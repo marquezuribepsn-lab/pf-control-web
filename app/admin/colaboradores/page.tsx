@@ -1,3 +1,4 @@
+"use client";
 import { ColaboradoresProvider, useColaboradores } from '@/components/ColaboradoresProvider';
 
 function ColaboradoresList() {
