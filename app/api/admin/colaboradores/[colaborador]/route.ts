@@ -14,7 +14,8 @@ async function logAccion(colaboradorId: string, accion: string, detalles: any) {
   });
 }
 
-export async function GET(req: NextRequest, { params }: { params: { colaborador: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const params = await context.params;
   const colaborador = await prisma.user.findUnique({
     where: { id: params.colaborador, role: 'COLABORADOR' },
   });
@@ -24,7 +25,8 @@ export async function GET(req: NextRequest, { params }: { params: { colaborador:
   return NextResponse.json({ colaborador, historial });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { colaborador: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const params = await context.params;
   const data = await req.json();
   try {
     const colaborador = await prisma.user.update({
@@ -38,7 +40,8 @@ export async function PUT(req: NextRequest, { params }: { params: { colaborador:
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { colaborador: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const params = await context.params;
   try {
     // Suspender en vez de borrar
     const colaborador = await prisma.user.update({
