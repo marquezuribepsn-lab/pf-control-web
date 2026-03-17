@@ -1,0 +1,317 @@
+{
+  "pf-control-jugadoras": [
+    {
+      "nombre": "Sofía Gómez",
+      "posicion": "Volante",
+      "wellness": 8,
+      "carga": 540,
+      "fechaNacimiento": "2002-05-10",
+      "altura": "168",
+      "peso": "60",
+      "deporte": "Fútbol",
+      "categoria": "Primera",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Potencia y prevención",
+      "observaciones": "Sin novedades"
+    },
+    {
+      "nombre": "Valentina Ruiz",
+      "posicion": "Delantera",
+      "wellness": 4,
+      "carga": 760,
+      "fechaNacimiento": "2001-11-02",
+      "altura": "164",
+      "peso": "57",
+      "deporte": "Fútbol",
+      "categoria": "Primera",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Fuerza y aceleración",
+      "observaciones": "Fatiga alta"
+    },
+    {
+      "nombre": "Camila Torres",
+      "posicion": "Defensora",
+      "wellness": 7,
+      "carga": 490,
+      "fechaNacimiento": "2003-03-21",
+      "altura": "170",
+      "peso": "62",
+      "deporte": "Fútbol",
+      "categoria": "Primera",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Fuerza general",
+      "observaciones": "Normal"
+    },
+    {
+      "nombre": "Ana López",
+      "posicion": "Portera",
+      "wellness": 9,
+      "carga": 520,
+      "fechaNacimiento": "2006-07-15",
+      "altura": "172",
+      "peso": "65",
+      "deporte": "Fútbol",
+      "categoria": "Sub 18",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Técnica y agilidad",
+      "observaciones": "Buen estado"
+    },
+    {
+      "nombre": "María Fernández",
+      "posicion": "Mediocampista",
+      "wellness": 6,
+      "carga": 480,
+      "fechaNacimiento": "2007-09-12",
+      "altura": "160",
+      "peso": "55",
+      "deporte": "Fútbol",
+      "categoria": "Sub 18",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Condición física",
+      "observaciones": "Recuperándose"
+    },
+    {
+      "nombre": "Lucía Martínez",
+      "posicion": "Defensora",
+      "wellness": 8,
+      "carga": 450,
+      "fechaNacimiento": "2008-01-08",
+      "altura": "165",
+      "peso": "58",
+      "deporte": "Fútbol",
+      "categoria": "Sub 16",
+      "club": "Club Atlético Ejemplo",
+      "objetivo": "Fuerza básica",
+      "observaciones": "Normal"
+    }
+  ],
+  "pf-control-sesiones": [
+    {
+      "id": "1",
+      "titulo": "Fuerza tren inferior + aceleración",
+      "objetivo": "Desarrollar fuerza, prevención y aceleración inicial.",
+      "duracion": "70",
+      "equipo": "Primera Femenina",
+      "bloques": [
+        {
+          "id": "1",
+          "titulo": "Bloque principal - Fuerza",
+          "objetivo": "Desarrollo de fuerza unilateral",
+          "ejercicios": [
+            {
+              "ejercicioId": "1",
+              "series": 3,
+              "repeticiones": "8-10",
+              "carga": "70-80% 1RM",
+              "observaciones": "Mantener equilibrio, no tocar el suelo con la rodilla trasera"
+            },
+            {
+              "ejercicioId": "2",
+              "series": 3,
+              "repeticiones": "6-8",
+              "carga": "Asistido con banda",
+              "observaciones": "Controlar la bajada, evitar rebote"
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "titulo": "Bloque velocidad",
+          "objetivo": "Desarrollo de aceleración",
+          "ejercicios": [
+            {
+              "ejercicioId": "3",
+              "series": 6,
+              "repeticiones": "1",
+              "carga": "Máxima intensidad",
+              "observaciones": "Recuperación completa entre series, técnica perfecta"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pf-control-wellness": [
+    {
+      "nombre": "Sofía Gómez",
+      "bienestar": 8,
+      "fatiga": 3,
+      "dolor": 1,
+      "disponibilidad": "Disponible",
+      "comentario": "Buena recuperación."
+    },
+    {
+      "nombre": "Valentina Ruiz",
+      "bienestar": 4,
+      "fatiga": 8,
+      "dolor": 3,
+      "disponibilidad": "Limitada",
+      "comentario": "Cansancio alto post sesión."
+    },
+    {
+      "nombre": "Camila Torres",
+      "bienestar": 7,
+      "fatiga": 4,
+      "dolor": 1,
+      "disponibilidad": "Disponible",
+      "comentario": "Normal."
+    }
+  ],
+  "pf-control-categorias": [
+    {
+      "nombre": "Primera",
+      "habilitada": true
+    },
+    {
+      "nombre": "Sub 18",
+      "habilitada": true
+    },
+    {
+      "nombre": "Sub 16",
+      "habilitada": true
+    }
+  ],
+  "pf-control-equipos": [
+    {
+      "id": "1",
+      "nombre": "Primera Femenina",
+      "categoria": "Primera",
+      "temporada": "2026",
+      "descripcion": "Equipo principal femenino"
+    },
+    {
+      "id": "2",
+      "nombre": "Sub 18 Femenina",
+      "categoria": "Sub 18",
+      "temporada": "2026",
+      "descripcion": "Equipo sub 18 femenino"
+    },
+    {
+      "id": "3",
+      "nombre": "Sub 16 Femenina",
+      "categoria": "Sub 16",
+      "temporada": "2026",
+      "descripcion": "Equipo sub 16 femenino"
+    }
+  ],
+  "pf-control-deportes": [
+    {
+      "nombre": "Fútbol",
+      "habilitado": true,
+      "posiciones": [
+        "Portero",
+        "Defensa central",
+        "Lateral derecho",
+        "Lateral izquierdo",
+        "Pivote defensivo",
+        "Mediocampista central",
+        "Mediocampista derecho",
+        "Mediocampista izquierdo",
+        "Extremo derecho",
+        "Extremo izquierdo",
+        "Delantero centro",
+        "Segundo delantero"
+      ]
+    },
+    {
+      "nombre": "Hockey",
+      "habilitado": true,
+      "posiciones": [
+        "Portero",
+        "Defensa derecho",
+        "Defensa izquierdo",
+        "Defensa central",
+        "Volante derecho",
+        "Volante izquierdo",
+        "Volante central",
+        "Delantero derecho",
+        "Delantero izquierdo",
+        "Delantero centro"
+      ]
+    },
+    {
+      "nombre": "Baloncesto",
+      "habilitado": true,
+      "posiciones": [
+        "Base",
+        "Escolta",
+        "Alero",
+        "Ala-Pívot",
+        "Pívot"
+      ]
+    },
+    {
+      "nombre": "Voleibol",
+      "habilitado": true,
+      "posiciones": [
+        "Libero",
+        "Central",
+        "Opuesto",
+        "Receptor",
+        "Armador"
+      ]
+    },
+    {
+      "nombre": "Tenis",
+      "habilitado": true,
+      "posiciones": [
+        "Jugador individual",
+        "Dobles"
+      ]
+    },
+    {
+      "nombre": "Rugby",
+      "habilitado": true,
+      "posiciones": [
+        "Prop",
+        "Hooker",
+        "Lock",
+        "Flanker",
+        "Number 8",
+        "Scrum-half",
+        "Fly-half",
+        "Centre",
+        "Wing",
+        "Full-back"
+      ]
+    },
+    {
+      "nombre": "Handball",
+      "habilitado": true,
+      "posiciones": [
+        "Goalkeeper",
+        "Left back",
+        "Centre back",
+        "Right back",
+        "Left wing",
+        "Right wing",
+        "Pivot"
+      ]
+    },
+    {
+      "nombre": "Baseball",
+      "habilitado": true,
+      "posiciones": [
+        "Pitcher",
+        "Catcher",
+        "First baseman",
+        "Second baseman",
+        "Third baseman",
+        "Shortstop",
+        "Left fielder",
+        "Center fielder",
+        "Right fielder"
+      ]
+    }
+  ],
+  "pf-control-ejercicios": [
+    {
+      "nombre": "Sentadilla con barra",
+      "categoria": "Fuerza",
+      "descripcion": "Ejercicio compuesto que fortalece piernas, glúteos y core. Mejora la fuerza funcional y estabilidad.",
+      "objetivo": "",
+      "videoUrl": "https://youtube.com/shorts/aM5tDFTkryM?si=IbBG6Zm64tYbRZs9",
+      "id": "1773618792465"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #020617;
+}
+
+body {
+  color: #e2e8f0;
+}
+
+/* Regla global solicitada: fondos blancos a gris y texto blanco en negrita */
+:where([class*="bg-white"]) {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+:where([class*="text-neutral-"], [class*="text-slate-"]) {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+:where([class*="border-neutral-"]) {
+  border-color: #64748b !important;
+}
+
+:where(input, textarea, select) {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-color: #64748b !important;
+}
+
+:where(input::placeholder, textarea::placeholder) {
+  color: #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.35);
+  color: #ffffff;
+}

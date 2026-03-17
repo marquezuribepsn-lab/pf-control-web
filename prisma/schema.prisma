@@ -1,0 +1,106 @@
+model AlumnoAsignado {
+  id            String   @id @default(cuid())
+  colaborador   User    @relation("ColaboradorAsignado", fields: [colaboradorId], references: [id], onDelete: Cascade)
+  colaboradorId String
+  alumno        User    @relation("AlumnoAsignado", fields: [alumnoId], references: [id], onDelete: Cascade)
+  alumnoId      String
+  puedeEditar   Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model SyncEntry {
+  key       String   @id
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sync_entries")
+}
+
+enum UserRole {
+  ADMIN
+  COLABORADOR
+  CLIENTE
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  role          UserRole @default(CLIENTE)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+    etiquetas     Etiqueta[]
+  updatedAt     DateTime @updatedAt
+
+  // Datos personales
+  nombreCompleto String @default("Sin nombre")
+  edad           Int @default(0)
+  fechaNacimiento DateTime @default("2000-01-01T00:00:00.000Z")
+  altura         Float @default(0.0)
+  telefono       String?
+  direccion      String?
+
+  // Permisos
+  puedeEditarRegistros   Boolean @default(false)
+  puedeEditarPlanes      Boolean @default(false)
+  puedeVerTodosAlumnos   Boolean @default(false)
+  permisosGranulares     Json? // Permisos específicos por colaborador
+
+  estado                 String @default("activo") // activo, suspendido, baja
+
+  // Relación con alumnos
+  colaboraciones         AlumnoAsignado[] @relation("ColaboradorAsignado")
+  asignaciones           AlumnoAsignado[] @relation("AlumnoAsignado")
+
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+  model Etiqueta {
+    id        String   @id @default(cuid())
+    texto     String
+    color     String   // HEX o nombre
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    @@map("etiquetas")
+  }
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  @@map("password_reset_tokens")
+}

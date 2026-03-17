@@ -1,0 +1,144 @@
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Base de datos (PostgreSQL + Prisma)
+
+La app ya soporta persistencia en PostgreSQL sin cambiar los providers actuales.
+
+Comportamiento:
+
+- Si existe `DATABASE_URL`, el endpoint de sync guarda/lee en PostgreSQL.
+- Si no existe `DATABASE_URL`, usa el store JSON (`SYNC_STORE_PATH`) como fallback.
+
+Pasos:
+
+1. Crear variables de entorno a partir de `.env.example`.
+2. Configurar `DATABASE_URL`.
+3. Generar cliente Prisma:
+
+```bash
+npm run db:generate
+```
+
+4. Crear tabla inicial en la DB:
+
+```bash
+npm run db:push
+```
+
+5. (Opcional) Abrir Prisma Studio:
+
+```bash
+npm run db:studio
+```
+
+### Setup automatico en VPS (Hostinger KVM)
+
+Si no aparece una seccion de "Database" en el panel, puedes instalar PostgreSQL directo en el VPS y dejar la URL guardada para deploys futuros:
+
+```bash
+npm run setup:db:vps -- -DbPassword "TU_PASSWORD_FUERTE"
+```
+
+Opcionales:
+
+```bash
+npm run setup:db:vps -- -Server "root@TU_IP" -DbName "pf_control" -DbUser "pf_user" -DbPassword "TU_PASSWORD_FUERTE"
+```
+
+Este comando:
+
+- instala PostgreSQL en el VPS (si falta),
+- crea/actualiza usuario y base,
+- guarda `DATABASE_URL` en `/root/pf-control-web/.db.env`,
+- ejecuta `db:push` para crear tablas.
+
+El script de deploy ya carga automaticamente `/root/pf-control-web/.db.env` y reinicia PM2 con `--update-env`.
+
+## Ejecutar como servidor (sin dejar PowerShell abierto)
+
+Este proyecto incluye PM2 para dejar la app corriendo en segundo plano.
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Generar build de producción:
+
+```bash
+npm run build
+```
+
+3. Iniciar servidor en segundo plano:
+
+```bash
+npm run server:start
+```
+
+4. Ver estado:
+
+```bash
+npm run server:status
+```
+
+5. Ver logs:
+
+```bash
+npm run server:logs
+```
+
+6. Reiniciar:
+
+```bash
+npm run server:restart
+```
+
+7. Detener:
+
+```bash
+npm run server:stop
+```
+
+8. Eliminar proceso de PM2:
+
+```bash
+npm run server:delete
+```
+
+Nota: PM2 mantiene el proceso activo aunque cierres la terminal. Para reinicios de PC, puedes configurar arranque automático con PM2 o una tarea programada de Windows.
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
