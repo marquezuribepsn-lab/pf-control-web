@@ -201,3 +201,6 @@ export default function ColaboradorDetallePage({ params }: { params: { colaborad
     </div>
   );
 }
+  // Fin del componente
+  // Agregada llave de cierre faltante
+  }
