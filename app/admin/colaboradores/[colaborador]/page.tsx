@@ -1,4 +1,3 @@
-}
 import { useState, useEffect } from 'react';
 import { useAlumnos } from '@/components/AlumnosProvider';
 import { useRouter } from 'next/navigation';
