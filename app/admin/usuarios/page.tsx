@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 interface User {
@@ -20,7 +20,6 @@ export default function AdminUsersPage() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  // Redirect if not admin
   useEffect(() => {
     if (session && (session.user as any).role !== 'ADMIN') {
       router.push('/');
@@ -34,7 +33,7 @@ export default function AdminUsersPage() {
         if (!res.ok) throw new Error('Error al cargar usuarios');
         const data = await res.json();
         setUsers(data);
-      } catch (err) {
+      } catch {
         setError('Error al cargar usuarios');
       } finally {
         setLoading(false);
@@ -55,14 +54,14 @@ export default function AdminUsersPage() {
       if (!res.ok) throw new Error('Error al actualizar usuario');
 
       const updated = await res.json();
-      setUsers(users.map(u => u.id === userId ? updated : u));
-    } catch (err) {
+      setUsers(users.map((u) => (u.id === userId ? updated : u)));
+    } catch {
       setError('Error al actualizar rol');
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este usuario?')) return;
+    if (!confirm('Estas seguro de que quieres eliminar este usuario?')) return;
 
     try {
       const res = await fetch('/api/admin/users', {
@@ -73,63 +72,68 @@ export default function AdminUsersPage() {
 
       if (!res.ok) throw new Error('Error al eliminar usuario');
 
-      setUsers(users.filter(u => u.id !== userId));
-    } catch (err) {
+      setUsers(users.filter((u) => u.id !== userId));
+    } catch {
       setError('Error al eliminar usuario');
     }
   };
 
-  const filteredUsers = filterRole
-    ? users.filter(u => u.role === filterRole)
-    : users;
+  const filteredUsers = filterRole ? users.filter((u) => u.role === filterRole) : users;
 
-  const clientesCount = users.filter(u => u.role === 'CLIENTE').length;
-  const colaboradoresCount = users.filter(u => u.role === 'COLABORADOR').length;
+  const clientesCount = users.filter((u) => u.role === 'CLIENTE').length;
+  const colaboradoresCount = users.filter((u) => u.role === 'COLABORADOR').length;
+
+  const roleTone = (role: User['role']) => {
+    if (role === 'ADMIN') return 'bg-amber-500/20 text-amber-200 border-amber-300/30';
+    if (role === 'COLABORADOR') return 'bg-cyan-500/20 text-cyan-200 border-cyan-300/30';
+    return 'bg-emerald-500/20 text-emerald-200 border-emerald-300/30';
+  };
 
   if (loading) {
     return (
-      <div className="p-6 text-center">
-        <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-        <p className="mt-4 text-gray-600">Cargando usuarios...</p>
-      </div>
+      <main className="mx-auto max-w-6xl p-6 text-slate-100">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/40 border-t-cyan-300" />
+          <p className="mt-4 text-sm text-slate-300">Cargando usuarios...</p>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">Gestión de Usuarios</h1>
+    <main className="mx-auto max-w-6xl p-6 text-slate-100">
+      <div className="mb-6">
+        <h1 className="text-4xl font-black tracking-tight">Gestion de Usuarios</h1>
+        <p className="mt-1 text-sm text-slate-300">Administra roles y acceso desde el panel.</p>
+      </div>
 
       {error && (
-        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-6">
+        <div className="mb-6 rounded-xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm font-semibold text-rose-200">
           {error}
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <p className="text-gray-600 text-sm">Total Usuarios</p>
-          <p className="text-3xl font-bold text-blue-600">{users.length}</p>
+      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Total Usuarios</p>
+          <p className="mt-1 text-3xl font-black text-white">{users.length}</p>
         </div>
-        <div className="bg-yellow-100 p-4 rounded-lg">
-          <p className="text-gray-600 text-sm">Clientes</p>
-          <p className="text-3xl font-bold text-yellow-600">{clientesCount}</p>
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Clientes</p>
+          <p className="mt-1 text-3xl font-black text-white">{clientesCount}</p>
         </div>
-        <div className="bg-green-100 p-4 rounded-lg">
-          <p className="text-gray-600 text-sm">Colaboradores</p>
-          <p className="text-3xl font-bold text-green-600">{colaboradoresCount}</p>
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Colaboradores</p>
+          <p className="mt-1 text-3xl font-black text-white">{colaboradoresCount}</p>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Filtrar por rol
-        </label>
+      <div className="mb-6 max-w-sm">
+        <label className="mb-2 block text-sm font-semibold text-slate-300">Filtrar por rol</label>
         <select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+          className="w-full rounded-xl border border-white/15 bg-slate-900 px-4 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/50"
         >
           <option value="">Todos</option>
           <option value="CLIENTE">Clientes</option>
@@ -138,65 +142,47 @@ export default function AdminUsersPage() {
         </select>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-900/65">
         <table className="w-full">
-          <thead className="bg-gray-100 border-b">
+          <thead className="border-b border-white/10 bg-slate-800/70">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Rol
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Verificado
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Registrado
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                Acciones
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Rol</th>
+              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Verificado</th>
+              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Registrado</th>
+              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.map((user) => (
-              <tr key={user.id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-900">{user.email}</td>
+              <tr key={user.id} className="border-b border-white/10 hover:bg-slate-800/40">
+                <td className="px-6 py-4 text-sm text-slate-100">{user.email}</td>
                 <td className="px-6 py-4">
-                  <select
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    disabled={user.role === 'ADMIN'}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100"
-                  >
-                    <option value="CLIENTE">Cliente</option>
-                    <option value="COLABORADOR">Colaborador</option>
-                    <option value="ADMIN" disabled>
-                      Admin
-                    </option>
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full border px-2 py-1 text-[11px] font-bold ${roleTone(user.role)}`}>{user.role}</span>
+                    <select
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      disabled={user.role === 'ADMIN'}
+                      className="rounded-lg border border-white/15 bg-slate-800 px-2 py-1 text-xs text-slate-100 outline-none focus:border-cyan-300/60 disabled:opacity-60"
+                    >
+                      <option value="CLIENTE">Cliente</option>
+                      <option value="COLABORADOR">Colaborador</option>
+                      <option value="ADMIN" disabled>Admin</option>
+                    </select>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      user.emailVerified
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${user.emailVerified ? 'bg-emerald-500/20 text-emerald-200' : 'bg-rose-500/20 text-rose-200'}`}>
                     {user.emailVerified ? 'Verificado' : 'No verificado'}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {new Date(user.createdAt).toLocaleDateString('es-AR')}
-                </td>
+                <td className="px-6 py-4 text-sm text-slate-300">{new Date(user.createdAt).toLocaleDateString('es-AR')}</td>
                 <td className="px-6 py-4">
                   {user.role !== 'ADMIN' && (
                     <button
                       onClick={() => handleDeleteUser(user.id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      className="rounded-lg bg-rose-500/20 px-3 py-1 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/30"
                     >
                       Eliminar
                     </button>
@@ -208,11 +194,7 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
-      {filteredUsers.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No hay usuarios que mostrar
-        </div>
-      )}
-    </div>
+      {filteredUsers.length === 0 && <div className="py-8 text-center text-slate-400">No hay usuarios que mostrar</div>}
+    </main>
   );
 }

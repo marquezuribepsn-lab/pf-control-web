@@ -34,6 +34,8 @@ export default function RootLayout({
     { href: "/deportes", label: "Deportes", icon: "⚽", tone: "from-sky-500 to-cyan-600" },
     { href: "/equipos", label: "Equipos", icon: "🛡️", tone: "from-indigo-500 to-violet-600" },
     { href: "/clientes", label: "Clientes", icon: "👤", tone: "from-lime-500 to-green-600" },
+    { href: "/admin/usuarios", label: "Admin usuarios", icon: "🛠️", tone: "from-orange-500 to-amber-600", adminOnly: true },
+    { href: "/admin/colaboradores", label: "Admin colaboradores", icon: "🧩", tone: "from-pink-500 to-rose-600", adminOnly: true },
     { href: "/configuracion", label: "Configuración", icon: "⚙️", tone: "from-slate-500 to-gray-600" },
     { href: "/nueva-sesion", label: "Nueva sesión", icon: "🚀", tone: "from-cyan-500 to-sky-600" },
   ];

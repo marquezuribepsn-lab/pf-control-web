@@ -7,9 +7,17 @@ const db = prisma as any;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    let payload: any;
+    try {
+      payload = await req.json();
+    } catch {
+      return NextResponse.json({ message: 'Body JSON invalido' }, { status: 400 });
+    }
 
-    if (!email || !password || password.length < 6) {
+    const { email, password } = payload || {};
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+    if (!normalizedEmail || !password || password.length < 6) {
       return NextResponse.json(
         { message: 'Email y contraseña (mínimo 6 caracteres) requeridos' },
         { status: 400 }
@@ -18,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -34,17 +42,17 @@ export async function POST(req: NextRequest) {
     // Create user
     const user = await db.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         role: 'CLIENTE',
       },
     });
 
     // Generate verification token
-    const token = await generateVerificationToken(email);
+    const token = await generateVerificationToken(user.email);
 
     // Send verification email
-    await sendVerificationEmail(email, token);
+    await sendVerificationEmail(user.email, token);
 
     return NextResponse.json(
       { message: 'Usuario creado. Revisa tu email para verificar.' },

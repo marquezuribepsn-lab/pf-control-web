@@ -16,7 +16,7 @@ export const authConfig = {
         rememberMe: { label: 'Remember me', type: 'checkbox' },
       },
       async authorize(credentials) {
-        const email = typeof credentials?.email === 'string' ? credentials.email : null;
+        const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : null;
         const password = typeof credentials?.password === 'string' ? credentials.password : null;
 
         if (!email || !password) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { sendColaboradorCredentials } from '@/lib/email';
 
 const prisma = new PrismaClient();
@@ -21,15 +22,30 @@ export async function POST(req: NextRequest) {
     asignaciones // array de IDs de alumnos
   } = data;
 
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const cleanedAsignaciones = Array.isArray(asignaciones)
+    ? asignaciones.map((id: string) => id.trim()).filter(Boolean)
+    : [];
+
+  if (!normalizedEmail || !nombreCompleto) {
+    return NextResponse.json({ success: false, error: 'Email y nombre completo son requeridos' }, { status: 400 });
+  }
+
   // Generar contraseña aleatoria segura
   const password = randomBytes(8).toString('hex');
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existing) {
+      return NextResponse.json({ success: false, error: 'El email ya está registrado' }, { status: 400 });
+    }
+
     // Crear colaborador
     const colaborador = await prisma.user.create({
       data: {
-        email,
-        password,
+        email: normalizedEmail,
+        password: hashedPassword,
         role: 'COLABORADOR',
         nombreCompleto,
         edad,
@@ -44,8 +60,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Asignar alumnos
-    if (Array.isArray(asignaciones)) {
-      for (const alumnoId of asignaciones) {
+    if (cleanedAsignaciones.length > 0) {
+      for (const alumnoId of cleanedAsignaciones) {
         await prisma.alumnoAsignado.create({
           data: {
             colaboradorId: colaborador.id,
@@ -57,18 +73,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Enviar credenciales por mail
-    await sendColaboradorCredentials(email, password, nombreCompleto);
+    await sendColaboradorCredentials(normalizedEmail, password, nombreCompleto);
 
     return NextResponse.json({ success: true, colaborador });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    let errorMsg = 'Error desconocido';
+    if (typeof error === 'object' && error && 'message' in error) {
+      errorMsg = (error as any).message;
+    }
+    return NextResponse.json({ success: false, error: errorMsg }, { status: 500 });
   }
 }
 
 export async function GET() {
   // Listar colaboradores
   const colaboradores = await prisma.user.findMany({
-    where: { role: 'COLABORADOR' },
+    where: {
+      OR: [
+        { role: 'COLABORADOR' },
+        { colaboraciones: { some: {} } },
+      ],
+    },
     include: {
       colaboraciones: {
         include: { alumno: true },

@@ -6,7 +6,14 @@ const db = prisma as any;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    let payload: any;
+    try {
+      payload = await req.json();
+    } catch {
+      return NextResponse.json({ message: 'Body JSON invalido' }, { status: 400 });
+    }
+
+    const { email } = payload || {};
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
     if (!normalizedEmail) {

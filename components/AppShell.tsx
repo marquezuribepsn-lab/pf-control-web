@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 type NavLink = {
   href: string;
   label: string;
   icon: string;
   tone: string;
+  adminOnly?: boolean;
 };
 
 type AppShellProps = {
@@ -96,6 +98,7 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 };
 
 export default function AppShell({ links, children }: AppShellProps) {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -197,11 +200,18 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMobileOpen(false);
   }, [pathname]);
 
-  const linkByHref = new Map(links.map((link) => [link.href, link]));
+  const role = (session?.user as any)?.role;
+  const visibleLinks = links.filter((link) => !link.adminOnly || role === "ADMIN");
+
+  const linkByHref = new Map(visibleLinks.map((link) => [link.href, link]));
 
   const orderedLinks = config.order
     .map((href) => linkByHref.get(href))
     .filter((link): link is NavLink => Boolean(link));
+
+  useEffect(() => {
+    setConfig((current) => normalizeConfig(visibleLinks, current));
+  }, [role, links]);
 
   const handleDropOnItem = (targetHref: string) => {
     if (!dragState) {
