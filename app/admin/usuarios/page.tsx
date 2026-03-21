@@ -15,7 +15,9 @@ interface User {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [filterRole, setFilterRole] = useState<string>('');
   const router = useRouter();
   const { data: session } = useSession();
@@ -29,6 +31,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setError('');
         const res = await fetch('/api/admin/users');
         if (!res.ok) throw new Error('Error al cargar usuarios');
         const data = await res.json();
@@ -42,6 +45,32 @@ export default function AdminUsersPage() {
 
     if (session) fetchUsers();
   }, [session]);
+
+  const handleCleanupTestAccounts = async () => {
+    if (!confirm('Esto eliminara cuentas de prueba detectadas. Continuar?')) return;
+
+    try {
+      setCleanupLoading(true);
+      setError('');
+      setSuccess('');
+
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cleanupTestAccounts: true }),
+      });
+
+      if (!res.ok) throw new Error('Error al limpiar cuentas de prueba');
+
+      const data = await res.json();
+      setUsers(data.users ?? []);
+      setSuccess(`Limpieza completada. Cuentas eliminadas: ${data.deletedCount ?? 0}.`);
+    } catch {
+      setError('Error al limpiar cuentas de prueba');
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -113,6 +142,12 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {success && (
+        <div className="mb-6 rounded-xl border border-emerald-400/30 bg-emerald-500/15 p-4 text-sm font-semibold text-emerald-200">
+          {success}
+        </div>
+      )}
+
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Total Usuarios</p>
@@ -140,6 +175,16 @@ export default function AdminUsersPage() {
           <option value="COLABORADOR">Colaboradores</option>
           <option value="ADMIN">Administrador</option>
         </select>
+      </div>
+
+      <div className="mb-6">
+        <button
+          onClick={handleCleanupTestAccounts}
+          disabled={cleanupLoading}
+          className="rounded-xl border border-amber-300/40 bg-amber-500/15 px-4 py-2 text-sm font-bold text-amber-100 transition hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {cleanupLoading ? 'Limpiando cuentas de prueba...' : 'Limpiar cuentas de prueba'}
+        </button>
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-900/65">

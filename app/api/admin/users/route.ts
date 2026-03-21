@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { filterOperationalUsers, isTestAccountEmail } from '@/lib/operationalUsers';
 
 const db = prisma as any;
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(users);
+  return NextResponse.json(filterOperationalUsers(users));
 }
 
 export async function PUT(req: NextRequest) {
@@ -99,6 +100,70 @@ export async function DELETE(req: NextRequest) {
     console.error('Delete user error:', error);
     return NextResponse.json(
       { message: 'Error al eliminar usuario' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json(
+      { message: 'No autorizado' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json().catch(() => ({}));
+    if (!body?.cleanupTestAccounts) {
+      return NextResponse.json(
+        { message: 'Operacion no soportada' },
+        { status: 400 }
+      );
+    }
+
+    const users = await db.user.findMany({
+      select: { id: true, email: true },
+    });
+
+    const currentUserId = String((session.user as any).id || '');
+    const toDeleteIds = users
+      .filter((user: { id: string; email?: string | null }) => isTestAccountEmail(user.email))
+      .map((user: { id: string }) => user.id)
+      .filter((id: string) => id !== currentUserId);
+
+    let deletedCount = 0;
+    if (toDeleteIds.length > 0) {
+      const result = await db.user.deleteMany({
+        where: {
+          id: { in: toDeleteIds },
+        },
+      });
+      deletedCount = result.count;
+    }
+
+    const remainingUsers = await db.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        emailVerified: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({
+      message: `Se eliminaron ${deletedCount} cuentas de prueba`,
+      deletedCount,
+      users: filterOperationalUsers(remainingUsers),
+    });
+  } catch (error) {
+    console.error('Cleanup test users error:', error);
+    return NextResponse.json(
+      { message: 'Error al limpiar cuentas de prueba' },
       { status: 500 }
     );
   }

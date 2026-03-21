@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { getPendingSaveStatus } from "./useSharedState";
 
 type NavLink = {
   href: string;
@@ -21,8 +22,10 @@ type AppShellProps = {
 
 type InlineToast = {
   id: number;
-  type: "success" | "error";
+  type: "success" | "error" | "warning";
+  title: string;
   message: string;
+  phase: "enter" | "exit";
 };
 
 const PRIMARY_ORDER = [
@@ -100,6 +103,7 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const [viewport, setViewport] = useState({ width: 1366, height: 768 });
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -108,6 +112,101 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
+  const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
+  const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+
+  const formatPendingKeyLabel = (key: string) => {
+    const keyLabels: Record<string, string> = {
+      "pf-control-nutricion-planes-v1": "Nutricion · Planes",
+      "pf-control-nutricion-alimentos-v1": "Nutricion · Alimentos",
+      "pf-control-nutricion-asignaciones-v1": "Nutricion · Asignaciones",
+      "pf-control-clientes-meta-v1": "Clientes · Fichas",
+      "pf-control-pagos-v1": "Clientes · Pagos",
+      "pf-control-sesiones": "Sesiones",
+      "pf-control-semana-plan": "Semana · Plan",
+      "pf-control-alumno-week-notifications": "Semana · Alertas",
+      "pf-control-asistencias-jornadas-v1": "Asistencias · Jornadas",
+      "pf-control-asistencias-registros-v1": "Asistencias · Registros",
+      "pf-control-alumnos": "Alumnos",
+      "pf-control-jugadoras": "Jugadoras",
+      "pf-control-categorias": "Categorias",
+      "pf-control-deportes": "Deportes",
+      "pf-control-ejercicios": "Ejercicios",
+      "pf-control-equipos": "Equipos",
+      "pf-control-wellness": "Wellness",
+    };
+
+    if (keyLabels[key]) {
+      return keyLabels[key];
+    }
+
+    const normalized = key
+      .replace(/^pf-control-/, "")
+      .replace(/-v\d+$/, "")
+      .replace(/-/g, " ")
+      .trim();
+
+    if (!normalized) {
+      return key;
+    }
+
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  };
+
+  const pendingBadgeSummary = (() => {
+    if (pendingSaveKeys.length === 0) return "";
+    const labels = pendingSaveKeys.slice(0, 2).map((key) => formatPendingKeyLabel(key));
+    const base = labels.join(" + ");
+    const rest = pendingSaveKeys.length - labels.length;
+    return rest > 0 ? `${base} +${rest}` : base;
+  })();
+
+  const pushToast = (type: InlineToast["type"], message: string, title?: string) => {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const resolvedTitle =
+      title ||
+      (type === "success"
+        ? "Cambios guardados"
+        : type === "warning"
+        ? "Atencion"
+        : "Error");
+
+    setToasts((prev) => [
+      ...prev,
+      {
+        id,
+        type,
+        title: resolvedTitle,
+        message,
+        phase: "enter",
+      },
+    ]);
+
+    window.setTimeout(() => {
+      setToasts((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, phase: "exit" } : item))
+      );
+    }, 3200);
+
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((item) => item.id !== id));
+    }, 3850);
+  };
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("orientationchange", updateViewport);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", updateViewport);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -125,21 +224,93 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [links]);
 
   useEffect(() => {
-    const onToast = (event: Event) => {
-      const custom = event as CustomEvent<{ type?: "success" | "error"; message?: string }>;
-      const type = custom.detail?.type === "error" ? "error" : "success";
-      const message = custom.detail?.message || "Cambio guardado";
-      const id = Date.now() + Math.floor(Math.random() * 1000);
+    if (!mounted || !session?.user) {
+      return;
+    }
 
-      setToasts((prev) => [...prev, { id, type, message }]);
+    let cancelled = false;
 
-      window.setTimeout(() => {
-        setToasts((prev) => prev.filter((item) => item.id !== id));
-      }, 3800);
+    void (async () => {
+      try {
+        const response = await fetch("/api/account", { cache: "no-store" });
+        if (!response.ok || cancelled) {
+          return;
+        }
+
+        const data = await response.json();
+        const remoteImage =
+          typeof data.sidebarImage === "string" && data.sidebarImage.trim()
+            ? data.sidebarImage
+            : null;
+
+        if (cancelled) {
+          return;
+        }
+
+        setSidebarImage(remoteImage);
+
+        if (remoteImage) {
+          localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
+        } else {
+          localStorage.removeItem(SIDEBAR_IMAGE_KEY);
+        }
+
+        window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+      } catch {
+        // no bloquear el render del shell si falla la sincronizacion inicial
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, session?.user]);
+
+  useEffect(() => {
+    const initialPending = getPendingSaveStatus();
+    setPendingSaveKeys(initialPending.keys);
+
+    const onPendingSaveStatus = (event: Event) => {
+      const custom = event as CustomEvent<{ keys?: string[] }>;
+      const keys = Array.isArray(custom.detail?.keys) ? custom.detail.keys : [];
+      setPendingSaveKeys(keys);
     };
 
+    const onToast = (event: Event) => {
+      const custom = event as CustomEvent<{
+        type?: "success" | "error" | "warning";
+        title?: string;
+        message?: string;
+      }>;
+      const requestedType = custom.detail?.type;
+      const type =
+        requestedType === "error"
+          ? "error"
+          : requestedType === "warning"
+          ? "warning"
+          : "success";
+      const message = custom.detail?.message || "Cambio guardado";
+      pushToast(type, message, custom.detail?.title);
+    };
+
+    const onUnhandledRejection = () => {
+      pushToast("error", "Ocurrio un problema inesperado en la pagina", "Error");
+    };
+
+    const onRuntimeError = () => {
+      pushToast("error", "Se detecto un error inesperado", "Error");
+    };
+
+    window.addEventListener("pf-pending-save-status", onPendingSaveStatus);
     window.addEventListener("pf-inline-toast", onToast);
-    return () => window.removeEventListener("pf-inline-toast", onToast);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    window.addEventListener("error", onRuntimeError);
+    return () => {
+      window.removeEventListener("pf-pending-save-status", onPendingSaveStatus);
+      window.removeEventListener("pf-inline-toast", onToast);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+      window.removeEventListener("error", onRuntimeError);
+    };
   }, []);
 
   useEffect(() => {
@@ -200,6 +371,12 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (pendingSaveKeys.length === 0) {
+      setPendingPanelOpen(false);
+    }
+  }, [pendingSaveKeys]);
+
   const role = (session?.user as any)?.role;
   const visibleLinks = links.filter((link) => !link.adminOnly || role === "ADMIN");
 
@@ -248,15 +425,73 @@ export default function AppShell({ links, children }: AppShellProps) {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
     width: `${100 / screenScale}%`,
-    minHeight: `${100 / screenScale}vh`,
+    minHeight: `${100 / screenScale}dvh`,
   } as const;
+
+  const isUltraWideSidebar = viewport.width >= 1920 && viewport.height >= 900;
+  const isCompactSidebar = viewport.height <= 840 || viewport.width <= 1366;
+  const isUltraCompactSidebar = viewport.height <= 740 || viewport.width <= 1200;
+
+  const desktopExpandedWidthClass = isUltraWideSidebar
+    ? "lg:w-80"
+    : isUltraCompactSidebar
+    ? "lg:w-60"
+    : isCompactSidebar
+    ? "lg:w-64"
+    : "lg:w-72";
+
+  const desktopCollapsedWidthClass = isUltraWideSidebar
+    ? "lg:w-24"
+    : isUltraCompactSidebar
+    ? "lg:w-16"
+    : "lg:w-20";
+
+  const shellExpandedPaddingClass = isUltraWideSidebar
+    ? "lg:pl-80"
+    : isUltraCompactSidebar
+    ? "lg:pl-60"
+    : isCompactSidebar
+    ? "lg:pl-64"
+    : "lg:pl-72";
+
+  const shellCollapsedPaddingClass = isUltraWideSidebar
+    ? "lg:pl-24"
+    : isUltraCompactSidebar
+    ? "lg:pl-16"
+    : "lg:pl-20";
+
+  const headerPaddingClass = isUltraWideSidebar
+    ? "p-[clamp(0.95rem,1.2vh,1.35rem)]"
+    : isUltraCompactSidebar
+    ? "p-[clamp(0.5rem,1.2vh,0.85rem)]"
+    : "p-[clamp(0.6rem,1.6vh,1.25rem)] lg:p-[clamp(0.7rem,1.8vh,1.35rem)]";
+
+  const navGapClass = isUltraWideSidebar
+    ? "gap-[clamp(0.38rem,0.85vh,0.6rem)]"
+    : isUltraCompactSidebar
+    ? "gap-[clamp(0.12rem,0.35vh,0.22rem)]"
+    : "gap-[clamp(0.22rem,0.7vh,0.5rem)]";
+
+  const navButtonPaddingClass = isUltraWideSidebar
+    ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
+    : isUltraCompactSidebar
+    ? "px-[clamp(0.36rem,1vw,0.56rem)] py-[clamp(0.2rem,0.5vh,0.34rem)] text-[clamp(0.58rem,1.2vh,0.75rem)]"
+    : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.28rem,0.8vh,0.56rem)] text-[clamp(0.65rem,1.5vh,0.875rem)]";
+
+  const footerButtonPaddingClass = isUltraWideSidebar
+    ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
+    : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.3rem,0.85vh,0.56rem)] text-[clamp(0.65rem,1.45vh,0.875rem)]";
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
 
   return (
-    <div className="relative min-h-screen lg:grid lg:grid-cols-[auto_1fr]" style={scaledStyle}>
+    <div
+      className={`relative min-h-[100svh] overflow-x-hidden transition-[padding] duration-300 ${
+        collapsed ? shellCollapsedPaddingClass : shellExpandedPaddingClass
+      }`}
+    >
       <button
         onClick={() => setMobileOpen(true)}
         className="fixed left-4 top-4 z-40 rounded-lg border border-white/20 bg-slate-900/90 px-3 py-2 text-sm font-bold text-white shadow-lg lg:hidden"
@@ -273,8 +508,10 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen border-r border-white/15 bg-slate-900/95 backdrop-blur-md transition-all duration-300 lg:sticky ${
-          collapsed ? "w-20" : "w-72"
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-white/15 bg-slate-900/95 backdrop-blur-md transition-all duration-300 ${
+          collapsed
+            ? `w-20 ${desktopCollapsedWidthClass}`
+            : `w-[min(86vw,19rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="pointer-events-none absolute inset-0 opacity-50">
@@ -282,76 +519,80 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute right-0 top-16 h-32 w-32 rounded-full bg-fuchsia-500/25 blur-3xl" />
         </div>
 
-        <div className="relative flex h-full flex-col p-4 lg:p-5">
+        <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${headerPaddingClass}`}>
           {collapsed && sidebarImage && (
-            <div className="mb-3 flex justify-center">
+            <div className="mb-[clamp(0.25rem,0.9vh,0.75rem)] flex justify-center">
               <img
                 src={sidebarImage}
                 alt="Imagen lateral"
-                className="h-10 w-10 rounded-lg border border-white/20 object-cover"
+                className="h-[clamp(2rem,4.2vh,2.5rem)] w-[clamp(2rem,4.2vh,2.5rem)] rounded-lg border border-white/20 object-cover"
               />
             </div>
           )}
 
-          <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="mb-[clamp(0.35rem,1.1vh,1rem)] flex items-center justify-between gap-2">
             {!collapsed && (
               <div>
-                {sidebarImage && (
+                {sidebarImage && !isUltraCompactSidebar && (
                   <img
                     src={sidebarImage}
                     alt="Imagen lateral"
-                    className="mb-2 h-12 w-12 rounded-xl border border-white/20 object-cover"
+                    className="mb-1 h-[clamp(2rem,5vh,3rem)] w-[clamp(2rem,5vh,3rem)] rounded-xl border border-white/20 object-cover"
                   />
                 )}
-                <p className="text-xl font-black tracking-tight text-white">PF Control</p>
-                <p className="text-xs text-slate-300">Plataforma para preparadores fisicos</p>
+                <p className="text-[clamp(0.95rem,2.3vh,1.25rem)] font-black tracking-tight text-white">PF Control</p>
+                {!isUltraCompactSidebar && (
+                  <p className="text-[clamp(0.62rem,1.35vh,0.75rem)] text-slate-300">Plataforma para preparadores fisicos</p>
+                )}
               </div>
             )}
 
             <button
               onClick={toggleCollapsed}
-              className="rounded-lg border border-white/20 bg-slate-800/70 px-2 py-1 text-xs font-bold text-white"
+              className="rounded-lg border border-white/20 bg-slate-800/70 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-white"
             >
               {collapsed ? ">>" : "<<"}
             </button>
           </div>
 
-          <nav
-            className="grid gap-2 rounded-xl border border-white/10 p-2"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDropOnList}
-          >
-            {orderedLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                draggable
-                onDragStart={() => setDragState({ href: link.href })}
-                onDragEnd={() => setDragState(null)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDropOnItem(link.href);
-                }}
-                className="group relative overflow-hidden rounded-xl border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
-                title={link.label}
-              >
-                <span className={`absolute inset-0 bg-gradient-to-r ${link.tone} opacity-80 transition group-hover:opacity-100`} />
-                <span className="relative flex items-center justify-center gap-2">
-                  <span>{link.icon}</span>
-                  {!collapsed && <span>{link.label}</span>}
-                </span>
-              </Link>
-            ))}
-          </nav>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <nav
+              className={`grid h-full content-start rounded-xl border border-white/10 p-[clamp(0.28rem,0.8vh,0.58rem)] ${navGapClass}`}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropOnList}
+            >
+              {orderedLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  draggable
+                  onDragStart={() => setDragState({ href: link.href })}
+                  onDragEnd={() => setDragState(null)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDropOnItem(link.href);
+                  }}
+                  className={`group relative overflow-hidden rounded-xl border border-white/20 font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass}`}
+                  title={link.label}
+                >
+                  <span className={`absolute inset-0 bg-gradient-to-r ${link.tone} opacity-80 transition group-hover:opacity-100`} />
+                  <span className="relative flex items-center justify-center gap-2">
+                    <span>{link.icon}</span>
+                    {!collapsed && <span>{link.label}</span>}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-            <div className="mt-auto grid gap-2 pt-4">
+            <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
               <Link
                 href="/cuenta"
                 onClick={() => setMobileOpen(false)}
-                className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                className={`rounded-xl border font-semibold transition ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
                     : "border-white/15 bg-slate-800/60 text-slate-100 hover:bg-slate-800/90"
@@ -363,7 +604,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                className="w-full rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20 hover:text-rose-100"
+                className={`w-full rounded-xl border border-rose-500/30 bg-rose-500/10 font-semibold text-rose-300 transition hover:bg-rose-500/20 hover:text-rose-100 ${footerButtonPaddingClass}`}
                 title="Cerrar sesión"
               >
                 {collapsed ? "🚪" : "🚪 Cerrar sesión"}
@@ -373,20 +614,79 @@ export default function AppShell({ links, children }: AppShellProps) {
       </aside>
 
       <div className={`relative transition-all duration-300 ${collapsed ? "lg:ml-0" : "lg:ml-0"}`}>
-        <div className="pointer-events-none fixed right-4 top-4 z-[60] flex w-[min(92vw,360px)] flex-col gap-2">
+        {pendingSaveKeys.length > 0 ? (
+          <div className="fixed left-4 top-4 z-[59] pointer-events-none">
+            <div className="pointer-events-auto space-y-2">
+              <button
+                type="button"
+                onClick={() => setPendingPanelOpen((prev) => !prev)}
+                className="rounded-xl border border-amber-300/45 bg-amber-500/15 px-3 py-2 text-xs font-semibold text-amber-100 shadow-lg backdrop-blur-md"
+              >
+                Cambios pendientes de guardar ({pendingSaveKeys.length})
+                {pendingBadgeSummary ? ` · ${pendingBadgeSummary}` : ""}
+              </button>
+
+              {pendingPanelOpen ? (
+                <div className="w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">
+                    Modulos pendientes
+                  </p>
+                  <div className="mt-2 max-h-56 space-y-1 overflow-auto">
+                    {pendingSaveKeys.map((key) => (
+                      <div
+                        key={key}
+                        className="rounded-md border border-white/10 bg-slate-800/80 px-2 py-1.5"
+                      >
+                        <p className="text-xs font-semibold text-slate-100">{formatPendingKeyLabel(key)}</p>
+                        <p className="text-[10px] text-slate-400">{key}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-300">
+                    Recordatorio: los cambios se suben cuando presionas Guardar en cada pantalla.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="pointer-events-none fixed right-4 top-4 z-[60] flex w-[min(92vw,380px)] flex-col gap-2">
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl ${
+              className={`pf-ios-toast rounded-[1.4rem] border px-4 py-3 shadow-2xl backdrop-blur-xl ${
+                toast.phase === "enter" ? "pf-ios-toast-enter" : "pf-ios-toast-exit"
+              } ${
                 toast.type === "success"
-                  ? "border-emerald-200/40 bg-emerald-500/25 text-emerald-50"
+                  ? "border-emerald-200/45 bg-gradient-to-r from-emerald-500/35 to-cyan-400/30 text-emerald-50"
+                  : toast.type === "warning"
+                  ? "border-amber-200/45 bg-gradient-to-r from-amber-500/35 to-orange-400/30 text-amber-50"
                   : "border-rose-200/40 bg-rose-500/25 text-rose-50"
               }`}
             >
-              <p className="text-[11px] font-semibold uppercase tracking-wider opacity-90">
-                {toast.type === "success" ? "Guardado" : "Error"}
-              </p>
-              <p className="mt-1 text-sm font-semibold">{toast.message}</p>
+              <div className="flex items-start gap-3">
+                <div
+                  className={`pf-ios-toast-icon mt-0.5 h-7 w-7 shrink-0 rounded-full border text-center text-sm leading-7 ${
+                    toast.type === "success"
+                      ? "border-emerald-100/70 bg-emerald-100/25"
+                      : toast.type === "warning"
+                      ? "border-amber-100/70 bg-amber-100/25"
+                      : "border-rose-100/70 bg-rose-100/25"
+                  }`}
+                >
+                  {toast.type === "success" ? "✓" : toast.type === "warning" ? "!" : "x"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-90">
+                    {toast.title}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold leading-5">{toast.message}</p>
+                </div>
+              </div>
+              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-black/20">
+                <div className="pf-ios-toast-progress h-full rounded-full bg-white/70" />
+              </div>
             </div>
           ))}
         </div>
@@ -395,7 +695,9 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div className="pt-16 lg:pt-0">{children}</div>
+        <div className="pt-16 lg:pt-0" style={scaledStyle}>
+          {children}
+        </div>
       </div>
     </div>
   );
