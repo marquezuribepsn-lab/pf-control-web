@@ -24,6 +24,14 @@ const hasMailConfig = Boolean(activeProvider);
 
 const defaultFromAddress = process.env.BREVO_SENDER_EMAIL || process.env.MAIL_FROM || process.env.SMTP_FROM || process.env.GMAIL_USER || '';
 const defaultFromName = process.env.BREVO_SENDER_NAME || 'PF Control';
+const mailAppName = process.env.MAIL_APP_NAME || 'PF Control';
+const mailAppUrl = process.env.NEXTAUTH_URL || 'https://pf-control.com';
+const mailPanelUrl = `${mailAppUrl}/auth/login`;
+const mailPrimaryColor = process.env.MAIL_PRIMARY_COLOR || '#06b6d4';
+const mailAccentColor = process.env.MAIL_ACCENT_COLOR || '#10b981';
+const mailSupportEmail = process.env.MAIL_SUPPORT_EMAIL || defaultFromAddress;
+const mailSendTimeoutMs = Math.max(3000, Math.min(60000, Number(process.env.MAIL_SEND_TIMEOUT_MS) || 15000));
+const mailSendRetries = Math.max(1, Math.min(5, Number(process.env.MAIL_SEND_RETRIES) || 2));
 
 const transporter = activeProvider === 'smtp'
   ? nodemailer.createTransport({
@@ -67,28 +75,47 @@ function ensureMailConfigured() {
 }
 
 async function sendMail(options: { to: string; subject: string; html: string }) {
-  if (activeProvider === 'brevo') {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': process.env.BREVO_API_KEY || '',
-      },
-      body: JSON.stringify({
-        sender: {
-          email: defaultFromAddress,
-          name: defaultFromName,
-        },
-        to: [{ email: options.to }],
-        subject: options.subject,
-        htmlContent: options.html,
-      }),
-    });
+  const normalizedTo = String(options.to || '').trim().toLowerCase();
+  if (!isValidEmail(normalizedTo)) {
+    throw new Error(`Email de destino invalido: ${options.to}`);
+  }
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Brevo API error: ${response.status} ${text}`);
-    }
+  const subject = String(options.subject || '').trim();
+  if (!subject) {
+    throw new Error('El asunto del email no puede estar vacio.');
+  }
+
+  if (activeProvider === 'brevo') {
+    await withRetries(async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), mailSendTimeoutMs);
+      try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': process.env.BREVO_API_KEY || '',
+          },
+          body: JSON.stringify({
+            sender: {
+              email: defaultFromAddress,
+              name: defaultFromName,
+            },
+            to: [{ email: normalizedTo }],
+            subject,
+            htmlContent: options.html,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Brevo API error: ${response.status} ${text}`);
+        }
+      } finally {
+        clearTimeout(timer);
+      }
+    }, mailSendRetries, 'sendMail(brevo)');
 
     return;
   }
@@ -97,12 +124,229 @@ async function sendMail(options: { to: string; subject: string; html: string }) 
     throw new Error('No hay proveedor SMTP disponible para enviar correo.');
   }
 
-  await transporter.sendMail({
-    from: defaultFromAddress,
-    to: options.to,
-    subject: options.subject,
-    html: options.html,
+  await withRetries(
+    () =>
+      withTimeout(
+        transporter.sendMail({
+          from: defaultFromAddress,
+          to: normalizedTo,
+          subject,
+          html: options.html,
+        }),
+        mailSendTimeoutMs,
+        'sendMail(smtp)'
+      ),
+    mailSendRetries,
+    'sendMail(smtp)'
+  );
+}
+
+function parseRecipients(raw: string | undefined) {
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function uniqueEmails(values: string[]) {
+  return [...new Set(values.map((email) => email.toLowerCase()))];
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function safeHref(url: string) {
+  const value = String(url || '').trim();
+  if (!value) return '#';
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+  return '#';
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timeout en ${label} tras ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
   });
+}
+
+async function withRetries<T>(fn: () => Promise<T>, retries: number, label: string): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 350 * attempt));
+      }
+    }
+  }
+
+  throw new Error(`${label} fallo tras ${retries} intento(s): ${String(lastError)}`);
+}
+
+function renderEmailLayout(options: {
+  preheader?: string;
+  title: string;
+  intro?: string;
+  bodyHtml: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  footerNote?: string;
+}) {
+  const preheader = escapeHtml(options.preheader || options.title);
+  const title = escapeHtml(options.title);
+  const intro = options.intro ? `<p style="margin:0 0 14px;color:#cbd5e1;font-size:14px;line-height:1.55;">${escapeHtml(options.intro)}</p>` : '';
+  const ctaHref = options.ctaUrl ? safeHref(options.ctaUrl) : '#';
+  const cta = options.ctaLabel && options.ctaUrl
+    ? `
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
+        <tr>
+          <td align="center" bgcolor="${escapeHtml(mailPrimaryColor)}" style="border-radius:10px;">
+            <a href="${escapeHtml(ctaHref)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:11px 18px;border-radius:10px;color:#001018;text-decoration:none;font-weight:800;font-size:14px;font-family:Segoe UI,Arial,sans-serif;">
+              ${escapeHtml(options.ctaLabel)}
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;">Si no ves el boton, abre este enlace: <a href="${escapeHtml(ctaHref)}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(ctaHref)}</a></p>
+    `
+    : '';
+  const footerNote = escapeHtml(options.footerNote || 'Si necesitas ayuda, responde este correo.');
+
+  return `
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${preheader}</div>
+    <div style="margin:0;padding:24px 12px;background:#020617;font-family:Segoe UI,Arial,sans-serif;color:#e2e8f0;">
+      <div style="max-width:680px;margin:0 auto;background:#0b1329;border:1px solid rgba(148,163,184,0.25);border-radius:16px;overflow:hidden;">
+        <div style="padding:18px 20px;background:linear-gradient(135deg,${escapeHtml(mailPrimaryColor)}22,${escapeHtml(mailAccentColor)}22);border-bottom:1px solid rgba(148,163,184,0.22);">
+          <p style="margin:0;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;font-weight:800;color:#bae6fd;">${escapeHtml(mailAppName)}</p>
+        </div>
+        <div style="padding:20px;">
+          <h2 style="margin:0 0 12px;font-size:23px;line-height:1.25;color:#f8fafc;">${title}</h2>
+          ${intro}
+          <div style="margin:0 0 16px;">${options.bodyHtml}</div>
+          ${cta ? `<div style="margin:0 0 16px;">${cta}</div>` : ''}
+          <div style="margin:18px 0 0;padding-top:12px;border-top:1px solid rgba(148,163,184,0.2);font-size:12px;color:#94a3b8;line-height:1.55;">
+            <p style="margin:0 0 8px;">${footerNote}</p>
+            <p style="margin:0;">${escapeHtml(mailAppName)} · <a href="${escapeHtml(safeHref(mailAppUrl))}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(mailAppUrl)}</a>${mailSupportEmail ? ` · ${escapeHtml(mailSupportEmail)}` : ''}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function getAdminNotificationRecipients() {
+  const envRecipients = parseRecipients(
+    process.env.ADMIN_NOTIFICATION_EMAILS || process.env.ADMIN_NOTIFICATION_EMAIL
+  );
+
+  if (envRecipients.length > 0) {
+    return uniqueEmails(envRecipients);
+  }
+
+  let adminUserRecipients: string[] = [];
+  try {
+    const admins = await db.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { email: true },
+    });
+    adminUserRecipients = admins
+      .map((item: { email?: string | null }) => String(item.email || "").trim().toLowerCase())
+      .filter(Boolean);
+  } catch {
+    // Si falla el acceso a usuarios admin, seguimos con los mails configurados por env.
+  }
+
+  return uniqueEmails([...envRecipients, ...adminUserRecipients]);
+}
+
+export async function sendAdminAlumnoRegisteredEmail(alumnoData: Record<string, unknown>) {
+  ensureMailConfigured();
+
+  const recipients = await getAdminNotificationRecipients();
+  if (recipients.length === 0) {
+    return;
+  }
+
+  const nombre = escapeHtml(alumnoData.nombre || "Sin nombre");
+  const creadoEn = new Date().toLocaleString("es-AR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const fields = [
+    ["Nombre", alumnoData.nombre],
+    ["Estado", alumnoData.estado],
+    ["Fecha de nacimiento", alumnoData.fechaNacimiento],
+    ["Altura", alumnoData.altura],
+    ["Peso", alumnoData.peso],
+    ["Club", alumnoData.club],
+    ["Objetivo", alumnoData.objetivo],
+    ["Observaciones", alumnoData.observaciones],
+    ["Practica deporte", alumnoData.practicaDeporte],
+  ] as const;
+
+  const rows = fields
+    .map(([label, value]) => {
+      const cleanValue = value === undefined || value === null || value === "" ? "-" : String(value);
+      return `<tr><td style=\"padding:6px 10px;border-bottom:1px solid #e2e8f0;font-weight:700;\">${escapeHtml(label)}</td><td style=\"padding:6px 10px;border-bottom:1px solid #e2e8f0;\">${escapeHtml(cleanValue)}</td></tr>`;
+    })
+    .join("");
+
+  const rawJson = escapeHtml(JSON.stringify(alumnoData, null, 2));
+
+  const html = renderEmailLayout({
+    preheader: `Nuevo alumno registrado: ${String(alumnoData.nombre || '')}`,
+    title: 'Nuevo alumno registrado',
+    intro: 'Se registro un alumno nuevo en PF Control.',
+    bodyHtml: `
+      <p style="margin:0 0 14px;color:#cbd5e1;"><b>Fecha:</b> ${escapeHtml(creadoEn)}</p>
+      <table style="border-collapse:collapse;width:100%;max-width:700px;margin-bottom:14px;background:#020617;border:1px solid rgba(148,163,184,0.2);border-radius:10px;overflow:hidden;">${rows}</table>
+      <p style="margin:0 0 8px;color:#cbd5e1;"><b>Payload completo:</b></p>
+      <pre style="background:#020617;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto;border:1px solid rgba(148,163,184,0.2);">${rawJson}</pre>
+    `,
+    ctaLabel: 'Abrir panel',
+    ctaUrl: mailPanelUrl,
+  });
+
+  await Promise.all(
+    recipients.map((to) =>
+      sendMail({
+        to,
+        subject: `Nuevo alumno registrado: ${nombre}`,
+        html,
+      })
+    )
+  );
 }
 
 export async function sendColaboradorCredentials(email: string, password: string, nombreCompleto: string) {
@@ -112,11 +356,14 @@ export async function sendColaboradorCredentials(email: string, password: string
     await sendMail({
       to: email,
       subject: 'Aviso de baja - PF Control',
-      html: `
-        <h2>Hola ${nombreCompleto}</h2>
-        <p>Te informamos que has sido dado de baja como colaborador en PF Control.</p>
-        <p>Si tienes dudas, contacta al administrador.</p>
-      `,
+      html: renderEmailLayout({
+        preheader: 'Aviso de baja de colaborador',
+        title: `Hola ${nombreCompleto}`,
+        intro: 'Te informamos que has sido dado de baja como colaborador en PF Control.',
+        bodyHtml: `<p style="margin:0;color:#cbd5e1;font-size:14px;">Si tienes dudas, contacta al administrador.</p>`,
+        ctaLabel: 'Abrir panel',
+        ctaUrl: mailPanelUrl,
+      }),
     });
     return;
   }
@@ -124,18 +371,21 @@ export async function sendColaboradorCredentials(email: string, password: string
   await sendMail({
     to: email,
     subject: 'Tus credenciales de acceso - PF Control',
-    html: `
-      <h2>¡Bienvenido, ${nombreCompleto}!</h2>
-      <p>Te han dado de alta como colaborador en PF Control.</p>
-      <p>Estas son tus credenciales de acceso:</p>
-      <ul>
-        <li><b>Email:</b> ${email}</li>
-        <li><b>Contraseña:</b> ${password}</li>
-      </ul>
-      <p>Por favor, inicia sesión y cambia tu contraseña desde el panel de usuario.</p>
-      <p>Accede aquí: <a href="${process.env.NEXTAUTH_URL}/auth/login">Panel de acceso</a></p>
-      <p>Si tienes dudas, contacta al administrador.</p>
-    `,
+    html: renderEmailLayout({
+      preheader: 'Credenciales de acceso de colaborador',
+      title: `Bienvenido, ${nombreCompleto}`,
+      intro: 'Te han dado de alta como colaborador en PF Control.',
+      bodyHtml: `
+        <p style="margin:0 0 8px;color:#cbd5e1;">Estas son tus credenciales de acceso:</p>
+        <ul style="margin:0 0 12px;padding-left:18px;color:#e2e8f0;">
+          <li><b>Email:</b> ${escapeHtml(email)}</li>
+          <li><b>Contrasena:</b> ${escapeHtml(password)}</li>
+        </ul>
+        <p style="margin:0;color:#cbd5e1;font-size:14px;">Por seguridad, inicia sesion y cambia tu contrasena desde el panel de usuario.</p>
+      `,
+      ctaLabel: 'Ir al panel',
+      ctaUrl: mailPanelUrl,
+    }),
   });
 }
 
@@ -156,28 +406,23 @@ export async function generateVerificationToken(email: string): Promise<string> 
 
 export async function sendVerificationEmail(email: string, token: string) {
   ensureMailConfigured();
-  const verifyUrl = `${process.env.NEXTAUTH_URL}/auth/verify?token=${token}`;
+  const verifyUrl = `${mailAppUrl}/auth/verify?token=${token}`;
 
   await sendMail({
     to: email,
     subject: 'Verifica tu email - PF Control',
-    html: `
-      <h2>Bienvenido a PF Control</h2>
-      <p>Haz click en el enlace a continuación para verificar tu email:</p>
-      <a href="${verifyUrl}" style="
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #2563eb;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-      ">
-        Verificar email
-      </a>
-      <p>O copia y pega este enlace en tu navegador:</p>
-      <p>${verifyUrl}</p>
-      <p>Este enlace expira en 24 horas.</p>
-    `,
+    html: renderEmailLayout({
+      preheader: 'Verifica tu cuenta de PF Control',
+      title: 'Verifica tu email',
+      intro: 'Haz clic en el boton para validar tu cuenta y habilitar todas las funciones.',
+      bodyHtml: `
+        <p style="margin:0 0 10px;color:#cbd5e1;">Si no funciona el boton, copia este enlace en tu navegador:</p>
+        <p style="margin:0 0 10px;word-break:break-all;"><a href="${escapeHtml(safeHref(verifyUrl))}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(verifyUrl)}</a></p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;">Este enlace expira en 24 horas.</p>
+      `,
+      ctaLabel: 'Verificar email',
+      ctaUrl: verifyUrl,
+    }),
   });
 }
 
@@ -222,28 +467,24 @@ export async function generatePasswordResetToken(email: string, userId?: string 
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   ensureMailConfigured();
-  const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`;
+  const resetUrl = `${mailAppUrl}/auth/reset-password?token=${token}`;
 
   await sendMail({
     to: email,
     subject: 'Recuperar contraseña - PF Control',
-    html: `
-      <h2>Recuperación de contraseña</h2>
-      <p>Recibimos una solicitud para restablecer tu contraseña en PF Control.</p>
-      <a href="${resetUrl}" style="
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #0ea5e9;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-      ">
-        Crear nueva contraseña
-      </a>
-      <p>O copia y pega este enlace en tu navegador:</p>
-      <p>${resetUrl}</p>
-      <p>Este enlace expira en 1 hora.</p>
-    `,
+    html: renderEmailLayout({
+      preheader: 'Recuperacion de contrasena de PF Control',
+      title: 'Recuperacion de contrasena',
+      intro: 'Recibimos una solicitud para restablecer tu contrasena en PF Control.',
+      bodyHtml: `
+        <p style="margin:0 0 10px;color:#cbd5e1;">Si no solicitaste este cambio, ignora este correo.</p>
+        <p style="margin:0 0 10px;color:#cbd5e1;">Tambien puedes copiar este enlace en tu navegador:</p>
+        <p style="margin:0 0 10px;word-break:break-all;"><a href="${escapeHtml(safeHref(resetUrl))}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(resetUrl)}</a></p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;">Este enlace expira en 1 hora.</p>
+      `,
+      ctaLabel: 'Crear nueva contrasena',
+      ctaUrl: resetUrl,
+    }),
   });
 }
 
