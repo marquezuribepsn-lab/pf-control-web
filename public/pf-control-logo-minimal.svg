@@ -1,0 +1,44 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PF Control training logo</title>
+  <desc id="desc">Minimal training style logo for PF Control with PF monogram, dumbbell bar, and gym plate details.</desc>
+  <defs>
+    <linearGradient id="bg" x1="76" y1="76" x2="948" y2="948" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="1" stop-color="#102A56"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="140" y1="744" x2="884" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="184" y1="744" x2="838" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94A3B8"/>
+      <stop offset="0.5" stop-color="#E2E8F0"/>
+      <stop offset="1" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="76" y="76" width="872" height="872" rx="220" fill="url(#bg)"/>
+  <rect x="76" y="76" width="872" height="872" rx="220" stroke="#334155" stroke-width="8"/>
+
+  <path d="M292 286H474C553 286 618 351 618 430C618 509 553 574 474 574H292V286Z" fill="#E2E8F0"/>
+  <rect x="254" y="286" width="80" height="376" rx="28" fill="#E2E8F0"/>
+
+  <rect x="632" y="286" width="70" height="376" rx="24" fill="#A5F3FC"/>
+  <rect x="702" y="286" width="128" height="52" rx="18" fill="#A5F3FC"/>
+  <rect x="702" y="396" width="106" height="48" rx="16" fill="#A5F3FC"/>
+
+  <rect x="214" y="704" width="596" height="30" rx="12" fill="url(#metal)"/>
+  <rect x="246" y="707" width="44" height="24" rx="8" fill="url(#accent)"/>
+  <rect x="734" y="707" width="44" height="24" rx="8" fill="url(#accent)"/>
+
+  <rect x="176" y="688" width="30" height="62" rx="10" fill="#34D399"/>
+  <rect x="140" y="678" width="32" height="82" rx="10" fill="#34D399"/>
+  <circle cx="156" cy="719" r="40" fill="none" stroke="#34D399" stroke-width="12"/>
+
+  <rect x="818" y="688" width="30" height="62" rx="10" fill="#22D3EE"/>
+  <rect x="852" y="678" width="32" height="82" rx="10" fill="#22D3EE"/>
+  <circle cx="868" cy="719" r="40" fill="none" stroke="#22D3EE" stroke-width="12"/>
+
+  <path d="M488 230C488 212 502 198 520 198C538 198 552 212 552 230V238H536V230C536 220 530 214 520 214C510 214 504 220 504 230V238H488V230Z" fill="#22D3EE"/>
+  <rect x="490" y="238" width="60" height="34" rx="12" fill="#38BDF8"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PF Control logo mark</title>
+  <desc id="desc">PF Control square icon with PF monogram and pulse motif.</desc>
+  <defs>
+    <linearGradient id="bg" x1="38" y1="38" x2="474" y2="474" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B2239"/>
+      <stop offset="1" stop-color="#123D62"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="88" y1="338" x2="420" y2="338" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00D084"/>
+      <stop offset="1" stop-color="#19B8FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="38" y="38" width="436" height="436" rx="108" fill="url(#bg)"/>
+  <rect x="38" y="38" width="436" height="436" rx="108" stroke="#1D5D8F" stroke-width="6"/>
+
+  <rect x="146" y="122" width="42" height="212" rx="14" fill="#F3F8FC"/>
+  <path d="M188 122H270C299 122 322 145 322 174C322 203 299 226 270 226H188V122Z" fill="#F3F8FC"/>
+
+  <rect x="266" y="122" width="38" height="212" rx="13" fill="#A9E6FF"/>
+  <rect x="304" y="122" width="90" height="34" rx="10" fill="#A9E6FF"/>
+  <rect x="304" y="196" width="72" height="30" rx="10" fill="#A9E6FF"/>
+
+  <polyline points="88,338 150,338 182,290 214,366 250,314 286,338 322,280 360,338 420,338" fill="none" stroke="url(#accent)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

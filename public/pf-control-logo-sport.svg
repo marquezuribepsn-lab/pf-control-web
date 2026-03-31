@@ -1,0 +1,50 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PF Control power logo</title>
+  <desc id="desc">Power training style logo for PF Control with shield, speed slash, and weight plate rack details.</desc>
+  <defs>
+    <linearGradient id="bg" x1="90" y1="84" x2="930" y2="942" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#08111D"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="148" y1="144" x2="876" y2="876" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="slash" x1="388" y1="300" x2="678" y2="746" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A5F3FC"/>
+      <stop offset="1" stop-color="#67E8F9"/>
+    </linearGradient>
+    <linearGradient id="barMetal" x1="244" y1="754" x2="784" y2="754" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94A3B8"/>
+      <stop offset="0.5" stop-color="#E2E8F0"/>
+      <stop offset="1" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M512 84C721 84 876 236 876 432V652C876 833 737 940 512 940C287 940 148 833 148 652V432C148 236 303 84 512 84Z" fill="url(#bg)"/>
+  <path d="M512 110C709 110 850 250 850 434V648C850 814 724 912 512 912C300 912 174 814 174 648V434C174 250 315 110 512 110Z" stroke="url(#edge)" stroke-width="16"/>
+
+  <path d="M300 328H500C569 328 624 383 624 452C624 521 569 576 500 576H300V328Z" fill="#E2E8F0"/>
+  <rect x="262" y="328" width="78" height="356" rx="28" fill="#E2E8F0"/>
+
+  <path d="M646 328H788V386H710V452H778V504H710V684H646V328Z" fill="#A5F3FC"/>
+
+  <path d="M614 282L478 510H582L430 754L672 514H556L698 282H614Z" fill="url(#slash)"/>
+
+  <rect x="244" y="742" width="540" height="24" rx="10" fill="url(#barMetal)"/>
+  <rect x="292" y="745" width="48" height="18" rx="8" fill="#22D3EE"/>
+  <rect x="688" y="745" width="48" height="18" rx="8" fill="#34D399"/>
+
+  <rect x="208" y="728" width="28" height="52" rx="8" fill="#34D399"/>
+  <rect x="174" y="720" width="28" height="68" rx="8" fill="#34D399"/>
+  <circle cx="188" cy="754" r="34" fill="none" stroke="#34D399" stroke-width="10"/>
+  <circle cx="188" cy="754" r="20" fill="none" stroke="#34D399" stroke-width="8"/>
+
+  <rect x="792" y="728" width="28" height="52" rx="8" fill="#22D3EE"/>
+  <rect x="826" y="720" width="28" height="68" rx="8" fill="#22D3EE"/>
+  <circle cx="840" cy="754" r="34" fill="none" stroke="#22D3EE" stroke-width="10"/>
+  <circle cx="840" cy="754" r="20" fill="none" stroke="#22D3EE" stroke-width="8"/>
+
+  <rect x="226" y="326" width="14" height="86" rx="7" fill="#334155"/>
+  <rect x="786" y="326" width="14" height="86" rx="7" fill="#334155"/>
+</svg>
