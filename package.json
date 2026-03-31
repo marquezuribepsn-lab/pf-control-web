@@ -8,6 +8,7 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "eslint",
     "db:generate": "prisma generate --schema=prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
     "db:push": "prisma db push --schema=prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=prisma/schema.prisma",
     "db:seed": "ts-node --project tsconfig.json prisma/seed.ts",
@@ -22,8 +23,25 @@
     "server:delete": "npx pm2 delete pf-control-web",
     "server:status": "npx pm2 status",
     "server:logs": "npx pm2 logs pf-control-web",
+    "smoke:login:guard": "node scripts/smoke-login-guard.js",
+    "smoke:login:admin": "node scripts/smoke-login-admin.js",
+    "smoke:clientes:visual": "node scripts/smoke-clientes-visual.js",
+    "smoke:mail:guard": "node scripts/smoke-mail-guard.js",
+    "smoke:password:one-time": "node scripts/smoke-password-one-time.js",
+    "smoke:runtime:db": "node scripts/smoke-runtime-db.js",
+    "smoke:admin:usuarios:redirect": "node scripts/smoke-admin-usuarios-redirect.js",
+    "smoke:whatsapp": "node scripts/smoke-whatsapp.js",
+    "smoke:whatsapp:failure-alert": "node scripts/smoke-whatsapp-failure-alert.js",
+    "smoke:sesiones:ai": "node scripts/smoke-sesiones-ai.js",
+    "report:whatsapp:phones": "node scripts/report-whatsapp-missing-phones.js",
+    "whatsapp:automation:run": "node scripts/run-whatsapp-automation.js",
+    "whatsapp:automation:dry": "node scripts/run-whatsapp-automation.js --dry-run",
     "smoke:full": "node scripts/smoke-full.js",
-    "server:save": "npx pm2 save"
+    "smoke:auth:mail:all": "node scripts/smoke-auth-mail-all.js",
+    "server:save": "npx pm2 save",
+    "test:nutrition": "tsx scripts/test-nutrition-calculations.ts",
+    "test:nutrition:flow": "tsx scripts/test-nutrition-flow.ts",
+    "test:nutrition:all": "npm run test:nutrition && npm run test:nutrition:flow"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -47,10 +65,12 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "playwright": "^1.58.2",
     "pm2": "^5.4.3",
     "prisma": "^6.16.2",
     "tailwindcss": "^4.2.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

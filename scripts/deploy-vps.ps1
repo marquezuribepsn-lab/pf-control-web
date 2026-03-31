@@ -1,7 +1,8 @@
 param(
   [string]$Server = "root@72.60.55.235",
   [string]$RemoteDir = "/root/pf-control-web",
-  [string]$RemoteBackupsDir = "/root/pf-control-web-backups"
+  [string]$RemoteBackupsDir = "/root/pf-control-web-backups",
+  [int]$BackupRetention = 3
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,7 +14,10 @@ $includePaths = @(
   "app",
   "components",
   "lib",
-  "prisma",
+  "scripts",
+  "prisma/schema.prisma",
+  "prisma/migrations",
+  "prisma/seed.ts",
   "data",
   "public",
   "proxy.ts",
@@ -26,16 +30,19 @@ $includePaths = @(
   "eslint.config.mjs",
   "ecosystem.config.cjs"
 )
-$envFilePath = Join-Path $projectRoot ".env.production"
-
 
 $fullPaths = $includePaths | ForEach-Object { Join-Path $projectRoot $_ }
 
-$filesToDelete = "package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs ecosystem.config.cjs proxy.ts next-auth.d.ts schema.prisma .env.production"
-$dirsToDelete = "app components lib prisma data public"
+if ($BackupRetention -lt 1) {
+  throw "BackupRetention debe ser mayor o igual a 1."
+}
 
-$remoteBackupAndPrep = "set -e; mkdir -p $RemoteBackupsDir; if [ -f $RemoteDir/package.json ]; then ts=`$(date +%Y%m%d-%H%M%S); cp -a $RemoteDir $RemoteBackupsDir/pf-control-web-`$ts; fi; mkdir -p $RemoteDir; cd $RemoteDir; rm -rf $dirsToDelete; rm -f $filesToDelete"
-$remoteBuild = "set -e; cd $RemoteDir; export `$(grep -v '^#' .env.production | grep '=' | tr -d '\r' | xargs); npm ci; npm run db:generate; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); pm2 save"
+$filesToDelete = "package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs ecosystem.config.cjs proxy.ts next-auth.d.ts"
+$dirsToDelete = "app components lib scripts data public"
+
+$pruneFrom = $BackupRetention + 1
+$remoteBackupAndPrep = "set -e; mkdir -p $RemoteBackupsDir; if [ -f $RemoteDir/package.json ]; then ts=`$(date +%Y%m%d-%H%M%S); backupDir=$RemoteBackupsDir/pf-control-web-`$ts; mkdir -p `$backupDir; cp -a $RemoteDir/. `$backupDir/; rm -rf `$backupDir/node_modules `$backupDir/.next `$backupDir/.turbo `$backupDir/.cache `$backupDir/.git; fi; ls -1dt $RemoteBackupsDir/pf-control-web-* 2>/dev/null | tail -n +$pruneFrom | xargs -r rm -rf; mkdir -p $RemoteDir; cd $RemoteDir; rm -rf $dirsToDelete; rm -f $filesToDelete"
+$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; npm run smoke:mail:guard; SMOKE_REQUIRE_ADMIN_LOGIN=1 npm run smoke:auth:mail:all; npm run smoke:admin:usuarios:redirect; pm2 save"
 
 Write-Host "[1/4] Creando backup y preparando carpeta remota..."
 ssh $Server $remoteBackupAndPrep
@@ -48,11 +55,6 @@ Write-Host "[2/4] Subiendo archivos al VPS..."
 scp -r $fullPaths "$Server`:$RemoteDir/"
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo scp al subir archivos al VPS."
-}
-# Copia .env.production por separado para asegurar que esté en la carpeta remota
-scp $envFilePath "$Server`:$RemoteDir/.env.production"
-if ($LASTEXITCODE -ne 0) {
-  throw "Fallo scp al subir .env.production al VPS."
 }
 
 Write-Host "[3/4] Ejecutando install, build y PM2 en el VPS..."
