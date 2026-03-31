@@ -6,6 +6,8 @@ import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
+import { markManualSaveIntent } from "../../components/useSharedState";
+import SesionesAIPlanner from "@/components/sesiones/SesionesAIPlanner";
 import {
   type BloqueEntrenamiento,
   type PrescripcionSesionPersona,
@@ -310,6 +312,7 @@ export default function SesionesPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    markManualSaveIntent("pf-control-sesiones");
 
     const payload = {
       ...formData,
@@ -349,6 +352,7 @@ export default function SesionesPage() {
 
   const handleDelete = (id: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar esta sesión?")) {
+      markManualSaveIntent("pf-control-sesiones");
       eliminarSesion(id);
       if (editandoBloquesId === id) {
         setEditandoBloquesId(null);
@@ -387,6 +391,7 @@ export default function SesionesPage() {
 
   const saveBlocks = () => {
     if (!editandoBloquesId) return;
+    markManualSaveIntent("pf-control-sesiones");
     editarSesion(editandoBloquesId, { bloques: bloquesDraft });
     setEditandoBloquesId(null);
     setBloquesDraft([]);
@@ -962,24 +967,26 @@ export default function SesionesPage() {
   }, [exerciseDetailId, quickExerciseOpen]);
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-7xl px-3 py-4 text-slate-100 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Sesiones</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Sesiones</h1>
           <p className="text-sm text-slate-300">
             Crea la sesión y luego carga o edita sus bloques de entrenamiento.
           </p>
         </div>
         <button
           onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
         >
           Nueva Sesión
         </button>
       </div>
 
+      <SesionesAIPlanner />
+
       {mostrarFormulario && (
-        <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/80 p-4 shadow-sm sm:p-6">
           <h2 className="mb-4 text-xl font-semibold">
             {editandoSesion ? "Editar Sesión" : "Nueva Sesión"}
           </h2>
@@ -1751,10 +1758,10 @@ export default function SesionesPage() {
                 }
               }}
             >
-              <div className="flex justify-center border-b border-white/10 px-6 pt-2">
+              <div className="flex justify-center border-b border-white/10 px-4 pt-2 sm:px-6">
                 <span className="h-1.5 w-12 rounded-full bg-slate-600" aria-hidden="true" />
               </div>
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-6 py-4">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6">
                 <h2 className="text-lg font-bold text-white">
                   {detailEx?.nombre ?? "Ejercicio"}
                 </h2>
@@ -1767,7 +1774,7 @@ export default function SesionesPage() {
                 </button>
               </div>
 
-              <div className="max-h-[80vh] overflow-y-auto p-6 space-y-4">
+              <div className="max-h-[80vh] space-y-4 overflow-y-auto p-4 sm:p-6">
                 {detailEx?.videoUrl ? (
                   isDirectVideo ? (
                     <div className="w-full overflow-hidden rounded-xl border border-white/10">
@@ -1852,7 +1859,7 @@ export default function SesionesPage() {
 
       {quickExerciseOpen ? (
         <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4">
-          <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+          <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/15 bg-slate-900 p-4 shadow-2xl sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-white">

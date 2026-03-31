@@ -170,11 +170,11 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
     return clientes.filter((c) => c.email.toLowerCase().includes(q));
   }, [clientes, searchCliente]);
 
-  if (loading) return <main className="mx-auto max-w-6xl p-6 text-slate-100">Cargando...</main>;
+  if (loading) return <main className="mx-auto max-w-6xl px-3 py-4 text-slate-100 sm:p-6">Cargando...</main>;
   if (!colaborador) {
     return (
-      <main className="mx-auto max-w-6xl p-6 text-slate-100">
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6">
+      <main className="mx-auto max-w-6xl px-3 py-4 text-slate-100 sm:p-6">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:p-6">
           <p className="text-lg font-bold">No encontrado</p>
           <p className="mt-1 text-sm text-slate-300">No existe un colaborador con ese ID o no tiene rol COLABORADOR.</p>
         </div>
@@ -197,10 +197,10 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
   };
 
   return (
-    <main className="mx-auto max-w-6xl p-6 text-slate-100">
+    <main className="mx-auto max-w-6xl px-3 py-4 text-slate-100 sm:p-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">{colaborador.nombreCompleto}</h1>
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{colaborador.nombreCompleto}</h1>
           <p className="text-sm text-slate-300">{colaborador.email}</p>
         </div>
         <span

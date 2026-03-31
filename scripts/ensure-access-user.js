@@ -1,15 +1,21 @@
-require('dotenv').config({ path: '../.env.production' });
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.db.env') });
 
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
-const email = 'marquezuribepsn@gmail.com';
-const password = 'pfcontrol2026';
+const email = process.env.ACCESS_USER_EMAIL || 'marquezuribepsn@gmail.com';
+const password = process.env.ACCESS_USER_PASSWORD || process.env.SMOKE_MAIN_PASSWORD || '';
 const role = 'ADMIN';
 
 async function main() {
+  if (!password) {
+    throw new Error('ACCESS_USER_PASSWORD o SMOKE_MAIN_PASSWORD es requerido.');
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.upsert({
@@ -37,11 +43,16 @@ async function main() {
     },
   });
 
-  console.log(JSON.stringify({
+  const output = {
     ok: true,
     user,
-    password,
-  }));
+  };
+
+  if (process.env.SHOW_ACCESS_PASSWORD === '1') {
+    output.password = password;
+  }
+
+  console.log(JSON.stringify(output));
 }
 
 main()

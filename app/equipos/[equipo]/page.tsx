@@ -46,24 +46,24 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">{equipo.nombre}</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{equipo.nombre}</h1>
           <p className="text-sm text-neutral-600">
             {equipo.categoria} · Temporada {equipo.temporada}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <button
             onClick={() => setEditandoEquipo(true)}
-            className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+            className="w-full rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 sm:w-auto"
           >
             Editar Equipo
           </button>
           <button
             onClick={handleDeleteEquipo}
-            className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            className="w-full rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 sm:w-auto"
           >
             Eliminar Equipo
           </button>
@@ -71,7 +71,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
       </div>
 
       {editandoEquipo && (
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
           <h2 className="mb-4 text-xl font-semibold">Editar Equipo</h2>
           <form onSubmit={handleUpdateEquipo} className="space-y-4">
             <div>
@@ -127,7 +127,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                 rows={3}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -146,7 +146,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
         </div>
       )}
 
-      <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Detalles del Equipo</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -170,7 +170,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
         )}
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm mb-6">
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Agregar Jugadora al Equipo</h2>
         <div className="space-y-2">
           {jugadoras
@@ -195,7 +195,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Jugadoras</h2>
         {jugadorasEnEquipo.length === 0 ? (
           <p>No hay jugadoras en este equipo.</p>

@@ -6,7 +6,7 @@ import { useCategories } from "../../components/CategoriesProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSessions } from "../../components/SessionsProvider";
-import { useSharedState } from "../../components/useSharedState";
+import { markManualSaveIntent, useSharedState } from "../../components/useSharedState";
 import { semana as semanaInicial, type Sesion } from "../../data/mockData";
 
 type LegacySemanaItem = {
@@ -691,7 +691,6 @@ export default function SemanaPage() {
     if (fromFilter) {
       const key = toOwnerKey(fromFilter);
       setSelectedOwnerKey(key);
-      setStore((prev) => (isSemanaStoreV3(prev) ? ensurePlanForPersona(prev, fromFilter) : prev));
       return;
     }
 
@@ -780,71 +779,6 @@ export default function SemanaPage() {
       prescripcion,
     };
   };
-
-  useEffect(() => {
-    if (!loaded || !selectedOwnerKey || !planSeleccionado || !personaSeleccionada) {
-      return;
-    }
-
-    let changed = false;
-
-    setStore((prev) => {
-      if (!isSemanaStoreV3(prev)) {
-        return prev;
-      }
-
-      const nextPlanes = prev.planes.map((plan) => {
-        if (plan.ownerKey !== selectedOwnerKey) {
-          return plan;
-        }
-
-        const nextWeeks = plan.semanas.map((semana) => ({
-          ...semana,
-          dias: semana.dias.map((dia) => {
-            const linked = getEffectiveLinkedSession(dia.sesionId);
-            if (!linked || !linked.isPersonalized) {
-              return dia;
-            }
-
-            const nextObjective = `${AUTO_OBJECTIVE_PREFIX} ${
-              linked.prescripcion?.resumen || "Prescripcion individual activa"
-            }`;
-
-            if (
-              (isAutoObjective(dia.objetivo) || !(dia.objetivo || "").trim()) &&
-              dia.objetivo !== nextObjective
-            ) {
-              changed = true;
-              return {
-                ...dia,
-                objetivo: nextObjective,
-              };
-            }
-
-            return dia;
-          }),
-        }));
-
-        return changed ? { ...plan, semanas: nextWeeks } : plan;
-      });
-
-      if (!changed) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        planes: nextPlanes,
-      };
-    });
-  }, [
-    loaded,
-    personaSeleccionada,
-    planSeleccionado,
-    selectedOwnerKey,
-    sesionesById,
-    setStore,
-  ]);
 
   const getExerciseName = (id: string) => {
     const ejercicio = ejercicios.find((item) => item.id === id);
@@ -1305,7 +1239,13 @@ export default function SemanaPage() {
   const seleccionarPersona = (persona: PersonaItem) => {
     const key = toOwnerKey(persona);
     setSelectedOwnerKey(key);
-    setStore((prev) => (isSemanaStoreV3(prev) ? ensurePlanForPersona(prev, persona) : prev));
+  };
+
+  const crearPlanParaPersonaSeleccionada = () => {
+    if (!personaSeleccionada) return;
+
+    setStore((prev) => (isSemanaStoreV3(prev) ? ensurePlanForPersona(prev, personaSeleccionada) : prev));
+    showToast(`Plan creado para ${personaSeleccionada.nombre}`, "success", 2200);
   };
 
   const actualizarSemanasSeleccionadas = (
@@ -1602,8 +1542,13 @@ export default function SemanaPage() {
       ? "[x]"
       : "[OK]";
 
+  const guardarCambiosSemanales = () => {
+    markManualSaveIntent(STORAGE_KEY);
+    markManualSaveIntent(ALUMNO_NOTIFICATIONS_KEY);
+  };
+
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+    <main className="mx-auto max-w-7xl px-3 py-4 text-slate-100 sm:p-6">
       {toast && (
         <div className="pointer-events-none fixed right-4 top-4 z-50 w-full max-w-xs">
           <div
@@ -1623,12 +1568,18 @@ export default function SemanaPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Semana</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Semana</h1>
           <p className="text-sm text-slate-300">
             Selecciona una persona y gestiona su plan semanal por semanas y dias.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={guardarCambiosSemanales}
+            className="rounded-xl border border-emerald-300/45 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10"
+          >
+            Guardar cambios
+          </button>
           <button
             onClick={agregarSemana}
             disabled={!planSeleccionado}
@@ -1647,7 +1598,7 @@ export default function SemanaPage() {
       </div>
 
       {alumnoNotifications.length > 0 ? (
-        <section className="mb-6 rounded-2xl border border-amber-300/20 bg-amber-500/5 p-5">
+        <section className="mb-6 rounded-2xl border border-amber-300/20 bg-amber-500/5 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-amber-100">Alertas de alumnos</h2>
@@ -1694,7 +1645,7 @@ export default function SemanaPage() {
         </section>
       ) : null}
 
-      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Browser de personas</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-4">
           <div>
@@ -2022,8 +1973,17 @@ export default function SemanaPage() {
       )}
 
       {!planSeleccionado ? (
-        <div className="rounded-2xl border border-dashed border-white/20 bg-slate-900/50 p-6 text-sm text-slate-300">
-          Selecciona una jugadora o alumno para crear/editar su plan semanal.
+        <div className="rounded-2xl border border-dashed border-white/20 bg-slate-900/50 p-4 text-sm text-slate-300 sm:p-6">
+          <p>Selecciona una jugadora o alumno para crear/editar su plan semanal.</p>
+          {personaSeleccionada ? (
+            <button
+              type="button"
+              onClick={crearPlanParaPersonaSeleccionada}
+              className="mt-3 rounded-xl border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+            >
+              Crear plan para {personaSeleccionada.nombre}
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="space-y-5">

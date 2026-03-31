@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useDeportes } from "../../components/DeportesProvider";
@@ -22,7 +23,7 @@ type ClienteTab =
   | "recetas"
   | "notas"
   | "documentos"
-  | "chequeos"
+  | "antropometria"
   | "progreso";
 
 type ClienteView = {
@@ -115,6 +116,39 @@ type PagoRegistro = {
   createdAt: string;
 };
 
+type IngresanteCliente = {
+  id: string;
+  nombre?: string;
+  apellido?: string;
+  nombreCompleto: string;
+  email: string;
+  telefono?: string;
+  fechaNacimiento?: string;
+  emailVerified: boolean;
+  createdAt: string;
+  estado: string;
+  intake?: {
+    anamnesis?: {
+      antecedentesMedicos?: string;
+      lesionesPrevias?: string;
+      objetivoPrincipal?: string;
+      medicacionActual?: string;
+      cirugias?: string;
+      actividadFisicaActual?: string;
+      restricciones?: string;
+    };
+  };
+};
+
+type AlumnoAccountStatus = {
+  userId: string;
+  email: string;
+  nombreCompleto: string;
+  sidebarImage: string | null;
+  lastSeenAt: string | null;
+  isOnline: boolean;
+};
+
 type NutritionGoal = "mantenimiento" | "recomposicion" | "masa" | "deficit";
 
 type NutritionTargets = {
@@ -153,6 +187,21 @@ type AlumnoNutritionAssignment = {
   alumnoNombre: string;
   planId: string;
   assignedAt: string;
+};
+
+type AlumnoAnthropometryRecord = {
+  id: string;
+  alumnoNombre: string;
+  fecha: string;
+  peso: number;
+  grasaCorporal: number;
+  cintura: number;
+  cadera: number;
+  pecho: number;
+  brazo: number;
+  muslo: number;
+  comentario: string;
+  updatedAt: string;
 };
 
 type NutritionFood = {
@@ -195,6 +244,86 @@ const CLIENT_TABLE_UI_KEY_PREFIX = "pf-control-clientes-table-ui-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const ALUMNO_ANTROPOMETRIA_KEY = "pf-control-alumno-antropometria-v1";
+const PASSWORD_VISIBLE_TTL_MS = 2 * 60 * 1000;
+const SIDEBAR_IMAGE_MAX_EDGE = 960;
+const SIDEBAR_IMAGE_TARGET_BYTES = 360 * 1024;
+const SIDEBAR_IMAGE_MAX_DATA_URL_LENGTH = 900_000;
+
+function estimateDataUrlBytes(dataUrl: string): number {
+  const commaIndex = dataUrl.indexOf(",");
+  if (commaIndex < 0) return 0;
+  const base64Length = dataUrl.length - commaIndex - 1;
+  return Math.ceil((base64Length * 3) / 4);
+}
+
+function loadImageFromObjectUrl(objectUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("No se pudo procesar la imagen"));
+    image.src = objectUrl;
+  });
+}
+
+async function optimizeClientProfileImage(file: File): Promise<string> {
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await loadImageFromObjectUrl(objectUrl);
+    const longestSide = Math.max(image.naturalWidth, image.naturalHeight) || 1;
+    const scale = Math.min(1, SIDEBAR_IMAGE_MAX_EDGE / longestSide);
+
+    let width = Math.max(1, Math.round(image.naturalWidth * scale));
+    let height = Math.max(1, Math.round(image.naturalHeight * scale));
+    let quality = 0.82;
+
+    const canvas = document.createElement("canvas");
+    let context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("No se pudo preparar el compresor de imagen");
+    }
+
+    const render = (q: number) => {
+      canvas.width = width;
+      canvas.height = height;
+      context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("No se pudo renderizar la imagen");
+      }
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
+      context.drawImage(image, 0, 0, width, height);
+      return canvas.toDataURL("image/jpeg", q);
+    };
+
+    let dataUrl = render(quality);
+
+    while (
+      (estimateDataUrlBytes(dataUrl) > SIDEBAR_IMAGE_TARGET_BYTES ||
+        dataUrl.length > SIDEBAR_IMAGE_MAX_DATA_URL_LENGTH) &&
+      quality > 0.5
+    ) {
+      quality = Number((quality - 0.08).toFixed(2));
+      dataUrl = render(quality);
+    }
+
+    while (dataUrl.length > SIDEBAR_IMAGE_MAX_DATA_URL_LENGTH && width > 320 && height > 320) {
+      width = Math.max(320, Math.round(width * 0.85));
+      height = Math.max(320, Math.round(height * 0.85));
+      dataUrl = render(Math.max(quality, 0.62));
+    }
+
+    if (dataUrl.length > SIDEBAR_IMAGE_MAX_DATA_URL_LENGTH) {
+      throw new Error("La imagen sigue siendo muy grande. Elegi una foto mas liviana.");
+    }
+
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 
 const DEFAULT_COLUMN_WIDTHS: Record<ClientTableColumnKey, number> = {
   cliente: 300,
@@ -323,6 +452,92 @@ function parseDateAtStart(dateValue: string): Date | null {
   return parsed;
 }
 
+function parseHeightMeters(value?: string): number | null {
+  if (!value) return null;
+  const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "").trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+
+  if (parsed > 10) {
+    return parsed / 100;
+  }
+
+  return parsed;
+}
+
+function computeImc(weightKg: number, heightMeters: number | null): number | null {
+  if (!heightMeters || heightMeters <= 0) return null;
+  const value = weightKg / (heightMeters * heightMeters);
+  if (!Number.isFinite(value)) return null;
+  return Math.round(value * 10) / 10;
+}
+
+function estimateBodyFatRfm(
+  heightMeters: number | null,
+  waistCm: number,
+  sexo: "masculino" | "femenino"
+): number | null {
+  if (!heightMeters || heightMeters <= 0 || !Number.isFinite(waistCm) || waistCm <= 0) {
+    return null;
+  }
+
+  const heightCm = heightMeters * 100;
+  const raw = sexo === "masculino"
+    ? 64 - 20 * (heightCm / waistCm)
+    : 76 - 20 * (heightCm / waistCm);
+
+  if (!Number.isFinite(raw)) return null;
+  const clamped = Math.max(2, Math.min(70, raw));
+  return Math.round(clamped * 10) / 10;
+}
+
+function imcCategory(imc: number | null): string {
+  if (imc === null) return "Sin datos";
+  if (imc < 18.5) return "Bajo peso";
+  if (imc < 25) return "Normopeso";
+  if (imc < 30) return "Sobrepeso";
+  return "Obesidad";
+}
+
+function bodyFatCategory(
+  bodyFatPct: number | null,
+  sexo: "masculino" | "femenino"
+): string {
+  if (bodyFatPct === null || !Number.isFinite(bodyFatPct) || bodyFatPct <= 0) {
+    return "Sin datos";
+  }
+
+  if (sexo === "masculino") {
+    if (bodyFatPct < 6) return "Esencial";
+    if (bodyFatPct < 14) return "Atletico";
+    if (bodyFatPct < 18) return "Fitness";
+    if (bodyFatPct < 25) return "Promedio";
+    return "Alto";
+  }
+
+  if (bodyFatPct < 14) return "Esencial";
+  if (bodyFatPct < 21) return "Atletico";
+  if (bodyFatPct < 25) return "Fitness";
+  if (bodyFatPct < 32) return "Promedio";
+  return "Alto";
+}
+
+function buildLinePath(values: number[], width = 320, height = 120): string {
+  if (values.length === 0) return "";
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = Math.max(max - min, 1);
+
+  return values
+    .map((value, index) => {
+      const x = values.length === 1 ? width / 2 : (index / (values.length - 1)) * width;
+      const y = height - ((value - min) / range) * (height - 8) - 4;
+      return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(" ");
+}
+
 function normalizeWhatsAppNumber(meta: ClienteMeta): string {
   let phone = (meta.telefono || "").replace(/\D+/g, "");
   if (!phone) return "";
@@ -366,7 +581,7 @@ const TABS: { id: ClienteTab; label: string }[] = [
   { id: "recetas", label: "Recetas" },
   { id: "notas", label: "Notas" },
   { id: "documentos", label: "Documentos" },
-  { id: "chequeos", label: "Chequeos" },
+  { id: "antropometria", label: "Antropometria" },
   { id: "progreso", label: "Progreso" },
 ];
 
@@ -376,7 +591,7 @@ const tabPlaceholderCopy: Partial<Record<ClienteTab, string>> = {
   recetas: "Recetas sugeridas y planificacion de comidas.",
   notas: "Notas del profesional y seguimiento del cliente.",
   documentos: "Links o referencias de documentos cargados.",
-  chequeos: "Checklist de chequeos periodicos.",
+  antropometria: "Historial de medidas antropometricas del alumno.",
 };
 
 function defaultMeta(cliente: ClienteView): ClienteMeta {
@@ -417,6 +632,9 @@ function defaultMeta(cliente: ClienteView): ClienteMeta {
 
 export default function ClientesPage() {
   const { data: session } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const [isDetailMode, setIsDetailMode] = useState(false);
   const [detailClientId, setDetailClientId] = useState<string | null>(null);
   const [detailTabId, setDetailTabId] = useState<string | null>(null);
@@ -484,6 +702,10 @@ export default function ClientesPage() {
     key: NUTRITION_CUSTOM_FOODS_KEY,
     legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
   });
+  const [anthropometryRecords, setAnthropometryRecords] = useSharedState<AlumnoAnthropometryRecord[]>([], {
+    key: ALUMNO_ANTROPOMETRIA_KEY,
+    legacyLocalStorageKey: ALUMNO_ANTROPOMETRIA_KEY,
+  });
 
   const [vista, setVista] = useState<ClienteEstado>("activo");
   const [search, setSearch] = useState("");
@@ -502,6 +724,118 @@ export default function ClientesPage() {
     importe: "",
     moneda: "ARS",
   });
+  const [ingresantes, setIngresantes] = useState<IngresanteCliente[]>([]);
+  const [ingresantesLoading, setIngresantesLoading] = useState(false);
+  const [ingresantesError, setIngresantesError] = useState("");
+  const [ingresantesSuccess, setIngresantesSuccess] = useState("");
+  const [ingresanteActionId, setIngresanteActionId] = useState("");
+  const [resendVerificationId, setResendVerificationId] = useState("");
+  const [anthropometryEditingId, setAnthropometryEditingId] = useState<string | null>(null);
+  const [anthropometryDraft, setAnthropometryDraft] = useState<AlumnoAnthropometryRecord | null>(null);
+  const [accountPasswordLoading, setAccountPasswordLoading] = useState(false);
+  const [accountPasswordInfo, setAccountPasswordInfo] = useState<{
+    userId: string;
+    email: string;
+    role: string;
+    password: string;
+    issuedAt: string | null;
+  } | null>(null);
+  const profileImageInputRef = useRef<HTMLInputElement | null>(null);
+  const [accountSidebarImage, setAccountSidebarImage] = useState<string | null>(null);
+  const [accountSidebarImageLoading, setAccountSidebarImageLoading] = useState(false);
+  const [accountSidebarImageSaving, setAccountSidebarImageSaving] = useState(false);
+  const [accountSidebarImageMessage, setAccountSidebarImageMessage] = useState<string | null>(null);
+  const [accountSidebarImageError, setAccountSidebarImageError] = useState<string | null>(null);
+  const [resolvedAccountUserId, setResolvedAccountUserId] = useState<string | null>(null);
+  const [resolvedAccountEmail, setResolvedAccountEmail] = useState<string | null>(null);
+  const [alumnoAccountStatuses, setAlumnoAccountStatuses] = useState<AlumnoAccountStatus[]>([]);
+
+  const loadIngresantes = async () => {
+    if (!isAdmin) return;
+
+    try {
+      setIngresantesLoading(true);
+      setIngresantesError("");
+      const res = await fetch("/api/admin/ingresantes");
+      const data = await res.json().catch(() => []);
+      if (!res.ok) {
+        throw new Error(data?.message || "No se pudieron cargar ingresantes");
+      }
+      setIngresantes(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setIngresantesError(error instanceof Error ? error.message : "No se pudieron cargar ingresantes");
+      setIngresantes([]);
+    } finally {
+      setIngresantesLoading(false);
+    }
+  };
+
+  const handleIngresanteAction = async (userId: string, action: "aprobar" | "rechazar") => {
+    if (!isAdmin) return;
+    const actionLabel = action === "aprobar" ? "aprobar" : "rechazar";
+    if (!confirm(`Confirmas ${actionLabel} este ingresante?`)) return;
+
+    try {
+      setIngresanteActionId(userId);
+      setIngresantesError("");
+      setIngresantesSuccess("");
+      const res = await fetch("/api/admin/ingresantes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || "No se pudo actualizar ingresante");
+      }
+      setIngresantes((current) => current.filter((item) => item.id !== userId));
+      setIngresantesSuccess(
+        action === "aprobar"
+          ? "Alumno dado de alta correctamente."
+          : "Ingresante rechazado correctamente."
+      );
+    } catch (error) {
+      setIngresantesError(error instanceof Error ? error.message : "No se pudo actualizar ingresante");
+    } finally {
+      setIngresanteActionId("");
+    }
+  };
+
+  const handleResendIngresanteVerification = async (email: string, userId: string) => {
+    if (!isAdmin) return;
+    if (!email) return;
+
+    try {
+      setResendVerificationId(userId);
+      setIngresantesError("");
+      setIngresantesSuccess("");
+
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || 'No se pudo reenviar verificacion');
+      }
+
+      setIngresantesSuccess(data?.message || 'Correo de verificacion reenviado exitosamente.');
+      await loadIngresantes();
+    } catch (error) {
+      setIngresantesError(
+        error instanceof Error ? error.message : 'No se pudo reenviar verificacion'
+      );
+    } finally {
+      setResendVerificationId("");
+    }
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadIngresantes();
+  }, [isAdmin]);
 
   useEffect(() => {
     const safeDecodeParam = (value: string | null) => {
@@ -513,20 +847,10 @@ export default function ClientesPage() {
       }
     };
 
-    const syncFromLocation = () => {
-      if (typeof window === "undefined") return;
-      const params = new URLSearchParams(window.location.search);
-      setIsDetailMode(params.get("detalle") === "1");
-      setDetailClientId(safeDecodeParam(params.get("cliente")));
-      setDetailTabId(safeDecodeParam(params.get("tab")));
-    };
-
-    syncFromLocation();
-    window.addEventListener("popstate", syncFromLocation);
-    return () => {
-      window.removeEventListener("popstate", syncFromLocation);
-    };
-  }, []);
+    setIsDetailMode(searchParams.get("detalle") === "1");
+    setDetailClientId(safeDecodeParam(searchParams.get("cliente")));
+    setDetailTabId(safeDecodeParam(searchParams.get("tab")));
+  }, [searchParams]);
 
   const categoriasOptions = useMemo(
     () => categorias.filter((cat) => cat.habilitada).map((cat) => cat.nombre),
@@ -548,10 +872,26 @@ export default function ClientesPage() {
 
     setSelectedClientId(detailClientId);
 
-    if (detailTabId && TABS.some((tab) => tab.id === detailTabId)) {
-      setActiveTab(detailTabId as ClienteTab);
+    const normalizedDetailTabId = detailTabId === "chequeos" ? "antropometria" : detailTabId;
+
+    if (normalizedDetailTabId && TABS.some((tab) => tab.id === normalizedDetailTabId)) {
+      setActiveTab(normalizedDetailTabId as ClienteTab);
     }
   }, [detailClientId, detailTabId, isDetailMode]);
+
+  const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
+    setSelectedClientId(clientId);
+    setActiveTab(tab);
+    setIsDetailMode(true);
+    setDetailClientId(clientId);
+    setDetailTabId(tab);
+
+    const params = new URLSearchParams();
+    params.set("detalle", "1");
+    params.set("cliente", clientId);
+    params.set("tab", tab);
+    router.push(`/clientes?${params.toString()}`);
+  };
 
   const deportesOptions = useMemo(
     () => deportes.filter((dep) => dep.habilitado).map((dep) => dep.nombre),
@@ -605,6 +945,10 @@ export default function ClientesPage() {
     () => clientes.find((cliente) => cliente.id === selectedClientId) || null,
     [clientes, selectedClientId]
   );
+
+  useEffect(() => {
+    setAccountPasswordInfo(null);
+  }, [selectedClient?.id]);
 
   const nutritionFoodsById = useMemo(() => {
     const mergedFoods: NutritionFood[] = [
@@ -743,6 +1087,255 @@ export default function ClientesPage() {
       grasas: Math.round(totals.grasas * 10) / 10,
     };
   }, [nutritionFoodsById, selectedNutritionPlan]);
+
+  const selectedAnthropometryRecords = useMemo(() => {
+    if (!selectedClient) return [];
+
+    const clientName = selectedClient.nombre;
+    const clientIdName = selectedClient.id.split(":")[1] || "";
+
+    return anthropometryRecords
+      .filter(
+        (record) =>
+          namesLikelyMatch(record.alumnoNombre, clientName) ||
+          namesLikelyMatch(record.alumnoNombre, clientIdName)
+      )
+      .slice()
+      .sort((a, b) => {
+        const dateDiff = new Date(b.fecha || 0).getTime() - new Date(a.fecha || 0).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+      });
+  }, [anthropometryRecords, selectedClient]);
+
+  const latestAnthropometry = selectedAnthropometryRecords[0] || null;
+  const previousAnthropometry = selectedAnthropometryRecords[1] || null;
+  const anthropometryPesoDiff =
+    latestAnthropometry && previousAnthropometry
+      ? latestAnthropometry.peso - previousAnthropometry.peso
+      : 0;
+  const anthropometryCinturaDiff =
+    latestAnthropometry && previousAnthropometry
+      ? latestAnthropometry.cintura - previousAnthropometry.cintura
+      : 0;
+
+  const formatDiff = (value: number) => {
+    const rounded = Math.round(value * 10) / 10;
+    if (rounded === 0) return "0";
+    return `${rounded > 0 ? "+" : ""}${rounded}`;
+  };
+
+  const selectedHeightMeters = useMemo(
+    () => parseHeightMeters(selectedClient?.altura),
+    [selectedClient?.altura]
+  );
+
+  const anthropometrySexo = useMemo(
+    () => ((selectedClient ? clientesMeta[selectedClient.id]?.sexo : "femenino") || "femenino") as "masculino" | "femenino",
+    [clientesMeta, selectedClient]
+  );
+
+  const latestImc = useMemo(() => {
+    if (!latestAnthropometry) return null;
+    return computeImc(latestAnthropometry.peso, selectedHeightMeters);
+  }, [latestAnthropometry, selectedHeightMeters]);
+
+  const previousImc = useMemo(() => {
+    if (!previousAnthropometry) return null;
+    return computeImc(previousAnthropometry.peso, selectedHeightMeters);
+  }, [previousAnthropometry, selectedHeightMeters]);
+
+  const imcDiff =
+    latestImc !== null && previousImc !== null ? Math.round((latestImc - previousImc) * 10) / 10 : 0;
+
+  const latestBodyFatCategory = useMemo(
+    () => bodyFatCategory(latestAnthropometry?.grasaCorporal ?? null, anthropometrySexo),
+    [anthropometrySexo, latestAnthropometry?.grasaCorporal]
+  );
+
+  const anthropometryChartData = useMemo(() => {
+    return selectedAnthropometryRecords
+      .slice()
+      .reverse()
+      .map((record) => ({
+        date: record.fecha,
+        peso: record.peso,
+        grasa: record.grasaCorporal,
+        imc: computeImc(record.peso, selectedHeightMeters),
+      }));
+  }, [selectedAnthropometryRecords, selectedHeightMeters]);
+
+  const pesoLinePath = useMemo(
+    () => buildLinePath(anthropometryChartData.map((item) => item.peso)),
+    [anthropometryChartData]
+  );
+
+  const imcLinePath = useMemo(
+    () => buildLinePath(anthropometryChartData.map((item) => item.imc ?? 0)),
+    [anthropometryChartData]
+  );
+
+  const grasaLinePath = useMemo(
+    () => buildLinePath(anthropometryChartData.map((item) => item.grasa)),
+    [anthropometryChartData]
+  );
+
+  const recalculateAnthropometryForSelected = () => {
+    if (!isAdmin || !selectedClient || selectedClient.tipo !== "alumno") return;
+    if (!selectedHeightMeters) {
+      window.dispatchEvent(
+        new CustomEvent("pf-inline-toast", {
+          detail: {
+            type: "warning",
+            title: "Antropometria",
+            message: "No se puede calcular sin altura del alumno en Datos generales.",
+          },
+        })
+      );
+      return;
+    }
+
+    const sexo = anthropometrySexo;
+    const selectedName = selectedClient.nombre;
+    const selectedIdName = selectedClient.id.split(":")[1] || "";
+
+    markManualSaveIntent(ALUMNO_ANTROPOMETRIA_KEY);
+    setAnthropometryRecords((prev) =>
+      prev.map((item) => {
+        const belongsToSelected =
+          namesLikelyMatch(item.alumnoNombre, selectedName) ||
+          namesLikelyMatch(item.alumnoNombre, selectedIdName);
+
+        if (!belongsToSelected) {
+          return item;
+        }
+
+        const recalculatedBodyFat = estimateBodyFatRfm(selectedHeightMeters, item.cintura, sexo);
+        return {
+          ...item,
+          grasaCorporal: recalculatedBodyFat ?? item.grasaCorporal,
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    );
+  };
+
+  const startAnthropometryEdit = (record: AlumnoAnthropometryRecord) => {
+    setAnthropometryEditingId(record.id);
+    setAnthropometryDraft({ ...record });
+  };
+
+  const cancelAnthropometryEdit = () => {
+    setAnthropometryEditingId(null);
+    setAnthropometryDraft(null);
+  };
+
+  const saveAnthropometryEdit = () => {
+    if (!anthropometryEditingId || !anthropometryDraft) return;
+
+    const numericFields = [
+      "peso",
+      "grasaCorporal",
+      "cintura",
+      "cadera",
+      "pecho",
+      "brazo",
+      "muslo",
+    ] as const;
+
+    const sanitized: AlumnoAnthropometryRecord = {
+      ...anthropometryDraft,
+      fecha: anthropometryDraft.fecha,
+      comentario: anthropometryDraft.comentario || "",
+      updatedAt: new Date().toISOString(),
+    };
+
+    for (const field of numericFields) {
+      const value = Number(anthropometryDraft[field]);
+      if (!Number.isFinite(value) || value < 0) {
+        return;
+      }
+      sanitized[field] = Math.round(value * 10) / 10;
+    }
+
+    markManualSaveIntent(ALUMNO_ANTROPOMETRIA_KEY);
+    setAnthropometryRecords((prev) =>
+      prev.map((item) => (item.id === anthropometryEditingId ? sanitized : item))
+    );
+    cancelAnthropometryEdit();
+  };
+
+  const deleteAnthropometryRecord = (record: AlumnoAnthropometryRecord) => {
+    if (!isAdmin) return;
+    const ok = window.confirm(
+      `Eliminar registro de ${new Date(record.fecha).toLocaleDateString("es-AR")}?`
+    );
+    if (!ok) return;
+
+    markManualSaveIntent(ALUMNO_ANTROPOMETRIA_KEY);
+    setAnthropometryRecords((prev) => prev.filter((item) => item.id !== record.id));
+
+    if (anthropometryEditingId === record.id) {
+      cancelAnthropometryEdit();
+    }
+  };
+
+  const downloadAnthropometryCsv = () => {
+    if (!selectedClient || selectedAnthropometryRecords.length === 0 || typeof window === "undefined") {
+      return;
+    }
+
+    const headers = [
+      "fecha",
+      "alumno",
+      "peso_kg",
+      "grasa_pct",
+      "cintura_cm",
+      "cadera_cm",
+      "pecho_cm",
+      "brazo_cm",
+      "muslo_cm",
+      "imc",
+      "comentario",
+    ];
+
+    const rows = selectedAnthropometryRecords.map((record) => {
+      const imc = computeImc(record.peso, selectedHeightMeters);
+      return [
+        record.fecha,
+        selectedClient.nombre,
+        record.peso,
+        record.grasaCorporal,
+        record.cintura,
+        record.cadera,
+        record.pecho,
+        record.brazo,
+        record.muslo,
+        imc ?? "",
+        (record.comentario || "").replace(/\n/g, " "),
+      ];
+    });
+
+    const toCsvCell = (value: string | number) => {
+      const asText = String(value ?? "");
+      if (asText.includes(",") || asText.includes('"') || asText.includes("\n")) {
+        return `"${asText.replace(/"/g, '""')}"`;
+      }
+      return asText;
+    };
+
+    const csv = [headers.join(","), ...rows.map((row) => row.map(toCsvCell).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const fileSafeName = selectedClient.nombre.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    link.href = url;
+    link.download = `antropometria-${fileSafeName}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     if (!selectedClient) return;
@@ -952,6 +1545,114 @@ export default function ClientesPage() {
     });
   }, [clientesFiltrados, etiquetasByUserId]);
 
+  useEffect(() => {
+    if (!isAdmin) {
+      setAlumnoAccountStatuses([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadAlumnoAccountStatuses = async () => {
+      try {
+        const response = await fetch('/api/admin/users/client-status?thresholdSec=90', {
+          cache: 'no-store',
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || cancelled) {
+          return;
+        }
+
+        const rows = Array.isArray(data?.rows) ? (data.rows as AlumnoAccountStatus[]) : [];
+        setAlumnoAccountStatuses(rows);
+      } catch {
+        if (!cancelled) {
+          setAlumnoAccountStatuses([]);
+        }
+      }
+    };
+
+    void loadAlumnoAccountStatuses();
+
+    const intervalId = window.setInterval(() => {
+      void loadAlumnoAccountStatuses();
+    }, 30_000);
+
+    const handleFocus = () => {
+      void loadAlumnoAccountStatuses();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void loadAlumnoAccountStatuses();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAdmin]);
+
+  const resolvedAlumnoStatusByClientId = useMemo(() => {
+    const byEmail = new Map<string, AlumnoAccountStatus>();
+    for (const row of alumnoAccountStatuses) {
+      const normalizedEmail = String(row.email || '').trim().toLowerCase();
+      if (normalizedEmail) {
+        byEmail.set(normalizedEmail, row);
+      }
+    }
+
+    const resolved = new Map<string, AlumnoAccountStatus | null>();
+
+    for (const cliente of clientes) {
+      if (cliente.tipo !== 'alumno') {
+        resolved.set(cliente.id, null);
+        continue;
+      }
+
+      const mergedMeta = {
+        ...defaultMeta(cliente),
+        ...(clientesMeta[cliente.id] || {}),
+      };
+
+      const metaEmail = String(mergedMeta.email || '').trim().toLowerCase();
+      if (metaEmail && byEmail.has(metaEmail)) {
+        resolved.set(cliente.id, byEmail.get(metaEmail) || null);
+        continue;
+      }
+
+      const candidates = alumnoAccountStatuses
+        .filter((row) => namesLikelyMatch(row.nombreCompleto, cliente.nombre))
+        .slice()
+        .sort((left, right) => {
+          if (left.isOnline !== right.isOnline) {
+            return left.isOnline ? -1 : 1;
+          }
+
+          const leftHasImage = Boolean(left.sidebarImage);
+          const rightHasImage = Boolean(right.sidebarImage);
+          if (leftHasImage !== rightHasImage) {
+            return leftHasImage ? -1 : 1;
+          }
+
+          const leftSeen = left.lastSeenAt ? new Date(left.lastSeenAt).getTime() : 0;
+          const rightSeen = right.lastSeenAt ? new Date(right.lastSeenAt).getTime() : 0;
+          return rightSeen - leftSeen;
+        });
+
+      resolved.set(cliente.id, candidates[0] || null);
+    }
+
+    return resolved;
+  }, [alumnoAccountStatuses, clientes, clientesMeta]);
+
   const selectedMeta = useMemo(() => {
     if (!selectedClient) return null;
     return {
@@ -959,6 +1660,80 @@ export default function ClientesPage() {
       ...(clientesMeta[selectedClient.id] || {}),
     };
   }, [clientesMeta, selectedClient]);
+
+  const selectedClientEmail = useMemo(
+    () => String(selectedMeta?.email || "").trim().toLowerCase(),
+    [selectedMeta?.email]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAccountSidebarImage = async () => {
+      setAccountSidebarImageMessage(null);
+      setAccountSidebarImageError(null);
+
+      if (!isAdmin || !selectedClient || selectedClient.tipo !== "alumno") {
+        setAccountSidebarImage(null);
+        setResolvedAccountUserId(null);
+        setResolvedAccountEmail(null);
+        return;
+      }
+
+      const params = new URLSearchParams({ role: "CLIENTE" });
+      if (selectedClientEmail) {
+        params.set("email", selectedClientEmail);
+      } else {
+        params.set("nombreCompleto", selectedClient.nombre);
+      }
+
+      try {
+        setAccountSidebarImageLoading(true);
+        const response = await fetch(`/api/admin/users/profile-image?${params.toString()}`);
+        const data = await response.json().catch(() => ({}));
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setAccountSidebarImage(null);
+            setResolvedAccountUserId(null);
+            setResolvedAccountEmail(null);
+            return;
+          }
+          throw new Error(data?.message || "No se pudo cargar la foto de perfil");
+        }
+
+        const remoteImage = typeof data?.sidebarImage === "string" && data.sidebarImage
+          ? data.sidebarImage
+          : null;
+        setAccountSidebarImage(remoteImage);
+        setResolvedAccountUserId(typeof data?.user?.id === "string" ? data.user.id : null);
+        setResolvedAccountEmail(typeof data?.user?.email === "string" ? data.user.email : null);
+      } catch (error) {
+        if (!cancelled) {
+          setAccountSidebarImage(null);
+          setResolvedAccountUserId(null);
+          setResolvedAccountEmail(null);
+          setAccountSidebarImageError(
+            error instanceof Error ? error.message : "No se pudo cargar la foto de perfil"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setAccountSidebarImageLoading(false);
+        }
+      }
+    };
+
+    void loadAccountSidebarImage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, selectedClient?.id, selectedClient?.nombre, selectedClient?.tipo, selectedClientEmail]);
 
   const sesionesCliente = useMemo(() => {
     if (!selectedClient) return [];
@@ -1372,6 +2147,18 @@ export default function ClientesPage() {
       categoriaPlan: datosDraft.categoria || selectedMeta.categoriaPlan,
     });
     setSelectedClientId(nextId);
+
+    if (selectedClient.tipo === "alumno") {
+      void syncAlumnoAccountProfile({
+        currentClientName: selectedClient.nombre,
+        nextClientId: nextId,
+        nextNombre,
+        apellido: selectedMeta.apellido,
+        fechaNacimiento: datosDraft.fechaNacimiento,
+        telefono: selectedMeta.telefono,
+        email: selectedMeta.email,
+      });
+    }
   };
 
   const updateTabNote = (tab: ClienteTab, value: string) => {
@@ -1402,6 +2189,279 @@ export default function ClientesPage() {
 
     const presetText = encodeURIComponent(`Hola ${cliente.nombre}, te escribo desde PF Control.`);
     window.open(`https://wa.me/${telefono}?text=${presetText}`, "_blank", "noopener,noreferrer");
+  };
+
+  const emitInlineToast = (
+    type: "success" | "error" | "warning",
+    title: string,
+    message: string
+  ) => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("pf-inline-toast", {
+        detail: { type, title, message },
+      })
+    );
+  };
+
+  const syncAlumnoAccountProfile = async (options: {
+    currentClientName: string;
+    nextClientId: string;
+    nextNombre: string;
+    apellido: string;
+    fechaNacimiento: string;
+    telefono: string;
+    email: string;
+  }) => {
+    if (!isAdmin) return;
+
+    const normalizedEmail = String(options.email || "").trim().toLowerCase();
+    const payload: Record<string, unknown> = {
+      role: "CLIENTE",
+      nombre: options.nextNombre,
+      apellido: String(options.apellido || "").trim(),
+      fechaNacimiento: options.fechaNacimiento || null,
+      telefono: options.telefono || "",
+      email: normalizedEmail,
+    };
+
+    if (resolvedAccountUserId) {
+      payload.userId = resolvedAccountUserId;
+    } else if (resolvedAccountEmail) {
+      payload.email = resolvedAccountEmail;
+    } else if (normalizedEmail) {
+      payload.email = normalizedEmail;
+    } else {
+      payload.nombreCompleto = options.currentClientName;
+    }
+
+    try {
+      const response = await fetch("/api/admin/users/account-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo sincronizar la cuenta del alumno");
+      }
+
+      const updatedUserId = typeof data?.user?.id === "string" ? data.user.id : null;
+      const updatedEmail = typeof data?.user?.email === "string" ? data.user.email : normalizedEmail;
+      const updatedTelefono = typeof data?.user?.telefono === "string" ? data.user.telefono : options.telefono;
+      const updatedApellido = typeof data?.user?.apellido === "string" ? data.user.apellido : options.apellido;
+
+      setResolvedAccountUserId(updatedUserId);
+      setResolvedAccountEmail(updatedEmail || null);
+
+      setMetaPatch(options.nextClientId, {
+        email: updatedEmail || "",
+        telefono: updatedTelefono || "",
+        apellido: updatedApellido || "",
+      });
+
+      emitInlineToast(
+        "success",
+        "Cuenta",
+        data?.message || "Cuenta del alumno sincronizada automaticamente"
+      );
+    } catch (error) {
+      emitInlineToast(
+        "error",
+        "Cuenta",
+        error instanceof Error ? error.message : "No se pudo sincronizar la cuenta del alumno"
+      );
+    }
+  };
+
+  const saveAccountSidebarImage = async (image: string | null) => {
+    if (!isAdmin || !selectedClient || selectedClient.tipo !== "alumno") {
+      emitInlineToast("warning", "Cuenta", "Solo aplica a alumnos con usuario de acceso");
+      return;
+    }
+
+    setAccountSidebarImageSaving(true);
+    setAccountSidebarImageMessage(null);
+    setAccountSidebarImageError(null);
+
+    try {
+      const payload: Record<string, string | null> = {
+        ...buildAlumnoAccountLookupPayload(),
+        sidebarImage: image,
+      };
+
+      const response = await fetch("/api/admin/users/profile-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo actualizar la foto de perfil");
+      }
+
+      const remoteImage =
+        typeof data?.sidebarImage === "string" && data.sidebarImage ? data.sidebarImage : null;
+      setAccountSidebarImage(remoteImage);
+      const message = String(data?.message || "Foto de perfil actualizada");
+      setAccountSidebarImageMessage(message);
+      emitInlineToast("success", "Cuenta", message);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "No se pudo actualizar la foto de perfil";
+      setAccountSidebarImageError(message);
+      emitInlineToast("error", "Cuenta", message);
+    } finally {
+      setAccountSidebarImageSaving(false);
+    }
+  };
+
+  const handleAccountSidebarImageFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    try {
+      const optimized = await optimizeClientProfileImage(file);
+      await saveAccountSidebarImage(optimized);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo procesar la imagen";
+      setAccountSidebarImageError(message);
+      emitInlineToast("error", "Cuenta", message);
+    }
+  };
+
+  const buildAlumnoAccountLookupPayload = () => {
+    const payload: Record<string, string> = {
+      role: "CLIENTE",
+    };
+
+    if (resolvedAccountUserId) {
+      payload.userId = resolvedAccountUserId;
+      return payload;
+    }
+
+    if (resolvedAccountEmail) {
+      payload.email = resolvedAccountEmail;
+      return payload;
+    }
+
+    if (selectedClientEmail) {
+      payload.email = selectedClientEmail;
+      return payload;
+    }
+
+    if (selectedClient) {
+      payload.nombreCompleto = selectedClient.nombre;
+    }
+
+    return payload;
+  };
+
+  const runAccountPasswordAction = async (action: "show" | "reset") => {
+    if (!isAdmin) {
+      emitInlineToast("warning", "Permisos", "Solo el admin puede gestionar contrasenas");
+      return;
+    }
+
+    if (!selectedClient || !selectedMeta) {
+      emitInlineToast("warning", "Cuenta", "Selecciona un cliente primero");
+      return;
+    }
+
+    if (selectedClient.tipo !== "alumno") {
+      emitInlineToast("warning", "Cuenta", "Solo aplica a alumnos con usuario de acceso");
+      return;
+    }
+
+    try {
+      setAccountPasswordLoading(true);
+      const payload = buildAlumnoAccountLookupPayload();
+
+      const tokenAction = action === "show" ? "issue-token" : "reset";
+
+      const tokenResponse = await fetch("/api/admin/users/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          action: tokenAction,
+        }),
+      });
+
+      const tokenData = await tokenResponse.json().catch(() => ({}));
+
+      if (!tokenResponse.ok) {
+        if (action === "show" && tokenData?.code === "PASSWORD_CHANGED") {
+          setAccountPasswordInfo(null);
+          emitInlineToast("warning", "Informacion", tokenData?.message || "El usuario ya modifico su contrasena, no puede ser consultada.");
+          return;
+        }
+
+        emitInlineToast("error", "Cuenta", tokenData?.message || "No se pudo procesar la contrasena");
+        return;
+      }
+
+      const viewToken = String(tokenData?.viewToken || "").trim();
+      if (!viewToken) {
+        emitInlineToast("error", "Cuenta", "No se pudo obtener token de visualizacion");
+        return;
+      }
+
+      const response = await fetch("/api/admin/users/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          action: "show",
+          viewToken,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        if (data?.code === "PASSWORD_CHANGED") {
+          setAccountPasswordInfo(null);
+          emitInlineToast("warning", "Informacion", data?.message || "El usuario ya modifico su contrasena, no puede ser consultada.");
+          return;
+        }
+
+        emitInlineToast("error", "Cuenta", data?.message || "No se pudo procesar la contrasena");
+        return;
+      }
+      setAccountPasswordInfo({
+        userId: String(data?.user?.id || ""),
+        email: String(data?.user?.email || ""),
+        role: String(data?.user?.role || ""),
+        password: String(data?.password || ""),
+        issuedAt: data?.issuedAt || null,
+      });
+      window.setTimeout(() => {
+        setAccountPasswordInfo((current) => {
+          if (!current || current.userId !== String(data?.user?.id || "")) {
+            return current;
+          }
+          return null;
+        });
+      }, PASSWORD_VISIBLE_TTL_MS);
+
+      if (action === "reset") {
+        emitInlineToast("success", "Exito", "Contrasena blanqueada correctamente");
+      } else {
+        emitInlineToast("success", "Exito", "Contrasena consultada correctamente");
+      }
+    } catch {
+      emitInlineToast("error", "Cuenta", "No se pudo procesar la contrasena");
+    } finally {
+      setAccountPasswordLoading(false);
+    }
   };
 
   const registrarPago = (e: React.FormEvent) => {
@@ -1460,10 +2520,10 @@ export default function ClientesPage() {
   };
 
   return (
-    <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <main className="mx-auto max-w-[1500px] px-3 py-4 text-slate-100 sm:p-6">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-black">Clientes</h1>
+          <h1 className="text-2xl font-black sm:text-3xl">Clientes</h1>
           <p className="mt-1 text-sm text-slate-300">
             Vista unificada con apartados operativos estilo panel profesional.
           </p>
@@ -1496,7 +2556,123 @@ export default function ClientesPage() {
         </div>
       </section>
 
-      <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      {isAdmin ? (
+        <section className="mb-6 rounded-3xl border border-amber-300/30 bg-amber-500/10 p-4 shadow-lg sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-amber-50">Ingresantes</h2>
+              <p className="mt-1 text-sm text-amber-100/85">
+                Solicitudes nuevas desde el registro publico. Aprobalas para dar alta como alumno.
+              </p>
+            </div>
+            <div className="rounded-xl border border-amber-300/40 bg-amber-400/15 px-3 py-2 text-sm font-bold text-amber-100">
+              Pendientes: {ingresantes.length}
+            </div>
+          </div>
+
+          {ingresantesError ? (
+            <div className="mt-4 rounded-xl border border-rose-300/30 bg-rose-500/15 px-3 py-2 text-sm text-rose-100">
+              {ingresantesError}
+            </div>
+          ) : null}
+
+          {ingresantesSuccess ? (
+            <div className="mt-4 rounded-xl border border-emerald-300/30 bg-emerald-500/15 px-3 py-2 text-sm text-emerald-100">
+              {ingresantesSuccess}
+            </div>
+          ) : null}
+
+          {ingresantesLoading ? (
+            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-200">
+              Cargando ingresantes...
+            </div>
+          ) : null}
+
+          {!ingresantesLoading && ingresantes.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-200">
+              No hay ingresantes pendientes.
+            </div>
+          ) : null}
+
+          {!ingresantesLoading && ingresantes.length > 0 ? (
+            <div className="mt-4 grid gap-3">
+              {ingresantes.map((item) => {
+                const anamnesis = item.intake?.anamnesis || {};
+                return (
+                  <article key={item.id} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="text-base font-black text-white">{item.nombreCompleto || "Sin nombre"}</p>
+                        <p className="text-sm text-slate-300">{item.email}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <span className={`rounded-full px-2 py-1 font-bold ${item.emailVerified ? "bg-emerald-500/20 text-emerald-200" : "bg-rose-500/20 text-rose-200"}`}>
+                          {item.emailVerified ? "Email verificado" : "Email pendiente"}
+                        </span>
+                        <span className="rounded-full bg-sky-500/20 px-2 py-1 font-bold text-sky-200">
+                          {new Date(item.createdAt).toLocaleDateString("es-AR")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-sm text-slate-200 sm:grid-cols-2">
+                      <p><span className="font-semibold text-slate-100">Telefono:</span> {item.telefono || "-"}</p>
+                      <p>
+                        <span className="font-semibold text-slate-100">Nacimiento:</span>{" "}
+                        {item.fechaNacimiento ? new Date(item.fechaNacimiento).toLocaleDateString("es-AR") : "-"}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-sm text-slate-200 sm:grid-cols-3">
+                      <div className="rounded-xl border border-white/10 bg-slate-800/55 p-3">
+                        <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-cyan-200">Antecedentes</p>
+                        <p>{anamnesis.antecedentesMedicos || "-"}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-slate-800/55 p-3">
+                        <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-cyan-200">Lesiones</p>
+                        <p>{anamnesis.lesionesPrevias || "-"}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-slate-800/55 p-3">
+                        <p className="mb-1 text-[11px] font-black uppercase tracking-wide text-cyan-200">Objetivo</p>
+                        <p>{anamnesis.objetivoPrincipal || "-"}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleIngresanteAction(item.id, "aprobar")}
+                        disabled={ingresanteActionId === item.id || !item.emailVerified}
+                        className="rounded-xl bg-emerald-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {ingresanteActionId === item.id ? "Procesando..." : "Dar alta como alumno"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleIngresanteAction(item.id, "rechazar")}
+                        disabled={ingresanteActionId === item.id}
+                        className="rounded-xl border border-rose-300/35 bg-rose-500/15 px-3 py-2 text-sm font-bold text-rose-100 hover:bg-rose-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Rechazar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleResendIngresanteVerification(item.email, item.id)}
+                        disabled={resendVerificationId === item.id}
+                        className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-3 py-2 text-sm font-bold text-cyan-100 hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {resendVerificationId === item.id ? 'Reenviando...' : 'Reenviar verificacion'}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
         <h2 className="text-xl font-bold">Registrar pago</h2>
         <p className="mt-1 text-sm text-slate-300">
           Al registrar un pago, se renueva automaticamente la asesoria por 30 dias (configurable por cliente).
@@ -1579,7 +2755,7 @@ export default function ClientesPage() {
       </section>
 
       {crearOpen ? (
-        <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
           <h2 className="text-xl font-bold">Crear cliente</h2>
           <form onSubmit={submitCliente} className="mt-4 space-y-4">
             <div className="grid gap-3 md:grid-cols-3">
@@ -1661,7 +2837,7 @@ export default function ClientesPage() {
       >
         {!isDetailMode ? (
         <div
-          className="w-full rounded-3xl border border-cyan-300/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_38%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_24px_60px_rgba(3,7,18,0.55)]"
+          className="w-full rounded-3xl border border-cyan-300/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_38%,rgba(2,6,23,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(3,7,18,0.55)] sm:p-5"
           data-layout-lock="clientes-list-panel"
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -1773,6 +2949,9 @@ export default function ClientesPage() {
                 const active = cliente.id === selectedClientId;
                 const sesionesCount = sesionesPorCliente[cliente.id] || 0;
                 const meta = getMeta(cliente);
+                const alumnoStatus = resolvedAlumnoStatusByClientId.get(cliente.id) || null;
+                const alumnoSidebarImage = cliente.tipo === "alumno" ? alumnoStatus?.sidebarImage || null : null;
+                const alumnoIsOnline = cliente.tipo === "alumno" ? Boolean(alumnoStatus?.isOnline) : false;
                 const userId = cliente.id.split(":")[1];
                 const etiquetasCliente = etiquetasByUserId[userId] || [];
                 const lastPayment = latestPaymentByClientId.get(cliente.id);
@@ -1783,22 +2962,50 @@ export default function ClientesPage() {
                     key={cliente.id}
                     className={`w-full overflow-hidden rounded-2xl border p-2.5 transition ${active ? "border-cyan-300/45 bg-cyan-500/10" : "border-white/10 bg-slate-900/65 hover:border-cyan-300/30 hover:bg-slate-900/80"}`}
                     data-layout-lock="clientes-row-card"
+                    data-client-row="true"
+                    data-client-id={cliente.id}
+                    data-client-type={cliente.tipo}
                   >
                     <div className="flex flex-wrap items-center gap-2.5" data-layout-lock="clientes-row-content">
                       <div className="flex shrink-0 items-center justify-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/35 bg-cyan-500/15 text-xs font-black text-cyan-100">
-                          {cliente.nombre
-                            .split(" ")
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((part) => part[0]?.toUpperCase() || "")
-                            .join("") || "CL"}
+                        <div
+                          className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-cyan-300/35 bg-cyan-500/15 text-xs font-black text-cyan-100"
+                          data-client-avatar="true"
+                          data-client-avatar-state={alumnoSidebarImage ? "image" : "initials"}
+                        >
+                          {alumnoSidebarImage ? (
+                            <img src={alumnoSidebarImage} alt={`Foto de ${cliente.nombre}`} className="h-full w-full object-cover" data-client-avatar-image="true" />
+                          ) : (
+                            <span data-client-avatar-initials="true">
+                              {cliente.nombre
+                                .split(" ")
+                                .filter(Boolean)
+                                .slice(0, 2)
+                                .map((part) => part[0]?.toUpperCase() || "")
+                                .join("") || "CL"}
+                            </span>
+                          )}
+
+                          {cliente.tipo === "alumno" ? (
+                            <span
+                              className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-slate-950 ${alumnoIsOnline ? "bg-emerald-400" : "bg-slate-500"}`}
+                              title={alumnoIsOnline ? "En linea" : "Desconectado"}
+                              data-client-presence-dot={alumnoIsOnline ? "online" : "offline"}
+                            />
+                          ) : null}
                         </div>
                       </div>
 
-                      <div className="min-w-[140px] flex-1">
-                        <p className="truncate text-sm font-bold text-white">{cliente.nombre}</p>
-                        <p className="truncate text-xs text-slate-300">{cliente.club || "Sin club"}</p>
+                      <div className="min-w-0 flex-1 sm:min-w-[140px]">
+                        <p className="truncate text-sm font-bold text-white" data-client-name="true">{cliente.nombre}</p>
+                        <p className="truncate text-xs text-slate-300">
+                          {cliente.club || "Sin club"}
+                          {cliente.tipo === "alumno" ? (
+                            <span className={alumnoIsOnline ? "text-emerald-300" : "text-slate-400"} data-client-presence-text={alumnoIsOnline ? "online" : "offline"}>
+                              {` · ${alumnoIsOnline ? "En linea" : "Desconectado"}`}
+                            </span>
+                          ) : null}
+                        </p>
                       </div>
 
                       <div className="flex shrink-0 items-center">
@@ -1807,11 +3014,11 @@ export default function ClientesPage() {
                         </span>
                       </div>
 
-                      <div className="min-w-[110px] text-xs text-slate-200">
+                      <div className="min-w-0 w-full text-xs text-slate-200 sm:w-auto sm:min-w-[110px]">
                         <p className="truncate">{cliente.categoria || cliente.deporte || "-"}</p>
                       </div>
 
-                      <div className="flex min-w-[180px] flex-wrap items-center gap-1.5">
+                      <div className="flex min-w-0 w-full flex-wrap items-center gap-1.5 sm:w-auto sm:min-w-[180px]">
                         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sesionesCount > 0 ? "bg-emerald-500/20 text-emerald-100" : "bg-rose-500/20 text-rose-100"}`}>
                           {sesionesCount > 0 ? `Con plan (${sesionesCount})` : "Sin plan"}
                         </span>
@@ -1823,12 +3030,12 @@ export default function ClientesPage() {
                         </span>
                       </div>
 
-                      <div className="min-w-[120px] text-[11px]">
+                      <div className="min-w-0 w-full text-[11px] sm:w-auto sm:min-w-[120px]">
                         <p className="truncate text-slate-300">{meta.endDate || "Sin vencimiento"}</p>
                         <p className="truncate text-slate-400">{lastPayment ? `${lastPayment.moneda} ${lastPayment.importe.toLocaleString("es-AR")}` : "Sin pagos"}</p>
                       </div>
 
-                      <div className="min-w-[120px]">
+                      <div className="min-w-0 w-full sm:w-auto sm:min-w-[120px]">
                         {etiquetasCliente.length === 0 ? (
                           <span className="text-xs text-slate-500">Sin etiquetas</span>
                         ) : (
@@ -1847,11 +3054,21 @@ export default function ClientesPage() {
                         )}
                       </div>
 
-                      <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                        <Link href={`/clientes/ver/${encodeURIComponent(cliente.id)}`} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver">👁</Link>
-                        <button type="button" onClick={() => { setSelectedClientId(cliente.id); setActiveTab("notas"); }} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat">💬</button>
+                      <div className="flex w-full flex-wrap items-center justify-start gap-1.5 sm:ml-auto sm:w-auto sm:shrink-0 sm:justify-end">
+                        <Link
+                          href={`/clientes?detalle=1&cliente=${encodeURIComponent(cliente.id)}&tab=datos`}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            openClientDetail(cliente.id, "datos");
+                          }}
+                          className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                          title="Ver"
+                        >
+                          👁
+                        </Link>
+                        <button type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat">💬</button>
                         <button type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</button>
-                        <button type="button" onClick={() => { setSelectedClientId(cliente.id); setActiveTab("plan-entrenamiento"); }} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Asignar">📌</button>
+                        <button type="button" onClick={() => openClientDetail(cliente.id, "plan-entrenamiento")} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Asignar">📌</button>
                         <button type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</button>
                         <button type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</button>
                       </div>
@@ -1907,11 +3124,11 @@ export default function ClientesPage() {
                     <p className="text-2xl font-black text-white">{selectedClient.nombre}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Ultimo Chequeo:</p>
+                    <p className="text-xs text-slate-300">Ultima antropometria:</p>
                     <p className="font-bold text-white">{selectedMeta.lastCheck}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Proximo chequeo:</p>
+                    <p className="text-xs text-slate-300">Proxima antropometria:</p>
                     <p className="font-bold text-white">{selectedMeta.nextCheck}</p>
                   </div>
                   <div>
@@ -2007,6 +3224,84 @@ export default function ClientesPage() {
                   <div className="grid gap-4 xl:grid-cols-2">
                     <div className="space-y-3">
                       <h3 className="text-xl font-bold text-white">Cliente</h3>
+                      <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/5 p-3">
+                        <p className="text-sm font-bold text-cyan-100">Foto de perfil de la cuenta</p>
+                        <p className="text-xs text-slate-300">
+                          Se sincroniza con el perfil del cliente en todos sus dispositivos.
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <div className="h-16 w-16 overflow-hidden rounded-full border border-white/20 bg-slate-900/70">
+                            {accountSidebarImage ? (
+                              <img
+                                src={accountSidebarImage}
+                                alt="Foto de perfil del cliente"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[11px] font-bold text-slate-300">
+                                Sin foto
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <input
+                              ref={profileImageInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleAccountSidebarImageFileChange}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => profileImageInputRef.current?.click()}
+                              disabled={
+                                accountSidebarImageSaving ||
+                                accountSidebarImageLoading ||
+                                selectedClient.tipo !== "alumno"
+                              }
+                              className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10 disabled:opacity-50"
+                            >
+                              {accountSidebarImage ? "Cambiar foto" : "Subir foto"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void saveAccountSidebarImage(null);
+                              }}
+                              disabled={
+                                accountSidebarImageSaving ||
+                                accountSidebarImageLoading ||
+                                !accountSidebarImage ||
+                                selectedClient.tipo !== "alumno"
+                              }
+                              className="rounded-lg border border-rose-300/40 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/10 disabled:opacity-50"
+                            >
+                              Quitar foto
+                            </button>
+                          </div>
+                        </div>
+
+                        {accountSidebarImageLoading ? (
+                          <p className="mt-2 text-[11px] text-slate-400">Cargando foto actual...</p>
+                        ) : null}
+                        {accountSidebarImageSaving ? (
+                          <p className="mt-2 text-[11px] text-slate-400">Guardando foto...</p>
+                        ) : null}
+                        {selectedClient.tipo !== "alumno" ? (
+                          <p className="mt-2 text-[11px] text-amber-200">
+                            Esta accion aplica a clientes con cuenta de acceso (alumnos).
+                          </p>
+                        ) : null}
+                        {accountSidebarImageError ? (
+                          <p className="mt-2 text-[11px] text-rose-200">{accountSidebarImageError}</p>
+                        ) : null}
+                        {accountSidebarImageMessage ? (
+                          <p className="mt-2 text-[11px] text-emerald-200">{accountSidebarImageMessage}</p>
+                        ) : null}
+                      </div>
+
                       <div className="grid gap-3 md:grid-cols-2">
                         <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Nombre" />
                         <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Apellido" />
@@ -2058,6 +3353,54 @@ export default function ClientesPage() {
                     </div>
 
                     <div className="space-y-3">
+                      {isAdmin ? (
+                        <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/5 p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold text-cyan-100">Usuarios y permisos</p>
+                              <p className="text-xs text-slate-300">
+                                Gestiona la cuenta de acceso del alumno desde Clientes. Si ya cambio su contrasena, primero blanqueala y luego consultala.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  void runAccountPasswordAction("show");
+                                }}
+                                disabled={accountPasswordLoading || selectedClient.tipo !== "alumno"}
+                                className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10 disabled:opacity-50"
+                              >
+                                Ver contrasena
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  void runAccountPasswordAction("reset");
+                                }}
+                                disabled={accountPasswordLoading || selectedClient.tipo !== "alumno"}
+                                className="rounded-lg border border-emerald-300/40 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-50"
+                              >
+                                Blanquear contrasena
+                              </button>
+                            </div>
+                          </div>
+
+                          {accountPasswordInfo ? (
+                            <div className="mt-3 rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Contrasena actual</p>
+                              <p className="mt-1 break-all font-mono text-sm font-bold text-white">{accountPasswordInfo.password}</p>
+                              <p className="mt-1 text-[11px] text-slate-400">
+                                {accountPasswordInfo.email || selectedMeta.email || selectedClient.nombre}
+                                {accountPasswordInfo.issuedAt
+                                  ? ` · ${new Date(accountPasswordInfo.issuedAt).toLocaleString("es-AR")}`
+                                  : ""}
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
                       <h3 className="text-xl font-bold text-white">Informacion de la asesoria</h3>
                       <p className="text-xs text-slate-300">
                         Estas fechas muestran la vigencia real del plan para el cliente: desde cuando inicia y hasta cuando finaliza la asesoria.
@@ -2258,6 +3601,211 @@ export default function ClientesPage() {
                           Ir a Nutricion
                         </Link>
                       </div>
+                    )}
+                  </div>
+                ) : activeTab === "antropometria" ? (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-bold text-white">Antropometria</h3>
+                    {selectedClient.tipo !== "alumno" ? (
+                      <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                        Esta seccion aplica solo a alumnos.
+                      </p>
+                    ) : selectedAnthropometryRecords.length === 0 ? (
+                      <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                        Todavia no hay medidas registradas para este alumno.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs text-slate-300">
+                            Registros: <span className="font-semibold text-white">{selectedAnthropometryRecords.length}</span>
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {isAdmin ? (
+                              <button
+                                type="button"
+                                onClick={recalculateAnthropometryForSelected}
+                                className="rounded-lg border border-emerald-300/40 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10"
+                              >
+                                Calcular IMC y grasa
+                              </button>
+                            ) : null}
+                            <button
+                              type="button"
+                              onClick={downloadAnthropometryCsv}
+                              className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                            >
+                              Descargar planilla CSV
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-5">
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-xs text-slate-300">Ultimo registro</p>
+                            <p className="text-sm font-semibold text-white">
+                              {latestAnthropometry
+                                ? new Date(latestAnthropometry.fecha).toLocaleDateString("es-AR")
+                                : "-"}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-xs text-slate-300">Peso</p>
+                            <p className="text-2xl font-black text-cyan-100">
+                              {latestAnthropometry ? latestAnthropometry.peso : "-"}
+                            </p>
+                            <p className="text-xs text-slate-400">Delta: {formatDiff(anthropometryPesoDiff)} kg</p>
+                          </div>
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-xs text-slate-300">% grasa</p>
+                            <p className="text-2xl font-black text-emerald-100">
+                              {latestAnthropometry ? latestAnthropometry.grasaCorporal : "-"}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-xs text-slate-300">Cintura</p>
+                            <p className="text-2xl font-black text-violet-100">
+                              {latestAnthropometry ? latestAnthropometry.cintura : "-"}
+                            </p>
+                            <p className="text-xs text-slate-400">Delta: {formatDiff(anthropometryCinturaDiff)} cm</p>
+                          </div>
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-xs text-slate-300">IMC</p>
+                            <p className="text-2xl font-black text-amber-100">
+                              {latestImc ?? "-"}
+                            </p>
+                            <p className="text-xs text-slate-400">{imcCategory(latestImc)} · Delta: {formatDiff(imcDiff)}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-amber-300/35 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100">
+                            Parametro IMC: {imcCategory(latestImc)}
+                          </span>
+                          <span className="rounded-full border border-violet-300/35 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-100">
+                            Parametro grasa ({anthropometrySexo === "masculino" ? "hombre" : "mujer"}): {latestBodyFatCategory}
+                          </span>
+                        </div>
+
+                        <div className="grid gap-3 lg:grid-cols-3">
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <div className="mb-2 flex items-center justify-between">
+                              <p className="text-sm font-semibold text-white">Evolucion de peso</p>
+                              <p className="text-[11px] text-slate-400">kg</p>
+                            </div>
+                            {anthropometryChartData.length < 2 ? (
+                              <p className="text-xs text-slate-400">Se necesitan al menos 2 registros para graficar.</p>
+                            ) : (
+                              <svg viewBox="0 0 320 120" className="h-28 w-full">
+                                <path d={pesoLinePath} fill="none" stroke="#22d3ee" strokeWidth="2.5" strokeLinecap="round" />
+                              </svg>
+                            )}
+                          </div>
+
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <div className="mb-2 flex items-center justify-between">
+                              <p className="text-sm font-semibold text-white">Evolucion de IMC</p>
+                              <p className="text-[11px] text-slate-400">kg/m2</p>
+                            </div>
+                            {anthropometryChartData.filter((item) => item.imc !== null).length < 2 ? (
+                              <p className="text-xs text-slate-400">Carga altura en datos del cliente para calcular IMC.</p>
+                            ) : (
+                              <svg viewBox="0 0 320 120" className="h-28 w-full">
+                                <path d={imcLinePath} fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
+                              </svg>
+                            )}
+                          </div>
+
+                          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <div className="mb-2 flex items-center justify-between">
+                              <p className="text-sm font-semibold text-white">Evolucion de grasa estimada</p>
+                              <p className="text-[11px] text-slate-400">%</p>
+                            </div>
+                            {anthropometryChartData.length < 2 ? (
+                              <p className="text-xs text-slate-400">Se necesitan al menos 2 registros para graficar.</p>
+                            ) : (
+                              <svg viewBox="0 0 320 120" className="h-28 w-full">
+                                <path d={grasaLinePath} fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-xl border border-white/10">
+                          <table className="min-w-full text-left text-sm">
+                            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-300">
+                              <tr>
+                                <th className="px-3 py-2">Fecha</th>
+                                <th className="px-3 py-2">Peso</th>
+                                <th className="px-3 py-2">Grasa %</th>
+                                <th className="px-3 py-2">Cintura</th>
+                                <th className="px-3 py-2">Cadera</th>
+                                <th className="px-3 py-2">Pecho</th>
+                                <th className="px-3 py-2">Brazo</th>
+                                <th className="px-3 py-2">Muslo</th>
+                                <th className="px-3 py-2">IMC</th>
+                                <th className="px-3 py-2">Parametro IMC</th>
+                                <th className="px-3 py-2">Parametro grasa</th>
+                                <th className="px-3 py-2">Comentario</th>
+                                <th className="px-3 py-2">Acciones</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {selectedAnthropometryRecords.map((record) => (
+                                <tr key={`${record.id}-${record.updatedAt}`} className="bg-slate-950/40 text-slate-100">
+                                  {anthropometryEditingId === record.id && anthropometryDraft ? (
+                                    <>
+                                      <td className="px-3 py-2"><input type="date" value={anthropometryDraft.fecha} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, fecha: e.target.value } : prev))} className="w-32 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.peso} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, peso: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.grasaCorporal} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, grasaCorporal: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.cintura} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, cintura: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.cadera} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, cadera: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.pecho} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, pecho: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.brazo} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, brazo: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2"><input type="number" min={0} step="0.1" value={anthropometryDraft.muslo} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, muslo: Number(e.target.value) } : prev))} className="w-20 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2 text-xs text-slate-300">{computeImc(anthropometryDraft.peso, selectedHeightMeters) ?? "-"}</td>
+                                      <td className="px-3 py-2 text-xs text-slate-300">{imcCategory(computeImc(anthropometryDraft.peso, selectedHeightMeters))}</td>
+                                      <td className="px-3 py-2 text-xs text-slate-300">{bodyFatCategory(anthropometryDraft.grasaCorporal, anthropometrySexo)}</td>
+                                      <td className="px-3 py-2"><input value={anthropometryDraft.comentario} onChange={(e) => setAnthropometryDraft((prev) => (prev ? { ...prev, comentario: e.target.value } : prev))} className="w-48 rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" /></td>
+                                      <td className="px-3 py-2">
+                                        <div className="flex gap-1">
+                                          <button type="button" onClick={saveAnthropometryEdit} className="rounded border border-emerald-300/40 px-2 py-1 text-[11px] font-semibold text-emerald-100 hover:bg-emerald-500/10">Guardar</button>
+                                          <button type="button" onClick={cancelAnthropometryEdit} className="rounded border border-white/25 px-2 py-1 text-[11px] font-semibold text-white hover:bg-white/10">Cancelar</button>
+                                        </div>
+                                      </td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td className="px-3 py-2">{new Date(record.fecha).toLocaleDateString("es-AR")}</td>
+                                      <td className="px-3 py-2">{record.peso}</td>
+                                      <td className="px-3 py-2">{record.grasaCorporal}</td>
+                                      <td className="px-3 py-2">{record.cintura}</td>
+                                      <td className="px-3 py-2">{record.cadera}</td>
+                                      <td className="px-3 py-2">{record.pecho}</td>
+                                      <td className="px-3 py-2">{record.brazo}</td>
+                                      <td className="px-3 py-2">{record.muslo}</td>
+                                      <td className="px-3 py-2">{computeImc(record.peso, selectedHeightMeters) ?? "-"}</td>
+                                      <td className="px-3 py-2">{imcCategory(computeImc(record.peso, selectedHeightMeters))}</td>
+                                      <td className="px-3 py-2">{bodyFatCategory(record.grasaCorporal, anthropometrySexo)}</td>
+                                      <td className="px-3 py-2 text-slate-300">{record.comentario || "-"}</td>
+                                      <td className="px-3 py-2">
+                                        {isAdmin ? (
+                                          <div className="flex gap-1">
+                                            <button type="button" onClick={() => startAnthropometryEdit(record)} className="rounded border border-cyan-300/40 px-2 py-1 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-500/10">Editar</button>
+                                            <button type="button" onClick={() => deleteAnthropometryRecord(record)} className="rounded border border-rose-300/40 px-2 py-1 text-[11px] font-semibold text-rose-100 hover:bg-rose-500/10">Borrar</button>
+                                          </div>
+                                        ) : (
+                                          <span className="text-xs text-slate-500">Solo lectura</span>
+                                        )}
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
                     )}
                   </div>
                 ) : activeTab === "progreso" ? (

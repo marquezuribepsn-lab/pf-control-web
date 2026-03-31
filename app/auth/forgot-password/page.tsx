@@ -1,15 +1,43 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function ForgotPasswordPage() {
+  const { status } = useSession();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [resetLink, setResetLink] = useState('');
   const [showLink, setShowLink] = useState(false);
+
+  const navigateAuthScreen = (path: string) => {
+    try {
+      router.push(path);
+
+      window.setTimeout(() => {
+        if (window.location.pathname !== path) {
+          window.location.assign(path);
+        }
+      }, 300);
+    } catch {
+      window.location.assign(path);
+    }
+  };
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/');
+      window.setTimeout(() => {
+        if (window.location.pathname.startsWith('/auth')) {
+          window.location.assign('/');
+        }
+      }, 250);
+    }
+  }, [router, status]);
 
   // Simulación: solo admins pueden ver el link
   const isAdmin = typeof window !== 'undefined' && localStorage.getItem('role') === 'ADMIN';
@@ -54,10 +82,10 @@ export default function ForgotPasswordPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#08111d] text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
-      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
-        <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
+      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center px-3 py-4 sm:px-6 sm:py-10">
+        <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-4 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-200/80">Recuperación</p>
-          <h1 className="mt-3 text-3xl font-black text-white">Olvidé mi contraseña</h1>
+          <h1 className="mt-3 text-2xl font-black text-white sm:text-3xl">Olvidé mi contraseña</h1>
           <p className="mt-2 text-sm leading-6 text-slate-300">
             Ingresá tu email y te enviaremos un enlace para crear una nueva contraseña.
           </p>
@@ -66,19 +94,19 @@ export default function ForgotPasswordPage() {
             {message && <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100">{message}</div>}
             {error && <div className="rounded-2xl border border-rose-400/35 bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-100">{error}</div>}
             {showLink && (
-              <div className="rounded-2xl border border-cyan-400/35 bg-cyan-500/15 px-4 py-3 text-sm font-medium text-cyan-100 flex items-center gap-2">
+              <div className="flex flex-col gap-2 rounded-2xl border border-cyan-400/35 bg-cyan-500/15 px-4 py-3 text-sm font-medium text-cyan-100 sm:flex-row sm:items-center">
                 <span>Link de recuperación:</span>
                 <input
                   type="text"
                   value={resetLink}
                   readOnly
-                  className="bg-transparent text-cyan-200 font-mono w-full"
+                  className="w-full break-all bg-transparent font-mono text-cyan-200"
                   style={{ border: 'none', outline: 'none' }}
                   onClick={e => (e.target as HTMLInputElement).select()}
                 />
                 <button
                   type="button"
-                  className="ml-2 px-2 py-1 rounded bg-cyan-700 text-white text-xs"
+                  className="rounded bg-cyan-700 px-2 py-1 text-xs text-white sm:ml-2"
                   onClick={() => navigator.clipboard.writeText(resetLink)}
                 >
                   Copiar
@@ -109,9 +137,13 @@ export default function ForgotPasswordPage() {
 
           <p className="mt-6 text-center text-sm text-slate-300">
             ¿Recordaste tu contraseña?{' '}
-            <Link href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
+            <button
+              type="button"
+              onClick={() => navigateAuthScreen('/auth/login')}
+              className="font-bold text-cyan-300 transition hover:text-cyan-200"
+            >
               Volver al login
-            </Link>
+            </button>
           </p>
         </div>
       </div>

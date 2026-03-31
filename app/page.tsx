@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import StatCard from "../components/StatCard";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
@@ -134,6 +135,7 @@ const defaultConfig: HomeConfig = {
 };
 
 export default function Home() {
+  const { data: session } = useSession();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
   const [configMode, setConfigMode] = useState(false);
@@ -227,6 +229,11 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if ((session?.user as any)?.role === "CLIENTE") {
+      window.location.href = "/alumno/inicio";
+      return;
+    }
+
     const fromSidebarConfig = localStorage.getItem(HOME_EDIT_MODE_KEY) === "1";
     const params = new URLSearchParams(window.location.search);
     const fromLegacyQuery = params.get("config") === "1";
@@ -269,7 +276,7 @@ export default function Home() {
     return () => {
       window.removeEventListener("pf-home-edit-toggle", handleToggle);
     };
-  }, []);
+  }, [session?.user]);
 
   const guardarConfig = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -343,7 +350,7 @@ export default function Home() {
         <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl p-6 md:p-8">
+      <div className="relative mx-auto max-w-7xl px-3 py-4 sm:p-6 md:p-8">
         {configMode && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-200">
@@ -390,7 +397,7 @@ export default function Home() {
           </div>
         )}
 
-        <header className="relative mb-6 overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-6 shadow-xl backdrop-blur-md md:p-8">
+        <header className="relative mb-6 overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-4 shadow-xl backdrop-blur-md sm:p-6 md:p-8">
           <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-bl from-cyan-500/20 via-fuchsia-500/10 to-emerald-500/20" />
           <div className="relative">
             {editando ? (
@@ -409,10 +416,10 @@ export default function Home() {
               <input
                 value={config.titulo}
                 onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
-                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-3xl font-black text-white"
+                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-2xl font-black text-white sm:text-3xl"
               />
             ) : (
-              <h1 className="mt-3 text-4xl font-black leading-tight md:text-5xl">
+              <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
                 {config.titulo}
               </h1>
             )}
@@ -511,28 +518,28 @@ export default function Home() {
           })}
         </section>
 
-        <section className="mt-6 rounded-3xl border border-cyan-300/25 bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-cyan-950/40 p-6 shadow-2xl">
+        <section className="mt-6 rounded-3xl border border-cyan-300/25 bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-cyan-950/40 p-4 shadow-2xl sm:p-6">
           <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
                 Mesa operativa
               </p>
-              <h3 className="mt-1 text-2xl font-black text-white">Alumnos y planes activos</h3>
+              <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">Alumnos y planes activos</h3>
               <p className="mt-1 text-sm text-slate-300">
                 Vista rapida con foco de trabajo diario, al estilo CRM operativo.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
               <Link
                 href="/clientes"
-                className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+                className="w-full rounded-xl bg-cyan-400 px-4 py-2 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300 sm:w-auto"
               >
                 Crear cliente
               </Link>
               <Link
                 href="/sesiones"
-                className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="w-full rounded-xl border border-white/30 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
               >
                 Gestionar sesiones
               </Link>
@@ -542,19 +549,19 @@ export default function Home() {
           <div className="grid gap-3 md:grid-cols-4">
             <div className="rounded-2xl border border-emerald-300/35 bg-emerald-500/15 p-4">
               <p className="text-xs uppercase tracking-wide text-emerald-100">Clientes activos</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalAlumnos}</p>
+              <p className="mt-1 text-2xl font-black text-white sm:text-3xl">{operativoKpis.totalAlumnos}</p>
             </div>
             <div className="rounded-2xl border border-blue-300/35 bg-blue-500/15 p-4">
               <p className="text-xs uppercase tracking-wide text-blue-100">Con plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.conPlan}</p>
+              <p className="mt-1 text-2xl font-black text-white sm:text-3xl">{operativoKpis.conPlan}</p>
             </div>
             <div className="rounded-2xl border border-rose-300/35 bg-rose-500/15 p-4">
               <p className="text-xs uppercase tracking-wide text-rose-100">Sin plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.sinPlan}</p>
+              <p className="mt-1 text-2xl font-black text-white sm:text-3xl">{operativoKpis.sinPlan}</p>
             </div>
             <div className="rounded-2xl border border-violet-300/35 bg-violet-500/15 p-4">
               <p className="text-xs uppercase tracking-wide text-violet-100">Prescripciones</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalPrescripciones}</p>
+              <p className="mt-1 text-2xl font-black text-white sm:text-3xl">{operativoKpis.totalPrescripciones}</p>
             </div>
           </div>
 
@@ -637,8 +644,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-4 shadow-lg backdrop-blur-md sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-xl font-black">Acceso rapido por categorias</h3>
             <Link
               href="/categorias"
@@ -679,7 +686,7 @@ export default function Home() {
 
         <section className="mt-6 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-4 shadow-lg backdrop-blur-md sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {editando ? (
                   <input
@@ -764,7 +771,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-b from-amber-500/20 to-orange-500/10 p-6 shadow-lg">
+          <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-b from-amber-500/20 to-orange-500/10 p-4 shadow-lg sm:p-6">
             <div className="mb-3 flex items-center justify-between gap-2">
               <h3 className="text-lg font-black text-amber-100">Alertas</h3>
               {editando && (
@@ -810,8 +817,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-4 shadow-lg backdrop-blur-md sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-xl font-black">Modulos y accesos</h3>
             {editando && (
               <button

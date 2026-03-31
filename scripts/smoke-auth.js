@@ -15,7 +15,19 @@ async function testRegister(email, password) {
   const response = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({
+      nombre: 'Smoke',
+      apellido: 'Auth',
+      fechaNacimiento: '1996-01-15',
+      telefono: '+5491112345678',
+      email,
+      password,
+      anamnesis: {
+        antecedentesMedicos: 'Sin patologias reportadas',
+        lesionesPrevias: 'Sin lesiones recientes',
+        objetivoPrincipal: 'Mejorar condicion fisica general',
+      },
+    }),
   });
 
   const data = await response.json();

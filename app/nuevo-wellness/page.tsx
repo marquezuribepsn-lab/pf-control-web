@@ -40,9 +40,9 @@ export default function NuevoWellnessPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
+    <main className="mx-auto max-w-4xl px-3 py-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Nuevo wellness</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Nuevo wellness</h1>
         <p className="text-sm text-neutral-600">
           Carga diaria de bienestar, fatiga, dolor y disponibilidad.
         </p>
@@ -50,7 +50,7 @@ export default function NuevoWellnessPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl bg-white p-6 shadow-sm"
+        className="rounded-2xl bg-white p-4 shadow-sm sm:p-6"
       >
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
@@ -129,7 +129,7 @@ export default function NuevoWellnessPage() {
         <div className="mt-6 flex justify-end">
           <button
             type="submit"
-            className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
+            className="w-full rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 sm:w-auto"
           >
             Guardar wellness
           </button>

@@ -56,24 +56,24 @@ export default function EquiposPage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Equipos</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Equipos</h1>
           <p className="text-sm text-neutral-600">
             Gestión de equipos por categoría y temporada.
           </p>
         </div>
         <button
           onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
         >
           Nuevo Equipo
         </button>
       </div>
 
       {mostrarFormulario && (
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
           <h2 className="mb-4 text-xl font-semibold">
             {editandoEquipo ? "Editar Equipo" : "Nuevo Equipo"}
           </h2>
@@ -131,7 +131,7 @@ export default function EquiposPage() {
                 rows={3}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -158,7 +158,7 @@ export default function EquiposPage() {
         {equiposConJugadoras.map((equipo) => (
           <div
             key={equipo.id}
-            className="rounded-2xl bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-4 shadow-sm sm:p-5"
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex-1">

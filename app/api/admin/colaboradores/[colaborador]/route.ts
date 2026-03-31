@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { sendColaboradorCredentials } from '@/lib/email';
+import { isProtectedAdminEmail, isTestAccountEmail } from '@/lib/operationalUsers';
+import { auth } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -15,6 +17,11 @@ async function logAccion(colaboradorId: string, accion: string, detalles: any) {
 }
 
 export async function GET(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const session = await auth();
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
+  }
+
   const params = await context.params;
   const colaborador = await prisma.user.findUnique({
     where: { id: params.colaborador },
@@ -24,7 +31,16 @@ export async function GET(req: NextRequest, context: { params: Promise<{ colabor
       },
     },
   });
+  if (colaborador && isTestAccountEmail(colaborador.email)) {
+    return NextResponse.json({ colaborador: null }, { status: 404 });
+  }
   if (!colaborador) return NextResponse.json({ colaborador: null }, { status: 404 });
+  if (isProtectedAdminEmail(colaborador.email) || colaborador.role === 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'Cuenta protegida' }, { status: 403 });
+  }
+  if (colaborador.role !== 'COLABORADOR') {
+    return NextResponse.json({ success: false, error: 'El usuario no es colaborador' }, { status: 400 });
+  }
   // Obtener historial
   const historial = await prisma.syncEntry.findMany({
     where: {
@@ -41,6 +57,11 @@ export async function GET(req: NextRequest, context: { params: Promise<{ colabor
 }
 
 export async function PUT(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const session = await auth();
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
+  }
+
   const params = await context.params;
   const input = await req.json();
   try {
@@ -48,11 +69,21 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ colabor
     if (!existing) {
       return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
     }
+    if (isProtectedAdminEmail(existing.email) || existing.role === 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Cuenta protegida' }, { status: 403 });
+    }
+    if (existing.role !== 'COLABORADOR') {
+      return NextResponse.json({ success: false, error: 'El usuario no es colaborador' }, { status: 400 });
+    }
 
     const data = {
       ...input,
       email: typeof input.email === 'string' ? input.email.trim().toLowerCase() : input.email,
     };
+
+    if (typeof data.email === 'string' && isProtectedAdminEmail(data.email)) {
+      return NextResponse.json({ success: false, error: 'Email reservado del administrador principal' }, { status: 403 });
+    }
 
     const colaborador = await prisma.user.update({
       where: { id: params.colaborador },
@@ -70,11 +101,22 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ colabor
 }
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ colaborador: string }> }) {
+  const session = await auth();
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
+  }
+
   const params = await context.params;
   try {
     const existing = await prisma.user.findUnique({ where: { id: params.colaborador } });
     if (!existing) {
       return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
+    }
+    if (isProtectedAdminEmail(existing.email) || existing.role === 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Cuenta protegida' }, { status: 403 });
+    }
+    if (existing.role !== 'COLABORADOR') {
+      return NextResponse.json({ success: false, error: 'El usuario no es colaborador' }, { status: 400 });
     }
 
     // Suspender en vez de borrar

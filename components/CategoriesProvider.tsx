@@ -3,9 +3,10 @@
 import {
   createContext,
   useContext,
+  useEffect,
 } from "react";
 import { categoriasIniciales, type Categoria } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type CategoriesContextType = {
   categorias: Categoria[];
@@ -19,6 +20,7 @@ const CategoriesContext = createContext<CategoriesContextType | undefined>(
 );
 
 const STORAGE_KEY = "pf-control-categorias";
+const NUTRITION_CATEGORY_NAME = "Nutricion";
 
 export default function CategoriesProvider({
   children,
@@ -30,11 +32,26 @@ export default function CategoriesProvider({
     legacyLocalStorageKey: STORAGE_KEY,
   });
 
+  useEffect(() => {
+    const hasNutrition = categorias.some(
+      (categoria) => categoria.nombre.trim().toLowerCase() === NUTRITION_CATEGORY_NAME.toLowerCase()
+    );
+
+    if (hasNutrition) {
+      return;
+    }
+
+    markManualSaveIntent(STORAGE_KEY);
+    setCategorias((prev) => [...prev, { nombre: NUTRITION_CATEGORY_NAME, habilitada: true }]);
+  }, [categorias, setCategorias]);
+
   function agregarCategoria(categoria: Categoria) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) => [...prev, categoria]);
   }
 
   function toggleCategoria(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) =>
       prev.map((cat) =>
         cat.nombre === nombre ? { ...cat, habilitada: !cat.habilitada } : cat
@@ -43,6 +60,7 @@ export default function CategoriesProvider({
   }
 
   function eliminarCategoria(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) => prev.filter((cat) => cat.nombre !== nombre));
   }
 

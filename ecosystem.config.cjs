@@ -1,3 +1,44 @@
+const fs = require("node:fs");
+const path = require("node:path");
+
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+
+  const env = {};
+  const text = fs.readFileSync(filePath, "utf8");
+
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const index = line.indexOf("=");
+    if (index <= 0) continue;
+
+    let key = line.slice(0, index).trim();
+    const value = line.slice(index + 1).trim();
+
+    if (key.startsWith("export ")) {
+      key = key.slice("export ".length).trim();
+    }
+
+    if (!key) continue;
+
+    env[key] = value;
+  }
+
+  return env;
+}
+
+const fileEnv = loadEnvFile(path.join(__dirname, ".env.production"));
+const dbEnv = loadEnvFile(path.join(__dirname, ".db.env"));
+const runtimeEnv = {
+  ...fileEnv,
+  ...dbEnv,
+  ...process.env,
+};
+
 module.exports = {
   apps: [
     {
@@ -8,9 +49,9 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3000,
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL || "https://pf-control.com",
-        NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-        DATABASE_URL: process.env.DATABASE_URL,
+        NEXTAUTH_URL: runtimeEnv.NEXTAUTH_URL || "https://pf-control.com",
+        NEXTAUTH_SECRET: runtimeEnv.NEXTAUTH_SECRET,
+        DATABASE_URL: runtimeEnv.DATABASE_URL,
         SYNC_STORE_PATH: "/root/pf-control-web-storage/sync-store.json",
       },
     },

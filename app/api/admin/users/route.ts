@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { filterOperationalUsers, isTestAccountEmail } from '@/lib/operationalUsers';
+import {
+  filterOperationalUsers,
+  isProtectedAdminEmail,
+  isTestAccountEmail,
+} from '@/lib/operationalUsers';
 
 const db = prisma as any;
 
@@ -20,6 +24,7 @@ export async function GET(req: NextRequest) {
       id: true,
       email: true,
       role: true,
+      estado: true,
       emailVerified: true,
       createdAt: true,
     },
@@ -49,6 +54,22 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const targetUser = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    if (isProtectedAdminEmail(targetUser.email)) {
+      return NextResponse.json(
+        { message: 'La cuenta de administrador principal esta protegida y no se puede modificar' },
+        { status: 403 }
+      );
+    }
+
     const user = await db.user.update({
       where: { id: userId },
       data: { role },
@@ -56,6 +77,7 @@ export async function PUT(req: NextRequest) {
         id: true,
         email: true,
         role: true,
+        estado: true,
         emailVerified: true,
         createdAt: true,
       },
@@ -88,6 +110,22 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { message: 'userId requerido' },
         { status: 400 }
+      );
+    }
+
+    const targetUser = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    if (isProtectedAdminEmail(targetUser.email)) {
+      return NextResponse.json(
+        { message: 'La cuenta de administrador principal esta protegida y no se puede eliminar' },
+        { status: 403 }
       );
     }
 
@@ -149,6 +187,7 @@ export async function POST(req: NextRequest) {
         id: true,
         email: true,
         role: true,
+        estado: true,
         emailVerified: true,
         createdAt: true,
       },

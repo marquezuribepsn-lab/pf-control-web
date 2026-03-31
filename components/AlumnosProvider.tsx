@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { alumnosIniciales, type Alumno } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type AlumnosContextType = {
   alumnos: Alumno[];
@@ -22,6 +22,7 @@ export default function AlumnosProvider({ children }: { children: React.ReactNod
   });
 
   function agregarAlumno(alumno: Alumno) {
+    markManualSaveIntent(STORAGE_KEY);
     setAlumnos((prev) => {
       const base = Array.isArray(prev) ? prev : [];
       return [alumno, ...base];
@@ -29,6 +30,7 @@ export default function AlumnosProvider({ children }: { children: React.ReactNod
   }
 
   function editarAlumno(nombreActual: string, alumnoActualizado: Partial<Alumno>) {
+    markManualSaveIntent(STORAGE_KEY);
     setAlumnos((prev) =>
       prev.map((alumno) =>
         alumno.nombre === nombreActual ? { ...alumno, ...alumnoActualizado } : alumno
@@ -37,6 +39,7 @@ export default function AlumnosProvider({ children }: { children: React.ReactNod
   }
 
   function eliminarAlumno(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setAlumnos((prev) => prev.filter((alumno) => alumno.nombre !== nombre));
   }
 

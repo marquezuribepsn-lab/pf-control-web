@@ -3,6 +3,7 @@ const requireAdminLogin = process.env.SMOKE_REQUIRE_ADMIN_LOGIN !== '0';
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
 const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
 const testPhone = String(process.env.SMOKE_WHATSAPP_TEST_PHONE || process.env.WHATSAPP_TO || '').trim();
+const requireSend = String(process.env.SMOKE_REQUIRE_WHATSAPP_SEND || '0').trim() === '1';
 
 function toCookieHeader(setCookieList) {
   return (Array.isArray(setCookieList) ? setCookieList : [])
@@ -77,6 +78,7 @@ async function main() {
   const summary = {
     baseUrl,
     requireAdminLogin,
+    requireSend,
     checks: [],
     failed: [],
   };
@@ -185,11 +187,13 @@ async function main() {
   } else {
     summary.checks.push({
       name: 'send',
-      pass: true,
-      skipped: true,
+      pass: !requireSend,
+      skipped: !requireSend,
       detail: {
-        skipped: true,
-        reason: 'SMOKE_WHATSAPP_TEST_PHONE/WHATSAPP_TO no configurado',
+        skipped: !requireSend,
+        reason: requireSend
+          ? 'SMOKE_REQUIRE_WHATSAPP_SEND=1 pero SMOKE_WHATSAPP_TEST_PHONE/WHATSAPP_TO no configurado'
+          : 'SMOKE_WHATSAPP_TEST_PHONE/WHATSAPP_TO no configurado',
       },
     });
   }

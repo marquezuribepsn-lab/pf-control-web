@@ -175,24 +175,24 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Sesiones - {equipo.nombre}</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Sesiones - {equipo.nombre}</h1>
           <p className="text-sm text-neutral-600">
             Planificación detallada de sesiones de entrenamiento
           </p>
         </div>
         <button
           onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
         >
           Nueva Sesión
         </button>
       </div>
 
       {/* Información del equipo */}
-      <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Información del Equipo</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -217,7 +217,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       </div>
 
       {mostrarFormulario && (
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
           <h2 className="mb-4 text-xl font-semibold">Nueva Sesión</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -274,7 +274,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -299,7 +299,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       {/* Sesiones del equipo */}
       <div className="space-y-6">
         {sesionesEquipo.map((sesion) => (
-          <div key={sesion.id} className="rounded-2xl bg-white p-6 shadow-sm">
+          <div key={sesion.id} className="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <h3 className="text-2xl font-bold">{sesion.titulo}</h3>

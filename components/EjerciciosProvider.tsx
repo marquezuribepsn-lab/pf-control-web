@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react";
 import { type Ejercicio } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type EjerciciosContextType = {
   ejercicios: Ejercicio[];
@@ -235,6 +235,7 @@ export default function EjerciciosProvider({
   });
 
   function agregarEjercicio(ejercicio: Omit<Ejercicio, 'id'>): string {
+    markManualSaveIntent(STORAGE_KEY);
     const nuevoId = Date.now().toString();
     const nuevoEjercicio: Ejercicio = {
       ...ejercicio,
@@ -245,6 +246,7 @@ export default function EjerciciosProvider({
   }
 
   function editarEjercicio(id: string, ejercicioActualizado: Partial<Ejercicio>) {
+    markManualSaveIntent(STORAGE_KEY);
     setEjercicios((prev) =>
       prev.map((ejercicio) =>
         ejercicio.id === id ? { ...ejercicio, ...ejercicioActualizado } : ejercicio
@@ -253,6 +255,7 @@ export default function EjerciciosProvider({
   }
 
   function eliminarEjercicio(id: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setEjercicios((prev) => prev.filter((ejercicio) => ejercicio.id !== id));
   }
 

@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react";
 import { type Jugadora } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 export type Equipo = {
   id: string;
@@ -65,6 +65,7 @@ export default function EquiposProvider({
   });
 
   function agregarEquipo(equipo: Omit<Equipo, 'id'>) {
+    markManualSaveIntent(STORAGE_KEY);
     const nuevoEquipo: Equipo = {
       ...equipo,
       id: Date.now().toString(),
@@ -73,6 +74,7 @@ export default function EquiposProvider({
   }
 
   function editarEquipo(id: string, equipoActualizado: Partial<Equipo>) {
+    markManualSaveIntent(STORAGE_KEY);
     setEquipos((prev) =>
       prev.map((equipo) =>
         equipo.id === id ? { ...equipo, ...equipoActualizado } : equipo
@@ -81,6 +83,7 @@ export default function EquiposProvider({
   }
 
   function eliminarEquipo(id: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setEquipos((prev) => prev.filter((equipo) => equipo.id !== id));
   }
 

@@ -1,7 +1,38 @@
 import { NextResponse } from "next/server";
 import { notifySyncChanged } from "@/lib/pushNotifications";
 import { getSyncValue, isValidSyncKey, setSyncValue } from "@/lib/syncStore";
+import { sendAdminAlumnoRegisteredEmail } from "@/lib/email";
 import { sendWhatsAppAlertForSyncChange } from "@/lib/whatsappAlerts";
+
+function asRecordArray(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item) => typeof item === "object" && item !== null) as Record<string, unknown>[];
+}
+
+function alumnoFingerprint(item: Record<string, unknown>) {
+  const nombre = String(item.nombre || "").trim().toLowerCase();
+  const fechaNacimiento = String(item.fechaNacimiento || "").trim().toLowerCase();
+  return `${nombre}::${fechaNacimiento}`;
+}
+
+async function notifyAdminForNewAlumnos(previousValue: unknown, nextValue: unknown) {
+  const previous = asRecordArray(previousValue);
+  const next = asRecordArray(nextValue);
+
+  if (next.length <= previous.length) {
+    return;
+  }
+
+  const previousSet = new Set(previous.map((item) => alumnoFingerprint(item)));
+  const nuevos = next.filter((item) => !previousSet.has(alumnoFingerprint(item)));
+
+  for (const alumno of nuevos) {
+    await sendAdminAlumnoRegisteredEmail(alumno);
+  }
+}
 
 export async function GET(
   _req: Request,
@@ -44,7 +75,13 @@ export async function PUT(
       });
 
       await sendWhatsAppAlertForSyncChange(key, previousValue, value).catch(() => {
-        // do not fail writes if whatsapp delivery fails
+        // do not fail writes if WhatsApp delivery fails
+      });
+    }
+
+    if (key === "pf-control-alumnos") {
+      await notifyAdminForNewAlumnos(previousValue, value).catch(() => {
+        // no bloquear guardado por fallos de mail al admin
       });
     }
 

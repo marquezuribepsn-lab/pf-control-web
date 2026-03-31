@@ -273,24 +273,24 @@ export default function EjerciciosPage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Ejercicios</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Ejercicios</h1>
           <p className="text-sm text-neutral-600">
             Gestión de ejercicios disponibles para sesiones de entrenamiento.
           </p>
         </div>
         <button
           onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
         >
           Nuevo Ejercicio
         </button>
       </div>
 
       {mostrarFormulario && (
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
           <h2 className="mb-6 text-2xl font-bold text-center">
             {editandoEjercicio ? "Editar Ejercicio" : "Crear Nuevo Ejercicio"}
           </h2>

@@ -1,8 +1,22 @@
 "use client";
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+
+type ColaboradorForm = {
+  email: string;
+  nombreCompleto: string;
+  edad: string;
+  fechaNacimiento: string;
+  altura: string;
+  telefono: string;
+  direccion: string;
+  puedeEditarRegistros: boolean;
+  puedeEditarPlanes: boolean;
+  puedeVerTodosAlumnos: boolean;
+  asignaciones: string;
+};
 
 export default function NuevoColaboradorPage() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ColaboradorForm>({
     email: '',
     nombreCompleto: '',
     edad: '',
@@ -19,7 +33,7 @@ export default function NuevoColaboradorPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
@@ -27,23 +41,43 @@ export default function NuevoColaboradorPage() {
     }));
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess(false);
+
+    const edad = Number.parseInt(form.edad, 10);
+    const altura = Number.parseFloat(form.altura);
+    if (!Number.isFinite(edad) || edad <= 0) {
+      setError('La edad debe ser un numero mayor a 0.');
+      setLoading(false);
+      return;
+    }
+    if (!Number.isFinite(altura) || altura <= 0) {
+      setError('La altura debe ser un numero mayor a 0.');
+      setLoading(false);
+      return;
+    }
+
+    const asignaciones = form.asignaciones
+      .split(',')
+      .map((id: string) => id.trim())
+      .filter(Boolean);
+
     try {
       const res = await fetch('/api/admin/colaboradores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          edad: parseInt(form.edad, 10),
-          altura: parseFloat(form.altura),
-          asignaciones: form.asignaciones
-            .split(',')
-            .map((id: string) => id.trim())
-            .filter(Boolean),
+          email: form.email.trim().toLowerCase(),
+          nombreCompleto: form.nombreCompleto.trim(),
+          telefono: form.telefono.trim(),
+          direccion: form.direccion.trim(),
+          edad,
+          altura,
+          asignaciones,
         }),
       });
       const data = await res.json();
@@ -56,13 +90,13 @@ export default function NuevoColaboradorPage() {
   };
 
   return (
-    <main className="mx-auto max-w-4xl p-6 text-slate-100">
+    <main className="mx-auto max-w-4xl px-3 py-4 text-slate-100 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-black tracking-tight">Nuevo colaborador</h1>
+        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Nuevo colaborador</h1>
         <p className="text-sm text-slate-300">Crea la cuenta, define permisos y envía credenciales automáticamente.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-white/10 bg-slate-900/70 p-6">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Email">
             <input name="email" type="email" placeholder="email@dominio.com" value={form.email} onChange={handleChange} required className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50" />
@@ -127,7 +161,7 @@ function Checkbox({
 }: {
   name: string;
   checked: boolean;
-  onChange: (e: any) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   label: string;
 }) {
   return (

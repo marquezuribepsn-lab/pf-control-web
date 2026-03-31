@@ -2,27 +2,40 @@ import { randomBytes } from 'crypto';
 import nodemailer from 'nodemailer';
 import { prisma } from './prisma';
 
-const db = prisma as any;
+const db = prisma;
 
-const hasBrevoApiConfig = Boolean(process.env.BREVO_API_KEY && (process.env.BREVO_SENDER_EMAIL || process.env.MAIL_FROM));
-const hasSmtpConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-const hasMailtrapConfig = Boolean(process.env.MAILTRAP_HOST && process.env.MAILTRAP_USER && process.env.MAILTRAP_PASS);
-const hasGmailConfig = Boolean(process.env.GMAIL_USER && process.env.GMAIL_PASSWORD);
+function envValue(name: string) {
+  return String(process.env[name] || '').trim();
+}
+
+const brevoApiKey = envValue('BREVO_API_KEY');
+const brevoSenderEmail = envValue('BREVO_SENDER_EMAIL');
+const mailFrom = envValue('MAIL_FROM');
+const smtpHost = envValue('SMTP_HOST');
+const smtpUser = envValue('SMTP_USER');
+const smtpPass = envValue('SMTP_PASS');
+const mailtrapHost = envValue('MAILTRAP_HOST');
+const mailtrapUser = envValue('MAILTRAP_USER');
+const mailtrapPass = envValue('MAILTRAP_PASS');
+const gmailUser = envValue('GMAIL_USER');
+const gmailPassword = envValue('GMAIL_PASSWORD');
+
+const hasBrevoApiConfig = Boolean(brevoApiKey && (brevoSenderEmail || mailFrom));
+const hasSmtpConfig = Boolean(smtpHost && smtpUser && smtpPass);
+const hasMailtrapConfig = Boolean(mailtrapHost && mailtrapUser && mailtrapPass);
+const hasGmailConfig = Boolean(gmailUser && gmailPassword);
 
 const isProduction = process.env.NODE_ENV === 'production';
-const activeProvider = hasBrevoApiConfig
-  ? 'brevo'
-  : hasSmtpConfig
-  ? 'smtp'
-  : !isProduction && hasMailtrapConfig
-  ? 'mailtrap'
-  : !isProduction && hasGmailConfig
-  ? 'gmail'
-  : null;
+const providerPriority = [
+  ...(hasBrevoApiConfig ? (['brevo'] as const) : []),
+  ...(hasSmtpConfig ? (['smtp'] as const) : []),
+  ...(!isProduction && hasMailtrapConfig ? (['mailtrap'] as const) : []),
+  ...(hasGmailConfig ? (['gmail'] as const) : []),
+];
 
-const hasMailConfig = Boolean(activeProvider);
+const hasMailConfig = providerPriority.length > 0;
 
-const defaultFromAddress = process.env.BREVO_SENDER_EMAIL || process.env.MAIL_FROM || process.env.SMTP_FROM || process.env.GMAIL_USER || '';
+const defaultFromAddress = brevoSenderEmail || mailFrom || envValue('SMTP_FROM') || gmailUser || '';
 const defaultFromName = process.env.BREVO_SENDER_NAME || 'PF Control';
 const mailAppName = process.env.MAIL_APP_NAME || 'PF Control';
 const mailAppUrl = process.env.NEXTAUTH_URL || 'https://pf-control.com';
@@ -33,32 +46,36 @@ const mailSupportEmail = process.env.MAIL_SUPPORT_EMAIL || defaultFromAddress;
 const mailSendTimeoutMs = Math.max(3000, Math.min(60000, Number(process.env.MAIL_SEND_TIMEOUT_MS) || 15000));
 const mailSendRetries = Math.max(1, Math.min(5, Number(process.env.MAIL_SEND_RETRIES) || 2));
 
-const transporter = activeProvider === 'smtp'
+const smtpTransporter = hasSmtpConfig
   ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: smtpHost,
       port: Number(process.env.SMTP_PORT) || 587,
       secure: process.env.SMTP_SECURE === 'true' || Number(process.env.SMTP_PORT) === 465,
       auth: {
-        user: process.env.SMTP_USER || '',
-        pass: process.env.SMTP_PASS || '',
+        user: smtpUser,
+        pass: smtpPass,
       },
     })
-  : activeProvider === 'mailtrap'
+  : null;
+
+const mailtrapTransporter = !isProduction && hasMailtrapConfig
   ? nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
+      host: mailtrapHost,
       port: Number(process.env.MAILTRAP_PORT) || 587,
       secure: Number(process.env.MAILTRAP_PORT) === 465,
       auth: {
-        user: process.env.MAILTRAP_USER || '',
-        pass: process.env.MAILTRAP_PASS || '',
+        user: mailtrapUser,
+        pass: mailtrapPass,
       },
     })
-  : activeProvider === 'gmail'
+  : null;
+
+const gmailTransporter = hasGmailConfig
   ? nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER || '',
-        pass: process.env.GMAIL_PASSWORD || '',
+        user: gmailUser,
+        pass: gmailPassword,
       },
     })
   : null;
@@ -85,7 +102,36 @@ async function sendMail(options: { to: string; subject: string; html: string }) 
     throw new Error('El asunto del email no puede estar vacio.');
   }
 
-  if (activeProvider === 'brevo') {
+  const sendWithTransporter = async (provider: 'smtp' | 'mailtrap' | 'gmail') => {
+    const transporter =
+      provider === 'smtp'
+        ? smtpTransporter
+        : provider === 'mailtrap'
+        ? mailtrapTransporter
+        : gmailTransporter;
+
+    if (!transporter) {
+      throw new Error(`Proveedor ${provider} no configurado.`);
+    }
+
+    await withRetries(
+      () =>
+        withTimeout(
+          transporter.sendMail({
+            from: defaultFromAddress,
+            to: normalizedTo,
+            subject,
+            html: options.html,
+          }),
+          mailSendTimeoutMs,
+          `sendMail(${provider})`
+        ),
+      mailSendRetries,
+      `sendMail(${provider})`
+    );
+  };
+
+  const sendWithBrevo = async () => {
     await withRetries(async () => {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), mailSendTimeoutMs);
@@ -94,7 +140,7 @@ async function sendMail(options: { to: string; subject: string; html: string }) 
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'api-key': process.env.BREVO_API_KEY || '',
+            'api-key': brevoApiKey,
           },
           body: JSON.stringify({
             sender: {
@@ -116,29 +162,26 @@ async function sendMail(options: { to: string; subject: string; html: string }) 
         clearTimeout(timer);
       }
     }, mailSendRetries, 'sendMail(brevo)');
+  };
 
-    return;
+  let lastError: unknown = null;
+
+  for (const provider of providerPriority) {
+    try {
+      if (provider === 'brevo') {
+        await sendWithBrevo();
+      } else {
+        await sendWithTransporter(provider);
+      }
+
+      return;
+    } catch (error) {
+      lastError = error;
+      console.error(`[mail] Provider ${provider} failed. Trying next fallback if available.`, error);
+    }
   }
 
-  if (!transporter) {
-    throw new Error('No hay proveedor SMTP disponible para enviar correo.');
-  }
-
-  await withRetries(
-    () =>
-      withTimeout(
-        transporter.sendMail({
-          from: defaultFromAddress,
-          to: normalizedTo,
-          subject,
-          html: options.html,
-        }),
-        mailSendTimeoutMs,
-        'sendMail(smtp)'
-      ),
-    mailSendRetries,
-    'sendMail(smtp)'
-  );
+  throw new Error(`No se pudo enviar correo con ningun proveedor disponible: ${String(lastError)}`);
 }
 
 function parseRecipients(raw: string | undefined) {
@@ -343,6 +386,85 @@ export async function sendAdminAlumnoRegisteredEmail(alumnoData: Record<string, 
       sendMail({
         to,
         subject: `Nuevo alumno registrado: ${nombre}`,
+        html,
+      })
+    )
+  );
+}
+
+export async function sendWhatsAppAutomationFailureEmail(payload: {
+  runId?: string;
+  generatedAt?: string;
+  triggeredBy?: string;
+  source?: string;
+  dryRun?: boolean;
+  rulesExecuted?: number;
+  requestedCategoryKey?: string | null;
+  requestedRuleKey?: string | null;
+  totals?: {
+    matched?: number;
+    sent?: number;
+    failed?: number;
+    skippedByWindow?: number;
+  };
+  error?: string | null;
+}) {
+  ensureMailConfigured();
+
+  const recipients = await getAdminNotificationRecipients();
+  if (recipients.length === 0) {
+    return;
+  }
+
+  const generatedAt = payload.generatedAt || new Date().toISOString();
+  const totals = payload.totals || {};
+  const runId = String(payload.runId || `auto-error-${Date.now()}`);
+  const requestedScope = payload.requestedCategoryKey
+    ? `${payload.requestedCategoryKey}${payload.requestedRuleKey ? ` / ${payload.requestedRuleKey}` : ""}`
+    : "todas";
+
+  const rows = [
+    ["Run ID", runId],
+    ["Fecha", generatedAt],
+    ["Disparado por", payload.triggeredBy || "system"],
+    ["Origen", payload.source || "desconocido"],
+    ["Modo", payload.dryRun ? "dry-run" : "run"],
+    ["Scope", requestedScope],
+    ["Reglas ejecutadas", String(payload.rulesExecuted || 0)],
+    ["Matched", String(totals.matched || 0)],
+    ["Enviados", String(totals.sent || 0)],
+    ["Fallidos", String(totals.failed || 0)],
+    ["Fuera de ventana", String(totals.skippedByWindow || 0)],
+  ]
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-weight:700;">${escapeHtml(label)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${escapeHtml(value)}</td></tr>`
+    )
+    .join("");
+
+  const errorBlock = payload.error
+    ? `<p style="margin:0 0 10px;color:#fecaca;"><b>Error:</b> ${escapeHtml(payload.error)}</p>`
+    : "";
+
+  const html = renderEmailLayout({
+    preheader: `Fallo en automatizacion WhatsApp (${runId})`,
+    title: "Alerta de automatizacion WhatsApp",
+    intro: "Se detecto al menos un fallo durante la ejecucion automatica de WhatsApp.",
+    bodyHtml: `
+      ${errorBlock}
+      <table style="border-collapse:collapse;width:100%;max-width:700px;margin-bottom:14px;background:#020617;border:1px solid rgba(148,163,184,0.2);border-radius:10px;overflow:hidden;">${rows}</table>
+      <p style="margin:0;color:#cbd5e1;">Revisa el panel admin para ver detalle por regla y destinatario.</p>
+    `,
+    ctaLabel: "Abrir panel",
+    ctaUrl: `${mailAppUrl}/admin/whatsapp`,
+    footerNote: "Este aviso se genero automaticamente por un fallo de automatizacion.",
+  });
+
+  await Promise.all(
+    recipients.map((to) =>
+      sendMail({
+        to,
+        subject: `Alerta WhatsApp: fallo en corrida (${runId})`,
         html,
       })
     )

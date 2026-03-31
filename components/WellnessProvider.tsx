@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react";
 import { wellnessInicial, type WellnessItem } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type WellnessContextType = {
   wellness: WellnessItem[];
@@ -30,6 +30,7 @@ export default function WellnessProvider({
   });
 
   function agregarWellness(item: WellnessItem) {
+    markManualSaveIntent(STORAGE_KEY);
     setWellness((prev) => {
       const base = Array.isArray(prev) ? prev : [];
       return [item, ...base];

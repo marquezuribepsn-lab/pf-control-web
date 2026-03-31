@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react";
 import { jugadorasIniciales, type Jugadora } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type PlayersContextType = {
   jugadoras: Jugadora[];
@@ -33,6 +33,7 @@ export default function PlayersProvider({
   });
 
   function agregarJugadora(jugadora: Jugadora) {
+    markManualSaveIntent(STORAGE_KEY);
     setJugadoras((prev) => {
       const base = Array.isArray(prev) ? prev : [];
       return [jugadora, ...base];
@@ -40,6 +41,7 @@ export default function PlayersProvider({
   }
 
   function editarJugadora(nombreActual: string, jugadoraActualizada: Partial<Jugadora>) {
+    markManualSaveIntent(STORAGE_KEY);
     setJugadoras((prev) =>
       prev.map((jugadora) =>
         jugadora.nombre === nombreActual
@@ -50,10 +52,12 @@ export default function PlayersProvider({
   }
 
   function eliminarJugadora(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setJugadoras((prev) => prev.filter((jugadora) => jugadora.nombre !== nombre));
   }
 
   function cambiarCategoriaJugadora(nombre: string, nuevaCategoria: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setJugadoras((prev) =>
       prev.map((jugadora) =>
         jugadora.nombre === nombre

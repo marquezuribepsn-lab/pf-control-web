@@ -1,3 +1,4 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Output is handled without Write-Host')]
 param(
   [string]$Server = "root@72.60.55.235",
   [string]$RemoteDir = "/root/pf-control-web",
@@ -42,27 +43,27 @@ $dirsToDelete = "app components lib scripts data public"
 
 $pruneFrom = $BackupRetention + 1
 $remoteBackupAndPrep = "set -e; mkdir -p $RemoteBackupsDir; if [ -f $RemoteDir/package.json ]; then ts=`$(date +%Y%m%d-%H%M%S); backupDir=$RemoteBackupsDir/pf-control-web-`$ts; mkdir -p `$backupDir; cp -a $RemoteDir/. `$backupDir/; rm -rf `$backupDir/node_modules `$backupDir/.next `$backupDir/.turbo `$backupDir/.cache `$backupDir/.git; fi; ls -1dt $RemoteBackupsDir/pf-control-web-* 2>/dev/null | tail -n +$pruneFrom | xargs -r rm -rf; mkdir -p $RemoteDir; cd $RemoteDir; rm -rf $dirsToDelete; rm -f $filesToDelete"
-$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; npm run smoke:mail:guard; SMOKE_REQUIRE_ADMIN_LOGIN=1 npm run smoke:auth:mail:all; npm run smoke:admin:usuarios:redirect; pm2 save"
+$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; SMOKE_RUN_DELIVERY=true SMOKE_RUN_FORGOT_PASSWORD=true npm run smoke:mail:guard; SMOKE_REQUIRE_ADMIN_LOGIN=1 npm run smoke:auth:mail:all; npm run smoke:admin:usuarios:redirect; SMOKE_WHATSAPP_TEST_PHONE=`$(grep '^SMOKE_WHATSAPP_TEST_PHONE=' .env.production | tail -n1 | cut -d= -f2-); if [ -z `$SMOKE_WHATSAPP_TEST_PHONE ]; then SMOKE_WHATSAPP_TEST_PHONE=`$(grep '^WHATSAPP_TO=' .env.production | tail -n1 | cut -d= -f2-); fi; if [ -n `$SMOKE_WHATSAPP_TEST_PHONE ]; then SMOKE_REQUIRE_WHATSAPP_SEND=1 SMOKE_WHATSAPP_TEST_PHONE=`$SMOKE_WHATSAPP_TEST_PHONE npm run smoke:whatsapp; else npm run smoke:whatsapp; fi; SMOKE_STRESS_LOOPS=2 npm run stress:platform:probe; pm2 save"
 
-Write-Host "[1/4] Creando backup y preparando carpeta remota..."
+Write-Output "[1/4] Creando backup y preparando carpeta remota..."
 ssh $Server $remoteBackupAndPrep
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo el backup/preparacion remota por SSH."
 }
 
 
-Write-Host "[2/4] Subiendo archivos al VPS..."
+Write-Output "[2/4] Subiendo archivos al VPS..."
 scp -r $fullPaths "$Server`:$RemoteDir/"
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo scp al subir archivos al VPS."
 }
 
-Write-Host "[3/4] Ejecutando install, build y PM2 en el VPS..."
+Write-Output "[3/4] Ejecutando install, build y PM2 en el VPS..."
 ssh $Server $remoteBuild
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo la ejecucion remota por SSH."
 }
 
-Write-Host "[4/4] Verificacion final completada."
+Write-Output "[4/4] Verificacion final completada."
 
-Write-Host "Deploy completado."
+Write-Output "Deploy completado."

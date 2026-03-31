@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCategories } from "../../components/CategoriesProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSessions } from "../../components/SessionsProvider";
-import { useSharedState } from "../../components/useSharedState";
+import { markManualSaveIntent, useSharedState } from "../../components/useSharedState";
 
 type JornadaEntrenamiento = {
   id: string;
@@ -293,35 +293,47 @@ export default function AsistenciasPage() {
     };
   }, [jugadorasDisponibles, registros, selectedJornada]);
 
+  const guardarCambiosAsistencias = () => {
+    markManualSaveIntent(JORNADAS_KEY);
+    markManualSaveIntent(REGISTROS_KEY);
+  };
+
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+    <main className="mx-auto max-w-7xl px-3 py-4 text-slate-100 sm:p-6">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
             Categoria operativa
           </p>
-          <h1 className="text-3xl font-black">Asistencias</h1>
+          <h1 className="text-2xl font-black sm:text-3xl">Asistencias</h1>
           <p className="mt-1 text-sm text-slate-300">
             Jornadas por dia y hora, con control de presentes y ausentes por categoria.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <button
+            type="button"
+            onClick={guardarCambiosAsistencias}
+            className="w-full rounded-xl border border-emerald-300/45 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10 sm:w-auto"
+          >
+            Guardar cambios
+          </button>
           <Link
             href="/sesiones"
-            className="rounded-xl border border-white/25 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10"
+            className="w-full rounded-xl border border-white/25 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 sm:w-auto"
           >
             Ver sesiones
           </Link>
           <Link
             href="/plantel"
-            className="rounded-xl bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
+            className="w-full rounded-xl bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300 sm:w-auto"
           >
             Ir a plantel
           </Link>
         </div>
       </div>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
         <h2 className="text-lg font-bold text-white">Nueva jornada</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div>

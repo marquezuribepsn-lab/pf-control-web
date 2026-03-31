@@ -9,15 +9,15 @@ export default function PlantelPage() {
   const [nuevoNombre, setNuevoNombre] = useState("");
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Plantel</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Plantel</h1>
         <p className="text-sm text-neutral-600">
           Vista general de jugadoras y estado actual.
         </p>
       </div>
 
-      <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-5">
         <p className="text-sm text-neutral-500">Total jugadoras</p>
         <h2 className="mt-2 text-2xl font-semibold">{jugadoras.length}</h2>
       </div>
@@ -26,7 +26,7 @@ export default function PlantelPage() {
         {jugadoras.map((jugadora) => (
           <div
             key={jugadora.nombre}
-            className="rounded-2xl bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-4 shadow-sm sm:p-5"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

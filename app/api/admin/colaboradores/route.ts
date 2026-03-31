@@ -3,10 +3,17 @@ import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { sendColaboradorCredentials } from '@/lib/email';
+import { filterOperationalUsers, isProtectedAdminEmail } from '@/lib/operationalUsers';
+import { auth } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
+  }
+
   const data = await req.json();
   const {
     email,
@@ -26,6 +33,13 @@ export async function POST(req: NextRequest) {
   const cleanedAsignaciones = Array.isArray(asignaciones)
     ? asignaciones.map((id: string) => id.trim()).filter(Boolean)
     : [];
+
+  if (isProtectedAdminEmail(normalizedEmail)) {
+    return NextResponse.json(
+      { success: false, error: 'Email reservado para el administrador principal' },
+      { status: 403 }
+    );
+  }
 
   if (!normalizedEmail || !nombreCompleto) {
     return NextResponse.json({ success: false, error: 'Email y nombre completo son requeridos' }, { status: 400 });
@@ -86,6 +100,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const session = await auth();
+  if (!session || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
+  }
+
   // Listar colaboradores
   const colaboradores = await prisma.user.findMany({
     where: {
@@ -100,5 +119,5 @@ export async function GET() {
       },
     },
   });
-  return NextResponse.json({ colaboradores });
+  return NextResponse.json({ colaboradores: filterOperationalUsers(colaboradores) });
 }

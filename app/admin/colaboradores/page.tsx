@@ -7,7 +7,7 @@ function ColaboradoresList() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-6xl p-6 text-slate-100">
+      <main className="mx-auto max-w-6xl px-3 py-4 text-slate-100 sm:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-10 w-72 rounded-xl bg-slate-800" />
           <div className="h-28 rounded-2xl bg-slate-800" />
@@ -21,10 +21,10 @@ function ColaboradoresList() {
   const suspendidos = colaboradores.filter((c: any) => c.estado === 'suspendido').length;
 
   return (
-    <main className="mx-auto max-w-6xl p-6 text-slate-100">
+    <main className="mx-auto max-w-6xl px-3 py-4 text-slate-100 sm:p-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Admin colaboradores</h1>
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Admin colaboradores</h1>
           <p className="text-sm text-slate-300">Gestiona permisos, estado y asignaciones del equipo.</p>
         </div>
 
@@ -49,7 +49,7 @@ function ColaboradoresList() {
       )}
 
       {colaboradores.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300 sm:p-6">
           Aun no hay colaboradores creados.
         </div>
       ) : (
@@ -110,7 +110,7 @@ function StatCard({ title, value, tone }: { title: string; value: number; tone: 
   return (
     <div className={`rounded-2xl border border-white/10 bg-gradient-to-r ${tone} p-4`}>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">{title}</p>
-      <p className="mt-1 text-3xl font-black text-white">{value}</p>
+      <p className="mt-1 text-2xl font-black text-white sm:text-3xl">{value}</p>
     </div>
   );
 }

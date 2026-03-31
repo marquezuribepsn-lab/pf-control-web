@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react";
 import { sesionesIniciales, type Sesion } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type SessionsContextType = {
   sesiones: Sesion[];
@@ -32,6 +32,7 @@ export default function SessionsProvider({
   });
 
   function agregarSesion(sesion: Omit<Sesion, 'id'>) {
+    markManualSaveIntent(STORAGE_KEY);
     const nuevaSesion: Sesion = {
       ...sesion,
       id: Date.now().toString(),
@@ -40,6 +41,7 @@ export default function SessionsProvider({
   }
 
   function editarSesion(id: string, sesionActualizada: Partial<Sesion>) {
+    markManualSaveIntent(STORAGE_KEY);
     setSesiones((prev) =>
       prev.map((sesion) =>
         sesion.id === id ? { ...sesion, ...sesionActualizada } : sesion
@@ -48,6 +50,7 @@ export default function SessionsProvider({
   }
 
   function eliminarSesion(id: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setSesiones((prev) => prev.filter((sesion) => sesion.id !== id));
   }
 

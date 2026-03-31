@@ -1,8 +1,10 @@
 "use client";
 
-import { useContext, use } from "react";
+import { useContext } from "react";
+import { useParams } from "next/navigation";
 import { PlayersContext } from "../../../components/PlayersProvider";
 import { type Jugadora } from "../../../data/mockData";
+import NutritionPlanner from "./NutritionPlanner";
 
 const CATEGORY_GRADIENTS = [
   "from-cyan-500 to-blue-600",
@@ -29,20 +31,33 @@ const getCategoryVisual = (categoria: string) => {
   };
 };
 
-export default function CategoriaPage({ params }: { params: Promise<{ categoria: string }> }) {
+export default function CategoriaPage() {
+  const params = useParams<{ categoria: string }>();
   const { jugadoras } = useContext(PlayersContext)!;
-  const resolvedParams = use(params);
-  const categoria = decodeURIComponent(resolvedParams.categoria);
+  const rawCategoria = String(params?.categoria || "");
+  const categoria = (() => {
+    try {
+      return decodeURIComponent(rawCategoria);
+    } catch {
+      return rawCategoria;
+    }
+  })();
   const visual = getCategoryVisual(categoria);
+  const normalizedCategoria = categoria
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const isNutritionCategory = normalizedCategoria === "nutricion";
 
   const jugadorasEnCategoria = jugadoras.filter(
     (jugadora: Jugadora) => jugadora.categoria === categoria
   );
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <main className={isNutritionCategory ? "mx-auto max-w-[1500px] px-3 py-4 sm:p-6" : "mx-auto max-w-7xl px-3 py-4 sm:p-6"}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl font-bold sm:text-3xl">
           <span className="mr-2">{visual.icon}</span>
           Categoría: {categoria}
         </h1>
@@ -51,33 +66,37 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <div className={`mb-4 h-2 rounded-full bg-gradient-to-r ${visual.tone}`} />
-        <h2 className="text-xl font-semibold mb-4">Jugadoras ({jugadorasEnCategoria.length})</h2>
-        {jugadorasEnCategoria.length === 0 ? (
-          <p>No hay jugadoras en esta categoría.</p>
-        ) : (
-          <div className="space-y-4">
-            {jugadorasEnCategoria.map((jugadora: Jugadora, index: number) => (
-              <div key={index} className="border-b border-neutral-200 pb-4 last:border-b-0">
-                <h3 className="text-lg font-medium">{jugadora.nombre}</h3>
-                <div className="mt-2 grid gap-2 text-sm text-neutral-600 md:grid-cols-2">
-                  <p><strong>Posición:</strong> {jugadora.posicion}</p>
-                  <p><strong>Wellness:</strong> {jugadora.wellness}/10</p>
-                  <p><strong>Carga:</strong> {jugadora.carga}</p>
-                  {jugadora.fechaNacimiento && <p><strong>Fecha de nacimiento:</strong> {jugadora.fechaNacimiento}</p>}
-                  {jugadora.altura && <p><strong>Altura:</strong> {jugadora.altura} cm</p>}
-                  {jugadora.peso && <p><strong>Peso:</strong> {jugadora.peso} kg</p>}
-                  {jugadora.deporte && <p><strong>Deporte:</strong> {jugadora.deporte}</p>}
-                  {jugadora.club && <p><strong>Club:</strong> {jugadora.club}</p>}
-                  {jugadora.objetivo && <p><strong>Objetivo:</strong> {jugadora.objetivo}</p>}
-                  {jugadora.observaciones && <p><strong>Observaciones:</strong> {jugadora.observaciones}</p>}
+      {isNutritionCategory ? (
+        <NutritionPlanner />
+      ) : (
+        <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+          <div className={`mb-4 h-2 rounded-full bg-gradient-to-r ${visual.tone}`} />
+          <h2 className="text-xl font-semibold mb-4">Jugadoras ({jugadorasEnCategoria.length})</h2>
+          {jugadorasEnCategoria.length === 0 ? (
+            <p>No hay jugadoras en esta categoría.</p>
+          ) : (
+            <div className="space-y-4">
+              {jugadorasEnCategoria.map((jugadora: Jugadora, index: number) => (
+                <div key={index} className="border-b border-neutral-200 pb-4 last:border-b-0">
+                  <h3 className="text-lg font-medium">{jugadora.nombre}</h3>
+                  <div className="mt-2 grid gap-2 text-sm text-neutral-600 md:grid-cols-2">
+                    <p><strong>Posición:</strong> {jugadora.posicion}</p>
+                    <p><strong>Wellness:</strong> {jugadora.wellness}/10</p>
+                    <p><strong>Carga:</strong> {jugadora.carga}</p>
+                    {jugadora.fechaNacimiento && <p><strong>Fecha de nacimiento:</strong> {jugadora.fechaNacimiento}</p>}
+                    {jugadora.altura && <p><strong>Altura:</strong> {jugadora.altura} cm</p>}
+                    {jugadora.peso && <p><strong>Peso:</strong> {jugadora.peso} kg</p>}
+                    {jugadora.deporte && <p><strong>Deporte:</strong> {jugadora.deporte}</p>}
+                    {jugadora.club && <p><strong>Club:</strong> {jugadora.club}</p>}
+                    {jugadora.objetivo && <p><strong>Objetivo:</strong> {jugadora.objetivo}</p>}
+                    {jugadora.observaciones && <p><strong>Observaciones:</strong> {jugadora.observaciones}</p>}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }

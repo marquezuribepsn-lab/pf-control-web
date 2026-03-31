@@ -35,7 +35,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Si el email existe, te enviaremos un enlace de recuperación.' });
   } catch (error) {
     console.error('Forgot password error:', error);
-    const message = error instanceof Error ? error.message : 'No se pudo procesar la solicitud';
-    return NextResponse.json({ message }, { status: 500 });
+    return NextResponse.json(
+      { message: 'No pudimos enviar el correo de recuperacion. Intenta nuevamente en unos minutos.' },
+      { status: 500 }
+    );
   }
 }

@@ -21,9 +21,9 @@ export default function WellnessPage() {
   ).length;
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Wellness</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Wellness</h1>
         <p className="text-sm text-neutral-600">
           Estado diario del plantel: bienestar, fatiga, dolor y disponibilidad.
         </p>
@@ -52,7 +52,7 @@ export default function WellnessPage() {
         {wellnessList.map((item: WellnessItem) => (
           <div
             key={`${item.nombre}-${item.comentario}`}
-            className="rounded-2xl bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-4 shadow-sm sm:p-5"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>

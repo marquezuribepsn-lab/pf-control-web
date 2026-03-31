@@ -1,11 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 function ResetPasswordContent() {
   const router = useRouter();
+  const { status } = useSession();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [password, setPassword] = useState('');
@@ -14,11 +15,45 @@ function ResetPasswordContent() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const navigateAuthScreen = (path: string, delayMs = 0) => {
+    const runNavigation = () => {
+      try {
+        router.push(path);
+
+        window.setTimeout(() => {
+          if (window.location.pathname !== path) {
+            window.location.assign(path);
+          }
+        }, 300);
+      } catch {
+        window.location.assign(path);
+      }
+    };
+
+    if (delayMs > 0) {
+      window.setTimeout(runNavigation, delayMs);
+      return;
+    }
+
+    runNavigation();
+  };
+
   useEffect(() => {
     if (!token) {
       setError('El enlace no es válido o está incompleto.');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/');
+      window.setTimeout(() => {
+        if (window.location.pathname.startsWith('/auth')) {
+          window.location.assign('/');
+        }
+      }, 250);
+    }
+  }, [router, status]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -51,7 +86,7 @@ function ResetPasswordContent() {
       }
 
       setMessage(data.message || 'Contraseña actualizada');
-      setTimeout(() => router.push('/auth/login'), 2000);
+      navigateAuthScreen('/auth/login', 1200);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'No se pudo restablecer la contraseña');
     } finally {
@@ -62,10 +97,10 @@ function ResetPasswordContent() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#08111d] text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
-      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
-        <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
+      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center px-3 py-4 sm:px-6 sm:py-10">
+        <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-4 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Nueva contraseña</p>
-          <h1 className="mt-3 text-3xl font-black text-white">Restablecer contraseña</h1>
+          <h1 className="mt-3 text-2xl font-black text-white sm:text-3xl">Restablecer contraseña</h1>
           <p className="mt-2 text-sm leading-6 text-slate-300">
             Elegí una nueva contraseña para volver a entrar a PF Control.
           </p>
@@ -110,9 +145,13 @@ function ResetPasswordContent() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-300">
-            <Link href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
+            <button
+              type="button"
+              onClick={() => navigateAuthScreen('/auth/login')}
+              className="font-bold text-cyan-300 transition hover:text-cyan-200"
+            >
               Volver al login
-            </Link>
+            </button>
           </p>
         </div>
       </div>

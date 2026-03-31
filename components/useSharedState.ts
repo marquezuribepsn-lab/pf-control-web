@@ -9,10 +9,141 @@ type SharedStateOptions = {
 };
 
 const NOTIFICATIONS_ENABLED_KEY = "pf-control-notifications-enabled-v1";
+const LOCAL_SYNC_CACHE_PREFIX = "pf-control-sync-cache-v1:";
+const MANUAL_SAVE_INTENT_TTL_MS = 2500;
+const STRICT_MANUAL_INTENT_KEYS = new Set([
+  "pf-control-clientes-meta-v1",
+  "pf-control-pagos-v1",
+  "pf-control-sesiones",
+  "pf-control-semana-plan",
+  "pf-control-alumno-week-notifications",
+  "pf-control-asistencias-jornadas-v1",
+  "pf-control-asistencias-registros-v1",
+  "pf-control-alumnos",
+  "pf-control-jugadoras",
+  "pf-control-categorias",
+  "pf-control-deportes",
+  "pf-control-ejercicios",
+  "pf-control-equipos",
+  "pf-control-wellness",
+]);
+const STRICT_MANUAL_INTENT_PREFIXES = ["pf-control-clientes-table-ui-v1-"];
 
-type ToastType = "success" | "error";
+type ToastType = "success" | "error" | "warning";
 
-function emitInlineToast(type: ToastType, message: string) {
+const OFFLINE_WRITE_TOAST_TTL_MS = 2200;
+
+const ANY_SAVE_KEY = "__any__";
+type ManualIntent = {
+  count: number;
+  expiresAt: number;
+};
+
+const manualSaveIntentByKey = new Map<string, ManualIntent>();
+const pendingSaveKeys = new Set<string>();
+
+function isStrictManualKey(key: string) {
+  return (
+    STRICT_MANUAL_INTENT_KEYS.has(key) ||
+    STRICT_MANUAL_INTENT_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+}
+
+function emitPendingSaveStatus() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("pf-pending-save-status", {
+      detail: {
+        keys: Array.from(pendingSaveKeys),
+        hasPending: pendingSaveKeys.size > 0,
+      },
+    })
+  );
+}
+
+function setPendingForKey(key: string, isPending: boolean) {
+  const hadKey = pendingSaveKeys.has(key);
+
+  if (isPending) {
+    pendingSaveKeys.add(key);
+  } else {
+    pendingSaveKeys.delete(key);
+  }
+
+  const hasKey = pendingSaveKeys.has(key);
+  if (hadKey !== hasKey) {
+    emitPendingSaveStatus();
+  }
+}
+
+export function getPendingSaveStatus() {
+  return {
+    keys: Array.from(pendingSaveKeys),
+    hasPending: pendingSaveKeys.size > 0,
+  };
+}
+
+function getIntentCount(key: string) {
+  const intent = manualSaveIntentByKey.get(key);
+  if (!intent) return 0;
+  if (Date.now() > intent.expiresAt) {
+    manualSaveIntentByKey.delete(key);
+    return 0;
+  }
+  return intent.count;
+}
+
+export function markManualSaveIntent(key?: string, count = 1) {
+  const normalizedKey = key && key.trim() ? key.trim() : ANY_SAVE_KEY;
+  const safeCount = Math.max(1, Math.floor(count));
+
+  // No acumulamos intents para evitar autosave tardio al escribir.
+  manualSaveIntentByKey.set(normalizedKey, {
+    count: safeCount,
+    expiresAt: Date.now() + MANUAL_SAVE_INTENT_TTL_MS,
+  });
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("pf-manual-save-intent", {
+        detail: { key: normalizedKey },
+      })
+    );
+  }
+}
+
+function hasManualSaveIntent(key: string) {
+  if (isStrictManualKey(key)) {
+    return getIntentCount(key) > 0;
+  }
+
+  return getIntentCount(key) > 0 || getIntentCount(ANY_SAVE_KEY) > 0;
+}
+
+function consumeManualSaveIntent(key: string) {
+  const keyCount = getIntentCount(key);
+  if (keyCount > 0) {
+    manualSaveIntentByKey.delete(key);
+    return true;
+  }
+
+  if (isStrictManualKey(key)) {
+    return false;
+  }
+
+  const anyCount = getIntentCount(ANY_SAVE_KEY);
+  if (anyCount > 0) {
+    manualSaveIntentByKey.delete(ANY_SAVE_KEY);
+    return true;
+  }
+
+  return false;
+}
+
+export function emitInlineToast(type: ToastType, message: string) {
   if (typeof window === "undefined") {
     return;
   }
@@ -80,12 +211,95 @@ export function useSharedState<T>(
   const { key, legacyLocalStorageKey, pollMs = 4000 } = options;
   const [state, setState] = useState<T>(initialValue);
   const [loaded, setLoaded] = useState(false);
+  const initialValueRef = useRef<T>(initialValue);
   const lastSyncedRef = useRef<string>(JSON.stringify(initialValue));
+  const pendingSerializedRef = useRef<string | null>(null);
+  const writeInFlightRef = useRef(false);
+  const lastOfflineWriteToastAtRef = useRef(0);
+
+  const readLocalSnapshot = (): T | null => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      const raw = localStorage.getItem(`${LOCAL_SYNC_CACHE_PREFIX}${key}`);
+      if (!raw) {
+        return null;
+      }
+
+      return JSON.parse(raw) as T;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeLocalSnapshot = (value: T) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      localStorage.setItem(`${LOCAL_SYNC_CACHE_PREFIX}${key}`, JSON.stringify(value));
+    } catch {
+      // ignorar errores de cuota/localStorage no disponible
+    }
+  };
+
+  const tryFlushPending = () => {
+    if (!loaded || writeInFlightRef.current || !hasManualSaveIntent(key)) {
+      return;
+    }
+
+    const snapshotSerialized = pendingSerializedRef.current;
+    if (!snapshotSerialized) {
+      return;
+    }
+
+    const snapshotState = JSON.parse(snapshotSerialized) as T;
+
+    void (async () => {
+      try {
+        writeInFlightRef.current = true;
+        await putRemoteValue(key, snapshotState);
+        lastSyncedRef.current = snapshotSerialized;
+        writeLocalSnapshot(snapshotState);
+
+        if (pendingSerializedRef.current === snapshotSerialized) {
+          pendingSerializedRef.current = null;
+          setPendingForKey(key, false);
+        }
+
+        if (consumeManualSaveIntent(key)) {
+          maybeSendNotification(key);
+          emitInlineToast("success", "Cambios guardados correctamente");
+        }
+      } catch {
+        setPendingForKey(key, true);
+        if (consumeManualSaveIntent(key)) {
+          emitInlineToast("error", "No se pudieron guardar los cambios");
+        }
+      } finally {
+        writeInFlightRef.current = false;
+
+        if (pendingSerializedRef.current && hasManualSaveIntent(key)) {
+          tryFlushPending();
+        }
+      }
+    })();
+  };
 
   useEffect(() => {
     let active = true;
 
     const load = async () => {
+      const localSnapshot = readLocalSnapshot();
+
+      if (localSnapshot !== null) {
+        setState(localSnapshot);
+        lastSyncedRef.current = JSON.stringify(localSnapshot);
+      }
+
       try {
         const remoteValue = await getRemoteValue<T>(key);
         if (!active) return;
@@ -93,6 +307,8 @@ export function useSharedState<T>(
         if (remoteValue !== null) {
           setState(remoteValue);
           lastSyncedRef.current = JSON.stringify(remoteValue);
+          writeLocalSnapshot(remoteValue);
+          setPendingForKey(key, false);
           setLoaded(true);
           return;
         }
@@ -105,7 +321,9 @@ export function useSharedState<T>(
               setState(parsed);
               lastSyncedRef.current = JSON.stringify(parsed);
               await putRemoteValue(key, parsed);
+              writeLocalSnapshot(parsed);
               localStorage.removeItem(legacyLocalStorageKey);
+              setPendingForKey(key, false);
               setLoaded(true);
               return;
             } catch {
@@ -114,9 +332,13 @@ export function useSharedState<T>(
           }
         }
 
-        await putRemoteValue(key, initialValue);
+        await putRemoteValue(key, initialValueRef.current);
+        writeLocalSnapshot(initialValueRef.current);
+        setPendingForKey(key, false);
       } catch {
-        // ignore transient network errors
+        if (localSnapshot !== null) {
+          setPendingForKey(key, false);
+        }
       } finally {
         if (active) {
           setLoaded(true);
@@ -128,32 +350,64 @@ export function useSharedState<T>(
 
     return () => {
       active = false;
+      setPendingForKey(key, false);
     };
-  }, [initialValue, key, legacyLocalStorageKey]);
+  }, [key, legacyLocalStorageKey]);
 
   useEffect(() => {
     if (!loaded) return;
 
     const serialized = JSON.stringify(state);
-    if (serialized === lastSyncedRef.current) return;
+    if (serialized === lastSyncedRef.current) {
+      setPendingForKey(key, false);
+      return;
+    }
 
-    void (async () => {
-      try {
-        await putRemoteValue(key, state);
-        lastSyncedRef.current = serialized;
-        maybeSendNotification(key);
-        emitInlineToast("success", `Cambios guardados correctamente (${key})`);
-      } catch {
-        emitInlineToast("error", `No se pudieron guardar los cambios (${key})`);
+    const strictManual = isStrictManualKey(key);
+    const hasIntent = hasManualSaveIntent(key);
+
+    // For strict manual keys, ignore automatic/UI-only mutations unless
+    // there is an explicit save intent for that key.
+    if (strictManual && !hasIntent) {
+      if (!pendingSerializedRef.current) {
+        setPendingForKey(key, false);
       }
-    })();
+      return;
+    }
+
+    pendingSerializedRef.current = serialized;
+    setPendingForKey(key, true);
+
+    tryFlushPending();
   }, [key, loaded, state]);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    const onManualIntent = (event: Event) => {
+      const custom = event as CustomEvent<{ key?: string }>;
+      const intentKey = custom.detail?.key || ANY_SAVE_KEY;
+      if (intentKey !== ANY_SAVE_KEY && intentKey !== key) {
+        return;
+      }
+      tryFlushPending();
+    };
+
+    window.addEventListener("pf-manual-save-intent", onManualIntent);
+    return () => {
+      window.removeEventListener("pf-manual-save-intent", onManualIntent);
+    };
+  }, [loaded]);
 
   useEffect(() => {
     if (!loaded) return;
 
     const interval = setInterval(async () => {
       try {
+        if (pendingSerializedRef.current || writeInFlightRef.current) {
+          return;
+        }
+
         const remoteValue = await getRemoteValue<T>(key);
         if (remoteValue === null) return;
 
@@ -161,6 +415,7 @@ export function useSharedState<T>(
         if (remoteSerialized === lastSyncedRef.current) return;
 
         lastSyncedRef.current = remoteSerialized;
+        writeLocalSnapshot(remoteValue);
         setState(remoteValue);
       } catch {
         // ignore polling errors
@@ -170,5 +425,21 @@ export function useSharedState<T>(
     return () => clearInterval(interval);
   }, [key, loaded, pollMs]);
 
-  return [state, setState, loaded];
+  const guardedSetState: Dispatch<SetStateAction<T>> = (nextState) => {
+    if (typeof window !== "undefined" && !window.navigator.onLine) {
+      const now = Date.now();
+      if (now - lastOfflineWriteToastAtRef.current > OFFLINE_WRITE_TOAST_TTL_MS) {
+        lastOfflineWriteToastAtRef.current = now;
+        emitInlineToast(
+          "warning",
+          "Sin conexion: podes navegar y ver datos guardados, pero para guardar cambios necesitas internet"
+        );
+      }
+      return;
+    }
+
+    setState(nextState);
+  };
+
+  return [state, guardedSetState, loaded];
 }

@@ -11,6 +11,39 @@ body {
   color: #e2e8f0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 1024px) {
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px;
+  }
+}
+
 /* Regla global solicitada: fondos blancos a gris y texto blanco en negrita */
 :where([class*="bg-white"]) {
   background-color: #334155 !important;
@@ -178,4 +211,43 @@ body {
   flex-wrap: wrap !important;
   align-items: center;
   max-width: 100%;
+}
+
+/* Feedback tactil estilo iPhone para la mayoria de acciones navegables */
+:where(a[href], button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 140ms cubic-bezier(0.22, 0.88, 0.24, 1),
+    filter 160ms ease,
+    box-shadow 180ms ease;
+  will-change: transform;
+}
+
+:where(a[href], button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):where(:hover, :focus-visible) {
+  box-shadow: 0 6px 16px rgba(8, 47, 73, 0.14);
+}
+
+:where(a[href], button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):active {
+  transform: translate3d(0, 0.5px, 0) scale(0.986);
+  filter: brightness(1.025) saturate(1.02);
+}
+
+:where(button:disabled, input:disabled) {
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(a[href], button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+    transition: none;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.pf-sidebar-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }

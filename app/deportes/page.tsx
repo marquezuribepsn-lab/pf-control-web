@@ -38,17 +38,17 @@ export default function DeportesPage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <main className="mx-auto max-w-7xl px-3 py-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Deportes</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Deportes</h1>
         <p className="text-sm text-neutral-600">
           Gestión de deportes disponibles.
         </p>
       </div>
 
-      <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Agregar nuevo deporte</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             value={nuevoDeporte}
@@ -69,7 +69,7 @@ export default function DeportesPage() {
         {deportes.map((deporte) => (
           <div
             key={deporte.nombre}
-            className="rounded-2xl bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-4 shadow-sm sm:p-5"
           >
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-semibold">{deporte.nombre}</h2>

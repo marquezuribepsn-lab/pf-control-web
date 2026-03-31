@@ -1,25 +1,44 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'DbSecret usa SecureString y nunca se persiste en texto plano fuera de este proceso.')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = 'No se exportan cmdlets; advertencia residual del analizador en este script interno.')]
 param(
 	[string]$Server = "root@72.60.55.235",
 	[string]$RemoteDir = "/root/pf-control-web",
 	[string]$DbName = "pf_control",
 	[string]$DbUser = "pf_user",
 	[Parameter(Mandatory = $true)]
-	[string]$DbPassword,
+	[Alias("DbPassword")]
+	[System.Security.SecureString]$DbSecret,
 	[string]$DbHost = "127.0.0.1",
 	[int]$DbPort = 5432
 )
 
 $ErrorActionPreference = "Stop"
 
-function Escape-SingleQuotes([string]$Value) {
+function ConvertTo-PlainText([SecureString]$SecureValue) {
+	if (-not $SecureValue) {
+		return ""
+	}
+
+	$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+	try {
+		return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+	}
+	finally {
+		[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+	}
+}
+
+function ConvertTo-SqlEscapedString([string]$Value) {
 	return $Value -replace "'", "''"
 }
 
-$dbNameSql = Escape-SingleQuotes $DbName
-$dbUserSql = Escape-SingleQuotes $DbUser
-$dbPasswordSql = Escape-SingleQuotes $DbPassword
+$dbPasswordPlain = ConvertTo-PlainText $DbSecret
 
-$databaseUrl = "postgresql://$DbUser`:$DbPassword@$DbHost`:$DbPort/$DbName"
+$dbNameSql = ConvertTo-SqlEscapedString $DbName
+$dbUserSql = ConvertTo-SqlEscapedString $DbUser
+$dbPasswordSql = ConvertTo-SqlEscapedString $dbPasswordPlain
+
+$databaseUrl = "postgresql://$DbUser`:$dbPasswordPlain@$DbHost`:$DbPort/$DbName"
 
 $remoteScript = @"
 set -e

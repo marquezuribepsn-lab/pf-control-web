@@ -3,13 +3,15 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 const db = prisma as any;
+const seedAdminEmail = process.env.SEED_ADMIN_EMAIL || 'maruquezuribepsn@gmail.com';
+const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD || process.env.SMOKE_MAIN_PASSWORD || '';
 
 async function main() {
   console.log('🔄 Iniciando setup de base de datos...');
 
   // Check if admin already exists
   const adminExists = await db.user.findUnique({
-    where: { email: 'maruquezuribepsn@gmail.com' },
+    where: { email: seedAdminEmail },
   });
 
   if (adminExists) {
@@ -17,12 +19,17 @@ async function main() {
     return;
   }
 
+  if (!seedAdminPassword) {
+    console.log('⚠️ SEED_ADMIN_PASSWORD no configurada. Se omite creacion de admin.');
+    return;
+  }
+
   // Create admin user
-  const hashedPassword = await bcrypt.hash('Gimnasio2005', 10);
+  const hashedPassword = await bcrypt.hash(seedAdminPassword, 10);
   
   const admin = await db.user.create({
     data: {
-      email: 'maruquezuribepsn@gmail.com',
+      email: seedAdminEmail,
       password: hashedPassword,
       role: 'ADMIN',
       emailVerified: true,
@@ -31,7 +38,6 @@ async function main() {
 
   console.log('✅ Admin creado:');
   console.log(`   📧 Email: ${admin.email}`);
-  console.log(`   🔑 Contraseña: Gimnasio2005`);
   console.log(`   👤 Rol: ${admin.role}`);
   console.log('\n✨ Setup completado exitosamente');
 }

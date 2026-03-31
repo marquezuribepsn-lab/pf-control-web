@@ -24,6 +24,11 @@ export default function RootLayout({
 }) {
   const links = [
     { href: "/", label: "Inicio", icon: "🏠", tone: "from-cyan-500 to-blue-600" },
+    { href: "/alumno/inicio", label: "Inicio alumno", icon: "☀️", tone: "from-cyan-500 to-blue-600" },
+    { href: "/alumno/rutina", label: "Rutina", icon: "🏋️", tone: "from-blue-600 to-indigo-600" },
+    { href: "/alumno/nutricion", label: "Nutricion", icon: "🥗", tone: "from-emerald-500 to-lime-600" },
+    { href: "/alumno/medidas", label: "Medidas", icon: "📏", tone: "from-violet-500 to-purple-600" },
+    { href: "/alumno/progreso", label: "Mi progreso", icon: "📈", tone: "from-emerald-500 to-cyan-600" },
     { href: "/plantel", label: "Plantel", icon: "👥", tone: "from-emerald-500 to-teal-600" },
     { href: "/semana", label: "Semana", icon: "📅", tone: "from-violet-500 to-purple-600" },
     { href: "/sesiones", label: "Sesiones", icon: "🏋️", tone: "from-blue-600 to-indigo-600" },
@@ -32,10 +37,11 @@ export default function RootLayout({
     { href: "/registros", label: "Registros", icon: "📊", tone: "from-amber-500 to-orange-600" },
     { href: "/categorias", label: "Categorías", icon: "🏷️", tone: "from-rose-500 to-red-600" },
     { href: "/deportes", label: "Deportes", icon: "⚽", tone: "from-sky-500 to-cyan-600" },
+    { href: "/categorias/Nutricion", label: "Nutrición", icon: "🥗", tone: "from-emerald-500 to-lime-600" },
     { href: "/equipos", label: "Equipos", icon: "🛡️", tone: "from-indigo-500 to-violet-600" },
     { href: "/clientes", label: "Clientes", icon: "👤", tone: "from-lime-500 to-green-600" },
-    { href: "/admin/usuarios", label: "Admin usuarios", icon: "🛠️", tone: "from-orange-500 to-amber-600", adminOnly: true },
-    { href: "/admin/colaboradores", label: "Admin colaboradores", icon: "🧩", tone: "from-pink-500 to-rose-600", adminOnly: true },
+    { href: "/admin/musica", label: "Musica", icon: "🎧", tone: "from-fuchsia-500 to-pink-600", adminOnly: true },
+    { href: "/admin/whatsapp", label: "Whats App", icon: "/whatsapp-logo.svg", tone: "from-green-500 to-emerald-600", adminOnly: true },
     { href: "/configuracion", label: "Configuración", icon: "⚙️", tone: "from-slate-500 to-gray-600" },
     { href: "/nueva-sesion", label: "Nueva sesión", icon: "🚀", tone: "from-cyan-500 to-sky-600" },
   ];
