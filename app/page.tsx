@@ -58,6 +58,50 @@ function normalizeAppHref(value: string | undefined, fallback: string): string {
   return fallback;
 }
 
+function guessAppHrefByLabel(label: string): string | null {
+  const normalized = String(label || "").trim().toLowerCase();
+
+  if (!normalized) return null;
+  if (normalized.includes("inicio")) return "/";
+  if (normalized.includes("sesion")) return "/sesiones";
+  if (normalized.includes("ejercicio")) return "/ejercicios";
+  if (normalized.includes("cliente")) return "/clientes";
+  if (normalized.includes("semana")) return "/semana";
+  if (normalized.includes("plantel") || normalized.includes("jugadora") || normalized.includes("alumno")) {
+    return "/plantel";
+  }
+  if (normalized.includes("registro")) return "/registros";
+  if (normalized.includes("categoria")) return "/categorias";
+  if (normalized.includes("deporte")) return "/deportes";
+  if (normalized.includes("equipo")) return "/equipos";
+  if (normalized.includes("asistencia")) return "/asistencias";
+  if (normalized.includes("wellness")) return "/wellness";
+  if (normalized.includes("nutricion")) return "/categorias/Nutricion";
+  if (normalized.includes("configuracion")) return "/configuracion";
+  if (normalized.includes("cuenta")) return "/cuenta";
+
+  return null;
+}
+
+function resolveActionHref(rawHref: string | undefined, label: string, fallbackHref: string): string {
+  const raw = String(rawHref || "").trim();
+  const normalized = normalizeAppHref(raw, fallbackHref);
+  const guessed = guessAppHrefByLabel(label);
+
+  if (raw === "#" || raw === "/" || !raw) {
+    if (guessed) {
+      return guessed;
+    }
+    return fallbackHref;
+  }
+
+  if (normalized === "/" && guessed && guessed !== "/") {
+    return guessed;
+  }
+
+  return normalized;
+}
+
 function resolveDashboardStatHref(title: string, index: number): string {
   const normalized = title.toLowerCase();
 
@@ -172,8 +216,16 @@ export default function Home() {
   const [operativoFiltro, setOperativoFiltro] = useState("");
   const [config, setConfig] = useState<HomeConfig>(defaultConfig);
   const categoriesContext = useContext(CategoriesContext);
-  const primaryActionHref = normalizeAppHref(config.botonPrimarioHref, defaultConfig.botonPrimarioHref);
-  const secondaryActionHref = normalizeAppHref(config.botonSecundarioHref, defaultConfig.botonSecundarioHref);
+  const primaryActionHref = resolveActionHref(
+    config.botonPrimarioHref,
+    config.botonPrimarioLabel,
+    defaultConfig.botonPrimarioHref
+  );
+  const secondaryActionHref = resolveActionHref(
+    config.botonSecundarioHref,
+    config.botonSecundarioLabel,
+    defaultConfig.botonSecundarioHref
+  );
   const categoriasActivas = (categoriesContext?.categorias || []).filter(
     (categoria) => categoria.habilitada && categoria.nombre.toLowerCase() !== "wellness"
   );
@@ -293,7 +345,30 @@ export default function Home() {
               },
             ];
 
-        setConfig({ ...defaultConfig, ...parsed, modulos: modulosConAsistencias });
+        const hydratedConfig = { ...defaultConfig, ...parsed, modulos: modulosConAsistencias };
+        const sanitizedConfig: HomeConfig = {
+          ...hydratedConfig,
+          botonPrimarioHref: resolveActionHref(
+            hydratedConfig.botonPrimarioHref,
+            hydratedConfig.botonPrimarioLabel,
+            defaultConfig.botonPrimarioHref
+          ),
+          botonSecundarioHref: resolveActionHref(
+            hydratedConfig.botonSecundarioHref,
+            hydratedConfig.botonSecundarioLabel,
+            defaultConfig.botonSecundarioHref
+          ),
+          modulos: hydratedConfig.modulos.map((modulo) => ({
+            ...modulo,
+            href: resolveActionHref(modulo.href, modulo.label, guessAppHrefByLabel(modulo.label) || "/"),
+          })),
+        };
+
+        setConfig(sanitizedConfig);
+
+        if (JSON.stringify(hydratedConfig) !== JSON.stringify(sanitizedConfig)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedConfig));
+        }
       } catch {
         // ignore invalid stored state
       }
@@ -897,7 +972,7 @@ export default function Home() {
               ) : (
                 <Link
                   key={`${item.label}-${index}`}
-                  href={normalizeAppHref(item.href, "/")}
+                  href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
                   className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
                 >
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
