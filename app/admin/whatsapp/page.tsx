@@ -46,6 +46,13 @@ type RunRow = {
   forcedFailureTest?: boolean;
 };
 
+type SimulatedMatch = {
+  id: string;
+  nombre: string;
+  categoria: string;
+  ruleKey: string;
+};
+
 type HistoryRow = {
   id?: string;
   createdAt?: string;
@@ -114,6 +121,14 @@ export default function AdminWhatsAppPage() {
     connection: { enabled: true, mode: "test" },
     categories: { cobranzas: { enabled: true }, recordatorios_otros: { enabled: true } },
   });
+  const [automationCategoryKey, setAutomationCategoryKey] = useState("recordatorios_otros");
+  const [automationRuleKey, setAutomationRuleKey] = useState("encuesta_fin_semana");
+  const [simulateLimit, setSimulateLimit] = useState(10);
+  const [simulateSummary, setSimulateSummary] = useState<{
+    totalMatched: number;
+    limitedTo: number;
+  } | null>(null);
+  const [simulateMatches, setSimulateMatches] = useState<SimulatedMatch[]>([]);
 
   const recipientById = useMemo(
     () => new Map(recipients.map((recipient) => [recipient.id, recipient])),
@@ -384,7 +399,7 @@ export default function AdminWhatsAppPage() {
     }
   };
 
-  const runAutomation = async (dryRun: boolean) => {
+  const runAutomation = async (dryRun: boolean, forceFailureForTest = false) => {
     resetFeedback();
     try {
       setActionLoading(true);
@@ -393,20 +408,57 @@ export default function AdminWhatsAppPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dryRun,
-          categoryKey: "recordatorios_otros",
-          ruleKey: "encuesta_fin_semana",
+          categoryKey: automationCategoryKey,
+          ruleKey: automationRuleKey,
           forceWindow: true,
           includeDisabled: true,
+          forceFailureForTest,
         }),
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data?.error || "No se pudo ejecutar automatizacion");
       }
-      setStatus(`${dryRun ? "Dry run" : "Run real"} ejecutado: ${data.runId}`);
+      setStatus(
+        forceFailureForTest
+          ? `Prueba de fallo ejecutada: ${data.runId}`
+          : `${dryRun ? "Dry run" : "Run real"} ejecutado: ${data.runId}`
+      );
       await loadAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al ejecutar automatizacion");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const simulateAutomation = async () => {
+    resetFeedback();
+    try {
+      setActionLoading(true);
+      const response = await fetch("/api/whatsapp/automation/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categoryKey: automationCategoryKey,
+          ruleKey: automationRuleKey,
+          limit: simulateLimit,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo simular automatizacion");
+      }
+
+      const summary = data?.summary || {};
+      setSimulateSummary({
+        totalMatched: Number(summary.totalMatched || 0),
+        limitedTo: Number(summary.limitedTo || simulateLimit),
+      });
+      setSimulateMatches(Array.isArray(data?.matches) ? data.matches : []);
+      setStatus(`Simulacion lista: ${Number(summary.totalMatched || 0)} destinatario(s).`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al simular automatizacion");
     } finally {
       setActionLoading(false);
     }
@@ -810,7 +862,45 @@ export default function AdminWhatsAppPage() {
         <section className="space-y-4">
           <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
             <h2 className="text-lg font-bold">Ejecucion automatica</h2>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <label className="text-sm text-slate-300">
+                Categoria
+                <input
+                  value={automationCategoryKey}
+                  onChange={(event) => setAutomationCategoryKey(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="text-sm text-slate-300">
+                Regla
+                <input
+                  value={automationRuleKey}
+                  onChange={(event) => setAutomationRuleKey(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="text-sm text-slate-300">
+                Limite simulacion
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={simulateLimit}
+                  onChange={(event) => setSimulateLimit(Math.max(1, Math.min(100, Number(event.target.value || 10))))}
+                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                />
+              </label>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={simulateAutomation}
+                disabled={actionLoading}
+                className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Simular destinatarios
+              </button>
               <button
                 type="button"
                 onClick={() => runAutomation(true)}
@@ -827,7 +917,34 @@ export default function AdminWhatsAppPage() {
               >
                 Ejecutar real
               </button>
+              <button
+                type="button"
+                onClick={() => runAutomation(false, true)}
+                disabled={actionLoading}
+                className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Probar fallo controlado
+              </button>
             </div>
+
+            {simulateSummary ? (
+              <div className="mt-3 rounded-lg border border-indigo-300/25 bg-indigo-500/10 p-3 text-xs text-indigo-100">
+                Coincidencias: {simulateSummary.totalMatched} · Limite aplicado: {simulateSummary.limitedTo}
+              </div>
+            ) : null}
+
+            {simulateMatches.length > 0 ? (
+              <div className="mt-3 max-h-56 overflow-auto rounded-lg border border-white/10 bg-slate-800/50 p-2">
+                {simulateMatches.map((match) => (
+                  <div key={match.id} className="mb-1 rounded-md border border-white/10 bg-slate-900/60 px-2 py-1 text-xs text-slate-200 last:mb-0">
+                    <p className="font-semibold text-slate-100">{match.nombre}</p>
+                    <p>
+                      {match.categoria} · {match.ruleKey}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">

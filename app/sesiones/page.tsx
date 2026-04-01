@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
@@ -7,6 +8,7 @@ import { useAlumnos } from "../../components/AlumnosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
 import SesionesAIPlanner from "../../components/sesiones/SesionesAIPlanner";
+import { useSharedState } from "../../components/useSharedState";
 import {
   type BloqueEntrenamiento,
   type PrescripcionSesionPersona,
@@ -140,6 +142,22 @@ const QUICK_EXERCISE_DEFAULT: QuickExerciseForm = {
   gruposMusculares: [],
 };
 
+type JornadaEntrenamiento = {
+  id: string;
+  categoria: string;
+  fecha: string;
+  hora: string;
+  suspendida?: boolean;
+};
+
+type AsistenciaRegistro = {
+  jornadaId: string;
+  estado: "presente" | "ausente";
+};
+
+const ASISTENCIAS_JORNADAS_KEY = "pf-control-asistencias-jornadas-v1";
+const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
+
 const createId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 const toPersonaKey = (persona: PersonaProgramable) => `${persona.tipo}:${persona.nombre}`;
@@ -266,6 +284,14 @@ export default function SesionesPage() {
   const { alumnos } = useAlumnos();
   const { jugadoras } = usePlayers();
   const { ejercicios, agregarEjercicio, editarEjercicio } = useEjercicios();
+  const [jornadas] = useSharedState<JornadaEntrenamiento[]>([], {
+    key: ASISTENCIAS_JORNADAS_KEY,
+    legacyLocalStorageKey: ASISTENCIAS_JORNADAS_KEY,
+  });
+  const [asistencias] = useSharedState<AsistenciaRegistro[]>([], {
+    key: ASISTENCIAS_REGISTROS_KEY,
+    legacyLocalStorageKey: ASISTENCIAS_REGISTROS_KEY,
+  });
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoSesion, setEditandoSesion] = useState<string | null>(null);
@@ -962,6 +988,24 @@ export default function SesionesPage() {
     return () => window.removeEventListener("keydown", handleGlobalShortcuts);
   }, [exerciseDetailId, quickExerciseOpen]);
 
+  const sesionesOperativas = useMemo(() => {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const jornadasActivas = jornadas.filter((jornada) => !jornada.suspendida);
+    const jornadasProximas = jornadasActivas.filter((jornada) => jornada.fecha >= hoy).length;
+    const presentes = asistencias.filter((item) => item.estado === "presente").length;
+    const ausentes = asistencias.filter((item) => item.estado === "ausente").length;
+
+    return {
+      totalSesiones: sesiones.length,
+      totalJornadas: jornadasActivas.length,
+      jornadasProximas,
+      totalPresentes: presentes,
+      totalAusentes: ausentes,
+      totalJugadoras: jugadoras.length,
+      totalAlumnos: alumnos.length,
+    };
+  }, [alumnos.length, asistencias, jornadas, jugadoras.length, sesiones.length]);
+
   return (
     <main className="mx-auto max-w-7xl p-6 text-slate-100">
       <div className="mb-6 flex items-center justify-between">
@@ -977,6 +1021,47 @@ export default function SesionesPage() {
         >
           Nueva Sesión
         </button>
+      </div>
+
+      <section className="mb-6 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-cyan-100">Sesiones</p>
+          <p className="text-2xl font-black text-white">{sesionesOperativas.totalSesiones}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-emerald-100">Jornadas activas</p>
+          <p className="text-2xl font-black text-white">{sesionesOperativas.totalJornadas}</p>
+        </div>
+        <div className="rounded-2xl border border-indigo-300/30 bg-indigo-500/10 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-indigo-100">Jornadas proximas</p>
+          <p className="text-2xl font-black text-white">{sesionesOperativas.jornadasProximas}</p>
+        </div>
+        <div className="rounded-2xl border border-lime-300/30 bg-lime-500/10 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-lime-100">Presentes</p>
+          <p className="text-2xl font-black text-white">{sesionesOperativas.totalPresentes}</p>
+        </div>
+        <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-rose-100">Ausentes</p>
+          <p className="text-2xl font-black text-white">{sesionesOperativas.totalAusentes}</p>
+        </div>
+        <div className="rounded-2xl border border-white/15 bg-slate-900/80 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-slate-300">Plantel/Alumnos</p>
+          <p className="text-2xl font-black text-white">
+            {sesionesOperativas.totalJugadoras}/{sesionesOperativas.totalAlumnos}
+          </p>
+        </div>
+      </section>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Link href="/asistencias" className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10">
+          Abrir asistencias
+        </Link>
+        <Link href="/plantel" className="rounded-lg border border-emerald-300/35 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
+          Abrir plantel
+        </Link>
+        <Link href="/registros" className="rounded-lg border border-violet-300/35 px-3 py-1.5 text-xs font-semibold text-violet-100 hover:bg-violet-500/10">
+          Ver registros
+        </Link>
       </div>
 
       <SesionesAIPlanner />

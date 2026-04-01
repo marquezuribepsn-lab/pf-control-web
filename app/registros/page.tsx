@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 import * as XLSX from "xlsx";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -28,8 +29,23 @@ type PagoRegistro = {
   createdAt: string;
 };
 
+type JornadaEntrenamiento = {
+  id: string;
+  categoria: string;
+  fecha: string;
+  suspendida?: boolean;
+};
+
+type AsistenciaRegistro = {
+  jornadaId: string;
+  jugadoraNombre: string;
+  estado: "presente" | "ausente";
+};
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const PAGOS_KEY = "pf-control-pagos-v1";
+const ASISTENCIAS_JORNADAS_KEY = "pf-control-asistencias-jornadas-v1";
+const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 
 function StatCard({
   label,
@@ -50,10 +66,10 @@ function StatCard({
   }[accent ?? "blue"] ?? "text-neutral-800";
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm">
-      <p className="text-sm text-neutral-500">{label}</p>
+    <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+      <p className="text-sm text-slate-300">{label}</p>
       <h2 className={`mt-2 text-2xl font-semibold ${accentClass}`}>{value}</h2>
-      {sub && <p className="mt-1 text-xs text-neutral-400">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
     </div>
   );
 }
@@ -69,6 +85,14 @@ export default function RegistrosPage() {
   const [pagos] = useSharedState<PagoRegistro[]>([], {
     key: PAGOS_KEY,
     legacyLocalStorageKey: PAGOS_KEY,
+  });
+  const [jornadas] = useSharedState<JornadaEntrenamiento[]>([], {
+    key: ASISTENCIAS_JORNADAS_KEY,
+    legacyLocalStorageKey: ASISTENCIAS_JORNADAS_KEY,
+  });
+  const [asistenciaRegistros] = useSharedState<AsistenciaRegistro[]>([], {
+    key: ASISTENCIAS_REGISTROS_KEY,
+    legacyLocalStorageKey: ASISTENCIAS_REGISTROS_KEY,
   });
 
   const stats = useMemo(() => {
@@ -130,6 +154,19 @@ export default function RegistrosPage() {
       {} as Record<string, number>
     );
 
+    const presentesAsistencia = asistenciaRegistros.filter((r) => r.estado === "presente").length;
+    const ausentesAsistencia = asistenciaRegistros.filter((r) => r.estado === "ausente").length;
+    const totalAsistencia = presentesAsistencia + ausentesAsistencia;
+    const presentismoGeneral = totalAsistencia > 0
+      ? Math.round((presentesAsistencia / totalAsistencia) * 100)
+      : 0;
+    const jornadasActivas = jornadas.filter((j) => !j.suspendida).length;
+    const categoriasConJornadas = new Set(
+      jornadas
+        .map((j) => (j.categoria || "").trim())
+        .filter((categoria) => categoria.length > 0)
+    ).size;
+
     return {
       totalClientes,
       activos,
@@ -142,8 +179,13 @@ export default function RegistrosPage() {
       sesionesTotales: sesiones.length,
       tipoAsesoria,
       modalidades,
+      jornadasActivas,
+      categoriasConJornadas,
+      presentesAsistencia,
+      ausentesAsistencia,
+      presentismoGeneral,
     };
-  }, [jugadoras, alumnos, sesiones, clientesMeta]);
+  }, [jugadoras, alumnos, sesiones, clientesMeta, jornadas, asistenciaRegistros]);
 
   const mesNombre = new Date().toLocaleString("es-AR", { month: "long", year: "numeric" });
 
@@ -231,16 +273,35 @@ export default function RegistrosPage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
-      <div className="mb-6">
+    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl font-bold">Registros</h1>
-        <p className="text-sm text-neutral-600">
-          Resumen de clientes, pagos y actividad del sistema.
-        </p>
+        <div className="flex gap-2">
+          <Link href="/asistencias" className="rounded-xl border border-cyan-300/35 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10">
+            Asistencias
+          </Link>
+          <Link href="/sesiones" className="rounded-xl border border-violet-300/35 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/10">
+            Sesiones
+          </Link>
+          <Link href="/plantel" className="rounded-xl border border-emerald-300/35 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
+            Plantel
+          </Link>
+        </div>
       </div>
+      <p className="mb-6 text-sm text-slate-300">
+        Resumen de clientes, pagos y operacion diaria conectada con asistencias.
+      </p>
+
+      <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-5">
+        <StatCard label="Jornadas activas" value={stats.jornadasActivas} accent="blue" />
+        <StatCard label="Categorias activas" value={stats.categoriasConJornadas} accent="yellow" />
+        <StatCard label="Presentes" value={stats.presentesAsistencia} accent="green" />
+        <StatCard label="Ausentes" value={stats.ausentesAsistencia} accent="red" />
+        <StatCard label="Presentismo general" value={`${stats.presentismoGeneral}%`} accent="blue" />
+      </section>
 
       {/* Clientes */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
         Clientes
       </h2>
       <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
@@ -255,12 +316,12 @@ export default function RegistrosPage() {
         />
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
         Resumen mensual de ingresos
       </h2>
-      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
+      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-slate-300">
             Consolidado por mes en base a pagos registrados en Clientes.
           </p>
           <button
@@ -273,11 +334,11 @@ export default function RegistrosPage() {
         </div>
 
         {resumenMensualIngresos.length === 0 ? (
-          <p className="text-sm text-neutral-400">No hay pagos suficientes para resumir por mes.</p>
+          <p className="text-sm text-slate-400">No hay pagos suficientes para resumir por mes.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-neutral-200">
+          <div className="overflow-x-auto rounded-xl border border-white/10">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
+              <thead className="bg-slate-800 text-slate-200">
                 <tr>
                   <th className="px-3 py-2">Mes</th>
                   <th className="px-3 py-2">Pagos</th>
@@ -287,10 +348,10 @@ export default function RegistrosPage() {
               </thead>
               <tbody>
                 {resumenMensualIngresos.map((row) => (
-                  <tr key={row.mes} className="border-t border-neutral-200">
-                    <td className="px-3 py-2 font-medium text-neutral-800">{row.mes}</td>
-                    <td className="px-3 py-2 text-neutral-700">{row.cantidadPagos}</td>
-                    <td className="px-3 py-2 text-neutral-700">{row.clientesUnicos}</td>
+                  <tr key={row.mes} className="border-t border-white/10">
+                    <td className="px-3 py-2 font-medium text-slate-100">{row.mes}</td>
+                    <td className="px-3 py-2 text-slate-300">{row.cantidadPagos}</td>
+                    <td className="px-3 py-2 text-slate-300">{row.clientesUnicos}</td>
                     <td className="px-3 py-2 font-semibold text-green-700">
                       {row.moneda} {row.total.toLocaleString("es-AR")}
                     </td>
@@ -303,7 +364,7 @@ export default function RegistrosPage() {
       </section>
 
       {/* Pagos */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
         Pagos
       </h2>
       <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
@@ -338,7 +399,7 @@ export default function RegistrosPage() {
       </section>
 
       {/* Sesiones y tipo */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
         Sesiones y asesoría
       </h2>
       <section className="mb-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -347,24 +408,24 @@ export default function RegistrosPage() {
           value={stats.sesionesTotales}
           accent="blue"
         />
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-neutral-500">Tipo de asesoría</p>
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+          <p className="text-sm text-slate-300">Tipo de asesoría</p>
           <div className="mt-3 space-y-1">
             {(["completa", "entrenamiento", "nutricion"] as const).map((tipo) => (
               <div key={tipo} className="flex items-center justify-between text-sm">
-                <span className="capitalize text-neutral-600">{tipo}</span>
-                <span className="font-semibold">{stats.tipoAsesoria[tipo] ?? 0}</span>
+                <span className="capitalize text-slate-300">{tipo}</span>
+                <span className="font-semibold text-white">{stats.tipoAsesoria[tipo] ?? 0}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-neutral-500">Modalidad</p>
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+          <p className="text-sm text-slate-300">Modalidad</p>
           <div className="mt-3 space-y-1">
             {(["presencial", "virtual"] as const).map((mod) => (
               <div key={mod} className="flex items-center justify-between text-sm">
-                <span className="capitalize text-neutral-600">{mod}</span>
-                <span className="font-semibold">{stats.modalidades[mod] ?? 0}</span>
+                <span className="capitalize text-slate-300">{mod}</span>
+                <span className="font-semibold text-white">{stats.modalidades[mod] ?? 0}</span>
               </div>
             ))}
           </div>
@@ -372,23 +433,23 @@ export default function RegistrosPage() {
       </section>
 
       {/* Listado de clientes */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
         Todos los clientes ({allClientes.length})
       </h2>
       <section className="grid gap-3">
         {allClientes.length === 0 && (
-          <p className="text-sm text-neutral-400">No hay clientes registrados aún.</p>
+          <p className="text-sm text-slate-400">No hay clientes registrados aún.</p>
         )}
         {allClientes.map((cliente) => {
           const meta = clientesMeta[cliente.id] as ClienteMeta | undefined;
           return (
             <div
               key={cliente.id}
-              className="flex flex-col gap-2 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-semibold text-neutral-800">{cliente.nombre}</p>
-                <p className="text-xs text-neutral-400">
+                <p className="font-semibold text-slate-100">{cliente.nombre}</p>
+                <p className="text-xs text-slate-400">
                   {cliente.tipo}
                   {cliente.categoria ? ` · ${cliente.categoria}` : ""}
                   {cliente.club ? ` · ${cliente.club}` : ""}
@@ -397,7 +458,7 @@ export default function RegistrosPage() {
 
               <div className="flex flex-wrap items-center gap-2">
                 {meta?.startDate && (
-                  <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-500">
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">
                     Desde {new Date(meta.startDate).toLocaleDateString("es-AR")}
                   </span>
                 )}
