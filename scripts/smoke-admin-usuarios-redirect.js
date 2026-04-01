@@ -1,6 +1,9 @@
 const path = require('node:path');
+const { PrismaClient } = require('@prisma/client');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+
+const prisma = new PrismaClient();
 
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000';
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
@@ -70,8 +73,107 @@ async function loginByCredentials(email, password) {
   };
 }
 
+async function loginByMagicLink(email) {
+  const requestResponse = await fetch(`${baseUrl}/api/auth/login-link`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!requestResponse.ok) {
+    return {
+      ok: false,
+      status: requestResponse.status,
+      location: 'magic-link-request-failed',
+      cookieHeader: '',
+    };
+  }
+
+  const latestToken = await prisma.verificationToken.findFirst({
+    where: {
+      email,
+      token: {
+        startsWith: 'login-link-',
+      },
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      expiresAt: 'desc',
+    },
+    select: {
+      token: true,
+    },
+  });
+
+  if (!latestToken?.token) {
+    return {
+      ok: false,
+      status: 500,
+      location: 'magic-token-not-found',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
+  if (!csrfResponse.ok) {
+    return {
+      ok: false,
+      status: csrfResponse.status,
+      location: 'csrf-failed',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfData = await csrfResponse.json();
+  if (!csrfData?.csrfToken) {
+    return {
+      ok: false,
+      status: 500,
+      location: 'csrf-token-missing',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfCookies = getSetCookieValues(csrfResponse.headers);
+  const body = new URLSearchParams({
+    email,
+    loginToken: latestToken.token,
+    csrfToken: csrfData.csrfToken,
+    callbackUrl: `${baseUrl}/`,
+    json: 'true',
+  }).toString();
+
+  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Cookie: toCookieHeader(csrfCookies),
+    },
+    body,
+    redirect: 'manual',
+  });
+
+  const location = loginResponse.headers.get('location') || '';
+  const loginCookies = getSetCookieValues(loginResponse.headers);
+
+  return {
+    ok: loginResponse.status === 302 && !/error=/i.test(location),
+    status: loginResponse.status,
+    location,
+    cookieHeader: toCookieHeader([...csrfCookies, ...loginCookies]),
+  };
+}
+
 async function main() {
-  const login = await loginByCredentials(adminEmail, adminPassword);
+  let login = await loginByCredentials(adminEmail, adminPassword);
+  if (!login.ok) {
+    login = await loginByMagicLink(adminEmail);
+  }
+
   if (!login.ok) {
     throw new Error(`admin login fallo: status=${login.status} location=${login.location}`);
   }
@@ -105,7 +207,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
-  process.exit(1);
-});
+main()
+  .catch((error) => {
+    console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
