@@ -10,6 +10,13 @@ function run(command) {
   return execSync(command, { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
 }
 
+function maskSecret(value) {
+  return String(value || "").replace(
+    /(WHATSAPP_AUTOMATION_SECRET=)'[^']+'/g,
+    "$1'***'"
+  );
+}
+
 function getCurrentCrontab() {
   try {
     return run("crontab -l 2>/dev/null || true");
@@ -63,7 +70,7 @@ function main() {
         schedule,
         marker,
         secretConfigured: Boolean(automationSecret),
-        line: enabled ? cronCommand : null,
+        line: enabled ? maskSecret(cronCommand) : null,
       },
       null,
       2
