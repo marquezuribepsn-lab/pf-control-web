@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, type MouseEvent } from "react";
 import StatCard from "../components/StatCard";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
@@ -112,6 +112,24 @@ function resolveDashboardStatHref(title: string, index: number): string {
 
   const fallbackByIndex = ["/categorias", "/plantel", "/semana", "/wellness"];
   return fallbackByIndex[index] || "/registros";
+}
+
+function shouldKeepNativeNavigation(event: MouseEvent<HTMLAnchorElement>): boolean {
+  if (event.defaultPrevented) return true;
+  if (event.button !== 0) return true;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
+  const target = event.currentTarget.getAttribute("target");
+  if (target && target !== "_self") return true;
+  return false;
+}
+
+function forceHomepageNavigation(event: MouseEvent<HTMLAnchorElement>, href: string) {
+  if (shouldKeepNativeNavigation(event)) {
+    return;
+  }
+
+  event.preventDefault();
+  window.location.assign(href);
 }
 
 function isWellnessModulo(modulo: Modulo): boolean {
@@ -580,12 +598,14 @@ export default function Home() {
                 <div className="flex flex-wrap gap-3 md:col-span-2">
                   <Link
                     href={primaryActionHref}
+                    onClick={(event) => forceHomepageNavigation(event, primaryActionHref)}
                     className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-400"
                   >
                     {config.botonPrimarioLabel}
                   </Link>
                   <Link
                     href={secondaryActionHref}
+                    onClick={(event) => forceHomepageNavigation(event, secondaryActionHref)}
                     className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     {config.botonSecundarioLabel}
@@ -611,6 +631,7 @@ export default function Home() {
               <Link
                 key={stat.title}
                 href={statHref}
+                onClick={(event) => forceHomepageNavigation(event, statHref)}
                 className={`rounded-2xl bg-gradient-to-br ${tone} p-0.5 shadow-lg`}
               >
                 <div className="rounded-[14px] bg-white p-0.5">
@@ -636,12 +657,14 @@ export default function Home() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/clientes"
+                onClick={(event) => forceHomepageNavigation(event, "/clientes")}
                 className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
               >
                 Crear cliente
               </Link>
               <Link
                 href="/sesiones"
+                onClick={(event) => forceHomepageNavigation(event, "/sesiones")}
                 className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Gestionar sesiones
@@ -678,6 +701,7 @@ export default function Home() {
               />
               <Link
                 href="/clientes"
+                onClick={(event) => forceHomepageNavigation(event, "/clientes")}
                 className="rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/10"
               >
                 Ver modulo clientes
@@ -733,6 +757,7 @@ export default function Home() {
                         <td className="px-3 py-3 text-right">
                           <Link
                             href="/semana"
+                            onClick={(event) => forceHomepageNavigation(event, "/semana")}
                             className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
                           >
                             Abrir semana
@@ -752,6 +777,7 @@ export default function Home() {
             <h3 className="text-xl font-black">Acceso rapido por categorias</h3>
             <Link
               href="/categorias"
+              onClick={(event) => forceHomepageNavigation(event, "/categorias")}
               className="rounded-lg border border-white/30 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
             >
               Ver todas
@@ -772,6 +798,9 @@ export default function Home() {
                   <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
+                    onClick={(event) =>
+                      forceHomepageNavigation(event, `/categorias/${encodeURIComponent(categoria.nombre)}`)
+                    }
                     className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
                   >
                     <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
@@ -973,6 +1002,12 @@ export default function Home() {
                 <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
+                  onClick={(event) =>
+                    forceHomepageNavigation(
+                      event,
+                      resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")
+                    )
+                  }
                   className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
                 >
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
