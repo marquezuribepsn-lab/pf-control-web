@@ -57,7 +57,7 @@ $mailIntensiveStep = if ($RunMailIntensiveSmokes.IsPresent) {
   "echo '[guardrail] smoke:auth:mail:all omitido para ahorrar creditos de Brevo (usa -RunMailIntensiveSmokes para activarlo)';"
 }
 
-$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; npm run smoke:mail:guard; $mailIntensiveStep npm run smoke:admin:usuarios:redirect; $uxGuardrailStep pm2 save"
+$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run whatsapp:automation:cron:setup; npm run smoke:login:guard; npm run smoke:mail:guard; $mailIntensiveStep npm run smoke:admin:usuarios:redirect; $uxGuardrailStep pm2 save"
 
 Write-Output "[1/4] Creando backup y preparando carpeta remota..."
 ssh $Server $remoteBackupAndPrep

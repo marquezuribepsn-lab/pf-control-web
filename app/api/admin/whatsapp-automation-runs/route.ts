@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSyncValue } from "@/lib/syncStore";
+import { RUNNER_STATE_KEY } from "@/lib/whatsappRunService";
 
 const db = prisma as any;
+const ALERTS_KEY = "whatsapp-automation-alerts-v1";
 
 export async function GET() {
   const session = await auth();
@@ -11,20 +14,24 @@ export async function GET() {
   }
 
   try {
-    const rows = await db.syncEntry.findMany({
-      where: {
-        key: {
-          startsWith: "whatsapp-automation-run-",
+    const [rows, runnerStateRaw, alertsRaw] = await Promise.all([
+      db.syncEntry.findMany({
+        where: {
+          key: {
+            startsWith: "whatsapp-automation-run-",
+          },
         },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 100,
-      select: {
-        key: true,
-        value: true,
-        updatedAt: true,
-      },
-    });
+        orderBy: { updatedAt: "desc" },
+        take: 100,
+        select: {
+          key: true,
+          value: true,
+          updatedAt: true,
+        },
+      }),
+      getSyncValue(RUNNER_STATE_KEY),
+      getSyncValue(ALERTS_KEY),
+    ]);
 
     const runs = rows.map((row: any) => {
       const value = row.value && typeof row.value === "object" ? row.value : {};
@@ -37,7 +44,13 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ ok: true, runs });
+    return NextResponse.json({
+      ok: true,
+      runs,
+      runnerState:
+        runnerStateRaw && typeof runnerStateRaw === "object" ? runnerStateRaw : {},
+      alerts: Array.isArray(alertsRaw) ? alertsRaw.slice(0, 50) : [],
+    });
   } catch (error) {
     return NextResponse.json(
       {

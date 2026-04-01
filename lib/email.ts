@@ -506,3 +506,62 @@ export async function verifyPasswordResetToken(token: string) {
 
   return resetToken;
 }
+
+export async function sendWhatsAppAutomationFailureEmail(input: {
+  runId: string;
+  categoryKey?: string;
+  ruleKey?: string;
+  failed: number;
+  sent: number;
+  reason?: string | null;
+  attemptedAt?: string;
+  retryCount?: number;
+}) {
+  ensureMailConfigured();
+
+  const recipients = await getAdminNotificationRecipients();
+  if (recipients.length === 0) {
+    return { delivered: false, recipients: 0 };
+  }
+
+  const attemptedAt = input.attemptedAt
+    ? new Date(input.attemptedAt).toLocaleString("es-AR")
+    : new Date().toLocaleString("es-AR");
+
+  const category = String(input.categoryKey || "all");
+  const rule = String(input.ruleKey || "all");
+  const reason = String(input.reason || "fallo_de_envio");
+
+  const html = renderEmailLayout({
+    preheader: `Fallo del runner de WhatsApp (${input.runId})`,
+    title: "Alerta: fallo en corrida automatica de WhatsApp",
+    intro: "Se detecto una corrida con fallos y requiere revision operativa.",
+    bodyHtml: `
+      <table style="border-collapse:collapse;width:100%;max-width:700px;margin-bottom:14px;background:#020617;border:1px solid rgba(148,163,184,0.2);border-radius:10px;overflow:hidden;">
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Run ID</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(input.runId)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Fecha</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(attemptedAt)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Categoria</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(category)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Regla</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(rule)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Enviados OK</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(input.sent)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Fallidos</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(input.failed)}</td></tr>
+        <tr><td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;">Reintentos</td><td style="padding:7px 10px;border-bottom:1px solid #1e293b;">${escapeHtml(input.retryCount ?? 0)}</td></tr>
+        <tr><td style="padding:7px 10px;font-weight:700;">Motivo</td><td style="padding:7px 10px;">${escapeHtml(reason)}</td></tr>
+      </table>
+      <p style="margin:0;color:#cbd5e1;">Revisa el panel de WhatsApp para detalle por destinatario y ejecutar correcciones.</p>
+    `,
+    ctaLabel: "Abrir panel de WhatsApp",
+    ctaUrl: `${mailAppUrl}/admin/whatsapp`,
+  });
+
+  await Promise.all(
+    recipients.map((to) =>
+      sendMail({
+        to,
+        subject: `PF Control - Alerta runner WhatsApp (${input.runId})`,
+        html,
+      })
+    )
+  );
+
+  return { delivered: true, recipients: recipients.length };
+}

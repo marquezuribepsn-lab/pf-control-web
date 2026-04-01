@@ -34,6 +34,14 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+function parsePhoneList(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return String(raw)
+    .split(",")
+    .map((item) => normalizeWhatsAppPhone(item))
+    .filter((value): value is string => Boolean(value));
+}
+
 function toDateTimeString() {
   return new Date().toLocaleString("es-AR", {
     year: "numeric",
@@ -179,4 +187,53 @@ export async function sendWhatsAppAlertForSyncChange(
   }
 
   await sendWhatsAppText(bodyText, { forceText: true });
+}
+
+export async function sendWhatsAppInternalAlert(message: string, toList?: string[]) {
+  const envTargets = parsePhoneList(process.env.WHATSAPP_INTERNAL_ALERT_TO);
+  const fallbackTarget = normalizeWhatsAppPhone(String(process.env.WHATSAPP_TO || ""));
+  const explicitTargets = Array.isArray(toList)
+    ? toList
+        .map((value) => normalizeWhatsAppPhone(String(value || "")))
+        .filter((value): value is string => Boolean(value))
+    : [];
+
+  const targets = Array.from(
+    new Set([
+      ...explicitTargets,
+      ...envTargets,
+      ...(fallbackTarget ? [fallbackTarget] : []),
+    ])
+  );
+
+  if (targets.length === 0) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: 1,
+      reasons: ["internal_alert_targets_missing"],
+    };
+  }
+
+  const reasons: string[] = [];
+  let sent = 0;
+
+  for (const target of targets) {
+    const result = await sendWhatsAppText(message, {
+      toOverride: target,
+      forceText: true,
+    });
+    if (result.ok) {
+      sent += 1;
+    } else {
+      reasons.push(result.error || `status_${result.status}`);
+    }
+  }
+
+  return {
+    ok: sent > 0,
+    sent,
+    failed: targets.length - sent,
+    reasons,
+  };
 }

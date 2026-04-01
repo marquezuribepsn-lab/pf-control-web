@@ -1,19 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { setSyncValue } from "@/lib/syncStore";
+import { executeAutomationRun } from "@/lib/whatsappRunService";
 
-const mkRunId = () => `whatsapp-automation-run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+async function resolveActor(req: NextRequest) {
+  const configuredSecret = String(process.env.WHATSAPP_AUTOMATION_SECRET || "").trim();
+  const receivedSecret = String(req.headers.get("x-whatsapp-automation-secret") || "").trim();
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session || (session.user as any)?.role !== "ADMIN") {
-    return false;
+  if (configuredSecret && receivedSecret && configuredSecret === receivedSecret) {
+    return {
+      source: "runner" as const,
+      userId: "runner-secret",
+      userEmail: "runner@system.local",
+      userName: "Runner Secret",
+    };
   }
-  return true;
+
+  const session = await auth();
+  if (session && (session.user as any)?.role === "ADMIN") {
+    return {
+      source: "admin" as const,
+      userId: String((session.user as any)?.id || ""),
+      userEmail: String(session.user?.email || ""),
+      userName: String(session.user?.name || ""),
+    };
+  }
+
+  return null;
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await requireAdmin())) {
+  const actor = await resolveActor(req);
+  if (!actor) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -24,46 +41,40 @@ export async function POST(req: NextRequest) {
     forceWindow?: boolean;
     includeDisabled?: boolean;
     forceFailureForTest?: boolean;
+    limit?: number;
   };
 
-  const runId = mkRunId();
-  const dryRun = body.dryRun !== false;
-  const categoryKey = String(body.categoryKey || "general");
-  const ruleKey = String(body.ruleKey || "regla");
   const forceFailureForTest = body.forceFailureForTest === true;
+  const allowForcedFailureInProd = process.env.WHATSAPP_AUTOMATION_ALLOW_FORCE_FAILURE_TEST === "1";
 
-  const startedAt = new Date().toISOString();
+  if (forceFailureForTest && process.env.NODE_ENV === "production" && !allowForcedFailureInProd) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "forceFailureForTest disabled",
+      },
+      { status: 400 }
+    );
+  }
 
-  const summary = {
-    runId,
-    startedAt,
-    finishedAt: new Date().toISOString(),
-    dryRun,
-    categoryKey,
-    ruleKey,
-    rulesExecuted: 1,
-    totalMatched: 0,
-    sent: 0,
-    failed: 0,
-    forceWindow: Boolean(body.forceWindow),
-    includeDisabled: Boolean(body.includeDisabled),
-    emailAlertSent: false,
-    whatsappAlertSent: false,
-    alertError: null as string | null,
-    forcedFailureTest: forceFailureForTest,
-    ok: !forceFailureForTest,
-    error: forceFailureForTest ? "forceFailureForTest" : null,
-  };
-
-  await setSyncValue(runId, summary);
+  const runResult = await executeAutomationRun({
+    dryRun: body.dryRun,
+    categoryKey: body.categoryKey,
+    ruleKey: body.ruleKey,
+    forceWindow: body.forceWindow,
+    includeDisabled: body.includeDisabled,
+    forceFailureForTest: body.forceFailureForTest,
+    limit: body.limit,
+    actor,
+  });
 
   if (forceFailureForTest) {
     return NextResponse.json(
       {
         ok: false,
-        runId,
-        rulesExecuted: summary.rulesExecuted,
-        error: summary.error,
+        runId: runResult.runId,
+        rulesExecuted: runResult.rulesExecuted,
+        error: runResult.summary?.error || "forceFailureForTest",
         forcedFailureTest: true,
       },
       { status: 200 }
@@ -71,9 +82,9 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    ok: true,
-    runId,
-    rulesExecuted: summary.rulesExecuted,
-    summary,
+    ok: runResult.ok,
+    runId: runResult.runId,
+    rulesExecuted: runResult.rulesExecuted,
+    summary: runResult.summary,
   });
 }

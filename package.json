@@ -39,6 +39,7 @@
     "report:whatsapp:phones": "node scripts/report-whatsapp-missing-phones.js",
     "whatsapp:automation:run": "node scripts/run-whatsapp-automation.js",
     "whatsapp:automation:dry": "node scripts/run-whatsapp-automation.js --dry-run",
+    "whatsapp:automation:cron:setup": "node scripts/setup-whatsapp-runner-cron.js",
     "smoke:full": "node scripts/smoke-full.js",
     "smoke:auth:mail:all": "node scripts/smoke-auth-mail-all.js",
     "server:save": "npx pm2 save",

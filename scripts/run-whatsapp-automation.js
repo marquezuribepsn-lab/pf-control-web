@@ -1,6 +1,7 @@
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || "http://127.0.0.1:3000";
 const secret = String(process.env.WHATSAPP_AUTOMATION_SECRET || "").trim();
 const dryRun = process.argv.includes("--dry-run") || process.env.WHATSAPP_AUTOMATION_DRY_RUN === "1";
+const forceRunner = process.argv.includes("--force") || process.env.WHATSAPP_AUTOMATION_FORCE_RUN === "1";
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || "marquezuribepsn@gmail.com";
 const adminPassword = process.env.SMOKE_MAIN_PASSWORD || "pfcontrol2026";
 
@@ -74,14 +75,19 @@ async function main() {
     cookieHeader = await loginByCredentials(adminEmail, adminPassword);
   }
 
-  const response = await fetch(`${baseUrl}/api/whatsapp/automation/run`, {
+  const endpoint = dryRun
+    ? "/api/whatsapp/automation/run"
+    : "/api/whatsapp/automation/runner";
+  const body = dryRun ? { dryRun: true } : { force: forceRunner };
+
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(secret ? { "x-whatsapp-automation-secret": secret } : {}),
       ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
-    body: JSON.stringify({ dryRun }),
+    body: JSON.stringify(body),
   });
 
   const text = await response.text();
@@ -96,6 +102,8 @@ async function main() {
     ok: response.ok,
     baseUrl,
     dryRun,
+    forceRunner,
+    endpoint,
     authMode: secret ? "secret" : "admin-session",
     status: response.status,
     data,

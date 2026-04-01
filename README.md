@@ -108,6 +108,22 @@ npm run server:delete
 
 Nota: PM2 mantiene el proceso activo aunque cierres la terminal. Para reinicios de PC, puedes configurar arranque automático con PM2 o una tarea programada de Windows.
 
+## Runner automatico de WhatsApp (cron + frecuencia configurable)
+
+- El cron del runner se instala/actualiza con:
+
+```bash
+npm run whatsapp:automation:cron:setup
+```
+
+- El deploy a VPS ya ejecuta ese comando automaticamente.
+- La entrada de cron corre cada minuto, pero la ejecucion real respeta la frecuencia definida en `/admin/whatsapp` (ejemplo: 5 o 10 minutos).
+- Variables operativas recomendadas:
+	- `WHATSAPP_AUTOMATION_SECRET`: autenticacion para invocar el runner sin sesion admin.
+	- `WHATSAPP_AUTOMATION_CRON_ENABLED=1` (default).
+	- `WHATSAPP_AUTOMATION_CRON_SCHEDULE="* * * * *"`.
+	- `WHATSAPP_INTERNAL_ALERT_TO="54911...,54922..."` para alertas internas por WhatsApp.
+
 ## Getting Started
 
 First, run the development server:

@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSyncValue, setSyncValue } from "@/lib/syncStore";
+import { getDefaultWhatsAppConfig, normalizeWhatsAppConfig } from "@/lib/whatsappConfig";
 
 const CONFIG_KEY = "whatsapp-config-v1";
-
-const DEFAULT_CONFIG = {
-  connection: {
-    enabled: true,
-    mode: "test",
-  },
-  categories: {
-    cobranzas: { enabled: true },
-    recordatorios_otros: { enabled: true },
-  },
-  updatedAt: new Date(0).toISOString(),
-};
 
 async function requireAdmin() {
   const session = await auth();
@@ -29,7 +18,8 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const config = (await getSyncValue(CONFIG_KEY)) || DEFAULT_CONFIG;
+  const raw = await getSyncValue(CONFIG_KEY);
+  const config = normalizeWhatsAppConfig(raw || getDefaultWhatsAppConfig());
   return NextResponse.json({ config });
 }
 
@@ -40,9 +30,9 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = (await req.json()) as Record<string, unknown>;
+    const normalized = normalizeWhatsAppConfig(body || {});
     const nextConfig = {
-      ...DEFAULT_CONFIG,
-      ...(body || {}),
+      ...normalized,
       updatedAt: new Date().toISOString(),
     };
     await setSyncValue(CONFIG_KEY, nextConfig);

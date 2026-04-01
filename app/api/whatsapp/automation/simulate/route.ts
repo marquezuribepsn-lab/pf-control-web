@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getSyncValue } from "@/lib/syncStore";
+import { buildAutomationMatches } from "@/lib/whatsappAutomation";
 
 async function requireAdmin() {
   const session = await auth();
@@ -19,30 +19,27 @@ export async function POST(req: NextRequest) {
     categoryKey?: string;
     ruleKey?: string;
     limit?: number;
+    includeDisabled?: boolean;
+    forceWindow?: boolean;
   };
 
-  const categoryKey = String(body.categoryKey || "general");
-  const ruleKey = String(body.ruleKey || "regla");
-  const limit = Math.max(1, Math.min(100, Number(body.limit) || 10));
-
-  const alumnos = await getSyncValue("pf-control-alumnos");
-  const rows = Array.isArray(alumnos) ? alumnos : [];
-
-  const matches = rows.slice(0, limit).map((item: any, index: number) => ({
-    id: `${index + 1}`,
-    nombre: String(item?.nombre || `Cliente ${index + 1}`),
-    categoria: categoryKey,
-    ruleKey,
-  }));
+  const result = await buildAutomationMatches({
+    categoryKey: body.categoryKey,
+    ruleKey: body.ruleKey,
+    limit: body.limit,
+    includeDisabled: body.includeDisabled,
+    forceWindow: body.forceWindow,
+  });
 
   return NextResponse.json({
     ok: true,
     summary: {
-      categoryKey,
-      ruleKey,
-      totalMatched: matches.length,
-      limitedTo: limit,
+      categoryKey: String(body.categoryKey || "all"),
+      ruleKey: String(body.ruleKey || "all"),
+      rulesEvaluated: result.rulesEvaluated,
+      totalMatched: result.totalMatched,
+      limitedTo: result.limitedTo,
     },
-    matches,
+    matches: result.matches,
   });
 }
