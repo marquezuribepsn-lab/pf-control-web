@@ -1404,6 +1404,32 @@ export default function ClientesPage() {
     window.open(`https://wa.me/${telefono}?text=${presetText}`, "_blank", "noopener,noreferrer");
   };
 
+  const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
+    setSelectedClientId(clientId);
+    setActiveTab(tab);
+    setIsDetailMode(true);
+    setDetailClientId(clientId);
+    setDetailTabId(tab);
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("detalle", "1");
+      params.set("cliente", clientId);
+      params.set("tab", tab);
+      window.history.pushState({}, "", `${window.location.pathname}?${params.toString()}`);
+    }
+  };
+
+  const closeClientDetail = () => {
+    setIsDetailMode(false);
+    setDetailClientId(null);
+    setDetailTabId(null);
+
+    if (typeof window !== "undefined") {
+      window.history.pushState({}, "", window.location.pathname);
+    }
+  };
+
   const registrarPago = (e: React.FormEvent) => {
     e.preventDefault();
     markManualSaveIntent(PAGOS_KEY);
@@ -1848,10 +1874,10 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                        <Link href={`/clientes/ver/${encodeURIComponent(cliente.id)}`} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver">👁</Link>
-                        <button type="button" onClick={() => { setSelectedClientId(cliente.id); setActiveTab("notas"); }} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat">💬</button>
+                        <button type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</button>
+                        <button type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</button>
                         <button type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</button>
-                        <button type="button" onClick={() => { setSelectedClientId(cliente.id); setActiveTab("plan-entrenamiento"); }} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Asignar">📌</button>
+                        <button type="button" onClick={() => openClientDetail(cliente.id, "plan-entrenamiento")} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan">📌</button>
                         <button type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</button>
                         <button type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</button>
                       </div>
@@ -1886,17 +1912,13 @@ export default function ClientesPage() {
                     >
                       WhatsApp
                     </button>
-                    <Link
-                      href="/clientes"
-                      onClick={() => {
-                        setIsDetailMode(false);
-                        setDetailClientId(null);
-                        setDetailTabId(null);
-                      }}
+                    <button
+                      type="button"
+                      onClick={closeClientDetail}
                       className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
                     >
                       Volver al listado
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>

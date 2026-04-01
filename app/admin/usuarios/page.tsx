@@ -46,6 +46,7 @@ const ACCESS_OPTIONS: AccessOption[] = [
   { href: "/deportes", label: "Deportes", category: "Catalogos" },
   { href: "/equipos", label: "Equipos", category: "Catalogos" },
   { href: "/clientes", label: "Clientes", category: "Clientes" },
+  { href: "/clientes/musica", label: "Musica alumnos", category: "Clientes" },
 ];
 
 const CATEGORY_ACCESS_HREFS = ["/categorias", "/deportes", "/equipos"];

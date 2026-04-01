@@ -50,6 +50,7 @@ const COLABORADOR_ACCESS_HREFS = [
   "/deportes",
   "/equipos",
   "/clientes",
+  "/clientes/musica",
   "/clientes/playlists",
 ];
 
@@ -417,7 +418,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         return true;
       }
 
-      if (link.href === "/clientes/playlists") {
+      if (link.href === "/clientes/musica" || link.href === "/clientes/playlists") {
         return colaboradorAccessMap["/clientes"] !== false;
       }
 
