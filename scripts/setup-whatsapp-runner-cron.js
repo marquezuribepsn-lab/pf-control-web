@@ -1,4 +1,6 @@
 const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 const marker = "# PF_CONTROL_WHATSAPP_RUNNER";
 
@@ -8,6 +10,24 @@ function shellQuote(value) {
 
 function run(command) {
   return execSync(command, { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+}
+
+function readEnvValueFromFile(filePath, key) {
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = String(content || "").split(/\r?\n/);
+    const prefix = `${key}=`;
+    for (const rawLine of lines) {
+      const line = String(rawLine || "").trim();
+      if (!line || line.startsWith("#") || !line.startsWith(prefix)) {
+        continue;
+      }
+      return line.slice(prefix.length).trim();
+    }
+  } catch {
+    // ignore env file read errors
+  }
+  return "";
 }
 
 function maskSecret(value) {
@@ -34,8 +54,13 @@ function main() {
   const enabled = process.env.WHATSAPP_AUTOMATION_CRON_ENABLED !== "0";
   const schedule = String(process.env.WHATSAPP_AUTOMATION_CRON_SCHEDULE || "* * * * *").trim();
   const cwd = process.cwd();
-  const nextAuthUrl = String(process.env.NEXTAUTH_URL || "http://127.0.0.1:3000").trim();
-  const automationSecret = String(process.env.WHATSAPP_AUTOMATION_SECRET || "").trim();
+  const envFilePath = path.join(cwd, ".env.production");
+  const nextAuthUrl = String(
+    process.env.NEXTAUTH_URL || readEnvValueFromFile(envFilePath, "NEXTAUTH_URL") || "http://127.0.0.1:3000"
+  ).trim();
+  const automationSecret = String(
+    process.env.WHATSAPP_AUTOMATION_SECRET || readEnvValueFromFile(envFilePath, "WHATSAPP_AUTOMATION_SECRET") || ""
+  ).trim();
   const logPath = String(process.env.WHATSAPP_AUTOMATION_CRON_LOG || "/var/log/pf-whatsapp-automation.log").trim();
 
   const envParts = [
