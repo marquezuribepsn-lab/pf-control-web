@@ -1,9 +1,12 @@
 import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { decode as jwtDecode, encode as jwtEncode } from 'next-auth/jwt';
 import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 
 const db = prisma as any;
+const REMEMBERED_SESSION_MAX_AGE = 30 * 24 * 60 * 60;
+const SHORT_SESSION_MAX_AGE = 24 * 60 * 60;
 
 export const authConfig = {
   trustHost: true,
@@ -21,6 +24,11 @@ export const authConfig = {
         const password = typeof credentials?.password === 'string' ? credentials.password : null;
         const loginToken =
           typeof credentials?.loginToken === 'string' ? credentials.loginToken.trim() : null;
+        const rememberMe =
+          credentials?.rememberMe === true ||
+          credentials?.rememberMe === 'true' ||
+          credentials?.rememberMe === '1' ||
+          credentials?.rememberMe === 'on';
 
         if (!email) {
           return null;
@@ -62,6 +70,7 @@ export const authConfig = {
             id: user.id,
             email: user.email,
             role: user.role,
+            rememberMe,
           };
         }
 
@@ -82,6 +91,7 @@ export const authConfig = {
           id: user.id,
           email: user.email,
           role: user.role,
+          rememberMe,
         };
       },
     }),
@@ -94,6 +104,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.rememberMe = Boolean((user as any).rememberMe);
       }
       return token;
     },
@@ -105,9 +116,19 @@ export const authConfig = {
       return session;
     },
   },
+  jwt: {
+    async encode(params) {
+      const rememberMe = Boolean((params.token as any)?.rememberMe);
+      const maxAge = rememberMe ? REMEMBERED_SESSION_MAX_AGE : SHORT_SESSION_MAX_AGE;
+      return jwtEncode({ ...params, maxAge });
+    },
+    async decode(params) {
+      return jwtDecode(params);
+    },
+  },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: REMEMBERED_SESSION_MAX_AGE,
   },
   secret: process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthConfig;

@@ -12,12 +12,32 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (!token) {
       setError('El enlace no es válido o está incompleto.');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (!redirecting) {
+      return;
+    }
+
+    const softRedirect = window.setTimeout(() => {
+      router.replace('/auth/login');
+    }, 900);
+
+    const hardRedirect = window.setTimeout(() => {
+      window.location.assign('/auth/login');
+    }, 1800);
+
+    return () => {
+      window.clearTimeout(softRedirect);
+      window.clearTimeout(hardRedirect);
+    };
+  }, [redirecting, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -49,8 +69,8 @@ function ResetPasswordContent() {
         throw new Error(data.message || 'No se pudo restablecer la contraseña');
       }
 
-      setMessage(data.message || 'Contraseña actualizada');
-      setTimeout(() => router.push('/auth/login'), 2000);
+      setMessage((data.message || 'Contraseña actualizada') + ' Redirigiendo al login...');
+      setRedirecting(true);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'No se pudo restablecer la contraseña');
     } finally {
@@ -101,10 +121,10 @@ function ResetPasswordContent() {
 
             <button
               type="submit"
-              disabled={loading || !token}
+              disabled={loading || redirecting || !token}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
+              {loading || redirecting ? 'Guardando...' : 'Guardar nueva contraseña'}
             </button>
           </form>
 

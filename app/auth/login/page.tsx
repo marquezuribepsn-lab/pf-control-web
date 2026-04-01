@@ -4,12 +4,17 @@ import { Suspense, useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+const LOGIN_FAILED_ATTEMPTS_KEY = 'pf_login_failed_attempts';
+const LOGIN_REMEMBER_EMAIL_KEY = 'pf_login_remembered_email';
+const LOGIN_REMEMBER_ENABLED_KEY = 'pf_login_remember_enabled';
+
 function LoginPageContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [loading, setLoading] = useState(false);
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState('');
@@ -18,6 +23,30 @@ function LoginPageContent() {
 
   const magicToken = String(searchParams.get('magic') || '').trim();
   const magicEmail = String(searchParams.get('email') || '').trim().toLowerCase();
+  const authError = String(searchParams.get('error') || '').trim();
+  const canUseMagicAccess = failedAttempts >= 3;
+
+  useEffect(() => {
+    try {
+      const storedAttempts = Number(window.sessionStorage.getItem(LOGIN_FAILED_ATTEMPTS_KEY) || 0);
+      if (Number.isFinite(storedAttempts) && storedAttempts > 0) {
+        setFailedAttempts(Math.min(10, Math.floor(storedAttempts)));
+      }
+
+      const rememberEnabled = window.localStorage.getItem(LOGIN_REMEMBER_ENABLED_KEY) === '1';
+      if (rememberEnabled) {
+        const rememberedEmail = String(window.localStorage.getItem(LOGIN_REMEMBER_EMAIL_KEY) || '')
+          .trim()
+          .toLowerCase();
+        if (rememberedEmail) {
+          setEmail(rememberedEmail);
+        }
+        setRememberMe(true);
+      }
+    } catch {
+      // Ignoramos errores de storage en navegadores restringidos.
+    }
+  }, []);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -31,6 +60,39 @@ function LoginPageContent() {
     }
     setEmail(magicEmail);
   }, [magicEmail]);
+
+  useEffect(() => {
+    if (authError !== 'CredentialsSignin') {
+      return;
+    }
+    setError('Email o contraseña incorrectos. Revisa tus datos e intenta nuevamente.');
+  }, [authError]);
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(LOGIN_FAILED_ATTEMPTS_KEY, String(failedAttempts));
+    } catch {
+      // Ignoramos errores de storage en navegadores restringidos.
+    }
+  }, [failedAttempts]);
+
+  useEffect(() => {
+    try {
+      if (!rememberMe) {
+        window.localStorage.removeItem(LOGIN_REMEMBER_EMAIL_KEY);
+        window.localStorage.removeItem(LOGIN_REMEMBER_ENABLED_KEY);
+        return;
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail) {
+        window.localStorage.setItem(LOGIN_REMEMBER_EMAIL_KEY, normalizedEmail);
+      }
+      window.localStorage.setItem(LOGIN_REMEMBER_ENABLED_KEY, '1');
+    } catch {
+      // Ignoramos errores de storage en navegadores restringidos.
+    }
+  }, [rememberMe, email]);
 
   useEffect(() => {
     const consumeMagic = async () => {
@@ -53,6 +115,8 @@ function LoginPageContent() {
           return;
         }
 
+        setFailedAttempts(0);
+
         window.location.assign('/');
       } catch {
         setError('No pudimos validar el enlace de acceso. Intenta nuevamente.');
@@ -68,19 +132,30 @@ function LoginPageContent() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setMagicSent('');
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: normalizedEmail,
         password,
         rememberMe,
         redirect: false,
       });
 
       if (!result?.ok) {
-        setError('No pudimos iniciar sesión. Revisa email, contraseña y verificación del correo.');
+        const nextAttempts = Math.min(failedAttempts + 1, 10);
+        setFailedAttempts(nextAttempts);
+        if (nextAttempts >= 3) {
+          setError('Email o contraseña incorrectos. Revisa tus datos o usa el acceso por enlace al email.');
+        } else {
+          setError('Email o contraseña incorrectos. Revisa tus datos e intenta nuevamente.');
+        }
         return;
       }
+
+      setFailedAttempts(0);
 
       window.location.assign('/');
     } catch (err) {
@@ -229,14 +304,21 @@ function LoginPageContent() {
                 {loading ? 'Ingresando...' : 'Iniciar sesión'}
               </button>
 
-              <button
-                type="button"
-                onClick={handleRequestMagicLink}
-                disabled={magicLoading}
-                className="w-full rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {magicLoading ? 'Enviando enlace...' : 'Entrar con enlace al email'}
-              </button>
+              {canUseMagicAccess ? (
+                <>
+                  <p className="text-xs font-semibold text-cyan-200/90">
+                    Detectamos varios intentos fallidos. Puedes entrar con un enlace seguro al email.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleRequestMagicLink}
+                    disabled={magicLoading || loading}
+                    className="w-full rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {magicLoading ? 'Enviando enlace...' : 'Entrar con enlace al email'}
+                  </button>
+                </>
+              ) : null}
 
             <div className="text-right">
               <a href="/auth/forgot-password" className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">
