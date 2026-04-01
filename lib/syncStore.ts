@@ -115,7 +115,23 @@ export async function getSyncValue(key: string): Promise<unknown | null> {
         where: { key },
         select: { value: true },
       });
-      return row?.value ?? null;
+      if (row) {
+        return row.value ?? null;
+      }
+
+      // If DB is enabled but this key was never migrated, reuse file snapshot.
+      const fileStore = await readStore();
+      if (key in fileStore) {
+        const fallbackValue = fileStore[key] ?? null;
+        await prisma.syncEntry.upsert({
+          where: { key },
+          update: { value: fallbackValue as any },
+          create: { key, value: fallbackValue as any },
+        });
+        return fallbackValue;
+      }
+
+      return null;
     }
   }
 

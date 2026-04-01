@@ -1,10 +1,17 @@
-type WhatsAppPayload = {
-  messaging_product: "whatsapp";
-  to: string;
-  type: "text";
-  text: {
-    body: string;
-  };
+type SendWhatsAppTextOptions = {
+  toOverride?: string;
+  forceText?: boolean;
+  templateName?: string;
+  templateLanguageCode?: string;
+  templateComponents?: unknown[];
+};
+
+type SendWhatsAppResult = {
+  ok: boolean;
+  status: number;
+  payloadType: "text" | "template";
+  providerMessageId: string | null;
+  error: string | null;
 };
 
 function isEnabled() {
@@ -12,11 +19,11 @@ function isEnabled() {
 }
 
 function getConfig() {
-  const token = process.env.WHATSAPP_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const to = process.env.WHATSAPP_TO;
+  const token = String(process.env.WHATSAPP_TOKEN || "").trim();
+  const phoneNumberId = String(process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
+  const to = String(process.env.WHATSAPP_TO || "").trim();
 
-  if (!token || !phoneNumberId || !to) {
+  if (!token || !phoneNumberId) {
     return null;
   }
 
@@ -35,6 +42,25 @@ function toDateTimeString() {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export function normalizeWhatsAppPhone(input: string): string | null {
+  const digits = String(input || "").replace(/\D+/g, "");
+  if (!digits) return null;
+
+  if (digits.startsWith("549") && digits.length >= 12) {
+    return digits;
+  }
+
+  if (digits.startsWith("54") && digits.length >= 12) {
+    return `549${digits.slice(2)}`;
+  }
+
+  if (digits.length === 10) {
+    return `549${digits}`;
+  }
+
+  return null;
 }
 
 function buildMessage(key: string, previousValue: unknown, nextValue: unknown): string {
@@ -67,6 +93,77 @@ function buildMessage(key: string, previousValue: unknown, nextValue: unknown): 
   return "";
 }
 
+export async function sendWhatsAppText(
+  message: string,
+  options: SendWhatsAppTextOptions = {}
+): Promise<SendWhatsAppResult> {
+  const cfg = getConfig();
+  if (!cfg) {
+    return {
+      ok: false,
+      status: 500,
+      payloadType: "text",
+      providerMessageId: null,
+      error: "config_missing",
+    };
+  }
+
+  const to = normalizeWhatsAppPhone(options.toOverride || cfg.to);
+  if (!to) {
+    return {
+      ok: false,
+      status: 400,
+      payloadType: "text",
+      providerMessageId: null,
+      error: "invalid_phone",
+    };
+  }
+
+  const payloadType =
+    options.templateName && !options.forceText ? ("template" as const) : ("text" as const);
+
+  const payload =
+    payloadType === "template"
+      ? {
+          messaging_product: "whatsapp",
+          to,
+          type: "template",
+          template: {
+            name: options.templateName,
+            language: { code: options.templateLanguageCode || "es_AR" },
+            components: Array.isArray(options.templateComponents)
+              ? options.templateComponents
+              : undefined,
+          },
+        }
+      : {
+          messaging_product: "whatsapp",
+          to,
+          type: "text",
+          text: { body: String(message || "") },
+        };
+
+  const response = await fetch(`https://graph.facebook.com/v22.0/${cfg.phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${cfg.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = (await response.json().catch(() => ({}))) as any;
+  const providerMessageId = body?.messages?.[0]?.id || null;
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    payloadType,
+    providerMessageId,
+    error: response.ok ? null : body?.error?.message || `provider_status_${response.status}`,
+  };
+}
+
 export async function sendWhatsAppAlertForSyncChange(
   key: string,
   previousValue: unknown,
@@ -76,30 +173,10 @@ export async function sendWhatsAppAlertForSyncChange(
     return;
   }
 
-  const cfg = getConfig();
-  if (!cfg) {
-    return;
-  }
-
   const bodyText = buildMessage(key, previousValue, nextValue);
   if (!bodyText) {
     return;
   }
 
-  const url = `https://graph.facebook.com/v20.0/${cfg.phoneNumberId}/messages`;
-  const payload: WhatsAppPayload = {
-    messaging_product: "whatsapp",
-    to: cfg.to,
-    type: "text",
-    text: { body: bodyText },
-  };
-
-  await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${cfg.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  await sendWhatsAppText(bodyText, { forceText: true });
 }

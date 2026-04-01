@@ -169,6 +169,10 @@
     {
       "nombre": "Sub 16",
       "habilitada": true
+    },
+    {
+      "nombre": "Nutricion",
+      "habilitada": true
     }
   ],
   "pf-control-equipos": [

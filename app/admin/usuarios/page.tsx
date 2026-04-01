@@ -1,245 +1,383 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useEffect, useMemo, useState } from "react";
 
-interface User {
+type AccessOption = {
+  href: string;
+  label: string;
+  category: string;
+};
+
+type Colaborador = {
   id: string;
   email: string;
-  role: 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
-  emailVerified: boolean;
-  createdAt: string;
+  role: "ADMIN" | "COLABORADOR" | "CLIENTE";
+  estado?: string;
+  nombreCompleto?: string;
+  puedeEditarRegistros?: boolean;
+  puedeEditarPlanes?: boolean;
+  puedeVerTodosAlumnos?: boolean;
+  permisosGranulares?: {
+    accesos?: Record<string, boolean>;
+    [key: string]: unknown;
+  } | null;
+};
+
+type ColaboradorDraft = {
+  id: string;
+  email: string;
+  nombreCompleto: string;
+  estado: string;
+  puedeEditarRegistros: boolean;
+  puedeEditarPlanes: boolean;
+  puedeVerTodosAlumnos: boolean;
+  accesos: Record<string, boolean>;
+  permisosGranulares: Record<string, unknown>;
+};
+
+const ACCESS_OPTIONS: AccessOption[] = [
+  { href: "/plantel", label: "Plantel", category: "Base" },
+  { href: "/semana", label: "Semana", category: "Planificacion" },
+  { href: "/sesiones", label: "Sesiones", category: "Planificacion" },
+  { href: "/asistencias", label: "Asistencias", category: "Seguimiento" },
+  { href: "/ejercicios", label: "Ejercicios", category: "Biblioteca" },
+  { href: "/registros", label: "Registros", category: "Seguimiento" },
+  { href: "/categorias", label: "Categorias", category: "Catalogos" },
+  { href: "/deportes", label: "Deportes", category: "Catalogos" },
+  { href: "/equipos", label: "Equipos", category: "Catalogos" },
+  { href: "/clientes", label: "Clientes", category: "Clientes" },
+];
+
+const CATEGORY_ACCESS_HREFS = ["/categorias", "/deportes", "/equipos"];
+
+const ALL_ACCESS_TRUE = ACCESS_OPTIONS.reduce<Record<string, boolean>>((acc, item) => {
+  acc[item.href] = true;
+  return acc;
+}, {});
+
+function normalizeAccessMap(raw: unknown): Record<string, boolean> {
+  const result = { ...ALL_ACCESS_TRUE };
+
+  if (!raw || typeof raw !== "object") {
+    return result;
+  }
+
+  const input = raw as Record<string, unknown>;
+  for (const option of ACCESS_OPTIONS) {
+    const maybe = input[option.href];
+    if (typeof maybe === "boolean") {
+      result[option.href] = maybe;
+    }
+  }
+
+  return result;
 }
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+function mapColaboradorToDraft(colab: Colaborador): ColaboradorDraft {
+  const permisosGranulares =
+    colab.permisosGranulares && typeof colab.permisosGranulares === "object"
+      ? { ...colab.permisosGranulares }
+      : {};
+
+  const accesos = normalizeAccessMap(colab.permisosGranulares?.accesos);
+
+  return {
+    id: colab.id,
+    email: colab.email,
+    nombreCompleto: String(colab.nombreCompleto || "Sin nombre"),
+    estado: String(colab.estado || "activo"),
+    puedeEditarRegistros: Boolean(colab.puedeEditarRegistros),
+    puedeEditarPlanes: Boolean(colab.puedeEditarPlanes),
+    puedeVerTodosAlumnos: Boolean(colab.puedeVerTodosAlumnos),
+    accesos,
+    permisosGranulares,
+  };
+}
+
+export default function AdminUsuariosPermisosPage() {
+  const [items, setItems] = useState<ColaboradorDraft[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cleanupLoading, setCleanupLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [filterRole, setFilterRole] = useState<string>('');
-  const router = useRouter();
-  const { data: session } = useSession();
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    if (session && (session.user as any).role !== 'ADMIN') {
-      router.push('/');
-    }
-  }, [session, router]);
+    let cancelled = false;
 
-  useEffect(() => {
-    const fetchUsers = async () => {
+    async function load() {
       try {
-        setError('');
-        const res = await fetch('/api/admin/users');
-        if (!res.ok) throw new Error('Error al cargar usuarios');
+        setLoading(true);
+        setMessage(null);
+
+        const res = await fetch("/api/admin/colaboradores", { cache: "no-store" });
         const data = await res.json();
-        setUsers(data);
-      } catch {
-        setError('Error al cargar usuarios');
+
+        if (!res.ok) {
+          throw new Error(data?.error || "No se pudieron cargar colaboradores");
+        }
+
+        const colaboradores = Array.isArray(data?.colaboradores) ? data.colaboradores : [];
+        const onlyColaboradores = colaboradores.filter((c: Colaborador) => c.role === "COLABORADOR");
+
+        if (!cancelled) {
+          setItems(onlyColaboradores.map(mapColaboradorToDraft));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setMessage({ type: "error", text: error instanceof Error ? error.message : "Error al cargar permisos" });
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
     };
+  }, []);
 
-    if (session) fetchUsers();
-  }, [session]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
 
-  const handleCleanupTestAccounts = async () => {
-    if (!confirm('Esto eliminara cuentas de prueba detectadas. Continuar?')) return;
+    return items.filter(
+      (item) => item.nombreCompleto.toLowerCase().includes(q) || item.email.toLowerCase().includes(q)
+    );
+  }, [items, search]);
+
+  const updateItem = (id: string, updater: (prev: ColaboradorDraft) => ColaboradorDraft) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? updater(item) : item)));
+  };
+
+  const setAllAccess = (id: string, value: boolean) => {
+    updateItem(id, (item) => {
+      const next = { ...item.accesos };
+      for (const option of ACCESS_OPTIONS) {
+        next[option.href] = value;
+      }
+      return { ...item, accesos: next };
+    });
+  };
+
+  const saveItem = async (id: string) => {
+    const current = items.find((item) => item.id === id);
+    if (!current) return;
+
+    const allCategoryAccessBlocked = CATEGORY_ACCESS_HREFS.every(
+      (href) => current.accesos[href] === false
+    );
+
+    if (allCategoryAccessBlocked) {
+      setMessage({
+        type: "error",
+        text: "Debes dejar habilitada al menos una categoria (Categorias, Deportes o Equipos).",
+      });
+      return;
+    }
 
     try {
-      setCleanupLoading(true);
-      setError('');
-      setSuccess('');
+      setSavingId(id);
+      setMessage(null);
 
-      const res = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cleanupTestAccounts: true }),
+      const payload = {
+        puedeEditarRegistros: current.puedeEditarRegistros,
+        puedeEditarPlanes: current.puedeEditarPlanes,
+        puedeVerTodosAlumnos: current.puedeVerTodosAlumnos,
+        permisosGranulares: {
+          ...current.permisosGranulares,
+          accesos: current.accesos,
+        },
+      };
+
+      const res = await fetch(`/api/admin/colaboradores/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) throw new Error('Error al limpiar cuentas de prueba');
 
       const data = await res.json();
-      setUsers(data.users ?? []);
-      setSuccess(`Limpieza completada. Cuentas eliminadas: ${data.deletedCount ?? 0}.`);
-    } catch {
-      setError('Error al limpiar cuentas de prueba');
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "No se pudieron guardar los permisos");
+      }
+
+      const updated = mapColaboradorToDraft(data.colaborador as Colaborador);
+      setItems((prev) => prev.map((item) => (item.id === id ? updated : item)));
+      setMessage({ type: "success", text: `Permisos actualizados: ${updated.nombreCompleto}` });
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Error al guardar" });
     } finally {
-      setCleanupLoading(false);
+      setSavingId(null);
     }
-  };
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    try {
-      const res = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, role: newRole }),
-      });
-
-      if (!res.ok) throw new Error('Error al actualizar usuario');
-
-      const updated = await res.json();
-      setUsers(users.map((u) => (u.id === userId ? updated : u)));
-    } catch {
-      setError('Error al actualizar rol');
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Estas seguro de que quieres eliminar este usuario?')) return;
-
-    try {
-      const res = await fetch('/api/admin/users', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!res.ok) throw new Error('Error al eliminar usuario');
-
-      setUsers(users.filter((u) => u.id !== userId));
-    } catch {
-      setError('Error al eliminar usuario');
-    }
-  };
-
-  const filteredUsers = filterRole ? users.filter((u) => u.role === filterRole) : users;
-
-  const clientesCount = users.filter((u) => u.role === 'CLIENTE').length;
-  const colaboradoresCount = users.filter((u) => u.role === 'COLABORADOR').length;
-
-  const roleTone = (role: User['role']) => {
-    if (role === 'ADMIN') return 'bg-amber-500/20 text-amber-200 border-amber-300/30';
-    if (role === 'COLABORADOR') return 'bg-cyan-500/20 text-cyan-200 border-cyan-300/30';
-    return 'bg-emerald-500/20 text-emerald-200 border-emerald-300/30';
   };
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-6xl p-6 text-slate-100">
+      <main className="mx-auto max-w-7xl p-6 text-slate-100">
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/40 border-t-cyan-300" />
-          <p className="mt-4 text-sm text-slate-300">Cargando usuarios...</p>
+          <p className="mt-4 text-sm text-slate-300">Cargando permisos de colaboradores...</p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-6xl p-6 text-slate-100">
-      <div className="mb-6">
-        <h1 className="text-4xl font-black tracking-tight">Gestion de Usuarios</h1>
-        <p className="mt-1 text-sm text-slate-300">Administra roles y acceso desde el panel.</p>
+    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight">Usuarios y permisos</h1>
+          <p className="mt-1 text-sm text-slate-300">
+            Ajusta solo permisos de colaboradores: edicion y acceso por apartados.
+          </p>
+        </div>
+
+        <div className="w-full max-w-sm">
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Buscar colaborador</label>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Nombre o email"
+            className="w-full rounded-xl border border-white/15 bg-slate-900 px-4 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
+          />
+        </div>
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm font-semibold text-rose-200">
-          {error}
+      {message && (
+        <div
+          className={`mb-6 rounded-xl border p-4 text-sm font-semibold ${
+            message.type === "success"
+              ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-200"
+              : "border-rose-400/30 bg-rose-500/15 text-rose-200"
+          }`}
+        >
+          {message.text}
         </div>
       )}
 
-      {success && (
-        <div className="mb-6 rounded-xl border border-emerald-400/30 bg-emerald-500/15 p-4 text-sm font-semibold text-emerald-200">
-          {success}
+      <div className="space-y-4">
+        {filtered.map((item) => (
+          <section key={item.id} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-black text-white">{item.nombreCompleto}</h2>
+                <p className="text-sm text-slate-300">{item.email}</p>
+              </div>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  item.estado === "suspendido"
+                    ? "bg-rose-500/20 text-rose-200"
+                    : "bg-emerald-500/20 text-emerald-200"
+                }`}
+              >
+                {item.estado === "suspendido" ? "Suspendido" : "Activo"}
+              </span>
+            </div>
+
+            <div className="mb-4 grid gap-2 sm:grid-cols-3">
+              <ToggleChip
+                label="Puede editar registros"
+                checked={item.puedeEditarRegistros}
+                onToggle={(checked) => updateItem(item.id, (prev) => ({ ...prev, puedeEditarRegistros: checked }))}
+              />
+              <ToggleChip
+                label="Puede editar planes"
+                checked={item.puedeEditarPlanes}
+                onToggle={(checked) => updateItem(item.id, (prev) => ({ ...prev, puedeEditarPlanes: checked }))}
+              />
+              <ToggleChip
+                label="Puede ver todos los alumnos"
+                checked={item.puedeVerTodosAlumnos}
+                onToggle={(checked) => updateItem(item.id, (prev) => ({ ...prev, puedeVerTodosAlumnos: checked }))}
+              />
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-bold text-slate-100">Acceso a categorias y apartados</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAllAccess(item.id, true)}
+                    className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-200"
+                  >
+                    Dar todo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAllAccess(item.id, false)}
+                    className="rounded-lg border border-rose-300/40 bg-rose-500/15 px-3 py-1 text-xs font-bold text-rose-200"
+                  >
+                    Quitar todo
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {ACCESS_OPTIONS.map((option) => (
+                  <label
+                    key={option.href}
+                    className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-slate-100">{option.label}</p>
+                      <p className="text-[11px] text-slate-400">{option.category}</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(item.accesos[option.href])}
+                      onChange={(e) =>
+                        updateItem(item.id, (prev) => ({
+                          ...prev,
+                          accesos: { ...prev.accesos, [option.href]: e.target.checked },
+                        }))
+                      }
+                      className="h-4 w-4"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <button
+                type="button"
+                disabled={savingId === item.id || item.estado === "suspendido"}
+                onClick={() => saveItem(item.id)}
+                className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingId === item.id ? "Guardando permisos..." : "Guardar permisos"}
+              </button>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
+          No se encontraron colaboradores para mostrar.
         </div>
       )}
-
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Total Usuarios</p>
-          <p className="mt-1 text-3xl font-black text-white">{users.length}</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Clientes</p>
-          <p className="mt-1 text-3xl font-black text-white">{clientesCount}</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Colaboradores</p>
-          <p className="mt-1 text-3xl font-black text-white">{colaboradoresCount}</p>
-        </div>
-      </div>
-
-      <div className="mb-6 max-w-sm">
-        <label className="mb-2 block text-sm font-semibold text-slate-300">Filtrar por rol</label>
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          className="w-full rounded-xl border border-white/15 bg-slate-900 px-4 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/50"
-        >
-          <option value="">Todos</option>
-          <option value="CLIENTE">Clientes</option>
-          <option value="COLABORADOR">Colaboradores</option>
-          <option value="ADMIN">Administrador</option>
-        </select>
-      </div>
-
-      <div className="mb-6">
-        <button
-          onClick={handleCleanupTestAccounts}
-          disabled={cleanupLoading}
-          className="rounded-xl border border-amber-300/40 bg-amber-500/15 px-4 py-2 text-sm font-bold text-amber-100 transition hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {cleanupLoading ? 'Limpiando cuentas de prueba...' : 'Limpiar cuentas de prueba'}
-        </button>
-      </div>
-
-      <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-900/65">
-        <table className="w-full">
-          <thead className="border-b border-white/10 bg-slate-800/70">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Rol</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Verificado</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Registrado</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-300">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id} className="border-b border-white/10 hover:bg-slate-800/40">
-                <td className="px-6 py-4 text-sm text-slate-100">{user.email}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className={`rounded-full border px-2 py-1 text-[11px] font-bold ${roleTone(user.role)}`}>{user.role}</span>
-                    <select
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      disabled={user.role === 'ADMIN'}
-                      className="rounded-lg border border-white/15 bg-slate-800 px-2 py-1 text-xs text-slate-100 outline-none focus:border-cyan-300/60 disabled:opacity-60"
-                    >
-                      <option value="CLIENTE">Cliente</option>
-                      <option value="COLABORADOR">Colaborador</option>
-                      <option value="ADMIN" disabled>Admin</option>
-                    </select>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${user.emailVerified ? 'bg-emerald-500/20 text-emerald-200' : 'bg-rose-500/20 text-rose-200'}`}>
-                    {user.emailVerified ? 'Verificado' : 'No verificado'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-300">{new Date(user.createdAt).toLocaleDateString('es-AR')}</td>
-                <td className="px-6 py-4">
-                  {user.role !== 'ADMIN' && (
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="rounded-lg bg-rose-500/20 px-3 py-1 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/30"
-                    >
-                      Eliminar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredUsers.length === 0 && <div className="py-8 text-center text-slate-400">No hay usuarios que mostrar</div>}
     </main>
+  );
+}
+
+function ToggleChip({
+  label,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-800/70 px-3 py-2 text-sm text-slate-100">
+      <input type="checkbox" checked={checked} onChange={(e) => onToggle(e.target.checked)} className="h-4 w-4" />
+      <span>{label}</span>
+    </label>
   );
 }

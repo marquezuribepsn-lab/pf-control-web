@@ -2,7 +2,9 @@ param(
   [string]$Server = "root@72.60.55.235",
   [string]$RemoteDir = "/root/pf-control-web",
   [string]$RemoteBackupsDir = "/root/pf-control-web-backups",
-  [int]$BackupRetention = 3
+  [int]$BackupRetention = 3,
+  [switch]$RunUxPermisosSmoke,
+  [switch]$RunMailIntensiveSmokes
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,27 +44,40 @@ $dirsToDelete = "app components lib scripts data public"
 
 $pruneFrom = $BackupRetention + 1
 $remoteBackupAndPrep = "set -e; mkdir -p $RemoteBackupsDir; if [ -f $RemoteDir/package.json ]; then ts=`$(date +%Y%m%d-%H%M%S); backupDir=$RemoteBackupsDir/pf-control-web-`$ts; mkdir -p `$backupDir; cp -a $RemoteDir/. `$backupDir/; rm -rf `$backupDir/node_modules `$backupDir/.next `$backupDir/.turbo `$backupDir/.cache `$backupDir/.git; fi; ls -1dt $RemoteBackupsDir/pf-control-web-* 2>/dev/null | tail -n +$pruneFrom | xargs -r rm -rf; mkdir -p $RemoteDir; cd $RemoteDir; rm -rf $dirsToDelete; rm -f $filesToDelete"
-$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; npm run smoke:mail:guard; SMOKE_REQUIRE_ADMIN_LOGIN=1 npm run smoke:auth:mail:all; npm run smoke:admin:usuarios:redirect; pm2 save"
 
-Write-Host "[1/4] Creando backup y preparando carpeta remota..."
+$uxGuardrailStep = if ($RunUxPermisosSmoke.IsPresent) {
+  "npm run smoke:ux:permisos;"
+} else {
+  "echo '[guardrail] smoke:ux:permisos omitido (usa -RunUxPermisosSmoke para activarlo)';"
+}
+
+$mailIntensiveStep = if ($RunMailIntensiveSmokes.IsPresent) {
+  "SMOKE_REQUIRE_ADMIN_LOGIN=1 npm run smoke:auth:mail:all;"
+} else {
+  "echo '[guardrail] smoke:auth:mail:all omitido para ahorrar creditos de Brevo (usa -RunMailIntensiveSmokes para activarlo)';"
+}
+
+$remoteBuild = "set -e; cd $RemoteDir; npm ci; npm run db:migrate:deploy; npm run db:generate; npm run smoke:runtime:db; npm run build; (pm2 describe pf-control-web > /dev/null 2>&1 && pm2 restart pf-control-web --update-env || pm2 start ecosystem.config.cjs --env production); npm run smoke:login:guard; npm run smoke:mail:guard; $mailIntensiveStep npm run smoke:admin:usuarios:redirect; $uxGuardrailStep pm2 save"
+
+Write-Output "[1/4] Creando backup y preparando carpeta remota..."
 ssh $Server $remoteBackupAndPrep
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo el backup/preparacion remota por SSH."
 }
 
 
-Write-Host "[2/4] Subiendo archivos al VPS..."
+Write-Output "[2/4] Subiendo archivos al VPS..."
 scp -r $fullPaths "$Server`:$RemoteDir/"
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo scp al subir archivos al VPS."
 }
 
-Write-Host "[3/4] Ejecutando install, build y PM2 en el VPS..."
+Write-Output "[3/4] Ejecutando install, build y PM2 en el VPS..."
 ssh $Server $remoteBuild
 if ($LASTEXITCODE -ne 0) {
   throw "Fallo la ejecucion remota por SSH."
 }
 
-Write-Host "[4/4] Verificacion final completada."
+Write-Output "[4/4] Verificacion final completada."
 
-Write-Host "Deploy completado."
+Write-Output "Deploy completado."

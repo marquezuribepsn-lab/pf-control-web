@@ -98,6 +98,7 @@ export const categoriasIniciales: Categoria[] = [
   { nombre: "Primera", habilitada: true },
   { nombre: "Sub 18", habilitada: true },
   { nombre: "Sub 16", habilitada: true },
+  { nombre: "Nutricion", habilitada: true },
 ];
 
 export type Deporte = {

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
@@ -52,9 +51,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#08111d] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
-      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#08111d] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
         <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-200/80">Recuperación</p>
           <h1 className="mt-3 text-3xl font-black text-white">Olvidé mi contraseña</h1>
@@ -109,9 +108,9 @@ export default function ForgotPasswordPage() {
 
           <p className="mt-6 text-center text-sm text-slate-300">
             ¿Recordaste tu contraseña?{' '}
-            <Link href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
+            <a href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
               Volver al login
-            </Link>
+            </a>
           </p>
         </div>
       </div>

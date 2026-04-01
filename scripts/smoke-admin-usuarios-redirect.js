@@ -83,8 +83,9 @@ async function main() {
     redirect: 'manual',
   });
 
+  const body = await response.text();
   const location = response.headers.get('location') || '';
-  const pass = [302, 307, 308].includes(response.status) && /\/clientes(?:$|\?|#|\/)/i.test(location);
+  const pass = response.status === 200 && /usuarios y permisos|permisos de colaboradores|colaboradores/i.test(body);
 
   const output = {
     ok: pass,
@@ -92,7 +93,8 @@ async function main() {
     checks: {
       status: response.status,
       location,
-      expected: 'redirect a /clientes',
+      bodyHasPermissionCopy: /usuarios y permisos|permisos de colaboradores|colaboradores/i.test(body),
+      expected: 'pagina disponible para administrar permisos',
     },
   };
 

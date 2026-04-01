@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const { status } = useSession();
@@ -38,7 +37,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/');
+      window.location.assign('/');
     } catch (err) {
       setError('Error al conectar. Intenta de nuevo.');
     } finally {
@@ -47,11 +46,11 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#09111f] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
-      <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#09111f] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
 
-      <div className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-10 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
+      <div className="relative z-10 mx-auto grid min-h-screen max-w-7xl items-center gap-10 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
         <section className="hidden lg:block">
           <div className="max-w-xl">
             <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.35em] text-cyan-100">
@@ -136,16 +135,16 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || status === 'loading'}
+                disabled={loading}
                 className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Ingresando...' : 'Iniciar sesión'}
               </button>
 
             <div className="text-right">
-              <Link href="/auth/forgot-password" className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">
+              <a href="/auth/forgot-password" className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">
                 Olvidé mi contraseña
-              </Link>
+              </a>
             </div>
             </form>
 
@@ -157,9 +156,9 @@ export default function LoginPage() {
 
             <p className="mt-6 text-center text-sm text-slate-300">
               ¿No tenés cuenta?{' '}
-              <Link href="/auth/register" className="font-bold text-cyan-300 transition hover:text-cyan-200">
+              <a href="/auth/register" className="font-bold text-cyan-300 transition hover:text-cyan-200">
                 Registrate acá
-              </Link>
+              </a>
             </p>
           </div>
         </section>

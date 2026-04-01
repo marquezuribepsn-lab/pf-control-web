@@ -3,6 +3,7 @@
 import { useContext, use } from "react";
 import { PlayersContext } from "../../../components/PlayersProvider";
 import { type Jugadora } from "../../../data/mockData";
+import NutritionPlanner from "./NutritionPlanner";
 
 const CATEGORY_GRADIENTS = [
   "from-cyan-500 to-blue-600",
@@ -29,10 +30,22 @@ const getCategoryVisual = (categoria: string) => {
   };
 };
 
+const normalizeCategory = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+
 export default function CategoriaPage({ params }: { params: Promise<{ categoria: string }> }) {
   const { jugadoras } = useContext(PlayersContext)!;
   const resolvedParams = use(params);
   const categoria = decodeURIComponent(resolvedParams.categoria);
+
+  if (normalizeCategory(categoria) === "nutricion") {
+    return <NutritionPlanner />;
+  }
+
   const visual = getCategoryVisual(categoria);
 
   const jugadorasEnCategoria = jugadoras.filter(

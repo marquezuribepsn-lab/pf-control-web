@@ -1,0 +1,107 @@
+Resumen completo de la sesión de desarrollo de la plataforma PF Control (marzo-abril 2026)
+
+---
+
+1. Objetivo principal:
+- Implementar un panel de administración robusto para WhatsApp (envío manual y automático, plantillas, historial, programación, etc.)
+- Asegurar que la sección WhatsApp sea visible en el menú de administración en producción.
+
+2. Cambios y mejoras implementadas:
+- Creación de UI y backend para el panel de WhatsApp admin.
+- Integración con WhatsApp Cloud API.
+- Endpoints personalizados para envío, plantillas y programación de mensajes WhatsApp.
+- Gestión de plantillas: CRUD de plantillas de mensajes.
+- Programación de mensajes automáticos: CRUD de programaciones.
+- Historial de mensajes enviados.
+- Selección de destinatarios (alumnos y colaboradores).
+- Editor de mensajes con variables dinámicas ({{nombre}}, {{actividad}}, etc.).
+- Vista previa de mensajes.
+- Validaciones de campos y feedback visual.
+- Actualización del menú en app/layout.tsx para mostrar WhatsApp solo a admins.
+- Corrección de errores de build: "use client" en todos los componentes WhatsApp, exportación de sendWhatsAppText, errores de JSX, y función no exportada.
+- Refactor de WhatsAppMessageEditor para estar correctamente envuelto en una función componente.
+- Limpieza de caché y reconstrucción forzada para solucionar errores de compilación persistentes.
+
+3. Problemas y soluciones:
+- El menú de WhatsApp no aparecía en producción: se corrigió el layout y se forzó el deploy.
+- Errores de compilación por JSX mal cerrado (< /span>): corregido.
+- Código fuera de la función componente: corregido.
+- Problemas de caché: se recomendó y guió la limpieza manual de .next y node_modules/.cache.
+- Errores de permisos en comandos de borrado: se explicó la diferencia entre PowerShell y CMD.
+
+4. Instrucciones y aclaraciones importantes:
+- Se dieron instrucciones paso a paso para limpiar caché y reconstruir.
+- Se explicó cómo ejecutar comandos correctamente según el entorno (PowerShell vs CMD).
+- Se mantuvo la comunicación en español a pedido del usuario.
+
+5. Estado final:
+- Todas las funcionalidades del panel WhatsApp admin implementadas y corregidas.
+- Listo para build y deploy en producción.
+- Documentación de todos los cambios y problemas resueltos en este archivo.
+
+---
+
+DETALLE COMPLETO DE CAMBIOS, MEJORAS Y FUNCIONALIDADES AGREGADAS:
+
+---
+
+1. PANEL DE ADMINISTRACIÓN DE WHATSAPP
+- Se creó una sección exclusiva para administradores en el menú principal (app/layout.tsx) llamada "WhatsApp".
+- El acceso a esta sección está restringido a usuarios con rol de admin.
+- El menú fue actualizado para que WhatsApp aparezca correctamente en producción.
+
+2. UI/UX Y APARIENCIA
+- Se diseñó un panel visualmente integrado con el resto de la plataforma, usando los mismos estilos de Tailwind y componentes reutilizables.
+- Se agregaron mensajes de feedback visual (éxito, error, cargando, etc.) en cada acción relevante.
+- Se implementó un editor de mensajes con textarea, botones para insertar variables dinámicas y vista previa en tiempo real.
+- Sección de selección de destinatarios con checkboxes para alumnos y colaboradores, organizados en grids.
+- Botones con estados deshabilitados según validaciones de campos.
+- Listados de plantillas y programaciones con botones de acción (eliminar, cargar, etc.).
+- Sección de historial de mensajes enviados (tabla con detalles).
+
+3. FUNCIONALIDADES WHATSAPP
+- Envío manual de mensajes a múltiples destinatarios seleccionados.
+- Envío automático programado: permite definir fecha/hora, destinatarios y mensaje.
+- CRUD de plantillas: crear, listar, cargar y eliminar plantillas de mensajes.
+- CRUD de programaciones: crear, listar y eliminar programaciones automáticas.
+- Variables dinámicas en mensajes: {{nombre}}, {{actividad}}, {{fecha}}, {{vencimiento}}, {{link}}.
+- Vista previa de mensaje con reemplazo simulado de variables.
+- Validaciones: no permite enviar/programar/guardar si faltan campos obligatorios.
+- Feedback visual tras cada acción (éxito/error).
+
+4. BACKEND Y API
+- Endpoints en /api/whatsapp/send, /api/whatsapp/templates, /api/whatsapp/schedule para manejar todas las operaciones.
+- Integración con WhatsApp Cloud API para el envío real de mensajes.
+- Uso de Prisma y SyncEntry para almacenar plantillas, programaciones e historial.
+- Manejo de errores y respuestas estructuradas en cada endpoint.
+
+5. CAMBIOS DE CÓDIGO Y REFACTORIZACIONES
+- Se agregó "use client" en todos los componentes de WhatsApp para evitar errores de compilación.
+- Se exportó correctamente la función sendWhatsAppText en lib/whatsappAlerts.ts.
+- Se corrigieron errores de JSX (etiquetas mal cerradas, por ejemplo < /span>).
+- Se reestructuró WhatsAppMessageEditor para estar completamente dentro de una función componente exportada.
+- Se revisó y limpió el código para evitar duplicados y fragmentos fuera de lugar.
+- Se mejoró la gestión de estado y hooks para evitar bugs y comportamientos inesperados.
+
+6. PROBLEMAS ENCONTRADOS Y SOLUCIONES
+- El menú de WhatsApp no aparecía en producción: se revisó el layout y se forzó el deploy.
+- Errores de compilación por JSX mal cerrado: se corrigieron todas las etiquetas.
+- Código fuera de la función componente: se reubicó todo el código dentro de la función principal.
+- Problemas de caché: se recomendó y guió la limpieza manual de .next y node_modules/.cache.
+- Errores de permisos en comandos de borrado: se explicó la diferencia entre PowerShell y CMD y se dieron los comandos correctos.
+- Se detectó y corrigió un error donde el build seguía fallando por caché, aunque el código ya estaba bien.
+
+7. INSTRUCCIONES Y AYUDA AL USUARIO
+- Se dieron instrucciones detalladas para limpiar caché y reconstruir el proyecto.
+- Se explicó cómo ejecutar comandos correctamente según el entorno (PowerShell vs CMD).
+- Se mantuvo la comunicación en español a pedido del usuario.
+- Se ofreció ayuda paso a paso para cada error reportado.
+
+8. ESTADO FINAL
+- Todas las funcionalidades del panel WhatsApp admin implementadas, probadas y corregidas.
+- Listo para build y deploy en producción.
+- Documentación de todos los cambios, problemas resueltos y detalles técnicos en este archivo.
+
+---
+
+Fin del detalle completo de la sesión de chat y desarrollo.

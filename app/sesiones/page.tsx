@@ -6,6 +6,7 @@ import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
+import SesionesAIPlanner from "../../components/sesiones/SesionesAIPlanner";
 import {
   type BloqueEntrenamiento,
   type PrescripcionSesionPersona,
@@ -977,6 +978,8 @@ export default function SesionesPage() {
           Nueva Sesión
         </button>
       </div>
+
+      <SesionesAIPlanner />
 
       {mostrarFormulario && (
         <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-sm">

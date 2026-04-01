@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
@@ -40,6 +39,21 @@ const PRIMARY_ORDER = [
 const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
+const COLABORADOR_ACCESS_HREFS = [
+  "/plantel",
+  "/semana",
+  "/sesiones",
+  "/asistencias",
+  "/ejercicios",
+  "/registros",
+  "/categorias",
+  "/deportes",
+  "/equipos",
+  "/clientes",
+  "/clientes/playlists",
+];
+
+const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
 
 type NavConfig = {
   order: string[];
@@ -111,6 +125,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [dragState, setDragState] = useState<{ href: string } | null>(null);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
+  const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
@@ -243,11 +258,25 @@ export default function AppShell({ links, children }: AppShellProps) {
             ? data.sidebarImage
             : null;
 
+        const rawAccess =
+          data?.permisosGranulares && typeof data.permisosGranulares === "object"
+            ? (data.permisosGranulares as Record<string, unknown>).accesos
+            : null;
+        const normalizedAccess: Record<string, boolean> = {};
+        if (rawAccess && typeof rawAccess === "object") {
+          for (const [key, value] of Object.entries(rawAccess as Record<string, unknown>)) {
+            if (typeof value === "boolean") {
+              normalizedAccess[key] = value;
+            }
+          }
+        }
+
         if (cancelled) {
           return;
         }
 
         setSidebarImage(remoteImage);
+        setColaboradorAccessMap(normalizedAccess);
 
         if (remoteImage) {
           localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
@@ -378,7 +407,33 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pendingSaveKeys]);
 
   const role = (session?.user as any)?.role;
-  const visibleLinks = links.filter((link) => !link.adminOnly || role === "ADMIN");
+  const visibleLinks = links.filter((link) => {
+    if (link.adminOnly && role !== "ADMIN") {
+      return false;
+    }
+
+    if (role === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
+      if (!colaboradorAccessMap || Object.keys(colaboradorAccessMap).length === 0) {
+        return true;
+      }
+
+      if (link.href === "/clientes/playlists") {
+        return colaboradorAccessMap["/clientes"] !== false;
+      }
+
+      const allCategoryAccessBlocked = COLABORADOR_CATEGORY_HREFS.every(
+        (href) => colaboradorAccessMap[href] === false
+      );
+
+      if (allCategoryAccessBlocked && COLABORADOR_CATEGORY_HREFS.includes(link.href)) {
+        return true;
+      }
+
+      return colaboradorAccessMap[link.href] !== false;
+    }
+
+    return true;
+  });
 
   const linkByHref = new Map(visibleLinks.map((link) => [link.href, link]));
 
@@ -558,23 +613,12 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
               className={`grid h-full content-start rounded-xl border border-white/10 p-[clamp(0.28rem,0.8vh,0.58rem)] ${navGapClass}`}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDropOnList}
             >
               {orderedLinks.map((link) => (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  draggable
-                  onDragStart={() => setDragState({ href: link.href })}
-                  onDragEnd={() => setDragState(null)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDropOnItem(link.href);
-                  }}
                   className={`group relative overflow-hidden rounded-xl border border-white/20 font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass}`}
                   title={link.label}
                 >
@@ -583,13 +627,13 @@ export default function AppShell({ links, children }: AppShellProps) {
                     <span>{link.icon}</span>
                     {!collapsed && <span>{link.label}</span>}
                   </span>
-                </Link>
+                </a>
               ))}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <Link
+              <a
                 href="/cuenta"
                 onClick={() => setMobileOpen(false)}
                 className={`rounded-xl border font-semibold transition ${footerButtonPaddingClass} ${
@@ -600,7 +644,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </Link>
+              </a>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}

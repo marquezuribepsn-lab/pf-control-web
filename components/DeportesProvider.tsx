@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 import { deportesIniciales, type Deporte } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type DeportesContextType = {
   deportes: Deporte[];
@@ -57,10 +57,12 @@ export default function DeportesProvider({
   }, [setDeportes]);
 
   function agregarDeporte(deporte: Deporte) {
+    markManualSaveIntent(STORAGE_KEY);
     setDeportes((prev) => [...prev, deporte]);
   }
 
   function toggleDeporte(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setDeportes((prev) =>
       prev.map((dep) =>
         dep.nombre === nombre ? { ...dep, habilitado: !dep.habilitado } : dep
@@ -69,10 +71,12 @@ export default function DeportesProvider({
   }
 
   function eliminarDeporte(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setDeportes((prev) => prev.filter((dep) => dep.nombre !== nombre));
   }
 
   function actualizarDeporte(nombre: string, updates: Partial<Deporte>) {
+    markManualSaveIntent(STORAGE_KEY);
     setDeportes((prev) =>
       prev.map((dep) =>
         dep.nombre === nombre ? { ...dep, ...updates } : dep

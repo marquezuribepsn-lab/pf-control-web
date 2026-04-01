@@ -120,8 +120,17 @@ async function main() {
   const changedEmail = makeAlias('acctchg');
 
   const register = await postJson(`${baseUrl}/api/auth/register`, {
+    nombre: 'Cuenta',
+    apellido: 'Smoke',
+    fechaNacimiento: '1998-04-22',
+    telefono: '+5491112345678',
     email: createdEmail,
     password,
+    anamnesis: {
+      antecedentesMedicos: 'Sin patologias reportadas',
+      lesionesPrevias: 'Sin lesiones recientes',
+      objetivoPrincipal: 'Recuperar estado fisico',
+    },
   });
 
   const login = await testLogin(createdEmail, password);

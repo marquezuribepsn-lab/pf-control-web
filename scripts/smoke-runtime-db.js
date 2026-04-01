@@ -6,7 +6,18 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.db.env') });
 
 const { PrismaClient } = require('@prisma/client');
 
-const requiredColumns = ['sidebarImage', 'nombre', 'apellido'];
+const requiredColumns = [
+  'email',
+  'password',
+  'role',
+  'emailVerified',
+  'nombreCompleto',
+  'puedeEditarRegistros',
+  'puedeEditarPlanes',
+  'puedeVerTodosAlumnos',
+  'permisosGranulares',
+  'estado',
+];
 const projectRoot = path.resolve(__dirname, '..');
 const schemaPath = path.resolve(projectRoot, 'prisma/schema.prisma');
 

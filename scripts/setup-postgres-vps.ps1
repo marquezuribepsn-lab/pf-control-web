@@ -4,22 +4,37 @@ param(
 	[string]$DbName = "pf_control",
 	[string]$DbUser = "pf_user",
 	[Parameter(Mandatory = $true)]
-	[string]$DbPassword,
+	[securestring]$DbPassword,
 	[string]$DbHost = "127.0.0.1",
 	[int]$DbPort = 5432
 )
 
 $ErrorActionPreference = "Stop"
 
-function Escape-SingleQuotes([string]$Value) {
+function ConvertFrom-SecureStringPlainText([securestring]$Value) {
+	if (-not $Value) {
+		return ""
+	}
+
+	$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($Value)
+	try {
+		return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+	}
+	finally {
+		[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+	}
+}
+
+function ConvertTo-SqlSingleQuoted([string]$Value) {
 	return $Value -replace "'", "''"
 }
 
-$dbNameSql = Escape-SingleQuotes $DbName
-$dbUserSql = Escape-SingleQuotes $DbUser
-$dbPasswordSql = Escape-SingleQuotes $DbPassword
+$dbPasswordPlain = ConvertFrom-SecureStringPlainText $DbPassword
+$dbNameSql = ConvertTo-SqlSingleQuoted $DbName
+$dbUserSql = ConvertTo-SqlSingleQuoted $DbUser
+$dbPasswordSql = ConvertTo-SqlSingleQuoted $dbPasswordPlain
 
-$databaseUrl = "postgresql://$DbUser`:$DbPassword@$DbHost`:$DbPort/$DbName"
+$databaseUrl = "postgresql://$DbUser`:$dbPasswordPlain@$DbHost`:$DbPort/$DbName"
 
 $remoteScript = @"
 set -e
@@ -77,10 +92,10 @@ fi
 echo "PostgreSQL listo. DATABASE_URL guardada en $RemoteDir/.db.env"
 "@
 
-Write-Host "[1/1] Instalando PostgreSQL y guardando DATABASE_URL en el VPS..."
+Write-Output "[1/1] Instalando PostgreSQL y guardando DATABASE_URL en el VPS..."
 ssh $Server $remoteScript
 if ($LASTEXITCODE -ne 0) {
 	throw "Fallo la configuracion remota de PostgreSQL."
 }
 
-Write-Host "Configuracion PostgreSQL completada."
+Write-Output "Configuracion PostgreSQL completada."

@@ -5,7 +5,7 @@ import {
   useContext,
 } from "react";
 import { categoriasIniciales, type Categoria } from "../data/mockData";
-import { useSharedState } from "./useSharedState";
+import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type CategoriesContextType = {
   categorias: Categoria[];
@@ -31,10 +31,12 @@ export default function CategoriesProvider({
   });
 
   function agregarCategoria(categoria: Categoria) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) => [...prev, categoria]);
   }
 
   function toggleCategoria(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) =>
       prev.map((cat) =>
         cat.nombre === nombre ? { ...cat, habilitada: !cat.habilitada } : cat
@@ -43,6 +45,7 @@ export default function CategoriesProvider({
   }
 
   function eliminarCategoria(nombre: string) {
+    markManualSaveIntent(STORAGE_KEY);
     setCategorias((prev) => prev.filter((cat) => cat.nombre !== nombre));
   }
 
