@@ -8,6 +8,15 @@ const LOGIN_FAILED_ATTEMPTS_KEY = 'pf_login_failed_attempts';
 const LOGIN_REMEMBER_EMAIL_KEY = 'pf_login_remembered_email';
 const LOGIN_REMEMBER_ENABLED_KEY = 'pf_login_remember_enabled';
 
+function isSignInFailure(result: unknown) {
+  const payload = (result || {}) as { ok?: boolean; error?: string | null; url?: string | null };
+  const errorCode = String(payload.error || '').trim();
+  const responseUrl = String(payload.url || '').trim();
+  const hasErrorInUrl = /[?&]error=/i.test(responseUrl);
+
+  return !payload.ok || Boolean(errorCode) || hasErrorInUrl;
+}
+
 function LoginPageContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
@@ -110,7 +119,7 @@ function LoginPageContent() {
           redirect: false,
         });
 
-        if (!result?.ok) {
+        if (isSignInFailure(result)) {
           setError('El enlace de acceso es invalido o expiro. Solicita uno nuevo.');
           return;
         }
@@ -144,7 +153,7 @@ function LoginPageContent() {
         redirect: false,
       });
 
-      if (!result?.ok) {
+      if (isSignInFailure(result)) {
         const nextAttempts = Math.min(failedAttempts + 1, 10);
         setFailedAttempts(nextAttempts);
         if (nextAttempts >= 3) {
