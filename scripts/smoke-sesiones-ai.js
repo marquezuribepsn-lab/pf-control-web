@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+
+const prisma = new PrismaClient();
 
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000';
 const mainEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
@@ -16,7 +19,7 @@ function getSetCookieHeaderValues(headers) {
   }
 
   const single = headers?.get?.('set-cookie');
-  return single ? [single] : [];
+  return single ? String(single).split(/,(?=\s*[^;,\s]+=)/g) : [];
 }
 
 function toCookieHeader(setCookieValue) {
@@ -47,7 +50,7 @@ async function readJsonSafe(response) {
   }
 }
 
-async function loginAndGetCookie() {
+async function loginByCredentials() {
   const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
   if (!csrfResponse.ok) {
     throw new Error(`csrf fallo: ${csrfResponse.status}`);
@@ -79,12 +82,126 @@ async function loginAndGetCookie() {
   });
 
   const location = loginResponse.headers.get('location') || '';
-  if (loginResponse.status !== 302 || /error=/i.test(location)) {
-    throw new Error(`login admin invalido: status=${loginResponse.status}, location=${location}`);
+  const loginCookie = toCookieHeader(getSetCookieHeaderValues(loginResponse.headers));
+
+  return {
+    ok: loginResponse.status === 302 && !/error=/i.test(location),
+    status: loginResponse.status,
+    location,
+    cookieHeader: [csrfCookie, loginCookie].filter(Boolean).join('; '),
+  };
+}
+
+async function loginByMagicLink(email) {
+  const requestResponse = await fetch(`${baseUrl}/api/auth/login-link`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!requestResponse.ok) {
+    return {
+      ok: false,
+      status: requestResponse.status,
+      location: 'magic-link-request-failed',
+      cookieHeader: '',
+    };
   }
 
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const latestToken = await prisma.verificationToken.findFirst({
+    where: {
+      email: normalizedEmail,
+      token: {
+        startsWith: 'login-link-',
+      },
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      expiresAt: 'desc',
+    },
+    select: {
+      token: true,
+    },
+  });
+
+  if (!latestToken?.token) {
+    return {
+      ok: false,
+      status: 500,
+      location: 'magic-token-not-found',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
+  if (!csrfResponse.ok) {
+    return {
+      ok: false,
+      status: csrfResponse.status,
+      location: 'csrf-failed',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfData = await csrfResponse.json();
+  if (!csrfData?.csrfToken) {
+    return {
+      ok: false,
+      status: 500,
+      location: 'csrf-token-missing',
+      cookieHeader: '',
+    };
+  }
+
+  const csrfCookies = toCookieHeader(getSetCookieHeaderValues(csrfResponse.headers));
+  const body = new URLSearchParams({
+    email: normalizedEmail,
+    loginToken: latestToken.token,
+    csrfToken: csrfData.csrfToken,
+    callbackUrl: `${baseUrl}/`,
+    json: 'true',
+  }).toString();
+
+  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Cookie: csrfCookies,
+    },
+    body,
+    redirect: 'manual',
+  });
+
+  const location = loginResponse.headers.get('location') || '';
   const loginCookie = toCookieHeader(getSetCookieHeaderValues(loginResponse.headers));
-  return [csrfCookie, loginCookie].filter(Boolean).join('; ');
+
+  return {
+    ok: loginResponse.status === 302 && !/error=/i.test(location),
+    status: loginResponse.status,
+    location,
+    cookieHeader: [csrfCookies, loginCookie].filter(Boolean).join('; '),
+  };
+}
+
+async function loginAndGetCookie() {
+  const credentialsLogin = await loginByCredentials();
+  if (credentialsLogin.ok) {
+    return credentialsLogin.cookieHeader;
+  }
+
+  const magicLogin = await loginByMagicLink(mainEmail);
+  if (magicLogin.ok) {
+    return magicLogin.cookieHeader;
+  }
+
+  throw new Error(
+    `login admin invalido: credentials(status=${credentialsLogin.status}, location=${credentialsLogin.location}) magic(status=${magicLogin.status}, location=${magicLogin.location})`
+  );
 }
 
 async function postJson(url, body, cookieHeader) {
@@ -116,6 +233,7 @@ async function getPage(url, cookieHeader) {
 function evaluate(results) {
   const createdPlan = results.createPlan?.data?.plan;
   const extendedPlan = results.extendPlan?.data?.plan;
+  const recalculatedPlan = results.recalculateWeek?.data?.plan;
 
   const checks = [
     {
@@ -158,6 +276,18 @@ function evaluate(results) {
         bodyLength: results.sesionesPage.bodyLength,
       },
     },
+    {
+      name: 'recalculateWeek',
+      pass:
+        results.recalculateWeek.status === 200 &&
+        Boolean(recalculatedPlan?.id) &&
+        Number(recalculatedPlan?.totalWeeks || 0) === Number(extendedPlan?.totalWeeks || 0),
+      detail: {
+        status: results.recalculateWeek.status,
+        planId: recalculatedPlan?.id,
+        totalWeeks: recalculatedPlan?.totalWeeks || 0,
+      },
+    },
   ];
 
   const failedChecks = checks.filter((item) => !item.pass);
@@ -169,7 +299,7 @@ async function main() {
     `${baseUrl}/api/sesiones/ai-plan`,
     {
       mode: 'create',
-      targetType: 'alumno',
+      targetType: 'alumnos',
       targetName: 'Smoke AI',
       sport: 'Futbol',
       category: 'General',
@@ -200,7 +330,7 @@ async function main() {
     `${baseUrl}/api/sesiones/ai-plan`,
     {
       mode: 'create',
-      targetType: 'alumno',
+      targetType: 'alumnos',
       targetName: `Smoke Sesiones AI ${Date.now()}`,
       sport: 'Futbol',
       category: 'General',
@@ -218,8 +348,8 @@ async function main() {
       events: [
         {
           date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-          label: 'Partido smoke',
-          kind: 'partido',
+          description: 'Partido smoke',
+          type: 'partido',
           importance: 4,
         },
       ],
@@ -237,11 +367,25 @@ async function main() {
       events: [
         {
           date: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-          label: 'Partido extend smoke',
-          kind: 'partido',
+          description: 'Partido extend smoke',
+          type: 'partido',
           importance: 3,
         },
       ],
+    },
+    cookie
+  );
+
+  const extendPlanData = extendPlan?.data?.plan;
+  const recalculateWeek = await postJson(
+    `${baseUrl}/api/sesiones/ai-plan`,
+    {
+      mode: 'recalculate-week',
+      existingPlan: extendPlanData,
+      weekNumber: 1,
+      wellnessScore: 6.5,
+      externalLoadDelta: -5,
+      note: 'Smoke recalc',
     },
     cookie
   );
@@ -260,6 +404,7 @@ async function main() {
     },
     createPlan,
     extendPlan,
+    recalculateWeek,
     sesionesPage: {
       status: sesionesPage.status,
       bodyLength: sesionesPage.body.length,
@@ -275,6 +420,7 @@ async function main() {
     summary: {
       createPlanStatus: createPlan.status,
       extendPlanStatus: extendPlan.status,
+      recalculateWeekStatus: recalculateWeek.status,
       sesionesStatus: sesionesPage.status,
       createdWeeks: createPlan?.data?.plan?.totalWeeks || null,
       extendedWeeks: extendPlan?.data?.plan?.totalWeeks || null,
@@ -288,7 +434,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
-  process.exit(1);
-});
+main()
+  .catch((error) => {
+    console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
