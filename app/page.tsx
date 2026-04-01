@@ -39,6 +39,37 @@ type HomeConfig = {
   modulos: Modulo[];
 };
 
+function normalizeAppHref(value: string | undefined, fallback: string): string {
+  const raw = String(value || "").trim();
+  if (!raw) return fallback;
+
+  if (/^https?:\/\//i.test(raw)) {
+    return raw;
+  }
+
+  if (raw.startsWith("/")) {
+    return raw;
+  }
+
+  if (/^[a-zA-Z0-9/_-]+$/.test(raw)) {
+    return `/${raw.replace(/^\/+/, "")}`;
+  }
+
+  return fallback;
+}
+
+function resolveDashboardStatHref(title: string, index: number): string {
+  const normalized = title.toLowerCase();
+
+  if (normalized.includes("categoria")) return "/categorias";
+  if (normalized.includes("jugadora") || normalized.includes("alumno") || normalized.includes("plantel")) return "/plantel";
+  if (normalized.includes("wellness")) return "/wellness";
+  if (normalized.includes("carga") || normalized.includes("sesion")) return "/semana";
+
+  const fallbackByIndex = ["/categorias", "/plantel", "/semana", "/wellness"];
+  return fallbackByIndex[index] || "/registros";
+}
+
 function isWellnessModulo(modulo: Modulo): boolean {
   const href = modulo.href.trim().toLowerCase();
   return href === "/wellness" || href === "/nuevo-wellness";
@@ -141,6 +172,8 @@ export default function Home() {
   const [operativoFiltro, setOperativoFiltro] = useState("");
   const [config, setConfig] = useState<HomeConfig>(defaultConfig);
   const categoriesContext = useContext(CategoriesContext);
+  const primaryActionHref = normalizeAppHref(config.botonPrimarioHref, defaultConfig.botonPrimarioHref);
+  const secondaryActionHref = normalizeAppHref(config.botonSecundarioHref, defaultConfig.botonSecundarioHref);
   const categoriasActivas = (categoriesContext?.categorias || []).filter(
     (categoria) => categoria.habilitada && categoria.nombre.toLowerCase() !== "wellness"
   );
@@ -471,13 +504,13 @@ export default function Home() {
               ) : (
                 <div className="flex flex-wrap gap-3 md:col-span-2">
                   <Link
-                    href={config.botonPrimarioHref}
+                    href={primaryActionHref}
                     className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-400"
                   >
                     {config.botonPrimarioLabel}
                   </Link>
                   <Link
-                    href={config.botonSecundarioHref}
+                    href={secondaryActionHref}
                     className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     {config.botonSecundarioLabel}
@@ -497,16 +530,18 @@ export default function Home() {
               "from-orange-500 to-red-600",
             ];
             const tone = tones[index % tones.length];
+            const statHref = resolveDashboardStatHref(stat.title, index);
 
             return (
-              <div
+              <Link
                 key={stat.title}
+                href={statHref}
                 className={`rounded-2xl bg-gradient-to-br ${tone} p-0.5 shadow-lg`}
               >
                 <div className="rounded-[14px] bg-white p-0.5">
                   <StatCard title={stat.title} value={stat.value} />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </section>
@@ -862,7 +897,7 @@ export default function Home() {
               ) : (
                 <Link
                   key={`${item.label}-${index}`}
-                  href={item.href}
+                  href={normalizeAppHref(item.href, "/")}
                   className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
                 >
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
