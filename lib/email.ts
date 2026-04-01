@@ -507,6 +507,34 @@ export async function verifyPasswordResetToken(token: string) {
   return resetToken;
 }
 
+export async function sendLoginAccessLinkEmail(email: string, token: string) {
+  ensureMailConfigured();
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    throw new Error('Email requerido para enviar acceso por enlace.');
+  }
+
+  const loginUrl = `${mailAppUrl}/auth/login?magic=${encodeURIComponent(token)}&email=${encodeURIComponent(normalizedEmail)}`;
+
+  await sendMail({
+    to: normalizedEmail,
+    subject: 'Tu enlace de acceso - PF Control',
+    html: renderEmailLayout({
+      preheader: 'Accede a PF Control desde cualquier dispositivo',
+      title: 'Enlace de acceso seguro',
+      intro: 'Usa este enlace para iniciar sesion sin escribir contrasena en este dispositivo.',
+      bodyHtml: `
+        <p style="margin:0 0 10px;color:#cbd5e1;">Este enlace es de un solo uso y expira en 15 minutos.</p>
+        <p style="margin:0 0 10px;color:#cbd5e1;">Si no lo solicitaste, ignora este correo.</p>
+        <p style="margin:0 0 10px;word-break:break-all;"><a href="${escapeHtml(safeHref(loginUrl))}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(loginUrl)}</a></p>
+      `,
+      ctaLabel: 'Iniciar sesion con enlace',
+      ctaUrl: loginUrl,
+    }),
+  });
+}
+
 export async function sendWhatsAppAutomationFailureEmail(input: {
   runId: string;
   categoryKey?: string;

@@ -1,23 +1,68 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { status } = useSession();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [magicSent, setMagicSent] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const magicToken = String(searchParams.get('magic') || '').trim();
+  const magicEmail = String(searchParams.get('email') || '').trim().toLowerCase();
 
   useEffect(() => {
     if (status === 'authenticated') {
       router.replace('/');
     }
   }, [router, status]);
+
+  useEffect(() => {
+    if (!magicEmail) {
+      return;
+    }
+    setEmail(magicEmail);
+  }, [magicEmail]);
+
+  useEffect(() => {
+    const consumeMagic = async () => {
+      if (!magicToken || !magicEmail || status === 'authenticated') {
+        return;
+      }
+
+      setMagicLoading(true);
+      setError('');
+
+      try {
+        const result = await signIn('credentials', {
+          email: magicEmail,
+          loginToken: magicToken,
+          redirect: false,
+        });
+
+        if (!result?.ok) {
+          setError('El enlace de acceso es invalido o expiro. Solicita uno nuevo.');
+          return;
+        }
+
+        window.location.assign('/');
+      } catch {
+        setError('No pudimos validar el enlace de acceso. Intenta nuevamente.');
+      } finally {
+        setMagicLoading(false);
+      }
+    };
+
+    void consumeMagic();
+  }, [magicToken, magicEmail, status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +87,37 @@ export default function LoginPage() {
       setError('Error al conectar. Intenta de nuevo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRequestMagicLink = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError('Ingresa tu email para recibir el enlace de acceso.');
+      return;
+    }
+
+    setMagicLoading(true);
+    setError('');
+    setMagicSent('');
+
+    try {
+      const response = await fetch('/api/auth/login-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(String(data?.message || 'No se pudo enviar el enlace'));
+      }
+
+      setMagicSent('Te enviamos un enlace de acceso al mail de tu cuenta.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar el enlace de acceso.');
+    } finally {
+      setMagicLoading(false);
     }
   };
 
@@ -92,11 +168,23 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {magicLoading && magicToken ? (
+                <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-3 text-sm font-medium text-cyan-100">
+                  Validando enlace de acceso...
+                </div>
+              ) : null}
+
               {error && (
                 <div className="rounded-2xl border border-rose-400/35 bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-100">
                   {error}
                 </div>
               )}
+
+              {magicSent ? (
+                <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100">
+                  {magicSent}
+                </div>
+              ) : null}
 
               <label className="grid gap-2 text-sm font-semibold text-slate-200">
                 Email
@@ -141,6 +229,15 @@ export default function LoginPage() {
                 {loading ? 'Ingresando...' : 'Iniciar sesión'}
               </button>
 
+              <button
+                type="button"
+                onClick={handleRequestMagicLink}
+                disabled={magicLoading}
+                className="w-full rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {magicLoading ? 'Enviando enlace...' : 'Entrar con enlace al email'}
+              </button>
+
             <div className="text-right">
               <a href="/auth/forgot-password" className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">
                 Olvidé mi contraseña
@@ -164,6 +261,25 @@ export default function LoginPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="relative isolate min-h-screen overflow-hidden bg-[#09111f] text-white">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
+          <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6 py-10">
+            <div className="rounded-2xl border border-white/12 bg-slate-950/55 px-6 py-4 text-sm text-slate-200 backdrop-blur-2xl">
+              Cargando acceso...
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
 

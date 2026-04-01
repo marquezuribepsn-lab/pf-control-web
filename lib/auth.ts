@@ -13,13 +13,16 @@ export const authConfig = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        loginToken: { label: 'Login token', type: 'text' },
         rememberMe: { label: 'Remember me', type: 'checkbox' },
       },
       async authorize(credentials) {
         const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : null;
         const password = typeof credentials?.password === 'string' ? credentials.password : null;
+        const loginToken =
+          typeof credentials?.loginToken === 'string' ? credentials.loginToken.trim() : null;
 
-        if (!email || !password) {
+        if (!email) {
           return null;
         }
 
@@ -28,6 +31,41 @@ export const authConfig = {
         });
 
         if (!user || !user.emailVerified) {
+          return null;
+        }
+
+        if (loginToken) {
+          const row = await db.verificationToken.findUnique({
+            where: { token: loginToken },
+            select: {
+              email: true,
+              token: true,
+              expiresAt: true,
+            },
+          });
+
+          const validToken =
+            !!row &&
+            String(row.email || '').trim().toLowerCase() === email &&
+            String(row.token || '').startsWith('login-link-') &&
+            new Date(row.expiresAt).getTime() > Date.now();
+
+          if (!validToken) {
+            return null;
+          }
+
+          await db.verificationToken
+            .delete({ where: { token: loginToken } })
+            .catch(() => null);
+
+          return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          };
+        }
+
+        if (!password) {
           return null;
         }
 
