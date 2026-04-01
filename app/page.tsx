@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useContext, useEffect, useMemo, useState, type MouseEvent } from "react";
-import StatCard from "../components/StatCard";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
 import { useSessions } from "../components/SessionsProvider";
@@ -112,6 +111,26 @@ function resolveDashboardStatHref(title: string, index: number): string {
 
   const fallbackByIndex = ["/categorias", "/plantel", "/semana", "/wellness"];
   return fallbackByIndex[index] || "/registros";
+}
+
+function resolveDashboardStatHint(title: string, index: number): string {
+  const normalized = title.toLowerCase();
+
+  if (normalized.includes("categoria")) return "Abrir mapa de categorias";
+  if (normalized.includes("jugadora") || normalized.includes("alumno") || normalized.includes("plantel")) {
+    return "Ver plantilla operativa";
+  }
+  if (normalized.includes("wellness")) return "Revisar balance de carga";
+  if (normalized.includes("carga") || normalized.includes("sesion")) return "Entrar al plan semanal";
+
+  const fallbackHints = [
+    "Explorar indicadores",
+    "Ir al panel asociado",
+    "Abrir vista detallada",
+    "Continuar con acciones",
+  ];
+
+  return fallbackHints[index % fallbackHints.length];
 }
 
 function shouldKeepNativeNavigation(event: MouseEvent<HTMLAnchorElement>): boolean {
@@ -462,14 +481,19 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+    <main
+      className="relative min-h-screen overflow-hidden bg-[#061026] text-slate-100"
+      style={{ fontFamily: '"Trebuchet MS", "Segoe UI", sans-serif' }}
+    >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-cyan-500/25 blur-3xl" />
-        <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-fuchsia-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(56,189,248,0.24),transparent_28%),radial-gradient(circle_at_86%_8%,rgba(16,185,129,0.22),transparent_30%),radial-gradient(circle_at_70%_85%,rgba(249,115,22,0.16),transparent_26%)]" />
+        <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(148,163,184,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:62px_62px]" />
+        <div className="absolute -left-16 top-14 h-72 w-72 rounded-full border border-cyan-300/25 bg-cyan-400/18 blur-3xl" />
+        <div className="absolute right-0 top-0 h-80 w-80 rounded-full border border-indigo-300/20 bg-indigo-500/18 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full border border-emerald-300/20 bg-emerald-500/15 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl p-6 md:p-8">
+      <div className="relative mx-auto max-w-7xl px-5 py-6 md:px-7 md:py-8 lg:px-8">
         {configMode && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-200">
@@ -516,8 +540,10 @@ export default function Home() {
           </div>
         )}
 
-        <header className="relative mb-6 overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-6 shadow-xl backdrop-blur-md md:p-8">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-bl from-cyan-500/20 via-fuchsia-500/10 to-emerald-500/20" />
+        <header className="relative mb-7 overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-[linear-gradient(120deg,rgba(14,30,56,0.94),rgba(23,45,80,0.9)_52%,rgba(15,23,42,0.7)_100%)] p-6 shadow-[0_35px_95px_rgba(2,8,24,0.5)] md:p-8">
+          <div className="absolute right-[-3rem] top-[-3rem] h-44 w-44 rounded-full bg-cyan-300/25 blur-3xl" />
+          <div className="absolute bottom-[-2.25rem] right-14 h-40 w-40 rounded-full bg-emerald-300/20 blur-3xl" />
+          <div className="absolute inset-y-0 right-0 w-[42%] bg-[linear-gradient(145deg,rgba(6,182,212,0.2),rgba(129,140,248,0.14),rgba(16,185,129,0.2))]" />
           <div className="relative">
             {editando ? (
               <input
@@ -526,7 +552,7 @@ export default function Home() {
                 className="w-full max-w-sm rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-xs font-bold tracking-wide text-cyan-100"
               />
             ) : (
-              <p className="inline-flex rounded-full border border-cyan-300/40 bg-cyan-400/20 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-100">
+              <p className="inline-flex rounded-full border border-cyan-200/45 bg-cyan-300/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-100">
                 {config.badge}
               </p>
             )}
@@ -538,7 +564,7 @@ export default function Home() {
                 className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-3xl font-black text-white"
               />
             ) : (
-              <h1 className="mt-3 text-4xl font-black leading-tight md:text-5xl">
+              <h1 className="mt-4 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-[3.4rem]">
                 {config.titulo}
               </h1>
             )}
@@ -551,7 +577,7 @@ export default function Home() {
                 rows={3}
               />
             ) : (
-              <p className="mt-3 max-w-3xl text-sm text-slate-200 md:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
                 {config.subtitulo}
               </p>
             )}
@@ -599,14 +625,14 @@ export default function Home() {
                   <Link
                     href={primaryActionHref}
                     onClick={(event) => forceHomepageNavigation(event, primaryActionHref)}
-                    className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-400"
+                    className="rounded-xl border border-cyan-200/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_14px_30px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px] hover:from-cyan-200 hover:to-sky-300"
                   >
                     {config.botonPrimarioLabel}
                   </Link>
                   <Link
                     href={secondaryActionHref}
                     onClick={(event) => forceHomepageNavigation(event, secondaryActionHref)}
-                    className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="rounded-xl border border-cyan-100/30 bg-slate-900/35 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-200/55 hover:bg-slate-800/55"
                   >
                     {config.botonSecundarioLabel}
                   </Link>
@@ -616,7 +642,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {dashboardStats.map((stat, index) => {
             const tones = [
               "from-cyan-500 to-blue-600",
@@ -626,30 +652,38 @@ export default function Home() {
             ];
             const tone = tones[index % tones.length];
             const statHref = resolveDashboardStatHref(stat.title, index);
+            const statHint = resolveDashboardStatHint(stat.title, index);
 
             return (
               <Link
                 key={stat.title}
                 href={statHref}
                 onClick={(event) => forceHomepageNavigation(event, statHref)}
-                className={`rounded-2xl bg-gradient-to-br ${tone} p-0.5 shadow-lg`}
+                className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
               >
-                <div className="rounded-[14px] bg-white p-0.5">
-                  <StatCard title={stat.title} value={stat.value} />
+                <div className={`mb-3 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
+                <p className="text-xs font-bold uppercase tracking-[0.17em] text-slate-300">{stat.title}</p>
+                <p className="mt-2 text-4xl font-black tracking-tight text-white">{stat.value}</p>
+                <p className="mt-2 text-xs text-slate-300">{statHint}</p>
+                <span className="absolute right-4 top-4 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
+                  ir →
+                </span>
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
                 </div>
               </Link>
             );
           })}
         </section>
 
-        <section className="mt-6 rounded-3xl border border-cyan-300/25 bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-cyan-950/40 p-6 shadow-2xl">
+        <section className="mt-6 rounded-[2rem] border border-cyan-300/25 bg-[linear-gradient(145deg,rgba(4,16,36,0.95),rgba(6,26,58,0.92),rgba(5,18,40,0.96))] p-6 shadow-[0_32px_80px_rgba(2,8,24,0.5)]">
           <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/90">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-200/90">
                 Mesa operativa
               </p>
-              <h3 className="mt-1 text-2xl font-black text-white">Alumnos y planes activos</h3>
-              <p className="mt-1 text-sm text-slate-300">
+              <h3 className="mt-1 text-3xl font-black leading-none text-white">Alumnos y planes activos</h3>
+              <p className="mt-2 text-sm text-slate-300">
                 Vista rapida con foco de trabajo diario, al estilo CRM operativo.
               </p>
             </div>
@@ -658,14 +692,14 @@ export default function Home() {
               <Link
                 href="/clientes"
                 onClick={(event) => forceHomepageNavigation(event, "/clientes")}
-                className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+                className="rounded-xl border border-cyan-100/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_12px_24px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px]"
               >
                 Crear cliente
               </Link>
               <Link
                 href="/sesiones"
                 onClick={(event) => forceHomepageNavigation(event, "/sesiones")}
-                className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
               >
                 Gestionar sesiones
               </Link>
@@ -673,19 +707,19 @@ export default function Home() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-4">
-            <div className="rounded-2xl border border-emerald-300/35 bg-emerald-500/15 p-4">
+            <div className="rounded-2xl border border-emerald-300/35 bg-gradient-to-br from-emerald-500/20 to-transparent p-4">
               <p className="text-xs uppercase tracking-wide text-emerald-100">Clientes activos</p>
               <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalAlumnos}</p>
             </div>
-            <div className="rounded-2xl border border-blue-300/35 bg-blue-500/15 p-4">
+            <div className="rounded-2xl border border-blue-300/35 bg-gradient-to-br from-blue-500/20 to-transparent p-4">
               <p className="text-xs uppercase tracking-wide text-blue-100">Con plan</p>
               <p className="mt-1 text-3xl font-black text-white">{operativoKpis.conPlan}</p>
             </div>
-            <div className="rounded-2xl border border-rose-300/35 bg-rose-500/15 p-4">
+            <div className="rounded-2xl border border-rose-300/35 bg-gradient-to-br from-rose-500/20 to-transparent p-4">
               <p className="text-xs uppercase tracking-wide text-rose-100">Sin plan</p>
               <p className="mt-1 text-3xl font-black text-white">{operativoKpis.sinPlan}</p>
             </div>
-            <div className="rounded-2xl border border-violet-300/35 bg-violet-500/15 p-4">
+            <div className="rounded-2xl border border-violet-300/35 bg-gradient-to-br from-violet-500/20 to-transparent p-4">
               <p className="text-xs uppercase tracking-wide text-violet-100">Prescripciones</p>
               <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalPrescripciones}</p>
             </div>
@@ -772,13 +806,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
+        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(33,48,74,0.92),rgba(41,56,82,0.88))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-xl font-black">Acceso rapido por categorias</h3>
+            <h3 className="text-2xl font-black text-white">Acceso rapido por categorias</h3>
             <Link
               href="/categorias"
               onClick={(event) => forceHomepageNavigation(event, "/categorias")}
-              className="rounded-lg border border-white/30 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+              className="rounded-lg border border-white/25 bg-slate-900/35 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/10"
             >
               Ver todas
             </Link>
@@ -801,14 +835,14 @@ export default function Home() {
                     onClick={(event) =>
                       forceHomepageNavigation(event, `/categorias/${encodeURIComponent(categoria.nombre)}`)
                     }
-                    className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
+                    className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
                   >
                     <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
-                    <p className="text-lg font-bold text-white">
+                    <p className="text-2xl font-black text-white">
                       <span className="mr-2">{icon}</span>
                       {categoria.nombre}
                     </p>
-                    <p className="mt-1 text-xs text-slate-200">Abrir categoria</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-200">Abrir categoria</p>
                   </Link>
                 );
               })}
@@ -818,7 +852,7 @@ export default function Home() {
 
         <section className="mt-6 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
+            <div className="rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(34,50,79,0.95),rgba(44,61,89,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {editando ? (
                   <input
@@ -903,7 +937,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-b from-amber-500/20 to-orange-500/10 p-6 shadow-lg">
+          <div className="rounded-[2rem] border border-amber-300/35 bg-[linear-gradient(170deg,rgba(89,52,13,0.58),rgba(42,18,12,0.6))] p-6 shadow-[0_24px_70px_rgba(45,23,7,0.42)]">
             <div className="mb-3 flex items-center justify-between gap-2">
               <h3 className="text-lg font-black text-amber-100">Alertas</h3>
               {editando && (
@@ -949,9 +983,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-6 shadow-lg backdrop-blur-md">
+        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(35,50,75,0.95),rgba(49,63,90,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-xl font-black">Modulos y accesos</h3>
+            <h3 className="text-2xl font-black">Modulos y accesos</h3>
             {editando && (
               <button
                 onClick={addModulo}
@@ -1008,11 +1042,11 @@ export default function Home() {
                       resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")
                     )
                   }
-                  className="group rounded-2xl border border-white/20 bg-slate-900/40 p-4 transition hover:-translate-y-0.5 hover:bg-slate-900/60"
+                  className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
                 >
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
-                  <p className="text-base font-bold text-white">{item.label}</p>
-                  <p className="mt-1 text-xs text-slate-200">{item.desc}</p>
+                  <p className="text-lg font-black text-white">{item.label}</p>
+                  <p className="mt-1 text-sm text-slate-200">{item.desc}</p>
                 </Link>
               )
             )}
