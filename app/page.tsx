@@ -661,11 +661,11 @@ export default function Home() {
                 onClick={(event) => forceHomepageNavigation(event, statHref)}
                 className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
               >
-                <div className={`mb-3 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
+                <div className={`mb-3 mr-12 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
                 <p className="text-xs font-bold uppercase tracking-[0.17em] text-slate-300">{stat.title}</p>
                 <p className="mt-2 text-4xl font-black tracking-tight text-white">{stat.value}</p>
                 <p className="mt-2 text-xs text-slate-300">{statHint}</p>
-                <span className="absolute right-4 top-4 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
+                <span className="absolute right-4 top-3 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
                   ir →
                 </span>
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
