@@ -715,15 +715,15 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-slate-700/70 bg-[#081327]/95 shadow-[0_20px_55px_rgba(2,6,23,0.55)] backdrop-blur-md ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-sky-200/15 bg-gradient-to-b from-[#040b1a] via-[#071327] to-[#020812] shadow-[0_26px_70px_rgba(2,6,23,0.62)] backdrop-blur-md ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
             : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="pointer-events-none absolute inset-0 opacity-60">
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/8 to-transparent" />
-          <div className="absolute inset-y-0 left-0 w-[1px] bg-slate-400/35" />
+          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-cyan-300/12 to-transparent" />
+          <div className="absolute inset-y-0 left-0 w-[1px] bg-sky-200/30" />
         </div>
 
         <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${headerPaddingClass}`}>
@@ -747,16 +747,16 @@ export default function AppShell({ links, children }: AppShellProps) {
                     className="mb-1 h-[clamp(2rem,5vh,3rem)] w-[clamp(2rem,5vh,3rem)] rounded-xl border border-white/20 object-cover"
                   />
                 )}
-                <p className="text-[clamp(0.95rem,2.3vh,1.25rem)] font-black tracking-tight text-white">PF Control</p>
+                <p className="text-[clamp(0.95rem,2.3vh,1.25rem)] font-black tracking-tight text-sky-100">PF Control</p>
                 {!isUltraCompactSidebar && !useTightSidebar && (
-                  <p className="text-[clamp(0.62rem,1.35vh,0.75rem)] text-slate-300">Plataforma para preparadores fisicos</p>
+                  <p className="text-[clamp(0.62rem,1.35vh,0.75rem)] text-sky-200/80">Plataforma para preparadores fisicos</p>
                 )}
               </div>
             )}
 
             <button
               onClick={toggleCollapsed}
-              className="rounded-lg border border-slate-500/60 bg-slate-800/70 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-slate-100"
+              className="rounded-lg border border-sky-200/30 bg-slate-800/65 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-sky-100"
             >
               {collapsed ? ">>" : "<<"}
             </button>
@@ -764,10 +764,10 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-3xl border border-slate-600/70 bg-[#0c1a34]/90 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-3xl border border-sky-200/20 bg-[#051127]/85 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${navGapClass}`}
             >
               {!collapsed ? (
-                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-slate-300`}>
+                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-sky-200/85`}>
                   Navegacion
                 </p>
               ) : null}
@@ -782,8 +782,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                   (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
                 const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                   isActive
-                    ? "border-cyan-300/45 bg-cyan-400/12 text-cyan-50 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.24)]"
-                    : "border-slate-600/55 bg-slate-900/55 text-slate-100"
+                    ? "border-sky-300/55 bg-gradient-to-b from-sky-500/25 to-cyan-500/18 text-sky-50 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.3),0_10px_22px_rgba(2,132,199,0.2)]"
+                    : "border-sky-900/75 bg-slate-900/45 text-sky-100/95"
                 }`;
 
                 return (
@@ -791,20 +791,20 @@ export default function AppShell({ links, children }: AppShellProps) {
                     key={link.href}
                     type="button"
                     onClick={() => navigateSidebar(link.href)}
-                    className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
+                    className={`${linkClassName} ${isActive ? "" : "hover:bg-sky-950/70"} ${collapsed ? "justify-center" : "flex-col justify-center gap-1.5"}`}
                     title={link.label}
                   >
                     <span
                       className={`absolute inset-y-2 left-1.5 w-1 rounded-full ${
-                        isActive ? "bg-cyan-200/90" : "bg-slate-500/70"
+                        isActive ? "bg-sky-100/95" : "bg-sky-300/40"
                       }`}
                     />
-                    <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5 px-2"}`}>
-                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full bg-gradient-to-br ${link.tone} ${isActive ? "ring-1 ring-cyan-100/70" : "ring-1 ring-black/25"}`}>
+                    <span className={`flex items-center ${collapsed ? "justify-center" : "justify-center"}`}>
+                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full bg-gradient-to-br ${link.tone} ${isActive ? "ring-1 ring-sky-50/85" : "ring-1 ring-sky-800/70"}`}>
                         <span className="text-[0.95rem] leading-none">{link.icon}</span>
                       </span>
-                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em] text-slate-100">{link.label}</span>}
                     </span>
+                    {!collapsed && <span className="line-clamp-2 px-2 text-center text-[0.68rem] font-semibold leading-[1.05rem] tracking-[0.01em] text-sky-100">{link.label}</span>}
                   </button>
                 );
               })}
