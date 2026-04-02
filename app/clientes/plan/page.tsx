@@ -272,7 +272,7 @@ function ClientePlanContent() {
   }, [nutritionFoodsById, selectedNutritionPlan]);
 
   const backHref = selectedClient
-    ? `/clientes?detalle=1&cliente=${encodeURIComponent(selectedClient.id)}&tab=datos`
+    ? `/clientes/ficha/${encodeURIComponent(selectedClient.id)}/datos`
     : "/clientes";
 
   if (!selectedClient) {

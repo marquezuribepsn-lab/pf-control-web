@@ -368,11 +368,7 @@ function buildPlanViewHref(clientId: string, tab: PlanViewTab): string {
 }
 
 function buildClientDetailHref(clientId: string, tab: ClienteTab = "datos"): string {
-  const params = new URLSearchParams();
-  params.set("detalle", "1");
-  params.set("cliente", clientId);
-  params.set("tab", tab);
-  return `/clientes?${params.toString()}`;
+  return `/clientes/ficha/${encodeURIComponent(clientId)}/${tab}`;
 }
 
 const TABS: { id: ClienteTab; label: string }[] = [
@@ -532,6 +528,17 @@ export default function ClientesPage() {
 
     const syncFromLocation = () => {
       if (typeof window === "undefined") return;
+
+      const normalizedPath = window.location.pathname.replace(/\/+$/, "");
+      const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
+
+      if (detailPathMatch) {
+        setIsDetailMode(true);
+        setDetailClientId(safeDecodeParam(detailPathMatch[1]));
+        setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
+        return;
+      }
+
       const params = new URLSearchParams(window.location.search);
       setIsDetailMode(params.get("detalle") === "1");
       setDetailClientId(safeDecodeParam(params.get("cliente")));
