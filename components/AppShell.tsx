@@ -798,7 +798,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div className="pt-16 lg:pt-0" style={scaledStyle}>
+        <div key={pathname} className="pf-route-enter pt-16 lg:pt-0" style={scaledStyle}>
           {children}
         </div>
       </div>
