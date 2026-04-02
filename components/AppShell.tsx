@@ -547,6 +547,12 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMobileOpen(false);
     setSidebarSelectedHref(href);
 
+    const avoidHardReload =
+      COLABORADOR_CATEGORY_HREFS.includes(href) ||
+      href.startsWith("/categorias/") ||
+      href.startsWith("/deportes") ||
+      href.startsWith("/equipos");
+
     if (normalizePath(pathname) === normalizePath(href)) {
       return;
     }
@@ -557,6 +563,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     const targetPath = normalizePath(href);
+    router.prefetch(href);
     router.push(href);
 
     window.setTimeout(() => {
@@ -566,7 +573,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
         window.setTimeout(() => {
           const replacedPath = normalizePath(window.location.pathname);
-          if (replacedPath !== targetPath) {
+          if (!avoidHardReload && replacedPath !== targetPath) {
             window.location.assign(href);
           }
         }, 220);
