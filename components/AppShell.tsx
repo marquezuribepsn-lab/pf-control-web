@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -120,6 +120,10 @@ export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const linksSignature = links
+    .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
+    .join("||");
+  const stableLinks = useMemo(() => links, [linksSignature]);
   const [viewport, setViewport] = useState(() => {
     if (typeof window === "undefined") {
       return { width: 1366, height: 768 };
@@ -136,7 +140,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [config, setConfig] = useState<NavConfig>(() => getDefaultConfig(links));
+  const [config, setConfig] = useState<NavConfig>(() => getDefaultConfig(stableLinks));
   const [dragState, setDragState] = useState<{ href: string } | null>(null);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
@@ -243,7 +247,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     try {
       const saved = localStorage.getItem(NAV_CONFIG_KEY);
       const parsed = saved ? (JSON.parse(saved) as Partial<NavConfig>) : null;
-      setConfig(normalizeConfig(links, parsed));
+      setConfig(normalizeConfig(stableLinks, parsed));
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
       const savedScale = Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
       setScreenScale(Number.isFinite(savedScale) && savedScale > 0 ? savedScale : 1);
@@ -252,11 +256,11 @@ export default function AppShell({ links, children }: AppShellProps) {
         setCollapsed(savedCollapsed === "1");
       }
     } catch {
-      setConfig(getDefaultConfig(links));
+      setConfig(getDefaultConfig(stableLinks));
       setScreenScale(1);
       setCollapsed(false);
     }
-  }, [links]);
+  }, [stableLinks]);
 
   useEffect(() => {
     if (!mounted || !session?.user) {
@@ -373,7 +377,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         const parsed = event.newValue
           ? (JSON.parse(event.newValue) as Partial<NavConfig>)
           : null;
-        setConfig(normalizeConfig(links, parsed));
+        setConfig(normalizeConfig(stableLinks, parsed));
       }
 
       if (event.key === SIDEBAR_IMAGE_KEY) {
@@ -395,7 +399,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     const onNavConfigChange = () => {
       const saved = localStorage.getItem(NAV_CONFIG_KEY);
       const parsed = saved ? (JSON.parse(saved) as Partial<NavConfig>) : null;
-      setConfig(normalizeConfig(links, parsed));
+      setConfig(normalizeConfig(stableLinks, parsed));
     };
 
     const onSidebarImageChange = () => {
@@ -413,7 +417,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       window.removeEventListener("pf-nav-config-updated", onNavConfigChange);
       window.removeEventListener("pf-sidebar-image-updated", onSidebarImageChange);
     };
-  }, [links]);
+  }, [stableLinks]);
 
   useEffect(() => {
     if (!mounted) {
@@ -433,7 +437,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pendingSaveKeys]);
 
   const role = (session?.user as any)?.role;
-  const visibleLinks = links.filter((link) => {
+  const visibleLinks = stableLinks.filter((link) => {
     if (link.adminOnly && role !== "ADMIN") {
       return false;
     }
@@ -469,7 +473,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   useEffect(() => {
     setConfig((current) => normalizeConfig(visibleLinks, current));
-  }, [role, links]);
+  }, [visibleLinks]);
 
   const handleDropOnItem = (targetHref: string) => {
     if (!dragState) {
