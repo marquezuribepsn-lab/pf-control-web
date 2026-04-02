@@ -1462,8 +1462,25 @@ export default function ClientesPage() {
     window.open(`https://wa.me/${telefono}?text=${presetText}`, "_blank", "noopener,noreferrer");
   };
 
+  const navigateWithFallback = (href: string) => {
+    if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    router.push(href);
+
+    window.setTimeout(() => {
+      const nextUrl = `${window.location.pathname}${window.location.search}`;
+      if (nextUrl === currentUrl) {
+        window.location.assign(href);
+      }
+    }, 180);
+  };
+
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    router.push(buildPlanViewHref(clientId, tab));
+    navigateWithFallback(buildPlanViewHref(clientId, tab));
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
@@ -1472,14 +1489,14 @@ export default function ClientesPage() {
     setDetailTabId(tab);
     setSelectedClientId(clientId);
     setActiveTab(tab);
-    router.push(buildClientDetailHref(clientId, tab));
+    navigateWithFallback(buildClientDetailHref(clientId, tab));
   };
 
   const closeClientDetail = () => {
     setIsDetailMode(false);
     setDetailClientId(null);
     setDetailTabId(null);
-    router.push("/clientes");
+    navigateWithFallback("/clientes");
   };
 
   const registrarPago = (e: React.FormEvent) => {
@@ -2057,7 +2074,7 @@ export default function ClientesPage() {
                         }
                         setActiveTab(tab.id);
                         setDetailTabId(tab.id);
-                        router.push(buildClientDetailHref(selectedClient.id, tab.id));
+                        navigateWithFallback(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
                       className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}

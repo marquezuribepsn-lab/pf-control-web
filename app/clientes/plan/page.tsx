@@ -276,6 +276,23 @@ function ClientePlanContent() {
     ? `/clientes/ficha/${encodeURIComponent(selectedClient.id)}/datos`
     : "/clientes";
 
+  const navigateWithFallback = (href: string) => {
+    if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    router.push(href);
+
+    window.setTimeout(() => {
+      const nextUrl = `${window.location.pathname}${window.location.search}`;
+      if (nextUrl === currentUrl) {
+        window.location.assign(href);
+      }
+    }, 180);
+  };
+
   if (!selectedClient) {
     return (
       <main className="mx-auto max-w-6xl p-6 text-slate-100">
@@ -311,7 +328,7 @@ function ClientePlanContent() {
           </div>
           <button
             type="button"
-            onClick={() => router.push(backHref)}
+            onClick={() => navigateWithFallback(backHref)}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a ficha
