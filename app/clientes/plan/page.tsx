@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense } from "react";
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -301,12 +300,12 @@ function ClientePlanContent() {
           <p className="mt-2 text-sm text-amber-100">
             No se encontro el cliente solicitado o faltan parametros de navegacion.
           </p>
-          <Link
+          <a
             href="/clientes"
             className="mt-4 inline-flex rounded-xl border border-amber-200/40 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-500/10"
           >
             Volver a Clientes
-          </Link>
+          </a>
         </section>
       </main>
     );
@@ -336,8 +335,9 @@ function ClientePlanContent() {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <Link
-            href={buildPlanHref(selectedClient.id, "plan-entrenamiento")}
+          <button
+            type="button"
+            onClick={() => navigateWithFallback(buildPlanHref(selectedClient.id, "plan-entrenamiento"))}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-entrenamiento"
                 ? "border-cyan-200/55 bg-cyan-300 text-slate-950"
@@ -345,9 +345,10 @@ function ClientePlanContent() {
             }`}
           >
             Plan entrenamiento
-          </Link>
-          <Link
-            href={buildPlanHref(selectedClient.id, "plan-nutricional")}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigateWithFallback(buildPlanHref(selectedClient.id, "plan-nutricional"))}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-nutricional"
                 ? "border-cyan-200/55 bg-cyan-300 text-slate-950"
@@ -355,7 +356,7 @@ function ClientePlanContent() {
             }`}
           >
             Plan nutricional
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -363,12 +364,12 @@ function ClientePlanContent() {
         <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-xl font-black text-white">Plan de entrenamiento</h2>
-            <Link
+            <a
               href="/sesiones"
               className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
             >
               Gestionar sesiones
-            </Link>
+            </a>
           </div>
 
           {sesionesCliente.length === 0 ? (
@@ -462,12 +463,12 @@ function ClientePlanContent() {
               <p className="mt-1 text-amber-50/90">
                 Puedes asignarlo desde el modulo de nutricion para verlo aqui.
               </p>
-              <Link
+              <a
                 href="/categorias/Nutricion"
                 className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
               >
                 Ir a Nutricion
-              </Link>
+              </a>
             </div>
           )}
         </section>
