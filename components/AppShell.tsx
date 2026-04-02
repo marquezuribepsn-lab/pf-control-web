@@ -514,7 +514,12 @@ export default function AppShell({ links, children }: AppShellProps) {
     return false;
   };
 
-  const navigateSidebar = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+  const navigateSidebar = (
+    event: MouseEvent<HTMLAnchorElement>,
+    href: string,
+    options?: { hardFallback?: boolean }
+  ) => {
+    const hardFallback = options?.hardFallback ?? true;
     setMobileOpen(false);
 
     if (shouldKeepNativeNavigation(event)) {
@@ -522,6 +527,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     event.preventDefault();
+
+    if (pathname === href) {
+      return;
+    }
 
     if (typeof window === "undefined") {
       router.push(href);
@@ -538,12 +547,12 @@ export default function AppShell({ links, children }: AppShellProps) {
 
         window.setTimeout(() => {
           const retryUrl = `${window.location.pathname}${window.location.search}`;
-          if (retryUrl === currentUrl) {
+          if (hardFallback && retryUrl === currentUrl) {
             window.location.assign(href);
           }
-        }, 180);
+        }, 220);
       }
-    }, 220);
+    }, 260);
   };
 
   const scaledStyle = {
@@ -710,7 +719,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={(event) => navigateSidebar(event, link.href)}
+                    onClick={(event) =>
+                      navigateSidebar(event, link.href, { hardFallback: !isCategoryLink })
+                    }
                     className={`group relative overflow-hidden rounded-2xl border font-semibold text-white transition hover:-translate-y-0.5 ${isCategoryLink ? "pf-sidebar-category-link" : ""} ${navButtonPaddingClass} ${
                       isActive
                         ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
