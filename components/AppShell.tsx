@@ -705,9 +705,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                     <Link
                       key={link.href}
                       href={link.href}
-                      onClick={() => {
-                        setMobileOpen(false);
-                        setSidebarSelectedHref(link.href);
+                      onClick={(event) => {
+                        event.preventDefault();
+                        navigateSidebar(link.href);
                       }}
                       className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-colors ${navButtonPaddingClass} ${
                         collapsed ? "justify-center" : "justify-start gap-3"
@@ -726,8 +726,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                         />
                       )}
 
-                      <span className={`${collapsed ? "text-[1.18rem]" : navIconTextClass} leading-none`}>
-                        {link.icon}
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                        <span className={`${collapsed ? "text-[1.18rem]" : navIconTextClass} select-none font-normal leading-none`}>
+                          {link.icon}
+                        </span>
                       </span>
 
                       {!collapsed && (
