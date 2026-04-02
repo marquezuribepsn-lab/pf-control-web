@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -118,6 +117,7 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -147,6 +147,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+  const [sidebarSelectedHref, setSidebarSelectedHref] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -452,6 +453,10 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pathname]);
 
   useEffect(() => {
+    setSidebarSelectedHref(null);
+  }, [pathname]);
+
+  useEffect(() => {
     if (pendingSaveKeys.length === 0) {
       setPendingPanelOpen(false);
     }
@@ -528,6 +533,29 @@ export default function AppShell({ links, children }: AppShellProps) {
       }
       return next;
     });
+  };
+
+  const navigateSidebar = (href: string) => {
+    setMobileOpen(false);
+    setSidebarSelectedHref(href);
+
+    if (pathname === href) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    const currentPath = window.location.pathname;
+    router.push(href);
+
+    window.setTimeout(() => {
+      if (window.location.pathname === currentPath) {
+        router.replace(href);
+      }
+    }, 180);
   };
 
   const scaledStyle = {
@@ -685,13 +713,14 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </p>
               ) : null}
               {orderedLinks.map((link) => {
+                const effectivePath = sidebarSelectedHref || pathname;
                 const hasChildLink = orderedLinks.some(
                   (candidate) =>
                     candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
                 );
                 const isActive =
-                  pathname === link.href ||
-                  (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
+                  effectivePath === link.href ||
+                  (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
                 const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                   isActive
                     ? `bg-gradient-to-r ${link.tone} border-white/40 shadow-[0_8px_24px_rgba(8,47,73,0.3)]`
@@ -699,9 +728,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                 }`;
 
                 return (
-                  <Link
+                  <button
                     key={link.href}
-                    href={link.href}
+                    type="button"
+                    onClick={() => navigateSidebar(link.href)}
                     className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
@@ -721,15 +751,16 @@ export default function AppShell({ links, children }: AppShellProps) {
                         {isActive ? "●" : "○"}
                       </span>
                     )}
-                  </Link>
+                  </button>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <Link
-                href="/cuenta"
+              <button
+                type="button"
+                onClick={() => navigateSidebar("/cuenta")}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -738,7 +769,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </Link>
+              </button>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
