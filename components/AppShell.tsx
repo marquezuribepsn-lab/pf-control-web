@@ -572,24 +572,24 @@ export default function AppShell({ links, children }: AppShellProps) {
   const isUltraCompactSidebar = viewport.height <= 740 || viewport.width <= 1200;
 
   const desktopExpandedWidthClass = isUltraWideSidebar
-    ? "lg:w-80"
+    ? "lg:w-[25rem]"
     : isUltraCompactSidebar
-    ? "lg:w-60"
+    ? "lg:w-[20rem]"
     : isCompactSidebar
-    ? "lg:w-64"
-    : "lg:w-72";
+    ? "lg:w-[21rem]"
+    : "lg:w-[22rem]";
 
   const desktopCollapsedWidthClass = isUltraWideSidebar
     ? "lg:w-24"
     : "lg:w-20";
 
   const shellExpandedPaddingClass = isUltraWideSidebar
-    ? "lg:pl-80"
+    ? "lg:pl-[25rem]"
     : isUltraCompactSidebar
-    ? "lg:pl-60"
+    ? "lg:pl-[20rem]"
     : isCompactSidebar
-    ? "lg:pl-64"
-    : "lg:pl-72";
+    ? "lg:pl-[21rem]"
+    : "lg:pl-[22rem]";
 
   const shellCollapsedPaddingClass = isUltraWideSidebar
     ? "lg:pl-24"
@@ -646,7 +646,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md transition-all duration-300 ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
-            : `w-[min(86vw,19rem)] ${desktopExpandedWidthClass}`
+            : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="pointer-events-none absolute inset-0 opacity-70">
@@ -693,10 +693,10 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-2xl border border-cyan-200/15 bg-slate-950/45 p-[clamp(0.28rem,0.8vh,0.58rem)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/70 via-slate-900/55 to-slate-950/75 p-[clamp(0.34rem,0.9vh,0.66rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
             >
               {!collapsed ? (
-                <p className="mb-1 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
+                <p className="mb-1 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
                   Navegacion
                 </p>
               ) : null}
@@ -711,10 +711,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                     key={link.href}
                     href={link.href}
                     onClick={(event) => navigateSidebar(event, link.href)}
-                    className={`group relative overflow-hidden rounded-xl border font-semibold text-white transition hover:-translate-y-0.5 ${isCategoryLink ? "pf-sidebar-category-link" : ""} ${navButtonPaddingClass} ${
+                    className={`group relative overflow-hidden rounded-2xl border font-semibold text-white transition hover:-translate-y-0.5 ${isCategoryLink ? "pf-sidebar-category-link" : ""} ${navButtonPaddingClass} ${
                       isActive
-                        ? "border-cyan-200/50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
-                        : "border-white/15"
+                        ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
+                        : "border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                     }`}
                     title={link.label}
                   >
@@ -724,11 +724,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                       }`}
                     />
                     {isActive ? (
-                      <span className="absolute inset-y-1 left-1 w-1 rounded-full bg-white/80" />
+                      <span className="absolute inset-y-1 left-1.5 w-1 rounded-full bg-white/80" />
                     ) : null}
-                    <span className="relative flex items-center justify-center gap-2">
-                      <span>{link.icon}</span>
-                      {!collapsed && <span>{link.label}</span>}
+                    <span className={`relative flex items-center gap-2.5 ${collapsed ? "justify-center" : "justify-start px-2"}`}>
+                      <span className="text-[1.02em]">{link.icon}</span>
+                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
                     </span>
                   </a>
                 );
