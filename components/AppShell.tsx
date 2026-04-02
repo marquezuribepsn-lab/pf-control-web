@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -117,6 +117,7 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -507,6 +508,33 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
+  const handleSidebarLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    setMobileOpen(false);
+
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    const isPlainLeftClick =
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey;
+
+    if (!isPlainLeftClick) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (pathname === href) {
+      return;
+    }
+
+    router.push(href);
+  };
+
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -662,9 +690,13 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </p>
               ) : null}
               {orderedLinks.map((link) => {
+                const hasChildLink = orderedLinks.some(
+                  (candidate) =>
+                    candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
+                );
                 const isActive =
                   pathname === link.href ||
-                  (link.href !== "/" && pathname.startsWith(`${link.href}/`));
+                  (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
                 const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                   isActive
                     ? `bg-gradient-to-r ${link.tone} border-white/40 shadow-[0_8px_24px_rgba(8,47,73,0.3)]`
@@ -675,7 +707,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={(event) => handleSidebarLinkClick(event, link.href)}
                     className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
@@ -704,7 +736,7 @@ export default function AppShell({ links, children }: AppShellProps) {
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
               <a
                 href="/cuenta"
-                onClick={() => setMobileOpen(false)}
+                onClick={(event) => handleSidebarLinkClick(event, "/cuenta")}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
