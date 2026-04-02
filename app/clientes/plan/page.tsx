@@ -280,6 +280,10 @@ function ClientePlanContent() {
     ? `/clientes/ficha/${encodeURIComponent(selectedClient.id)}/datos`
     : "/clientes";
 
+  useEffect(() => {
+    router.prefetch(backHref);
+  }, [backHref, router]);
+
   const navigateWithRetry = (href: string) => {
     if (typeof window === "undefined") {
       router.push(href);
@@ -298,16 +302,6 @@ function ClientePlanContent() {
   };
 
   const goBackFromPlan = () => {
-    if (typeof window === "undefined") {
-      router.push(backHref);
-      return;
-    }
-
-    if (window.history.length > 1) {
-      window.history.back();
-      return;
-    }
-
     navigateWithRetry(backHref);
   };
 

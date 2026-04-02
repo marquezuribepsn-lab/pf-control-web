@@ -1480,7 +1480,7 @@ export default function ClientesPage() {
     window.history.pushState({}, "", next);
   };
 
-  const navigateWithRetry = (href: string, options?: { hardFallback?: boolean }) => {
+  const navigateWithRetry = (href: string) => {
     if (typeof window === "undefined") {
       router.push(href);
       return;
@@ -1492,17 +1492,17 @@ export default function ClientesPage() {
     window.setTimeout(() => {
       const nextUrl = `${window.location.pathname}${window.location.search}`;
       if (nextUrl === currentUrl) {
-        if (options?.hardFallback) {
-          window.location.assign(href);
-          return;
-        }
         router.replace(href);
       }
     }, 240);
   };
 
+  useEffect(() => {
+    router.prefetch("/clientes/plan");
+  }, [router]);
+
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    navigateWithRetry(buildPlanViewHref(clientId, tab), { hardFallback: true });
+    navigateWithRetry(buildPlanViewHref(clientId, tab));
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
