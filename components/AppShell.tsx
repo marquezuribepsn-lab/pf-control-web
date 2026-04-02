@@ -676,7 +676,6 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    onClick={() => setMobileOpen(false)}
                     className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
@@ -705,7 +704,6 @@ export default function AppShell({ links, children }: AppShellProps) {
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
               <Link
                 href="/cuenta"
-                onClick={() => setMobileOpen(false)}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
