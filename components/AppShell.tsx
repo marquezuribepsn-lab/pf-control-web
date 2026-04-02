@@ -56,7 +56,6 @@ const COLABORADOR_ACCESS_HREFS = [
 ];
 
 const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
-const SOFT_NAV_ONLY_HREFS = ["/categorias", "/deportes", "/equipos"];
 
 type NavConfig = {
   order: string[];
@@ -523,11 +522,14 @@ export default function AppShell({ links, children }: AppShellProps) {
     window.setTimeout(() => {
       const nextUrl = `${window.location.pathname}${window.location.search}`;
       if (nextUrl === currentUrl) {
-        if (SOFT_NAV_ONLY_HREFS.includes(href)) {
-          router.replace(href);
-          return;
-        }
-        window.location.assign(href);
+        router.replace(href);
+
+        window.setTimeout(() => {
+          const retryUrl = `${window.location.pathname}${window.location.search}`;
+          if (retryUrl === currentUrl) {
+            window.location.assign(href);
+          }
+        }, 180);
       }
     }, 220);
   };
