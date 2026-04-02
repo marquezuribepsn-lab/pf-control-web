@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { usePlayers } from "../../../components/PlayersProvider";
 import { useSessions } from "../../../components/SessionsProvider";
@@ -124,6 +124,7 @@ function buildPlanHref(clientId: string, tab: PlanViewTab): string {
 }
 
 function ClientePlanContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const rawClientId = safeDecodeParam(searchParams.get("cliente"));
   const rawTab = safeDecodeParam(searchParams.get("tab"));
@@ -310,10 +311,7 @@ function ClientePlanContent() {
           </div>
           <button
             type="button"
-            onClick={() => {
-              if (typeof window === "undefined") return;
-              window.location.assign(backHref);
-            }}
+            onClick={() => router.push(backHref)}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a ficha

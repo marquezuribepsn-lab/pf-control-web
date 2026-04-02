@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -392,6 +393,41 @@ const tabPlaceholderCopy: Partial<Record<ClienteTab, string>> = {
   chequeos: "Checklist de chequeos periodicos.",
 };
 
+const tabVisualConfig: Partial<
+  Record<ClienteTab, { badge: string; title: string; hint: string; accent: string }>
+> = {
+  cuestionario: {
+    badge: "Intake",
+    title: "Mapa inicial del cliente",
+    hint: "Sintetiza antecedentes, limitaciones y contexto para decisiones mas rapidas.",
+    accent: "border-fuchsia-300/35 bg-fuchsia-500/10",
+  },
+  recetas: {
+    badge: "Nutricion",
+    title: "Biblioteca de recetas aplicables",
+    hint: "Registra alternativas practicas y reemplazos por disponibilidad o preferencia.",
+    accent: "border-amber-300/35 bg-amber-500/10",
+  },
+  notas: {
+    badge: "Coaching",
+    title: "Bitacora profesional",
+    hint: "Documenta avances, fricciones y acuerdos para sostener adherencia.",
+    accent: "border-cyan-300/35 bg-cyan-500/10",
+  },
+  documentos: {
+    badge: "Recursos",
+    title: "Repositorio de soporte",
+    hint: "Centraliza links, archivos clave y evidencia compartida con el cliente.",
+    accent: "border-indigo-300/35 bg-indigo-500/10",
+  },
+  chequeos: {
+    badge: "Control",
+    title: "Panel de chequeos periodicos",
+    hint: "Anota mediciones y cumplimiento para detectar desvio temprano.",
+    accent: "border-emerald-300/35 bg-emerald-500/10",
+  },
+};
+
 function defaultMeta(cliente: ClienteView): ClienteMeta {
   const nowDate = new Date().toISOString().slice(0, 10);
   return {
@@ -429,6 +465,8 @@ function defaultMeta(cliente: ClienteView): ClienteMeta {
 }
 
 export default function ClientesPage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = useSession();
   const [isDetailMode, setIsDetailMode] = useState(false);
   const [detailClientId, setDetailClientId] = useState<string | null>(null);
@@ -526,31 +564,22 @@ export default function ClientesPage() {
       }
     };
 
-    const syncFromLocation = () => {
-      if (typeof window === "undefined") return;
+    const normalizedPath = pathname.replace(/\/+$/, "");
+    const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
 
-      const normalizedPath = window.location.pathname.replace(/\/+$/, "");
-      const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
+    if (detailPathMatch) {
+      setIsDetailMode(true);
+      setDetailClientId(safeDecodeParam(detailPathMatch[1]));
+      setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
+      return;
+    }
 
-      if (detailPathMatch) {
-        setIsDetailMode(true);
-        setDetailClientId(safeDecodeParam(detailPathMatch[1]));
-        setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
-        return;
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      setIsDetailMode(params.get("detalle") === "1");
-      setDetailClientId(safeDecodeParam(params.get("cliente")));
-      setDetailTabId(safeDecodeParam(params.get("tab")));
-    };
-
-    syncFromLocation();
-    window.addEventListener("popstate", syncFromLocation);
-    return () => {
-      window.removeEventListener("popstate", syncFromLocation);
-    };
-  }, []);
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setIsDetailMode(params.get("detalle") === "1");
+    setDetailClientId(safeDecodeParam(params.get("cliente")));
+    setDetailTabId(safeDecodeParam(params.get("tab")));
+  }, [pathname]);
 
   const categoriasOptions = useMemo(
     () => categorias.filter((cat) => cat.habilitada).map((cat) => cat.nombre),
@@ -1140,7 +1169,7 @@ export default function ClientesPage() {
           return `${cliente.nombre} ${cliente.club || "Sin club"}`;
         case "tipo":
           return cliente.tipo === "jugadora" ? "Jugadora" : "Alumno/a";
-  return Math.max(minByColumn[column], Math.min(estimated, 900));
+        case "categoria":
           return cliente.categoria || cliente.deporte || "-";
         case "plan":
           return sesionesCount > 0 ? `Con plan (${sesionesCount})` : "Sin plan";
@@ -1434,32 +1463,23 @@ export default function ClientesPage() {
   };
 
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    if (typeof window === "undefined") return;
-    window.location.assign(buildPlanViewHref(clientId, tab));
+    router.push(buildPlanViewHref(clientId, tab));
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
-    if (typeof window !== "undefined") {
-      window.location.assign(buildClientDetailHref(clientId, tab));
-      return;
-    }
-
-    setSelectedClientId(clientId);
-    setActiveTab(tab);
     setIsDetailMode(true);
     setDetailClientId(clientId);
     setDetailTabId(tab);
+    setSelectedClientId(clientId);
+    setActiveTab(tab);
+    router.push(buildClientDetailHref(clientId, tab));
   };
 
   const closeClientDetail = () => {
-    if (typeof window !== "undefined") {
-      window.location.assign("/clientes");
-      return;
-    }
-
     setIsDetailMode(false);
     setDetailClientId(null);
     setDetailTabId(null);
+    router.push("/clientes");
   };
 
   const registrarPago = (e: React.FormEvent) => {
@@ -1918,21 +1938,28 @@ export default function ClientesPage() {
                         <p className="truncate text-slate-400">{lastPayment ? `${lastPayment.moneda} ${lastPayment.importe.toLocaleString("es-AR")}` : "Sin pagos"}</p>
                       </div>
 
-                      <div className="min-w-[120px]">
+                      <div className="min-w-[220px] max-w-[320px]">
                         {etiquetasCliente.length === 0 ? (
-                          <span className="text-xs text-slate-500">Sin etiquetas</span>
+                          <span className="inline-flex rounded-full border border-slate-500/50 bg-slate-800/70 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                            Sin etiquetas
+                          </span>
                         ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {etiquetasCliente.slice(0, 2).map((tag) => (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {etiquetasCliente.slice(0, 3).map((tag) => (
                               <span
                                 key={tag.id}
-                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+                                className="max-w-[120px] truncate rounded-full border border-white/20 px-2.5 py-1 text-[11px] font-bold text-white shadow-[0_2px_10px_rgba(15,23,42,0.35)]"
                                 style={{ backgroundColor: tag.color || "#2196f3" }}
                                 title={tag.texto}
                               >
                                 {tag.texto}
                               </span>
                             ))}
+                            {etiquetasCliente.length > 3 ? (
+                              <span className="rounded-full border border-cyan-300/40 bg-cyan-500/15 px-2 py-1 text-[11px] font-bold text-cyan-100">
+                                +{etiquetasCliente.length - 3}
+                              </span>
+                            ) : null}
                           </div>
                         )}
                       </div>
@@ -2028,12 +2055,9 @@ export default function ClientesPage() {
                           openClientPlanView(selectedClient.id, tab.id);
                           return;
                         }
-                        if (typeof window !== "undefined") {
-                          window.location.assign(buildClientDetailHref(selectedClient.id, tab.id));
-                          return;
-                        }
-                        setDetailTabId(tab.id);
                         setActiveTab(tab.id);
+                        setDetailTabId(tab.id);
+                        router.push(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
                       className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
@@ -2290,15 +2314,51 @@ export default function ClientesPage() {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <h3 className="mb-2 text-xl font-bold text-white">{TABS.find((item) => item.id === activeTab)?.label}</h3>
-                    <p className="mb-3 text-sm text-slate-300">{tabPlaceholderCopy[activeTab] || "Apartado editable del cliente."}</p>
+                  <div className="space-y-4">
+                    <div
+                      className={`rounded-2xl border p-4 ${
+                        tabVisualConfig[activeTab]?.accent || "border-slate-300/25 bg-slate-700/20"
+                      }`}
+                    >
+                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-200/80">
+                        {tabVisualConfig[activeTab]?.badge || "Detalle"}
+                      </p>
+                      <h3 className="mt-2 text-xl font-black text-white">
+                        {tabVisualConfig[activeTab]?.title || TABS.find((item) => item.id === activeTab)?.label}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-200/90">
+                        {tabVisualConfig[activeTab]?.hint || tabPlaceholderCopy[activeTab] || "Apartado editable del cliente."}
+                      </p>
+
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        <div className="rounded-xl border border-white/15 bg-slate-950/45 p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Cliente</p>
+                          <p className="truncate text-sm font-bold text-white">{selectedClient.nombre}</p>
+                        </div>
+                        <div className="rounded-xl border border-white/15 bg-slate-950/45 p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Vigencia plan</p>
+                          <p className="truncate text-sm font-bold text-white">
+                            {selectedMeta.startDate || "Sin inicio"} - {selectedMeta.endDate || "Sin fin"}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-white/15 bg-slate-950/45 p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Largo de nota</p>
+                          <p className="text-sm font-bold text-white">
+                            {(selectedMeta.tabNotas[activeTab] || "").trim().length} caracteres
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-slate-300">
+                      Campo de trabajo para {TABS.find((item) => item.id === activeTab)?.label?.toLowerCase()}.
+                    </p>
                     <textarea
                       value={selectedMeta.tabNotas[activeTab] || ""}
                       onChange={(e) => updateTabNote(activeTab, e.target.value)}
-                      rows={7}
-                      className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-                      placeholder="Escribe aqui..."
+                      rows={10}
+                      className="w-full rounded-2xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm leading-relaxed shadow-inner shadow-cyan-500/5"
+                      placeholder="Escribe aqui observaciones accionables, acuerdos y pendientes..."
                     />
                   </div>
                 )}
