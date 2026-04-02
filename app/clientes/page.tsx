@@ -2019,7 +2019,7 @@ export default function ClientesPage() {
 
               <div className="mt-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                  {TABS.map((tab) => (
+                  {TABS.map((tab, index) => (
                     <button
                       key={tab.id}
                       type="button"
@@ -2035,7 +2035,8 @@ export default function ClientesPage() {
                         setDetailTabId(tab.id);
                         setActiveTab(tab.id);
                       }}
-                      className={`group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                      style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
                     >
                       {activeTab === tab.id ? (
                         <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
