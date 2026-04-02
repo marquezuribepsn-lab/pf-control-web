@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
@@ -701,10 +702,13 @@ export default function AppShell({ links, children }: AppShellProps) {
                     (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
 
                   return (
-                    <button
+                    <Link
                       key={link.href}
-                      type="button"
-                      onClick={() => navigateSidebar(link.href)}
+                      href={link.href}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        setSidebarSelectedHref(link.href);
+                      }}
                       className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-colors ${navButtonPaddingClass} ${
                         collapsed ? "justify-center" : "justify-start gap-3"
                       } ${
@@ -731,7 +735,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                           {link.label}
                         </span>
                       )}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
