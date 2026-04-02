@@ -662,7 +662,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md transition-[width,transform] duration-300 ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
             : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
@@ -724,9 +724,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   pathname === link.href ||
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
                 const isCategoryLink = COLABORADOR_CATEGORY_HREFS.includes(link.href);
-                const linkMotionClass = isCategoryLink
-                  ? "transition-none hover:translate-y-0"
-                  : "transition hover:-translate-y-0.5";
+                const linkMotionClass = "transition-none hover:translate-y-0";
                 const linkClassName = `group relative overflow-hidden rounded-2xl border font-semibold text-white ${linkMotionClass} ${navButtonPaddingClass} ${
                   isActive
                     ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
@@ -737,8 +735,6 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <>
                     <span
                       className={`absolute inset-0 bg-gradient-to-r ${link.tone} ${
-                        isCategoryLink ? "" : "transition"
-                      } ${
                         isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
                       }`}
                     />
@@ -790,7 +786,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               <a
                 href="/cuenta"
                 onClick={(event) => navigateSidebar(event, "/cuenta")}
-                className={`rounded-xl border font-semibold transition ${footerButtonPaddingClass} ${
+                className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
                     : "border-white/15 bg-slate-800/60 text-slate-100 hover:bg-slate-800/90"
@@ -802,7 +798,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                className={`w-full rounded-xl border border-rose-500/30 bg-rose-500/10 font-semibold text-rose-300 transition hover:bg-rose-500/20 hover:text-rose-100 ${footerButtonPaddingClass}`}
+                className={`w-full rounded-xl border border-rose-500/30 bg-rose-500/10 font-semibold text-rose-300 transition-none hover:bg-rose-500/20 hover:text-rose-100 ${footerButtonPaddingClass}`}
                 title="Cerrar sesión"
               >
                 {collapsed ? "🚪" : "🚪 Cerrar sesión"}
