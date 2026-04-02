@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
-import { useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { usePlayers } from "../../../components/PlayersProvider";
@@ -127,7 +126,13 @@ function ClientePlanContent() {
   const searchParams = useSearchParams();
   const rawClientId = safeDecodeParam(searchParams.get("cliente"));
   const rawTab = safeDecodeParam(searchParams.get("tab"));
-  const tab: PlanViewTab = rawTab === "plan-nutricional" ? "plan-nutricional" : "plan-entrenamiento";
+  const [tab, setTab] = useState<PlanViewTab>(
+    rawTab === "plan-nutricional" ? "plan-nutricional" : "plan-entrenamiento"
+  );
+
+  useEffect(() => {
+    setTab(rawTab === "plan-nutricional" ? "plan-nutricional" : "plan-entrenamiento");
+  }, [rawTab]);
 
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
@@ -289,7 +294,22 @@ function ClientePlanContent() {
       if (nextUrl === currentUrl) {
         window.location.assign(href);
       }
-    }, 180);
+    }, 900);
+  };
+
+  const switchPlanTab = (nextTab: PlanViewTab) => {
+    if (!selectedClient) return;
+    setTab(nextTab);
+
+    if (typeof window === "undefined") return;
+    const nextHref = buildPlanHref(selectedClient.id, nextTab);
+    const nextUrl = new URL(nextHref, window.location.origin);
+    const next = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (next !== current) {
+      window.history.pushState({}, "", next);
+    }
   };
 
   if (!selectedClient) {
@@ -337,7 +357,7 @@ function ClientePlanContent() {
         <div className="relative mt-4 flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => navigateWithFallback(buildPlanHref(selectedClient.id, "plan-entrenamiento"))}
+            onClick={() => switchPlanTab("plan-entrenamiento")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-entrenamiento"
                 ? "border-cyan-200/55 bg-cyan-300 text-slate-950"
@@ -348,7 +368,7 @@ function ClientePlanContent() {
           </button>
           <button
             type="button"
-            onClick={() => navigateWithFallback(buildPlanHref(selectedClient.id, "plan-nutricional"))}
+            onClick={() => switchPlanTab("plan-nutricional")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-nutricional"
                 ? "border-cyan-200/55 bg-cyan-300 text-slate-950"

@@ -564,21 +564,30 @@ export default function ClientesPage() {
       }
     };
 
-    const normalizedPath = pathname.replace(/\/+$/, "");
-    const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
+    const syncFromLocation = () => {
+      if (typeof window === "undefined") return;
 
-    if (detailPathMatch) {
-      setIsDetailMode(true);
-      setDetailClientId(safeDecodeParam(detailPathMatch[1]));
-      setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
-      return;
-    }
+      const normalizedPath = window.location.pathname.replace(/\/+$/, "");
+      const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
 
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setIsDetailMode(params.get("detalle") === "1");
-    setDetailClientId(safeDecodeParam(params.get("cliente")));
-    setDetailTabId(safeDecodeParam(params.get("tab")));
+      if (detailPathMatch) {
+        setIsDetailMode(true);
+        setDetailClientId(safeDecodeParam(detailPathMatch[1]));
+        setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      setIsDetailMode(params.get("detalle") === "1");
+      setDetailClientId(safeDecodeParam(params.get("cliente")));
+      setDetailTabId(safeDecodeParam(params.get("tab")));
+    };
+
+    syncFromLocation();
+    window.addEventListener("popstate", syncFromLocation);
+    return () => {
+      window.removeEventListener("popstate", syncFromLocation);
+    };
   }, [pathname]);
 
   const categoriasOptions = useMemo(
@@ -1462,6 +1471,15 @@ export default function ClientesPage() {
     window.open(`https://wa.me/${telefono}?text=${presetText}`, "_blank", "noopener,noreferrer");
   };
 
+  const pushUrlWithoutReload = (href: string) => {
+    if (typeof window === "undefined") return;
+    const nextUrl = new URL(href, window.location.origin);
+    const next = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (next === current) return;
+    window.history.pushState({}, "", next);
+  };
+
   const navigateWithFallback = (href: string) => {
     if (typeof window === "undefined") {
       router.push(href);
@@ -1476,7 +1494,7 @@ export default function ClientesPage() {
       if (nextUrl === currentUrl) {
         window.location.assign(href);
       }
-    }, 180);
+    }, 900);
   };
 
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
@@ -1489,14 +1507,14 @@ export default function ClientesPage() {
     setDetailTabId(tab);
     setSelectedClientId(clientId);
     setActiveTab(tab);
-    navigateWithFallback(buildClientDetailHref(clientId, tab));
+    pushUrlWithoutReload(buildClientDetailHref(clientId, tab));
   };
 
   const closeClientDetail = () => {
     setIsDetailMode(false);
     setDetailClientId(null);
     setDetailTabId(null);
-    navigateWithFallback("/clientes");
+    pushUrlWithoutReload("/clientes");
   };
 
   const registrarPago = (e: React.FormEvent) => {
@@ -2074,7 +2092,7 @@ export default function ClientesPage() {
                         }
                         setActiveTab(tab.id);
                         setDetailTabId(tab.id);
-                        navigateWithFallback(buildClientDetailHref(selectedClient.id, tab.id));
+                        pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
                       className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
