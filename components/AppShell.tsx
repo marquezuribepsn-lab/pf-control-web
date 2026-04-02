@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
@@ -114,6 +113,14 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
   withoutDragged.splice(targetIndex, 0, dragHref);
   return withoutDragged;
+};
+
+const normalizePath = (value: string) => {
+  const path = value.split("?")[0] || "/";
+  if (path !== "/" && path.endsWith("/")) {
+    return path.slice(0, -1);
+  }
+  return path;
 };
 
 export default function AppShell({ links, children }: AppShellProps) {
@@ -540,7 +547,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMobileOpen(false);
     setSidebarSelectedHref(href);
 
-    if (pathname === href) {
+    if (normalizePath(pathname) === normalizePath(href)) {
       return;
     }
 
@@ -549,15 +556,22 @@ export default function AppShell({ links, children }: AppShellProps) {
       return;
     }
 
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    const targetPath = normalizePath(href);
     router.push(href);
 
     window.setTimeout(() => {
-      const pushedUrl = `${window.location.pathname}${window.location.search}`;
-      if (pushedUrl === currentUrl) {
+      const pushedPath = normalizePath(window.location.pathname);
+      if (pushedPath !== targetPath) {
         router.replace(href);
+
+        window.setTimeout(() => {
+          const replacedPath = normalizePath(window.location.pathname);
+          if (replacedPath !== targetPath) {
+            window.location.assign(href);
+          }
+        }, 220);
       }
-    }, 260);
+    }, 180);
   };
 
   const scaledStyle = {
@@ -702,13 +716,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                     (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
 
                   return (
-                    <Link
+                    <button
                       key={link.href}
-                      href={link.href}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        navigateSidebar(link.href);
-                      }}
+                      type="button"
+                      onClick={() => navigateSidebar(link.href)}
                       className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-colors ${navButtonPaddingClass} ${
                         collapsed ? "justify-center" : "justify-start gap-3"
                       } ${
@@ -737,7 +748,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                           {link.label}
                         </span>
                       )}
-                    </Link>
+                    </button>
                   );
                 })}
               </div>
