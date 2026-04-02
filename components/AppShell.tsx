@@ -548,14 +548,22 @@ export default function AppShell({ links, children }: AppShellProps) {
       return;
     }
 
-    const currentPath = window.location.pathname;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
     router.push(href);
 
     window.setTimeout(() => {
-      if (window.location.pathname === currentPath) {
+      const pushedUrl = `${window.location.pathname}${window.location.search}`;
+      if (pushedUrl === currentUrl) {
         router.replace(href);
+
+        window.setTimeout(() => {
+          const replacedUrl = `${window.location.pathname}${window.location.search}`;
+          if (replacedUrl === currentUrl) {
+            window.location.assign(href);
+          }
+        }, 260);
       }
-    }, 180);
+    }, 220);
   };
 
   const scaledStyle = {
