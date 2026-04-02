@@ -677,11 +677,11 @@ export default function AppShell({ links, children }: AppShellProps) {
     ? "mb-1 px-2 text-[9px]"
     : "mb-2 px-3 text-[10px]";
 
-  const navIconSizeClass = useUltraTightSidebar
-    ? "h-6 w-6"
+  const navIconTextClass = useUltraTightSidebar
+    ? "text-[1.05rem]"
     : useTightSidebar
-    ? "h-[1.625rem] w-[1.625rem]"
-    : "h-7 w-7";
+    ? "text-[1.1rem]"
+    : "text-[1.18rem]";
 
   const footerSpacingClass = useUltraTightSidebar
     ? "mt-1 gap-1 pb-0.5 pt-1"
@@ -791,20 +791,13 @@ export default function AppShell({ links, children }: AppShellProps) {
                     key={link.href}
                     type="button"
                     onClick={() => navigateSidebar(link.href)}
-                    className={`${linkClassName} ${isActive ? "" : "hover:bg-sky-950/70"} ${collapsed ? "justify-center" : "flex-col justify-center gap-1.5"}`}
+                    className={`${linkClassName} ${isActive ? "" : "hover:bg-sky-950/70"} ${collapsed ? "justify-center" : "justify-start gap-3"}`}
                     title={link.label}
                   >
-                    <span
-                      className={`absolute inset-y-2 left-1.5 w-1 rounded-full ${
-                        isActive ? "bg-sky-100/95" : "bg-sky-300/40"
-                      }`}
-                    />
-                    <span className={`flex items-center ${collapsed ? "justify-center" : "justify-center"}`}>
-                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full bg-gradient-to-br ${link.tone} ${isActive ? "ring-1 ring-sky-50/85" : "ring-1 ring-sky-800/70"}`}>
-                        <span className="text-[0.95rem] leading-none">{link.icon}</span>
-                      </span>
+                    <span className={`flex items-center ${collapsed ? "justify-center" : "justify-start"}`}>
+                      <span className={`${navIconTextClass} leading-none`}>{link.icon}</span>
                     </span>
-                    {!collapsed && <span className="line-clamp-2 px-2 text-center text-[0.68rem] font-semibold leading-[1.05rem] tracking-[0.01em] text-sky-100">{link.label}</span>}
+                    {!collapsed && <span className="line-clamp-2 text-left text-[0.74rem] font-semibold leading-[1.05rem] tracking-[0.01em] text-sky-100">{link.label}</span>}
                   </button>
                 );
               })}
