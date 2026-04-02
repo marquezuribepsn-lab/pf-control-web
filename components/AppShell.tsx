@@ -31,7 +31,6 @@ const PRIMARY_ORDER = [
   "/",
   "/semana",
   "/sesiones",
-  "/nueva-sesion",
   "/plantel",
   "/clientes",
 ];
@@ -564,15 +563,16 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-white/15 bg-slate-900/95 backdrop-blur-md transition-all duration-300 ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md transition-all duration-300 ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
             : `w-[min(86vw,19rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div className="pointer-events-none absolute inset-0 opacity-50">
-          <div className="absolute -left-12 top-0 h-36 w-36 rounded-full bg-cyan-500/30 blur-3xl" />
-          <div className="absolute right-0 top-16 h-32 w-32 rounded-full bg-fuchsia-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 opacity-70">
+          <div className="absolute -left-12 top-0 h-36 w-36 rounded-full bg-cyan-500/35 blur-3xl" />
+          <div className="absolute right-0 top-16 h-32 w-32 rounded-full bg-emerald-500/25 blur-3xl" />
+          <div className="absolute inset-y-0 left-0 w-[2px] bg-gradient-to-b from-cyan-300/80 via-sky-300/40 to-transparent" />
         </div>
 
         <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${headerPaddingClass}`}>
@@ -613,23 +613,45 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-xl border border-white/10 p-[clamp(0.28rem,0.8vh,0.58rem)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-2xl border border-cyan-200/15 bg-slate-950/45 p-[clamp(0.28rem,0.8vh,0.58rem)] ${navGapClass}`}
             >
-              {orderedLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`group relative overflow-hidden rounded-xl border border-white/20 font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass}`}
-                  title={link.label}
-                >
-                  <span className={`absolute inset-0 bg-gradient-to-r ${link.tone} opacity-80 transition group-hover:opacity-100`} />
-                  <span className="relative flex items-center justify-center gap-2">
-                    <span>{link.icon}</span>
-                    {!collapsed && <span>{link.label}</span>}
-                  </span>
-                </a>
-              ))}
+              {!collapsed ? (
+                <p className="mb-1 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
+                  Navegacion
+                </p>
+              ) : null}
+              {orderedLinks.map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== "/" && pathname.startsWith(`${link.href}/`));
+
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`group relative overflow-hidden rounded-xl border font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass} ${
+                      isActive
+                        ? "border-cyan-200/50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
+                        : "border-white/15"
+                    }`}
+                    title={link.label}
+                  >
+                    <span
+                      className={`absolute inset-0 bg-gradient-to-r ${link.tone} transition ${
+                        isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+                      }`}
+                    />
+                    {isActive ? (
+                      <span className="absolute inset-y-1 left-1 w-1 rounded-full bg-white/80" />
+                    ) : null}
+                    <span className="relative flex items-center justify-center gap-2">
+                      <span>{link.icon}</span>
+                      {!collapsed && <span>{link.label}</span>}
+                    </span>
+                  </a>
+                );
+              })}
             </nav>
           </div>
 

@@ -41,7 +41,6 @@ export default function RootLayout({
     { href: "/admin/musica", label: "Musica", icon: "🎵", tone: "from-fuchsia-500 to-purple-600", adminOnly: true },
     { href: "/admin/whatsapp", label: "WhatsApp", icon: "💬", tone: "from-emerald-500 to-green-600", adminOnly: true },
     { href: "/configuracion", label: "Configuración", icon: "⚙️", tone: "from-slate-500 to-gray-600" },
-    { href: "/nueva-sesion", label: "Nueva sesión", icon: "🚀", tone: "from-cyan-500 to-sky-600" },
   ];
 
   return (

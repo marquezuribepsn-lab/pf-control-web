@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
@@ -1006,67 +1005,106 @@ export default function SesionesPage() {
     };
   }, [alumnos.length, asistencias, jornadas, jugadoras.length, sesiones.length]);
 
-  return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Sesiones</h1>
-          <p className="text-sm text-slate-300">
-            Crea la sesión y luego carga o edita sus bloques de entrenamiento.
-          </p>
-        </div>
-        <button
-          onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Nueva Sesión
-        </button>
-      </div>
+  const abrirPantalla = (href: string) => {
+    if (typeof window === "undefined") return;
+    window.location.assign(href);
+  };
 
-      <section className="mb-6 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-cyan-100">Sesiones</p>
-          <p className="text-2xl font-black text-white">{sesionesOperativas.totalSesiones}</p>
+  const totalRegistrosAsistencia =
+    sesionesOperativas.totalPresentes + sesionesOperativas.totalAusentes;
+  const tasaAsistencia =
+    totalRegistrosAsistencia > 0
+      ? Math.round((sesionesOperativas.totalPresentes / totalRegistrosAsistencia) * 100)
+      : null;
+
+  return (
+    <main className="mx-auto max-w-7xl space-y-6 p-6 text-slate-100">
+      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/55 to-slate-900 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] md:p-7">
+        <div className="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full bg-cyan-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-100/85">
+              Centro de operaciones
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">
+              Sesiones
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
+              Planifica cada bloque, ejecuta progresiones automatizadas y abre una nueva sesion en pantalla dedicada.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => abrirPantalla("/nueva-sesion")}
+              className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+            >
+              + Nueva sesion
+            </button>
+            <button
+              type="button"
+              onClick={() => abrirPantalla("/semana")}
+              className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+            >
+              Ver plan semanal
+            </button>
+          </div>
         </div>
-        <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-emerald-100">Jornadas activas</p>
-          <p className="text-2xl font-black text-white">{sesionesOperativas.totalJornadas}</p>
-        </div>
-        <div className="rounded-2xl border border-indigo-300/30 bg-indigo-500/10 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-indigo-100">Jornadas proximas</p>
-          <p className="text-2xl font-black text-white">{sesionesOperativas.jornadasProximas}</p>
-        </div>
-        <div className="rounded-2xl border border-lime-300/30 bg-lime-500/10 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-lime-100">Presentes</p>
-          <p className="text-2xl font-black text-white">{sesionesOperativas.totalPresentes}</p>
-        </div>
-        <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-rose-100">Ausentes</p>
-          <p className="text-2xl font-black text-white">{sesionesOperativas.totalAusentes}</p>
-        </div>
-        <div className="rounded-2xl border border-white/15 bg-slate-900/80 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-slate-300">Plantel/Alumnos</p>
-          <p className="text-2xl font-black text-white">
-            {sesionesOperativas.totalJugadoras}/{sesionesOperativas.totalAlumnos}
-          </p>
+
+        <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4">
+            <p className="text-[11px] uppercase tracking-wide text-cyan-100">Sesiones activas</p>
+            <p className="text-3xl font-black text-white">{sesionesOperativas.totalSesiones}</p>
+          </div>
+          <div className="rounded-2xl border border-emerald-200/25 bg-emerald-500/10 p-4">
+            <p className="text-[11px] uppercase tracking-wide text-emerald-100">Jornadas proximas</p>
+            <p className="text-3xl font-black text-white">{sesionesOperativas.jornadasProximas}</p>
+          </div>
+          <div className="rounded-2xl border border-lime-200/25 bg-lime-500/10 p-4">
+            <p className="text-[11px] uppercase tracking-wide text-lime-100">Asistencia</p>
+            <p className="text-3xl font-black text-white">
+              {tasaAsistencia === null ? "-" : `${tasaAsistencia}%`}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/20 bg-slate-900/70 p-4">
+            <p className="text-[11px] uppercase tracking-wide text-slate-300">Plantel / Alumnos</p>
+            <p className="text-3xl font-black text-white">
+              {sesionesOperativas.totalJugadoras}/{sesionesOperativas.totalAlumnos}
+            </p>
+          </div>
         </div>
       </section>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link href="/asistencias" className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10">
+      <section className="grid gap-3 md:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => abrirPantalla("/asistencias")}
+          className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-left text-sm font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-500/20"
+        >
           Abrir asistencias
-        </Link>
-        <Link href="/plantel" className="rounded-lg border border-emerald-300/35 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
+        </button>
+        <button
+          type="button"
+          onClick={() => abrirPantalla("/plantel")}
+          className="rounded-2xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
+        >
           Abrir plantel
-        </Link>
-        <Link href="/registros" className="rounded-lg border border-violet-300/35 px-3 py-1.5 text-xs font-semibold text-violet-100 hover:bg-violet-500/10">
+        </button>
+        <button
+          type="button"
+          onClick={() => abrirPantalla("/registros")}
+          className="rounded-2xl border border-violet-300/35 bg-violet-500/10 px-4 py-3 text-left text-sm font-semibold text-violet-100 transition hover:-translate-y-0.5 hover:bg-violet-500/20"
+        >
           Ver registros
-        </Link>
-      </div>
+        </button>
+      </section>
 
       <SesionesAIPlanner />
 
-      {mostrarFormulario && (
+      {mostrarFormulario && editandoSesion && (
         <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">
             {editandoSesion ? "Editar Sesión" : "Nueva Sesión"}
