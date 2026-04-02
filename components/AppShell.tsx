@@ -554,7 +554,18 @@ export default function AppShell({ links, children }: AppShellProps) {
   } as const;
 
   const transitionKey =
-    pathname === "/" ? "/" : `/${pathname.split("/").filter(Boolean)[0] || ""}`;
+    (() => {
+      if (pathname === "/") {
+        return "/";
+      }
+
+      const firstSegment = `/${pathname.split("/").filter(Boolean)[0] || ""}`;
+      if (COLABORADOR_CATEGORY_HREFS.includes(firstSegment)) {
+        return "/categorias-grupo";
+      }
+
+      return firstSegment;
+    })();
 
   const isUltraWideSidebar = viewport.width >= 1920 && viewport.height >= 900;
   const isCompactSidebar = viewport.height <= 840 || viewport.width <= 1366;
@@ -570,8 +581,6 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const desktopCollapsedWidthClass = isUltraWideSidebar
     ? "lg:w-24"
-    : isUltraCompactSidebar
-    ? "lg:w-16"
     : "lg:w-20";
 
   const shellExpandedPaddingClass = isUltraWideSidebar
@@ -584,8 +593,6 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const shellCollapsedPaddingClass = isUltraWideSidebar
     ? "lg:pl-24"
-    : isUltraCompactSidebar
-    ? "lg:pl-16"
     : "lg:pl-20";
 
   const headerPaddingClass = isUltraWideSidebar
