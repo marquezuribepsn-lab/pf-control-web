@@ -371,16 +371,16 @@ function buildClientDetailHref(clientId: string, tab: ClienteTab = "datos"): str
   return `/clientes/ficha/${encodeURIComponent(clientId)}/${tab}`;
 }
 
-const TABS: { id: ClienteTab; label: string }[] = [
-  { id: "datos", label: "Datos generales" },
-  { id: "cuestionario", label: "Cuestionario" },
-  { id: "plan-entrenamiento", label: "Plan entrenamiento" },
-  { id: "plan-nutricional", label: "Plan nutricional" },
-  { id: "recetas", label: "Recetas" },
-  { id: "notas", label: "Notas" },
-  { id: "documentos", label: "Documentos" },
-  { id: "chequeos", label: "Chequeos" },
-  { id: "progreso", label: "Progreso" },
+const TABS: { id: ClienteTab; label: string; icon: string }[] = [
+  { id: "datos", label: "Datos generales", icon: "🧾" },
+  { id: "cuestionario", label: "Cuestionario", icon: "🧠" },
+  { id: "plan-entrenamiento", label: "Plan entrenamiento", icon: "🏋" },
+  { id: "plan-nutricional", label: "Plan nutricional", icon: "🥗" },
+  { id: "recetas", label: "Recetas", icon: "🍽" },
+  { id: "notas", label: "Notas", icon: "📝" },
+  { id: "documentos", label: "Documentos", icon: "📁" },
+  { id: "chequeos", label: "Chequeos", icon: "✅" },
+  { id: "progreso", label: "Progreso", icon: "📈" },
 ];
 
 const tabPlaceholderCopy: Partial<Record<ClienteTab, string>> = {
@@ -2018,7 +2018,7 @@ export default function ClientesPage() {
               </div>
 
               <div className="mt-3 space-y-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                   {TABS.map((tab) => (
                     <button
                       key={tab.id}
@@ -2035,9 +2035,20 @@ export default function ClientesPage() {
                         setDetailTabId(tab.id);
                         setActiveTab(tab.id);
                       }}
-                      className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${activeTab === tab.id ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-50" : "border-cyan-300/40 text-white hover:bg-cyan-500/10"}`}
+                      className={`group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
                     >
-                      {tab.label}
+                      {activeTab === tab.id ? (
+                        <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
+                      ) : null}
+                      <span className="relative flex items-start gap-2">
+                        <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
+                        <span>
+                          <span className="block text-sm font-bold leading-tight">{tab.label}</span>
+                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
+                            Vista dedicada
+                          </span>
+                        </span>
+                      </span>
                     </button>
                   ))}
                 </div>
