@@ -39,6 +39,7 @@ const PRIMARY_ORDER = [
 const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
+const SIDEBAR_COLLAPSED_KEY = "pf-control-sidebar-collapsed-v1";
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
   "/semana",
@@ -55,6 +56,7 @@ const COLABORADOR_ACCESS_HREFS = [
 ];
 
 const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
+const SOFT_NAV_ONLY_HREFS = ["/categorias", "/deportes", "/equipos"];
 
 type NavConfig = {
   order: string[];
@@ -234,9 +236,14 @@ export default function AppShell({ links, children }: AppShellProps) {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
       const savedScale = Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
       setScreenScale(Number.isFinite(savedScale) && savedScale > 0 ? savedScale : 1);
+      const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (savedCollapsed === "1" || savedCollapsed === "0") {
+        setCollapsed(savedCollapsed === "1");
+      }
     } catch {
       setConfig(getDefaultConfig(links));
       setScreenScale(1);
+      setCollapsed(false);
     }
   }, [links]);
 
@@ -361,6 +368,12 @@ export default function AppShell({ links, children }: AppShellProps) {
       if (event.key === SIDEBAR_IMAGE_KEY) {
         setSidebarImage(event.newValue || null);
       }
+
+      if (event.key === SIDEBAR_COLLAPSED_KEY) {
+        if (event.newValue === "1" || event.newValue === "0") {
+          setCollapsed(event.newValue === "1");
+        }
+      }
     };
 
     const onScaleChange = () => {
@@ -474,6 +487,9 @@ export default function AppShell({ links, children }: AppShellProps) {
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      }
       return next;
     });
   };
@@ -507,6 +523,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     window.setTimeout(() => {
       const nextUrl = `${window.location.pathname}${window.location.search}`;
       if (nextUrl === currentUrl) {
+        if (SOFT_NAV_ONLY_HREFS.includes(href)) {
+          router.replace(href);
+          return;
+        }
         window.location.assign(href);
       }
     }, 220);
@@ -663,13 +683,14 @@ export default function AppShell({ links, children }: AppShellProps) {
                 const isActive =
                   pathname === link.href ||
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
+                const isCategoryLink = COLABORADOR_CATEGORY_HREFS.includes(link.href);
 
                 return (
                   <a
                     key={link.href}
                     href={link.href}
                     onClick={(event) => navigateSidebar(event, link.href)}
-                    className={`group relative overflow-hidden rounded-xl border font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass} ${
+                    className={`group relative overflow-hidden rounded-xl border font-semibold text-white transition hover:-translate-y-0.5 ${isCategoryLink ? "pf-sidebar-category-link" : ""} ${navButtonPaddingClass} ${
                       isActive
                         ? "border-cyan-200/50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
                         : "border-white/15"
