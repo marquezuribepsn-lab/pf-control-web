@@ -658,7 +658,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md transition-all duration-300 ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md transition-[width,transform] duration-300 ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
             : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
@@ -723,24 +723,14 @@ export default function AppShell({ links, children }: AppShellProps) {
                 const linkMotionClass = isCategoryLink
                   ? "transition-none hover:translate-y-0"
                   : "transition hover:-translate-y-0.5";
+                const linkClassName = `group relative overflow-hidden rounded-2xl border font-semibold text-white ${linkMotionClass} ${navButtonPaddingClass} ${
+                  isActive
+                    ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
+                    : "border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                }`;
 
-                return (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={(event) =>
-                      navigateSidebar(event, link.href, {
-                        hardFallback: !isCategoryLink,
-                        instant: isCategoryLink,
-                      })
-                    }
-                    className={`group relative overflow-hidden rounded-2xl border font-semibold text-white ${linkMotionClass} ${navButtonPaddingClass} ${
-                      isActive
-                        ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
-                        : "border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                    }`}
-                    title={link.label}
-                  >
+                const labelContent = (
+                  <>
                     <span
                       className={`absolute inset-0 bg-gradient-to-r ${link.tone} ${
                         isCategoryLink ? "" : "transition"
@@ -755,6 +745,37 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <span className="text-[1.02em]">{link.icon}</span>
                       {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
                     </span>
+                  </>
+                );
+
+                if (isCategoryLink) {
+                  return (
+                    <button
+                      key={link.href}
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        if (pathname !== link.href) {
+                          router.push(link.href);
+                        }
+                      }}
+                      className={`${linkClassName} pf-sidebar-category-static text-left`}
+                      title={link.label}
+                    >
+                      {labelContent}
+                    </button>
+                  );
+                }
+
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={(event) => navigateSidebar(event, link.href)}
+                    className={linkClassName}
+                    title={link.label}
+                  >
+                    {labelContent}
                   </a>
                 );
               })}

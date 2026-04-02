@@ -261,6 +261,12 @@ body {
   box-shadow: 0 10px 24px rgba(6, 182, 212, 0.2);
 }
 
+.pf-sidebar-category-static {
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pf-route-enter {
     animation: none;
