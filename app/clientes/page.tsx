@@ -2029,7 +2029,8 @@ export default function ClientesPage() {
                           return;
                         }
                         if (typeof window !== "undefined") {
-                          window.history.replaceState({}, "", buildClientDetailHref(selectedClient.id, tab.id));
+                          window.location.assign(buildClientDetailHref(selectedClient.id, tab.id));
+                          return;
                         }
                         setDetailTabId(tab.id);
                         setActiveTab(tab.id);
