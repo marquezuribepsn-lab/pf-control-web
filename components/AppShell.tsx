@@ -605,6 +605,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     ? "lg:w-24"
     : "lg:w-20";
 
+  const navItemCount = orderedLinks.length;
+  const useTightSidebar = !collapsed && (viewport.height <= 860 || navItemCount >= 15);
+  const useUltraTightSidebar = !collapsed && (viewport.height <= 760 || navItemCount >= 18);
+
   const shellExpandedPaddingClass = isUltraWideSidebar
     ? "lg:pl-[25rem]"
     : isUltraCompactSidebar
@@ -617,27 +621,73 @@ export default function AppShell({ links, children }: AppShellProps) {
     ? "lg:pl-24"
     : "lg:pl-20";
 
-  const headerPaddingClass = isUltraWideSidebar
+  const headerPaddingClass = useUltraTightSidebar
+    ? "p-[clamp(0.38rem,0.9vh,0.62rem)]"
+    : useTightSidebar
+    ? "p-[clamp(0.46rem,1.05vh,0.8rem)]"
+    : isUltraWideSidebar
     ? "p-[clamp(0.95rem,1.2vh,1.35rem)]"
     : isUltraCompactSidebar
     ? "p-[clamp(0.5rem,1.2vh,0.85rem)]"
     : "p-[clamp(0.6rem,1.6vh,1.25rem)] lg:p-[clamp(0.7rem,1.8vh,1.35rem)]";
 
-  const navGapClass = isUltraWideSidebar
+  const navGapClass = useUltraTightSidebar
+    ? "gap-[clamp(0.06rem,0.2vh,0.14rem)]"
+    : useTightSidebar
+    ? "gap-[clamp(0.1rem,0.28vh,0.2rem)]"
+    : isUltraWideSidebar
     ? "gap-[clamp(0.38rem,0.85vh,0.6rem)]"
     : isUltraCompactSidebar
     ? "gap-[clamp(0.12rem,0.35vh,0.22rem)]"
     : "gap-[clamp(0.22rem,0.7vh,0.5rem)]";
 
-  const navButtonPaddingClass = isUltraWideSidebar
+  const navButtonPaddingClass = useUltraTightSidebar
+    ? "px-[clamp(0.3rem,0.85vw,0.48rem)] py-[clamp(0.13rem,0.35vh,0.24rem)] text-[clamp(0.58rem,1.05vh,0.7rem)]"
+    : useTightSidebar
+    ? "px-[clamp(0.36rem,1vw,0.56rem)] py-[clamp(0.18rem,0.45vh,0.3rem)] text-[clamp(0.62rem,1.2vh,0.76rem)]"
+    : isUltraWideSidebar
     ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
     : isUltraCompactSidebar
     ? "px-[clamp(0.36rem,1vw,0.56rem)] py-[clamp(0.2rem,0.5vh,0.34rem)] text-[clamp(0.58rem,1.2vh,0.75rem)]"
     : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.28rem,0.8vh,0.56rem)] text-[clamp(0.65rem,1.5vh,0.875rem)]";
 
-  const footerButtonPaddingClass = isUltraWideSidebar
+  const footerButtonPaddingClass = useUltraTightSidebar
+    ? "px-[clamp(0.34rem,0.9vw,0.5rem)] py-[clamp(0.16rem,0.4vh,0.26rem)] text-[clamp(0.58rem,1.05vh,0.72rem)]"
+    : useTightSidebar
+    ? "px-[clamp(0.38rem,1vw,0.56rem)] py-[clamp(0.2rem,0.52vh,0.34rem)] text-[clamp(0.62rem,1.2vh,0.78rem)]"
+    : isUltraWideSidebar
     ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
     : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.3rem,0.85vh,0.56rem)] text-[clamp(0.65rem,1.45vh,0.875rem)]";
+
+  const headerBlockMarginClass = useUltraTightSidebar
+    ? "mb-[clamp(0.18rem,0.45vh,0.32rem)]"
+    : useTightSidebar
+    ? "mb-[clamp(0.22rem,0.6vh,0.45rem)]"
+    : "mb-[clamp(0.35rem,1.1vh,1rem)]";
+
+  const navPanelPaddingClass = useUltraTightSidebar
+    ? "p-[clamp(0.24rem,0.55vh,0.38rem)]"
+    : useTightSidebar
+    ? "p-[clamp(0.3rem,0.7vh,0.52rem)]"
+    : "p-[clamp(0.42rem,1vh,0.74rem)]";
+
+  const navTitleClass = useUltraTightSidebar
+    ? "mb-1 px-2 text-[9px]"
+    : useTightSidebar
+    ? "mb-1 px-2 text-[9px]"
+    : "mb-2 px-3 text-[10px]";
+
+  const navIconSizeClass = useUltraTightSidebar
+    ? "h-6 w-6"
+    : useTightSidebar
+    ? "h-[1.625rem] w-[1.625rem]"
+    : "h-7 w-7";
+
+  const footerSpacingClass = useUltraTightSidebar
+    ? "mt-1 gap-1 pb-0.5 pt-1"
+    : useTightSidebar
+    ? "mt-2 gap-1.5 pb-0.5 pt-1.5"
+    : "mt-[clamp(0.35rem,1vh,0.85rem)] gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]";
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
@@ -688,10 +738,10 @@ export default function AppShell({ links, children }: AppShellProps) {
             </div>
           )}
 
-          <div className="mb-[clamp(0.35rem,1.1vh,1rem)] flex items-center justify-between gap-2">
+          <div className={`${headerBlockMarginClass} flex items-center justify-between gap-2`}>
             {!collapsed && (
               <div>
-                {sidebarImage && !isUltraCompactSidebar && (
+                {sidebarImage && !isUltraCompactSidebar && !useTightSidebar && (
                   <img
                     src={sidebarImage}
                     alt="Imagen lateral"
@@ -699,7 +749,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   />
                 )}
                 <p className="text-[clamp(0.95rem,2.3vh,1.25rem)] font-black tracking-tight text-white">PF Control</p>
-                {!isUltraCompactSidebar && (
+                {!isUltraCompactSidebar && !useTightSidebar && (
                   <p className="text-[clamp(0.62rem,1.35vh,0.75rem)] text-slate-300">Plataforma para preparadores fisicos</p>
                 )}
               </div>
@@ -713,12 +763,12 @@ export default function AppShell({ links, children }: AppShellProps) {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid min-h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 p-[clamp(0.42rem,1vh,0.74rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
             >
               {!collapsed ? (
-                <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
+                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-cyan-100/80`}>
                   Navegacion
                 </p>
               ) : null}
@@ -751,7 +801,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                       }`}
                     />
                     <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5 px-2"}`}>
-                      <span className={`grid h-7 w-7 place-items-center rounded-full ${isActive ? "bg-black/20" : "bg-white/10"}`}>
+                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full ${isActive ? "bg-black/20" : "bg-white/10"}`}>
                         <span className="text-[0.95rem] leading-none">{link.icon}</span>
                       </span>
                       {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
@@ -767,7 +817,7 @@ export default function AppShell({ links, children }: AppShellProps) {
             </nav>
           </div>
 
-            <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
+            <div className={`grid ${footerSpacingClass}`}>
               <button
                 type="button"
                 onClick={() => navigateSidebar("/cuenta")}
