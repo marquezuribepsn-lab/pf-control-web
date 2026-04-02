@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -117,7 +118,6 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -508,16 +508,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
-  const navigateSidebar = (href: string) => {
-    setMobileOpen(false);
-
-    if (pathname === href) {
-      return;
-    }
-
-    router.push(href);
-  };
-
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -663,9 +653,9 @@ export default function AppShell({ links, children }: AppShellProps) {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             <nav
-              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 p-[clamp(0.42rem,1vh,0.74rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
+              className={`grid min-h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 p-[clamp(0.42rem,1vh,0.74rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
             >
               {!collapsed ? (
                 <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
@@ -683,13 +673,18 @@ export default function AppShell({ links, children }: AppShellProps) {
                 }`;
 
                 return (
-                  <button
+                  <Link
                     key={link.href}
-                    type="button"
-                    onClick={() => navigateSidebar(link.href)}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
                     className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
+                    <span
+                      className={`absolute inset-y-2 left-1.5 w-1 rounded-full ${
+                        isActive ? "bg-white/85" : "bg-cyan-200/45"
+                      }`}
+                    />
                     <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5 px-2"}`}>
                       <span className={`grid h-7 w-7 place-items-center rounded-full ${isActive ? "bg-black/20" : "bg-white/10"}`}>
                         <span className="text-[0.95rem] leading-none">{link.icon}</span>
@@ -701,16 +696,16 @@ export default function AppShell({ links, children }: AppShellProps) {
                         {isActive ? "●" : "○"}
                       </span>
                     )}
-                  </button>
+                  </Link>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <button
-                type="button"
-                onClick={() => navigateSidebar("/cuenta")}
+              <Link
+                href="/cuenta"
+                onClick={() => setMobileOpen(false)}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -719,7 +714,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </button>
+              </Link>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
