@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
@@ -626,7 +627,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                 return (
-                  <a
+                  <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
@@ -649,14 +650,14 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <span>{link.icon}</span>
                       {!collapsed && <span>{link.label}</span>}
                     </span>
-                  </a>
+                  </Link>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <a
+              <Link
                 href="/cuenta"
                 onClick={() => setMobileOpen(false)}
                 className={`rounded-xl border font-semibold transition ${footerButtonPaddingClass} ${
@@ -667,7 +668,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </a>
+              </Link>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}

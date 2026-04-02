@@ -2177,55 +2177,71 @@ export default function ClientesPage() {
               <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
                 {activeTab === "datos" ? (
                   <div className="grid gap-4 xl:grid-cols-2">
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-bold text-white">Cliente</h3>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Nombre" />
-                        <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Apellido" />
-                        <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Segundo apellido" />
-                        <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Email" />
-                        <input type="date" value={datosDraft.fechaNacimiento} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
-                        <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Telefono" />
-                        <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Cod. telefono pais" />
-                        <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Pais" />
-                        <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Provincia/Estado" />
-                        <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Calle" />
-                        <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Numero" />
-                        <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Piso" />
-                        <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Depto" />
-                        <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
-                          <option value="masculino">Masculino</option>
-                          <option value="femenino">Femenino</option>
-                        </select>
-                        <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Altura" />
+                    <div className="space-y-4">
+                      <div className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 p-4">
+                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-100/85">Datos generales</p>
+                        <h3 className="mt-1 text-xl font-black text-white">Cliente</h3>
+                        <p className="mt-1 text-xs text-slate-200/90">Ficha personal, contacto y perfil deportivo en un solo panel.</p>
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Peso" />
-                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Club" />
-                        {selectedClient.tipo === "jugadora" ? (
-                          <>
-                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
-                              {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-                            </select>
-                            <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
-                              {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-                            </select>
-                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
-                              <option value="">Sin posicion</option>
-                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item}>{item}</option>)}
-                            </select>
-                          </>
-                        ) : null}
+                      <div className="rounded-2xl border border-white/12 bg-slate-900/65 p-4">
+                        <p className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-300">Identidad y contacto</p>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Nombre" />
+                          <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Apellido" />
+                          <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Segundo apellido" />
+                          <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Email" />
+                          <input type="date" value={datosDraft.fechaNacimiento} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+                          <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Telefono" />
+                          <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Cod. telefono pais" />
+                          <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Pais" />
+                        </div>
                       </div>
 
-                      <div className="grid gap-3">
-                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Objetivo" />
-                        <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" rows={2} placeholder="Observaciones" />
+                      <div className="rounded-2xl border border-white/12 bg-slate-900/65 p-4">
+                        <p className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-300">Ubicacion y perfil fisico</p>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Provincia/Estado" />
+                          <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Calle" />
+                          <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Numero" />
+                          <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Piso" />
+                          <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Depto" />
+                          <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                          </select>
+                          <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Altura" />
+                          <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Peso" />
+                        </div>
                       </div>
 
-                      <div className="flex justify-end">
-                        <button type="button" onClick={saveDatosGenerales} className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300">Guardar cambios</button>
+                      <div className="rounded-2xl border border-white/12 bg-slate-900/65 p-4">
+                        <p className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-300">Contexto deportivo y objetivos</p>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" placeholder="Club" />
+                          {selectedClient.tipo === "jugadora" ? (
+                            <>
+                              <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+                                {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                              </select>
+                              <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+                                {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                              </select>
+                              <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+                                <option value="">Sin posicion</option>
+                                {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item}>{item}</option>)}
+                              </select>
+                            </>
+                          ) : null}
+                          <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm md:col-span-2" placeholder="Objetivo" />
+                          <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm md:col-span-2" rows={2} placeholder="Observaciones" />
+                        </div>
+
+                        <div className="mt-4 flex justify-end">
+                          <button type="button" onClick={saveDatosGenerales} className="rounded-xl bg-cyan-400 px-5 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300">
+                            Guardar cambios
+                          </button>
+                        </div>
                       </div>
                     </div>
 
