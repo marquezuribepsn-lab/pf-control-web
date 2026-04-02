@@ -538,8 +538,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const navigateSidebar = (href: string) => {
     setMobileOpen(false);
     setSidebarSelectedHref(href);
-    const avoidHardReload =
-      COLABORADOR_CATEGORY_HREFS.includes(href) || href.startsWith("/categorias/");
 
     if (pathname === href) {
       return;
@@ -557,15 +555,8 @@ export default function AppShell({ links, children }: AppShellProps) {
       const pushedUrl = `${window.location.pathname}${window.location.search}`;
       if (pushedUrl === currentUrl) {
         router.replace(href);
-
-        window.setTimeout(() => {
-          const replacedUrl = `${window.location.pathname}${window.location.search}`;
-          if (!avoidHardReload && replacedUrl === currentUrl) {
-            window.location.assign(href);
-          }
-        }, 260);
       }
-    }, 220);
+    }, 260);
   };
 
   const scaledStyle = {
@@ -589,105 +580,36 @@ export default function AppShell({ links, children }: AppShellProps) {
       return firstSegment;
     })();
 
-  const isUltraWideSidebar = viewport.width >= 1920 && viewport.height >= 900;
-  const isCompactSidebar = viewport.height <= 840 || viewport.width <= 1366;
-  const isUltraCompactSidebar = viewport.height <= 740 || viewport.width <= 1200;
+  const isWideSidebar = viewport.width >= 1800 && viewport.height >= 860;
+  const isCompactSidebar = viewport.width <= 1300 || viewport.height <= 760;
 
-  const desktopExpandedWidthClass = isUltraWideSidebar
-    ? "lg:w-[25rem]"
-    : isUltraCompactSidebar
-    ? "lg:w-[20rem]"
+  const desktopExpandedWidthClass = isWideSidebar
+    ? "lg:w-[19.5rem]"
     : isCompactSidebar
-    ? "lg:w-[21rem]"
-    : "lg:w-[22rem]";
+    ? "lg:w-[16.75rem]"
+    : "lg:w-[18rem]";
 
-  const desktopCollapsedWidthClass = isUltraWideSidebar
-    ? "lg:w-24"
-    : "lg:w-20";
+  const desktopCollapsedWidthClass = "lg:w-[4.75rem]";
 
-  const navItemCount = orderedLinks.length;
-  const useTightSidebar = !collapsed && (viewport.height <= 860 || navItemCount >= 15);
-  const useUltraTightSidebar = !collapsed && (viewport.height <= 760 || navItemCount >= 18);
-
-  const shellExpandedPaddingClass = isUltraWideSidebar
-    ? "lg:pl-[25rem]"
-    : isUltraCompactSidebar
-    ? "lg:pl-[20rem]"
+  const shellExpandedPaddingClass = isWideSidebar
+    ? "lg:pl-[19.5rem]"
     : isCompactSidebar
-    ? "lg:pl-[21rem]"
-    : "lg:pl-[22rem]";
+    ? "lg:pl-[16.75rem]"
+    : "lg:pl-[18rem]";
 
-  const shellCollapsedPaddingClass = isUltraWideSidebar
-    ? "lg:pl-24"
-    : "lg:pl-20";
+  const shellCollapsedPaddingClass = "lg:pl-[4.75rem]";
 
-  const headerPaddingClass = useUltraTightSidebar
-    ? "p-[clamp(0.38rem,0.9vh,0.62rem)]"
-    : useTightSidebar
-    ? "p-[clamp(0.46rem,1.05vh,0.8rem)]"
-    : isUltraWideSidebar
-    ? "p-[clamp(0.95rem,1.2vh,1.35rem)]"
-    : isUltraCompactSidebar
-    ? "p-[clamp(0.5rem,1.2vh,0.85rem)]"
-    : "p-[clamp(0.6rem,1.6vh,1.25rem)] lg:p-[clamp(0.7rem,1.8vh,1.35rem)]";
-
-  const navGapClass = useUltraTightSidebar
-    ? "gap-[clamp(0.06rem,0.2vh,0.14rem)]"
-    : useTightSidebar
-    ? "gap-[clamp(0.1rem,0.28vh,0.2rem)]"
-    : isUltraWideSidebar
-    ? "gap-[clamp(0.38rem,0.85vh,0.6rem)]"
-    : isUltraCompactSidebar
-    ? "gap-[clamp(0.12rem,0.35vh,0.22rem)]"
-    : "gap-[clamp(0.22rem,0.7vh,0.5rem)]";
-
-  const navButtonPaddingClass = useUltraTightSidebar
-    ? "px-[clamp(0.3rem,0.85vw,0.48rem)] py-[clamp(0.13rem,0.35vh,0.24rem)] text-[clamp(0.58rem,1.05vh,0.7rem)]"
-    : useTightSidebar
-    ? "px-[clamp(0.36rem,1vw,0.56rem)] py-[clamp(0.18rem,0.45vh,0.3rem)] text-[clamp(0.62rem,1.2vh,0.76rem)]"
-    : isUltraWideSidebar
-    ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
-    : isUltraCompactSidebar
-    ? "px-[clamp(0.36rem,1vw,0.56rem)] py-[clamp(0.2rem,0.5vh,0.34rem)] text-[clamp(0.58rem,1.2vh,0.75rem)]"
-    : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.28rem,0.8vh,0.56rem)] text-[clamp(0.65rem,1.5vh,0.875rem)]";
-
-  const footerButtonPaddingClass = useUltraTightSidebar
-    ? "px-[clamp(0.34rem,0.9vw,0.5rem)] py-[clamp(0.16rem,0.4vh,0.26rem)] text-[clamp(0.58rem,1.05vh,0.72rem)]"
-    : useTightSidebar
-    ? "px-[clamp(0.38rem,1vw,0.56rem)] py-[clamp(0.2rem,0.52vh,0.34rem)] text-[clamp(0.62rem,1.2vh,0.78rem)]"
-    : isUltraWideSidebar
-    ? "px-[clamp(0.65rem,1.2vw,0.95rem)] py-[clamp(0.4rem,0.9vh,0.66rem)] text-[clamp(0.78rem,1.4vh,0.96rem)]"
-    : "px-[clamp(0.45rem,1.5vw,0.75rem)] py-[clamp(0.3rem,0.85vh,0.56rem)] text-[clamp(0.65rem,1.45vh,0.875rem)]";
-
-  const headerBlockMarginClass = useUltraTightSidebar
-    ? "mb-[clamp(0.18rem,0.45vh,0.32rem)]"
-    : useTightSidebar
-    ? "mb-[clamp(0.22rem,0.6vh,0.45rem)]"
-    : "mb-[clamp(0.35rem,1.1vh,1rem)]";
-
-  const navPanelPaddingClass = useUltraTightSidebar
-    ? "p-[clamp(0.24rem,0.55vh,0.38rem)]"
-    : useTightSidebar
-    ? "p-[clamp(0.3rem,0.7vh,0.52rem)]"
-    : "p-[clamp(0.42rem,1vh,0.74rem)]";
-
-  const navTitleClass = useUltraTightSidebar
-    ? "mb-1 px-2 text-[9px]"
-    : useTightSidebar
-    ? "mb-1 px-2 text-[9px]"
-    : "mb-2 px-3 text-[10px]";
-
-  const navIconTextClass = useUltraTightSidebar
-    ? "text-[1.05rem]"
-    : useTightSidebar
-    ? "text-[1.1rem]"
-    : "text-[1.18rem]";
-
-  const footerSpacingClass = useUltraTightSidebar
-    ? "mt-1 gap-1 pb-0.5 pt-1"
-    : useTightSidebar
-    ? "mt-2 gap-1.5 pb-0.5 pt-1.5"
-    : "mt-[clamp(0.35rem,1vh,0.85rem)] gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]";
+  const sidebarPaddingClass = isCompactSidebar ? "p-3" : "p-4";
+  const navPanelPaddingClass = isCompactSidebar ? "p-2" : "p-2.5";
+  const navGapClass = isCompactSidebar ? "gap-1" : "gap-1.5";
+  const navButtonPaddingClass = isCompactSidebar
+    ? "px-2.5 py-2"
+    : "px-3 py-2.5";
+  const navIconTextClass = isCompactSidebar ? "text-[1.1rem]" : "text-[1.2rem]";
+  const footerButtonPaddingClass = isCompactSidebar
+    ? "px-2.5 py-2 text-[0.76rem]"
+    : "px-3 py-2.5 text-[0.8rem]";
+  const footerSpacingClass = isCompactSidebar ? "mt-2 gap-1.5" : "mt-3 gap-2";
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
@@ -715,48 +637,44 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-sky-200/15 bg-gradient-to-b from-[#040b1a] via-[#071327] to-[#020812] shadow-[0_26px_70px_rgba(2,6,23,0.62)] backdrop-blur-md ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-gradient-to-b from-[#051325] via-[#071a33] to-[#040b1a] shadow-[0_24px_64px_rgba(3,10,28,0.62)] backdrop-blur-md ${
           collapsed
-            ? `w-20 ${desktopCollapsedWidthClass}`
-            : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
+            ? `w-[4.75rem] ${desktopCollapsedWidthClass}`
+            : `w-[min(88vw,18rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div className="pointer-events-none absolute inset-0 opacity-60">
-          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-cyan-300/12 to-transparent" />
-          <div className="absolute inset-y-0 left-0 w-[1px] bg-sky-200/30" />
+        <div className="pointer-events-none absolute inset-0 opacity-70">
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-300/15 to-transparent" />
+          <div className="absolute -left-10 top-24 h-32 w-32 rounded-full bg-cyan-400/10 blur-3xl" />
         </div>
 
-        <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${headerPaddingClass}`}>
-          {collapsed && sidebarImage && (
-            <div className="mb-[clamp(0.25rem,0.9vh,0.75rem)] flex justify-center">
-              <img
-                src={sidebarImage}
-                alt="Imagen lateral"
-                className="h-[clamp(2rem,4.2vh,2.5rem)] w-[clamp(2rem,4.2vh,2.5rem)] rounded-lg border border-white/20 object-cover"
-              />
-            </div>
-          )}
-
-          <div className={`${headerBlockMarginClass} flex items-center justify-between gap-2`}>
-            {!collapsed && (
-              <div>
-                {sidebarImage && !isUltraCompactSidebar && !useTightSidebar && (
+        <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${sidebarPaddingClass}`}>
+          <div className={`mb-3 flex items-start ${collapsed ? "justify-center" : "justify-between"} gap-2`}>
+            {!collapsed ? (
+              <div className="min-w-0">
+                {sidebarImage && (
                   <img
                     src={sidebarImage}
                     alt="Imagen lateral"
-                    className="mb-1 h-[clamp(2rem,5vh,3rem)] w-[clamp(2rem,5vh,3rem)] rounded-xl border border-white/20 object-cover"
+                    className="mb-2 h-10 w-10 rounded-lg border border-white/20 object-cover"
                   />
                 )}
-                <p className="text-[clamp(0.95rem,2.3vh,1.25rem)] font-black tracking-tight text-sky-100">PF Control</p>
-                {!isUltraCompactSidebar && !useTightSidebar && (
-                  <p className="text-[clamp(0.62rem,1.35vh,0.75rem)] text-sky-200/80">Plataforma para preparadores fisicos</p>
-                )}
+                <p className="text-[1.05rem] font-black tracking-tight text-sky-100">PF Control</p>
+                <p className="text-[0.68rem] text-sky-200/80">Gestion deportiva</p>
               </div>
-            )}
+            ) : null}
+
+            {collapsed && sidebarImage ? (
+              <img
+                src={sidebarImage}
+                alt="Imagen lateral"
+                className="h-9 w-9 rounded-lg border border-white/20 object-cover"
+              />
+            ) : null}
 
             <button
               onClick={toggleCollapsed}
-              className="rounded-lg border border-sky-200/30 bg-slate-800/65 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-sky-100"
+              className="rounded-lg border border-sky-200/30 bg-slate-800/70 px-2 py-1 text-[0.68rem] font-bold text-sky-100"
             >
               {collapsed ? ">>" : "<<"}
             </button>
@@ -764,43 +682,59 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-3xl border border-sky-200/20 bg-[#051127]/85 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${navGapClass}`}
+              className={`flex h-full flex-col rounded-2xl border border-cyan-200/20 bg-[#071429]/86 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`}
             >
               {!collapsed ? (
-                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-sky-200/85`}>
-                  Navegacion
+                <p className="mb-2 px-1 text-[0.6rem] font-black uppercase tracking-[0.22em] text-sky-200/80">
+                  Menu
                 </p>
               ) : null}
-              {orderedLinks.map((link) => {
-                const effectivePath = sidebarSelectedHref || pathname;
-                const hasChildLink = orderedLinks.some(
-                  (candidate) =>
-                    candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
-                );
-                const isActive =
-                  effectivePath === link.href ||
-                  (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
-                const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
-                  isActive
-                    ? "border-sky-300/55 bg-gradient-to-b from-sky-500/25 to-cyan-500/18 text-sky-50 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.3),0_10px_22px_rgba(2,132,199,0.2)]"
-                    : "border-sky-900/75 bg-slate-900/45 text-sky-100/95"
-                }`;
+              <div className={`grid content-start ${navGapClass}`}>
+                {orderedLinks.map((link) => {
+                  const effectivePath = sidebarSelectedHref || pathname;
+                  const hasChildLink = orderedLinks.some(
+                    (candidate) =>
+                      candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
+                  );
+                  const isActive =
+                    effectivePath === link.href ||
+                    (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
 
-                return (
-                  <button
-                    key={link.href}
-                    type="button"
-                    onClick={() => navigateSidebar(link.href)}
-                    className={`${linkClassName} ${isActive ? "" : "hover:bg-sky-950/70"} ${collapsed ? "justify-center" : "justify-start gap-3"}`}
-                    title={link.label}
-                  >
-                    <span className={`flex items-center ${collapsed ? "justify-center" : "justify-start"}`}>
-                      <span className={`${navIconTextClass} leading-none`}>{link.icon}</span>
-                    </span>
-                    {!collapsed && <span className="line-clamp-2 text-left text-[0.74rem] font-semibold leading-[1.05rem] tracking-[0.01em] text-sky-100">{link.label}</span>}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={link.href}
+                      type="button"
+                      onClick={() => navigateSidebar(link.href)}
+                      className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-colors ${navButtonPaddingClass} ${
+                        collapsed ? "justify-center" : "justify-start gap-3"
+                      } ${
+                        isActive
+                          ? "border-cyan-300/50 bg-cyan-400/14 text-cyan-50 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.2)]"
+                          : "border-white/10 bg-slate-900/45 text-sky-100/95 hover:bg-slate-800/65"
+                      }`}
+                      title={link.label}
+                    >
+                      {!collapsed && (
+                        <span
+                          className={`absolute inset-y-2 left-0 w-[2px] rounded-r ${
+                            isActive ? "bg-cyan-200" : "bg-transparent"
+                          }`}
+                        />
+                      )}
+
+                      <span className={`${collapsed ? "text-[1.18rem]" : navIconTextClass} leading-none`}>
+                        {link.icon}
+                      </span>
+
+                      {!collapsed && (
+                        <span className="truncate text-left text-[0.82rem] font-semibold tracking-[0.01em] text-sky-100">
+                          {link.label}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </nav>
           </div>
 
