@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
+import type { MouseEvent } from "react";
 
 type NavLink = {
   href: string;
@@ -117,6 +117,7 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const [viewport, setViewport] = useState({ width: 1366, height: 768 });
   const [collapsed, setCollapsed] = useState(false);
@@ -477,6 +478,40 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
+  const shouldKeepNativeNavigation = (event: MouseEvent<HTMLAnchorElement>): boolean => {
+    if (event.defaultPrevented) return true;
+    if (event.button !== 0) return true;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
+    const target = event.currentTarget.getAttribute("target");
+    if (target && target !== "_self") return true;
+    return false;
+  };
+
+  const navigateSidebar = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    setMobileOpen(false);
+
+    if (shouldKeepNativeNavigation(event)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    router.push(href);
+
+    window.setTimeout(() => {
+      const nextUrl = `${window.location.pathname}${window.location.search}`;
+      if (nextUrl === currentUrl) {
+        window.location.assign(href);
+      }
+    }, 220);
+  };
+
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -627,10 +662,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                 return (
-                  <Link
+                  <a
                     key={link.href}
                     href={link.href}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={(event) => navigateSidebar(event, link.href)}
                     className={`group relative overflow-hidden rounded-xl border font-semibold text-white transition hover:-translate-y-0.5 ${navButtonPaddingClass} ${
                       isActive
                         ? "border-cyan-200/50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
@@ -650,16 +685,16 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <span>{link.icon}</span>
                       {!collapsed && <span>{link.label}</span>}
                     </span>
-                  </Link>
+                  </a>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <Link
+              <a
                 href="/cuenta"
-                onClick={() => setMobileOpen(false)}
+                onClick={(event) => navigateSidebar(event, "/cuenta")}
                 className={`rounded-xl border font-semibold transition ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -668,7 +703,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </Link>
+              </a>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
