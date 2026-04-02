@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
-import type { MouseEvent } from "react";
 
 type NavLink = {
   href: string;
@@ -509,60 +508,14 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
-  const shouldKeepNativeNavigation = (event: MouseEvent<HTMLAnchorElement>): boolean => {
-    if (event.defaultPrevented) return true;
-    if (event.button !== 0) return true;
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
-    const target = event.currentTarget.getAttribute("target");
-    if (target && target !== "_self") return true;
-    return false;
-  };
-
-  const navigateSidebar = (
-    event: MouseEvent<HTMLAnchorElement>,
-    href: string,
-    options?: { hardFallback?: boolean; instant?: boolean }
-  ) => {
-    const hardFallback = options?.hardFallback ?? true;
-    const instant = options?.instant ?? false;
+  const navigateSidebar = (href: string) => {
     setMobileOpen(false);
-
-    if (shouldKeepNativeNavigation(event)) {
-      return;
-    }
-
-    event.preventDefault();
 
     if (pathname === href) {
       return;
     }
 
-    if (typeof window === "undefined") {
-      router.push(href);
-      return;
-    }
-
-    if (instant) {
-      router.push(href);
-      return;
-    }
-
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
     router.push(href);
-
-    window.setTimeout(() => {
-      const nextUrl = `${window.location.pathname}${window.location.search}`;
-      if (nextUrl === currentUrl) {
-        router.replace(href);
-
-        window.setTimeout(() => {
-          const retryUrl = `${window.location.pathname}${window.location.search}`;
-          if (hardFallback && retryUrl === currentUrl) {
-            window.location.assign(href);
-          }
-        }, 220);
-      }
-    }, 260);
   };
 
   const scaledStyle = {
@@ -712,10 +665,10 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/70 via-slate-900/55 to-slate-950/75 p-[clamp(0.34rem,0.9vh,0.66rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 p-[clamp(0.42rem,1vh,0.74rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
             >
               {!collapsed ? (
-                <p className="mb-1 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
+                <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/80">
                   Navegacion
                 </p>
               ) : null}
@@ -723,69 +676,41 @@ export default function AppShell({ links, children }: AppShellProps) {
                 const isActive =
                   pathname === link.href ||
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
-                const isCategoryLink = COLABORADOR_CATEGORY_HREFS.includes(link.href);
-                const linkMotionClass = "transition-none hover:translate-y-0";
-                const linkClassName = `group relative overflow-hidden rounded-2xl border font-semibold text-white ${linkMotionClass} ${navButtonPaddingClass} ${
+                const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                   isActive
-                    ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
-                    : "border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    ? `bg-gradient-to-r ${link.tone} border-white/40 shadow-[0_8px_24px_rgba(8,47,73,0.3)]`
+                    : "bg-slate-800/70 border-white/15"
                 }`;
 
-                const labelContent = (
-                  <>
-                    <span
-                      className={`absolute inset-0 bg-gradient-to-r ${link.tone} ${
-                        isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
-                      }`}
-                    />
-                    {isActive ? (
-                      <span className="absolute inset-y-1 left-1.5 w-1 rounded-full bg-white/80" />
-                    ) : null}
-                    <span className={`relative flex items-center gap-2.5 ${collapsed ? "justify-center" : "justify-start px-2"}`}>
-                      <span className="text-[1.02em]">{link.icon}</span>
-                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
-                    </span>
-                  </>
-                );
-
-                if (isCategoryLink) {
-                  return (
-                    <button
-                      key={link.href}
-                      type="button"
-                      onClick={() => {
-                        setMobileOpen(false);
-                        if (pathname !== link.href) {
-                          router.push(link.href);
-                        }
-                      }}
-                      className={`${linkClassName} pf-sidebar-category-static text-left`}
-                      title={link.label}
-                    >
-                      {labelContent}
-                    </button>
-                  );
-                }
-
                 return (
-                  <a
+                  <button
                     key={link.href}
-                    href={link.href}
-                    onClick={(event) => navigateSidebar(event, link.href)}
-                    className={linkClassName}
+                    type="button"
+                    onClick={() => navigateSidebar(link.href)}
+                    className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
-                    {labelContent}
-                  </a>
+                    <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5 px-2"}`}>
+                      <span className={`grid h-7 w-7 place-items-center rounded-full ${isActive ? "bg-black/20" : "bg-white/10"}`}>
+                        <span className="text-[0.95rem] leading-none">{link.icon}</span>
+                      </span>
+                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
+                    </span>
+                    {!collapsed && (
+                      <span className={`text-xs ${isActive ? "text-white/90" : "text-slate-300"}`}>
+                        {isActive ? "●" : "○"}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <a
-                href="/cuenta"
-                onClick={(event) => navigateSidebar(event, "/cuenta")}
+              <button
+                type="button"
+                onClick={() => navigateSidebar("/cuenta")}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -794,7 +719,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </a>
+              </button>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
