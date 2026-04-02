@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -117,7 +118,6 @@ const reorderToTarget = (list: string[], dragHref: string, targetHref: string): 
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -508,33 +508,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
-  const handleSidebarLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
-    setMobileOpen(false);
-
-    if (event.defaultPrevented) {
-      return;
-    }
-
-    const isPlainLeftClick =
-      event.button === 0 &&
-      !event.metaKey &&
-      !event.ctrlKey &&
-      !event.shiftKey &&
-      !event.altKey;
-
-    if (!isPlainLeftClick) {
-      return;
-    }
-
-    event.preventDefault();
-
-    if (pathname === href) {
-      return;
-    }
-
-    router.push(href);
-  };
-
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -704,10 +677,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                 }`;
 
                 return (
-                  <a
+                  <Link
                     key={link.href}
                     href={link.href}
-                    onClick={(event) => handleSidebarLinkClick(event, link.href)}
                     className={`${linkClassName} ${isActive ? "" : "hover:bg-slate-700/85"} ${collapsed ? "justify-center" : "justify-between"}`}
                     title={link.label}
                   >
@@ -727,16 +699,15 @@ export default function AppShell({ links, children }: AppShellProps) {
                         {isActive ? "●" : "○"}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 );
               })}
             </nav>
           </div>
 
             <div className="mt-[clamp(0.35rem,1vh,0.85rem)] grid gap-[clamp(0.24rem,0.7vh,0.5rem)] pb-1 pt-[clamp(0.25rem,0.75vh,0.7rem)]">
-              <a
+              <Link
                 href="/cuenta"
-                onClick={(event) => handleSidebarLinkClick(event, "/cuenta")}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -745,7 +716,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </a>
+              </Link>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
