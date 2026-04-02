@@ -1484,6 +1484,7 @@ export default function ClientesPage() {
 
   useEffect(() => {
     router.prefetch("/clientes/plan");
+    router.prefetch("/registros");
   }, [router]);
 
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
@@ -1600,12 +1601,13 @@ export default function ClientesPage() {
                 >
                   Crear cliente
                 </button>
-                <Link
-                  href="/registros"
+                <button
+                  type="button"
+                  onClick={() => navigateWithRetry("/registros")}
                   className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
                 >
                   Ver registros
-                </Link>
+                </button>
               </>
             )}
           </div>
