@@ -517,9 +517,10 @@ export default function AppShell({ links, children }: AppShellProps) {
   const navigateSidebar = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
-    options?: { hardFallback?: boolean }
+    options?: { hardFallback?: boolean; instant?: boolean }
   ) => {
     const hardFallback = options?.hardFallback ?? true;
+    const instant = options?.instant ?? false;
     setMobileOpen(false);
 
     if (shouldKeepNativeNavigation(event)) {
@@ -533,6 +534,11 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    if (instant) {
       router.push(href);
       return;
     }
@@ -714,15 +720,21 @@ export default function AppShell({ links, children }: AppShellProps) {
                   pathname === link.href ||
                   (link.href !== "/" && pathname.startsWith(`${link.href}/`));
                 const isCategoryLink = COLABORADOR_CATEGORY_HREFS.includes(link.href);
+                const linkMotionClass = isCategoryLink
+                  ? "transition-none hover:translate-y-0"
+                  : "transition hover:-translate-y-0.5";
 
                 return (
                   <a
                     key={link.href}
                     href={link.href}
                     onClick={(event) =>
-                      navigateSidebar(event, link.href, { hardFallback: !isCategoryLink })
+                      navigateSidebar(event, link.href, {
+                        hardFallback: !isCategoryLink,
+                        instant: isCategoryLink,
+                      })
                     }
-                    className={`group relative overflow-hidden rounded-2xl border font-semibold text-white transition hover:-translate-y-0.5 ${isCategoryLink ? "pf-sidebar-category-link" : ""} ${navButtonPaddingClass} ${
+                    className={`group relative overflow-hidden rounded-2xl border font-semibold text-white ${linkMotionClass} ${navButtonPaddingClass} ${
                       isActive
                         ? "border-cyan-200/55 shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_12px_26px_rgba(14,116,144,0.22)]"
                         : "border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -730,7 +742,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                     title={link.label}
                   >
                     <span
-                      className={`absolute inset-0 bg-gradient-to-r ${link.tone} transition ${
+                      className={`absolute inset-0 bg-gradient-to-r ${link.tone} ${
+                        isCategoryLink ? "" : "transition"
+                      } ${
                         isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
                       }`}
                     />
