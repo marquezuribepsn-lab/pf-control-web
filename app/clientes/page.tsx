@@ -1480,7 +1480,7 @@ export default function ClientesPage() {
     window.history.pushState({}, "", next);
   };
 
-  const navigateWithFallback = (href: string) => {
+  const navigateWithRetry = (href: string) => {
     if (typeof window === "undefined") {
       router.push(href);
       return;
@@ -1492,13 +1492,13 @@ export default function ClientesPage() {
     window.setTimeout(() => {
       const nextUrl = `${window.location.pathname}${window.location.search}`;
       if (nextUrl === currentUrl) {
-        window.location.assign(href);
+        router.replace(href);
       }
-    }, 900);
+    }, 240);
   };
 
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    navigateWithFallback(buildPlanViewHref(clientId, tab));
+    navigateWithRetry(buildPlanViewHref(clientId, tab));
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {

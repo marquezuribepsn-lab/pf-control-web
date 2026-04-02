@@ -280,7 +280,7 @@ function ClientePlanContent() {
     ? `/clientes/ficha/${encodeURIComponent(selectedClient.id)}/datos`
     : "/clientes";
 
-  const navigateWithFallback = (href: string) => {
+  const navigateWithRetry = (href: string) => {
     if (typeof window === "undefined") {
       router.push(href);
       return;
@@ -292,9 +292,23 @@ function ClientePlanContent() {
     window.setTimeout(() => {
       const nextUrl = `${window.location.pathname}${window.location.search}`;
       if (nextUrl === currentUrl) {
-        window.location.assign(href);
+        router.replace(href);
       }
-    }, 900);
+    }, 240);
+  };
+
+  const goBackFromPlan = () => {
+    if (typeof window === "undefined") {
+      router.push(backHref);
+      return;
+    }
+
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    navigateWithRetry(backHref);
   };
 
   const switchPlanTab = (nextTab: PlanViewTab) => {
@@ -347,7 +361,7 @@ function ClientePlanContent() {
           </div>
           <button
             type="button"
-            onClick={() => navigateWithFallback(backHref)}
+            onClick={goBackFromPlan}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a ficha
