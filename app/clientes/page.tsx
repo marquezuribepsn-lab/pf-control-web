@@ -367,6 +367,14 @@ function buildPlanViewHref(clientId: string, tab: PlanViewTab): string {
   return `/clientes/plan?${params.toString()}`;
 }
 
+function buildClientDetailHref(clientId: string, tab: ClienteTab = "datos"): string {
+  const params = new URLSearchParams();
+  params.set("detalle", "1");
+  params.set("cliente", clientId);
+  params.set("tab", tab);
+  return `/clientes?${params.toString()}`;
+}
+
 const TABS: { id: ClienteTab; label: string }[] = [
   { id: "datos", label: "Datos generales" },
   { id: "cuestionario", label: "Cuestionario" },
@@ -1424,29 +1432,27 @@ export default function ClientesPage() {
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
+    if (typeof window !== "undefined") {
+      window.location.assign(buildClientDetailHref(clientId, tab));
+      return;
+    }
+
     setSelectedClientId(clientId);
     setActiveTab(tab);
     setIsDetailMode(true);
     setDetailClientId(clientId);
     setDetailTabId(tab);
-
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      params.set("detalle", "1");
-      params.set("cliente", clientId);
-      params.set("tab", tab);
-      window.history.pushState({}, "", `${window.location.pathname}?${params.toString()}`);
-    }
   };
 
   const closeClientDetail = () => {
+    if (typeof window !== "undefined") {
+      window.location.assign("/clientes");
+      return;
+    }
+
     setIsDetailMode(false);
     setDetailClientId(null);
     setDetailTabId(null);
-
-    if (typeof window !== "undefined") {
-      window.history.pushState({}, "", window.location.pathname);
-    }
   };
 
   const registrarPago = (e: React.FormEvent) => {
@@ -1506,6 +1512,7 @@ export default function ClientesPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
+      {!isDetailMode ? (
       <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/50 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
         <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
@@ -1522,22 +1529,34 @@ export default function ClientesPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setCrearOpen((prev) => !prev);
-                if (!crearOpen) resetForm();
-              }}
-              className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
-            >
-              Crear cliente
-            </button>
-            <Link
-              href="/registros"
-              className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              Ver registros
-            </Link>
+            {isDetailMode ? (
+              <button
+                type="button"
+                onClick={closeClientDetail}
+                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+              >
+                Volver al listado
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCrearOpen((prev) => !prev);
+                    if (!crearOpen) resetForm();
+                  }}
+                  className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                >
+                  Crear cliente
+                </button>
+                <Link
+                  href="/registros"
+                  className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  Ver registros
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -1556,7 +1575,9 @@ export default function ClientesPage() {
           </div>
         </div>
       </section>
+      ) : null}
 
+      {!isDetailMode ? (
       <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
         <h2 className="text-xl font-bold">Registrar pago</h2>
         <p className="mt-1 text-sm text-slate-300">
@@ -1638,8 +1659,9 @@ export default function ClientesPage() {
           ) : null}
         </div>
       </section>
+      ) : null}
 
-      {crearOpen ? (
+      {!isDetailMode && crearOpen ? (
         <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <h2 className="text-xl font-bold">Crear cliente</h2>
           <form onSubmit={submitCliente} className="mt-4 space-y-4">
@@ -1999,6 +2021,10 @@ export default function ClientesPage() {
                           openClientPlanView(selectedClient.id, tab.id);
                           return;
                         }
+                        if (typeof window !== "undefined") {
+                          window.history.replaceState({}, "", buildClientDetailHref(selectedClient.id, tab.id));
+                        }
+                        setDetailTabId(tab.id);
                         setActiveTab(tab.id);
                       }}
                       className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${activeTab === tab.id ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-50" : "border-cyan-300/40 text-white hover:bg-cyan-500/10"}`}

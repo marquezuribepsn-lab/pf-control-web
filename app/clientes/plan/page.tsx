@@ -308,12 +308,16 @@ function ClientePlanContent() {
               Esta pantalla muestra el plan sin mezclarlo con la ficha general del cliente.
             </p>
           </div>
-          <Link
-            href={backHref}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              window.location.assign(backHref);
+            }}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a ficha
-          </Link>
+          </button>
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
