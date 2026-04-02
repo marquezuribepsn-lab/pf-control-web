@@ -595,23 +595,8 @@ export default function ClientesPage() {
     [categorias]
   );
 
-  const normalizedActiveTab = useMemo(
-    () =>
-      String(activeTab || "")
-        .trim()
-        .toLowerCase()
-        .replace(/[\s_]+/g, "-"),
-    [activeTab]
-  );
-  const isPlanNutricionalTab = normalizedActiveTab === "plan-nutricional";
-
   useEffect(() => {
     if (!isDetailMode || !detailClientId) return;
-
-    if (detailTabId === "plan-entrenamiento" || detailTabId === "plan-nutricional") {
-      openClientPlanView(detailClientId, detailTabId);
-      return;
-    }
 
     setSelectedClientId(detailClientId);
 
@@ -2085,62 +2070,32 @@ export default function ClientesPage() {
 
               <div className="mt-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                  {TABS.map((tab, index) => {
-                    const isPlanTab =
-                      tab.id === "plan-entrenamiento" || tab.id === "plan-nutricional";
-
-                    if (isPlanTab) {
-                      return (
-                        <Link
-                          key={tab.id}
-                          href={buildPlanViewHref(selectedClient.id, tab.id as PlanViewTab)}
-                          prefetch
-                          className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
-                          style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
-                        >
-                          {activeTab === tab.id ? (
-                            <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
-                          ) : null}
-                          <span className="relative flex items-start gap-2">
-                            <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
-                            <span>
-                              <span className="block text-sm font-bold leading-tight">{tab.label}</span>
-                              <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
-                                Vista dedicada
-                              </span>
-                            </span>
-                          </span>
-                        </Link>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          setDetailTabId(tab.id);
-                          pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
-                        }}
-                        className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
-                        style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
-                      >
-                        {activeTab === tab.id ? (
-                          <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
-                        ) : null}
-                        <span className="relative flex items-start gap-2">
-                          <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
-                          <span>
-                            <span className="block text-sm font-bold leading-tight">{tab.label}</span>
-                            <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
-                              Vista dedicada
-                            </span>
+                  {TABS.map((tab, index) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setDetailTabId(tab.id);
+                        pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
+                      }}
+                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                      style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
+                    >
+                      {activeTab === tab.id ? (
+                        <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
+                      ) : null}
+                      <span className="relative flex items-start gap-2">
+                        <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
+                        <span>
+                          <span className="block text-sm font-bold leading-tight">{tab.label}</span>
+                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
+                            Vista dedicada
                           </span>
                         </span>
-                      </button>
-                    );
-                  })}
+                      </span>
+                    </button>
+                  ))}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-slate-950/35 p-2">
@@ -2356,26 +2311,119 @@ export default function ClientesPage() {
                       </div>
                     </div>
                   </div>
-                ) : activeTab === "plan-entrenamiento" || isPlanNutricionalTab ? (
-                  <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/10 p-4">
-                    <p className="text-sm font-semibold text-cyan-100">
-                      La visualizacion de planes ahora se abre en pantalla dedicada.
-                    </p>
-                    <p className="mt-1 text-sm text-slate-200">
-                      Esto evita que el plan quede embebido debajo de la ficha y mejora la lectura.
-                    </p>
-                    <Link
-                      href={buildPlanViewHref(
-                        selectedClient.id,
-                        activeTab === "plan-nutricional"
-                          ? "plan-nutricional"
-                          : "plan-entrenamiento"
-                      )}
-                      prefetch
-                      className="mt-3 inline-flex rounded-xl border border-cyan-200/45 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
-                    >
-                      Abrir plan en pantalla nueva
-                    </Link>
+                ) : activeTab === "plan-entrenamiento" ? (
+                  <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <h3 className="text-lg font-black text-white">Plan de entrenamiento</h3>
+                      <Link
+                        href="/sesiones"
+                        className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                      >
+                        Gestionar sesiones
+                      </Link>
+                    </div>
+
+                    {sesionesCliente.length === 0 ? (
+                      <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                        No hay sesiones vinculadas para este cliente todavia.
+                      </p>
+                    ) : (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {sesionesCliente.map((sesion) => (
+                          <article key={sesion.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                            <p className="text-lg font-bold text-white">{sesion.titulo}</p>
+                            <p className="mt-1 text-sm text-slate-300">{sesion.objetivo}</p>
+                            <p className="mt-2 text-xs font-semibold text-cyan-100">
+                              {sesion.duracion} min · {sesion.bloques.length} bloques
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : activeTab === "plan-nutricional" ? (
+                  <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                    <h3 className="text-lg font-black text-white">Plan nutricional</h3>
+
+                    {selectedNutritionPlan ? (
+                      <>
+                        <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-emerald-100">Plan asignado</p>
+                              <p className="text-lg font-black text-white">{selectedNutritionPlan.nombre}</p>
+                            </div>
+                            <p className="text-xs text-slate-300">
+                              Asignado: {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
+                            </p>
+                          </div>
+
+                          <div className="mt-3 grid gap-3 md:grid-cols-4">
+                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo</p>
+                              <p className="font-bold text-cyan-100">{nutritionGoalLabel(selectedNutritionPlan.objetivo)}</p>
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Kcal objetivo</p>
+                              <p className="font-bold text-white">{selectedNutritionPlan.targets.calorias}</p>
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G objetivo</p>
+                              <p className="font-bold text-white">
+                                {selectedNutritionPlan.targets.proteinas} / {selectedNutritionPlan.targets.carbohidratos} / {selectedNutritionPlan.targets.grasas} g
+                              </p>
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G del plan</p>
+                              <p className="font-bold text-emerald-100">
+                                {selectedNutritionIntake.proteinas} / {selectedNutritionIntake.carbohidratos} / {selectedNutritionIntake.grasas} g
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-3">
+                          {selectedNutritionPlan.comidas.length === 0 ? (
+                            <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                              El plan no tiene comidas cargadas todavia.
+                            </p>
+                          ) : (
+                            selectedNutritionPlan.comidas.map((meal) => (
+                              <article key={meal.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
+                                <p className="font-semibold text-white">{meal.nombre}</p>
+                                {meal.items.length === 0 ? (
+                                  <p className="mt-1 text-xs text-slate-400">Sin alimentos cargados.</p>
+                                ) : (
+                                  <div className="mt-2 space-y-1 text-sm">
+                                    {meal.items.map((item) => {
+                                      const food = nutritionFoodsById.get(item.foodId);
+                                      return (
+                                        <p key={item.id} className="text-slate-200">
+                                          • {food?.nombre || "Alimento no encontrado"} - {item.gramos} g
+                                        </p>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </article>
+                            ))
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                        <p className="font-semibold">Este cliente aun no tiene un plan nutricional asignado.</p>
+                        <p className="mt-1 text-amber-50/90">
+                          Puedes asignarlo desde el modulo de nutricion para verlo aqui.
+                        </p>
+                        <Link
+                          href="/categorias/Nutricion"
+                          className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
+                        >
+                          Ir a Nutricion
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
