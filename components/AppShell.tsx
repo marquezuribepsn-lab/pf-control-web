@@ -538,6 +538,8 @@ export default function AppShell({ links, children }: AppShellProps) {
   const navigateSidebar = (href: string) => {
     setMobileOpen(false);
     setSidebarSelectedHref(href);
+    const avoidHardReload =
+      COLABORADOR_CATEGORY_HREFS.includes(href) || href.startsWith("/categorias/");
 
     if (pathname === href) {
       return;
@@ -558,7 +560,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
         window.setTimeout(() => {
           const replacedUrl = `${window.location.pathname}${window.location.search}`;
-          if (replacedUrl === currentUrl) {
+          if (!avoidHardReload && replacedUrl === currentUrl) {
             window.location.assign(href);
           }
         }, 260);
