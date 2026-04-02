@@ -715,16 +715,15 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/10 bg-slate-900/95 shadow-[0_0_60px_rgba(6,182,212,0.08)] backdrop-blur-md ${
+        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-slate-700/70 bg-[#081327]/95 shadow-[0_20px_55px_rgba(2,6,23,0.55)] backdrop-blur-md ${
           collapsed
             ? `w-20 ${desktopCollapsedWidthClass}`
             : `w-[min(90vw,22rem)] ${desktopExpandedWidthClass}`
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute -left-12 top-0 h-36 w-36 rounded-full bg-cyan-500/35 blur-3xl" />
-          <div className="absolute right-0 top-16 h-32 w-32 rounded-full bg-emerald-500/25 blur-3xl" />
-          <div className="absolute inset-y-0 left-0 w-[2px] bg-gradient-to-b from-cyan-300/80 via-sky-300/40 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 opacity-60">
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/8 to-transparent" />
+          <div className="absolute inset-y-0 left-0 w-[1px] bg-slate-400/35" />
         </div>
 
         <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${headerPaddingClass}`}>
@@ -757,7 +756,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
             <button
               onClick={toggleCollapsed}
-              className="rounded-lg border border-white/20 bg-slate-800/70 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-white"
+              className="rounded-lg border border-slate-500/60 bg-slate-800/70 px-2 py-[clamp(0.2rem,0.55vh,0.32rem)] text-[clamp(0.62rem,1.3vh,0.75rem)] font-bold text-slate-100"
             >
               {collapsed ? ">>" : "<<"}
             </button>
@@ -765,10 +764,10 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             <nav
-              className={`grid h-full content-start rounded-3xl border border-cyan-200/20 bg-gradient-to-b from-slate-950/80 via-slate-900/65 to-slate-950/85 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
+              className={`grid h-full content-start rounded-3xl border border-slate-600/70 bg-[#0c1a34]/90 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${navGapClass}`}
             >
               {!collapsed ? (
-                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-cyan-100/80`}>
+                <p className={`${navTitleClass} font-black uppercase tracking-[0.2em] text-slate-300`}>
                   Navegacion
                 </p>
               ) : null}
@@ -783,8 +782,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                   (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
                 const linkClassName = `group relative flex w-full items-center rounded-2xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                   isActive
-                    ? `bg-gradient-to-r ${link.tone} border-white/40 shadow-[0_8px_24px_rgba(8,47,73,0.3)]`
-                    : "bg-slate-800/70 border-white/15"
+                    ? "border-cyan-300/45 bg-cyan-400/12 text-cyan-50 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.24)]"
+                    : "border-slate-600/55 bg-slate-900/55 text-slate-100"
                 }`;
 
                 return (
@@ -797,20 +796,15 @@ export default function AppShell({ links, children }: AppShellProps) {
                   >
                     <span
                       className={`absolute inset-y-2 left-1.5 w-1 rounded-full ${
-                        isActive ? "bg-white/85" : "bg-cyan-200/45"
+                        isActive ? "bg-cyan-200/90" : "bg-slate-500/70"
                       }`}
                     />
                     <span className={`flex items-center ${collapsed ? "justify-center" : "gap-2.5 px-2"}`}>
-                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full ${isActive ? "bg-black/20" : "bg-white/10"}`}>
+                      <span className={`grid ${navIconSizeClass} place-items-center rounded-full bg-gradient-to-br ${link.tone} ${isActive ? "ring-1 ring-cyan-100/70" : "ring-1 ring-black/25"}`}>
                         <span className="text-[0.95rem] leading-none">{link.icon}</span>
                       </span>
-                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em]">{link.label}</span>}
+                      {!collapsed && <span className="whitespace-nowrap tracking-[0.01em] text-slate-100">{link.label}</span>}
                     </span>
-                    {!collapsed && (
-                      <span className={`text-xs ${isActive ? "text-white/90" : "text-slate-300"}`}>
-                        {isActive ? "●" : "○"}
-                      </span>
-                    )}
                   </button>
                 );
               })}
