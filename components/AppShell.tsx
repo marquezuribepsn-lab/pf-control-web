@@ -148,6 +148,28 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    void (async () => {
+      try {
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+      } catch {
+        // evitar bloquear la app si no se puede limpiar cache/sw
+      }
+    })();
+  }, []);
+
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
       "pf-control-nutricion-planes-v1": "Nutricion · Planes",
