@@ -519,6 +519,9 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
+  const transitionKey =
+    pathname === "/" ? "/" : `/${pathname.split("/").filter(Boolean)[0] || ""}`;
+
   const isUltraWideSidebar = viewport.width >= 1920 && viewport.height >= 900;
   const isCompactSidebar = viewport.height <= 840 || viewport.width <= 1366;
   const isUltraCompactSidebar = viewport.height <= 740 || viewport.width <= 1200;
@@ -798,7 +801,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div key={pathname} className="pf-route-enter pt-16 lg:pt-0" style={scaledStyle}>
+        <div key={transitionKey} className="pf-route-enter pt-16 lg:pt-0" style={scaledStyle}>
           {children}
         </div>
       </div>
