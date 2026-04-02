@@ -2007,7 +2007,7 @@ export default function ClientesPage() {
                         <button type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</button>
                         <button type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</button>
                         <button type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</button>
-                        <button type="button" onClick={() => openClientPlanView(cliente.id, "plan-entrenamiento")} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan en pantalla nueva">📌</button>
+                        <Link href={buildPlanViewHref(cliente.id, "plan-entrenamiento")} prefetch className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan en pantalla nueva">📌</Link>
                         <button type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</button>
                         <button type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</button>
                       </div>
@@ -2085,36 +2085,62 @@ export default function ClientesPage() {
 
               <div className="mt-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                  {TABS.map((tab, index) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => {
-                        if (tab.id === "plan-entrenamiento" || tab.id === "plan-nutricional") {
-                          openClientPlanView(selectedClient.id, tab.id);
-                          return;
-                        }
-                        setActiveTab(tab.id);
-                        setDetailTabId(tab.id);
-                        pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
-                      }}
-                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
-                      style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
-                    >
-                      {activeTab === tab.id ? (
-                        <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
-                      ) : null}
-                      <span className="relative flex items-start gap-2">
-                        <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
-                        <span>
-                          <span className="block text-sm font-bold leading-tight">{tab.label}</span>
-                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
-                            Vista dedicada
+                  {TABS.map((tab, index) => {
+                    const isPlanTab =
+                      tab.id === "plan-entrenamiento" || tab.id === "plan-nutricional";
+
+                    if (isPlanTab) {
+                      return (
+                        <Link
+                          key={tab.id}
+                          href={buildPlanViewHref(selectedClient.id, tab.id as PlanViewTab)}
+                          prefetch
+                          className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                          style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
+                        >
+                          {activeTab === tab.id ? (
+                            <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
+                          ) : null}
+                          <span className="relative flex items-start gap-2">
+                            <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
+                            <span>
+                              <span className="block text-sm font-bold leading-tight">{tab.label}</span>
+                              <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
+                                Vista dedicada
+                              </span>
+                            </span>
+                          </span>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setDetailTabId(tab.id);
+                          pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
+                        }}
+                        className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-slate-900/55 text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                        style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
+                      >
+                        {activeTab === tab.id ? (
+                          <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
+                        ) : null}
+                        <span className="relative flex items-start gap-2">
+                          <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
+                          <span>
+                            <span className="block text-sm font-bold leading-tight">{tab.label}</span>
+                            <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
+                              Vista dedicada
+                            </span>
                           </span>
                         </span>
-                      </span>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-slate-950/35 p-2">
@@ -2338,20 +2364,18 @@ export default function ClientesPage() {
                     <p className="mt-1 text-sm text-slate-200">
                       Esto evita que el plan quede embebido debajo de la ficha y mejora la lectura.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openClientPlanView(
-                          selectedClient.id,
-                          activeTab === "plan-nutricional"
-                            ? "plan-nutricional"
-                            : "plan-entrenamiento"
-                        )
-                      }
-                      className="mt-3 rounded-xl border border-cyan-200/45 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
+                    <Link
+                      href={buildPlanViewHref(
+                        selectedClient.id,
+                        activeTab === "plan-nutricional"
+                          ? "plan-nutricional"
+                          : "plan-entrenamiento"
+                      )}
+                      prefetch
+                      className="mt-3 inline-flex rounded-xl border border-cyan-200/45 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
                     >
                       Abrir plan en pantalla nueva
-                    </button>
+                    </Link>
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">

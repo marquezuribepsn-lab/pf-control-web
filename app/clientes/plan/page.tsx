@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
@@ -284,27 +285,6 @@ function ClientePlanContent() {
     router.prefetch(backHref);
   }, [backHref, router]);
 
-  const navigateWithRetry = (href: string) => {
-    if (typeof window === "undefined") {
-      router.push(href);
-      return;
-    }
-
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-    router.push(href);
-
-    window.setTimeout(() => {
-      const nextUrl = `${window.location.pathname}${window.location.search}`;
-      if (nextUrl === currentUrl) {
-        router.replace(href);
-      }
-    }, 240);
-  };
-
-  const goBackFromPlan = () => {
-    navigateWithRetry(backHref);
-  };
-
   const switchPlanTab = (nextTab: PlanViewTab) => {
     if (!selectedClient) return;
     setTab(nextTab);
@@ -328,12 +308,13 @@ function ClientePlanContent() {
           <p className="mt-2 text-sm text-amber-100">
             No se encontro el cliente solicitado o faltan parametros de navegacion.
           </p>
-          <a
+          <Link
             href="/clientes"
+            prefetch
             className="mt-4 inline-flex rounded-xl border border-amber-200/40 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-500/10"
           >
             Volver a Clientes
-          </a>
+          </Link>
         </section>
       </main>
     );
@@ -353,13 +334,13 @@ function ClientePlanContent() {
               Esta pantalla muestra el plan sin mezclarlo con la ficha general del cliente.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={goBackFromPlan}
+          <Link
+            href={backHref}
+            prefetch
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a ficha
-          </button>
+          </Link>
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
@@ -392,12 +373,13 @@ function ClientePlanContent() {
         <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-xl font-black text-white">Plan de entrenamiento</h2>
-            <a
+            <Link
               href="/sesiones"
+              prefetch
               className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
             >
               Gestionar sesiones
-            </a>
+            </Link>
           </div>
 
           {sesionesCliente.length === 0 ? (
@@ -491,12 +473,13 @@ function ClientePlanContent() {
               <p className="mt-1 text-amber-50/90">
                 Puedes asignarlo desde el modulo de nutricion para verlo aqui.
               </p>
-              <a
+              <Link
                 href="/categorias/Nutricion"
+                prefetch
                 className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
               >
                 Ir a Nutricion
-              </a>
+              </Link>
             </div>
           )}
         </section>
