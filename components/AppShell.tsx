@@ -120,7 +120,13 @@ export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  const [viewport, setViewport] = useState({ width: 1366, height: 768 });
+  const [viewport, setViewport] = useState(() => {
+    if (typeof window === "undefined") {
+      return { width: 1366, height: 768 };
+    }
+
+    return { width: window.innerWidth, height: window.innerHeight };
+  });
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") {
       return false;
