@@ -25,6 +25,8 @@ type ClienteTab =
   | "chequeos"
   | "progreso";
 
+type PlanViewTab = "plan-entrenamiento" | "plan-nutricional";
+
 type ClienteView = {
   id: string;
   tipo: ClienteTipo;
@@ -358,6 +360,13 @@ function normalizeWhatsAppNumber(meta: ClienteMeta): string {
   return phone;
 }
 
+function buildPlanViewHref(clientId: string, tab: PlanViewTab): string {
+  const params = new URLSearchParams();
+  params.set("cliente", clientId);
+  params.set("tab", tab);
+  return `/clientes/plan?${params.toString()}`;
+}
+
 const TABS: { id: ClienteTab; label: string }[] = [
   { id: "datos", label: "Datos generales" },
   { id: "cuestionario", label: "Cuestionario" },
@@ -545,6 +554,11 @@ export default function ClientesPage() {
 
   useEffect(() => {
     if (!isDetailMode || !detailClientId) return;
+
+    if (detailTabId === "plan-entrenamiento" || detailTabId === "plan-nutricional") {
+      openClientPlanView(detailClientId, detailTabId);
+      return;
+    }
 
     setSelectedClientId(detailClientId);
 
@@ -1404,6 +1418,11 @@ export default function ClientesPage() {
     window.open(`https://wa.me/${telefono}?text=${presetText}`, "_blank", "noopener,noreferrer");
   };
 
+  function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
+    if (typeof window === "undefined") return;
+    window.location.assign(buildPlanViewHref(clientId, tab));
+  }
+
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
     setSelectedClientId(clientId);
     setActiveTab(tab);
@@ -1486,39 +1505,55 @@ export default function ClientesPage() {
   };
 
   return (
-    <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-black">Clientes</h1>
-          <p className="mt-1 text-sm text-slate-300">
-            Vista unificada con apartados operativos estilo panel profesional.
-          </p>
+    <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
+      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/50 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
+        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">
+              Hub comercial y operativo
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Clientes</h1>
+            <p className="mt-2 text-sm text-slate-200/90">
+              Gestion integral de fichas, pagos y planes en una vista mas clara y moderna.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCrearOpen((prev) => !prev);
+                if (!crearOpen) resetForm();
+              }}
+              className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+            >
+              Crear cliente
+            </button>
+            <Link
+              href="/registros"
+              className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+            >
+              Ver registros
+            </Link>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setCrearOpen((prev) => !prev);
-            if (!crearOpen) resetForm();
-          }}
-          className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
-        >
-          Crear cliente
-        </button>
-      </div>
-
-      <section className="mb-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-300/35 bg-emerald-500/15 p-4">
-          <p className="text-xs uppercase tracking-wide text-emerald-100">Activos</p>
-          <p className="text-3xl font-black">{resumen.activos}</p>
-        </div>
-        <div className="rounded-2xl border border-rose-300/35 bg-rose-500/15 p-4">
-          <p className="text-xs uppercase tracking-wide text-rose-100">Finalizados</p>
-          <p className="text-3xl font-black">{resumen.finalizados}</p>
-        </div>
-        <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 p-4">
-          <p className="text-xs uppercase tracking-wide text-cyan-100">Total</p>
-          <p className="text-3xl font-black">{resumen.total}</p>
+        <div className="relative mt-5 grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-emerald-300/35 bg-emerald-500/15 p-4">
+            <p className="text-xs uppercase tracking-wide text-emerald-100">Activos</p>
+            <p className="text-3xl font-black">{resumen.activos}</p>
+          </div>
+          <div className="rounded-2xl border border-rose-300/35 bg-rose-500/15 p-4">
+            <p className="text-xs uppercase tracking-wide text-rose-100">Finalizados</p>
+            <p className="text-3xl font-black">{resumen.finalizados}</p>
+          </div>
+          <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 p-4">
+            <p className="text-xs uppercase tracking-wide text-cyan-100">Total</p>
+            <p className="text-3xl font-black">{resumen.total}</p>
+          </div>
         </div>
       </section>
 
@@ -1877,7 +1912,7 @@ export default function ClientesPage() {
                         <button type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</button>
                         <button type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</button>
                         <button type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</button>
-                        <button type="button" onClick={() => openClientDetail(cliente.id, "plan-entrenamiento")} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan">📌</button>
+                        <button type="button" onClick={() => openClientPlanView(cliente.id, "plan-entrenamiento")} className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan en pantalla nueva">📌</button>
                         <button type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</button>
                         <button type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</button>
                       </div>
@@ -1959,7 +1994,13 @@ export default function ClientesPage() {
                     <button
                       key={tab.id}
                       type="button"
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => {
+                        if (tab.id === "plan-entrenamiento" || tab.id === "plan-nutricional") {
+                          openClientPlanView(selectedClient.id, tab.id);
+                          return;
+                        }
+                        setActiveTab(tab.id);
+                      }}
                       className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${activeTab === tab.id ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-50" : "border-cyan-300/40 text-white hover:bg-cyan-500/10"}`}
                     >
                       {tab.label}
@@ -2164,123 +2205,28 @@ export default function ClientesPage() {
                       </div>
                     </div>
                   </div>
-                ) : activeTab === "plan-entrenamiento" ? (
-                  <div>
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <h3 className="text-xl font-bold">Plan entrenamiento</h3>
-                      <Link href="/sesiones" className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10">Gestionar sesiones</Link>
-                    </div>
-                    {sesionesCliente.length === 0 ? (
-                      <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">No hay sesiones vinculadas para este cliente todavia.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {sesionesCliente.map((sesion) => (
-                          <div key={sesion.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-3">
-                            <p className="font-semibold text-white">{sesion.titulo}</p>
-                            <p className="text-xs text-slate-300">{sesion.objetivo}</p>
-                            <p className="mt-1 text-xs text-cyan-100">{sesion.duracion} min · {sesion.bloques.length} bloques</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : isPlanNutricionalTab ? (
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-white">Plan nutricional asignado</h3>
-                    {selectedNutritionPlan ? (
-                      <>
-                        <div className="rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                              <p className="text-xs uppercase tracking-wide text-emerald-100">Plan</p>
-                              <p className="text-lg font-black text-white">{selectedNutritionPlan.nombre}</p>
-                            </div>
-                            <p className="text-xs text-slate-300">
-                              Asignado: {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
-                            </p>
-                          </div>
-                          <div className="mt-3 grid gap-3 md:grid-cols-4">
-                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo</p>
-                              <p className="font-bold text-cyan-100">
-                                {nutritionGoalLabel(selectedNutritionPlan.objetivo)}
-                              </p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Kcal objetivo</p>
-                              <p className="font-bold text-white">{selectedNutritionPlan.targets.calorias}</p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G objetivo</p>
-                              <p className="font-bold text-white">
-                                {selectedNutritionPlan.targets.proteinas} / {selectedNutritionPlan.targets.carbohidratos} / {selectedNutritionPlan.targets.grasas} g
-                              </p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G del plan</p>
-                              <p className="font-bold text-emerald-100">
-                                {selectedNutritionIntake.proteinas} / {selectedNutritionIntake.carbohidratos} / {selectedNutritionIntake.grasas} g
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          {selectedNutritionPlan.comidas.length === 0 ? (
-                            <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
-                              El plan no tiene comidas cargadas todavia.
-                            </p>
-                          ) : (
-                            selectedNutritionPlan.comidas.map((meal) => (
-                              <div
-                                key={meal.id}
-                                className="rounded-xl border border-white/10 bg-slate-900/60 p-3"
-                              >
-                                <p className="font-semibold text-white">{meal.nombre}</p>
-                                {meal.items.length === 0 ? (
-                                  <p className="mt-1 text-xs text-slate-400">Sin alimentos cargados.</p>
-                                ) : (
-                                  <div className="mt-2 space-y-1 text-sm">
-                                    {meal.items.map((item) => {
-                                      const food = nutritionFoodsById.get(item.foodId);
-                                      return (
-                                        <p key={item.id} className="text-slate-200">
-                                          • {food?.nombre || "Alimento no encontrado"} - {item.gramos} g
-                                        </p>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          )}
-                        </div>
-
-                        <div>
-                          <p className="mb-2 text-sm text-slate-300">Notas adicionales del cliente</p>
-                          <textarea
-                            value={selectedMeta.tabNotas["plan-nutricional"] || ""}
-                            onChange={(e) => updateTabNote("plan-nutricional", e.target.value)}
-                            rows={5}
-                            className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-                            placeholder="Escribe aqui..."
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="rounded-xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                        <p className="font-semibold">Este cliente aun no tiene un plan nutricional asignado.</p>
-                        <p className="mt-1 text-amber-50/90">
-                          Puedes asignarlo desde el modulo de nutricion para verlo automaticamente aqui.
-                        </p>
-                        <Link
-                          href="/categorias/Nutricion"
-                          className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
-                        >
-                          Ir a Nutricion
-                        </Link>
-                      </div>
-                    )}
+                ) : activeTab === "plan-entrenamiento" || isPlanNutricionalTab ? (
+                  <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/10 p-4">
+                    <p className="text-sm font-semibold text-cyan-100">
+                      La visualizacion de planes ahora se abre en pantalla dedicada.
+                    </p>
+                    <p className="mt-1 text-sm text-slate-200">
+                      Esto evita que el plan quede embebido debajo de la ficha y mejora la lectura.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openClientPlanView(
+                          selectedClient.id,
+                          activeTab === "plan-nutricional"
+                            ? "plan-nutricional"
+                            : "plan-entrenamiento"
+                        )
+                      }
+                      className="mt-3 rounded-xl border border-cyan-200/45 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
+                    >
+                      Abrir plan en pantalla nueva
+                    </button>
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
