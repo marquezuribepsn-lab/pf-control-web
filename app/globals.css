@@ -223,19 +223,19 @@ body {
 
 @keyframes pf-route-enter {
   0% {
-    opacity: 0.95;
-    transform: translate3d(0, 6px, 0) scale(0.996);
-    filter: saturate(1.01) blur(0.6px);
+    opacity: 0.92;
+    transform: translate3d(0, 8px, 0);
+    filter: saturate(1.01) blur(0.35px);
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
     filter: saturate(1) blur(0);
   }
 }
 
 .pf-route-enter {
-  animation: pf-route-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pf-route-enter 220ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
   will-change: transform, opacity, filter;
   backface-visibility: hidden;
 }

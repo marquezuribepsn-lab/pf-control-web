@@ -121,7 +121,13 @@ export default function AppShell({ links, children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [viewport, setViewport] = useState({ width: 1366, height: 768 });
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [config, setConfig] = useState<NavConfig>(() => getDefaultConfig(links));
