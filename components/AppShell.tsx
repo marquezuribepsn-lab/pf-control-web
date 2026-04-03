@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -148,6 +148,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+  const navigationAttemptRef = useRef(0);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -497,11 +498,41 @@ export default function AppShell({ links, children }: AppShellProps) {
   const navigateSidebar = (href: string) => {
     setMobileOpen(false);
 
-    if (normalizePath(pathname) === normalizePath(href)) {
+    const targetPath = normalizePath(href);
+
+    if (normalizePath(pathname) === targetPath) {
       return;
     }
 
     router.push(href);
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const attemptId = ++navigationAttemptRef.current;
+    let frameCount = 0;
+    const maxFrames = 18;
+
+    const verifyNavigation = () => {
+      if (attemptId !== navigationAttemptRef.current) {
+        return;
+      }
+
+      if (normalizePath(window.location.pathname) === targetPath) {
+        return;
+      }
+
+      frameCount += 1;
+      if (frameCount >= maxFrames) {
+        window.location.assign(href);
+        return;
+      }
+
+      window.requestAnimationFrame(verifyNavigation);
+    };
+
+    window.requestAnimationFrame(verifyNavigation);
   };
 
   const scaledStyle = {
