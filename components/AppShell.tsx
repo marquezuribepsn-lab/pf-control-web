@@ -149,28 +149,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    void (async () => {
-      try {
-        if ("serviceWorker" in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration) => registration.unregister()));
-        }
-
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
-        }
-      } catch {
-        // evitar bloquear la app si no se puede limpiar cache/sw
-      }
-    })();
-  }, []);
-
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
       "pf-control-nutricion-planes-v1": "Nutricion · Planes",
@@ -519,44 +497,11 @@ export default function AppShell({ links, children }: AppShellProps) {
   const navigateSidebar = (href: string) => {
     setMobileOpen(false);
 
-    const avoidHardReload =
-      COLABORADOR_CATEGORY_HREFS.includes(href) ||
-      href.startsWith("/categorias/") ||
-      href.startsWith("/deportes") ||
-      href.startsWith("/equipos");
-
     if (normalizePath(pathname) === normalizePath(href)) {
       return;
     }
 
-    if (typeof window === "undefined") {
-      router.push(href);
-      return;
-    }
-
-    const targetPath = normalizePath(href);
-    router.prefetch(href);
-
-    if (avoidHardReload) {
-      router.push(href);
-      return;
-    }
-
     router.push(href);
-
-    window.setTimeout(() => {
-      const pushedPath = normalizePath(window.location.pathname);
-      if (pushedPath !== targetPath) {
-        router.replace(href);
-
-        window.setTimeout(() => {
-          const replacedPath = normalizePath(window.location.pathname);
-          if (!avoidHardReload && replacedPath !== targetPath) {
-            window.location.assign(href);
-          }
-        }, 220);
-      }
-    }, 180);
   };
 
   const scaledStyle = {
@@ -565,15 +510,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     width: `${100 / screenScale}%`,
     minHeight: `${100 / screenScale}dvh`,
   } as const;
-
-  const firstSegment = `/${pathname.split("/").filter(Boolean)[0] || ""}`;
-  const isCategoryGroupRoute = COLABORADOR_CATEGORY_HREFS.includes(firstSegment);
-  const transitionKey =
-    pathname === "/"
-      ? "/"
-      : isCategoryGroupRoute
-      ? "/categorias-grupo"
-      : firstSegment;
 
   const shellExpandedPaddingClass = "lg:pl-[18rem]";
   const shellCollapsedPaddingClass = "lg:pl-[4.75rem]";
@@ -807,7 +743,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div key={transitionKey} className={`${isCategoryGroupRoute ? "" : "pf-route-enter"} pt-16 lg:pt-0`} style={scaledStyle}>
+        <div className="pt-16 lg:pt-0" style={scaledStyle}>
           {children}
         </div>
       </div>
