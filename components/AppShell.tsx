@@ -649,9 +649,9 @@ export default function AppShell({ links, children }: AppShellProps) {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
             <nav
-              className={`flex h-full flex-col rounded-2xl border border-cyan-200/20 bg-[#071429]/86 ${navPanelPaddingClass} shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`}
+              className={`flex flex-col ${navPanelPaddingClass}`}
             >
               {!collapsed ? (
                 <p className="mb-2 px-1 text-[0.6rem] font-black uppercase tracking-[0.22em] text-sky-200/80">
@@ -677,19 +677,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                         collapsed ? "justify-center" : "justify-start gap-3"
                       } ${
                         isActive
-                          ? "border-cyan-300/50 bg-cyan-400/14 text-cyan-50 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.2)]"
+                          ? "border-white/15 bg-slate-900/45 text-sky-50"
                           : "border-white/10 bg-slate-900/45 text-sky-100/95 hover:bg-slate-800/65"
                       }`}
                       title={link.label}
                     >
-                      {!collapsed && (
-                        <span
-                          className={`absolute inset-y-2 left-0 w-[2px] rounded-r ${
-                            isActive ? "bg-cyan-200" : "bg-transparent"
-                          }`}
-                        />
-                      )}
-
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center">
                         <span className={`${collapsed ? "text-[1.18rem]" : navIconTextClass} select-none font-normal leading-none`}>
                           {link.icon}
