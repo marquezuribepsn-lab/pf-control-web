@@ -588,19 +588,14 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
+  const firstSegment = `/${pathname.split("/").filter(Boolean)[0] || ""}`;
+  const isCategoryGroupRoute = COLABORADOR_CATEGORY_HREFS.includes(firstSegment);
   const transitionKey =
-    (() => {
-      if (pathname === "/") {
-        return "/";
-      }
-
-      const firstSegment = `/${pathname.split("/").filter(Boolean)[0] || ""}`;
-      if (COLABORADOR_CATEGORY_HREFS.includes(firstSegment)) {
-        return "/categorias-grupo";
-      }
-
-      return firstSegment;
-    })();
+    pathname === "/"
+      ? "/"
+      : isCategoryGroupRoute
+      ? "/categorias-grupo"
+      : firstSegment;
 
   const isWideSidebar = viewport.width >= 1800 && viewport.height >= 860;
   const isCompactSidebar = viewport.width <= 1300 || viewport.height <= 760;
@@ -659,7 +654,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-gradient-to-b from-[#051325] via-[#071a33] to-[#040b1a] shadow-[0_24px_64px_rgba(3,10,28,0.62)] backdrop-blur-md ${
+        className={`pf-sidebar-static fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-gradient-to-b from-[#051325] via-[#071a33] to-[#040b1a] shadow-[0_24px_64px_rgba(3,10,28,0.62)] ${
           collapsed
             ? `w-[4.75rem] ${desktopCollapsedWidthClass}`
             : `w-[min(88vw,18rem)] ${desktopExpandedWidthClass}`
@@ -868,7 +863,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div key={transitionKey} className="pf-route-enter pt-16 lg:pt-0" style={scaledStyle}>
+        <div key={transitionKey} className={`${isCategoryGroupRoute ? "" : "pf-route-enter"} pt-16 lg:pt-0`} style={scaledStyle}>
           {children}
         </div>
       </div>

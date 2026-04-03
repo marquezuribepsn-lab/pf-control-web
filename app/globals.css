@@ -267,6 +267,13 @@ body {
   backface-visibility: hidden;
 }
 
+.pf-sidebar-static {
+  contain: layout paint;
+  isolation: isolate;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pf-route-enter {
     animation: none;
