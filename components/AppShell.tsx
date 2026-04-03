@@ -151,6 +151,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
+  const [resolvedRole, setResolvedRole] = useState<string | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
@@ -429,7 +430,14 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
   }, [pendingSaveKeys]);
 
-  const role = (session?.user as any)?.role;
+  useEffect(() => {
+    const nextRole = (session?.user as any)?.role;
+    if (typeof nextRole === "string" && nextRole.length > 0) {
+      setResolvedRole(nextRole);
+    }
+  }, [session?.user]);
+
+  const role = ((session?.user as any)?.role as string | undefined) ?? resolvedRole;
   const visibleLinks = useMemo(
     () =>
       stableLinks.filter((link) => {
@@ -544,17 +552,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
       frameCount += 1;
       if (frameCount >= maxFrames) {
-        if (shouldAvoidHardReload) {
-          router.replace(href);
-          return;
-        }
-
         router.replace(href);
-        window.setTimeout(() => {
-          if (normalizePath(window.location.pathname) !== targetPath) {
-            window.location.assign(href);
-          }
-        }, 240);
         return;
       }
 
