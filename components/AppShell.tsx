@@ -39,6 +39,7 @@ const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SIDEBAR_COLLAPSED_KEY = "pf-control-sidebar-collapsed-v1";
+const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
   "/semana",
@@ -151,7 +152,14 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
-  const [resolvedRole, setResolvedRole] = useState<string | null>(null);
+  const [resolvedRole, setResolvedRole] = useState<string | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const cachedRole = localStorage.getItem(SIDEBAR_ROLE_KEY);
+    return cachedRole && cachedRole.length > 0 ? cachedRole : null;
+  });
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
@@ -434,6 +442,9 @@ export default function AppShell({ links, children }: AppShellProps) {
     const nextRole = (session?.user as any)?.role;
     if (typeof nextRole === "string" && nextRole.length > 0) {
       setResolvedRole(nextRole);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SIDEBAR_ROLE_KEY, nextRole);
+      }
     }
   }, [session?.user]);
 
@@ -476,6 +487,18 @@ export default function AppShell({ links, children }: AppShellProps) {
       .map((href) => linkByHref.get(href))
       .filter((link): link is NavLink => Boolean(link));
   }, [visibleLinks, config.order]);
+
+  const [renderLinks, setRenderLinks] = useState<NavLink[]>(() =>
+    getDefaultConfig(stableLinks).order
+      .map((href) => stableLinks.find((link) => link.href === href))
+      .filter((link): link is NavLink => Boolean(link))
+  );
+
+  useEffect(() => {
+    if (orderedLinks.length > 0) {
+      setRenderLinks(orderedLinks);
+    }
+  }, [orderedLinks]);
 
   useEffect(() => {
     setConfig((current) => {
@@ -653,8 +676,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </p>
               ) : null}
               <div className={`grid content-start ${navGapClass}`}>
-                {orderedLinks.map((link) => {
-                  const hasChildLink = orderedLinks.some(
+                {renderLinks.map((link) => {
+                  const hasChildLink = renderLinks.some(
                     (candidate) =>
                       candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
                   );
