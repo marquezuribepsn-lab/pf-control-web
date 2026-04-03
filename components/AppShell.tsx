@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -124,12 +125,6 @@ const normalizePath = (value: string) => {
   return path;
 };
 
-const isCategoryRoute = (href: string) =>
-  COLABORADOR_CATEGORY_HREFS.includes(href) ||
-  href.startsWith("/categorias/") ||
-  href.startsWith("/deportes") ||
-  href.startsWith("/equipos");
-
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -163,7 +158,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
-  const navigationAttemptRef = useRef(0);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -429,7 +423,6 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   useEffect(() => {
     setMobileOpen(false);
-    navigationAttemptRef.current += 1;
   }, [pathname]);
 
   useEffect(() => {
@@ -544,47 +537,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     });
   };
 
-  const navigateSidebar = (href: string) => {
-    setMobileOpen(false);
-
-    const targetPath = normalizePath(href);
-    const shouldAvoidHardReload = isCategoryRoute(href);
-
-    if (normalizePath(pathname) === targetPath) {
-      return;
-    }
-
-    router.push(href);
-
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const attemptId = ++navigationAttemptRef.current;
-    let frameCount = 0;
-    const maxFrames = shouldAvoidHardReload ? 90 : 30;
-
-    const verifyNavigation = () => {
-      if (attemptId !== navigationAttemptRef.current) {
-        return;
-      }
-
-      if (normalizePath(window.location.pathname) === targetPath) {
-        return;
-      }
-
-      frameCount += 1;
-      if (frameCount >= maxFrames) {
-        router.replace(href);
-        return;
-      }
-
-      window.requestAnimationFrame(verifyNavigation);
-    };
-
-    window.requestAnimationFrame(verifyNavigation);
-  };
-
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -686,10 +638,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                     (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                   return (
-                    <button
+                    <Link
                       key={link.href}
-                      type="button"
-                      onClick={() => navigateSidebar(link.href)}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
                       className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                         collapsed ? "justify-center" : "justify-start gap-3"
                       } ${
@@ -710,7 +662,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                           {link.label}
                         </span>
                       )}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -718,9 +670,9 @@ export default function AppShell({ links, children }: AppShellProps) {
           </div>
 
             <div className={`grid ${footerSpacingClass}`}>
-              <button
-                type="button"
-                onClick={() => navigateSidebar("/cuenta")}
+              <Link
+                href="/cuenta"
+                onClick={() => setMobileOpen(false)}
                 className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
                   pathname === "/cuenta"
                     ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
@@ -729,7 +681,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 title="Cuenta"
               >
                 {collapsed ? "👤" : "👤 Cuenta"}
-              </button>
+              </Link>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/auth/login" })}
