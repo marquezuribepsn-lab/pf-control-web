@@ -540,9 +540,9 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return 1.52;
-    if (distance === 1) return 1.28;
-    if (distance === 2) return 1.12;
+    if (distance === 0) return 1.36;
+    if (distance === 1) return 1.18;
+    if (distance === 2) return 1.08;
     return 1;
   };
 
@@ -640,11 +640,11 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-3 z-[70] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[70] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="pf-dock-scroll w-auto max-w-[min(96vw,1160px)] overflow-x-auto rounded-[1.45rem] border border-cyan-100/20 bg-[#061326]/96 px-3 py-2 shadow-[0_22px_54px_rgba(2,6,23,0.64)]">
-          <div className="flex min-w-max items-end gap-2">
+        <div className="pf-dock-scroll w-auto max-w-[min(96vw,1160px)] overflow-x-auto rounded-[1.55rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-3 py-2.5 shadow-[0_18px_44px_rgba(2,6,23,0.55)] backdrop-blur-2xl">
+          <div className="flex min-w-max items-end gap-3">
             {sidebarImage ? (
               <img
                 src={sidebarImage}
@@ -663,7 +663,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
               const scale = getDockScale(index);
-              const lift = scale > 1 ? (scale - 1) * 14 : 0;
+              const lift = scale > 1 ? (scale - 1) * 9 : 0;
 
               return (
                 <Link
@@ -676,7 +676,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   title={link.label}
                 >
                   <span
-                    className={`pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 transition-all duration-150 ${
+                    className={`pointer-events-none absolute -top-9 z-20 whitespace-nowrap rounded-lg border border-white/35 bg-[#020817]/92 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg transition-all duration-150 ${
                       hoveredDockIndex === index ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
                     }`}
                   >
@@ -684,12 +684,12 @@ export default function AppShell({ links, children }: AppShellProps) {
                   </span>
 
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-[1.25rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-12 md:w-12 ${
+                    className={`relative origin-bottom flex h-11 w-11 items-center justify-center rounded-2xl border text-[1.25rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-12 md:w-12 ${
                       isActive
                         ? "border-cyan-200/65 bg-cyan-400/20"
                         : "border-white/18 bg-slate-900/80"
                     }`}
-                    style={{ transform: `translateY(-${lift}px) scale(${scale})` }}
+                    style={{ transform: `translateY(-${lift}px) scale(${scale})`, zIndex: Math.round(scale * 100) }}
                   >
                     {link.icon}
                   </span>
@@ -713,7 +713,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
             >
-              <span className="pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+              <span className="pointer-events-none absolute -top-9 z-20 whitespace-nowrap rounded-lg border border-white/35 bg-[#020817]/92 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
                 Cuenta
               </span>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.2rem] md:h-12 md:w-12">
@@ -726,7 +726,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               className="group relative flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-300/35 bg-rose-500/14 text-[1.2rem] text-rose-100 transition-transform duration-150 hover:scale-[1.08] md:h-12 md:w-12"
               title="Cerrar sesión"
             >
-              <span className="pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+              <span className="pointer-events-none absolute -top-9 z-20 whitespace-nowrap rounded-lg border border-white/35 bg-[#020817]/92 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
                 Salir
               </span>
               🚪
