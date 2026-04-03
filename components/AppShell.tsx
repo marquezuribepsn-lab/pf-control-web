@@ -131,13 +131,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
     .join("||");
   const stableLinks = useMemo(() => links, [linksSignature]);
-  const [viewport, setViewport] = useState(() => {
-    if (typeof window === "undefined") {
-      return { width: 1366, height: 768 };
-    }
-
-    return { width: window.innerWidth, height: window.innerHeight };
-  });
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -255,21 +248,6 @@ export default function AppShell({ links, children }: AppShellProps) {
       setToasts((prev) => prev.filter((item) => item.id !== id));
     }, 3850);
   };
-
-  useEffect(() => {
-    const updateViewport = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
-    };
-
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    window.addEventListener("orientationchange", updateViewport);
-
-    return () => {
-      window.removeEventListener("resize", updateViewport);
-      window.removeEventListener("orientationchange", updateViewport);
-    };
-  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -597,36 +575,15 @@ export default function AppShell({ links, children }: AppShellProps) {
       ? "/categorias-grupo"
       : firstSegment;
 
-  const isWideSidebar = viewport.width >= 1800 && viewport.height >= 860;
-  const isCompactSidebar = viewport.width <= 1300 || viewport.height <= 760;
-
-  const desktopExpandedWidthClass = isWideSidebar
-    ? "lg:w-[19.5rem]"
-    : isCompactSidebar
-    ? "lg:w-[16.75rem]"
-    : "lg:w-[18rem]";
-
-  const desktopCollapsedWidthClass = "lg:w-[4.75rem]";
-
-  const shellExpandedPaddingClass = isWideSidebar
-    ? "lg:pl-[19.5rem]"
-    : isCompactSidebar
-    ? "lg:pl-[16.75rem]"
-    : "lg:pl-[18rem]";
-
+  const shellExpandedPaddingClass = "lg:pl-[18rem]";
   const shellCollapsedPaddingClass = "lg:pl-[4.75rem]";
-
-  const sidebarPaddingClass = isCompactSidebar ? "p-3" : "p-4";
-  const navPanelPaddingClass = isCompactSidebar ? "p-2" : "p-2.5";
-  const navGapClass = isCompactSidebar ? "gap-1" : "gap-1.5";
-  const navButtonPaddingClass = isCompactSidebar
-    ? "px-2.5 py-2"
-    : "px-3 py-2.5";
-  const navIconTextClass = isCompactSidebar ? "text-[1.1rem]" : "text-[1.2rem]";
-  const footerButtonPaddingClass = isCompactSidebar
-    ? "px-2.5 py-2 text-[0.76rem]"
-    : "px-3 py-2.5 text-[0.8rem]";
-  const footerSpacingClass = isCompactSidebar ? "mt-2 gap-1.5" : "mt-3 gap-2";
+  const sidebarPaddingClass = "p-3.5";
+  const navPanelPaddingClass = "p-2";
+  const navGapClass = "gap-1";
+  const navButtonPaddingClass = "px-2.5 py-2";
+  const navIconTextClass = "text-[1.1rem]";
+  const footerButtonPaddingClass = "px-2.5 py-2 text-[0.76rem]";
+  const footerSpacingClass = "mt-2 gap-1.5";
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
@@ -634,7 +591,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   return (
     <div
-      className={`relative min-h-[100svh] overflow-x-hidden transition-[padding] duration-300 ${
+      className={`relative min-h-[100svh] overflow-x-hidden ${
         collapsed ? shellCollapsedPaddingClass : shellExpandedPaddingClass
       }`}
     >
@@ -654,17 +611,12 @@ export default function AppShell({ links, children }: AppShellProps) {
       )}
 
       <aside
-        className={`pf-sidebar-static fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-gradient-to-b from-[#051325] via-[#071a33] to-[#040b1a] shadow-[0_24px_64px_rgba(3,10,28,0.62)] ${
+        className={`pf-sidebar-static fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-[#071429] shadow-[0_14px_30px_rgba(3,10,28,0.36)] ${
           collapsed
-            ? `w-[4.75rem] ${desktopCollapsedWidthClass}`
-            : `w-[min(88vw,18rem)] ${desktopExpandedWidthClass}`
+            ? "w-[4.75rem] lg:w-[4.75rem]"
+            : "w-[min(88vw,18rem)] lg:w-[18rem]"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-300/15 to-transparent" />
-          <div className="absolute -left-10 top-24 h-32 w-32 rounded-full bg-cyan-400/10 blur-3xl" />
-        </div>
-
         <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${sidebarPaddingClass}`}>
           <div className={`mb-3 flex items-start ${collapsed ? "justify-center" : "justify-between"} gap-2`}>
             {!collapsed ? (
