@@ -155,7 +155,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
-  const [sidebarSelectedHref, setSidebarSelectedHref] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -461,10 +460,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pathname]);
 
   useEffect(() => {
-    setSidebarSelectedHref(null);
-  }, [pathname]);
-
-  useEffect(() => {
     if (pendingSaveKeys.length === 0) {
       setPendingPanelOpen(false);
     }
@@ -545,7 +540,6 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const navigateSidebar = (href: string) => {
     setMobileOpen(false);
-    setSidebarSelectedHref(href);
 
     const avoidHardReload =
       COLABORADOR_CATEGORY_HREFS.includes(href) ||
@@ -564,6 +558,12 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     const targetPath = normalizePath(href);
     router.prefetch(href);
+
+    if (avoidHardReload) {
+      router.push(href);
+      return;
+    }
+
     router.push(href);
 
     window.setTimeout(() => {
@@ -713,21 +713,20 @@ export default function AppShell({ links, children }: AppShellProps) {
               ) : null}
               <div className={`grid content-start ${navGapClass}`}>
                 {orderedLinks.map((link) => {
-                  const effectivePath = sidebarSelectedHref || pathname;
                   const hasChildLink = orderedLinks.some(
                     (candidate) =>
                       candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
                   );
                   const isActive =
-                    effectivePath === link.href ||
-                    (!hasChildLink && link.href !== "/" && effectivePath.startsWith(`${link.href}/`));
+                    pathname === link.href ||
+                    (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                   return (
                     <button
                       key={link.href}
                       type="button"
                       onClick={() => navigateSidebar(link.href)}
-                      className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-colors ${navButtonPaddingClass} ${
+                      className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
                         collapsed ? "justify-center" : "justify-start gap-3"
                       } ${
                         isActive
