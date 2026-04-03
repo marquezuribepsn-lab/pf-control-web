@@ -123,6 +123,12 @@ const normalizePath = (value: string) => {
   return path;
 };
 
+const isCategoryRoute = (href: string) =>
+  COLABORADOR_CATEGORY_HREFS.includes(href) ||
+  href.startsWith("/categorias/") ||
+  href.startsWith("/deportes") ||
+  href.startsWith("/equipos");
+
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -414,6 +420,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   useEffect(() => {
     setMobileOpen(false);
+    navigationAttemptRef.current += 1;
   }, [pathname]);
 
   useEffect(() => {
@@ -423,42 +430,53 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pendingSaveKeys]);
 
   const role = (session?.user as any)?.role;
-  const visibleLinks = stableLinks.filter((link) => {
-    if (link.adminOnly && role !== "ADMIN") {
-      return false;
-    }
+  const visibleLinks = useMemo(
+    () =>
+      stableLinks.filter((link) => {
+        if (link.adminOnly && role !== "ADMIN") {
+          return false;
+        }
 
-    if (role === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
-      if (!colaboradorAccessMap || Object.keys(colaboradorAccessMap).length === 0) {
+        if (role === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
+          if (!colaboradorAccessMap || Object.keys(colaboradorAccessMap).length === 0) {
+            return true;
+          }
+
+          if (link.href === "/clientes/musica" || link.href === "/clientes/playlists") {
+            return colaboradorAccessMap["/clientes"] !== false;
+          }
+
+          const allCategoryAccessBlocked = COLABORADOR_CATEGORY_HREFS.every(
+            (href) => colaboradorAccessMap[href] === false
+          );
+
+          if (allCategoryAccessBlocked && COLABORADOR_CATEGORY_HREFS.includes(link.href)) {
+            return true;
+          }
+
+          return colaboradorAccessMap[link.href] !== false;
+        }
+
         return true;
-      }
+      }),
+    [stableLinks, role, colaboradorAccessMap]
+  );
 
-      if (link.href === "/clientes/musica" || link.href === "/clientes/playlists") {
-        return colaboradorAccessMap["/clientes"] !== false;
-      }
-
-      const allCategoryAccessBlocked = COLABORADOR_CATEGORY_HREFS.every(
-        (href) => colaboradorAccessMap[href] === false
-      );
-
-      if (allCategoryAccessBlocked && COLABORADOR_CATEGORY_HREFS.includes(link.href)) {
-        return true;
-      }
-
-      return colaboradorAccessMap[link.href] !== false;
-    }
-
-    return true;
-  });
-
-  const linkByHref = new Map(visibleLinks.map((link) => [link.href, link]));
-
-  const orderedLinks = config.order
-    .map((href) => linkByHref.get(href))
-    .filter((link): link is NavLink => Boolean(link));
+  const orderedLinks = useMemo(() => {
+    const linkByHref = new Map(visibleLinks.map((link) => [link.href, link]));
+    return config.order
+      .map((href) => linkByHref.get(href))
+      .filter((link): link is NavLink => Boolean(link));
+  }, [visibleLinks, config.order]);
 
   useEffect(() => {
-    setConfig((current) => normalizeConfig(visibleLinks, current));
+    setConfig((current) => {
+      const normalized = normalizeConfig(visibleLinks, current);
+      const sameOrder =
+        normalized.order.length === current.order.length &&
+        normalized.order.every((href, index) => href === current.order[index]);
+      return sameOrder ? current : normalized;
+    });
   }, [visibleLinks]);
 
   const handleDropOnItem = (targetHref: string) => {
@@ -499,6 +517,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMobileOpen(false);
 
     const targetPath = normalizePath(href);
+    const shouldAvoidHardReload = isCategoryRoute(href);
 
     if (normalizePath(pathname) === targetPath) {
       return;
@@ -512,7 +531,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     const attemptId = ++navigationAttemptRef.current;
     let frameCount = 0;
-    const maxFrames = 18;
+    const maxFrames = shouldAvoidHardReload ? 90 : 30;
 
     const verifyNavigation = () => {
       if (attemptId !== navigationAttemptRef.current) {
@@ -525,7 +544,17 @@ export default function AppShell({ links, children }: AppShellProps) {
 
       frameCount += 1;
       if (frameCount >= maxFrames) {
-        window.location.assign(href);
+        if (shouldAvoidHardReload) {
+          router.replace(href);
+          return;
+        }
+
+        router.replace(href);
+        window.setTimeout(() => {
+          if (normalizePath(window.location.pathname) !== targetPath) {
+            window.location.assign(href);
+          }
+        }, 240);
         return;
       }
 
