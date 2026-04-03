@@ -274,6 +274,15 @@ body {
   backface-visibility: hidden;
 }
 
+.pf-dock-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pf-dock-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pf-route-enter {
     animation: none;

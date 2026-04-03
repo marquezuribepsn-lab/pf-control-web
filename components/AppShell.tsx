@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -127,7 +127,6 @@ const normalizePath = (value: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -158,6 +157,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+  const [hoveredDockIndex, setHoveredDockIndex] = useState<number | null>(null);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -527,16 +527,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     setDragState(null);
   };
 
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-      }
-      return next;
-    });
-  };
-
   const scaledStyle = {
     transform: `scale(${screenScale})`,
     transformOrigin: "top left",
@@ -544,157 +534,25 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
-  const shellExpandedPaddingClass = "lg:pl-[18rem]";
-  const shellCollapsedPaddingClass = "lg:pl-[4.75rem]";
-  const sidebarPaddingClass = "p-3.5";
-  const navPanelPaddingClass = "p-2";
-  const navGapClass = "gap-1";
-  const navButtonPaddingClass = "px-2.5 py-2";
-  const navIconTextClass = "text-[1.1rem]";
-  const footerButtonPaddingClass = "px-2.5 py-2 text-[0.76rem]";
-  const footerSpacingClass = "mt-2 gap-1.5";
+  const getDockScale = (index: number) => {
+    if (hoveredDockIndex === null) {
+      return 1;
+    }
+
+    const distance = Math.abs(index - hoveredDockIndex);
+    if (distance === 0) return 1.52;
+    if (distance === 1) return 1.28;
+    if (distance === 2) return 1.12;
+    return 1;
+  };
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
 
   return (
-    <div
-      className={`relative min-h-[100svh] overflow-x-hidden ${
-        collapsed ? shellCollapsedPaddingClass : shellExpandedPaddingClass
-      }`}
-    >
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-40 rounded-lg border border-white/20 bg-slate-900/90 px-3 py-2 text-sm font-bold text-white shadow-lg lg:hidden"
-      >
-        Menu
-      </button>
-
-      {mobileOpen && (
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
-          aria-label="Cerrar menu"
-        />
-      )}
-
-      <aside
-        className={`pf-sidebar-static fixed inset-y-0 left-0 z-40 h-[100svh] max-h-[100svh] border-r border-cyan-200/15 bg-[#071429] shadow-[0_14px_30px_rgba(3,10,28,0.36)] ${
-          collapsed
-            ? "w-[4.75rem] lg:w-[4.75rem]"
-            : "w-[min(88vw,18rem)] lg:w-[18rem]"
-        } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
-      >
-        <div className={`relative flex h-full min-h-0 flex-col overflow-hidden ${sidebarPaddingClass}`}>
-          <div className={`mb-3 flex items-start ${collapsed ? "justify-center" : "justify-between"} gap-2`}>
-            {!collapsed ? (
-              <div className="min-w-0">
-                {sidebarImage && (
-                  <img
-                    src={sidebarImage}
-                    alt="Imagen lateral"
-                    className="mb-2 h-10 w-10 rounded-lg border border-white/20 object-cover"
-                  />
-                )}
-                <p className="text-[1.05rem] font-black tracking-tight text-sky-100">PF Control</p>
-                <p className="text-[0.68rem] text-sky-200/80">Gestion deportiva</p>
-              </div>
-            ) : null}
-
-            {collapsed && sidebarImage ? (
-              <img
-                src={sidebarImage}
-                alt="Imagen lateral"
-                className="h-9 w-9 rounded-lg border border-white/20 object-cover"
-              />
-            ) : null}
-
-            <button
-              onClick={toggleCollapsed}
-              className="rounded-lg border border-sky-200/30 bg-slate-800/70 px-2 py-1 text-[0.68rem] font-bold text-sky-100"
-            >
-              {collapsed ? ">>" : "<<"}
-            </button>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <nav
-              className={`flex flex-col ${navPanelPaddingClass}`}
-            >
-              {!collapsed ? (
-                <p className="mb-2 px-1 text-[0.6rem] font-black uppercase tracking-[0.22em] text-sky-200/80">
-                  Menu
-                </p>
-              ) : null}
-              <div className={`grid content-start ${navGapClass}`}>
-                {renderLinks.map((link) => {
-                  const hasChildLink = renderLinks.some(
-                    (candidate) =>
-                      candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
-                  );
-                  const isActive =
-                    pathname === link.href ||
-                    (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
-
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`group relative flex w-full items-center rounded-xl border font-semibold text-white transition-none ${navButtonPaddingClass} ${
-                        collapsed ? "justify-center" : "justify-start gap-3"
-                      } ${
-                        isActive
-                          ? "border-white/15 bg-slate-900/45 text-sky-50"
-                          : "border-white/10 bg-slate-900/45 text-sky-100/95 hover:bg-slate-800/65"
-                      }`}
-                      title={link.label}
-                    >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                        <span className={`${collapsed ? "text-[1.18rem]" : navIconTextClass} select-none font-normal leading-none`}>
-                          {link.icon}
-                        </span>
-                      </span>
-
-                      {!collapsed && (
-                        <span className="truncate text-left text-[0.82rem] font-semibold tracking-[0.01em] text-sky-100">
-                          {link.label}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
-          </div>
-
-            <div className={`grid ${footerSpacingClass}`}>
-              <Link
-                href="/cuenta"
-                onClick={() => setMobileOpen(false)}
-                className={`rounded-xl border font-semibold transition-none ${footerButtonPaddingClass} ${
-                  pathname === "/cuenta"
-                    ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"
-                    : "border-white/15 bg-slate-800/60 text-slate-100 hover:bg-slate-800/90"
-                }`}
-                title="Cuenta"
-              >
-                {collapsed ? "👤" : "👤 Cuenta"}
-              </Link>
-
-              <button
-                onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                className={`w-full rounded-xl border border-rose-500/30 bg-rose-500/10 font-semibold text-rose-300 transition-none hover:bg-rose-500/20 hover:text-rose-100 ${footerButtonPaddingClass}`}
-                title="Cerrar sesión"
-              >
-                {collapsed ? "🚪" : "🚪 Cerrar sesión"}
-              </button>
-            </div>
-        </div>
-      </aside>
-
-      <div className={`relative transition-all duration-300 ${collapsed ? "lg:ml-0" : "lg:ml-0"}`}>
+    <div className="relative min-h-[100svh] overflow-x-hidden">
+      <div className="relative">
         {pendingSaveKeys.length > 0 ? (
           <div className="fixed left-4 top-4 z-[59] pointer-events-none">
             <div className="pointer-events-auto space-y-2">
@@ -776,10 +634,106 @@ export default function AppShell({ links, children }: AppShellProps) {
           <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="absolute right-0 top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
-        <div className="pt-16 lg:pt-0" style={scaledStyle}>
+        <div className="pb-28 pt-4 md:pb-32" style={scaledStyle}>
           {children}
         </div>
       </div>
+
+      <nav
+        className="fixed inset-x-0 bottom-3 z-[70] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]"
+        onMouseLeave={() => setHoveredDockIndex(null)}
+      >
+        <div className="pf-dock-scroll w-auto max-w-[min(96vw,1160px)] overflow-x-auto rounded-[1.45rem] border border-cyan-100/20 bg-[#061326]/96 px-3 py-2 shadow-[0_22px_54px_rgba(2,6,23,0.64)]">
+          <div className="flex min-w-max items-end gap-2">
+            {sidebarImage ? (
+              <img
+                src={sidebarImage}
+                alt="Perfil"
+                className="h-10 w-10 shrink-0 rounded-xl border border-white/20 object-cover"
+              />
+            ) : null}
+
+            {renderLinks.map((link, index) => {
+              const hasChildLink = renderLinks.some(
+                (candidate) =>
+                  candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
+              );
+              const isActive =
+                pathname === link.href ||
+                (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
+
+              const scale = getDockScale(index);
+              const lift = scale > 1 ? (scale - 1) * 14 : 0;
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onMouseEnter={() => setHoveredDockIndex(index)}
+                  onFocus={() => setHoveredDockIndex(index)}
+                  onBlur={() => setHoveredDockIndex(null)}
+                  className="group relative flex flex-col items-center"
+                  title={link.label}
+                >
+                  <span
+                    className={`pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 transition-all duration-150 ${
+                      hoveredDockIndex === index ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+                    }`}
+                  >
+                    {link.label}
+                  </span>
+
+                  <span
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-[1.25rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-12 md:w-12 ${
+                      isActive
+                        ? "border-cyan-200/65 bg-cyan-400/20"
+                        : "border-white/18 bg-slate-900/80"
+                    }`}
+                    style={{ transform: `translateY(-${lift}px) scale(${scale})` }}
+                  >
+                    {link.icon}
+                  </span>
+
+                  <span
+                    className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                      isActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
+
+            <span className="mx-1 h-8 w-px bg-white/20" />
+
+            <Link
+              href="/cuenta"
+              className="group relative flex flex-col items-center"
+              title="Cuenta"
+              onMouseEnter={() => setHoveredDockIndex(renderLinks.length)}
+              onFocus={() => setHoveredDockIndex(renderLinks.length)}
+              onBlur={() => setHoveredDockIndex(null)}
+            >
+              <span className="pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+                Cuenta
+              </span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.2rem] md:h-12 md:w-12">
+                👤
+              </span>
+            </Link>
+
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              className="group relative flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-300/35 bg-rose-500/14 text-[1.2rem] text-rose-100 transition-transform duration-150 hover:scale-[1.08] md:h-12 md:w-12"
+              title="Cerrar sesión"
+            >
+              <span className="pointer-events-none absolute -top-8 rounded-md border border-white/20 bg-slate-900/95 px-2 py-1 text-[10px] font-semibold text-slate-100 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+                Salir
+              </span>
+              🚪
+            </button>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 }
