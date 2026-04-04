@@ -708,8 +708,8 @@ export default function AppShell({ links, children }: AppShellProps) {
       >
         <div className="pointer-events-auto w-[min(96vw,1080px)] rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
           <div className="flex items-end gap-2">
-            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto">
-              <div className="flex min-w-max items-end gap-2.5 pr-1">
+            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible pt-1">
+              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-1">
                 {sidebarImage ? (
                   <img
                     src={sidebarImage}
@@ -749,7 +749,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                       aria-current={isCurrent ? "page" : undefined}
                     >
                       <span
-                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-11 md:w-11 ${
+                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 will-change-transform md:h-11 md:w-11 ${
                           isActive
                             ? "border-cyan-200/65 bg-cyan-400/20"
                             : "border-white/18 bg-slate-900/80"
@@ -788,7 +788,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
             >
-              <div className="relative">
+              <div className="flex items-center gap-1.5 rounded-2xl border border-white/20 bg-slate-900/70 p-1 shadow-[0_8px_18px_rgba(2,6,23,0.45)]">
                 <Link
                   href="/cuenta"
                   prefetch={false}
@@ -796,7 +796,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                     event.preventDefault();
                     navigateDock("/cuenta");
                   }}
-                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-200/45 bg-slate-900/85 text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] md:h-11 md:w-11"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-200/45 bg-slate-900/85 text-[1.05rem] md:h-10 md:w-10"
                   title="Cuenta"
                   aria-label="Cuenta"
                 >
@@ -810,11 +810,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                     event.stopPropagation();
                     signOut({ callbackUrl: "/auth/login" });
                   }}
-                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-rose-200/70 bg-rose-500/90 text-[10px] text-white shadow-md transition-transform duration-150 hover:scale-110"
+                  className="flex h-9 items-center justify-center rounded-xl border border-rose-200/55 bg-rose-500/20 px-2 text-[10px] font-bold tracking-wide text-rose-100 transition-colors duration-150 hover:bg-rose-500/35 md:h-10"
                   title="Cerrar sesión"
                   aria-label="Cerrar sesión"
                 >
-                  x
+                  Salir
                 </button>
               </div>
 
