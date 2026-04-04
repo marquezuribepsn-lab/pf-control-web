@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -150,6 +150,7 @@ const compactDockLabel = (label: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -581,10 +582,31 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return 1.12;
-    if (distance === 1) return 1.06;
-    if (distance === 2) return 1.02;
+    if (distance === 0) return 1.06;
+    if (distance === 1) return 1.03;
+    if (distance === 2) return 1.01;
     return 1;
+  };
+
+  const navigateDock = (href: string) => {
+    const target = normalizePath(href);
+    if (typeof window === "undefined") {
+      router.push(href);
+      return;
+    }
+
+    if (normalizePath(window.location.pathname) === target) {
+      return;
+    }
+
+    router.push(href);
+
+    // Fallback ligero para casos donde el router no efectua la navegacion en el click.
+    window.setTimeout(() => {
+      if (normalizePath(window.location.pathname) !== target) {
+        window.location.assign(href);
+      }
+    }, 450);
   };
 
   if (pathname.startsWith("/auth")) {
@@ -713,6 +735,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                   key={link.href}
                   href={link.href}
                   prefetch={false}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateDock(link.href);
+                  }}
                   onMouseEnter={() => setHoveredDockIndex(index)}
                   onFocus={() => setHoveredDockIndex(index)}
                   onBlur={() => setHoveredDockIndex(null)}
@@ -762,6 +788,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                 <Link
                   href="/cuenta"
                   prefetch={false}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateDock("/cuenta");
+                  }}
                   className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.1rem] md:h-11 md:w-11"
                   title="Cuenta"
                 >

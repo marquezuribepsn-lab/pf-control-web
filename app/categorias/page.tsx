@@ -106,14 +106,12 @@ export default function CategoriasPage() {
                 <p>Equipos: 1</p>
                 <p suppressHydrationWarning={true}>Jugadoras: {categoria.jugadoras}</p>
               </div>
-              {categoria.habilitada && (
-                <Link
-                  href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                  className={`mt-4 inline-block rounded-xl bg-gradient-to-r px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 ${tone}`}
-                >
-                  Ver jugadoras
-                </Link>
-              )}
+              <Link
+                href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
+                className={`mt-4 inline-block rounded-xl bg-gradient-to-r px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 ${tone}`}
+              >
+                {categoria.habilitada ? "Ver jugadoras" : "Ver categoria"}
+              </Link>
             </div>
           );
         })}
