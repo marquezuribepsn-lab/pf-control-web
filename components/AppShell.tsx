@@ -423,6 +423,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   useEffect(() => {
     setMobileOpen(false);
+    setHoveredDockIndex(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -441,7 +442,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
   }, [session?.user]);
 
-  const role = ((session?.user as any)?.role as string | undefined) ?? resolvedRole;
+  const role =
+    ((session?.user as any)?.role as string | undefined) ??
+    resolvedRole ??
+    (pathname.startsWith("/admin") ? "ADMIN" : null);
   const visibleLinks = useMemo(
     () =>
       stableLinks.filter((link) => {
@@ -552,6 +556,16 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     router.push(href);
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      if (normalizePath(window.location.pathname) !== normalizePath(href)) {
+        router.replace(href);
+      }
+    });
   };
 
   if (pathname.startsWith("/auth")) {
