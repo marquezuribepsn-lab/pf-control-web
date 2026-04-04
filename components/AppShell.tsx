@@ -582,7 +582,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     const isNearRightEdge = index >= Math.max(0, renderLinks.length - 2);
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return isNearRightEdge ? 1.01 : 1.06;
+    if (distance === 0) return isNearRightEdge ? 1 : 1.06;
     if (distance === 1) return isNearRightEdge ? 1 : 1.03;
     if (distance === 2) return 1.01;
     return 1;
@@ -733,6 +733,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                     (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                   const scale = getDockScale(index);
+                  const isNearCuentaEdge = index >= Math.max(0, renderLinks.length - 2);
                   const lift = scale > 1 ? (scale - 1) * 2 : 0;
                   const isCurrent = normalizePath(pathname) === normalizePath(link.href);
                   const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
@@ -749,7 +750,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                       onMouseEnter={() => setHoveredDockIndex(index)}
                       onFocus={() => setHoveredDockIndex(index)}
                       onBlur={() => setHoveredDockIndex(null)}
-                      className="group relative flex shrink-0 touch-manipulation flex-col items-center"
+                      className={`group relative flex shrink-0 touch-manipulation flex-col items-center ${
+                        index === renderLinks.length - 1 ? "mr-3" : ""
+                      }`}
                       title={link.label}
                       aria-current={isCurrent ? "page" : undefined}
                     >
@@ -759,7 +762,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                             ? "border-cyan-200/65 bg-cyan-400/20"
                             : "border-white/18 bg-slate-900/80"
                         }`}
-                        style={{ transform: `translateY(-${lift}px) scale(${scale})`, zIndex: Math.round(scale * 100) }}
+                        style={{
+                          transform: isNearCuentaEdge ? "translateY(0px) scale(1)" : `translateY(-${lift}px) scale(${scale})`,
+                          zIndex: isNearCuentaEdge ? 80 : Math.round(scale * 100),
+                        }}
                       >
                         {link.icon}
                       </span>
@@ -792,7 +798,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 event.preventDefault();
                 navigateDock("/cuenta");
               }}
-              className="group relative ml-0.5 flex shrink-0 flex-col items-center"
+              className="group relative ml-2 flex shrink-0 flex-col items-center"
               title="Cuenta"
               aria-current={isCuentaActive ? "page" : undefined}
             >
