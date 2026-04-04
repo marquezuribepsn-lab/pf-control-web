@@ -609,6 +609,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     }, 450);
   };
 
+  const normalizedPathname = normalizePath(pathname);
+  const isCuentaActive =
+    normalizedPathname === "/cuenta" || normalizedPathname.startsWith("/cuenta/");
+
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
@@ -703,10 +707,10 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[70] flex justify-center px-2 pb-[env(safe-area-inset-bottom)]"
+        className="fixed bottom-0 left-1/2 z-[70] w-[min(96vw,1080px)] -translate-x-1/2 px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="pointer-events-auto w-[min(96vw,1080px)] rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
+        <div className="pointer-events-auto w-full rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
           <div className="flex items-end gap-2">
             <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible pt-1">
               <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-1">
@@ -788,7 +792,13 @@ export default function AppShell({ links, children }: AppShellProps) {
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
             >
-              <div className="flex items-center gap-1.5 rounded-2xl border border-white/20 bg-slate-900/70 p-1 shadow-[0_8px_18px_rgba(2,6,23,0.45)]">
+              <div
+                className={`flex items-center gap-1.5 rounded-2xl p-1 shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-all duration-200 ${
+                  isCuentaActive
+                    ? "border border-cyan-200/55 bg-gradient-to-r from-cyan-500/20 to-sky-500/20"
+                    : "border border-white/20 bg-slate-900/70"
+                }`}
+              >
                 <Link
                   href="/cuenta"
                   prefetch={false}
@@ -796,7 +806,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                     event.preventDefault();
                     navigateDock("/cuenta");
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-200/45 bg-slate-900/85 text-[1.05rem] md:h-10 md:w-10"
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl border text-[1.05rem] transition-colors duration-150 md:h-10 md:w-10 ${
+                    isCuentaActive
+                      ? "border-cyan-100/75 bg-cyan-400/25"
+                      : "border-cyan-200/45 bg-slate-900/85"
+                  }`}
                   title="Cuenta"
                   aria-label="Cuenta"
                 >
@@ -819,7 +833,11 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
 
               {dockLabelMode !== "icon" ? (
-                <span className="mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-cyan-100 transition-colors duration-150 group-hover:text-white">
+                <span
+                  className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                    isCuentaActive ? "text-cyan-100" : "text-slate-300 group-hover:text-white"
+                  }`}
+                >
                   Cuenta
                 </span>
               ) : null}
