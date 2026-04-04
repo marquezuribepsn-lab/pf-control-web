@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -40,6 +41,7 @@ const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SIDEBAR_COLLAPSED_KEY = "pf-control-sidebar-collapsed-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
+const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
   "/semana",
@@ -124,9 +126,19 @@ const normalizePath = (value: string) => {
   return path;
 };
 
+type DockLabelMode = "full" | "compact" | "icon";
+
+const normalizeDockLabelMode = (value: string | null): DockLabelMode => {
+  if (value === "full" || value === "compact" || value === "icon") {
+    return value;
+  }
+  return "compact";
+};
+
 const compactDockLabel = (label: string) => {
   const aliases: Record<string, string> = {
     "Asistencias": "Asist.",
+    "Configuracion": "Config.",
     "Configuración": "Config.",
     "Usuarios y permisos": "Usuarios",
     "Admin colaboradores": "Colabs",
@@ -138,7 +150,6 @@ const compactDockLabel = (label: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -170,6 +181,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [hoveredDockIndex, setHoveredDockIndex] = useState<number | null>(null);
+  const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -258,6 +270,8 @@ export default function AppShell({ links, children }: AppShellProps) {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
       const savedScale = Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
       setScreenScale(Number.isFinite(savedScale) && savedScale > 0 ? savedScale : 1);
+      const savedDockLabelMode = localStorage.getItem(DOCK_LABEL_MODE_KEY);
+      setDockLabelMode(normalizeDockLabelMode(savedDockLabelMode));
       const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
       if (savedCollapsed === "1" || savedCollapsed === "0") {
         setCollapsed(savedCollapsed === "1");
@@ -396,6 +410,10 @@ export default function AppShell({ links, children }: AppShellProps) {
           setCollapsed(event.newValue === "1");
         }
       }
+
+      if (event.key === DOCK_LABEL_MODE_KEY) {
+        setDockLabelMode(normalizeDockLabelMode(event.newValue));
+      }
     };
 
     const onScaleChange = () => {
@@ -413,16 +431,23 @@ export default function AppShell({ links, children }: AppShellProps) {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
     };
 
+    const onDockLabelModeChange = () => {
+      const savedMode = localStorage.getItem(DOCK_LABEL_MODE_KEY);
+      setDockLabelMode(normalizeDockLabelMode(savedMode));
+    };
+
     window.addEventListener("storage", onStorage);
     window.addEventListener("pf-screen-scale-updated", onScaleChange);
     window.addEventListener("pf-nav-config-updated", onNavConfigChange);
     window.addEventListener("pf-sidebar-image-updated", onSidebarImageChange);
+    window.addEventListener("pf-dock-label-mode-updated", onDockLabelModeChange);
 
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("pf-screen-scale-updated", onScaleChange);
       window.removeEventListener("pf-nav-config-updated", onNavConfigChange);
       window.removeEventListener("pf-sidebar-image-updated", onSidebarImageChange);
+      window.removeEventListener("pf-dock-label-mode-updated", onDockLabelModeChange);
     };
   }, [stableLinks]);
 
@@ -562,22 +587,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     return 1;
   };
 
-  const navigateDock = (href: string) => {
-    if (normalizePath(pathname) === normalizePath(href)) {
-      return;
-    }
-
-    router.push(href);
-
-    if (typeof window !== "undefined") {
-      window.requestAnimationFrame(() => {
-        if (normalizePath(window.location.pathname) !== normalizePath(href)) {
-          router.replace(href);
-        }
-      });
-    }
-  };
-
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
@@ -672,16 +681,16 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[70] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[70] flex justify-center px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="pf-dock-scroll w-auto max-w-[min(96vw,1160px)] overflow-x-auto rounded-[1.55rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-3 py-2.5 shadow-[0_18px_44px_rgba(2,6,23,0.55)] backdrop-blur-2xl">
-          <div className="flex min-w-max items-end gap-3">
+        <div className="pf-dock-scroll pointer-events-auto w-auto max-w-[min(92vw,980px)] overflow-x-auto rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
+          <div className="flex min-w-max items-end gap-2.5">
             {sidebarImage ? (
               <img
                 src={sidebarImage}
                 alt="Perfil"
-                className="h-10 w-10 shrink-0 rounded-xl border border-white/20 object-cover"
+                className="h-9 w-9 shrink-0 rounded-xl border border-white/20 object-cover"
               />
             ) : null}
 
@@ -696,20 +705,23 @@ export default function AppShell({ links, children }: AppShellProps) {
 
               const scale = getDockScale(index);
               const lift = scale > 1 ? (scale - 1) * 2 : 0;
+              const isCurrent = normalizePath(pathname) === normalizePath(link.href);
+              const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
 
               return (
-                <button
+                <Link
                   key={link.href}
-                  type="button"
-                  onClick={() => navigateDock(link.href)}
+                  href={link.href}
+                  prefetch={false}
                   onMouseEnter={() => setHoveredDockIndex(index)}
                   onFocus={() => setHoveredDockIndex(index)}
                   onBlur={() => setHoveredDockIndex(null)}
-                  className="group relative flex flex-col items-center"
+                  className="group relative flex shrink-0 touch-manipulation flex-col items-center"
                   title={link.label}
+                  aria-current={isCurrent ? "page" : undefined}
                 >
                   <span
-                    className={`relative origin-bottom flex h-11 w-11 items-center justify-center rounded-2xl border text-[1.25rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-12 md:w-12 ${
+                    className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-11 md:w-11 ${
                       isActive
                         ? "border-cyan-200/65 bg-cyan-400/20"
                         : "border-white/18 bg-slate-900/80"
@@ -725,22 +737,16 @@ export default function AppShell({ links, children }: AppShellProps) {
                     }`}
                   />
 
-                  <span
-                    className={`mt-1 hidden min-h-[1.45rem] w-[5.15rem] break-words text-center text-[10px] font-semibold leading-[0.74rem] transition-colors duration-150 sm:block ${
-                      hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
-                    }`}
-                  >
-                    {link.label}
-                  </span>
-
-                  <span
-                    className={`mt-1 block w-[4.2rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 sm:hidden ${
-                      hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
-                    }`}
-                  >
-                    {compactDockLabel(link.label)}
-                  </span>
-                </button>
+                  {dockLabelMode !== "icon" ? (
+                    <span
+                      className={`mt-1 w-[3.75rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                        hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
+                      }`}
+                    >
+                      {labelText}
+                    </span>
+                  ) : null}
+                </Link>
               );
             })}
 
@@ -753,16 +759,17 @@ export default function AppShell({ links, children }: AppShellProps) {
               onBlur={() => setHoveredDockIndex(null)}
             >
               <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => navigateDock("/cuenta")}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.2rem] md:h-12 md:w-12"
+                <Link
+                  href="/cuenta"
+                  prefetch={false}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.1rem] md:h-11 md:w-11"
                   title="Cuenta"
                 >
                   👤
-                </button>
+                </Link>
 
                 <button
+                  type="button"
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -776,13 +783,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </button>
               </div>
 
-              <span className="mt-1 hidden min-h-[1.45rem] w-[5.15rem] text-center text-[10px] font-semibold leading-[0.74rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100 sm:block">
-                Cuenta
-              </span>
-
-              <span className="mt-1 block w-[4.2rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100 sm:hidden">
-                Cuenta
-              </span>
+              {dockLabelMode !== "icon" ? (
+                <span className="mt-1 w-[3.75rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
+                  Cuenta
+                </span>
+              ) : null}
             </div>
           </div>
         </div>

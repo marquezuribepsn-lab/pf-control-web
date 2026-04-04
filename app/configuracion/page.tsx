@@ -8,15 +8,25 @@ const NOTIFICATIONS_ENABLED_KEY = "pf-control-notifications-enabled-v1";
 const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const HOME_EDIT_MODE_KEY = "pf-control-home-edit-mode-v1";
+const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
 const MIN_SCALE = 0.8;
 const MAX_SCALE = 1.35;
 
+type DockLabelMode = "full" | "compact" | "icon";
+
 function clampScale(value: number): number {
   if (value < MIN_SCALE) return MIN_SCALE;
   if (value > MAX_SCALE) return MAX_SCALE;
   return Number(value.toFixed(2));
+}
+
+function normalizeDockLabelMode(value: string | null): DockLabelMode {
+  if (value === "full" || value === "compact" || value === "icon") {
+    return value;
+  }
+  return "compact";
 }
 
 export default function ConfiguracionPage() {
@@ -30,18 +40,21 @@ export default function ConfiguracionPage() {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
+  const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
 
   useEffect(() => {
     const nextScale = clampScale(Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1"));
     const nextEditMode = localStorage.getItem(SCREEN_EDIT_MODE_KEY) === "1";
     const nextNotifications = localStorage.getItem(NOTIFICATIONS_ENABLED_KEY) === "1";
     const nextSidebarImage = localStorage.getItem(SIDEBAR_IMAGE_KEY);
+    const nextDockLabelMode = normalizeDockLabelMode(localStorage.getItem(DOCK_LABEL_MODE_KEY));
 
     setSavedScale(nextScale);
     setDraftScale(nextScale);
     setEditMode(nextEditMode);
     setNotificationsEnabled(nextNotifications);
     setSidebarImage(nextSidebarImage);
+    setDockLabelMode(nextDockLabelMode);
 
     if (typeof window !== "undefined" && "Notification" in window) {
       setPermission(Notification.permission);
@@ -151,6 +164,12 @@ export default function ConfiguracionPage() {
     setSidebarImage(null);
     localStorage.removeItem(SIDEBAR_IMAGE_KEY);
     window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+  };
+
+  const cambiarModoEtiquetasDock = (mode: DockLabelMode) => {
+    setDockLabelMode(mode);
+    localStorage.setItem(DOCK_LABEL_MODE_KEY, mode);
+    window.dispatchEvent(new Event("pf-dock-label-mode-updated"));
   };
 
   const urlBase64ToUint8Array = (base64String: string) => {
@@ -302,6 +321,29 @@ export default function ConfiguracionPage() {
             </button>
           </div>
         ) : null}
+
+        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
+          <p className="text-sm font-semibold text-slate-100">Dock inferior</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Controla como se muestran los nombres de los botones para evitar que el dock quede demasiado ancho.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label htmlFor="dock-label-mode" className="text-xs font-semibold text-slate-200">
+              Etiquetas del dock
+            </label>
+            <select
+              id="dock-label-mode"
+              value={dockLabelMode}
+              onChange={(event) => cambiarModoEtiquetasDock(event.target.value as DockLabelMode)}
+              className="rounded-lg border border-white/25 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-100"
+            >
+              <option value="compact">Compactas</option>
+              <option value="full">Completas</option>
+              <option value="icon">Solo iconos</option>
+            </select>
+          </div>
+        </div>
       </section>
 
       <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
