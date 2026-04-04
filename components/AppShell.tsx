@@ -706,80 +706,84 @@ export default function AppShell({ links, children }: AppShellProps) {
         className="fixed inset-x-0 bottom-0 z-[70] flex justify-center px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="pf-dock-scroll pointer-events-auto w-auto max-w-[min(92vw,980px)] overflow-x-auto rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
-          <div className="flex min-w-max items-end gap-2.5">
-            {sidebarImage ? (
-              <img
-                src={sidebarImage}
-                alt="Perfil"
-                className="h-9 w-9 shrink-0 rounded-xl border border-white/20 object-cover"
-              />
-            ) : null}
-
-            {renderLinks.map((link, index) => {
-              const hasChildLink = renderLinks.some(
-                (candidate) =>
-                  candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
-              );
-              const isActive =
-                pathname === link.href ||
-                (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
-
-              const scale = getDockScale(index);
-              const lift = scale > 1 ? (scale - 1) * 2 : 0;
-              const isCurrent = normalizePath(pathname) === normalizePath(link.href);
-              const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  prefetch={false}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    navigateDock(link.href);
-                  }}
-                  onMouseEnter={() => setHoveredDockIndex(index)}
-                  onFocus={() => setHoveredDockIndex(index)}
-                  onBlur={() => setHoveredDockIndex(null)}
-                  className="group relative flex shrink-0 touch-manipulation flex-col items-center"
-                  title={link.label}
-                  aria-current={isCurrent ? "page" : undefined}
-                >
-                  <span
-                    className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-11 md:w-11 ${
-                      isActive
-                        ? "border-cyan-200/65 bg-cyan-400/20"
-                        : "border-white/18 bg-slate-900/80"
-                    }`}
-                    style={{ transform: `translateY(-${lift}px) scale(${scale})`, zIndex: Math.round(scale * 100) }}
-                  >
-                    {link.icon}
-                  </span>
-
-                  <span
-                    className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
-                      isActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
-                    }`}
+        <div className="pointer-events-auto w-[min(96vw,1080px)] rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
+          <div className="flex items-end gap-2">
+            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto">
+              <div className="flex min-w-max items-end gap-2.5 pr-1">
+                {sidebarImage ? (
+                  <img
+                    src={sidebarImage}
+                    alt="Perfil"
+                    className="h-9 w-9 shrink-0 rounded-xl border border-white/20 object-cover"
                   />
+                ) : null}
 
-                  {dockLabelMode !== "icon" ? (
-                    <span
-                      className={`mt-1 w-[3.75rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
-                        hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
-                      }`}
+                {renderLinks.map((link, index) => {
+                  const hasChildLink = renderLinks.some(
+                    (candidate) =>
+                      candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
+                  );
+                  const isActive =
+                    pathname === link.href ||
+                    (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
+
+                  const scale = getDockScale(index);
+                  const lift = scale > 1 ? (scale - 1) * 2 : 0;
+                  const isCurrent = normalizePath(pathname) === normalizePath(link.href);
+                  const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      prefetch={false}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        navigateDock(link.href);
+                      }}
+                      onMouseEnter={() => setHoveredDockIndex(index)}
+                      onFocus={() => setHoveredDockIndex(index)}
+                      onBlur={() => setHoveredDockIndex(null)}
+                      className="group relative flex shrink-0 touch-manipulation flex-col items-center"
+                      title={link.label}
+                      aria-current={isCurrent ? "page" : undefined}
                     >
-                      {labelText}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
+                      <span
+                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-11 md:w-11 ${
+                          isActive
+                            ? "border-cyan-200/65 bg-cyan-400/20"
+                            : "border-white/18 bg-slate-900/80"
+                        }`}
+                        style={{ transform: `translateY(-${lift}px) scale(${scale})`, zIndex: Math.round(scale * 100) }}
+                      >
+                        {link.icon}
+                      </span>
 
-            <span className="mx-1 h-8 w-px bg-white/20" />
+                      <span
+                        className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                          isActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                        }`}
+                      />
+
+                      {dockLabelMode !== "icon" ? (
+                        <span
+                          className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                            hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
+                          }`}
+                        >
+                          {labelText}
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <span className="h-8 w-px shrink-0 bg-white/20" />
 
             <div
-              className="group relative flex flex-col items-center"
+              className="group relative flex shrink-0 flex-col items-center"
               onMouseEnter={() => setHoveredDockIndex(renderLinks.length)}
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
@@ -792,8 +796,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                     event.preventDefault();
                     navigateDock("/cuenta");
                   }}
-                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.1rem] md:h-11 md:w-11"
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-200/45 bg-slate-900/85 text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] md:h-11 md:w-11"
                   title="Cuenta"
+                  aria-label="Cuenta"
                 >
                   👤
                 </Link>
@@ -814,7 +819,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
 
               {dockLabelMode !== "icon" ? (
-                <span className="mt-1 w-[3.75rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
+                <span className="mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-cyan-100 transition-colors duration-150 group-hover:text-white">
                   Cuenta
                 </span>
               ) : null}
