@@ -707,12 +707,13 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed bottom-0 left-1/2 z-[70] w-[min(96vw,1080px)] -translate-x-1/2 px-2 pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[70] px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="pointer-events-auto w-full rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
+        <div className="mx-auto w-full max-w-[1080px] overflow-visible">
+        <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
           <div className="flex items-end gap-2">
-            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible pt-1">
+            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1">
               <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-1">
                 {sidebarImage ? (
                   <img
@@ -843,6 +844,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               ) : null}
             </div>
           </div>
+        </div>
         </div>
       </nav>
     </div>
