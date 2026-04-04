@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -127,6 +126,7 @@ const normalizePath = (value: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -540,10 +540,18 @@ export default function AppShell({ links, children }: AppShellProps) {
     }
 
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return 1.2;
-    if (distance === 1) return 1.1;
-    if (distance === 2) return 1.04;
+    if (distance === 0) return 1.12;
+    if (distance === 1) return 1.06;
+    if (distance === 2) return 1.02;
     return 1;
+  };
+
+  const navigateDock = (href: string) => {
+    if (normalizePath(pathname) === normalizePath(href)) {
+      return;
+    }
+
+    router.push(href);
   };
 
   if (pathname.startsWith("/auth")) {
@@ -644,7 +652,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="pf-dock-scroll w-auto max-w-[min(96vw,1160px)] overflow-x-auto rounded-[1.55rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-3 py-2.5 shadow-[0_18px_44px_rgba(2,6,23,0.55)] backdrop-blur-2xl">
-          <div className="flex min-w-max items-center gap-3">
+          <div className="flex min-w-max items-end gap-3">
             {sidebarImage ? (
               <img
                 src={sidebarImage}
@@ -663,26 +671,19 @@ export default function AppShell({ links, children }: AppShellProps) {
                 (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
               const scale = getDockScale(index);
-              const lift = scale > 1 ? (scale - 1) * 3 : 0;
+              const lift = scale > 1 ? (scale - 1) * 2 : 0;
 
               return (
-                <Link
+                <button
                   key={link.href}
-                  href={link.href}
+                  type="button"
+                  onClick={() => navigateDock(link.href)}
                   onMouseEnter={() => setHoveredDockIndex(index)}
                   onFocus={() => setHoveredDockIndex(index)}
                   onBlur={() => setHoveredDockIndex(null)}
                   className="group relative flex flex-col items-center"
                   title={link.label}
                 >
-                  <span
-                    className={`pointer-events-none absolute -top-9 z-20 whitespace-nowrap rounded-lg border border-white/35 bg-[#020817]/92 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg transition-all duration-150 ${
-                      hoveredDockIndex === index ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-                    }`}
-                  >
-                    {link.label}
-                  </span>
-
                   <span
                     className={`relative origin-bottom flex h-11 w-11 items-center justify-center rounded-2xl border text-[1.25rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 md:h-12 md:w-12 ${
                       isActive
@@ -699,7 +700,15 @@ export default function AppShell({ links, children }: AppShellProps) {
                       isActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
                     }`}
                   />
-                </Link>
+
+                  <span
+                    className={`mt-1 max-w-[4.4rem] truncate text-center text-[10px] font-semibold transition-colors duration-150 ${
+                      hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
+                    }`}
+                  >
+                    {link.label}
+                  </span>
+                </button>
               );
             })}
 
@@ -711,18 +720,15 @@ export default function AppShell({ links, children }: AppShellProps) {
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
             >
-              <span className="pointer-events-none absolute -top-9 z-20 whitespace-nowrap rounded-lg border border-white/35 bg-[#020817]/92 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
-                Cuenta y salida
-              </span>
-
               <div className="relative">
-                <Link
-                  href="/cuenta"
+                <button
+                  type="button"
+                  onClick={() => navigateDock("/cuenta")}
                   className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/18 bg-slate-900/80 text-[1.2rem] md:h-12 md:w-12"
                   title="Cuenta"
                 >
                   👤
-                </Link>
+                </button>
 
                 <button
                   onClick={(event) => {
@@ -737,6 +743,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                   x
                 </button>
               </div>
+
+              <span className="mt-1 max-w-[4.4rem] truncate text-center text-[10px] font-semibold text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
+                Cuenta
+              </span>
             </div>
           </div>
         </div>
