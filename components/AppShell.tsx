@@ -612,8 +612,13 @@ export default function AppShell({ links, children }: AppShellProps) {
   const normalizedPathname = normalizePath(pathname);
   const isCuentaActive =
     normalizedPathname === "/cuenta" || normalizedPathname.startsWith("/cuenta/");
+  const musicaLink = renderLinks.find((link) => link.href === "/admin/musica") || null;
   const usuariosLink = renderLinks.find((link) => link.href === "/admin/usuarios") || null;
-  const dockLinks = renderLinks.filter((link) => link.href !== "/admin/usuarios");
+  const dockLinks = renderLinks.filter(
+    (link) => link.href !== "/admin/usuarios" && link.href !== "/admin/musica"
+  );
+  const isMusicaActive =
+    normalizedPathname === "/admin/musica" || normalizedPathname.startsWith("/admin/musica/");
   const isUsuariosActive =
     normalizedPathname === "/admin/usuarios" || normalizedPathname.startsWith("/admin/usuarios/");
 
@@ -754,14 +759,12 @@ export default function AppShell({ links, children }: AppShellProps) {
                       onMouseEnter={() => setHoveredDockIndex(index)}
                       onFocus={() => setHoveredDockIndex(index)}
                       onBlur={() => setHoveredDockIndex(null)}
-                      className={`group relative flex shrink-0 touch-manipulation flex-col items-center ${
-                        index === dockLinks.length - 1 ? "mr-3" : ""
-                      }`}
+                      className="group relative flex shrink-0 touch-manipulation flex-col items-center"
                       title={link.label}
                       aria-current={isCurrent ? "page" : undefined}
                     >
                       <span
-                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 will-change-transform md:h-11 md:w-11 ${
+                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 will-change-transform md:h-11 md:w-11 ${
                           isActive
                             ? "border-cyan-200/65 bg-cyan-400/20"
                             : "border-white/18 bg-slate-900/80"
@@ -795,7 +798,50 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
             </div>
 
-            <div className="ml-2 flex shrink-0 items-end gap-2.5">
+            <div className="ml-2 flex shrink-0 items-end gap-2">
+              {musicaLink ? (
+                <Link
+                  href={musicaLink.href}
+                  prefetch={false}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateDock(musicaLink.href);
+                  }}
+                  onMouseEnter={() => setHoveredDockIndex(dockLinks.length)}
+                  onFocus={() => setHoveredDockIndex(dockLinks.length)}
+                  onBlur={() => setHoveredDockIndex(null)}
+                  className="group relative flex shrink-0 flex-col items-center"
+                  title={musicaLink.label}
+                  aria-current={isMusicaActive ? "page" : undefined}
+                >
+                  <span
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                      isMusicaActive
+                        ? "border-cyan-100/75 bg-cyan-400/25"
+                        : "border-white/18 bg-slate-900/80"
+                    }`}
+                  >
+                    {musicaLink.icon}
+                  </span>
+
+                  <span
+                    className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                      isMusicaActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                    }`}
+                  />
+
+                  {dockLabelMode !== "icon" ? (
+                    <span
+                      className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                        isMusicaActive ? "text-cyan-100" : "text-slate-300"
+                      }`}
+                    >
+                      {dockLabelMode === "compact" ? compactDockLabel(musicaLink.label) : musicaLink.label}
+                    </span>
+                  ) : null}
+                </Link>
+              ) : null}
+
               {usuariosLink ? (
                 <Link
                   href={usuariosLink.href}
@@ -812,7 +858,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   aria-current={isUsuariosActive ? "page" : undefined}
                 >
                   <span
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
                       isUsuariosActive
                         ? "border-cyan-100/75 bg-cyan-400/25"
                         : "border-white/18 bg-slate-900/80"
@@ -839,7 +885,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </Link>
               ) : null}
 
-              {usuariosLink ? <span className="mb-[1.45rem] h-8 w-px shrink-0 bg-white/25" aria-hidden="true" /> : null}
+              {usuariosLink ? <span className="mb-[1.45rem] h-7 w-px shrink-0 bg-white/30" aria-hidden="true" /> : null}
 
               <Link
                 href="/cuenta"
@@ -853,7 +899,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 aria-current={isCuentaActive ? "page" : undefined}
               >
                 <span
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
                     isCuentaActive
                       ? "border-cyan-100/75 bg-cyan-400/25"
                       : "border-cyan-200/45 bg-slate-900/85"
