@@ -795,88 +795,90 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
             </div>
 
-            {usuariosLink ? (
+            <div className="ml-2 flex shrink-0 items-end gap-2.5">
+              {usuariosLink ? (
+                <Link
+                  href={usuariosLink.href}
+                  prefetch={false}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateDock(usuariosLink.href);
+                  }}
+                  onMouseEnter={() => setHoveredDockIndex(dockLinks.length)}
+                  onFocus={() => setHoveredDockIndex(dockLinks.length)}
+                  onBlur={() => setHoveredDockIndex(null)}
+                  className="group relative flex shrink-0 flex-col items-center"
+                  title={usuariosLink.label}
+                  aria-current={isUsuariosActive ? "page" : undefined}
+                >
+                  <span
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                      isUsuariosActive
+                        ? "border-cyan-100/75 bg-cyan-400/25"
+                        : "border-white/18 bg-slate-900/80"
+                    }`}
+                  >
+                    {usuariosLink.icon}
+                  </span>
+
+                  <span
+                    className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                      isUsuariosActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                    }`}
+                  />
+
+                  {dockLabelMode !== "icon" ? (
+                    <span
+                      className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                        isUsuariosActive ? "text-cyan-100" : "text-slate-300"
+                      }`}
+                    >
+                      {dockLabelMode === "compact" ? compactDockLabel(usuariosLink.label) : usuariosLink.label}
+                    </span>
+                  ) : null}
+                </Link>
+              ) : null}
+
+              {usuariosLink ? <span className="mb-[1.45rem] h-8 w-px shrink-0 bg-white/25" aria-hidden="true" /> : null}
+
               <Link
-                href={usuariosLink.href}
+                href="/cuenta"
                 prefetch={false}
                 onClick={(event) => {
                   event.preventDefault();
-                  navigateDock(usuariosLink.href);
+                  navigateDock("/cuenta");
                 }}
-                onMouseEnter={() => setHoveredDockIndex(dockLinks.length)}
-                onFocus={() => setHoveredDockIndex(dockLinks.length)}
-                onBlur={() => setHoveredDockIndex(null)}
-                className="group relative ml-1 flex shrink-0 flex-col items-center"
-                title={usuariosLink.label}
-                aria-current={isUsuariosActive ? "page" : undefined}
+                className="group relative flex shrink-0 flex-col items-center"
+                title="Cuenta"
+                aria-current={isCuentaActive ? "page" : undefined}
               >
                 <span
                   className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
-                    isUsuariosActive
+                    isCuentaActive
                       ? "border-cyan-100/75 bg-cyan-400/25"
-                      : "border-white/18 bg-slate-900/80"
+                      : "border-cyan-200/45 bg-slate-900/85"
                   }`}
                 >
-                  {usuariosLink.icon}
+                  👤
                 </span>
 
                 <span
                   className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
-                    isUsuariosActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                    isCuentaActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
                   }`}
                 />
 
                 {dockLabelMode !== "icon" ? (
                   <span
                     className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
-                      isUsuariosActive ? "text-cyan-100" : "text-slate-300"
+                      isCuentaActive ? "text-cyan-100" : "text-slate-300 group-hover:text-white"
                     }`}
                   >
-                    {dockLabelMode === "compact" ? compactDockLabel(usuariosLink.label) : usuariosLink.label}
+                    Cuenta
                   </span>
                 ) : null}
               </Link>
-            ) : null}
-
-            <span className="w-6 shrink-0" aria-hidden="true" />
-
-            <Link
-              href="/cuenta"
-              prefetch={false}
-              onClick={(event) => {
-                event.preventDefault();
-                navigateDock("/cuenta");
-              }}
-              className="group relative ml-4 flex shrink-0 flex-col items-center"
-              title="Cuenta"
-              aria-current={isCuentaActive ? "page" : undefined}
-            >
-              <span
-                className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
-                  isCuentaActive
-                    ? "border-cyan-100/75 bg-cyan-400/25"
-                    : "border-cyan-200/45 bg-slate-900/85"
-                }`}
-              >
-                👤
-              </span>
-
-              <span
-                className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
-                  isCuentaActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
-                }`}
-              />
-
-              {dockLabelMode !== "icon" ? (
-                <span
-                  className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
-                    isCuentaActive ? "text-cyan-100" : "text-slate-300 group-hover:text-white"
-                  }`}
-                >
-                  Cuenta
-                </span>
-              ) : null}
-            </Link>
+            </div>
           </div>
         </div>
         </div>
