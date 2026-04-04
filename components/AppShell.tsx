@@ -580,8 +580,9 @@ export default function AppShell({ links, children }: AppShellProps) {
       return 1;
     }
 
+    const isRightEdgeIcon = index === renderLinks.length - 1;
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return 1.06;
+    if (distance === 0) return isRightEdgeIcon ? 1.02 : 1.06;
     if (distance === 1) return 1.03;
     if (distance === 2) return 1.01;
     return 1;
@@ -711,9 +712,9 @@ export default function AppShell({ links, children }: AppShellProps) {
       >
         <div className="mx-auto w-full max-w-[1080px] overflow-visible">
         <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-3">
             <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1">
-              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-1">
+              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-4">
                 {sidebarImage ? (
                   <img
                     src={sidebarImage}
@@ -784,10 +785,10 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
             </div>
 
-            <span className="h-8 w-px shrink-0 bg-white/20" />
+            <span className="mx-0.5 h-8 w-px shrink-0 bg-white/20" />
 
             <div
-              className="group relative flex shrink-0 flex-col items-center"
+              className="group relative ml-1 flex w-[4.1rem] shrink-0 flex-col items-center"
               onMouseEnter={() => setHoveredDockIndex(renderLinks.length)}
               onFocus={() => setHoveredDockIndex(renderLinks.length)}
               onBlur={() => setHoveredDockIndex(null)}
