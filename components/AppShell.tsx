@@ -580,10 +580,10 @@ export default function AppShell({ links, children }: AppShellProps) {
       return 1;
     }
 
-    const isRightEdgeIcon = index === renderLinks.length - 1;
+    const isNearRightEdge = index >= Math.max(0, renderLinks.length - 2);
     const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return isRightEdgeIcon ? 1.02 : 1.06;
-    if (distance === 1) return 1.03;
+    if (distance === 0) return isNearRightEdge ? 1.01 : 1.06;
+    if (distance === 1) return isNearRightEdge ? 1 : 1.03;
     if (distance === 2) return 1.01;
     return 1;
   };
@@ -711,10 +711,10 @@ export default function AppShell({ links, children }: AppShellProps) {
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="mx-auto w-full max-w-[1080px] overflow-visible">
-        <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
-          <div className="flex items-end gap-3">
+          <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
+          <div className="flex items-end gap-2">
             <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1">
-              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-4">
+              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-2">
                 {sidebarImage ? (
                   <img
                     src={sidebarImage}
@@ -785,39 +785,32 @@ export default function AppShell({ links, children }: AppShellProps) {
               </div>
             </div>
 
-            <span className="mx-0.5 h-8 w-px shrink-0 bg-white/20" />
-
-            <div
-              className="group relative ml-1 flex w-[4.1rem] shrink-0 flex-col items-center"
-              onMouseEnter={() => setHoveredDockIndex(renderLinks.length)}
-              onFocus={() => setHoveredDockIndex(renderLinks.length)}
-              onBlur={() => setHoveredDockIndex(null)}
+            <Link
+              href="/cuenta"
+              prefetch={false}
+              onClick={(event) => {
+                event.preventDefault();
+                navigateDock("/cuenta");
+              }}
+              className="group relative ml-0.5 flex shrink-0 flex-col items-center"
+              title="Cuenta"
+              aria-current={isCuentaActive ? "page" : undefined}
             >
-              <div
-                className={`flex items-center gap-1.5 rounded-2xl p-1 shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-all duration-200 ${
+              <span
+                className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
                   isCuentaActive
-                    ? "border border-cyan-200/55 bg-gradient-to-r from-cyan-500/20 to-sky-500/20"
-                    : "border border-white/20 bg-slate-900/70"
+                    ? "border-cyan-100/75 bg-cyan-400/25"
+                    : "border-cyan-200/45 bg-slate-900/85"
                 }`}
               >
-                <Link
-                  href="/cuenta"
-                  prefetch={false}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    navigateDock("/cuenta");
-                  }}
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl border text-[1.05rem] transition-colors duration-150 md:h-10 md:w-10 ${
-                    isCuentaActive
-                      ? "border-cyan-100/75 bg-cyan-400/25"
-                      : "border-cyan-200/45 bg-slate-900/85"
-                  }`}
-                  title="Cuenta"
-                  aria-label="Cuenta"
-                >
-                  👤
-                </Link>
-              </div>
+                👤
+              </span>
+
+              <span
+                className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                  isCuentaActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                }`}
+              />
 
               {dockLabelMode !== "icon" ? (
                 <span
@@ -828,7 +821,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   Cuenta
                 </span>
               ) : null}
-            </div>
+            </Link>
           </div>
         </div>
         </div>
