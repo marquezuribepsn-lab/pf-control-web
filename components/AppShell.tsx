@@ -557,6 +557,14 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     router.push(href);
 
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        if (normalizePath(window.location.pathname) !== normalizePath(href)) {
+          router.replace(href);
+        }
+      });
+    }
+
     if (typeof window === "undefined") {
       return;
     }
@@ -716,7 +724,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   />
 
                   <span
-                    className={`mt-1 max-w-[4.4rem] truncate text-center text-[10px] font-semibold transition-colors duration-150 ${
+                    className={`mt-1 w-[4.6rem] text-center text-[10px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
                       hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
                     }`}
                   >
@@ -758,7 +766,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </button>
               </div>
 
-              <span className="mt-1 max-w-[4.4rem] truncate text-center text-[10px] font-semibold text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
+              <span className="mt-1 w-[4.6rem] text-center text-[10px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
                 Cuenta
               </span>
             </div>
