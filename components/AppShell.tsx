@@ -124,6 +124,18 @@ const normalizePath = (value: string) => {
   return path;
 };
 
+const compactDockLabel = (label: string) => {
+  const aliases: Record<string, string> = {
+    "Asistencias": "Asist.",
+    "Configuración": "Config.",
+    "Usuarios y permisos": "Usuarios",
+    "Admin colaboradores": "Colabs",
+    "Cerrar sesión": "Salir",
+  };
+
+  return aliases[label] || label;
+};
+
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -564,16 +576,6 @@ export default function AppShell({ links, children }: AppShellProps) {
         }
       });
     }
-
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.requestAnimationFrame(() => {
-      if (normalizePath(window.location.pathname) !== normalizePath(href)) {
-        router.replace(href);
-      }
-    });
   };
 
   if (pathname.startsWith("/auth")) {
@@ -724,11 +726,19 @@ export default function AppShell({ links, children }: AppShellProps) {
                   />
 
                   <span
-                    className={`mt-1 w-[4.6rem] text-center text-[10px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                    className={`mt-1 hidden min-h-[1.45rem] w-[5.15rem] break-words text-center text-[10px] font-semibold leading-[0.74rem] transition-colors duration-150 sm:block ${
                       hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
                     }`}
                   >
                     {link.label}
+                  </span>
+
+                  <span
+                    className={`mt-1 block w-[4.2rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 sm:hidden ${
+                      hoveredDockIndex === index || isActive ? "text-cyan-100" : "text-slate-300"
+                    }`}
+                  >
+                    {compactDockLabel(link.label)}
                   </span>
                 </button>
               );
@@ -766,7 +776,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </button>
               </div>
 
-              <span className="mt-1 w-[4.6rem] text-center text-[10px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100">
+              <span className="mt-1 hidden min-h-[1.45rem] w-[5.15rem] text-center text-[10px] font-semibold leading-[0.74rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100 sm:block">
+                Cuenta
+              </span>
+
+              <span className="mt-1 block w-[4.2rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] text-slate-300 transition-colors duration-150 group-hover:text-cyan-100 sm:hidden">
                 Cuenta
               </span>
             </div>
