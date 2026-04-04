@@ -575,12 +575,12 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
-  const getDockScale = (index: number) => {
+  const getDockScale = (index: number, laneSize: number) => {
     if (hoveredDockIndex === null) {
       return 1;
     }
 
-    const isNearRightEdge = index >= Math.max(0, renderLinks.length - 2);
+    const isNearRightEdge = index >= Math.max(0, laneSize - 2);
     const distance = Math.abs(index - hoveredDockIndex);
     if (distance === 0) return isNearRightEdge ? 1 : 1.06;
     if (distance === 1) return isNearRightEdge ? 1 : 1.03;
@@ -612,6 +612,10 @@ export default function AppShell({ links, children }: AppShellProps) {
   const normalizedPathname = normalizePath(pathname);
   const isCuentaActive =
     normalizedPathname === "/cuenta" || normalizedPathname.startsWith("/cuenta/");
+  const usuariosLink = renderLinks.find((link) => link.href === "/admin/usuarios") || null;
+  const dockLinks = renderLinks.filter((link) => link.href !== "/admin/usuarios");
+  const isUsuariosActive =
+    normalizedPathname === "/admin/usuarios" || normalizedPathname.startsWith("/admin/usuarios/");
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
@@ -723,7 +727,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   />
                 ) : null}
 
-                {renderLinks.map((link, index) => {
+                {dockLinks.map((link, index) => {
                   const hasChildLink = renderLinks.some(
                     (candidate) =>
                       candidate.href !== link.href && candidate.href.startsWith(`${link.href}/`)
@@ -732,8 +736,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                     pathname === link.href ||
                     (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
-                  const scale = getDockScale(index);
-                  const isNearCuentaEdge = index >= Math.max(0, renderLinks.length - 2);
+                  const scale = getDockScale(index, dockLinks.length);
+                  const isNearCuentaEdge = index >= Math.max(0, dockLinks.length - 2);
                   const lift = scale > 1 ? (scale - 1) * 2 : 0;
                   const isCurrent = normalizePath(pathname) === normalizePath(link.href);
                   const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
@@ -751,7 +755,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                       onFocus={() => setHoveredDockIndex(index)}
                       onBlur={() => setHoveredDockIndex(null)}
                       className={`group relative flex shrink-0 touch-manipulation flex-col items-center ${
-                        index === renderLinks.length - 1 ? "mr-3" : ""
+                        index === dockLinks.length - 1 ? "mr-3" : ""
                       }`}
                       title={link.label}
                       aria-current={isCurrent ? "page" : undefined}
@@ -790,6 +794,49 @@ export default function AppShell({ links, children }: AppShellProps) {
                 })}
               </div>
             </div>
+
+            {usuariosLink ? (
+              <Link
+                href={usuariosLink.href}
+                prefetch={false}
+                onClick={(event) => {
+                  event.preventDefault();
+                  navigateDock(usuariosLink.href);
+                }}
+                onMouseEnter={() => setHoveredDockIndex(dockLinks.length)}
+                onFocus={() => setHoveredDockIndex(dockLinks.length)}
+                onBlur={() => setHoveredDockIndex(null)}
+                className="group relative ml-1 flex shrink-0 flex-col items-center"
+                title={usuariosLink.label}
+                aria-current={isUsuariosActive ? "page" : undefined}
+              >
+                <span
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                    isUsuariosActive
+                      ? "border-cyan-100/75 bg-cyan-400/25"
+                      : "border-white/18 bg-slate-900/80"
+                  }`}
+                >
+                  {usuariosLink.icon}
+                </span>
+
+                <span
+                  className={`mt-1 h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
+                    isUsuariosActive ? "bg-cyan-200 opacity-100" : "bg-white/40 opacity-0 group-hover:opacity-80"
+                  }`}
+                />
+
+                {dockLabelMode !== "icon" ? (
+                  <span
+                    className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                      isUsuariosActive ? "text-cyan-100" : "text-slate-300"
+                    }`}
+                  >
+                    {dockLabelMode === "compact" ? compactDockLabel(usuariosLink.label) : usuariosLink.label}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
 
             <span className="w-6 shrink-0" aria-hidden="true" />
 
