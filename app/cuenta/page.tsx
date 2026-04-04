@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 
 type AccountData = {
   id: string;
@@ -19,6 +20,7 @@ export default function CuentaPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,6 +107,11 @@ export default function CuentaPage() {
     } finally {
       setSendingVerification(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut({ callbackUrl: "/auth/login" });
   };
 
   if (loading) {
@@ -223,6 +230,21 @@ export default function CuentaPage() {
               {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </form>
+
+          <div className="mt-6 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
+            <p className="text-sm font-semibold text-rose-100">Sesion</p>
+            <p className="mt-1 text-xs text-rose-100/90">
+              Si terminaste de usar el sistema, cerrá tu sesion desde aca.
+            </p>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="mt-3 rounded-xl border border-rose-200/60 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 transition hover:bg-rose-500/35 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {signingOut ? "Cerrando sesion..." : "Cerrar sesion"}
+            </button>
+          </div>
         </section>
       </div>
     </main>

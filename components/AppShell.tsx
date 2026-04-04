@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
 
@@ -817,20 +816,6 @@ export default function AppShell({ links, children }: AppShellProps) {
                 >
                   👤
                 </Link>
-
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    signOut({ callbackUrl: "/auth/login" });
-                  }}
-                  className="flex h-9 items-center justify-center rounded-xl border border-rose-200/55 bg-rose-500/20 px-2 text-[10px] font-bold tracking-wide text-rose-100 transition-colors duration-150 hover:bg-rose-500/35 md:h-10"
-                  title="Cerrar sesión"
-                  aria-label="Cerrar sesión"
-                >
-                  Salir
-                </button>
               </div>
 
               {dockLabelMode !== "icon" ? (
