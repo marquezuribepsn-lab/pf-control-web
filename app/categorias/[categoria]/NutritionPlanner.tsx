@@ -1217,45 +1217,66 @@ export default function NutritionPlanner() {
             <h3 className="text-lg font-black">Listado de planes</h3>
             <p className="mt-1 text-xs text-slate-300">Selecciona uno para editarlo en la pantalla principal.</p>
 
-            <div className="mt-3 space-y-2">
-              {plans.map((plan) => (
-                <button
-                  key={plan.id}
-                  type="button"
-                  onClick={() => setSelectedPlanId(plan.id)}
-                  className={`w-full rounded-2xl border p-3 text-left transition ${
-                    selectedPlanId === plan.id
-                      ? "border-cyan-300 bg-cyan-500/15"
-                      : "border-white/10 bg-slate-900/55 hover:border-cyan-300/40"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-black text-white">{plan.nombre}</p>
-                      <p className="mt-1 text-xs text-slate-300">
-                        {plan.objetivo} · {plan.updatedAt.slice(0, 10)}
-                      </p>
-                    </div>
-                    <span className="rounded-full border border-white/15 bg-slate-950/60 px-2 py-0.5 text-[11px] font-semibold text-slate-200">
-                      {plan.targets.calorias} kcal
+            <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
+                Total planes: <span className="font-black text-slate-100">{plans.length}</span>
+              </p>
+              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
+                Con alumno: <span className="font-black text-slate-100">{plans.filter((plan) => Boolean(plan.alumnoAsignado)).length}</span>
+              </p>
+              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
+                Sin alumno: <span className="font-black text-slate-100">{plans.filter((plan) => !plan.alumnoAsignado).length}</span>
+              </p>
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/55">
+              <div className="hidden border-b border-white/10 bg-slate-950/70 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-300 md:grid md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2">
+                <span>Plan</span>
+                <span>Objetivo</span>
+                <span>Kcal</span>
+                <span>Macros</span>
+                <span>Asignado</span>
+              </div>
+
+              <div className="max-h-[58vh] overflow-y-auto">
+                {plans.map((plan) => (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => setSelectedPlanId(plan.id)}
+                    className={`grid w-full grid-cols-1 gap-1 border-b border-white/5 px-3 py-2 text-left text-xs transition last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2 ${
+                      selectedPlanId === plan.id
+                        ? "bg-cyan-500/15 text-cyan-50"
+                        : "text-slate-200 hover:bg-slate-800/70"
+                    }`}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black text-white">{plan.nombre}</span>
+                      <span className="text-[11px] text-slate-400">Actualizado: {plan.updatedAt.slice(0, 10)}</span>
                     </span>
-                  </div>
-                  <div className="mt-2 grid gap-2 text-[11px] text-slate-300 sm:grid-cols-3">
-                    <p className="rounded-lg bg-slate-950/60 px-2 py-1">P: {plan.targets.proteinas} g</p>
-                    <p className="rounded-lg bg-slate-950/60 px-2 py-1">C: {plan.targets.carbohidratos} g</p>
-                    <p className="rounded-lg bg-slate-950/60 px-2 py-1">G: {plan.targets.grasas} g</p>
-                  </div>
-                  <p className="mt-2 truncate text-xs text-cyan-100">
-                    {plan.alumnoAsignado ? `Asignado a: ${plan.alumnoAsignado}` : "Sin alumno asignado"}
-                  </p>
-                </button>
-              ))}
+                    <span className="font-semibold capitalize">{plan.objetivo}</span>
+                    <span className="font-semibold">{plan.targets.calorias}</span>
+                    <span className="text-[11px]">P {plan.targets.proteinas} · C {plan.targets.carbohidratos} · G {plan.targets.grasas}</span>
+                    <span className="truncate text-cyan-100">{plan.alumnoAsignado || "Sin asignar"}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
               <h3 className="text-sm font-black uppercase tracking-wide text-slate-200">Acciones</h3>
+              <p className="mt-2 truncate rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-slate-200">
+                Seleccionado: <span className="font-semibold text-white">{selectedPlan.nombre}</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsPlansViewMode(false)}
+                className="mt-2 w-full rounded-xl border border-emerald-300/60 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-100"
+              >
+                Editar plan seleccionado
+              </button>
               <button
                 type="button"
                 onClick={addPlan}
