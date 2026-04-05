@@ -43,7 +43,11 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
   const categoria = decodeURIComponent(resolvedParams.categoria);
 
   if (normalizeCategory(categoria) === "nutricion") {
-    return <NutritionPlanner />;
+    return (
+      <main className="mx-auto w-full max-w-[1380px] px-4 pb-10 pt-4 sm:px-6 lg:px-8">
+        <NutritionPlanner />
+      </main>
+    );
   }
 
   const visual = getCategoryVisual(categoria);
