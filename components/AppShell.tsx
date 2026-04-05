@@ -803,7 +803,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                         aria-current={isCurrent ? "page" : undefined}
                       >
                         <span
-                          className={`relative flex h-[2.75rem] w-[2.75rem] items-center justify-center rounded-2xl border pt-[1px] text-[1.07rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-[2.9rem] md:w-[2.9rem] md:text-[1.14rem] ${
+                          className={`relative flex h-[2.95rem] w-[2.95rem] items-center justify-center rounded-2xl border pt-[1px] text-[1.15rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-[3.1rem] md:w-[3.1rem] md:text-[1.22rem] ${
                             isCurrent
                               ? "border-cyan-200/65 bg-cyan-400/20"
                               : "border-white/18 bg-slate-900/80"
