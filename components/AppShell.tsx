@@ -575,19 +575,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
-  const getDockScale = (index: number, laneSize: number) => {
-    if (hoveredDockIndex === null) {
-      return 1;
-    }
-
-    const isNearRightEdge = index >= Math.max(0, laneSize - 2);
-    const distance = Math.abs(index - hoveredDockIndex);
-    if (distance === 0) return isNearRightEdge ? 1 : 1.06;
-    if (distance === 1) return isNearRightEdge ? 1 : 1.03;
-    if (distance === 2) return 1.01;
-    return 1;
-  };
-
   const navigateDock = (href: string) => {
     const target = normalizePath(href);
     if (typeof window === "undefined") {
@@ -741,9 +728,6 @@ export default function AppShell({ links, children }: AppShellProps) {
                     pathname === link.href ||
                     (!hasChildLink && link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
-                  const scale = getDockScale(index, dockLinks.length);
-                  const isNearCuentaEdge = index >= Math.max(0, dockLinks.length - 2);
-                  const lift = scale > 1 ? (scale - 1) * 2 : 0;
                   const isCurrent = normalizePath(pathname) === normalizePath(link.href);
                   const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
 
@@ -764,15 +748,11 @@ export default function AppShell({ links, children }: AppShellProps) {
                       aria-current={isCurrent ? "page" : undefined}
                     >
                       <span
-                        className={`relative origin-bottom flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-transform duration-150 will-change-transform md:h-11 md:w-11 ${
+                        className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border pt-[1px] text-[1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 md:text-[1.05rem] ${
                           isActive
                             ? "border-cyan-200/65 bg-cyan-400/20"
                             : "border-white/18 bg-slate-900/80"
                         }`}
-                        style={{
-                          transform: isNearCuentaEdge ? "translateY(0px) scale(1)" : `translateY(-${lift}px) scale(${scale})`,
-                          zIndex: isNearCuentaEdge ? 80 : Math.round(scale * 100),
-                        }}
                       >
                         {link.icon}
                       </span>
@@ -815,7 +795,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   aria-current={isMusicaActive ? "page" : undefined}
                 >
                   <span
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border pt-[1px] text-[1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 md:text-[1.05rem] ${
                       isMusicaActive
                         ? "border-cyan-100/75 bg-cyan-400/25"
                         : "border-white/18 bg-slate-900/80"
@@ -858,7 +838,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   aria-current={isUsuariosActive ? "page" : undefined}
                 >
                   <span
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border pt-[1px] text-[1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 md:text-[1.05rem] ${
                       isUsuariosActive
                         ? "border-cyan-100/75 bg-cyan-400/25"
                         : "border-white/18 bg-slate-900/80"
@@ -899,7 +879,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 aria-current={isCuentaActive ? "page" : undefined}
               >
                 <span
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border text-[1.1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 ${
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border pt-[1px] text-[1rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-11 md:w-11 md:text-[1.05rem] ${
                     isCuentaActive
                       ? "border-cyan-100/75 bg-cyan-400/25"
                       : "border-cyan-200/45 bg-slate-900/85"
