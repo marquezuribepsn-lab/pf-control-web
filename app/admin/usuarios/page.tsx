@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type AccessOption = {
@@ -99,8 +100,20 @@ export default function AdminUsuariosPermisosPage() {
   const [items, setItems] = useState<ColaboradorDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [showColaboradoresPanel, setShowColaboradoresPanel] = useState(false);
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const panel = new URLSearchParams(window.location.search).get("panel");
+    if (panel === "colaboradores") {
+      setShowColaboradoresPanel(true);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +162,13 @@ export default function AdminUsuariosPermisosPage() {
       (item) => item.nombreCompleto.toLowerCase().includes(q) || item.email.toLowerCase().includes(q)
     );
   }, [items, search]);
+
+  const colaboradoresStats = useMemo(() => {
+    const total = items.length;
+    const activos = items.filter((item) => item.estado !== "suspendido").length;
+    const suspendidos = total - activos;
+    return { total, activos, suspendidos };
+  }, [items]);
 
   const updateItem = (id: string, updater: (prev: ColaboradorDraft) => ColaboradorDraft) => {
     setItems((prev) => prev.map((item) => (item.id === id ? updater(item) : item)));
@@ -232,10 +252,101 @@ export default function AdminUsuariosPermisosPage() {
         <div>
           <h1 className="text-4xl font-black tracking-tight">Usuarios y permisos</h1>
           <p className="mt-1 text-sm text-slate-300">
-            Ajusta solo permisos de colaboradores: edicion y acceso por apartados.
+            Gestion centralizada de usuarios colaboradores, permisos y accesos.
           </p>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/colaboradores/nuevo"
+            className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300"
+          >
+            + Nuevo colaborador
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowColaboradoresPanel((prev) => !prev)}
+            className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-2 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/25"
+          >
+            {showColaboradoresPanel ? "Ocultar colaboradores" : "Ver colaboradores"}
+          </button>
+        </div>
+      </div>
+
+      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/10 bg-slate-900/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Total colaboradores</p>
+            <p className="mt-1 text-2xl font-black text-white">{colaboradoresStats.total}</p>
+          </div>
+          <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-200">Activos</p>
+            <p className="mt-1 text-2xl font-black text-emerald-100">{colaboradoresStats.activos}</p>
+          </div>
+          <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-rose-200">Suspendidos</p>
+            <p className="mt-1 text-2xl font-black text-rose-100">{colaboradoresStats.suspendidos}</p>
+          </div>
+        </div>
+
+        {showColaboradoresPanel ? (
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-slate-100">Ver colaboradores</p>
+            {items.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-slate-900/80 p-4 text-sm text-slate-300">
+                Aun no hay colaboradores creados.
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                {items.map((item) => (
+                  <div key={`panel-${item.id}`} className="rounded-xl border border-white/10 bg-slate-900/75 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-black text-white">{item.nombreCompleto}</p>
+                        <p className="text-xs text-slate-300">{item.email}</p>
+                      </div>
+                      <span
+                        className={`rounded-full px-2 py-1 text-[10px] font-bold ${
+                          item.estado === "suspendido"
+                            ? "bg-rose-500/20 text-rose-200"
+                            : "bg-emerald-500/20 text-emerald-200"
+                        }`}
+                      >
+                        {item.estado === "suspendido" ? "Suspendido" : "Activo"}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        href={`/admin/colaboradores/${item.id}`}
+                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/20"
+                      >
+                        Gestionar completo
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowColaboradoresPanel(false);
+                          document.getElementById(`permisos-${item.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                        className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-100 transition hover:bg-white/10"
+                      >
+                        Ir a permisos rapidos
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-black text-white">Permisos rapidos</h2>
+          <p className="text-xs text-slate-300">Edita accesos por apartado sin salir de esta pantalla.</p>
+        </div>
         <div className="w-full max-w-sm">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Buscar colaborador</label>
           <input
@@ -245,7 +356,7 @@ export default function AdminUsuariosPermisosPage() {
             className="w-full rounded-xl border border-white/15 bg-slate-900 px-4 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
           />
         </div>
-      </div>
+      </section>
 
       {message && (
         <div
@@ -261,7 +372,7 @@ export default function AdminUsuariosPermisosPage() {
 
       <div className="space-y-4">
         {filtered.map((item) => (
-          <section key={item.id} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+          <section id={`permisos-${item.id}`} key={item.id} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black text-white">{item.nombreCompleto}</h2>

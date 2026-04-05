@@ -37,7 +37,6 @@ export default function RootLayout({
     { href: "/clientes", label: "Clientes", icon: "👤", tone: "from-lime-500 to-green-600" },
     { href: "/clientes/musica", label: "Musica", icon: "🎧", tone: "from-fuchsia-500 to-pink-600" },
     { href: "/admin/usuarios", label: "Usuarios y permisos", icon: "🛠️", tone: "from-orange-500 to-amber-600", adminOnly: true },
-    { href: "/admin/colaboradores", label: "Admin colaboradores", icon: "🧩", tone: "from-pink-500 to-rose-600", adminOnly: true },
     { href: "/admin/musica", label: "Musica", icon: "🎵", tone: "from-fuchsia-500 to-purple-600", adminOnly: true },
     { href: "/admin/whatsapp", label: "WhatsApp", icon: "💬", tone: "from-emerald-500 to-green-600", adminOnly: true },
     { href: "/configuracion", label: "Configuración", icon: "⚙️", tone: "from-slate-500 to-gray-600" },
