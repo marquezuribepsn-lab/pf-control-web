@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000';
 const mainEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
 const mainPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
+const allowMagicLogin = process.env.SMOKE_ALLOW_MAGIC_LOGIN === '1';
 
 function getSetCookieHeaderValues(headers) {
   if (headers?.getSetCookie && typeof headers.getSetCookie === 'function') {
@@ -194,13 +195,19 @@ async function loginAndGetCookie() {
     return credentialsLogin.cookieHeader;
   }
 
-  const magicLogin = await loginByMagicLink(mainEmail);
-  if (magicLogin.ok) {
-    return magicLogin.cookieHeader;
+  if (allowMagicLogin) {
+    const magicLogin = await loginByMagicLink(mainEmail);
+    if (magicLogin.ok) {
+      return magicLogin.cookieHeader;
+    }
+
+    throw new Error(
+      `login admin invalido: credentials(status=${credentialsLogin.status}, location=${credentialsLogin.location}) magic(status=${magicLogin.status}, location=${magicLogin.location})`
+    );
   }
 
   throw new Error(
-    `login admin invalido: credentials(status=${credentialsLogin.status}, location=${credentialsLogin.location}) magic(status=${magicLogin.status}, location=${magicLogin.location})`
+    `login admin invalido: credentials(status=${credentialsLogin.status}, location=${credentialsLogin.location})`
   );
 }
 

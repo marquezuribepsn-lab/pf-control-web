@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000';
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
 const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
+const allowMagicLogin = process.env.SMOKE_ALLOW_MAGIC_LOGIN === '1';
 
 function splitSetCookie(raw) {
   if (!raw) return [];
@@ -170,7 +171,7 @@ async function loginByMagicLink(email) {
 
 async function main() {
   let login = await loginByCredentials(adminEmail, adminPassword);
-  if (!login.ok) {
+  if (!login.ok && allowMagicLogin) {
     login = await loginByMagicLink(adminEmail);
   }
 

@@ -188,8 +188,15 @@ function LoginPageContent() {
     try {
       const response = await fetch('/api/auth/login-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-login-link-source': 'manual_after_password_attempts',
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          source: 'manual_after_password_attempts',
+          failedAttempts,
+        }),
       });
 
       const data = await response.json().catch(() => ({}));

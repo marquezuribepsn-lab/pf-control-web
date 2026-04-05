@@ -12,6 +12,7 @@ const prisma = new PrismaClient();
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
 const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
+const allowMagicLogin = process.env.SMOKE_ALLOW_MAGIC_LOGIN === '1';
 const screenshotPath = process.env.SMOKE_SCREENSHOT_PATH || path.join(os.tmpdir(), `pf-control-clientes-visual-${Date.now()}.png`);
 const expectedPath = process.env.SMOKE_CLIENTES_EXPECT_PATH || '/clientes';
 
@@ -272,7 +273,7 @@ async function main() {
 
   try {
     let login = await loginByCredentials(adminEmail, adminPassword);
-    if (!login.ok) {
+    if (!login.ok && allowMagicLogin) {
       login = await loginByMagicLink(adminEmail);
     }
 

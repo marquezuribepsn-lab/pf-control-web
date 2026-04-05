@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { sendLoginAccessLinkEmail } from '@/lib/email';
 
 const db = prisma as any;
+const MANUAL_SOURCE = 'manual_after_password_attempts';
+const MIN_FAILED_ATTEMPTS = 3;
 
 function genericResponse() {
   return NextResponse.json({
@@ -16,9 +18,27 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const source = typeof body?.source === 'string' ? body.source.trim() : '';
+    const sourceHeader = String(req.headers.get('x-login-link-source') || '').trim();
+    const failedAttempts = Number(body?.failedAttempts || 0);
 
     if (!email) {
       return NextResponse.json({ ok: false, message: 'Email requerido' }, { status: 400 });
+    }
+
+    if (
+      source !== MANUAL_SOURCE ||
+      sourceHeader !== MANUAL_SOURCE ||
+      !Number.isFinite(failedAttempts) ||
+      failedAttempts < MIN_FAILED_ATTEMPTS
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'El acceso por enlace solo se habilita manualmente tras 3 intentos fallidos.',
+        },
+        { status: 403 }
+      );
     }
 
     const user = await db.user.findUnique({
