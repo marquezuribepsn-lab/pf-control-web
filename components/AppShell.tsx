@@ -134,6 +134,33 @@ const normalizeDockLabelMode = (value: string | null): DockLabelMode => {
   return "compact";
 };
 
+const resolveUserDisplayName = (user: any): string => {
+  const fromName = typeof user?.name === "string" ? user.name.trim() : "";
+  if (fromName) return fromName;
+
+  const fromEmail = typeof user?.email === "string" ? user.email.split("@")[0]?.trim() : "";
+  if (fromEmail) return fromEmail;
+
+  return "Usuario";
+};
+
+const resolveInitials = (name: string): string => {
+  const words = name
+    .split(/\s+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (words.length === 0) {
+    return "U";
+  }
+
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${words[0][0] || ""}${words[1][0] || ""}`.toUpperCase();
+};
+
 const compactDockLabel = (label: string) => {
   const aliases: Record<string, string> = {
     "Asistencias": "Asist.",
@@ -483,6 +510,10 @@ export default function AppShell({ links, children }: AppShellProps) {
     ((session?.user as any)?.role as string | undefined) ??
     resolvedRole ??
     (pathname.startsWith("/admin") ? "ADMIN" : null);
+  const displayName = resolveUserDisplayName(session?.user);
+  const profileInitials = resolveInitials(displayName);
+  const roleLabel = role === "ADMIN" ? "ADMIN" : role === "COLABORADOR" ? "COLABORADOR" : "USUARIO";
+  const profileStatusText = `Panel: ${roleLabel} | PF Control`;
   const visibleLinks = useMemo(
     () =>
       stableLinks.filter((link) => {
@@ -597,10 +628,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   };
 
   const normalizedPathname = normalizePath(pathname);
-  const hasUsuariosLink = renderLinks.some((link) => link.href === "/admin/usuarios");
-  const dockItems: NavLink[] = renderLinks.some((link) => link.href === "/cuenta")
-    ? renderLinks
-    : [...renderLinks, { href: "/cuenta", label: "Cuenta", icon: "👤", tone: "from-slate-500 to-slate-600" }];
+  const dockItems: NavLink[] = renderLinks;
 
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
@@ -609,8 +637,43 @@ export default function AppShell({ links, children }: AppShellProps) {
   return (
     <div className="relative min-h-[100svh] overflow-x-hidden">
       <div className="relative">
+        <div className="fixed left-4 top-4 z-[61]">
+          <div className="flex items-center gap-3 rounded-[1.2rem] border border-cyan-200/35 bg-slate-900/78 px-3 py-2 shadow-[0_14px_36px_rgba(2,6,23,0.55)] backdrop-blur-xl">
+            <div className="min-w-0">
+              <p className="truncate text-[0.95rem] font-black leading-tight text-white">Hola! {displayName.toUpperCase()}</p>
+              <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.11em] text-cyan-100/95">
+                {profileStatusText}
+              </p>
+            </div>
+
+            <Link
+              href="/cuenta"
+              prefetch={false}
+              onClick={(event) => {
+                event.preventDefault();
+                navigateDock("/cuenta");
+              }}
+              className="group shrink-0 rounded-full"
+              aria-label="Ir a cuenta"
+              title="Ir a cuenta"
+            >
+              {sidebarImage ? (
+                <img
+                  src={sidebarImage}
+                  alt="Abrir cuenta"
+                  className="h-14 w-14 rounded-full border border-cyan-100/45 object-cover shadow-[0_10px_24px_rgba(2,6,23,0.5)] transition-transform duration-150 group-hover:scale-[1.04]"
+                />
+              ) : (
+                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-cyan-100/45 bg-cyan-500/25 text-sm font-black text-cyan-50 shadow-[0_10px_24px_rgba(2,6,23,0.5)] transition-transform duration-150 group-hover:scale-[1.04]">
+                  {profileInitials}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+
         {pendingSaveKeys.length > 0 ? (
-          <div className="fixed left-4 top-4 z-[59] pointer-events-none">
+          <div className="fixed left-4 top-[5.35rem] z-[59] pointer-events-none">
             <div className="pointer-events-auto space-y-2">
               <button
                 type="button"
@@ -722,11 +785,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                     normalizedPathname === normalizedHref ||
                     (!hasChildLink && normalizedHref !== "/" && normalizedPathname.startsWith(`${normalizedHref}/`));
                   const labelText = dockLabelMode === "compact" ? compactDockLabel(link.label) : link.label;
-                  const showDividerBefore = link.href === "/cuenta" && hasUsuariosLink;
 
                   return (
                     <div key={link.href} className="flex items-end">
-                      {showDividerBefore ? <span className="mx-1.5 mb-[1.45rem] h-7 w-px shrink-0 bg-white/30" aria-hidden="true" /> : null}
                       <Link
                         href={link.href}
                         prefetch={false}
