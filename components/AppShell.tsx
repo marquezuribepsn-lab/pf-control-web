@@ -762,11 +762,11 @@ export default function AppShell({ links, children }: AppShellProps) {
         className="fixed inset-x-0 bottom-0 z-[70] px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
-        <div className="mx-auto w-full max-w-[1080px] overflow-visible">
+        <div className="mx-auto w-full max-w-[1320px] overflow-visible">
           <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
           <div className="flex items-end gap-2">
-            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1 pr-1">
-              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-12 md:pr-14">
+            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1 pr-2">
+              <div className="flex min-w-max items-end gap-2 md:gap-2.5 px-0.5 pr-16 md:pr-20">
                 {sidebarImage ? (
                   <img
                     src={sidebarImage}
@@ -820,7 +820,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
                         {dockLabelMode !== "icon" ? (
                           <span
-                            className={`mt-1 w-[3.6rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
+                            className={`mt-1 w-[3.4rem] md:w-[3.5rem] truncate text-center text-[9.5px] font-semibold leading-[0.72rem] transition-colors duration-150 ${
                               hoveredDockIndex === index || isCurrent ? "text-cyan-100" : "text-slate-300"
                             }`}
                           >
@@ -832,7 +832,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   );
                 })}
 
-                <span className="w-3 shrink-0 md:w-4" aria-hidden="true" />
+                <span className="w-6 shrink-0 md:w-7" aria-hidden="true" />
               </div>
             </div>
           </div>
