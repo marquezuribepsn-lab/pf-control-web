@@ -765,8 +765,8 @@ export default function AppShell({ links, children }: AppShellProps) {
         <div className="mx-auto w-full max-w-[1080px] overflow-visible">
           <div className="pointer-events-auto w-full overflow-visible rounded-[1.45rem] border border-white/28 bg-[linear-gradient(180deg,rgba(15,23,42,0.56),rgba(2,6,23,0.44))] px-2.5 py-2.5 shadow-[0_16px_40px_rgba(2,6,23,0.5)] backdrop-blur-2xl">
           <div className="flex items-end gap-2">
-            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1">
-              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-6">
+            <div className="pf-dock-scroll min-w-0 flex-1 overflow-x-auto overflow-y-visible py-1 pr-1">
+              <div className="flex min-w-max items-end gap-2.5 px-0.5 pr-12 md:pr-14">
                 {sidebarImage ? (
                   <img
                     src={sidebarImage}
@@ -831,6 +831,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                     </div>
                   );
                 })}
+
+                <span className="w-3 shrink-0 md:w-4" aria-hidden="true" />
               </div>
             </div>
           </div>
