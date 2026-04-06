@@ -21,6 +21,7 @@ export default function ReliableActionButton({
   failureMessage,
   onClick,
   disabled,
+  className,
   ...props
 }: ReliableActionButtonProps) {
   const [running, setRunning] = useState(false);
@@ -33,6 +34,11 @@ export default function ReliableActionButton({
   }, [reliabilityMode]);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (lockWhileRunning && running) {
+      event.preventDefault();
+      return;
+    }
+
     if (!onClick) {
       return;
     }
@@ -69,9 +75,12 @@ export default function ReliableActionButton({
   return (
     <button
       {...props}
+      className={["pf-action-btn", className].filter(Boolean).join(" ")}
       onClick={handleClick}
       disabled={Boolean(disabled) || (lockWhileRunning && running)}
+      aria-busy={lockWhileRunning && running ? true : undefined}
       data-button-failsafe-mode={mode}
+      data-running={running ? "true" : "false"}
     />
   );
 }

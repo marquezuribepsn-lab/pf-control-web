@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useContext, use, useState } from "react";
 import { useEquipos } from "../../../../components/EquiposProvider";
 import { useSessions } from "../../../../components/SessionsProvider";
@@ -184,12 +185,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
             Planificación detallada de sesiones de entrenamiento
           </p>
         </div>
-        <button
+        <ReliableActionButton
           onClick={() => setMostrarFormulario(true)}
           className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Nueva Sesión
-        </button>
+        </ReliableActionButton>
       </div>
 
       {/* Información del equipo */}
@@ -276,13 +277,13 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
               </div>
             </div>
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Crear Sesión
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => {
                   setMostrarFormulario(false);
@@ -291,7 +292,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                 className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
               >
                 Cancelar
-              </button>
+              </ReliableActionButton>
             </div>
           </form>
         </div>
@@ -310,12 +311,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                   <span>📊 {sesion.bloques.length} bloques</span>
                 </div>
               </div>
-              <button
+              <ReliableActionButton
                 onClick={() => setSesionSeleccionada(sesionSeleccionada === sesion.id ? null : sesion.id)}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 {sesionSeleccionada === sesion.id ? "Ocultar Detalles" : "Ver Detalles"}
-              </button>
+              </ReliableActionButton>
             </div>
 
             {sesionSeleccionada === sesion.id && (
@@ -339,13 +340,13 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                       className="rounded-md border border-neutral-300 px-3 py-2"
                     />
                   </div>
-                  <button
+                  <ReliableActionButton
                     onClick={() => agregarBloque(sesion.id)}
                     disabled={!bloqueForm.titulo || !bloqueForm.objetivo}
                     className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Agregar Bloque
-                  </button>
+                  </ReliableActionButton>
                 </div>
 
                 {/* Bloques de la sesión */}
@@ -357,7 +358,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                           <h5 className="text-lg font-semibold">{bloque.titulo}</h5>
                           <p className="text-neutral-600">{bloque.objetivo}</p>
                         </div>
-                        <button
+                        <ReliableActionButton
                           onClick={() => {
                             setBloqueActual(bloqueActual === bloque.id ? null : bloque.id);
                             setMostrarBuscadorEjercicios(false);
@@ -365,7 +366,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                           className="rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
                         >
                           {bloqueActual === bloque.id ? "Ocultar" : "Agregar Ejercicio"}
-                        </button>
+                        </ReliableActionButton>
                       </div>
 
                       {/* Lista de ejercicios del bloque */}
@@ -437,12 +438,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                         <div className="mt-4 rounded-lg bg-white p-4 border border-neutral-200">
                           {!mostrarBuscadorEjercicios ? (
                             <div className="text-center">
-                              <button
+                              <ReliableActionButton
                                 onClick={() => setMostrarBuscadorEjercicios(true)}
                                 className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                               >
                                 Agregar Ejercicios
-                              </button>
+                              </ReliableActionButton>
                             </div>
                           ) : (
                             <div className="space-y-4">
@@ -455,18 +456,18 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   onChange={(e) => setBusquedaEjercicio(e.target.value)}
                                   className="flex-1 rounded-md border border-neutral-300 px-3 py-2"
                                 />
-                                <button
+                                <ReliableActionButton
                                   onClick={seleccionarTodosEjercicios}
                                   className="rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
                                 >
                                   Todos
-                                </button>
-                                <button
+                                </ReliableActionButton>
+                                <ReliableActionButton
                                   onClick={deseleccionarTodosEjercicios}
                                   className="rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200"
                                 >
                                   Ninguno
-                                </button>
+                                </ReliableActionButton>
                               </div>
 
                               {/* Lista de ejercicios con checkboxes */}
@@ -548,13 +549,13 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   </div>
 
                                   <div className="flex gap-2">
-                                    <button
+                                    <ReliableActionButton
                                       onClick={() => agregarEjerciciosABloque(sesion.id, bloque.id)}
                                       className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                                     >
                                       Agregar {ejerciciosSeleccionados.size} Ejercicio{ejerciciosSeleccionados.size !== 1 ? 's' : ''} al Bloque
-                                    </button>
-                                    <button
+                                    </ReliableActionButton>
+                                    <ReliableActionButton
                                       onClick={() => {
                                         setEjerciciosSeleccionados(new Set());
                                         setParametrosGlobales({
@@ -569,7 +570,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                       className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
                                     >
                                       Cancelar
-                                    </button>
+                                    </ReliableActionButton>
                                   </div>
                                 </div>
                               )}

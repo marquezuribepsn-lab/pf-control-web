@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useContext, use, useEffect, useState } from "react";
 import { PlayersContext } from "../../../components/PlayersProvider";
 import { CategoriesContext } from "../../../components/CategoriesProvider";
@@ -69,18 +70,18 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <ReliableActionButton
             onClick={() => setEditandoEquipo(true)}
             className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
           >
             Editar Equipo
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             onClick={handleDeleteEquipo}
             className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
           >
             Eliminar Equipo
-          </button>
+          </ReliableActionButton>
         </div>
       </div>
 
@@ -142,19 +143,19 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
               />
             </div>
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Actualizar
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => setEditandoEquipo(false)}
                 className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
               >
                 Cancelar
-              </button>
+              </ReliableActionButton>
             </div>
           </form>
         </div>
@@ -195,12 +196,12 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                   <p className="font-medium">{jugadora.nombre}</p>
                   <p className="text-sm text-neutral-600">Categoría actual: {jugadora.categoria}</p>
                 </div>
-                <button
+                <ReliableActionButton
                   onClick={() => cambiarCategoriaJugadora(jugadora.nombre, equipo.categoria)}
                   className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
                 >
                   Agregar al equipo
-                </button>
+                </ReliableActionButton>
               </div>
             ))}
           {jugadoras.filter((j) => j.categoria !== equipo.categoria).length === 0 && (
@@ -235,7 +236,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                               </option>
                             ))}
                         </select>
-                        <button
+                        <ReliableActionButton
                           onClick={() => {
                             if (nuevaCategoria && nuevaCategoria !== jugadora.categoria) {
                               cambiarCategoriaJugadora(jugadora.nombre, nuevaCategoria);
@@ -246,8 +247,8 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                           className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
                         >
                           Guardar
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           onClick={() => {
                             setCambiandoCategoria(null);
                             setNuevaCategoria("");
@@ -255,11 +256,11 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                           className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-50"
                         >
                           Cancelar
-                        </button>
+                        </ReliableActionButton>
                       </div>
                     ) : (
                       <>
-                        <button
+                        <ReliableActionButton
                           onClick={() => {
                             setCambiandoCategoria(jugadora.nombre);
                             setNuevaCategoria(jugadora.categoria || "");
@@ -267,8 +268,8 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                           className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-50"
                         >
                           Cambiar Equipo
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           onClick={() => {
                             if (confirm(`¿Estás seguro de que quieres eliminar a ${jugadora.nombre}?`)) {
                               eliminarJugadora(jugadora.nombre);
@@ -277,7 +278,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                           className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
                         >
                           Eliminar
-                        </button>
+                        </ReliableActionButton>
                       </>
                     )}
                   </div>

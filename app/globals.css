@@ -1,18 +1,82 @@
 @import "tailwindcss";
 
+:root {
+  --pf-bg-0: #050711;
+  --pf-bg-1: #0a1429;
+  --pf-bg-2: #111f38;
+  --pf-surface: rgba(11, 21, 41, 0.78);
+  --pf-surface-strong: rgba(8, 16, 31, 0.88);
+  --pf-border: rgba(148, 197, 255, 0.2);
+  --pf-text: #f8fbff;
+  --pf-text-muted: #cdddf7;
+  --pf-accent: #39d2ff;
+  --pf-accent-warm: #ffb44d;
+  --pf-shadow: 0 14px 34px rgba(2, 8, 23, 0.5);
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  background: #020617;
+  min-height: 100%;
+  background:
+    radial-gradient(1300px 900px at -10% -20%, rgba(57, 210, 255, 0.22), transparent 52%),
+    radial-gradient(900px 600px at 108% -12%, rgba(255, 180, 77, 0.2), transparent 48%),
+    linear-gradient(148deg, var(--pf-bg-0) 0%, var(--pf-bg-1) 46%, var(--pf-bg-2) 100%);
 }
 
 html {
   scrollbar-gutter: stable both-edges;
+  color-scheme: dark;
 }
 
 body {
-  color: #e2e8f0;
+  position: relative;
+  color: var(--pf-text);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+  text-rendering: optimizeLegibility;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  inset: auto -12vw -26vh auto;
+  height: 44vh;
+  width: 46vw;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(57, 210, 255, 0.24) 0%, rgba(57, 210, 255, 0) 72%);
+  filter: blur(18px);
+}
+
+body::after {
+  inset: -18vh auto auto -16vw;
+  height: 48vh;
+  width: 44vw;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 180, 77, 0.2) 0%, rgba(255, 180, 77, 0) 70%);
+  filter: blur(20px);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.pf-root-atmosphere {
+  position: relative;
+  min-height: 100vh;
 }
 
 /* Regla global solicitada: fondos blancos a gris y texto blanco en negrita */
@@ -44,8 +108,79 @@ body {
 }
 
 ::selection {
-  background: rgba(56, 189, 248, 0.35);
+  background: rgba(57, 210, 255, 0.42);
   color: #ffffff;
+}
+
+.pf-action-btn,
+button,
+[role="button"] {
+  transition:
+    transform 170ms cubic-bezier(0.2, 0.9, 0.24, 1),
+    box-shadow 190ms ease,
+    filter 190ms ease,
+    border-color 190ms ease,
+    background-color 190ms ease,
+    color 190ms ease;
+  will-change: transform;
+}
+
+.pf-action-btn {
+  position: relative;
+  isolation: isolate;
+}
+
+.pf-action-btn::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%, rgba(57, 210, 255, 0.12));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 170ms ease;
+}
+
+.pf-action-btn:hover,
+button:hover,
+[role="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(2, 8, 23, 0.38);
+}
+
+.pf-action-btn:hover::after {
+  opacity: 1;
+}
+
+.pf-action-btn:active,
+button:active,
+[role="button"]:active {
+  transform: translateY(0);
+}
+
+.pf-action-btn:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+.pf-reliable-link:focus-visible {
+  outline: 2px solid rgba(57, 210, 255, 0.95);
+  outline-offset: 2px;
+}
+
+.pf-action-btn[disabled],
+button[disabled] {
+  transform: none;
+  filter: saturate(0.82);
+}
+
+.pf-reliable-link {
+  transition:
+    transform 160ms cubic-bezier(0.22, 0.9, 0.24, 1),
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.pf-reliable-link:hover {
+  transform: translateY(-1px);
 }
 
 @keyframes pf-ios-toast-in {
@@ -227,9 +362,9 @@ body {
 
 @keyframes pf-route-enter {
   0% {
-    opacity: 0.92;
-    transform: translate3d(0, 8px, 0);
-    filter: saturate(1.01) blur(0.35px);
+    opacity: 0.9;
+    transform: translate3d(0, 11px, 0) scale(0.995);
+    filter: saturate(1.02) blur(0.4px);
   }
   100% {
     opacity: 1;
@@ -239,7 +374,7 @@ body {
 }
 
 .pf-route-enter {
-  animation: pf-route-enter 220ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
+  animation: pf-route-enter 260ms cubic-bezier(0.2, 0.9, 0.24, 1) both;
   will-change: transform, opacity, filter;
   backface-visibility: hidden;
 }

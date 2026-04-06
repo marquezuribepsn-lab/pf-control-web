@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
@@ -1103,13 +1104,13 @@ export default function NutritionPlanner() {
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-2xl border border-white/15 bg-slate-900/80 p-4">
             <h2 className="text-xl font-black text-slate-100">Detalle de plan nutricional</h2>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={goBackToClientList}
               className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
             >
               Volver al listado
-            </button>
+            </ReliableActionButton>
           </div>
           <div className="rounded-2xl border border-white/15 bg-slate-900/75 p-4 text-slate-100 sm:p-6">
             No se encontro el plan seleccionado para ese cliente.
@@ -1127,13 +1128,13 @@ export default function NutritionPlanner() {
               <h2 className="mt-1 text-xl font-black sm:text-2xl">{detailAlumnoName || detailPlan.alumnoAsignado || "Alumno"}</h2>
               <p className="mt-1 text-sm text-slate-300">{detailPlan.nombre}</p>
             </div>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={goBackToClientList}
               className="w-full rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10 sm:w-auto sm:py-1.5"
             >
               Volver al listado
-            </button>
+            </ReliableActionButton>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -1210,13 +1211,13 @@ export default function NutritionPlanner() {
                 Administra tus planes en esta pantalla y vuelve a Nutricion para editar el plan seleccionado.
               </p>
             </div>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(false)}
               className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 sm:w-auto"
             >
               Volver a Nutricion
-            </button>
+            </ReliableActionButton>
           </div>
         </section>
 
@@ -1248,7 +1249,7 @@ export default function NutritionPlanner() {
 
               <div className="max-h-[58vh] overflow-y-auto">
                 {plans.map((plan) => (
-                  <button
+                  <ReliableActionButton
                     key={plan.id}
                     type="button"
                     onClick={() => setSelectedPlanId(plan.id)}
@@ -1266,7 +1267,7 @@ export default function NutritionPlanner() {
                     <span className="font-semibold">{plan.targets.calorias}</span>
                     <span className="text-[11px]">P {plan.targets.proteinas} · C {plan.targets.carbohidratos} · G {plan.targets.grasas}</span>
                     <span className="truncate text-cyan-100">{plan.alumnoAsignado || "Sin asignar"}</span>
-                  </button>
+                  </ReliableActionButton>
                 ))}
               </div>
             </div>
@@ -1278,28 +1279,28 @@ export default function NutritionPlanner() {
               <p className="mt-2 truncate rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-slate-200">
                 Seleccionado: <span className="font-semibold text-white">{selectedPlan.nombre}</span>
               </p>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => setIsPlansViewMode(false)}
                 className="mt-2 w-full rounded-xl border border-emerald-300/60 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-100"
               >
                 Editar plan seleccionado
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={addPlan}
                 className="mt-3 w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100"
               >
                 Nuevo plan
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => deletePlan(selectedPlan.id)}
                 disabled={plans.length <= 1}
                 className="mt-2 w-full rounded-xl border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-200 disabled:opacity-50"
               >
                 Eliminar plan actual
-              </button>
+              </ReliableActionButton>
             </div>
 
             <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 p-4 text-slate-100 shadow-lg">
@@ -1321,14 +1322,14 @@ export default function NutritionPlanner() {
                   </option>
                 ))}
               </select>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => assignPlanToAlumno(selectedAlumnoForPlan, selectedPlan.id)}
                 disabled={!selectedAlumnoForPlan}
                 className="mt-2 w-full rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
               >
                 Asignar plan seleccionado
-              </button>
+              </ReliableActionButton>
 
               <div className="mt-3 space-y-1 text-xs text-slate-200">
                 {assignments.length === 0 ? (
@@ -1384,7 +1385,7 @@ export default function NutritionPlanner() {
               </p>
             ) : (
               filteredAssignedClientRows.map((row) => (
-                <button
+                <ReliableActionButton
                   key={`${row.alumnoNombre}-${row.planId}`}
                   type="button"
                   onClick={() => openClientPlanDetail(row.alumnoNombre, row.planId)}
@@ -1392,7 +1393,7 @@ export default function NutritionPlanner() {
                 >
                   <p className="truncate text-sm font-bold text-white">{row.alumnoNombre}</p>
                   <p className="truncate text-xs text-slate-300">{row.planNombre}</p>
-                </button>
+                </ReliableActionButton>
               ))
             )}
           </div>
@@ -1423,34 +1424,34 @@ export default function NutritionPlanner() {
             </p>
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => exportCurrentPlanPdf("paciente")}
               className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 shadow-sm sm:w-auto"
             >
               PDF paciente
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => exportCurrentPlanPdf("profesional")}
               className="w-full rounded-xl border border-indigo-300/60 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-100 shadow-sm sm:w-auto"
             >
               PDF profesional
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={saveNutritionChanges}
               className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto"
             >
               Guardar cambios
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(true)}
               className="w-full rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto"
             >
               Ver planes
-            </button>
+            </ReliableActionButton>
           </div>
         </div>
       </section>
@@ -1465,13 +1466,13 @@ export default function NutritionPlanner() {
               distribucion diaria y comidas base editables.
             </p>
           </div>
-          <button
+          <ReliableActionButton
             type="button"
             onClick={generatePlanWithAI}
             className="w-full rounded-xl border border-cyan-300/70 bg-cyan-500/20 px-4 py-2 text-sm font-black text-cyan-100 sm:w-auto"
           >
             Crear plan nutricional con IA
-          </button>
+          </ReliableActionButton>
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1685,31 +1686,31 @@ export default function NutritionPlanner() {
                 </option>
               ))}
             </select>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={saveCurrentAIBriefAsTemplate}
               className="rounded-lg border border-emerald-300/50 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
             >
               Guardar plantilla
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={applySelectedTemplate}
               disabled={!selectedTemplateId}
               className="rounded-lg border border-cyan-300/50 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 disabled:opacity-50"
             >
               Aplicar
-            </button>
+            </ReliableActionButton>
           </div>
           <div className="mt-2 flex justify-end">
-            <button
+            <ReliableActionButton
               type="button"
               onClick={deleteSelectedTemplate}
               disabled={!selectedTemplateId}
               className="rounded-lg border border-rose-300/50 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:opacity-50"
             >
               Eliminar plantilla
-            </button>
+            </ReliableActionButton>
           </div>
         </div>
 
@@ -1808,13 +1809,13 @@ export default function NutritionPlanner() {
               </select>
             </label>
 
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(true)}
               className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 sm:w-auto"
             >
               Ver planes
-            </button>
+            </ReliableActionButton>
           </div>
 
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
@@ -1973,13 +1974,13 @@ export default function NutritionPlanner() {
           <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black">Comidas del plan</h3>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => addMeal(selectedPlan.id)}
                 className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold"
               >
                 Agregar comida
-              </button>
+              </ReliableActionButton>
             </div>
 
             <div className="mt-4 space-y-4">
@@ -2006,13 +2007,13 @@ export default function NutritionPlanner() {
                       }
                       className="flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
                     />
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => removeMeal(selectedPlan.id, meal.id)}
                       className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200"
                     >
                       Quitar comida
-                    </button>
+                    </ReliableActionButton>
                   </div>
 
                   <input
@@ -2066,25 +2067,25 @@ export default function NutritionPlanner() {
                             {totals ? `${roundValue(totals.calorias)} kcal` : "Sin datos"}
                           </p>
 
-                          <button
+                          <ReliableActionButton
                             type="button"
                             onClick={() => removeMealItem(selectedPlan.id, meal.id, item.id)}
                             className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200 sm:col-span-2 lg:col-span-1"
                           >
                             Quitar
-                          </button>
+                          </ReliableActionButton>
                         </div>
                       );
                     })}
                   </div>
 
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => addFoodToMeal(selectedPlan.id, meal.id, mealFoods[0]?.id || allFoods[0].id)}
                     className="mt-3 rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200"
                   >
                     Agregar alimento
-                  </button>
+                  </ReliableActionButton>
                   {mealFoods.length === 0 ? (
                     <p className="mt-2 text-xs text-amber-200">No hay resultados para ese buscador en esta comida.</p>
                   ) : null}
@@ -2217,13 +2218,13 @@ export default function NutritionPlanner() {
               />
             </div>
 
-            <button
+            <ReliableActionButton
               type="button"
               onClick={addCustomFood}
               className="mt-3 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-white"
             >
               Agregar alimento personalizado
-            </button>
+            </ReliableActionButton>
 
             <div className="mt-5 rounded-xl border border-white/10 bg-slate-900/55 p-3">
               <p className="text-xs font-black uppercase tracking-wide text-slate-200">Importacion masiva (CSV)</p>
@@ -2231,13 +2232,13 @@ export default function NutritionPlanner() {
                 Formato: nombre,grupo,kcal,proteina,carbohidrato,grasa por cada fila.
               </p>
 
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={downloadCsvTemplate}
                 className="mt-2 rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-100"
               >
                 Descargar formato CSV
-              </button>
+              </ReliableActionButton>
 
               <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200">
                 Subir archivo .csv
@@ -2250,26 +2251,26 @@ export default function NutritionPlanner() {
                 className="mt-2 h-28 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-400"
                 placeholder={"nombre,grupo,kcal,proteina,carbohidrato,grasa\nPollo cocido,Carnes,165,31,0,3.6\nArroz cocido,Cereales,130,2.4,28.2,0.3"}
               />
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={importFoodsFromCsv}
                 className="mt-2 rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200"
               >
                 Importar lote de alimentos
-              </button>
+              </ReliableActionButton>
               {bulkImportMessage ? (
                 <p className="mt-2 text-xs font-semibold text-slate-200">{bulkImportMessage}</p>
               ) : null}
             </div>
 
             <div className="mt-4 flex justify-end">
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={saveNutritionChanges}
                 className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm"
               >
                 Guardar cambios de nutricion
-              </button>
+              </ReliableActionButton>
             </div>
           </div>
         </div>
@@ -2277,3 +2278,4 @@ export default function NutritionPlanner() {
     </div>
   );
 }
+

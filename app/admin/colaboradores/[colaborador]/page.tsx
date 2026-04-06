@@ -1,4 +1,5 @@
 "use client";
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { use, useEffect, useMemo, useState } from 'react';
 
 type ClienteUsuario = {
@@ -213,17 +214,17 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
-        <button onClick={handleAlta} disabled={saving} className="rounded-xl bg-cyan-500/20 px-3 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/30 disabled:opacity-60">
+        <ReliableActionButton onClick={handleAlta} disabled={saving} className="rounded-xl bg-cyan-500/20 px-3 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-500/30 disabled:opacity-60">
           Enviar verificación
-        </button>
+        </ReliableActionButton>
         {colaborador.estado === 'suspendido' ? (
-          <button onClick={handleReactivar} disabled={saving} className="rounded-xl bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-60">
+          <ReliableActionButton onClick={handleReactivar} disabled={saving} className="rounded-xl bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-60">
             Reactivar colaborador
-          </button>
+          </ReliableActionButton>
         ) : (
-          <button onClick={handleBaja} disabled={saving} className="rounded-xl bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/30 disabled:opacity-60">
+          <ReliableActionButton onClick={handleBaja} disabled={saving} className="rounded-xl bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/30 disabled:opacity-60">
             Dar de baja
-          </button>
+          </ReliableActionButton>
         )}
       </div>
 
@@ -248,9 +249,9 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
             <Check label="Ver todos alumnos" checked={Boolean(colaborador.puedeVerTodosAlumnos)} onChange={checked => setColaborador({ ...colaborador, puedeVerTodosAlumnos: checked })} />
           </div>
 
-          <button type="submit" disabled={saving} className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:opacity-70">
+          <ReliableActionButton type="submit" disabled={saving} className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:opacity-70">
             {saving ? 'Guardando...' : 'Guardar cambios'}
-          </button>
+          </ReliableActionButton>
         </form>
 
         <div className="space-y-4">
@@ -298,9 +299,9 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
                 })
               )}
             </div>
-            <button type="submit" disabled={asignacionesLoading} className="rounded-xl bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-70">
+            <ReliableActionButton type="submit" disabled={asignacionesLoading} className="rounded-xl bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-70">
               {asignacionesLoading ? 'Actualizando...' : 'Actualizar asignaciones'}
-            </button>
+            </ReliableActionButton>
           </form>
 
           <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
@@ -344,3 +345,4 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
     </label>
   );
 }
+

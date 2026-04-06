@@ -11,6 +11,7 @@ type ReliableLinkProps = ComponentProps<typeof NextLink> & {
 
 export default function ReliableLink({
   reliabilityMode = "hard",
+  className,
   ...props
 }: ReliableLinkProps) {
   const mode =
@@ -18,5 +19,7 @@ export default function ReliableLink({
       ? reliabilityMode
       : "hard";
 
-  return <NextLink data-button-failsafe-mode={mode} {...props} />;
+  const resolvedClassName = ["pf-reliable-link", className].filter(Boolean).join(" ");
+
+  return <NextLink data-button-failsafe-mode={mode} className={resolvedClassName} {...props} />;
 }

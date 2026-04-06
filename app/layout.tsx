@@ -1,5 +1,6 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Sora, Space_Grotesk } from "next/font/google";
 import PlayersProvider from "../components/PlayersProvider";
 import SessionsProvider from "../components/SessionsProvider";
 import WellnessProvider from "../components/WellnessProvider";
@@ -11,9 +12,25 @@ import AppShell from "../components/AppShell";
 import AlumnosProvider from "../components/AlumnosProvider";
 import { AuthSessionProvider } from "../components/AuthSessionProvider";
 
+const bodyFont = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const displayFont = Sora({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "PF Control",
   description: "Plataforma para preparadores físicos",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#081124",
 };
 
 export default function RootLayout({
@@ -43,25 +60,27 @@ export default function RootLayout({
 
   return (
     <html lang="es">
-      <body className="min-h-screen bg-slate-950 text-slate-100">
+      <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
         <AuthSessionProvider>
-          <CategoriesProvider>
-            <EquiposProvider>
-              <DeportesProvider>
-                <EjerciciosProvider>
-                  <PlayersProvider>
-                    <AlumnosProvider>
-                      <SessionsProvider>
-                        <WellnessProvider>
-                          <AppShell links={links}>{children}</AppShell>
-                        </WellnessProvider>
-                      </SessionsProvider>
-                    </AlumnosProvider>
-                  </PlayersProvider>
-                </EjerciciosProvider>
-              </DeportesProvider>
-            </EquiposProvider>
-          </CategoriesProvider>
+          <div className="pf-root-atmosphere">
+            <CategoriesProvider>
+              <EquiposProvider>
+                <DeportesProvider>
+                  <EjerciciosProvider>
+                    <PlayersProvider>
+                      <AlumnosProvider>
+                        <SessionsProvider>
+                          <WellnessProvider>
+                            <AppShell links={links}>{children}</AppShell>
+                          </WellnessProvider>
+                        </SessionsProvider>
+                      </AlumnosProvider>
+                    </PlayersProvider>
+                  </EjerciciosProvider>
+                </DeportesProvider>
+              </EquiposProvider>
+            </CategoriesProvider>
+          </div>
         </AuthSessionProvider>
       </body>
     </html>
