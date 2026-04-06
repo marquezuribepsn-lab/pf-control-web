@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
 
@@ -209,6 +208,8 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [hoveredDockIndex, setHoveredDockIndex] = useState<number | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
+  const dockNavRetryTimerRef = useRef<number | null>(null);
+  const dockNavAttemptRef = useRef(0);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -488,7 +489,20 @@ export default function AppShell({ links, children }: AppShellProps) {
   useEffect(() => {
     setMobileOpen(false);
     setHoveredDockIndex(null);
+
+    if (dockNavRetryTimerRef.current !== null) {
+      window.clearTimeout(dockNavRetryTimerRef.current);
+      dockNavRetryTimerRef.current = null;
+    }
   }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (dockNavRetryTimerRef.current !== null) {
+        window.clearTimeout(dockNavRetryTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (pendingSaveKeys.length === 0) {
@@ -617,14 +631,28 @@ export default function AppShell({ links, children }: AppShellProps) {
       return;
     }
 
+    if (dockNavRetryTimerRef.current !== null) {
+      window.clearTimeout(dockNavRetryTimerRef.current);
+      dockNavRetryTimerRef.current = null;
+    }
+
+    dockNavAttemptRef.current += 1;
+    const attemptId = dockNavAttemptRef.current;
+
     router.push(href);
 
     // Reintento client-side sin hard reload para evitar parpadeo y reseteos del shell.
-    window.setTimeout(() => {
+    dockNavRetryTimerRef.current = window.setTimeout(() => {
+      if (dockNavAttemptRef.current !== attemptId) {
+        return;
+      }
+
       if (normalizePath(window.location.pathname) !== target) {
         router.replace(href);
       }
-    }, 900);
+
+      dockNavRetryTimerRef.current = null;
+    }, 420);
   };
 
   const normalizedPathname = normalizePath(pathname);
@@ -646,13 +674,9 @@ export default function AppShell({ links, children }: AppShellProps) {
               </p>
             </div>
 
-            <Link
-              href="/cuenta"
-              prefetch={false}
-              onClick={(event) => {
-                event.preventDefault();
-                navigateDock("/cuenta");
-              }}
+            <button
+              type="button"
+              onClick={() => navigateDock("/cuenta")}
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -668,7 +692,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   {profileInitials}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -788,19 +812,16 @@ export default function AppShell({ links, children }: AppShellProps) {
 
                   return (
                     <div key={link.href} className="flex items-end">
-                      <Link
-                        href={link.href}
-                        prefetch={false}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          navigateDock(link.href);
-                        }}
+                      <button
+                        type="button"
+                        onClick={() => navigateDock(link.href)}
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}
                         className="group relative flex shrink-0 touch-manipulation flex-col items-center"
                         title={link.label}
                         aria-current={isCurrent ? "page" : undefined}
+                        aria-label={link.label}
                       >
                         <span
                           className={`relative flex h-[2.95rem] w-[2.95rem] items-center justify-center rounded-2xl border pt-[1px] text-[1.15rem] leading-none shadow-[0_8px_18px_rgba(2,6,23,0.45)] transition-colors duration-150 md:h-[3.1rem] md:w-[3.1rem] md:text-[1.22rem] ${
@@ -827,7 +848,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                             {labelText}
                           </span>
                         ) : null}
-                      </Link>
+                      </button>
                     </div>
                   );
                 })}
