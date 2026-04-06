@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from "react";
 import { useEjercicios } from "../../components/EjerciciosProvider";
 
@@ -281,12 +282,12 @@ export default function EjerciciosPage() {
             Gestión de ejercicios disponibles para sesiones de entrenamiento.
           </p>
         </div>
-        <button
+        <ReliableActionButton
           onClick={() => setMostrarFormulario(true)}
           className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Nuevo Ejercicio
-        </button>
+        </ReliableActionButton>
       </div>
 
       {mostrarFormulario && (
@@ -336,7 +337,7 @@ export default function EjerciciosPage() {
                   <p className="text-sm font-medium text-yellow-800 mb-2">💡 Ejercicios similares encontrados:</p>
                   <div className="space-y-1">
                     {sugerencias.map((ejercicio) => (
-                      <button
+                      <ReliableActionButton
                         key={ejercicio.id}
                         type="button"
                         onClick={() => {
@@ -355,7 +356,7 @@ export default function EjerciciosPage() {
                         className="block w-full text-left text-sm text-blue-600 hover:text-blue-800 hover:underline"
                       >
                         {ejercicio.nombre} ({ejercicio.categoria})
-                      </button>
+                      </ReliableActionButton>
                     ))}
                   </div>
                 </div>
@@ -365,7 +366,7 @@ export default function EjerciciosPage() {
               {categoriaSugerida && !formData.categoria && (
                 <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm font-medium text-green-800 mb-1">🎯 Categoría sugerida:</p>
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => {
                       setFormData({ ...formData, categoria: categoriaSugerida });
@@ -375,7 +376,7 @@ export default function EjerciciosPage() {
                     className="text-sm text-green-700 hover:text-green-900 hover:underline font-medium"
                   >
                     {categoriaSugerida} - Hacer clic para aplicar
-                  </button>
+                  </ReliableActionButton>
                 </div>
               )}
 
@@ -384,7 +385,7 @@ export default function EjerciciosPage() {
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm font-medium text-blue-800 mb-1">📝 Descripción sugerida:</p>
                   <p className="text-sm text-blue-700 mb-2">{descripcionGenerada}</p>
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => {
                       setFormData({ ...formData, descripcion: descripcionGenerada });
@@ -393,7 +394,7 @@ export default function EjerciciosPage() {
                     className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     Usar esta descripción
-                  </button>
+                  </ReliableActionButton>
                 </div>
               )}
             </div>
@@ -482,13 +483,13 @@ export default function EjerciciosPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 {editandoEjercicio ? "Actualizar" : "Crear"}
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => {
                   setMostrarFormulario(false);
@@ -501,7 +502,7 @@ export default function EjerciciosPage() {
                 className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
               >
                 Cancelar
-              </button>
+              </ReliableActionButton>
             </div>
           </form>
         </div>
@@ -523,7 +524,7 @@ export default function EjerciciosPage() {
                 </div>
               </div>
               <div className="flex gap-1">
-                <button
+                <ReliableActionButton
                   onClick={() => handleEdit(ejercicio)}
                   className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
                   title="Editar"
@@ -531,8 +532,8 @@ export default function EjerciciosPage() {
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => handleDelete(ejercicio.id)}
                   className="rounded p-1 text-neutral-400 hover:bg-red-100 hover:text-red-600"
                   title="Eliminar"
@@ -540,7 +541,7 @@ export default function EjerciciosPage() {
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                </button>
+                </ReliableActionButton>
               </div>
             </div>
             {ejercicio.descripcion && (
@@ -599,13 +600,13 @@ export default function EjerciciosPage() {
               );
             })()}
             <div className="mt-3 flex gap-2">
-              <button
+              <ReliableActionButton
                 onClick={() => buscarShortEnYouTube(ejercicio.nombre)}
                 className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 title={`Buscar shorts en YouTube del canal ${SHORTS_PROFILE_HANDLE}`}
               >
                 🔍 Buscar Short
-              </button>
+              </ReliableActionButton>
               <a
                 href={SHORTS_PROFILE_URL}
                 target="_blank"

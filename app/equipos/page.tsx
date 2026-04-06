@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useContext, useState } from "react";
 import Link from "@/components/ReliableLink";
 import { useEquipos } from "../../components/EquiposProvider";
@@ -64,12 +65,12 @@ export default function EquiposPage() {
             Gestión de equipos por categoría y temporada.
           </p>
         </div>
-        <button
+        <ReliableActionButton
           onClick={() => setMostrarFormulario(true)}
           className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Nuevo Equipo
-        </button>
+        </ReliableActionButton>
       </div>
 
       {mostrarFormulario && (
@@ -132,13 +133,13 @@ export default function EquiposPage() {
               />
             </div>
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 {editandoEquipo ? "Actualizar" : "Crear"}
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => {
                   setMostrarFormulario(false);
@@ -148,7 +149,7 @@ export default function EquiposPage() {
                 className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
               >
                 Cancelar
-              </button>
+              </ReliableActionButton>
             </div>
           </form>
         </div>
@@ -185,18 +186,18 @@ export default function EquiposPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </Link>
-                <button
+                <ReliableActionButton
                   onClick={() => handleEdit(equipo)}
                   className="rounded-xl border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-50"
                 >
                   Editar
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => handleDelete(equipo.id)}
                   className="rounded-xl border border-red-300 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
                 >
                   Eliminar
-                </button>
+                </ReliableActionButton>
               </div>
             </div>
           </div>

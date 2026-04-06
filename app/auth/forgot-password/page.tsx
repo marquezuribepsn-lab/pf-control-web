@@ -1,5 +1,6 @@
 'use client';
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
@@ -75,13 +76,13 @@ export default function ForgotPasswordPage() {
                   style={{ border: 'none', outline: 'none' }}
                   onClick={e => (e.target as HTMLInputElement).select()}
                 />
-                <button
+                <ReliableActionButton
                   type="button"
                   className="ml-2 px-2 py-1 rounded bg-cyan-700 text-white text-xs"
                   onClick={() => navigator.clipboard.writeText(resetLink)}
                 >
                   Copiar
-                </button>
+                </ReliableActionButton>
               </div>
             )}
 
@@ -97,13 +98,13 @@ export default function ForgotPasswordPage() {
               />
             </label>
 
-            <button
+            <ReliableActionButton
               type="submit"
               disabled={loading}
               className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? 'Enviando enlace...' : 'Enviar enlace de recuperación'}
-            </button>
+            </ReliableActionButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-300">

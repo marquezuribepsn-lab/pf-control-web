@@ -1,5 +1,6 @@
 'use client';
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -114,13 +115,13 @@ function ResetPasswordContent() {
               />
             </label>
 
-            <button
+            <ReliableActionButton
               type="submit"
               disabled={loading || redirecting || !token}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading || redirecting ? 'Guardando...' : 'Guardar nueva contraseña'}
-            </button>
+            </ReliableActionButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-300">

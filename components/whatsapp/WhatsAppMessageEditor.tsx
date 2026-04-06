@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useMemo } from "react";
 
 type Props = {
@@ -56,7 +57,7 @@ export default function WhatsAppMessageEditor({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {vars.map((item) => (
-              <button
+              <ReliableActionButton
                 key={`insert-${item}`}
                 type="button"
                 onClick={() => insertVariable(item)}
@@ -64,7 +65,7 @@ export default function WhatsAppMessageEditor({
                 className="rounded-full border border-cyan-300/40 bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Insertar {`{{${item}}}`}
-              </button>
+              </ReliableActionButton>
             ))}
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSessions } from "../../components/SessionsProvider";
@@ -1038,20 +1039,20 @@ export default function SesionesPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => abrirPantalla("/nueva-sesion")}
               className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
             >
               + Nueva sesion
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => abrirPantalla("/semana")}
               className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
             >
               Ver plan semanal
-            </button>
+            </ReliableActionButton>
           </div>
         </div>
 
@@ -1080,27 +1081,27 @@ export default function SesionesPage() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <button
+        <ReliableActionButton
           type="button"
           onClick={() => abrirPantalla("/asistencias")}
           className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-left text-sm font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-500/20"
         >
           Abrir asistencias
-        </button>
-        <button
+        </ReliableActionButton>
+        <ReliableActionButton
           type="button"
           onClick={() => abrirPantalla("/plantel")}
           className="rounded-2xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
         >
           Abrir plantel
-        </button>
-        <button
+        </ReliableActionButton>
+        <ReliableActionButton
           type="button"
           onClick={() => abrirPantalla("/registros")}
           className="rounded-2xl border border-violet-300/35 bg-violet-500/10 px-4 py-3 text-left text-sm font-semibold text-violet-100 transition hover:-translate-y-0.5 hover:bg-violet-500/20"
         >
           Ver registros
-        </button>
+        </ReliableActionButton>
       </section>
 
       <SesionesAIPlanner />
@@ -1232,24 +1233,24 @@ export default function SesionesPage() {
                 />
               </div>
               <div className="rounded-xl border border-white/15 bg-slate-800 p-3 text-sm text-slate-200">
-                Los bloques se editan al guardar la sesión con el botón "Cargar bloques".
+                Los bloques se editan al guardar la sesión con el botón &quot;Cargar bloques&quot;.
               </div>
             </div>
 
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 type="submit"
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 {editandoSesion ? "Actualizar" : "Crear"}
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={resetForm}
                 className="rounded-xl border border-white/20 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800"
               >
                 Cancelar
-              </button>
+              </ReliableActionButton>
             </div>
           </form>
         </div>
@@ -1260,19 +1261,19 @@ export default function SesionesPage() {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-bold">Editor de bloques</h2>
             <div className="flex gap-2">
-              <button
+              <ReliableActionButton
                 onClick={addBlock}
                 className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white"
               >
                 + Bloque
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 onClick={saveBlocks}
                 className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white"
               >
                 Guardar bloques
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 onClick={() => {
                   setEditandoBloquesId(null);
                   setBloquesDraft([]);
@@ -1281,7 +1282,7 @@ export default function SesionesPage() {
                 className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-slate-100"
               >
                 Cerrar
-              </button>
+              </ReliableActionButton>
             </div>
           </div>
 
@@ -1294,12 +1295,12 @@ export default function SesionesPage() {
               <div key={bloque.id} className="rounded-xl border border-white/10 bg-slate-800 p-4 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-100">Bloque {index + 1}</p>
-                  <button
+                  <ReliableActionButton
                     onClick={() => removeBlock(index)}
                     className="text-xs font-semibold text-red-600"
                   >
                     Eliminar bloque
-                  </button>
+                  </ReliableActionButton>
                 </div>
                 <input
                   value={bloque.titulo}
@@ -1339,13 +1340,13 @@ export default function SesionesPage() {
                             <p className="mb-2 text-xs text-slate-300">
                               No encontramos ese ejercicio en tu biblioteca.
                             </p>
-                            <button
+                            <ReliableActionButton
                               type="button"
                               onClick={() => openQuickExerciseEditor(index, busquedasEjercicio[bloque.id] || "")}
                               className="w-full rounded-md border border-emerald-300/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-200"
                             >
                               Crear ejercicio nuevo
-                            </button>
+                            </ReliableActionButton>
                           </div>
                         );
                       }
@@ -1355,41 +1356,41 @@ export default function SesionesPage() {
                           key={`${bloque.id}-${ej.id}`}
                           className="flex items-center justify-between border-b border-white/10 px-3 py-2"
                         >
-                          <button
+                          <ReliableActionButton
                             type="button"
                             onClick={() => addExerciseToBlock(index, ej.id)}
                             className="flex-1 text-left text-sm text-slate-100 hover:text-cyan-200"
                           >
                             {ej.nombre}
-                          </button>
+                          </ReliableActionButton>
                           <div className="ml-2 flex items-center gap-2">
-                            <button
+                            <ReliableActionButton
                               type="button"
                               onClick={() => openQuickExerciseEditor(index, "", ej.id)}
                               className="text-[11px] font-semibold text-amber-200"
                             >
                               Editar
-                            </button>
-                            <button
+                            </ReliableActionButton>
+                            <ReliableActionButton
                               type="button"
                               onClick={() => addExerciseToBlock(index, ej.id)}
                               className="text-[11px] font-semibold text-slate-300"
                             >
                               + agregar
-                            </button>
+                            </ReliableActionButton>
                           </div>
                         </div>
                       ));
                     })()}
                   </div>
 
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => openQuickExerciseEditor(index, busquedasEjercicio[bloque.id] || "")}
                     className="mt-2 w-full rounded-md border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200"
                   >
                     Nuevo ejercicio rapido
-                  </button>
+                  </ReliableActionButton>
 
                   <div className="mt-3 grid gap-2">
                     {(bloque.ejercicios || []).map((ejercicioAsignado, exerciseIndex) => (
@@ -1398,7 +1399,7 @@ export default function SesionesPage() {
                         className="rounded-md border border-white/10 bg-slate-800 p-3"
                       >
                         <div className="mb-2 flex items-center justify-between">
-                          <button
+                          <ReliableActionButton
                             type="button"
                             onClick={() => setExerciseDetailId(ejercicioAsignado.ejercicioId)}
                             onKeyDown={(e) => {
@@ -1410,14 +1411,14 @@ export default function SesionesPage() {
                             className="text-left text-sm font-semibold text-slate-100 underline-offset-2 hover:text-cyan-300 hover:underline transition-colors"
                           >
                             {getExerciseName(ejercicioAsignado.ejercicioId)}
-                          </button>
-                          <button
+                          </ReliableActionButton>
+                          <ReliableActionButton
                             type="button"
                             onClick={() => removeExerciseFromBlock(index, exerciseIndex)}
                             className="text-xs font-semibold text-red-400"
                           >
                             Quitar
-                          </button>
+                          </ReliableActionButton>
                         </div>
 
                         <div className="mt-2 flex flex-wrap items-end gap-2">
@@ -1499,7 +1500,7 @@ export default function SesionesPage() {
                                   className="w-20 rounded border border-white/20 bg-slate-700 px-2 py-1 text-[10px] text-white"
                                   placeholder="RIR"
                                 />
-                                <button
+                                <ReliableActionButton
                                   type="button"
                                   onClick={() =>
                                     removeMeasurementFromExercise(index, exerciseIndex, measurementIndex)
@@ -1507,7 +1508,7 @@ export default function SesionesPage() {
                                   className="text-[10px] font-semibold text-red-300"
                                 >
                                   x
-                                </button>
+                                </ReliableActionButton>
                               </div>
                               <input
                                 value={medicion.valor}
@@ -1526,14 +1527,14 @@ export default function SesionesPage() {
                             </div>
                           ))}
 
-                          <button
+                          <ReliableActionButton
                             type="button"
                             onClick={() => addMeasurementToExercise(index, exerciseIndex)}
                             className="rounded-md border border-cyan-400/40 px-2 py-2 text-sm font-bold text-cyan-300"
                             title="Agregar métrica"
                           >
                             +
-                          </button>
+                          </ReliableActionButton>
                         </div>
 
                         <textarea
@@ -1570,34 +1571,34 @@ export default function SesionesPage() {
                 <p className="mt-1 text-sm text-slate-300">{sesion.objetivo}</p>
               </div>
               <div className="flex gap-1">
-                <button
+                <ReliableActionButton
                   onClick={() => handleEdit(sesion)}
                   className="rounded p-1 text-slate-300 hover:bg-slate-700 hover:text-white"
                   title="Editar sesión"
                 >
                   Editar
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => startBlockEdit(sesion)}
                   className="rounded p-1 text-cyan-300 hover:bg-slate-700"
                   title="Cargar bloques"
                 >
                   Bloques
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => openAutomation(sesion)}
                   className="rounded p-1 text-emerald-300 hover:bg-slate-700"
                   title="Automatizar cargas"
                 >
                   Progresion
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => handleDelete(sesion.id)}
                   className="rounded p-1 text-slate-300 hover:bg-red-900/40 hover:text-red-300"
                   title="Eliminar"
                 >
                   Eliminar
-                </button>
+                </ReliableActionButton>
               </div>
             </div>
 
@@ -1643,13 +1644,13 @@ export default function SesionesPage() {
                       Ajusta intensidad y volumen solo para las personas que selecciones. La sesion base no se rompe: se guardan prescripciones individuales encima.
                     </p>
                   </div>
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => setAutomatizandoSesionId(null)}
                     className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-200"
                   >
                     Cerrar
-                  </button>
+                  </ReliableActionButton>
                 </div>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-[1.4fr_0.8fr]">
@@ -1797,14 +1798,14 @@ export default function SesionesPage() {
                       </div>
                     ) : null}
 
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => applyAutomation(sesion)}
                       disabled={personasSeleccionadas.length === 0 || sesion.bloques.length === 0}
                       className="mt-4 w-full rounded-xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Aplicar automatizacion
-                    </button>
+                    </ReliableActionButton>
                   </div>
                 </div>
               </div>
@@ -1826,13 +1827,13 @@ export default function SesionesPage() {
                           <p className="font-semibold text-white">{prescripcion.personaNombre}</p>
                           <p className="text-xs text-slate-300">{prescripcion.resumen}</p>
                         </div>
-                        <button
+                        <ReliableActionButton
                           type="button"
                           onClick={() => removePrescription(sesion, prescripcion.id)}
                           className="rounded-lg border border-rose-300/30 px-2 py-1 text-[11px] font-semibold text-rose-200"
                         >
                           Quitar
-                        </button>
+                        </ReliableActionButton>
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
                         <div className="rounded-lg bg-slate-800 px-3 py-2 text-xs">
@@ -1885,13 +1886,13 @@ export default function SesionesPage() {
                 <h2 className="text-lg font-bold text-white">
                   {detailEx?.nombre ?? "Ejercicio"}
                 </h2>
-                <button
+                <ReliableActionButton
                   type="button"
                   onClick={() => setExerciseDetailId(null)}
                   className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800"
                 >
                   Cerrar
-                </button>
+                </ReliableActionButton>
               </div>
 
               <div className="max-h-[80vh] overflow-y-auto p-6 space-y-4">
@@ -1989,13 +1990,13 @@ export default function SesionesPage() {
                   Crea o edita ejercicios sin salir de Sesiones.
                 </p>
               </div>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={resetQuickExercise}
                 className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200"
               >
                 Cerrar
-              </button>
+              </ReliableActionButton>
             </div>
 
             <form onSubmit={submitQuickExercise} className="space-y-4">
@@ -2107,19 +2108,19 @@ export default function SesionesPage() {
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
-                <button
+                <ReliableActionButton
                   type="button"
                   onClick={resetQuickExercise}
                   className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200"
                 >
                   Cancelar
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   type="submit"
                   className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
                 >
                   {quickExerciseEditId ? "Guardar cambios" : "Guardar ejercicio"}
-                </button>
+                </ReliableActionButton>
               </div>
             </form>
           </div>

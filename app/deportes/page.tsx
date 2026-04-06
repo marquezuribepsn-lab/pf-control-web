@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from "react";
 import { useDeportes } from "../../components/DeportesProvider";
 
@@ -56,12 +57,12 @@ export default function DeportesPage() {
             placeholder="Nombre del deporte"
             className="flex-1 rounded-xl border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-500"
           />
-          <button
+          <ReliableActionButton
             onClick={handleAgregarDeporte}
             className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
           >
             Agregar
-          </button>
+          </ReliableActionButton>
         </div>
       </div>
 
@@ -74,7 +75,7 @@ export default function DeportesPage() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-semibold">{deporte.nombre}</h2>
               <div className="flex gap-2">
-                <button
+                <ReliableActionButton
                   onClick={() => toggleDeporte(deporte.nombre)}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${
                     deporte.habilitado
@@ -83,13 +84,13 @@ export default function DeportesPage() {
                   }`}
                 >
                   {deporte.habilitado ? "Habilitado" : "Deshabilitado"}
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   onClick={() => eliminarDeporte(deporte.nombre)}
                   className="rounded-full px-3 py-1 text-xs font-medium bg-red-500 text-white hover:bg-red-600"
                 >
                   Eliminar
-                </button>
+                </ReliableActionButton>
               </div>
             </div>
             <div className="mt-4">
@@ -98,12 +99,12 @@ export default function DeportesPage() {
                 {deporte.posiciones.map((pos, index) => (
                   <li key={index} className="flex items-center justify-between text-sm">
                     <span>{pos}</span>
-                    <button 
+                    <ReliableActionButton 
                       onClick={() => handleEliminarPosicion(deporte.nombre, pos)}
                       className="text-red-500 hover:text-red-700"
                     >
                       ×
-                    </button>
+                    </ReliableActionButton>
                   </li>
                 ))}
               </ul>
@@ -116,20 +117,20 @@ export default function DeportesPage() {
                     placeholder="Nueva posición"
                     className="flex-1 rounded border px-2 py-1 text-sm"
                   />
-                  <button
+                  <ReliableActionButton
                     onClick={() => handleAgregarPosicion(deporte.nombre)}
                     className="rounded bg-neutral-900 px-3 py-1 text-sm text-white"
                   >
                     +
-                  </button>
+                  </ReliableActionButton>
                 </div>
               )}
-              <button
+              <ReliableActionButton
                 onClick={() => setEditando(editando === deporte.nombre ? null : deporte.nombre)}
                 className="mt-2 text-sm text-neutral-600 hover:text-neutral-900"
               >
                 {editando === deporte.nombre ? "Cancelar" : "Editar posiciones"}
-              </button>
+              </ReliableActionButton>
             </div>
           </div>
         ))}

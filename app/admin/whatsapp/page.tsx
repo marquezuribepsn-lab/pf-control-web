@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import WhatsAppMessageEditor from "@/components/whatsapp/WhatsAppMessageEditor";
@@ -738,14 +739,14 @@ export default function AdminWhatsAppPage() {
             </p>
           </div>
 
-          <button
+          <ReliableActionButton
             type="button"
             onClick={saveConfig}
             disabled={saving}
             className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saving ? "Guardando..." : "Guardar cambios"}
-          </button>
+          </ReliableActionButton>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -769,7 +770,7 @@ export default function AdminWhatsAppPage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {TAB_ITEMS.map((tab) => (
-          <button
+          <ReliableActionButton
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
@@ -780,7 +781,7 @@ export default function AdminWhatsAppPage() {
             }`}
           >
             {tab.label}
-          </button>
+          </ReliableActionButton>
         ))}
       </div>
 
@@ -869,22 +870,22 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => sendManual("test")}
                 disabled={actionLoading}
                 className="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Probar Mensaje
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => sendManual("prod")}
                 disabled={actionLoading}
                 className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Enviar ahora
-              </button>
+              </ReliableActionButton>
             </div>
           </div>
         </section>
@@ -993,7 +994,7 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() =>
                   setHistoryFilters({
@@ -1008,7 +1009,7 @@ export default function AdminWhatsAppPage() {
                 className="rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-600"
               >
                 Limpiar filtros
-              </button>
+              </ReliableActionButton>
               <a
                 href={buildHistoryExportUrl()}
                 target="_blank"
@@ -1017,22 +1018,22 @@ export default function AdminWhatsAppPage() {
               >
                 Exportar CSV filtrado
               </a>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => runRunnerNow(false)}
                 disabled={actionLoading}
                 className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
               >
                 Runner ahora (respeta frecuencia)
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={() => runRunnerNow(true)}
                 disabled={actionLoading}
                 className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-50"
               >
                 Runner forzado
-              </button>
+              </ReliableActionButton>
             </div>
 
             <p className="mt-3 text-xs text-slate-400">
@@ -1085,7 +1086,7 @@ export default function AdminWhatsAppPage() {
                           <td className="px-2 py-2">{row.mode || "-"}</td>
                           <td className="px-2 py-2">
                             {details.length > 0 ? (
-                              <button
+                              <ReliableActionButton
                                 type="button"
                                 onClick={() =>
                                   setExpandedHistoryRowId((prev) => (prev === rowKey ? "" : rowKey))
@@ -1093,7 +1094,7 @@ export default function AdminWhatsAppPage() {
                                 className="rounded-md border border-cyan-300/40 bg-cyan-500/10 px-2 py-1 font-semibold text-cyan-100"
                               >
                                 {expanded ? "Ocultar" : `Ver (${details.length})`}
-                              </button>
+                              </ReliableActionButton>
                             ) : (
                               <span className="text-slate-500">-</span>
                             )}
@@ -1543,46 +1544,46 @@ export default function AdminWhatsAppPage() {
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <button
+                        <ReliableActionButton
                           type="button"
                           onClick={() => resetRuleMessage(activeTab, subcategoryKey)}
                           disabled={actionLoading}
                           className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Mensaje por defecto
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           type="button"
                           onClick={() => testSubcategoryMessage(activeTab, subcategoryKey)}
                           disabled={actionLoading}
                           className="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Probar Mensaje
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           type="button"
                           onClick={() => simulateRule(activeTab, subcategoryKey)}
                           disabled={actionLoading}
                           className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Simular
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           type="button"
                           onClick={() => runRule(activeTab, subcategoryKey, true)}
                           disabled={actionLoading}
                           className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Dry run
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           type="button"
                           onClick={() => runRule(activeTab, subcategoryKey, false)}
                           disabled={actionLoading}
                           className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Ejecutar ahora
-                        </button>
+                        </ReliableActionButton>
                       </div>
 
                       {sim ? (

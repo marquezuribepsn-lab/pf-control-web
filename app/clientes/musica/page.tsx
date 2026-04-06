@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useMemo, useState } from "react";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { useSharedState } from "../../../components/useSharedState";
@@ -168,13 +169,13 @@ export default function ClientesMusicaPage() {
           </label>
         </div>
 
-        <button
+        <ReliableActionButton
           type="button"
           onClick={addAssignment}
           className="mt-4 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
         >
           Guardar asignacion musical
-        </button>
+        </ReliableActionButton>
       </section>
 
       <section className="mt-4 rounded-2xl border border-white/15 bg-slate-900/70 p-5">
@@ -201,13 +202,13 @@ export default function ClientesMusicaPage() {
                 {item.recommendedSongArtist ? ` · ${item.recommendedSongArtist}` : ""}
               </p>
 
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => removeAssignment(item.id)}
                 className="mt-2 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-rose-200"
               >
                 Eliminar
-              </button>
+              </ReliableActionButton>
             </article>
           ))}
         </div>

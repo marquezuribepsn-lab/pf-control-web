@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useWellness } from "../../components/WellnessProvider";
@@ -127,12 +128,12 @@ export default function NuevoWellnessPage() {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button
+          <ReliableActionButton
             type="submit"
             className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
           >
             Guardar wellness
-          </button>
+          </ReliableActionButton>
         </div>
       </form>
     </main>

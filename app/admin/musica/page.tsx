@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 
 type PlaylistRow = {
@@ -146,13 +147,13 @@ export default function AdminMusicaPage() {
           />
         </div>
 
-        <button
+        <ReliableActionButton
           type="button"
           onClick={addPlaylist}
           className="mt-3 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
         >
           Guardar playlist
-        </button>
+        </ReliableActionButton>
 
         {status ? <p className="mt-3 text-sm text-emerald-300">{status}</p> : null}
         {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
@@ -170,13 +171,13 @@ export default function AdminMusicaPage() {
               </a>
               <p>Objetivo: {item.objetivo || "-"}</p>
               <p>Dia: {item.diaSemana || "-"}</p>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => removePlaylist(item.id)}
                 className="mt-2 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-rose-200"
               >
                 Eliminar
-              </button>
+              </ReliableActionButton>
             </article>
           ))}
         </div>

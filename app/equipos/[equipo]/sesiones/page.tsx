@@ -16,12 +16,6 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
   const equipoNombre = decodeURIComponent(resolvedParams.equipo);
 
   const equipo = equipos.find((e) => e.nombre === equipoNombre);
-  if (!equipo) {
-    return <div>Equipo no encontrado</div>;
-  }
-
-  const sesionesEquipo = sesiones.filter((sesion) => sesion.equipo === equipo.nombre);
-  const jugadorasEnEquipo = jugadoras.filter((j: Jugadora) => j.categoria === equipo.categoria);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [sesionSeleccionada, setSesionSeleccionada] = useState<string | null>(null);
@@ -55,6 +49,13 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
     carga: "",
     observaciones: "",
   });
+
+  if (!equipo) {
+    return <div>Equipo no encontrado</div>;
+  }
+
+  const sesionesEquipo = sesiones.filter((sesion) => sesion.equipo === equipo.nombre);
+  const jugadorasEnEquipo = jugadoras.filter((j: Jugadora) => j.categoria === equipo.categoria);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

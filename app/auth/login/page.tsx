@@ -1,5 +1,6 @@
 'use client';
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { Suspense, useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -361,27 +362,27 @@ function LoginPageContent() {
                 <span>Recordar inicio de sesión</span>
               </label>
 
-              <button
+              <ReliableActionButton
                 type="submit"
                 disabled={loading}
                 className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Ingresando...' : 'Iniciar sesión'}
-              </button>
+              </ReliableActionButton>
 
               {canUseMagicAccess ? (
                 <>
                   <p className="text-xs font-semibold text-cyan-200/90">
                     Detectamos varios intentos fallidos. Puedes entrar con un enlace seguro al email.
                   </p>
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={handleRequestMagicLink}
                     disabled={magicLoading || loading}
                     className="w-full rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {magicLoading ? 'Enviando enlace...' : 'Entrar con enlace al email'}
-                  </button>
+                  </ReliableActionButton>
                 </>
               ) : null}
 

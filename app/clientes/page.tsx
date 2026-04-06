@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -1565,16 +1566,16 @@ export default function ClientesPage() {
 
           <div className="flex flex-wrap gap-2">
             {isDetailMode ? (
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={closeClientDetail}
                 className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
               >
                 Volver al listado
-              </button>
+              </ReliableActionButton>
             ) : (
               <>
-                <button
+                <ReliableActionButton
                   type="button"
                   onClick={() => {
                     setCrearOpen((prev) => !prev);
@@ -1583,14 +1584,14 @@ export default function ClientesPage() {
                   className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
                 >
                   Crear cliente
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   type="button"
                   onClick={() => router.push("/registros")}
                   className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
                 >
                   Ver registros
-                </button>
+                </ReliableActionButton>
               </>
             )}
           </div>
@@ -1666,12 +1667,12 @@ export default function ClientesPage() {
             <option value="USD">USD</option>
           </select>
 
-          <button
+          <ReliableActionButton
             type="submit"
             className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
           >
             Guardar pago
-          </button>
+          </ReliableActionButton>
         </form>
 
         <div className="mt-4 grid gap-2">
@@ -1766,8 +1767,8 @@ export default function ClientesPage() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setCrearOpen(false)} className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200">Cancelar</button>
-              <button type="submit" className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300">Guardar cliente</button>
+              <ReliableActionButton type="button" onClick={() => setCrearOpen(false)} className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200">Cancelar</ReliableActionButton>
+              <ReliableActionButton type="submit" className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300">Guardar cliente</ReliableActionButton>
             </div>
           </form>
         </section>
@@ -1785,8 +1786,8 @@ export default function ClientesPage() {
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex rounded-xl border border-white/15 bg-slate-950/55 p-1">
-              <button type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "bg-emerald-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Activos</button>
-              <button type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "bg-rose-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Finalizados</button>
+              <ReliableActionButton type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "bg-emerald-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Activos</ReliableActionButton>
+              <ReliableActionButton type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "bg-rose-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Finalizados</ReliableActionButton>
             </div>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="w-full max-w-sm rounded-xl border border-cyan-300/30 bg-slate-900/85 px-3 py-2 text-sm shadow-inner shadow-cyan-500/5" />
           </div>
@@ -1821,48 +1822,48 @@ export default function ClientesPage() {
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px]">
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("todos")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "todos" ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Todos ({planStatusSummary.total})
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan" ? "border-emerald-300/70 bg-emerald-500/20 text-emerald-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Con plan ({planStatusSummary.conPlan})
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("sin-plan")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan" ? "border-rose-300/70 bg-rose-500/20 text-rose-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Sin plan ({planStatusSummary.sinPlan})
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan-entrenamiento")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-entrenamiento" ? "border-lime-300/70 bg-lime-500/20 text-lime-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Entrenamiento ({planStatusSummary.conEntrenamiento})
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan-nutricional")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-nutricional" ? "border-sky-300/70 bg-sky-500/20 text-sky-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Nutricional ({planStatusSummary.conNutricional})
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("sin-plan-nutricional")}
               className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan-nutricional" ? "border-slate-300/70 bg-slate-600/30 text-slate-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
             >
               Sin nutricional ({planStatusSummary.sinNutricional})
-            </button>
+            </ReliableActionButton>
           </div>
 
           <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -1974,12 +1975,12 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                        <button type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</button>
-                        <button type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</button>
-                        <button type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</button>
+                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</ReliableActionButton>
                         <Link href={buildPlanViewHref(cliente.id, "plan-entrenamiento")} prefetch className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan en pantalla nueva">📌</Link>
-                        <button type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</button>
-                        <button type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</button>
+                        <ReliableActionButton type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</ReliableActionButton>
                       </div>
                     </div>
                   </article>
@@ -2004,21 +2005,21 @@ export default function ClientesPage() {
                     <p className="text-xs text-slate-300">{selectedClient.tipo === "jugadora" ? "Perfil de jugadora" : "Perfil de alumno"}</p>
                   </div>
                   <div className="inline-flex items-center gap-2">
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => openWhatsapp(selectedClient)}
                       disabled={!selectedMeta.telefono}
                       className="rounded-lg border border-emerald-300/40 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40"
                     >
                       WhatsApp
-                    </button>
-                    <button
+                    </ReliableActionButton>
+                    <ReliableActionButton
                       type="button"
                       onClick={closeClientDetail}
                       className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
                     >
                       Volver al listado
-                    </button>
+                    </ReliableActionButton>
                   </div>
                 </div>
               </div>
@@ -2056,7 +2057,7 @@ export default function ClientesPage() {
               <div className="mt-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                   {TABS.map((tab, index) => (
-                    <button
+                    <ReliableActionButton
                       key={tab.id}
                       type="button"
                       onClick={() => {
@@ -2079,7 +2080,7 @@ export default function ClientesPage() {
                           </span>
                         </span>
                       </span>
-                    </button>
+                    </ReliableActionButton>
                   ))}
                 </div>
 
@@ -2128,7 +2129,7 @@ export default function ClientesPage() {
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, color: e.target.value }))}
                       className="w-8 h-8 border border-white/20"
                     />
-                    <button type="submit" className="rounded bg-cyan-400 px-2 py-1 text-xs font-bold text-slate-950 hover:bg-cyan-300">+</button>
+                    <ReliableActionButton type="submit" className="rounded bg-cyan-400 px-2 py-1 text-xs font-bold text-slate-950 hover:bg-cyan-300">+</ReliableActionButton>
                   </form>
                   {/* Buscador por etiqueta */}
                   <input
@@ -2204,9 +2205,9 @@ export default function ClientesPage() {
                         </div>
 
                         <div className="mt-4 flex justify-end">
-                          <button type="button" onClick={saveDatosGenerales} className="rounded-xl bg-cyan-400 px-5 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300">
+                          <ReliableActionButton type="button" onClick={saveDatosGenerales} className="rounded-xl bg-cyan-400 px-5 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300">
                             Guardar cambios
-                          </button>
+                          </ReliableActionButton>
                         </div>
                       </div>
                     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import Link from "@/components/ReliableLink";
 import { useCategories } from "../../components/CategoriesProvider";
@@ -442,13 +443,13 @@ export default function AsistenciasPage() {
         </div>
 
         <div className="mt-4">
-          <button
+          <ReliableActionButton
             type="button"
             onClick={crearJornada}
             className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
           >
             Crear jornada
-          </button>
+          </ReliableActionButton>
         </div>
       </section>
 
@@ -503,7 +504,7 @@ export default function AsistenciasPage() {
                         : "border-white/10 bg-slate-950/45"
                     }`}
                   >
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => setSelectedJornadaId(jornada.id)}
                       className="w-full text-left"
@@ -520,33 +521,33 @@ export default function AsistenciasPage() {
                       {jornada.ubicacion ? (
                         <p className="text-xs text-slate-400">{jornada.ubicacion}</p>
                       ) : null}
-                    </button>
+                    </ReliableActionButton>
 
                     <div className="mt-2 flex justify-end gap-2">
                       {jornada.suspendida ? (
-                        <button
+                        <ReliableActionButton
                           type="button"
                           onClick={() => reactivarJornada(jornada.id)}
                           className="rounded-lg border border-emerald-300/35 px-2 py-1 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/10"
                         >
                           Reactivar
-                        </button>
+                        </ReliableActionButton>
                       ) : (
-                        <button
+                        <ReliableActionButton
                           type="button"
                           onClick={() => abrirModalSuspension(jornada.id)}
                           className="rounded-lg border border-amber-300/35 px-2 py-1 text-xs font-semibold text-amber-200 hover:bg-amber-500/10"
                         >
                           Suspender
-                        </button>
+                        </ReliableActionButton>
                       )}
-                      <button
+                      <ReliableActionButton
                         type="button"
                         onClick={() => eliminarJornada(jornada.id)}
                         className="rounded-lg border border-rose-300/35 px-2 py-1 text-xs font-semibold text-rose-200 hover:bg-rose-500/10"
                       >
                         Eliminar
-                      </button>
+                      </ReliableActionButton>
                     </div>
                   </div>
                 );
@@ -576,21 +577,21 @@ export default function AsistenciasPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs font-semibold">
                   {selectedJornada.suspendida ? (
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => reactivarJornada(selectedJornada.id)}
                       className="rounded-full border border-emerald-300/40 px-3 py-1 text-emerald-100 hover:bg-emerald-500/10"
                     >
                       Reactivar jornada
-                    </button>
+                    </ReliableActionButton>
                   ) : (
-                    <button
+                    <ReliableActionButton
                       type="button"
                       onClick={() => abrirModalSuspension(selectedJornada.id)}
                       className="rounded-full border border-amber-300/40 px-3 py-1 text-amber-100 hover:bg-amber-500/10"
                     >
                       Suspender jornada
-                    </button>
+                    </ReliableActionButton>
                   )}
                   <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-100">
                     Presentes: {resumen.presentes}
@@ -625,7 +626,7 @@ export default function AsistenciasPage() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2">
-                            <button
+                            <ReliableActionButton
                               type="button"
                               onClick={() =>
                                 guardarEstado(selectedJornada.id, jugadora.nombre, "presente")
@@ -638,8 +639,8 @@ export default function AsistenciasPage() {
                               } disabled:cursor-not-allowed disabled:opacity-45`}
                             >
                               Presente
-                            </button>
-                            <button
+                            </ReliableActionButton>
+                            <ReliableActionButton
                               type="button"
                               onClick={() =>
                                 guardarEstado(
@@ -657,7 +658,7 @@ export default function AsistenciasPage() {
                               } disabled:cursor-not-allowed disabled:opacity-45`}
                             >
                               Ausente
-                            </button>
+                            </ReliableActionButton>
                           </div>
                         </div>
 
@@ -701,13 +702,13 @@ export default function AsistenciasPage() {
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-lg font-bold text-amber-100">Suspender jornada</h3>
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
                 className="rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-slate-200"
               >
                 Cerrar
-              </button>
+              </ReliableActionButton>
             </div>
 
             <p className="text-sm text-slate-300">
@@ -734,20 +735,20 @@ export default function AsistenciasPage() {
             </div>
 
             <div className="mt-4 flex justify-end gap-2">
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
                 className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200"
               >
                 Cancelar
-              </button>
-              <button
+              </ReliableActionButton>
+              <ReliableActionButton
                 type="button"
                 onClick={confirmarSuspension}
                 className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-300"
               >
                 Confirmar suspension
-              </button>
+              </ReliableActionButton>
             </div>
           </div>
         </div>

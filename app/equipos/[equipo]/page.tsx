@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, use, useState } from "react";
+import { useContext, use, useEffect, useState } from "react";
 import { PlayersContext } from "../../../components/PlayersProvider";
 import { CategoriesContext } from "../../../components/CategoriesProvider";
 import { useEquipos } from "../../../components/EquiposProvider";
@@ -14,6 +14,30 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
   const equipoNombre = decodeURIComponent(resolvedParams.equipo);
 
   const equipo = equipos.find((e) => e.nombre === equipoNombre);
+
+  const [cambiandoCategoria, setCambiandoCategoria] = useState<string | null>(null);
+  const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [editandoEquipo, setEditandoEquipo] = useState(false);
+  const [formData, setFormData] = useState({
+    nombre: equipo?.nombre || "",
+    categoria: equipo?.categoria || "",
+    temporada: equipo?.temporada || "",
+    descripcion: equipo?.descripcion || "",
+  });
+
+  useEffect(() => {
+    if (!equipo) {
+      return;
+    }
+
+    setFormData({
+      nombre: equipo.nombre,
+      categoria: equipo.categoria,
+      temporada: equipo.temporada,
+      descripcion: equipo.descripcion || "",
+    });
+  }, [equipo?.id]);
+
   if (!equipo) {
     return <div>Equipo no encontrado</div>;
   }
@@ -21,16 +45,6 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
   const jugadorasEnEquipo = jugadoras.filter(
     (jugadora: Jugadora) => jugadora.categoria === equipo.categoria
   );
-
-  const [cambiandoCategoria, setCambiandoCategoria] = useState<string | null>(null);
-  const [nuevaCategoria, setNuevaCategoria] = useState("");
-  const [editandoEquipo, setEditandoEquipo] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre: equipo.nombre,
-    categoria: equipo.categoria,
-    temporada: equipo.temporada,
-    descripcion: equipo.descripcion || "",
-  });
 
   const handleUpdateEquipo = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
@@ -1629,20 +1630,20 @@ export default function SemanaPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
+          <ReliableActionButton
             onClick={agregarSemana}
             disabled={!planSeleccionado}
             className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             + Semana
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             onClick={resetearPlanSeleccionado}
             disabled={!planSeleccionado}
             className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             Resetear plan seleccionado
-          </button>
+          </ReliableActionButton>
         </div>
       </div>
 
@@ -1655,18 +1656,18 @@ export default function SemanaPage() {
                 Registro automatico de cambios recientes en semanas de alumnos.
               </p>
             </div>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => setAlumnoNotifications([])}
               className="rounded-xl border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-200"
             >
               Limpiar alertas
-            </button>
+            </ReliableActionButton>
           </div>
 
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {alumnoNotifications.slice(0, 6).map((notification) => (
-              <button
+              <ReliableActionButton
                 key={notification.id}
                 type="button"
                 onClick={() => {
@@ -1688,7 +1689,7 @@ export default function SemanaPage() {
                 <p className="mt-3 text-[11px] text-slate-400">
                   {new Date(notification.createdAt).toLocaleString("es-AR")}
                 </p>
-              </button>
+              </ReliableActionButton>
             ))}
           </div>
         </section>
@@ -1749,7 +1750,7 @@ export default function SemanaPage() {
             const isSelected = ownerKey === selectedOwnerKey;
 
             return (
-              <button
+              <ReliableActionButton
                 key={ownerKey}
                 type="button"
                 onClick={() => seleccionarPersona(persona)}
@@ -1761,7 +1762,7 @@ export default function SemanaPage() {
               >
                 {persona.nombre}
                 {persona.categoria ? ` - ${persona.categoria}` : ""}
-              </button>
+              </ReliableActionButton>
             );
           })}
           {personasFiltradas.length === 0 && (
@@ -1783,13 +1784,13 @@ export default function SemanaPage() {
             placeholder="Nombre de plantilla"
             className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
           />
-          <button
+          <ReliableActionButton
             onClick={guardarPlantilla}
             disabled={!personaSeleccionada || !planSeleccionado || !templateNombre.trim()}
             className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Guardar plantilla actual
-          </button>
+          </ReliableActionButton>
           <div className="text-xs text-slate-300">
             Compatibles: {templatesCompatibles.length}
           </div>
@@ -1809,20 +1810,20 @@ export default function SemanaPage() {
               </option>
             ))}
           </select>
-          <button
+          <ReliableActionButton
             onClick={aplicarPlantilla}
             disabled={!selectedTemplateId || !planSeleccionado}
             className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm font-semibold text-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Aplicar plantilla
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             onClick={eliminarPlantilla}
             disabled={!selectedTemplateId}
             className="rounded-xl border border-rose-400/40 px-4 py-2 text-sm font-semibold text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Eliminar plantilla
-          </button>
+          </ReliableActionButton>
         </div>
       </section>
 
@@ -1839,13 +1840,13 @@ export default function SemanaPage() {
             placeholder="Etiqueta opcional (ej: Pretemporada)"
             className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
           />
-          <button
+          <ReliableActionButton
             onClick={guardarEnHistorial}
             disabled={!planSeleccionado}
             className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Guardar version en historial
-          </button>
+          </ReliableActionButton>
           <p className="text-xs text-slate-300">Versiones guardadas: {historialPlanSeleccionado.length}</p>
         </div>
 
@@ -1880,13 +1881,13 @@ export default function SemanaPage() {
         </div>
 
         <div className="mt-3 flex gap-2">
-          <button
+          <ReliableActionButton
             onClick={restaurarDesdeHistorial}
             disabled={!compareAId || !planSeleccionado}
             className="rounded-xl border border-amber-300/40 px-4 py-2 text-sm font-semibold text-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Restaurar version A
-          </button>
+          </ReliableActionButton>
         </div>
 
         {comparacion && (
@@ -1976,7 +1977,7 @@ export default function SemanaPage() {
             {insightsUnicos.acciones.length > 0 ? (
               <div className="mt-3 grid gap-2">
                 {insightsUnicos.acciones.map((action) => (
-                  <button
+                  <ReliableActionButton
                     key={action.id}
                     type="button"
                     onClick={() => applySuggestion(action.id)}
@@ -2013,7 +2014,7 @@ export default function SemanaPage() {
                     >
                       {action.detail}
                     </div>
-                  </button>
+                  </ReliableActionButton>
                 ))}
               </div>
             ) : null}
@@ -2062,18 +2063,18 @@ export default function SemanaPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <button
+                  <ReliableActionButton
                     onClick={() => duplicarSemana(semana.id)}
                     className="rounded-lg border border-cyan-400/40 px-3 py-2 text-xs font-semibold text-cyan-200"
                   >
                     Duplicar semana
-                  </button>
-                  <button
+                  </ReliableActionButton>
+                  <ReliableActionButton
                     onClick={() => eliminarSemana(semana.id)}
                     className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs font-semibold text-rose-200"
                   >
                     Eliminar semana
-                  </button>
+                  </ReliableActionButton>
                 </div>
               </div>
 
@@ -2204,12 +2205,12 @@ export default function SemanaPage() {
                       </div>
                     )}
 
-                    <button
+                    <ReliableActionButton
                       onClick={() => eliminarDia(semana.id, dia.id)}
                       className="mt-3 rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs font-semibold text-rose-200"
                     >
                       Eliminar dia
-                    </button>
+                    </ReliableActionButton>
                   </div>
                 ))}
               </div>
@@ -2234,12 +2235,12 @@ export default function SemanaPage() {
                     className="rounded-xl border border-white/20 bg-slate-700 px-3 py-2 text-sm md:col-span-2"
                   />
                 </div>
-                <button
+                <ReliableActionButton
                   onClick={() => agregarDia(semana.id)}
                   className="mt-3 rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950"
                 >
                   Agregar dia
-                </button>
+                </ReliableActionButton>
               </div>
             </section>
           ))}

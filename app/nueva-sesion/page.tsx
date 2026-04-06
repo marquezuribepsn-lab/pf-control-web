@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useSessions } from "../../components/SessionsProvider";
@@ -90,13 +91,13 @@ export default function NuevaSesionPage() {
             </p>
           </div>
 
-          <button
+          <ReliableActionButton
             type="button"
             onClick={goToSesiones}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a Sesiones
-          </button>
+          </ReliableActionButton>
         </div>
       </section>
 
@@ -218,19 +219,19 @@ export default function NuevaSesionPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <button
+          <ReliableActionButton
             type="button"
             onClick={goToSesiones}
             className="rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
           >
             Volver sin guardar
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             type="submit"
             className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
           >
             Guardar sesión
-          </button>
+          </ReliableActionButton>
         </div>
       </form>
     </main>

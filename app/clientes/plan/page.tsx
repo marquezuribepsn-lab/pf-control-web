@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -344,7 +345,7 @@ function ClientePlanContent() {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <button
+          <ReliableActionButton
             type="button"
             onClick={() => switchPlanTab("plan-entrenamiento")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
@@ -354,8 +355,8 @@ function ClientePlanContent() {
             }`}
           >
             Plan entrenamiento
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             type="button"
             onClick={() => switchPlanTab("plan-nutricional")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
@@ -365,7 +366,7 @@ function ClientePlanContent() {
             }`}
           >
             Plan nutricional
-          </button>
+          </ReliableActionButton>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 
 type AccessOption = {
@@ -626,20 +627,20 @@ export default function AdminUsuariosPermisosPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
+          <ReliableActionButton
             type="button"
             onClick={() => setShowCreateForm((prev) => !prev)}
             className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300"
           >
             {showCreateForm ? "Cerrar alta" : "+ Nuevo colaborador"}
-          </button>
-          <button
+          </ReliableActionButton>
+          <ReliableActionButton
             type="button"
             onClick={() => setShowColaboradoresPanel((prev) => !prev)}
             className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-2 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/25"
           >
             {showColaboradoresPanel ? "Ocultar colaboradores" : "Ver colaboradores"}
-          </button>
+          </ReliableActionButton>
         </div>
       </div>
 
@@ -737,14 +738,14 @@ export default function AdminUsuariosPermisosPage() {
           </div>
 
           <div className="mt-4">
-            <button
+            <ReliableActionButton
               type="button"
               onClick={() => void createColaborador()}
               disabled={createLoading}
               className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createLoading ? "Creando..." : "Crear colaborador"}
-            </button>
+            </ReliableActionButton>
           </div>
         </section>
       ) : null}
@@ -805,7 +806,7 @@ export default function AdminUsuariosPermisosPage() {
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <button
+                        <ReliableActionButton
                           type="button"
                           onClick={() => {
                             void openDetailPanel(item.id);
@@ -813,8 +814,8 @@ export default function AdminUsuariosPermisosPage() {
                           className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/20"
                         >
                           {expandedColaboradorId === item.id ? "Cerrar panel completo" : "Gestionar completo"}
-                        </button>
-                        <button
+                        </ReliableActionButton>
+                        <ReliableActionButton
                           type="button"
                           onClick={() => {
                             setShowColaboradoresPanel(false);
@@ -825,7 +826,7 @@ export default function AdminUsuariosPermisosPage() {
                           className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-100 transition hover:bg-white/10"
                         >
                           Ir a permisos rapidos
-                        </button>
+                        </ReliableActionButton>
                       </div>
 
                       {expandedColaboradorId === item.id ? (
@@ -915,23 +916,23 @@ export default function AdminUsuariosPermisosPage() {
                               </div>
 
                               <div className="flex flex-wrap gap-2">
-                                <button
+                                <ReliableActionButton
                                   type="button"
                                   onClick={() => void saveDetail(item.id)}
                                   disabled={detailSavingId === item.id}
                                   className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                   {detailSavingId === item.id ? "Guardando..." : "Guardar datos"}
-                                </button>
-                                <button
+                                </ReliableActionButton>
+                                <ReliableActionButton
                                   type="button"
                                   onClick={() => void sendVerification(item.id)}
                                   disabled={detailActionLoadingId === item.id}
                                   className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2 text-sm font-bold text-cyan-100 transition hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                   Enviar verificacion
-                                </button>
-                                <button
+                                </ReliableActionButton>
+                                <ReliableActionButton
                                   type="button"
                                   onClick={() => void toggleEstadoColaborador(item.id)}
                                   disabled={detailActionLoadingId === item.id}
@@ -942,7 +943,7 @@ export default function AdminUsuariosPermisosPage() {
                                   }`}
                                 >
                                   {detailDraft.estado === "suspendido" ? "Reactivar" : "Dar de baja"}
-                                </button>
+                                </ReliableActionButton>
                               </div>
 
                               <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
@@ -997,14 +998,14 @@ export default function AdminUsuariosPermisosPage() {
                                   )}
                                 </div>
 
-                                <button
+                                <ReliableActionButton
                                   type="button"
                                   onClick={() => void saveAsignaciones(item.id)}
                                   disabled={assignSavingId === item.id}
                                   className="mt-3 rounded-xl border border-emerald-300/40 bg-emerald-500/15 px-4 py-2 text-sm font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                   {assignSavingId === item.id ? "Actualizando..." : "Actualizar asignaciones"}
-                                </button>
+                                </ReliableActionButton>
                               </div>
 
                               <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
@@ -1104,20 +1105,20 @@ export default function AdminUsuariosPermisosPage() {
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-bold text-slate-100">Acceso a categorias y apartados</p>
                 <div className="flex gap-2">
-                  <button
+                  <ReliableActionButton
                     type="button"
                     onClick={() => setAllAccess(item.id, true)}
                     className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-200"
                   >
                     Dar todo
-                  </button>
-                  <button
+                  </ReliableActionButton>
+                  <ReliableActionButton
                     type="button"
                     onClick={() => setAllAccess(item.id, false)}
                     className="rounded-lg border border-rose-300/40 bg-rose-500/15 px-3 py-1 text-xs font-bold text-rose-200"
                   >
                     Quitar todo
-                  </button>
+                  </ReliableActionButton>
                 </div>
               </div>
 
@@ -1148,14 +1149,14 @@ export default function AdminUsuariosPermisosPage() {
             </div>
 
             <div className="mt-4">
-              <button
+              <ReliableActionButton
                 type="button"
                 disabled={savingId === item.id || item.estado === "suspendido"}
                 onClick={() => void saveItem(item.id)}
                 className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {savingId === item.id ? "Guardando permisos..." : "Guardar permisos"}
-              </button>
+              </ReliableActionButton>
             </div>
           </section>
         ))}

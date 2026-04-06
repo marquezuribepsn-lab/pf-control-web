@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useMemo } from "react";
 import * as XLSX from "xlsx";
@@ -324,13 +325,13 @@ export default function RegistrosPage() {
           <p className="text-sm text-slate-300">
             Consolidado por mes en base a pagos registrados en Clientes.
           </p>
-          <button
+          <ReliableActionButton
             type="button"
             onClick={exportarExcelIngresos}
             className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             Descargar Excel
-          </button>
+          </ReliableActionButton>
         </div>
 
         {resumenMensualIngresos.length === 0 ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from "react";
 
 export default function NuevaJugadoraPage() {
@@ -150,12 +151,12 @@ export default function NuevaJugadoraPage() {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button
+          <ReliableActionButton
             type="submit"
             className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
           >
             Guardar jugadora
-          </button>
+          </ReliableActionButton>
         </div>
       </form>
     </main>

@@ -1,4 +1,5 @@
 "use client";
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from 'react';
 
 export default function NuevoColaboradorPage() {
@@ -99,9 +100,9 @@ export default function NuevoColaboradorPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={loading} className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70">
+          <ReliableActionButton type="submit" disabled={loading} className="rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70">
             {loading ? 'Creando...' : 'Crear colaborador'}
-          </button>
+          </ReliableActionButton>
           {success && <span className="text-sm font-semibold text-emerald-300">Colaborador creado y credenciales enviadas por mail.</span>}
           {error && <span className="text-sm font-semibold text-rose-300">{error}</span>}
         </div>

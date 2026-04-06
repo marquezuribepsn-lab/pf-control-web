@@ -1,3 +1,4 @@
+import ReliableActionButton from "@/components/ReliableActionButton";
 import React from "react";
 
 export type Etiqueta = {
@@ -23,20 +24,20 @@ export const EtiquetasChips: React.FC<EtiquetasChipsProps> = ({ etiquetas, onEdi
         >
           {etiqueta.texto}
           {onEdit && (
-            <button
+            <ReliableActionButton
               className="ml-2 text-xs font-bold"
               style={{ color: "#fff" }}
               onClick={() => onEdit(etiqueta)}
               title="Editar etiqueta"
-            >✎</button>
+            >✎</ReliableActionButton>
           )}
           {onDelete && (
-            <button
+            <ReliableActionButton
               className="ml-1 text-xs font-bold"
               style={{ color: "#fff" }}
               onClick={() => onDelete(etiqueta.id)}
               title="Eliminar etiqueta"
-            >×</button>
+            >×</ReliableActionButton>
           )}
         </span>
       ))}

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 

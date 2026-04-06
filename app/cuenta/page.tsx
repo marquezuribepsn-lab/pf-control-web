@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 
@@ -171,13 +172,13 @@ export default function CuentaPage() {
               <p className="text-sm text-amber-100">
                 Tu email todavía no está verificado. Si no encontrás el mensaje, podés reenviarlo ahora.
               </p>
-              <button
+              <ReliableActionButton
                 onClick={handleResendVerification}
                 disabled={sendingVerification}
                 className="mt-3 rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {sendingVerification ? "Enviando..." : "Enviar mail de verificación"}
-              </button>
+              </ReliableActionButton>
             </div>
           )}
         </section>
@@ -222,13 +223,13 @@ export default function CuentaPage() {
               />
             </label>
 
-            <button
+            <ReliableActionButton
               type="submit"
               disabled={saving}
               className="rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {saving ? "Guardando..." : "Guardar cambios"}
-            </button>
+            </ReliableActionButton>
           </form>
 
           <div className="mt-6 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
@@ -236,14 +237,14 @@ export default function CuentaPage() {
             <p className="mt-1 text-xs text-rose-100/90">
               Si terminaste de usar el sistema, cerrá tu sesion desde aca.
             </p>
-            <button
+            <ReliableActionButton
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
               className="mt-3 rounded-xl border border-rose-200/60 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 transition hover:bg-rose-500/35 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {signingOut ? "Cerrando sesion..." : "Cerrar sesion"}
-            </button>
+            </ReliableActionButton>
           </div>
         </section>
       </div>

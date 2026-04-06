@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -717,14 +718,14 @@ export default function AppShell({ links, children }: AppShellProps) {
         {pendingSaveKeys.length > 0 ? (
           <div className="fixed left-4 top-[5.35rem] z-[59] pointer-events-none">
             <div className="pointer-events-auto space-y-2">
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={() => setPendingPanelOpen((prev) => !prev)}
                 className="rounded-xl border border-amber-300/45 bg-amber-500/15 px-3 py-2 text-xs font-semibold text-amber-100 shadow-lg backdrop-blur-md"
               >
                 Cambios pendientes de guardar ({pendingSaveKeys.length})
                 {pendingBadgeSummary ? ` · ${pendingBadgeSummary}` : ""}
-              </button>
+              </ReliableActionButton>
 
               {pendingPanelOpen ? (
                 <div className="w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">

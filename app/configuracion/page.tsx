@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -284,21 +285,21 @@ export default function ConfiguracionPage() {
         </p>
 
         <div className="mt-4 grid gap-3 md:grid-cols-[auto_auto_auto] md:items-center">
-          <button
+          <ReliableActionButton
             type="button"
             onClick={abrirEditorInicio}
             className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
           >
             Editar inicio
-          </button>
+          </ReliableActionButton>
 
-          <button
+          <ReliableActionButton
             type="button"
             onClick={resetearMenu}
             className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white"
           >
             Reset menu lateral
-          </button>
+          </ReliableActionButton>
 
           <label className="cursor-pointer rounded-xl border border-cyan-300/45 px-4 py-2 text-center text-sm font-semibold text-cyan-100">
             Cambiar imagen sidebar
@@ -314,13 +315,13 @@ export default function ConfiguracionPage() {
         {sidebarImage ? (
           <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3">
             <img src={sidebarImage} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
-            <button
+            <ReliableActionButton
               type="button"
               onClick={removeSidebarImage}
               className="rounded-lg border border-rose-300/45 px-3 py-1.5 text-xs font-semibold text-rose-100"
             >
               Quitar imagen
-            </button>
+            </ReliableActionButton>
           </div>
         ) : null}
 
@@ -351,7 +352,7 @@ export default function ConfiguracionPage() {
       <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
         <h2 className="text-xl font-bold">Pantalla</h2>
         <p className="mt-1 text-sm text-slate-300">
-          Solo puedes cambiar el tamano cuando activas "Modificar pantalla".
+          Solo puedes cambiar el tamano cuando activas &quot;Modificar pantalla&quot;.
         </p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
@@ -376,38 +377,38 @@ export default function ConfiguracionPage() {
 
           <div className="flex flex-wrap gap-2">
             {!editMode ? (
-              <button
+              <ReliableActionButton
                 type="button"
                 onClick={activarModificacion}
                 className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
               >
                 Modificar pantalla
-              </button>
+              </ReliableActionButton>
             ) : (
               <>
-                <button
+                <ReliableActionButton
                   type="button"
                   onClick={guardarPantalla}
                   className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
                 >
                   Guardar cambios
-                </button>
-                <button
+                </ReliableActionButton>
+                <ReliableActionButton
                   type="button"
                   onClick={cancelarModificacion}
                   className="rounded-xl border border-white/25 px-4 py-2 text-sm font-semibold text-white"
                 >
                   Cancelar
-                </button>
+                </ReliableActionButton>
               </>
             )}
-            <button
+            <ReliableActionButton
               type="button"
               onClick={resetPantalla}
               className="rounded-xl border border-rose-300/45 px-4 py-2 text-sm font-semibold text-rose-100"
             >
               Reset 100%
-            </button>
+            </ReliableActionButton>
           </div>
         </div>
       </section>
@@ -428,13 +429,13 @@ export default function ConfiguracionPage() {
             Activar notificaciones de cambios
           </label>
 
-          <button
+          <ReliableActionButton
             type="button"
             onClick={solicitarPermisoNotificaciones}
             className="rounded-xl border border-cyan-300/45 px-4 py-2 text-sm font-semibold text-cyan-100"
           >
             Permitir notificaciones
-          </button>
+          </ReliableActionButton>
         </div>
 
         <p className="mt-3 text-xs text-slate-400">
@@ -448,30 +449,30 @@ export default function ConfiguracionPage() {
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
+            <ReliableActionButton
               type="button"
               disabled={!pushSupported || !VAPID_PUBLIC_KEY || pushLoading}
               onClick={activarPushRemoto}
               className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Activar push remoto
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               disabled={!pushSupported || pushLoading}
               onClick={desactivarPushRemoto}
               className="rounded-xl border border-rose-300/45 px-4 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Desactivar push
-            </button>
-            <button
+            </ReliableActionButton>
+            <ReliableActionButton
               type="button"
               disabled={!pushSubscribed}
               onClick={enviarPruebaPush}
               className="rounded-xl border border-emerald-300/45 px-4 py-2 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Enviar prueba
-            </button>
+            </ReliableActionButton>
           </div>
 
           <p className="mt-2 text-xs text-slate-400">

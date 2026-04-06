@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useContext, useState } from "react";
 import { PlayersContext } from "../../components/PlayersProvider";
@@ -58,12 +59,12 @@ export default function CategoriasPage() {
             placeholder="Nombre de la categoría"
             className="flex-1 rounded-xl border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-500"
           />
-          <button
+          <ReliableActionButton
             onClick={handleAgregarCategoria}
             className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
           >
             Agregar
-          </button>
+          </ReliableActionButton>
         </div>
       </div>
 
@@ -84,7 +85,7 @@ export default function CategoriasPage() {
                   {categoria.nombre}
                 </h2>
                 <div className="flex gap-2">
-                  <button
+                  <ReliableActionButton
                     onClick={() => toggleCategoria(categoria.nombre)}
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
                       categoria.habilitada
@@ -93,13 +94,13 @@ export default function CategoriasPage() {
                     }`}
                   >
                     {categoria.habilitada ? "Habilitada" : "Deshabilitada"}
-                  </button>
-                  <button
+                  </ReliableActionButton>
+                  <ReliableActionButton
                     onClick={() => eliminarCategoria(categoria.nombre)}
                     className="rounded-full px-3 py-1 text-xs font-medium bg-red-500 text-white hover:bg-red-600"
                   >
                     Eliminar
-                  </button>
+                  </ReliableActionButton>
                 </div>
               </div>
               <div className="mt-4 space-y-2 text-sm text-neutral-600">

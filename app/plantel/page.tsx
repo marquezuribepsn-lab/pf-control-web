@@ -1,5 +1,6 @@
 "use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useMemo, useState } from "react";
 import { usePlayers } from "../../components/PlayersProvider";
@@ -150,7 +151,7 @@ export default function PlantelPage() {
                       placeholder="Nuevo nombre"
                     />
                     <div className="mt-2 flex gap-2">
-                      <button
+                      <ReliableActionButton
                         onClick={() => {
                           const trimmed = nuevoNombre.trim();
                           if (trimmed && trimmed !== jugadora.nombre) {
@@ -162,8 +163,8 @@ export default function PlantelPage() {
                         className="rounded-lg bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500"
                       >
                         Guardar
-                      </button>
-                      <button
+                      </ReliableActionButton>
+                      <ReliableActionButton
                         onClick={() => {
                           setEditando(null);
                           setNuevoNombre("");
@@ -171,7 +172,7 @@ export default function PlantelPage() {
                         className="rounded-lg border border-white/20 px-3 py-1 text-sm text-slate-200 hover:bg-white/10"
                       >
                         Cancelar
-                      </button>
+                      </ReliableActionButton>
                     </div>
                   </div>
                 ) : (
@@ -202,7 +203,7 @@ export default function PlantelPage() {
                   >
                     Asistencia
                   </Link>
-                  <button
+                  <ReliableActionButton
                     onClick={() => {
                       setEditando(jugadora.nombre);
                       setNuevoNombre(jugadora.nombre);
@@ -210,8 +211,8 @@ export default function PlantelPage() {
                     className="rounded-lg border border-white/20 px-3 py-1 text-sm text-slate-100 hover:bg-white/10"
                   >
                     Editar
-                  </button>
-                  <button
+                  </ReliableActionButton>
+                  <ReliableActionButton
                     onClick={() => {
                       if (confirm(`Eliminar a ${jugadora.nombre}?`)) {
                         eliminarJugadora(jugadora.nombre);
@@ -220,7 +221,7 @@ export default function PlantelPage() {
                     className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
                   >
                     Eliminar
-                  </button>
+                  </ReliableActionButton>
                 </div>
               </div>
             </div>

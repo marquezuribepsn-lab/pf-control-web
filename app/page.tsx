@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { CategoriesContext } from "../components/CategoriesProvider";
@@ -152,7 +153,7 @@ const CATEGORY_GRADIENTS = [
   "from-sky-500 to-indigo-600",
 ];
 
-const CATEGORY_ICONS = ["⚡", "🛡️", "🎯", "🚀", "🏆", "🔥", "🌟", "💪"];
+const CATEGORY_ICONS = ["SP", "DF", "GO", "AC", "WN", "EN", "ST", "PW"];
 
 const defaultConfig: HomeConfig = {
   badge: "ATHLETIC EDITION",
@@ -172,8 +173,8 @@ const defaultConfig: HomeConfig = {
   bloques: "3",
   objetivo: "Desarrollar fuerza, prevencion y aceleracion con control de carga.",
   alertas: [
-    { nombre: "Valentina Ruiz", detalle: "Fatiga alta · Wellness 4" },
-    { nombre: "Sofia Gomez", detalle: "Molestia leve · Seguimiento" },
+    { nombre: "Valentina Ruiz", detalle: "Fatiga alta - Wellness 4" },
+    { nombre: "Sofia Gomez", detalle: "Molestia leve - Seguimiento" },
   ],
   modulos: [
     {
@@ -483,34 +484,34 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-2">
               {!editando ? (
-                <button
+                <ReliableActionButton
                   onClick={() => setEditando(true)}
                   className="rounded-lg bg-cyan-400 px-3 py-1.5 text-sm font-bold text-slate-900"
                 >
                   Editar inicio
-                </button>
+                </ReliableActionButton>
               ) : (
                 <>
-                  <button
+                  <ReliableActionButton
                     onClick={guardarConfig}
                     className="rounded-lg bg-emerald-400 px-3 py-1.5 text-sm font-bold text-slate-900"
                   >
                     Guardar cambios
-                  </button>
-                  <button
+                  </ReliableActionButton>
+                  <ReliableActionButton
                     onClick={() => setEditando(false)}
                     className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
                   >
                     Cancelar
-                  </button>
+                  </ReliableActionButton>
                 </>
               )}
-              <button
+              <ReliableActionButton
                 onClick={resetConfig}
                 className="rounded-lg border border-rose-300/50 px-3 py-1.5 text-sm font-semibold text-rose-100"
               >
                 Reset
-              </button>
+              </ReliableActionButton>
               <Link
                 href="/"
                 onClick={closeHomeEditMode}
@@ -645,7 +646,7 @@ export default function Home() {
                 <p className="mt-2 text-4xl font-black tracking-tight text-white">{stat.value}</p>
                 <p className="mt-2 text-xs text-slate-300">{statHint}</p>
                 <span className="absolute right-4 top-3 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
-                  ir →
+                  ir &gt;
                 </span>
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
@@ -912,12 +913,12 @@ export default function Home() {
             <div className="mb-3 flex items-center justify-between gap-2">
               <h3 className="text-lg font-black text-amber-100">Alertas</h3>
               {editando && (
-                <button
+                <ReliableActionButton
                   onClick={addAlerta}
                   className="rounded-md bg-amber-300 px-2 py-1 text-xs font-bold text-slate-900"
                 >
                   + Alerta
-                </button>
+                </ReliableActionButton>
               )}
             </div>
             <div className="space-y-3">
@@ -935,12 +936,12 @@ export default function Home() {
                         onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
                         className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
                       />
-                      <button
+                      <ReliableActionButton
                         onClick={() => removeAlerta(index)}
                         className="mt-2 text-xs font-semibold text-rose-300"
                       >
                         Eliminar alerta
-                      </button>
+                      </ReliableActionButton>
                     </>
                   ) : (
                     <>
@@ -958,12 +959,12 @@ export default function Home() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-2xl font-black">Modulos y accesos</h3>
             {editando && (
-              <button
+              <ReliableActionButton
                 onClick={addModulo}
                 className="rounded-md bg-cyan-300 px-2 py-1 text-xs font-bold text-slate-900"
               >
                 + Modulo
-              </button>
+              </ReliableActionButton>
             )}
           </div>
 
@@ -996,12 +997,12 @@ export default function Home() {
                     className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
                     placeholder="from-cyan-500 to-sky-600"
                   />
-                  <button
+                  <ReliableActionButton
                     onClick={() => removeModulo(index)}
                     className="text-xs font-semibold text-rose-300"
                   >
                     Eliminar modulo
-                  </button>
+                  </ReliableActionButton>
                 </div>
               ) : (
                 <Link
