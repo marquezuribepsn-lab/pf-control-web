@@ -183,6 +183,28 @@ function tryModernNavigation(targetHref: string): boolean {
   }
 }
 
+function tryHistoryNavigation(targetHref: string): boolean {
+  try {
+    const nextUrl = new URL(targetHref, window.location.origin);
+    const nextHref = buildComparableHref(nextUrl);
+    const currentHref = buildComparableHref(new URL(window.location.href));
+
+    if (nextHref === currentHref) {
+      return true;
+    }
+
+    window.history.pushState(window.history.state, "", nextHref);
+    try {
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    } catch {
+      window.dispatchEvent(new Event("popstate"));
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function installButtonFailsafe(): CleanupFn {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return () => undefined;
@@ -219,7 +241,7 @@ export function installButtonFailsafe(): CleanupFn {
         const finalHref = buildComparableHref(new URL(window.location.href));
         if (finalHref === currentHref && document.visibilityState === "visible") {
           if (!usedModernNavigation || candidate.mode === "hard") {
-            window.location.assign(candidate.targetHref);
+            tryHistoryNavigation(candidate.targetHref);
           }
         }
       }, LINK_FAILSAFE_HARD_DELAY_MS);
@@ -266,7 +288,7 @@ export function installButtonFailsafe(): CleanupFn {
 
     const usedModernNavigation = tryModernNavigation(targetHref);
     if (mode === "hard" && !usedModernNavigation) {
-      window.location.assign(targetHref);
+      tryHistoryNavigation(targetHref);
     }
   };
 
