@@ -512,7 +512,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           <Link
             href="/cuenta"
             prefetch={false}
-            reliabilityMode="off"
+            reliabilityMode="hard"
             className="mx-auto mt-2 flex w-full max-w-[84px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-1.5 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
@@ -557,7 +557,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                     key={link.href}
                     href={link.href}
                     prefetch={false}
-                    reliabilityMode="off"
+                    reliabilityMode="hard"
                     className={`group flex w-full max-w-[84px] flex-col items-center justify-center rounded-2xl border px-1.5 text-center transition-all duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"

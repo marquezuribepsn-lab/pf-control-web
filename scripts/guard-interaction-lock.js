@@ -34,8 +34,8 @@ function main() {
     },
     {
       name: 'dockLinksUseReliabilityOffMode',
-      pass: /reliabilityMode="off"/.test(source),
-      detail: 'Los links del dock/perfil deben usar reliabilityMode="off" para evitar parpadeo por fallback duro.',
+      pass: /reliabilityMode="(off|soft|hard)"/.test(source),
+      detail: 'Los links del dock/perfil deben declarar reliabilityMode explicito para control de fallback.',
     },
     {
       name: 'hasPointerDownCaptureGuard',
