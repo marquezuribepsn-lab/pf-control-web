@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
@@ -186,7 +186,6 @@ const compactDockLabel = (label: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -624,29 +623,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const normalizedPathname = normalizePath(pathname);
   const dockItems: NavLink[] = renderLinks;
 
-  const handleDockClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (event.defaultPrevented) return;
-    if (event.button !== 0) return;
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-    const target = normalizePath(href);
-    if (target === normalizedPathname) {
-      event.preventDefault();
-      return;
-    }
-
-    event.preventDefault();
-    router.push(href);
-
-    // Reintento SPA no destructivo si un click queda sin transicionar.
-    window.setTimeout(() => {
-      if (typeof window === "undefined") return;
-      if (normalizePath(window.location.pathname) !== target) {
-        router.replace(href);
-      }
-    }, 220);
-  };
-
   if (pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
@@ -666,7 +642,6 @@ export default function AppShell({ links, children }: AppShellProps) {
             <Link
               href="/cuenta"
               prefetch={false}
-              onClick={(event) => handleDockClick(event, "/cuenta")}
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -805,7 +780,6 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <Link
                         href={link.href}
                         prefetch={false}
-                        onClick={(event) => handleDockClick(event, link.href)}
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}
