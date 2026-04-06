@@ -39,7 +39,7 @@ type UserLike = {
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const UI_BUILD_CACHE_KEY = "pf-control-ui-build-tag-v1";
-const UI_BUILD_TAG = "2026-04-06-left-sidebar-v1";
+const UI_BUILD_TAG = "2026-04-06-left-sidebar-v2-adaptive";
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -92,6 +92,19 @@ const roleToLabel = (role: string | null | undefined): string => {
   if (role === "ADMIN") return "ADMIN";
   if (role === "COLABORADOR") return "COLAB";
   return "USUARIO";
+};
+
+const compactSidebarLabel = (label: string): string => {
+  const aliases: Record<string, string> = {
+    "Asistencias": "Asist.",
+    "Configuracion": "Config.",
+    "Configuración": "Config.",
+    "Usuarios y permisos": "Usuarios",
+    "Admin colaboradores": "Colabs",
+    "Cerrar sesión": "Salir",
+  };
+
+  return aliases[label] || label;
 };
 
 const formatPendingKeyLabel = (key: string) => {
@@ -464,6 +477,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const normalizedPathname = normalizePath(pathname);
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
+  const sidebarItemCount = Math.max(visibleLinks.length, 1);
 
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
@@ -478,7 +492,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   }
 
   return (
-    <div className="relative min-h-[100svh] bg-slate-950 text-slate-100">
+    <div className="relative min-h-[100svh] bg-transparent text-slate-100">
       <ReliableActionButton
         type="button"
         onClick={() => setMobileOpen((prev) => !prev)}
@@ -497,17 +511,16 @@ export default function AppShell({ links, children }: AppShellProps) {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-[90] w-[96px] border-r border-cyan-300/20 bg-[linear-gradient(180deg,rgba(3,12,28,0.98),rgba(4,20,44,0.98))] shadow-[12px_0_28px_rgba(2,6,23,0.55)] transition-transform duration-200 md:translate-x-0 ${
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(88px,8.4vw,112px)] bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] transition-transform duration-200 md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="pointer-events-auto m-1 h-[calc(100%-0.5rem)] rounded-[1.45rem] border border-cyan-300/15 bg-slate-900/18">
-        <div className="flex h-full flex-col">
+        <div className="pointer-events-auto m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
             prefetch={false}
             reliabilityMode="off"
-            className="mx-auto mt-3 flex w-[80px] flex-col items-center gap-2 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-1.5 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
+            className="mx-auto mt-2 flex w-full max-w-[84px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-1.5 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
           >
@@ -522,16 +535,19 @@ export default function AppShell({ links, children }: AppShellProps) {
                 {profileInitials}
               </span>
             )}
-            <span className="w-full truncate text-[10px] font-black uppercase tracking-[0.08em] text-cyan-50">
+            <span className="w-full truncate text-[9px] font-black uppercase tracking-[0.06em] text-cyan-50">
               {displayName}
             </span>
-            <span className="rounded-full border border-cyan-200/40 bg-slate-900/65 px-2 py-0.5 text-[9px] font-bold tracking-[0.08em] text-cyan-100">
+            <span className="rounded-full border border-cyan-200/40 bg-slate-900/65 px-2 py-0.5 text-[8px] font-bold tracking-[0.08em] text-cyan-100">
               {roleLabel}
             </span>
           </Link>
 
-          <nav className="mt-3 flex-1 overflow-y-auto px-2 pb-3">
-            <div className="space-y-1.5">
+          <nav className="mt-2 flex-1 overflow-hidden px-2 pb-2">
+            <div
+              className="grid h-full w-full justify-items-center gap-1"
+              style={{ gridTemplateRows: `repeat(${sidebarItemCount}, minmax(0, 1fr))` }}
+            >
               {visibleLinks.map((link) => {
                 const normalizedHref = normalizePath(link.href);
                 const hasChildLink = allVisibleHrefs.some(
@@ -549,7 +565,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                     href={link.href}
                     prefetch={false}
                     reliabilityMode="off"
-                    className={`group mx-auto flex w-[80px] flex-col items-center rounded-2xl border px-1.5 py-2 text-center transition-all duration-150 ${
+                    className={`group flex h-full w-full max-w-[84px] min-h-0 flex-col items-center justify-center rounded-2xl border px-1.5 py-1 text-center transition-all duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
@@ -558,9 +574,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                     title={link.label}
                     aria-label={link.label}
                   >
-                    <span className="text-[1.28rem] leading-none">{link.icon}</span>
-                    <span className="mt-1.5 line-clamp-2 text-[10px] font-semibold leading-[1.02rem]">
-                      {link.label}
+                    <span className="text-[clamp(0.95rem,1.9vh,1.18rem)] leading-none">{link.icon}</span>
+                    <span className="mt-1 w-full truncate text-[clamp(8px,1.05vh,10px)] font-semibold leading-tight">
+                      {compactSidebarLabel(link.label)}
                     </span>
                   </Link>
                 );
@@ -569,18 +585,17 @@ export default function AppShell({ links, children }: AppShellProps) {
           </nav>
 
           {pendingSaveKeys.length > 0 ? (
-            <div className="px-2 pb-3">
+            <div className="px-2 pb-2">
               <ReliableActionButton
                 type="button"
                 onClick={() => setPendingPanelOpen((prev) => !prev)}
-                className="w-full rounded-xl border border-amber-300/45 bg-amber-500/18 px-2 py-2 text-[10px] font-bold text-amber-100"
+                className="mx-auto w-full max-w-[84px] rounded-xl border border-amber-300/45 bg-amber-500/18 px-2 py-1.5 text-[9px] font-bold text-amber-100"
                 title="Cambios pendientes"
               >
                 Pendientes ({pendingSaveKeys.length})
               </ReliableActionButton>
             </div>
           ) : null}
-        </div>
         </div>
       </aside>
 
@@ -646,7 +661,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         ))}
       </div>
 
-      <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[108px] md:pt-4">
+      <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[clamp(98px,9.8vw,126px)] md:pt-4">
         <div className="px-4">{children}</div>
       </main>
     </div>
