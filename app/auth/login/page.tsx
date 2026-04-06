@@ -49,11 +49,21 @@ function resolvePostLoginHref(result: unknown): string {
 
 function redirectAfterSuccessfulLogin(result: unknown, router: ReturnType<typeof useRouter>) {
   const targetHref = resolvePostLoginHref(result);
-  if (typeof window !== 'undefined') {
-    window.location.assign(targetHref);
+  router.replace(targetHref);
+
+  if (typeof window === 'undefined') {
     return;
   }
-  router.replace(targetHref);
+
+  // Keep navigation SPA-only; if the first replace races with pending auth state,
+  // retry once without forcing a hard reload.
+  const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.setTimeout(() => {
+    const nextUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl === currentUrl) {
+      router.replace(targetHref);
+    }
+  }, 240);
 }
 
 function LoginPageContent() {

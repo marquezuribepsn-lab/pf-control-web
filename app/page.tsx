@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
@@ -510,13 +511,13 @@ export default function Home() {
               >
                 Reset
               </button>
-              <a
+              <Link
                 href="/"
                 onClick={closeHomeEditMode}
                 className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
               >
                 Cerrar configuracion
-              </a>
+              </Link>
             </div>
           </div>
         )}
@@ -603,18 +604,18 @@ export default function Home() {
                 </>
               ) : (
                 <div className="flex flex-wrap gap-3 md:col-span-2">
-                  <a
+                  <Link
                     href={primaryActionHref}
                     className="rounded-xl border border-cyan-200/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_14px_30px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px] hover:from-cyan-200 hover:to-sky-300"
                   >
                     {config.botonPrimarioLabel}
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href={secondaryActionHref}
                     className="rounded-xl border border-cyan-100/30 bg-slate-900/35 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-200/55 hover:bg-slate-800/55"
                   >
                     {config.botonSecundarioLabel}
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
@@ -634,7 +635,7 @@ export default function Home() {
             const statHint = resolveDashboardStatHint(stat.title, index);
 
             return (
-              <a
+              <Link
                 key={stat.title}
                 href={statHref}
                 className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
@@ -649,7 +650,7 @@ export default function Home() {
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
                 </div>
-              </a>
+              </Link>
             );
           })}
         </section>
@@ -667,18 +668,18 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <a
+              <Link
                 href="/clientes"
                 className="rounded-xl border border-cyan-100/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_12px_24px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px]"
               >
                 Crear cliente
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/sesiones"
                 className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
               >
                 Gestionar sesiones
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -709,12 +710,12 @@ export default function Home() {
                 placeholder="Buscar alumno por nombre"
                 className="w-full max-w-sm rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white"
               />
-              <a
+              <Link
                 href="/clientes"
                 className="rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/10"
               >
                 Ver modulo clientes
-              </a>
+              </Link>
             </div>
 
             <div className="overflow-x-auto">
@@ -764,12 +765,12 @@ export default function Home() {
                             : "Sin movimientos"}
                         </td>
                         <td className="px-3 py-3 text-right">
-                          <a
+                          <Link
                             href="/semana"
                             className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
                           >
                             Abrir semana
-                          </a>
+                          </Link>
                         </td>
                       </tr>
                     ))
@@ -783,12 +784,12 @@ export default function Home() {
         <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(33,48,74,0.92),rgba(41,56,82,0.88))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-2xl font-black text-white">Acceso rapido por categorias</h3>
-            <a
+            <Link
               href="/categorias"
               className="rounded-lg border border-white/25 bg-slate-900/35 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/10"
             >
               Ver todas
-            </a>
+            </Link>
           </div>
 
           {categoriasActivas.length === 0 ? (
@@ -802,7 +803,7 @@ export default function Home() {
                 const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 
                 return (
-                  <a
+                  <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
                     className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
@@ -813,7 +814,7 @@ export default function Home() {
                       {categoria.nombre}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-200">Abrir categoria</p>
-                  </a>
+                  </Link>
                 );
               })}
             </div>
@@ -1003,7 +1004,7 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <a
+                <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
                   className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
@@ -1011,7 +1012,7 @@ export default function Home() {
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
                   <p className="text-lg font-black text-white">{item.label}</p>
                   <p className="mt-1 text-sm text-slate-200">{item.desc}</p>
-                </a>
+                </Link>
               )
             )}
           </div>
@@ -1020,4 +1021,5 @@ export default function Home() {
     </main>
   );
 }
+
 

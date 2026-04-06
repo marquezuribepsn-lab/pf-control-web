@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
+import { installButtonFailsafe } from "@/lib/buttonFailsafe";
 
 type NavLink = {
   href: string;
@@ -519,7 +520,8 @@ export default function AppShell({ links, children }: AppShellProps) {
     );
 
     const onPointerDownCapture = () => {
-      window.setTimeout(() => runInteractionGuard(), 0);
+      // Run guard immediately so the current click can recover from a stale overlay.
+      runInteractionGuard();
     };
 
     const onFocus = () => {
@@ -548,6 +550,15 @@ export default function AppShell({ links, children }: AppShellProps) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", onResize);
     };
+  }, [mounted, pathname]);
+
+  useEffect(() => {
+    if (!mounted || pathname.startsWith("/auth")) {
+      return;
+    }
+
+    const cleanup = installButtonFailsafe();
+    return cleanup;
   }, [mounted, pathname]);
 
   useEffect(() => {
@@ -683,10 +694,7 @@ export default function AppShell({ links, children }: AppShellProps) {
             <Link
               href="/cuenta"
               prefetch={false}
-              onClick={(event) => {
-                event.preventDefault();
-                window.location.assign("/cuenta");
-              }}
+              data-button-failsafe-off="true"
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -794,6 +802,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
       <nav
         className="fixed inset-x-0 bottom-0 z-[95] px-2 pb-[env(safe-area-inset-bottom)]"
+        data-button-failsafe-skip="true"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="mx-auto w-full max-w-[1120px] overflow-visible">
@@ -825,10 +834,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <Link
                         href={link.href}
                         prefetch={false}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          window.location.assign(link.href);
-                        }}
+                        data-button-failsafe-off="true"
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}

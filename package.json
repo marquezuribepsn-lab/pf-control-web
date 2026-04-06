@@ -28,6 +28,7 @@
     "server:logs": "npx pm2 logs pf-control-web",
     "smoke:login:guard": "node scripts/smoke-login-guard.js",
     "smoke:login:admin": "node scripts/smoke-login-admin.js",
+    "smoke:dock:no-reload": "node scripts/smoke-dock-no-reload.js",
     "smoke:clientes:visual": "node scripts/smoke-clientes-visual.js",
     "smoke:mail:guard": "node scripts/smoke-mail-guard.js",
     "smoke:password:one-time": "node scripts/smoke-password-one-time.js",

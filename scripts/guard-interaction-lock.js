@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const appShellPath = path.resolve(__dirname, '../components/AppShell.tsx');
+const loginPath = path.resolve(__dirname, '../app/auth/login/page.tsx');
 
 function readFileSafe(filePath) {
   try {
@@ -13,12 +14,18 @@ function readFileSafe(filePath) {
 
 function main() {
   const source = readFileSafe(appShellPath);
+  const loginSource = readFileSafe(loginPath);
 
   const checks = [
     {
       name: 'hasInteractionGuardImport',
       pass: /neutralizeViewportBlockers/.test(source),
       detail: 'AppShell debe importar y usar neutralizeViewportBlockers.',
+    },
+    {
+      name: 'hasButtonFailsafeImportAndUsage',
+      pass: /installButtonFailsafe/.test(source),
+      detail: 'AppShell debe instalar el failsafe global de botones/enlaces.',
     },
     {
       name: 'hasPointerDownCaptureGuard',
@@ -34,6 +41,16 @@ function main() {
       name: 'noExtremeDockZIndex',
       pass: !/z-\[214748\d+\]/.test(source),
       detail: 'No se permite z-index extremo en AppShell (riesgo de bloqueo global).',
+    },
+    {
+      name: 'noHardReloadNavigationInAppShell',
+      pass: !/window\.location\.assign\(/.test(source),
+      detail: 'AppShell no debe forzar recarga completa; usar navegacion SPA.',
+    },
+    {
+      name: 'noHardReloadLoginFallback',
+      pass: !/window\.location\.assign\(/.test(loginSource),
+      detail: 'Login no debe usar fallback de hard reload; mantener redireccion SPA.',
     },
   ];
 

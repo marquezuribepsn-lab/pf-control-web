@@ -1465,30 +1465,13 @@ export default function ClientesPage() {
     window.history.pushState({}, "", next);
   };
 
-  const navigateWithRetry = (href: string) => {
-    if (typeof window === "undefined") {
-      router.push(href);
-      return;
-    }
-
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-    router.push(href);
-
-    window.setTimeout(() => {
-      const nextUrl = `${window.location.pathname}${window.location.search}`;
-      if (nextUrl === currentUrl) {
-        router.replace(href);
-      }
-    }, 240);
-  };
-
   useEffect(() => {
     router.prefetch("/clientes/plan");
     router.prefetch("/registros");
   }, [router]);
 
   function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    navigateWithRetry(buildPlanViewHref(clientId, tab));
+    router.push(buildPlanViewHref(clientId, tab));
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
@@ -1603,7 +1586,7 @@ export default function ClientesPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigateWithRetry("/registros")}
+                  onClick={() => router.push("/registros")}
                   className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
                 >
                   Ver registros
