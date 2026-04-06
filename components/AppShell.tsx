@@ -147,6 +147,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(900);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [resolvedRole, setResolvedRole] = useState<string | null>(null);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
@@ -390,6 +391,23 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pathname]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncViewport = () => {
+      setViewportHeight(window.innerHeight || 900);
+    };
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+
+    return () => {
+      window.removeEventListener("resize", syncViewport);
+    };
+  }, []);
+
+  useEffect(() => {
     const nextRole = (session?.user as UserLike | undefined)?.role;
     if (typeof nextRole === "string" && nextRole.length > 0) {
       setResolvedRole(nextRole);
@@ -443,6 +461,16 @@ export default function AppShell({ links, children }: AppShellProps) {
   const normalizedPathname = normalizePath(pathname);
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
   const sidebarItemCount = Math.max(visibleLinks.length, 1);
+  const reservedSidebarHeight = 160 + (pendingSaveKeys.length > 0 ? 48 : 0);
+  const sidebarNavAvailableHeight = Math.max(260, viewportHeight - reservedSidebarHeight);
+  const sidebarItemHeight = Math.max(
+    34,
+    Math.min(54, Math.floor(sidebarNavAvailableHeight / sidebarItemCount) - 4)
+  );
+  const sidebarIconSize =
+    sidebarItemHeight < 38 ? "0.9rem" : sidebarItemHeight < 44 ? "1rem" : "1.12rem";
+  const sidebarLabelSize =
+    sidebarItemHeight < 38 ? "8px" : sidebarItemHeight < 44 ? "9px" : "10px";
 
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
@@ -510,8 +538,8 @@ export default function AppShell({ links, children }: AppShellProps) {
 
           <nav className="mt-2 flex-1 overflow-hidden px-2 pb-2">
             <div
-              className="grid h-full w-full justify-items-center gap-1"
-              style={{ gridTemplateRows: `repeat(${sidebarItemCount}, minmax(0, 1fr))` }}
+              className="grid w-full justify-items-center gap-1"
+              style={{ gridTemplateRows: `repeat(${sidebarItemCount}, ${sidebarItemHeight}px)` }}
             >
               {visibleLinks.map((link) => {
                 const normalizedHref = normalizePath(link.href);
@@ -530,17 +558,23 @@ export default function AppShell({ links, children }: AppShellProps) {
                     href={link.href}
                     prefetch={false}
                     reliabilityMode="off"
-                    className={`group flex h-full w-full max-w-[84px] min-h-0 flex-col items-center justify-center rounded-2xl border px-1.5 py-1 text-center transition-all duration-150 ${
+                    className={`group flex w-full max-w-[84px] flex-col items-center justify-center rounded-2xl border px-1.5 text-center transition-all duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
                     }`}
+                    style={{
+                      height: `${sidebarItemHeight}px`,
+                      minHeight: `${sidebarItemHeight}px`,
+                      paddingTop: sidebarItemHeight < 40 ? "2px" : "4px",
+                      paddingBottom: sidebarItemHeight < 40 ? "2px" : "4px",
+                    }}
                     aria-current={isCurrent ? "page" : undefined}
                     title={link.label}
                     aria-label={link.label}
                   >
-                    <span className="text-[clamp(0.95rem,1.9vh,1.18rem)] leading-none">{link.icon}</span>
-                    <span className="mt-1 w-full truncate text-[clamp(8px,1.05vh,10px)] font-semibold leading-tight">
+                    <span className="leading-none" style={{ fontSize: sidebarIconSize }}>{link.icon}</span>
+                    <span className="mt-1 w-full truncate font-semibold leading-tight" style={{ fontSize: sidebarLabelSize }}>
                       {compactSidebarLabel(link.label)}
                     </span>
                   </Link>
