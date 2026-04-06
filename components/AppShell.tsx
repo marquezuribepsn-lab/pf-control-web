@@ -619,12 +619,12 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     router.push(href);
 
-    // Fallback ligero para casos donde el router no efectua la navegacion en el click.
+    // Reintento client-side sin hard reload para evitar parpadeo y reseteos del shell.
     window.setTimeout(() => {
       if (normalizePath(window.location.pathname) !== target) {
-        window.location.assign(href);
+        router.replace(href);
       }
-    }, 450);
+    }, 900);
   };
 
   const normalizedPathname = normalizePath(pathname);
