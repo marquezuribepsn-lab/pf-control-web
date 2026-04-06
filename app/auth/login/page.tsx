@@ -125,8 +125,7 @@ function LoginPageContent() {
         }
 
         setFailedAttempts(0);
-
-        window.location.assign('/');
+        router.replace('/');
       } catch {
         setError('No pudimos validar el enlace de acceso. Intenta nuevamente.');
       } finally {
@@ -165,8 +164,7 @@ function LoginPageContent() {
       }
 
       setFailedAttempts(0);
-
-      window.location.assign('/');
+      router.replace('/');
     } catch (err) {
       setError('Error al conectar. Intenta de nuevo.');
     } finally {

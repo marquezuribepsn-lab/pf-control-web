@@ -29,13 +29,8 @@ function ResetPasswordContent() {
       router.replace('/auth/login');
     }, 900);
 
-    const hardRedirect = window.setTimeout(() => {
-      window.location.assign('/auth/login');
-    }, 1800);
-
     return () => {
       window.clearTimeout(softRedirect);
-      window.clearTimeout(hardRedirect);
     };
   }, [redirecting, router]);
 

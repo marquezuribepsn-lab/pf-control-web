@@ -147,8 +147,13 @@ function forceHomepageNavigation(event: MouseEvent<HTMLAnchorElement>, href: str
     return;
   }
 
-  event.preventDefault();
-  window.location.assign(href);
+  // Dejar que Link navegue en modo SPA; solo bloquear click redundante a la misma URL.
+  const targetUrl = new URL(href, window.location.origin);
+  const target = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (target === current) {
+    event.preventDefault();
+  }
 }
 
 function isWellnessModulo(modulo: Modulo): boolean {

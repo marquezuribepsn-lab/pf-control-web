@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { markManualSaveIntent, useSharedState } from "../../../components/useSharedState";
 import { argentineFoodsBase, type ArgentineFood } from "../../../data/argentineFoods";
@@ -267,6 +268,7 @@ function escapeHtml(value: string) {
 }
 
 export default function NutritionPlanner() {
+  const router = useRouter();
   const { alumnos } = useAlumnos();
   const [isClientDetailMode, setIsClientDetailMode] = useState(false);
   const [isPlansViewMode, setIsPlansViewMode] = useState(false);
@@ -1069,12 +1071,18 @@ export default function NutritionPlanner() {
       alumnoNombre,
       planId
     );
-    window.location.assign(detailUrl);
+    setIsClientDetailMode(true);
+    setDetailAlumnoName(alumnoNombre);
+    setDetailPlanId(planId);
+    router.push(detailUrl);
   };
 
   const goBackToClientList = () => {
     if (typeof window === "undefined") return;
-    window.location.assign(buildNutritionListUrl(window.location.pathname));
+    setIsClientDetailMode(false);
+    setDetailAlumnoName(null);
+    setDetailPlanId(null);
+    router.push(buildNutritionListUrl(window.location.pathname));
   };
 
   if (!selectedPlan) {

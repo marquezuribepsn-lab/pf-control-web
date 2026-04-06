@@ -43,11 +43,6 @@ export default function NuevaSesionPage() {
 
   function goToSesiones() {
     router.replace("/sesiones");
-    window.setTimeout(() => {
-      if (window.location.pathname !== "/sesiones") {
-        window.location.assign("/sesiones");
-      }
-    }, 140);
   }
 
   function handleSubmit(e: React.FormEvent) {

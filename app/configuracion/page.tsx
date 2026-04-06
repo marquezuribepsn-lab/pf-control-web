@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_EDIT_MODE_KEY = "pf-control-screen-edit-mode-v1";
@@ -30,6 +31,7 @@ function normalizeDockLabelMode(value: string | null): DockLabelMode {
 }
 
 export default function ConfiguracionPage() {
+  const router = useRouter();
   const [loaded, setLoaded] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [savedScale, setSavedScale] = useState(1);
@@ -132,7 +134,7 @@ export default function ConfiguracionPage() {
   const abrirEditorInicio = () => {
     localStorage.setItem(HOME_EDIT_MODE_KEY, "1");
     window.dispatchEvent(new Event("pf-home-edit-toggle"));
-    window.location.href = "/";
+    router.push("/");
   };
 
   const resetearMenu = () => {

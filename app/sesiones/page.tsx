@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -278,6 +279,7 @@ const findMetricNumber = (
 };
 
 export default function SesionesPage() {
+  const router = useRouter();
   const { sesiones, agregarSesion, editarSesion, eliminarSesion } = useSessions();
   const { categorias } = useCategories();
   const { alumnos } = useAlumnos();
@@ -1006,8 +1008,7 @@ export default function SesionesPage() {
   }, [alumnos.length, asistencias, jornadas, jugadoras.length, sesiones.length]);
 
   const abrirPantalla = (href: string) => {
-    if (typeof window === "undefined") return;
-    window.location.assign(href);
+    router.push(href);
   };
 
   const totalRegistrosAsistencia =
