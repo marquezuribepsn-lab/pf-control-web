@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
 
@@ -175,7 +176,6 @@ const compactDockLabel = (label: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
   const linksSignature = links
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
@@ -208,8 +208,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [hoveredDockIndex, setHoveredDockIndex] = useState<number | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
-  const dockNavRetryTimerRef = useRef<number | null>(null);
-  const dockNavAttemptRef = useRef(0);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -489,20 +487,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   useEffect(() => {
     setMobileOpen(false);
     setHoveredDockIndex(null);
-
-    if (dockNavRetryTimerRef.current !== null) {
-      window.clearTimeout(dockNavRetryTimerRef.current);
-      dockNavRetryTimerRef.current = null;
-    }
   }, [pathname]);
-
-  useEffect(() => {
-    return () => {
-      if (dockNavRetryTimerRef.current !== null) {
-        window.clearTimeout(dockNavRetryTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (pendingSaveKeys.length === 0) {
@@ -620,41 +605,6 @@ export default function AppShell({ links, children }: AppShellProps) {
     minHeight: `${100 / screenScale}dvh`,
   } as const;
 
-  const navigateDock = (href: string) => {
-    const target = normalizePath(href);
-    if (typeof window === "undefined") {
-      router.push(href);
-      return;
-    }
-
-    if (normalizePath(window.location.pathname) === target) {
-      return;
-    }
-
-    if (dockNavRetryTimerRef.current !== null) {
-      window.clearTimeout(dockNavRetryTimerRef.current);
-      dockNavRetryTimerRef.current = null;
-    }
-
-    dockNavAttemptRef.current += 1;
-    const attemptId = dockNavAttemptRef.current;
-
-    router.push(href);
-
-    // Reintento client-side sin hard reload para evitar parpadeo y reseteos del shell.
-    dockNavRetryTimerRef.current = window.setTimeout(() => {
-      if (dockNavAttemptRef.current !== attemptId) {
-        return;
-      }
-
-      if (normalizePath(window.location.pathname) !== target) {
-        router.replace(href);
-      }
-
-      dockNavRetryTimerRef.current = null;
-    }, 420);
-  };
-
   const normalizedPathname = normalizePath(pathname);
   const dockItems: NavLink[] = renderLinks;
 
@@ -674,9 +624,9 @@ export default function AppShell({ links, children }: AppShellProps) {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigateDock("/cuenta")}
+            <Link
+              href="/cuenta"
+              prefetch={false}
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -692,7 +642,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   {profileInitials}
                 </span>
               )}
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -812,9 +762,9 @@ export default function AppShell({ links, children }: AppShellProps) {
 
                   return (
                     <div key={link.href} className="flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => navigateDock(link.href)}
+                      <Link
+                        href={link.href}
+                        prefetch={false}
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}
@@ -848,7 +798,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                             {labelText}
                           </span>
                         ) : null}
-                      </button>
+                      </Link>
                     </div>
                   );
                 })}
