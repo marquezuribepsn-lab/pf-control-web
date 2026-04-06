@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -694,7 +694,7 @@ export default function AppShell({ links, children }: AppShellProps) {
             <Link
               href="/cuenta"
               prefetch={false}
-              data-button-failsafe-off="true"
+              reliabilityMode="off"
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -834,7 +834,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <Link
                         href={link.href}
                         prefetch={false}
-                        data-button-failsafe-off="true"
+                        reliabilityMode="off"
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}

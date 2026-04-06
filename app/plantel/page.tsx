@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { useMemo, useState } from "react";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSharedState } from "../../components/useSharedState";

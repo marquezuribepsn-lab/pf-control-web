@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { useCategories } from "../../components/CategoriesProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSessions } from "../../components/SessionsProvider";

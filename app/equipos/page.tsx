@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { useEquipos } from "../../components/EquiposProvider";
 import { PlayersContext } from "../../components/PlayersProvider";
 import { CategoriesContext } from "../../components/CategoriesProvider";

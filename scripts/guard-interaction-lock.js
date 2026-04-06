@@ -28,6 +28,16 @@ function main() {
       detail: 'AppShell debe instalar el failsafe global de botones/enlaces.',
     },
     {
+      name: 'usesReliableLinkSystem',
+      pass: /components\/ReliableLink/.test(source),
+      detail: 'AppShell debe usar el sistema centralizado ReliableLink.',
+    },
+    {
+      name: 'dockLinksUseReliabilityOffMode',
+      pass: /reliabilityMode="off"/.test(source),
+      detail: 'Los links del dock/perfil deben usar reliabilityMode="off" para evitar parpadeo por fallback duro.',
+    },
+    {
       name: 'hasPointerDownCaptureGuard',
       pass: /addEventListener\(\s*"pointerdown"\s*,\s*onPointerDownCapture\s*,\s*true\s*\)/.test(source),
       detail: 'AppShell debe ejecutar guardia de interaccion en captura de pointerdown.',

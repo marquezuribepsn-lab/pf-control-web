@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { useMemo } from "react";
 import * as XLSX from "xlsx";
 import { useAlumnos } from "../../components/AlumnosProvider";

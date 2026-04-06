@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Link from "next/link";
+import Link from "@/components/ReliableLink";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";

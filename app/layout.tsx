@@ -1,5 +1,4 @@
 import "./globals.css";
-import Link from "next/link";
 import type { Metadata } from "next";
 import PlayersProvider from "../components/PlayersProvider";
 import SessionsProvider from "../components/SessionsProvider";
