@@ -41,6 +41,8 @@ const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SIDEBAR_COLLAPSED_KEY = "pf-control-sidebar-collapsed-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
+const MIN_SCREEN_SCALE = 0.8;
+const MAX_SCREEN_SCALE = 1.35;
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
   "/semana",
@@ -132,6 +134,14 @@ const normalizeDockLabelMode = (value: string | null): DockLabelMode => {
     return value;
   }
   return "compact";
+};
+
+const sanitizeScreenScale = (value: unknown): number => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 1;
+  if (numeric < MIN_SCREEN_SCALE) return MIN_SCREEN_SCALE;
+  if (numeric > MAX_SCREEN_SCALE) return MAX_SCREEN_SCALE;
+  return numeric;
 };
 
 const resolveUserDisplayName = (user: any): string => {
@@ -294,8 +304,9 @@ export default function AppShell({ links, children }: AppShellProps) {
       const parsed = saved ? (JSON.parse(saved) as Partial<NavConfig>) : null;
       setConfig(normalizeConfig(stableLinks, parsed));
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
-      const savedScale = Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
-      setScreenScale(Number.isFinite(savedScale) && savedScale > 0 ? savedScale : 1);
+      const savedScale = sanitizeScreenScale(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
+      setScreenScale(savedScale);
+      localStorage.setItem(SCREEN_SCALE_KEY, String(savedScale));
       const savedDockLabelMode = localStorage.getItem(DOCK_LABEL_MODE_KEY);
       setDockLabelMode(normalizeDockLabelMode(savedDockLabelMode));
       const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
@@ -416,8 +427,8 @@ export default function AppShell({ links, children }: AppShellProps) {
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === SCREEN_SCALE_KEY) {
-        const nextScale = Number(event.newValue || "1");
-        setScreenScale(Number.isFinite(nextScale) && nextScale > 0 ? nextScale : 1);
+        const nextScale = sanitizeScreenScale(event.newValue || "1");
+        setScreenScale(nextScale);
       }
 
       if (event.key === NAV_CONFIG_KEY) {
@@ -443,8 +454,9 @@ export default function AppShell({ links, children }: AppShellProps) {
     };
 
     const onScaleChange = () => {
-      const savedScale = Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
-      setScreenScale(Number.isFinite(savedScale) && savedScale > 0 ? savedScale : 1);
+      const savedScale = sanitizeScreenScale(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
+      setScreenScale(savedScale);
+      localStorage.setItem(SCREEN_SCALE_KEY, String(savedScale));
     };
 
     const onNavConfigChange = () => {
@@ -598,12 +610,15 @@ export default function AppShell({ links, children }: AppShellProps) {
     setDragState(null);
   };
 
-  const scaledStyle = {
-    transform: `scale(${screenScale})`,
-    transformOrigin: "top left",
-    width: `${100 / screenScale}%`,
-    minHeight: `${100 / screenScale}dvh`,
-  } as const;
+  const hasScaledLayout = Math.abs(screenScale - 1) > 0.001;
+  const scaledStyle = hasScaledLayout
+    ? ({
+        transform: `scale(${screenScale})`,
+        transformOrigin: "top left",
+        width: `${100 / screenScale}%`,
+        minHeight: `${100 / screenScale}dvh`,
+      } as const)
+    : undefined;
 
   const normalizedPathname = normalizePath(pathname);
   const dockItems: NavLink[] = renderLinks;
