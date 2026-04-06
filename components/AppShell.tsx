@@ -501,6 +501,7 @@ export default function AppShell({ links, children }: AppShellProps) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        <div className="pointer-events-auto m-1 h-[calc(100%-0.5rem)] rounded-[1.45rem] border border-cyan-300/15 bg-slate-900/18">
         <div className="flex h-full flex-col">
           <Link
             href="/cuenta"
@@ -579,6 +580,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               </ReliableActionButton>
             </div>
           ) : null}
+        </div>
         </div>
       </aside>
 
