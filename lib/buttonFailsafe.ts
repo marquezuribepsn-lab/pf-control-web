@@ -39,7 +39,7 @@ function resolveReliabilityMode(element: HTMLElement): ReliabilityMode {
     return mode;
   }
 
-  return "hard";
+  return "soft";
 }
 
 function shouldIgnoreAnchorClick(event: MouseEvent, anchor: HTMLAnchorElement): boolean {

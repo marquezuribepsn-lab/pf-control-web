@@ -38,8 +38,6 @@ type UserLike = {
 
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
-const UI_BUILD_CACHE_KEY = "pf-control-ui-build-tag-v1";
-const UI_BUILD_TAG = "2026-04-06-left-sidebar-v2-adaptive";
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -140,15 +138,6 @@ const formatPendingKeyLabel = (key: string) => {
 
   if (!normalized) return key;
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
-};
-
-const isLikelyAppCache = (key: string) => {
-  const normalized = key.toLowerCase();
-  return (
-    normalized.includes("next") ||
-    normalized.includes("workbox") ||
-    normalized.includes("pf-control")
-  );
 };
 
 export default function AppShell({ links, children }: AppShellProps) {
@@ -369,29 +358,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
 
-    let shouldReload = false;
-    try {
-      const previousBuild = localStorage.getItem(UI_BUILD_CACHE_KEY);
-      if (previousBuild === UI_BUILD_TAG) return;
-      localStorage.setItem(UI_BUILD_CACHE_KEY, UI_BUILD_TAG);
-      shouldReload = true;
-    } catch {
-      return;
-    }
-
-    if (!shouldReload) return;
-
-    const refreshClientCaches = async () => {
-      try {
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          const targets = keys.filter((key) => isLikelyAppCache(key));
-          await Promise.all(targets.map((key) => caches.delete(key)));
-        }
-      } catch {
-        // ignore cache storage failures
-      }
-
+    const refreshServiceWorkers = async () => {
       try {
         if ("serviceWorker" in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
@@ -400,11 +367,9 @@ export default function AppShell({ links, children }: AppShellProps) {
       } catch {
         // ignore service worker update failures
       }
-
-      window.location.replace(window.location.href);
     };
 
-    void refreshClientCaches();
+    void refreshServiceWorkers();
   }, [mounted]);
 
   useEffect(() => {
