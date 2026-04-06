@@ -217,7 +217,7 @@ export function installButtonFailsafe(): CleanupFn {
     }
 
     const candidate = resolveNavigationCandidate(target, event);
-    if (!candidate || candidate.mode === "off") {
+    if (!candidate || candidate.mode !== "hard") {
       return;
     }
 
@@ -233,14 +233,11 @@ export function installButtonFailsafe(): CleanupFn {
       }
 
       const usedModernNavigation = tryModernNavigation(candidate.targetHref);
-      if (candidate.mode === "soft") {
-        return;
-      }
 
       window.setTimeout(() => {
         const finalHref = buildComparableHref(new URL(window.location.href));
         if (finalHref === currentHref && document.visibilityState === "visible") {
-          if (!usedModernNavigation || candidate.mode === "hard") {
+          if (!usedModernNavigation) {
             tryHistoryNavigation(candidate.targetHref);
           }
         }
@@ -277,7 +274,7 @@ export function installButtonFailsafe(): CleanupFn {
     }
 
     const mode = resolveReliabilityMode(navElement);
-    if (mode === "off") {
+    if (mode !== "hard") {
       return;
     }
 
@@ -287,7 +284,7 @@ export function installButtonFailsafe(): CleanupFn {
     }
 
     const usedModernNavigation = tryModernNavigation(targetHref);
-    if (mode === "hard" && !usedModernNavigation) {
+    if (!usedModernNavigation) {
       tryHistoryNavigation(targetHref);
     }
   };
