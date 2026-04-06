@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -624,9 +623,8 @@ export default function AppShell({ links, children }: AppShellProps) {
               </p>
             </div>
 
-            <Link
+            <a
               href="/cuenta"
-              prefetch={false}
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -642,7 +640,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                   {profileInitials}
                 </span>
               )}
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -762,9 +760,8 @@ export default function AppShell({ links, children }: AppShellProps) {
 
                   return (
                     <div key={link.href} className="flex items-end">
-                      <Link
+                      <a
                         href={link.href}
-                        prefetch={false}
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}
@@ -798,7 +795,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                             {labelText}
                           </span>
                         ) : null}
-                      </Link>
+                      </a>
                     </div>
                   );
                 })}
