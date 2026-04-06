@@ -44,6 +44,8 @@ const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SIDEBAR_COLLAPSED_KEY = "pf-control-sidebar-collapsed-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
+const UI_BUILD_CACHE_KEY = "pf-control-ui-build-tag-v1";
+const UI_BUILD_TAG = "2026-04-06-neo-refresh-1";
 const MIN_SCREEN_SCALE = 0.8;
 const MAX_SCREEN_SCALE = 1.35;
 const COLABORADOR_ACCESS_HREFS = [
@@ -185,6 +187,15 @@ const compactDockLabel = (label: string) => {
   };
 
   return aliases[label] || label;
+};
+
+const isLikelyAppCache = (key: string) => {
+  const normalized = key.toLowerCase();
+  return (
+    normalized.includes("next") ||
+    normalized.includes("workbox") ||
+    normalized.includes("pf-control")
+  );
 };
 
 export default function AppShell({ links, children }: AppShellProps) {
@@ -554,6 +565,56 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [mounted, pathname]);
 
   useEffect(() => {
+    if (!mounted || typeof window === "undefined") {
+      return;
+    }
+
+    let shouldReload = false;
+    try {
+      const previousBuild = localStorage.getItem(UI_BUILD_CACHE_KEY);
+      if (previousBuild === UI_BUILD_TAG) {
+        return;
+      }
+
+      localStorage.setItem(UI_BUILD_CACHE_KEY, UI_BUILD_TAG);
+      shouldReload = true;
+    } catch {
+      return;
+    }
+
+    if (!shouldReload) {
+      return;
+    }
+
+    const refreshClientCaches = async () => {
+      try {
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          const targets = keys.filter((key) => isLikelyAppCache(key));
+          await Promise.all(targets.map((key) => caches.delete(key)));
+        }
+      } catch {
+        // ignore cache storage failures
+      }
+
+      try {
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(
+            registrations.map((registration) => registration.update().catch(() => undefined))
+          );
+        }
+      } catch {
+        // ignore service worker update failures
+      }
+
+      window.location.replace(window.location.href);
+    };
+
+    void refreshClientCaches();
+  }, [mounted]);
+
+  useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) {
       return;
     }
@@ -681,7 +742,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   }
 
   return (
-    <div className="relative min-h-[100svh] overflow-x-hidden">
+    <div className="pf-neo-shell relative min-h-[100svh] overflow-x-hidden">
       <div className="relative">
         <div className="fixed left-4 top-4 z-[61] pointer-events-none">
           <div className="pointer-events-auto flex items-center gap-3 rounded-[1.2rem] border border-cyan-200/35 bg-slate-900/78 px-3 py-2 shadow-[0_14px_36px_rgba(2,6,23,0.55)] backdrop-blur-xl">
@@ -712,6 +773,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                 </span>
               )}
             </Link>
+
+            <span className="hidden sm:inline-flex items-center rounded-full border border-cyan-200/45 bg-cyan-400/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-100">
+              Neo UI
+            </span>
           </div>
         </div>
 

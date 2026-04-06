@@ -79,6 +79,25 @@ h6 {
   min-height: 100vh;
 }
 
+.pf-neo-shell :where(.rounded-2xl, .rounded-3xl) {
+  border-color: rgba(125, 211, 252, 0.24) !important;
+  background-image: linear-gradient(140deg, rgba(7, 17, 35, 0.88), rgba(9, 28, 54, 0.74)) !important;
+  box-shadow: 0 16px 34px rgba(3, 10, 28, 0.45);
+}
+
+.pf-neo-shell :where(.rounded-xl) {
+  border-color: rgba(148, 197, 255, 0.2) !important;
+}
+
+.pf-neo-shell :where(main h1) {
+  letter-spacing: -0.015em;
+  text-shadow: 0 6px 22px rgba(2, 8, 23, 0.38);
+}
+
+.pf-neo-shell :where(main h2) {
+  letter-spacing: -0.012em;
+}
+
 /* Regla global solicitada: fondos blancos a gris y texto blanco en negrita */
 :where([class*="bg-white"]) {
   background-color: #334155 !important;
