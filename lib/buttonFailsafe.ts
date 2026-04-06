@@ -11,6 +11,13 @@ type NavigationCandidate = {
   mode: ReliabilityMode;
 };
 
+export const FAILSAFE_NAVIGATE_EVENT = "pf-failsafe-navigate";
+
+type FailsafeNavigateDetail = {
+  href: string;
+  replace?: boolean;
+};
+
 function buildComparableHref(url: URL): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
@@ -169,22 +176,16 @@ function resolveNavigationCandidate(eventTarget: Element, event: MouseEvent): Na
   };
 }
 
-function tryHistoryNavigation(targetHref: string): boolean {
+function requestRouterNavigation(targetHref: string, replace = false): boolean {
   try {
-    const nextUrl = new URL(targetHref, window.location.origin);
-    const nextHref = buildComparableHref(nextUrl);
-    const currentHref = buildComparableHref(new URL(window.location.href));
-
-    if (nextHref === currentHref) {
+    const resolved = new URL(targetHref, window.location.origin);
+    const nextHref = buildComparableHref(resolved);
+    if (!nextHref) {
       return true;
     }
 
-    window.history.pushState(window.history.state, "", nextHref);
-    try {
-      window.dispatchEvent(new PopStateEvent("popstate"));
-    } catch {
-      window.dispatchEvent(new Event("popstate"));
-    }
+    const detail: FailsafeNavigateDetail = { href: nextHref, replace };
+    window.dispatchEvent(new CustomEvent<FailsafeNavigateDetail>(FAILSAFE_NAVIGATE_EVENT, { detail }));
     return true;
   } catch {
     return false;
@@ -224,7 +225,7 @@ export function installButtonFailsafe(): CleanupFn {
       window.setTimeout(() => {
         const finalHref = buildComparableHref(new URL(window.location.href));
         if (finalHref === currentHref && document.visibilityState === "visible") {
-          tryHistoryNavigation(candidate.targetHref);
+          requestRouterNavigation(candidate.targetHref);
         }
       }, LINK_FAILSAFE_HARD_DELAY_MS);
     }, LINK_FAILSAFE_DELAY_MS);
@@ -270,7 +271,7 @@ export function installButtonFailsafe(): CleanupFn {
       return;
     }
 
-    tryHistoryNavigation(targetHref);
+    requestRouterNavigation(targetHref);
   };
 
   document.addEventListener("click", onDocumentClick, false);

@@ -2,10 +2,10 @@
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
-import { installButtonFailsafe } from "@/lib/buttonFailsafe";
+import { FAILSAFE_NAVIGATE_EVENT, installButtonFailsafe } from "@/lib/buttonFailsafe";
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getPendingSaveStatus } from "./useSharedState";
 
@@ -142,6 +142,7 @@ const formatPendingKeyLabel = (key: string) => {
 
 export default function AppShell({ links, children }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const interactionGuardLastRunRef = useRef(0);
 
@@ -379,6 +380,33 @@ export default function AppShell({ links, children }: AppShellProps) {
     const cleanup = installButtonFailsafe();
     return cleanup;
   }, [mounted, pathname]);
+
+  useEffect(() => {
+    if (!mounted || typeof window === "undefined") {
+      return;
+    }
+
+    const onFailsafeNavigate = (event: Event) => {
+      const custom = event as CustomEvent<{ href?: string; replace?: boolean }>;
+      const href = typeof custom.detail?.href === "string" ? custom.detail.href.trim() : "";
+      if (!href) {
+        return;
+      }
+
+      const replace = custom.detail?.replace === true;
+      if (replace) {
+        router.replace(href, { scroll: true });
+        return;
+      }
+
+      router.push(href, { scroll: true });
+    };
+
+    window.addEventListener(FAILSAFE_NAVIGATE_EVENT, onFailsafeNavigate as EventListener);
+    return () => {
+      window.removeEventListener(FAILSAFE_NAVIGATE_EVENT, onFailsafeNavigate as EventListener);
+    };
+  }, [mounted, router]);
 
   useEffect(() => {
     if (pendingSaveKeys.length === 0) {
