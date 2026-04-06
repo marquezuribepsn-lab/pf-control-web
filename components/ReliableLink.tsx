@@ -1,12 +1,16 @@
 "use client";
 
-import NextLink from "next/link";
 import { useRouter } from "next/navigation";
-import type { ComponentProps, MouseEvent } from "react";
+import type { AnchorHTMLAttributes, MouseEvent } from "react";
+import type { UrlObject } from "url";
 
 type ReliabilityMode = "off" | "soft" | "hard";
 
-type ReliableLinkProps = ComponentProps<typeof NextLink> & {
+type ReliableLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
+  href: string | UrlObject;
+  prefetch?: boolean;
+  replace?: boolean;
+  scroll?: boolean;
   reliabilityMode?: ReliabilityMode;
 };
 
@@ -51,6 +55,9 @@ export default function ReliableLink({
   className,
   onClick,
   href,
+  replace,
+  scroll,
+  prefetch: _prefetch,
   ...props
 }: ReliableLinkProps) {
   const router = useRouter();
@@ -113,12 +120,19 @@ export default function ReliableLink({
     }
 
     event.preventDefault();
-    router.push(nextPath);
+    if (replace) {
+      router.replace(nextPath, { scroll });
+      return;
+    }
+
+    router.push(nextPath, { scroll });
   };
 
+  const resolvedHref = resolveHrefString(href) || "#";
+
   return (
-    <NextLink
-      href={href}
+    <a
+      href={resolvedHref}
       data-button-failsafe-mode={mode}
       className={resolvedClassName}
       onClick={handleClick}
