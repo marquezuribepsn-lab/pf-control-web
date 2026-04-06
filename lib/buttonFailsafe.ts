@@ -169,20 +169,6 @@ function resolveNavigationCandidate(eventTarget: Element, event: MouseEvent): Na
   };
 }
 
-function tryModernNavigation(targetHref: string): boolean {
-  const nav = (window as Window & { navigation?: { navigate?: (url: string) => unknown } }).navigation;
-  if (!nav || typeof nav.navigate !== "function") {
-    return false;
-  }
-
-  try {
-    nav.navigate(targetHref);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function tryHistoryNavigation(targetHref: string): boolean {
   try {
     const nextUrl = new URL(targetHref, window.location.origin);
@@ -235,14 +221,10 @@ export function installButtonFailsafe(): CleanupFn {
         return;
       }
 
-      const usedModernNavigation = tryModernNavigation(candidate.targetHref);
-
       window.setTimeout(() => {
         const finalHref = buildComparableHref(new URL(window.location.href));
         if (finalHref === currentHref && document.visibilityState === "visible") {
-          if (!usedModernNavigation) {
-            tryHistoryNavigation(candidate.targetHref);
-          }
+          tryHistoryNavigation(candidate.targetHref);
         }
       }, LINK_FAILSAFE_HARD_DELAY_MS);
     }, LINK_FAILSAFE_DELAY_MS);
@@ -288,10 +270,7 @@ export function installButtonFailsafe(): CleanupFn {
       return;
     }
 
-    const usedModernNavigation = tryModernNavigation(targetHref);
-    if (!usedModernNavigation) {
-      tryHistoryNavigation(targetHref);
-    }
+    tryHistoryNavigation(targetHref);
   };
 
   document.addEventListener("click", onDocumentClick, false);
