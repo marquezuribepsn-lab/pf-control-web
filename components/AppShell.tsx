@@ -304,9 +304,8 @@ export default function AppShell({ links, children }: AppShellProps) {
       const parsed = saved ? (JSON.parse(saved) as Partial<NavConfig>) : null;
       setConfig(normalizeConfig(stableLinks, parsed));
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
-      const savedScale = sanitizeScreenScale(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
-      setScreenScale(savedScale);
-      localStorage.setItem(SCREEN_SCALE_KEY, String(savedScale));
+      setScreenScale(1);
+      localStorage.setItem(SCREEN_SCALE_KEY, "1");
       const savedDockLabelMode = localStorage.getItem(DOCK_LABEL_MODE_KEY);
       setDockLabelMode(normalizeDockLabelMode(savedDockLabelMode));
       const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
@@ -427,8 +426,8 @@ export default function AppShell({ links, children }: AppShellProps) {
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === SCREEN_SCALE_KEY) {
-        const nextScale = sanitizeScreenScale(event.newValue || "1");
-        setScreenScale(nextScale);
+        setScreenScale(1);
+        localStorage.setItem(SCREEN_SCALE_KEY, "1");
       }
 
       if (event.key === NAV_CONFIG_KEY) {
@@ -454,9 +453,8 @@ export default function AppShell({ links, children }: AppShellProps) {
     };
 
     const onScaleChange = () => {
-      const savedScale = sanitizeScreenScale(localStorage.getItem(SCREEN_SCALE_KEY) || "1");
-      setScreenScale(savedScale);
-      localStorage.setItem(SCREEN_SCALE_KEY, String(savedScale));
+      setScreenScale(1);
+      localStorage.setItem(SCREEN_SCALE_KEY, "1");
     };
 
     const onNavConfigChange = () => {
@@ -610,15 +608,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     setDragState(null);
   };
 
-  const hasScaledLayout = Math.abs(screenScale - 1) > 0.001;
-  const scaledStyle = hasScaledLayout
-    ? ({
-        transform: `scale(${screenScale})`,
-        transformOrigin: "top left",
-        width: `${100 / screenScale}%`,
-        minHeight: `${100 / screenScale}dvh`,
-      } as const)
-    : undefined;
+  const scaledStyle = undefined;
 
   const normalizedPathname = normalizePath(pathname);
   const dockItems: NavLink[] = renderLinks;
@@ -748,7 +738,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[120] px-2 pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[2147483000] px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="mx-auto w-full max-w-[1120px] overflow-visible">
