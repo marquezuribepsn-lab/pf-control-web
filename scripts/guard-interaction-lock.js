@@ -26,9 +26,9 @@ function main() {
       detail: 'AppShell debe ejecutar guardia de interaccion en captura de pointerdown.',
     },
     {
-      name: 'dockWrapperPointerEventsNone',
-      pass: /className=\"(?=[^\"]*inset-x-0)(?=[^\"]*bottom-0)(?=[^\"]*pointer-events-none)[^\"]*\"/.test(source),
-      detail: 'El wrapper del dock debe tener pointer-events-none.',
+      name: 'dockContainerPointerEventsAuto',
+      pass: /className=\"[^\"]*pointer-events-auto[^\"]*rounded-\[1\.45rem\][^\"]*\"/.test(source),
+      detail: 'El contenedor del dock debe mantener pointer-events-auto.',
     },
     {
       name: 'noExtremeDockZIndex',

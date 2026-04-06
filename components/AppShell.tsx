@@ -192,13 +192,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     .map((link) => `${link.href}|${link.label}|${link.icon}|${link.tone}|${link.adminOnly ? "1" : "0"}`)
     .join("||");
   const stableLinks = useMemo(() => links, [linksSignature]);
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-  });
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [config, setConfig] = useState<NavConfig>(() => getDefaultConfig(stableLinks));
@@ -206,14 +200,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [screenScale, setScreenScale] = useState(1);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
-  const [resolvedRole, setResolvedRole] = useState<string | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const cachedRole = localStorage.getItem(SIDEBAR_ROLE_KEY);
-    return cachedRole && cachedRole.length > 0 ? cachedRole : null;
-  });
+  const [resolvedRole, setResolvedRole] = useState<string | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
@@ -330,6 +317,10 @@ export default function AppShell({ links, children }: AppShellProps) {
       const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
       if (savedCollapsed === "1" || savedCollapsed === "0") {
         setCollapsed(savedCollapsed === "1");
+      }
+      const cachedRole = localStorage.getItem(SIDEBAR_ROLE_KEY);
+      if (cachedRole && cachedRole.length > 0) {
+        setResolvedRole(cachedRole);
       }
     } catch {
       setConfig(getDefaultConfig(stableLinks));
@@ -692,6 +683,10 @@ export default function AppShell({ links, children }: AppShellProps) {
             <Link
               href="/cuenta"
               prefetch={false}
+              onClick={(event) => {
+                event.preventDefault();
+                window.location.assign("/cuenta");
+              }}
               className="group shrink-0 rounded-full"
               aria-label="Ir a cuenta"
               title="Ir a cuenta"
@@ -798,7 +793,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[95] px-2 pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-[95] px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="mx-auto w-full max-w-[1120px] overflow-visible">
@@ -830,6 +825,10 @@ export default function AppShell({ links, children }: AppShellProps) {
                       <Link
                         href={link.href}
                         prefetch={false}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          window.location.assign(link.href);
+                        }}
                         onMouseEnter={() => setHoveredDockIndex(index)}
                         onFocus={() => setHoveredDockIndex(index)}
                         onBlur={() => setHoveredDockIndex(null)}

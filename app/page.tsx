@@ -1,7 +1,6 @@
-"use client";
+﻿"use client";
 
-import Link from "next/link";
-import { useContext, useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
 import { useSessions } from "../components/SessionsProvider";
@@ -131,29 +130,6 @@ function resolveDashboardStatHint(title: string, index: number): string {
   ];
 
   return fallbackHints[index % fallbackHints.length];
-}
-
-function shouldKeepNativeNavigation(event: MouseEvent<HTMLAnchorElement>): boolean {
-  if (event.defaultPrevented) return true;
-  if (event.button !== 0) return true;
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
-  const target = event.currentTarget.getAttribute("target");
-  if (target && target !== "_self") return true;
-  return false;
-}
-
-function forceHomepageNavigation(event: MouseEvent<HTMLAnchorElement>, href: string) {
-  if (shouldKeepNativeNavigation(event)) {
-    return;
-  }
-
-  // Dejar que Link navegue en modo SPA; solo bloquear click redundante a la misma URL.
-  const targetUrl = new URL(href, window.location.origin);
-  const target = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
-  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  if (target === current) {
-    event.preventDefault();
-  }
 }
 
 function isWellnessModulo(modulo: Modulo): boolean {
@@ -534,13 +510,13 @@ export default function Home() {
               >
                 Reset
               </button>
-              <Link
+              <a
                 href="/"
                 onClick={closeHomeEditMode}
                 className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
               >
                 Cerrar configuracion
-              </Link>
+              </a>
             </div>
           </div>
         )}
@@ -627,20 +603,18 @@ export default function Home() {
                 </>
               ) : (
                 <div className="flex flex-wrap gap-3 md:col-span-2">
-                  <Link
+                  <a
                     href={primaryActionHref}
-                    onClick={(event) => forceHomepageNavigation(event, primaryActionHref)}
                     className="rounded-xl border border-cyan-200/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_14px_30px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px] hover:from-cyan-200 hover:to-sky-300"
                   >
                     {config.botonPrimarioLabel}
-                  </Link>
-                  <Link
+                  </a>
+                  <a
                     href={secondaryActionHref}
-                    onClick={(event) => forceHomepageNavigation(event, secondaryActionHref)}
                     className="rounded-xl border border-cyan-100/30 bg-slate-900/35 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-200/55 hover:bg-slate-800/55"
                   >
                     {config.botonSecundarioLabel}
-                  </Link>
+                  </a>
                 </div>
               )}
             </div>
@@ -660,10 +634,9 @@ export default function Home() {
             const statHint = resolveDashboardStatHint(stat.title, index);
 
             return (
-              <Link
+              <a
                 key={stat.title}
                 href={statHref}
-                onClick={(event) => forceHomepageNavigation(event, statHref)}
                 className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
               >
                 <div className={`mb-3 mr-12 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
@@ -676,7 +649,7 @@ export default function Home() {
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
                 </div>
-              </Link>
+              </a>
             );
           })}
         </section>
@@ -694,20 +667,18 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Link
+              <a
                 href="/clientes"
-                onClick={(event) => forceHomepageNavigation(event, "/clientes")}
                 className="rounded-xl border border-cyan-100/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_12px_24px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px]"
               >
                 Crear cliente
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/sesiones"
-                onClick={(event) => forceHomepageNavigation(event, "/sesiones")}
                 className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
               >
                 Gestionar sesiones
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -738,13 +709,12 @@ export default function Home() {
                 placeholder="Buscar alumno por nombre"
                 className="w-full max-w-sm rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white"
               />
-              <Link
+              <a
                 href="/clientes"
-                onClick={(event) => forceHomepageNavigation(event, "/clientes")}
                 className="rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/10"
               >
                 Ver modulo clientes
-              </Link>
+              </a>
             </div>
 
             <div className="overflow-x-auto">
@@ -794,13 +764,12 @@ export default function Home() {
                             : "Sin movimientos"}
                         </td>
                         <td className="px-3 py-3 text-right">
-                          <Link
+                          <a
                             href="/semana"
-                            onClick={(event) => forceHomepageNavigation(event, "/semana")}
                             className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
                           >
                             Abrir semana
-                          </Link>
+                          </a>
                         </td>
                       </tr>
                     ))
@@ -814,13 +783,12 @@ export default function Home() {
         <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(33,48,74,0.92),rgba(41,56,82,0.88))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-2xl font-black text-white">Acceso rapido por categorias</h3>
-            <Link
+            <a
               href="/categorias"
-              onClick={(event) => forceHomepageNavigation(event, "/categorias")}
               className="rounded-lg border border-white/25 bg-slate-900/35 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/10"
             >
               Ver todas
-            </Link>
+            </a>
           </div>
 
           {categoriasActivas.length === 0 ? (
@@ -834,12 +802,9 @@ export default function Home() {
                 const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 
                 return (
-                  <Link
+                  <a
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    onClick={(event) =>
-                      forceHomepageNavigation(event, `/categorias/${encodeURIComponent(categoria.nombre)}`)
-                    }
                     className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
                   >
                     <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
@@ -848,7 +813,7 @@ export default function Home() {
                       {categoria.nombre}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-200">Abrir categoria</p>
-                  </Link>
+                  </a>
                 );
               })}
             </div>
@@ -1038,21 +1003,15 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <Link
+                <a
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  onClick={(event) =>
-                    forceHomepageNavigation(
-                      event,
-                      resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")
-                    )
-                  }
                   className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
                 >
                   <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
                   <p className="text-lg font-black text-white">{item.label}</p>
                   <p className="mt-1 text-sm text-slate-200">{item.desc}</p>
-                </Link>
+                </a>
               )
             )}
           </div>
@@ -1061,3 +1020,4 @@ export default function Home() {
     </main>
   );
 }
+

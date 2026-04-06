@@ -9,12 +9,51 @@ const LOGIN_REMEMBER_EMAIL_KEY = 'pf_login_remembered_email';
 const LOGIN_REMEMBER_ENABLED_KEY = 'pf_login_remember_enabled';
 
 function isSignInFailure(result: unknown) {
+  if (typeof result === 'string') {
+    return /[?&]error=/i.test(result);
+  }
+
   const payload = (result || {}) as { ok?: boolean; error?: string | null; url?: string | null };
   const errorCode = String(payload.error || '').trim();
   const responseUrl = String(payload.url || '').trim();
   const hasErrorInUrl = /[?&]error=/i.test(responseUrl);
+  const explicitFailure = payload.ok === false;
 
-  return !payload.ok || Boolean(errorCode) || hasErrorInUrl;
+  return explicitFailure || Boolean(errorCode) || hasErrorInUrl;
+}
+
+function resolvePostLoginHref(result: unknown): string {
+  if (typeof window === 'undefined') {
+    return '/';
+  }
+
+  const responseUrl =
+    typeof result === 'string'
+      ? result
+      : String(((result as { url?: string | null })?.url || '')).trim();
+
+  if (!responseUrl) {
+    return '/';
+  }
+
+  try {
+    const parsed = new URL(responseUrl, window.location.origin);
+    if (parsed.pathname.startsWith('/auth/login')) {
+      return '/';
+    }
+    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
+  } catch {
+    return '/';
+  }
+}
+
+function redirectAfterSuccessfulLogin(result: unknown, router: ReturnType<typeof useRouter>) {
+  const targetHref = resolvePostLoginHref(result);
+  if (typeof window !== 'undefined') {
+    window.location.assign(targetHref);
+    return;
+  }
+  router.replace(targetHref);
 }
 
 function LoginPageContent() {
@@ -117,6 +156,7 @@ function LoginPageContent() {
           email: magicEmail,
           loginToken: magicToken,
           redirect: false,
+          callbackUrl: '/',
         });
 
         if (isSignInFailure(result)) {
@@ -125,7 +165,7 @@ function LoginPageContent() {
         }
 
         setFailedAttempts(0);
-        router.replace('/');
+        redirectAfterSuccessfulLogin(result, router);
       } catch {
         setError('No pudimos validar el enlace de acceso. Intenta nuevamente.');
       } finally {
@@ -150,6 +190,7 @@ function LoginPageContent() {
         password,
         rememberMe,
         redirect: false,
+        callbackUrl: '/',
       });
 
       if (isSignInFailure(result)) {
@@ -164,7 +205,7 @@ function LoginPageContent() {
       }
 
       setFailedAttempts(0);
-      router.replace('/');
+      redirectAfterSuccessfulLogin(result, router);
     } catch (err) {
       setError('Error al conectar. Intenta de nuevo.');
     } finally {
