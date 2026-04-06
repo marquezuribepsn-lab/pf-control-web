@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getPendingSaveStatus } from "./useSharedState";
+import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
 
 type NavLink = {
   href: string;
@@ -218,6 +219,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [hoveredDockIndex, setHoveredDockIndex] = useState<number | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
+  const interactionGuardLastRunRef = useRef(0);
 
   const formatPendingKeyLabel = (key: string) => {
     const keyLabels: Record<string, string> = {
@@ -264,6 +266,23 @@ export default function AppShell({ links, children }: AppShellProps) {
     const rest = pendingSaveKeys.length - labels.length;
     return rest > 0 ? `${base} +${rest}` : base;
   })();
+
+  const runInteractionGuard = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - interactionGuardLastRunRef.current < 150) {
+      return;
+    }
+    interactionGuardLastRunRef.current = now;
+
+    const result = neutralizeViewportBlockers();
+    if (result.neutralized > 0) {
+      console.warn("[interaction-guard] bloqueo neutralizado", result);
+    }
+  };
 
   const pushToast = (type: InlineToast["type"], message: string, title?: string) => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
@@ -500,6 +519,47 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pathname]);
 
   useEffect(() => {
+    if (!mounted || pathname.startsWith("/auth")) {
+      return;
+    }
+
+    const scheduledRuns = [0, 120, 420, 900].map((delayMs) =>
+      window.setTimeout(() => runInteractionGuard(), delayMs)
+    );
+
+    const onPointerDownCapture = () => {
+      window.setTimeout(() => runInteractionGuard(), 0);
+    };
+
+    const onFocus = () => {
+      runInteractionGuard();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        runInteractionGuard();
+      }
+    };
+
+    const onResize = () => {
+      runInteractionGuard();
+    };
+
+    document.addEventListener("pointerdown", onPointerDownCapture, true);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      scheduledRuns.forEach((timer) => window.clearTimeout(timer));
+      document.removeEventListener("pointerdown", onPointerDownCapture, true);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [mounted, pathname]);
+
+  useEffect(() => {
     if (pendingSaveKeys.length === 0) {
       setPendingPanelOpen(false);
     }
@@ -620,8 +680,8 @@ export default function AppShell({ links, children }: AppShellProps) {
   return (
     <div className="relative min-h-[100svh] overflow-x-hidden">
       <div className="relative">
-        <div className="fixed left-4 top-4 z-[61]">
-          <div className="flex items-center gap-3 rounded-[1.2rem] border border-cyan-200/35 bg-slate-900/78 px-3 py-2 shadow-[0_14px_36px_rgba(2,6,23,0.55)] backdrop-blur-xl">
+        <div className="fixed left-4 top-4 z-[61] pointer-events-none">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-[1.2rem] border border-cyan-200/35 bg-slate-900/78 px-3 py-2 shadow-[0_14px_36px_rgba(2,6,23,0.55)] backdrop-blur-xl">
             <div className="min-w-0">
               <p className="truncate text-[0.95rem] font-black leading-tight text-white">Hola! {displayName.toUpperCase()}</p>
               <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.11em] text-cyan-100/95">
@@ -738,7 +798,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[2147483000] px-2 pb-[env(safe-area-inset-bottom)]"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-[95] px-2 pb-[env(safe-area-inset-bottom)]"
         onMouseLeave={() => setHoveredDockIndex(null)}
       >
         <div className="mx-auto w-full max-w-[1120px] overflow-visible">
