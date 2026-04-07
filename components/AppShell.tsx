@@ -36,6 +36,10 @@ type UserLike = {
   role?: string | null;
 };
 
+type WindowWithDockSmokeToken = Window & {
+  __pfDockSmokeToken?: string;
+};
+
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 
@@ -373,6 +377,45 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [mounted]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const tokenStorageKey = "pf-dock-smoke-token";
+    const currentWindow = window as WindowWithDockSmokeToken;
+
+    try {
+      const restored = window.sessionStorage.getItem(tokenStorageKey);
+      if (!currentWindow.__pfDockSmokeToken && restored) {
+        currentWindow.__pfDockSmokeToken = restored;
+      }
+    } catch {
+      // ignore storage failures in restricted browsers
+    }
+
+    const persistToken = () => {
+      const token = currentWindow.__pfDockSmokeToken;
+      if (!token || typeof token !== "string") {
+        return;
+      }
+
+      try {
+        window.sessionStorage.setItem(tokenStorageKey, token);
+      } catch {
+        // ignore storage failures in restricted browsers
+      }
+    };
+
+    window.addEventListener("pagehide", persistToken);
+    window.addEventListener("beforeunload", persistToken);
+
+    return () => {
+      window.removeEventListener("pagehide", persistToken);
+      window.removeEventListener("beforeunload", persistToken);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) return;
 
     const cleanup = installButtonFailsafe();
@@ -485,8 +528,8 @@ export default function AppShell({ links, children }: AppShellProps) {
         <div className="pointer-events-auto m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
-            prefetch
-            reliabilityMode="soft"
+            prefetch={false}
+            reliabilityMode="hard"
             className="mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
@@ -527,8 +570,8 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    prefetch
-                    reliabilityMode="soft"
+                    prefetch={false}
+                    reliabilityMode="hard"
                     className={`group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
