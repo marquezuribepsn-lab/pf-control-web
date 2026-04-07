@@ -20,6 +20,7 @@ type NavLink = {
 type AppShellProps = {
   links: NavLink[];
   children: ReactNode;
+  initialRole?: string | null;
 };
 
 type InlineToast = {
@@ -144,7 +145,7 @@ const formatPendingKeyLabel = (key: string) => {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
-export default function AppShell({ links, children }: AppShellProps) {
+export default function AppShell({ links, children, initialRole = null }: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const interactionGuardLastRunRef = useRef(0);
@@ -152,7 +153,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
-  const [resolvedRole, setResolvedRole] = useState<string | null>(null);
+  const [resolvedRole, setResolvedRole] = useState<string | null>(initialRole);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
@@ -192,15 +193,26 @@ export default function AppShell({ links, children }: AppShellProps) {
     setMounted(true);
     try {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
-      const cachedRole = localStorage.getItem(SIDEBAR_ROLE_KEY);
-      if (cachedRole && cachedRole.length > 0) {
-        setResolvedRole(cachedRole);
+
+      const normalizedInitialRole = typeof initialRole === "string" ? initialRole.trim() : "";
+      if (normalizedInitialRole) {
+        setResolvedRole(normalizedInitialRole);
+        localStorage.setItem(SIDEBAR_ROLE_KEY, normalizedInitialRole);
+      } else {
+        const cachedRole = String(localStorage.getItem(SIDEBAR_ROLE_KEY) || "")
+          .trim()
+          .toUpperCase();
+
+        // Only reuse ADMIN cache to avoid stale lower-privilege roles causing icon reorder flicker.
+        if (cachedRole === "ADMIN") {
+          setResolvedRole(cachedRole);
+        }
       }
     } catch {
       setSidebarImage(null);
       setResolvedRole(null);
     }
-  }, []);
+  }, [initialRole]);
 
   useEffect(() => {
     if (!mounted || !session?.user) return;
@@ -446,6 +458,7 @@ export default function AppShell({ links, children }: AppShellProps) {
     ((session?.user as UserLike | undefined)?.role as string | undefined) ??
     resolvedRole ??
     (pathname.startsWith("/admin") ? "ADMIN" : null);
+  const normalizedRole = typeof role === "string" ? role.trim().toUpperCase() : null;
 
   const displayName = resolveUserDisplayName(session?.user as UserLike | undefined);
   const profileInitials = resolveInitials(displayName);
@@ -454,11 +467,15 @@ export default function AppShell({ links, children }: AppShellProps) {
   const visibleLinks = useMemo(
     () =>
       links.filter((link) => {
-        if (link.adminOnly && role !== "ADMIN") {
+        if (link.adminOnly && normalizedRole !== "ADMIN") {
+          // Keep admin links visible while role is unresolved to avoid icon reordering flicker.
+          if (!normalizedRole) {
+            return true;
+          }
           return false;
         }
 
-        if (role === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
+        if (normalizedRole === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
           if (!colaboradorAccessMap || Object.keys(colaboradorAccessMap).length === 0) {
             return true;
           }
@@ -480,7 +497,7 @@ export default function AppShell({ links, children }: AppShellProps) {
 
         return true;
       }),
-    [links, role, colaboradorAccessMap]
+    [links, normalizedRole, colaboradorAccessMap]
   );
 
   const normalizedPathname = normalizePath(pathname);
