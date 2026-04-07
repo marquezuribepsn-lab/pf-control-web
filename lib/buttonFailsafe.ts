@@ -208,9 +208,6 @@ export function installButtonFailsafe(): CleanupFn {
       return;
     }
 
-    // Prevent native anchor navigation to avoid full-page reload flicker.
-    event.preventDefault();
-
     const currentHref = buildComparableHref(new URL(window.location.href));
     if (currentHref === candidate.targetHref) {
       return;
