@@ -15,7 +15,7 @@ type ReliableLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> &
   reliabilityMode?: ReliabilityMode;
 };
 
-const HARD_MODE_FALLBACK_DELAY_MS = 1800;
+const HARD_MODE_FALLBACK_DELAY_MS = 520;
 
 function resolveHrefString(href: ReliableLinkProps["href"]): string | null {
   if (typeof href === "string") {
