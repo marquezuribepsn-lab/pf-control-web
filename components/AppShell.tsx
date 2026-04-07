@@ -36,10 +36,6 @@ type UserLike = {
   role?: string | null;
 };
 
-type WindowWithDockSmokeToken = Window & {
-  __pfDockSmokeToken?: string;
-};
-
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 
@@ -377,45 +373,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [mounted]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const tokenStorageKey = "pf-dock-smoke-token";
-    const currentWindow = window as WindowWithDockSmokeToken;
-
-    try {
-      const restored = window.sessionStorage.getItem(tokenStorageKey);
-      if (!currentWindow.__pfDockSmokeToken && restored) {
-        currentWindow.__pfDockSmokeToken = restored;
-      }
-    } catch {
-      // ignore storage failures in restricted browsers
-    }
-
-    const persistToken = () => {
-      const token = currentWindow.__pfDockSmokeToken;
-      if (!token || typeof token !== "string") {
-        return;
-      }
-
-      try {
-        window.sessionStorage.setItem(tokenStorageKey, token);
-      } catch {
-        // ignore storage failures in restricted browsers
-      }
-    };
-
-    window.addEventListener("pagehide", persistToken);
-    window.addEventListener("beforeunload", persistToken);
-
-    return () => {
-      window.removeEventListener("pagehide", persistToken);
-      window.removeEventListener("beforeunload", persistToken);
-    };
-  }, []);
-
-  useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) return;
 
     const cleanup = installButtonFailsafe();
@@ -485,12 +442,9 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const normalizedPathname = normalizePath(pathname);
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
-  const sidebarItemCount = Math.max(visibleLinks.length, 1);
-  const sidebarItemHeight = Math.max(34, Math.min(52, Math.floor(540 / sidebarItemCount)));
-  const sidebarIconSize =
-    sidebarItemHeight < 38 ? "0.9rem" : sidebarItemHeight < 44 ? "1rem" : "1.12rem";
-  const sidebarLabelSize =
-    sidebarItemHeight < 38 ? "8px" : sidebarItemHeight < 44 ? "9px" : "10px";
+  const sidebarItemHeight = 38;
+  const sidebarIconSize = "1rem";
+  const sidebarLabelSize = "11px";
 
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
@@ -524,16 +478,16 @@ export default function AppShell({ links, children }: AppShellProps) {
       ) : null}
 
       <aside
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(88px,8.4vw,112px)] bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] transition-transform duration-200 md:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] translate-x-0 transition-transform duration-200 ${
+          mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
         }`}
       >
         <div className="pointer-events-auto m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
-            prefetch={false}
-            reliabilityMode="hard"
-            className="mx-auto mt-2 flex w-full max-w-[84px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-1.5 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
+            prefetch
+            reliabilityMode="soft"
+            className="mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
           >
@@ -548,7 +502,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                 {profileInitials}
               </span>
             )}
-            <span className="w-full truncate text-[9px] font-black uppercase tracking-[0.06em] text-cyan-50">
+            <span className="w-full truncate text-[10px] font-black uppercase tracking-[0.05em] text-cyan-50">
               {displayName}
             </span>
             <span className="rounded-full border border-cyan-200/40 bg-slate-900/65 px-2 py-0.5 text-[8px] font-bold tracking-[0.08em] text-cyan-100">
@@ -556,11 +510,8 @@ export default function AppShell({ links, children }: AppShellProps) {
             </span>
           </Link>
 
-          <nav className="mt-2 flex-1 overflow-hidden px-2 pb-2">
-            <div
-              className="grid w-full justify-items-center gap-1"
-              style={{ gridTemplateRows: `repeat(${sidebarItemCount}, ${sidebarItemHeight}px)` }}
-            >
+          <nav className="mt-2 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-2">
+            <div className="flex w-full flex-col gap-1">
               {visibleLinks.map((link) => {
                 const normalizedHref = normalizePath(link.href);
                 const hasChildLink = allVisibleHrefs.some(
@@ -576,9 +527,9 @@ export default function AppShell({ links, children }: AppShellProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    prefetch={false}
-                    reliabilityMode="hard"
-                    className={`group flex w-full max-w-[84px] flex-col items-center justify-center rounded-2xl border px-1.5 text-center transition-colors duration-150 ${
+                    prefetch
+                    reliabilityMode="soft"
+                    className={`group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
@@ -586,15 +537,15 @@ export default function AppShell({ links, children }: AppShellProps) {
                     style={{
                       height: `${sidebarItemHeight}px`,
                       minHeight: `${sidebarItemHeight}px`,
-                      paddingTop: sidebarItemHeight < 40 ? "2px" : "4px",
-                      paddingBottom: sidebarItemHeight < 40 ? "2px" : "4px",
                     }}
                     aria-current={isCurrent ? "page" : undefined}
                     title={link.label}
                     aria-label={link.label}
                   >
-                    <span className="leading-none" style={{ fontSize: sidebarIconSize }}>{link.icon}</span>
-                    <span className="mt-1 w-full truncate font-semibold leading-tight" style={{ fontSize: sidebarLabelSize }}>
+                    <span className="w-5 shrink-0 text-center leading-none" style={{ fontSize: sidebarIconSize }}>
+                      {link.icon}
+                    </span>
+                    <span className="w-full truncate text-left font-semibold leading-tight" style={{ fontSize: sidebarLabelSize }}>
                       {compactSidebarLabel(link.label)}
                     </span>
                   </Link>
@@ -608,7 +559,7 @@ export default function AppShell({ links, children }: AppShellProps) {
               <ReliableActionButton
                 type="button"
                 onClick={() => setPendingPanelOpen((prev) => !prev)}
-                className="mx-auto w-full max-w-[84px] rounded-xl border border-amber-300/45 bg-amber-500/18 px-2 py-1.5 text-[9px] font-bold text-amber-100"
+                className="mx-auto w-full max-w-[130px] rounded-xl border border-amber-300/45 bg-amber-500/18 px-2 py-1.5 text-[10px] font-bold text-amber-100"
                 title="Cambios pendientes"
               >
                 Pendientes ({pendingSaveKeys.length})
@@ -619,7 +570,7 @@ export default function AppShell({ links, children }: AppShellProps) {
       </aside>
 
       {pendingSaveKeys.length > 0 && pendingPanelOpen ? (
-        <div className="fixed left-[104px] top-4 z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
+        <div className="fixed left-[138px] top-4 z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">
             Modulos pendientes
           </p>
@@ -680,7 +631,7 @@ export default function AppShell({ links, children }: AppShellProps) {
         ))}
       </div>
 
-      <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[clamp(98px,9.8vw,126px)] md:pt-4">
+      <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[clamp(132px,14vw,170px)] md:pt-4">
         <div className="px-4">{children}</div>
       </main>
     </div>
