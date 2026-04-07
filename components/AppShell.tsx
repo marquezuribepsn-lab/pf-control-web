@@ -6,7 +6,7 @@ import { FAILSAFE_NAVIGATE_EVENT, installButtonFailsafe } from "@/lib/buttonFail
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getPendingSaveStatus } from "./useSharedState";
 
 type NavLink = {
@@ -395,11 +395,15 @@ export default function AppShell({ links, children }: AppShellProps) {
 
       const replace = custom.detail?.replace === true;
       if (replace) {
-        router.replace(href, { scroll: true });
+        startTransition(() => {
+          router.replace(href, { scroll: true });
+        });
         return;
       }
 
-      router.push(href, { scroll: true });
+      startTransition(() => {
+        router.push(href, { scroll: true });
+      });
     };
 
     window.addEventListener(FAILSAFE_NAVIGATE_EVENT, onFailsafeNavigate as EventListener);

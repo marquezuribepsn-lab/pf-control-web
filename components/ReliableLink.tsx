@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { AnchorHTMLAttributes, MouseEvent } from "react";
+import { startTransition } from "react";
 import type { UrlObject } from "url";
 
 type ReliabilityMode = "off" | "soft" | "hard";
@@ -121,11 +122,15 @@ export default function ReliableLink({
 
     event.preventDefault();
     if (replace) {
-      router.replace(nextPath, { scroll });
+      startTransition(() => {
+        router.replace(nextPath, { scroll });
+      });
       return;
     }
 
-    router.push(nextPath, { scroll });
+    startTransition(() => {
+      router.push(nextPath, { scroll });
+    });
   };
 
   const resolvedHref = resolveHrefString(href) || "#";
