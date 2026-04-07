@@ -36,6 +36,10 @@ type UserLike = {
   role?: string | null;
 };
 
+type WindowWithDockSmokeToken = Window & {
+  __pfDockSmokeToken?: string;
+};
+
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 
@@ -372,6 +376,45 @@ export default function AppShell({ links, children }: AppShellProps) {
 
     void refreshServiceWorkers();
   }, [mounted]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const tokenStorageKey = "pf-dock-smoke-token";
+    const currentWindow = window as WindowWithDockSmokeToken;
+
+    try {
+      const restored = window.sessionStorage.getItem(tokenStorageKey);
+      if (!currentWindow.__pfDockSmokeToken && restored) {
+        currentWindow.__pfDockSmokeToken = restored;
+      }
+    } catch {
+      // ignore storage failures in restricted browsers
+    }
+
+    const persistToken = () => {
+      const token = currentWindow.__pfDockSmokeToken;
+      if (!token || typeof token !== "string") {
+        return;
+      }
+
+      try {
+        window.sessionStorage.setItem(tokenStorageKey, token);
+      } catch {
+        // ignore storage failures in restricted browsers
+      }
+    };
+
+    window.addEventListener("pagehide", persistToken);
+    window.addEventListener("beforeunload", persistToken);
+
+    return () => {
+      window.removeEventListener("pagehide", persistToken);
+      window.removeEventListener("beforeunload", persistToken);
+    };
+  }, []);
 
   useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) return;
