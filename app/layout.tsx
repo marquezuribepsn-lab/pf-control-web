@@ -11,6 +11,7 @@ import EjerciciosProvider from "../components/EjerciciosProvider";
 import AppShell from "../components/AppShell";
 import AlumnosProvider from "../components/AlumnosProvider";
 import { AuthSessionProvider } from "../components/AuthSessionProvider";
+import { auth } from "../lib/auth";
 
 const bodyFont = Space_Grotesk({
   subsets: ["latin"],
@@ -33,11 +34,27 @@ export const viewport: Viewport = {
   themeColor: "#081124",
 };
 
-export default function RootLayout({
+function resolveInitialProfileName(user?: { name?: string | null; email?: string | null } | null): string | null {
+  const fromName = typeof user?.name === "string" ? user.name.trim() : "";
+  if (fromName) {
+    return fromName;
+  }
+
+  const fromEmail = typeof user?.email === "string" ? user.email.split("@")[0]?.trim() : "";
+  return fromEmail || null;
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const initialRole = typeof (session?.user as { role?: string | null } | undefined)?.role === "string"
+    ? String((session?.user as { role?: string | null }).role || "").trim().toUpperCase() || null
+    : null;
+  const initialProfileName = resolveInitialProfileName(session?.user as { name?: string | null; email?: string | null } | null);
+
   const links = [
     { href: "/", label: "Inicio", icon: "🏠", tone: "from-cyan-500 to-blue-600" },
     { href: "/plantel", label: "Plantel", icon: "👥", tone: "from-emerald-500 to-teal-600" },
@@ -71,7 +88,9 @@ export default function RootLayout({
                       <AlumnosProvider>
                         <SessionsProvider>
                           <WellnessProvider>
-                            <AppShell links={links}>{children}</AppShell>
+                            <AppShell links={links} initialRole={initialRole} initialProfileName={initialProfileName}>
+                              {children}
+                            </AppShell>
                           </WellnessProvider>
                         </SessionsProvider>
                       </AlumnosProvider>

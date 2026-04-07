@@ -2,7 +2,6 @@
 
 import NextLink from "next/link";
 import type { LinkProps } from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, type AnchorHTMLAttributes } from "react";
 import type { UrlObject } from "url";
 
@@ -60,8 +59,6 @@ export default function ReliableLink({
   prefetch = false,
   ...props
 }: ReliableLinkProps) {
-  const router = useRouter();
-
   const mode =
     reliabilityMode === "off" || reliabilityMode === "soft" || reliabilityMode === "hard"
       ? reliabilityMode
@@ -152,8 +149,8 @@ export default function ReliableLink({
         return;
       }
 
-      // Recover dead clicks with SPA navigation to avoid shell re-hydration flicker.
-      router.push(targetComparable);
+      // Last-resort recovery for dead clicks when App Router transition does not start.
+      window.location.assign(targetComparable);
     }, HARD_MODE_FALLBACK_DELAY_MS);
   };
 
