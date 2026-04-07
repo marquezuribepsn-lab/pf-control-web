@@ -151,7 +151,6 @@ export default function AppShell({ links, children }: AppShellProps) {
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(900);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [resolvedRole, setResolvedRole] = useState<string | null>(null);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
@@ -434,23 +433,6 @@ export default function AppShell({ links, children }: AppShellProps) {
   }, [pathname]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncViewport = () => {
-      setViewportHeight(window.innerHeight || 900);
-    };
-
-    syncViewport();
-    window.addEventListener("resize", syncViewport);
-
-    return () => {
-      window.removeEventListener("resize", syncViewport);
-    };
-  }, []);
-
-  useEffect(() => {
     const nextRole = (session?.user as UserLike | undefined)?.role;
     if (typeof nextRole === "string" && nextRole.length > 0) {
       setResolvedRole(nextRole);
@@ -504,12 +486,7 @@ export default function AppShell({ links, children }: AppShellProps) {
   const normalizedPathname = normalizePath(pathname);
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
   const sidebarItemCount = Math.max(visibleLinks.length, 1);
-  const reservedSidebarHeight = 160 + (pendingSaveKeys.length > 0 ? 48 : 0);
-  const sidebarNavAvailableHeight = Math.max(260, viewportHeight - reservedSidebarHeight);
-  const sidebarItemHeight = Math.max(
-    34,
-    Math.min(54, Math.floor(sidebarNavAvailableHeight / sidebarItemCount) - 4)
-  );
+  const sidebarItemHeight = Math.max(34, Math.min(52, Math.floor(540 / sidebarItemCount)));
   const sidebarIconSize =
     sidebarItemHeight < 38 ? "0.9rem" : sidebarItemHeight < 44 ? "1rem" : "1.12rem";
   const sidebarLabelSize =
@@ -601,7 +578,7 @@ export default function AppShell({ links, children }: AppShellProps) {
                     href={link.href}
                     prefetch={false}
                     reliabilityMode="hard"
-                    className={`group flex w-full max-w-[84px] flex-col items-center justify-center rounded-2xl border px-1.5 text-center transition-all duration-150 ${
+                    className={`group flex w-full max-w-[84px] flex-col items-center justify-center rounded-2xl border px-1.5 text-center transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
