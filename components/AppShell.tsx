@@ -43,6 +43,8 @@ type WindowWithDockSmokeToken = Window & {
 
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
+const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
+const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -69,12 +71,19 @@ const normalizePath = (value: string) => {
   return path;
 };
 
-const resolveUserDisplayName = (user?: UserLike | null): string => {
+const resolveKnownUserDisplayName = (user?: UserLike | null): string | null => {
   const fromName = typeof user?.name === "string" ? user.name.trim() : "";
   if (fromName) return fromName;
 
   const fromEmail = typeof user?.email === "string" ? user.email.split("@")[0]?.trim() : "";
   if (fromEmail) return fromEmail;
+
+  return null;
+};
+
+const resolveUserDisplayName = (user?: UserLike | null): string => {
+  const resolved = resolveKnownUserDisplayName(user);
+  if (resolved) return resolved;
 
   return "Usuario";
 };
@@ -154,6 +163,8 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [resolvedRole, setResolvedRole] = useState<string | null>(initialRole);
+  const [cachedProfileName, setCachedProfileName] = useState<string>("");
+  const [cachedProfileRole, setCachedProfileRole] = useState<string | null>(null);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
@@ -194,10 +205,25 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
     try {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
 
+      const cachedName = String(localStorage.getItem(SIDEBAR_PROFILE_NAME_KEY) || "").trim();
+      if (cachedName) {
+        setCachedProfileName(cachedName);
+      }
+
+      const cachedProfileRoleValue = String(localStorage.getItem(SIDEBAR_PROFILE_ROLE_KEY) || "")
+        .trim()
+        .toUpperCase();
+      if (cachedProfileRoleValue) {
+        setCachedProfileRole(cachedProfileRoleValue);
+      }
+
       const normalizedInitialRole = typeof initialRole === "string" ? initialRole.trim() : "";
       if (normalizedInitialRole) {
-        setResolvedRole(normalizedInitialRole);
-        localStorage.setItem(SIDEBAR_ROLE_KEY, normalizedInitialRole);
+        const normalized = normalizedInitialRole.toUpperCase();
+        setResolvedRole(normalized);
+        setCachedProfileRole(normalized);
+        localStorage.setItem(SIDEBAR_ROLE_KEY, normalized);
+        localStorage.setItem(SIDEBAR_PROFILE_ROLE_KEY, normalized);
       } else {
         const cachedRole = String(localStorage.getItem(SIDEBAR_ROLE_KEY) || "")
           .trim()
@@ -211,6 +237,8 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
     } catch {
       setSidebarImage(null);
       setResolvedRole(null);
+      setCachedProfileName("");
+      setCachedProfileRole(null);
     }
   }, [initialRole]);
 
@@ -315,7 +343,17 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
       }
 
       if (event.key === SIDEBAR_ROLE_KEY) {
-        setResolvedRole(event.newValue || null);
+        const nextRole = String(event.newValue || "").trim().toUpperCase();
+        setResolvedRole(nextRole || null);
+      }
+
+      if (event.key === SIDEBAR_PROFILE_NAME_KEY) {
+        setCachedProfileName(String(event.newValue || "").trim());
+      }
+
+      if (event.key === SIDEBAR_PROFILE_ROLE_KEY) {
+        const nextProfileRole = String(event.newValue || "").trim().toUpperCase();
+        setCachedProfileRole(nextProfileRole || null);
       }
     };
 
@@ -445,11 +483,24 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
   }, [pathname]);
 
   useEffect(() => {
-    const nextRole = (session?.user as UserLike | undefined)?.role;
-    if (typeof nextRole === "string" && nextRole.length > 0) {
-      setResolvedRole(nextRole);
+    const nextUser = session?.user as UserLike | undefined;
+    const nextRole = nextUser?.role;
+    const nextKnownName = resolveKnownUserDisplayName(nextUser);
+
+    if (typeof nextKnownName === "string" && nextKnownName.length > 0) {
+      setCachedProfileName(nextKnownName);
       if (typeof window !== "undefined") {
-        localStorage.setItem(SIDEBAR_ROLE_KEY, nextRole);
+        localStorage.setItem(SIDEBAR_PROFILE_NAME_KEY, nextKnownName);
+      }
+    }
+
+    if (typeof nextRole === "string" && nextRole.length > 0) {
+      const normalizedNextRole = nextRole.trim().toUpperCase();
+      setResolvedRole(normalizedNextRole);
+      setCachedProfileRole(normalizedNextRole);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SIDEBAR_ROLE_KEY, normalizedNextRole);
+        localStorage.setItem(SIDEBAR_PROFILE_ROLE_KEY, normalizedNextRole);
       }
     }
   }, [session?.user]);
@@ -460,9 +511,10 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
     (pathname.startsWith("/admin") ? "ADMIN" : null);
   const normalizedRole = typeof role === "string" ? role.trim().toUpperCase() : null;
 
-  const displayName = resolveUserDisplayName(session?.user as UserLike | undefined);
+  const sessionKnownName = resolveKnownUserDisplayName(session?.user as UserLike | undefined);
+  const displayName = sessionKnownName || cachedProfileName || resolveUserDisplayName();
   const profileInitials = resolveInitials(displayName);
-  const roleLabel = roleToLabel(role);
+  const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
 
   const visibleLinks = useMemo(
     () =>
