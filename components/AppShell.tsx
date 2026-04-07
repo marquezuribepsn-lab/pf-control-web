@@ -5,8 +5,8 @@ import Link from "@/components/ReliableLink";
 import { installButtonFailsafe } from "@/lib/buttonFailsafe";
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import { getPendingSaveStatus } from "./useSharedState";
 
 type NavLink = {
@@ -156,8 +156,10 @@ const formatPendingKeyLabel = (key: string) => {
 
 export default function AppShell({ links, children, initialRole = null }: AppShellProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const interactionGuardLastRunRef = useRef(0);
+  const shellNavFallbackTimerRef = useRef<number | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -480,6 +482,11 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
 
   useEffect(() => {
     setMobileOpen(false);
+
+    if (shellNavFallbackTimerRef.current !== null) {
+      window.clearTimeout(shellNavFallbackTimerRef.current);
+      shellNavFallbackTimerRef.current = null;
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -558,6 +565,75 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
   const sidebarIconSize = "1rem";
   const sidebarLabelSize = "11px";
 
+  const handleShellLinkClick = (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    const anchor = event.currentTarget;
+    const target = (anchor.getAttribute("target") || "").trim().toLowerCase();
+    if ((target && target !== "_self") || anchor.hasAttribute("download")) {
+      return;
+    }
+
+    const trimmedHref = String(href || "").trim();
+    if (
+      !trimmedHref ||
+      trimmedHref.startsWith("#") ||
+      trimmedHref.startsWith("mailto:") ||
+      trimmedHref.startsWith("tel:") ||
+      trimmedHref.startsWith("javascript:")
+    ) {
+      return;
+    }
+
+    let targetUrl: URL;
+    try {
+      targetUrl = new URL(trimmedHref, window.location.origin);
+    } catch {
+      return;
+    }
+
+    if (targetUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    const fromComparable = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const targetComparable = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+    if (fromComparable === targetComparable) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      router.push(targetComparable);
+    } catch {
+      router.replace(targetComparable);
+      return;
+    }
+
+    if (shellNavFallbackTimerRef.current !== null) {
+      window.clearTimeout(shellNavFallbackTimerRef.current);
+      shellNavFallbackTimerRef.current = null;
+    }
+
+    shellNavFallbackTimerRef.current = window.setTimeout(() => {
+      shellNavFallbackTimerRef.current = null;
+
+      const currentComparable = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentComparable !== fromComparable || document.visibilityState !== "visible") {
+        return;
+      }
+
+      router.replace(targetComparable);
+    }, 1200);
+  };
+
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
     const labels = pendingSaveKeys.slice(0, 2).map((key) => formatPendingKeyLabel(key));
@@ -598,10 +674,11 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
           <Link
             href="/cuenta"
             prefetch={false}
-            reliabilityMode="hard"
+            reliabilityMode="off"
             className="mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
+            onClick={(event) => handleShellLinkClick(event, "/cuenta")}
           >
             {sidebarImage ? (
               <img
@@ -640,7 +717,7 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
                     key={link.href}
                     href={link.href}
                     prefetch={false}
-                    reliabilityMode="hard"
+                    reliabilityMode="off"
                     className={`group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
@@ -653,6 +730,7 @@ export default function AppShell({ links, children, initialRole = null }: AppShe
                     aria-current={isCurrent ? "page" : undefined}
                     title={link.label}
                     aria-label={link.label}
+                    onClick={(event) => handleShellLinkClick(event, link.href)}
                   >
                     <span className="w-5 shrink-0 text-center leading-none" style={{ fontSize: sidebarIconSize }}>
                       {link.icon}
