@@ -1,5 +1,5 @@
 param(
-  [string]$Tag = "restore-dock-2026-04-05",
+  [string]$Tag = "restore-dock-2026-04-06-sidebar-order-lock",
   [switch]$Push
 )
 
