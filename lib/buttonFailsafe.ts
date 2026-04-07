@@ -208,6 +208,11 @@ export function installButtonFailsafe(): CleanupFn {
       return;
     }
 
+    // Next Link handles anchor navigation; keep failsafe click fallback only for data-nav-href elements.
+    if (candidate.element instanceof HTMLAnchorElement) {
+      return;
+    }
+
     const currentHref = buildComparableHref(new URL(window.location.href));
     if (currentHref === candidate.targetHref) {
       return;
