@@ -2,7 +2,7 @@
 
 import NextLink from "next/link";
 import type { LinkProps } from "next/link";
-import type { AnchorHTMLAttributes } from "react";
+import { useEffect, useRef, type AnchorHTMLAttributes } from "react";
 import type { UrlObject } from "url";
 
 type ReliabilityMode = "off" | "soft" | "hard";
@@ -14,6 +14,8 @@ type ReliableLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> &
   scroll?: boolean;
   reliabilityMode?: ReliabilityMode;
 };
+
+const HARD_MODE_FALLBACK_DELAY_MS = 520;
 
 function resolveHrefString(href: ReliableLinkProps["href"]): string | null {
   if (typeof href === "string") {
@@ -62,20 +64,95 @@ export default function ReliableLink({
       ? reliabilityMode
       : "hard";
 
+  const hardFallbackTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (hardFallbackTimerRef.current !== null) {
+        window.clearTimeout(hardFallbackTimerRef.current);
+        hardFallbackTimerRef.current = null;
+      }
+    },
+    []
+  );
+
   const resolvedClassName = ["pf-reliable-link", className].filter(Boolean).join(" ");
   const resolvedHref = resolveHrefString(href) || "#";
 
-  if (mode === "hard") {
-    return (
-      <a
-        href={resolvedHref}
-        data-button-failsafe-mode={mode}
-        className={resolvedClassName}
-        onClick={onClick}
-        {...props}
-      />
-    );
-  }
+  const handleClick: AnchorHTMLAttributes<HTMLAnchorElement>["onClick"] = (event) => {
+    if (onClick) {
+      onClick(event);
+    }
+
+    if (mode !== "hard") {
+      return;
+    }
+
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    const target = event.currentTarget;
+    if (target instanceof HTMLAnchorElement) {
+      const targetAttr = (target.getAttribute("target") || "").trim().toLowerCase();
+      if ((targetAttr && targetAttr !== "_self") || target.hasAttribute("download")) {
+        return;
+      }
+    }
+
+    if (
+      resolvedHref.startsWith("#") ||
+      resolvedHref.startsWith("mailto:") ||
+      resolvedHref.startsWith("tel:") ||
+      resolvedHref.startsWith("javascript:")
+    ) {
+      return;
+    }
+
+    let targetUrl: URL;
+    try {
+      targetUrl = new URL(resolvedHref, window.location.origin);
+    } catch {
+      return;
+    }
+
+    if (targetUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    const fromComparable = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const targetComparable = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+
+    if (targetComparable === fromComparable) {
+      return;
+    }
+
+    if (hardFallbackTimerRef.current !== null) {
+      window.clearTimeout(hardFallbackTimerRef.current);
+      hardFallbackTimerRef.current = null;
+    }
+
+    hardFallbackTimerRef.current = window.setTimeout(() => {
+      hardFallbackTimerRef.current = null;
+      const currentComparable = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentComparable !== fromComparable || document.visibilityState !== "visible") {
+        return;
+      }
+
+      // If SPA navigation was blocked, force a hard navigation as last resort.
+      window.location.assign(targetComparable);
+    }, HARD_MODE_FALLBACK_DELAY_MS);
+  };
 
   return (
     <NextLink
@@ -85,7 +162,7 @@ export default function ReliableLink({
       scroll={scroll}
       data-button-failsafe-mode={mode}
       className={resolvedClassName}
-      onClick={onClick}
+      onClick={handleClick}
       {...props}
     />
   );
