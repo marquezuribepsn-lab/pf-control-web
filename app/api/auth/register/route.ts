@@ -16,8 +16,9 @@ export async function POST(req: NextRequest) {
 
     const { email, password } = payload || {};
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const normalizedPassword = typeof password === 'string' ? password.normalize('NFKC').trim() : '';
 
-    if (!normalizedEmail || !password || password.length < 6) {
+    if (!normalizedEmail || !normalizedPassword || normalizedPassword.length < 6) {
       return NextResponse.json(
         { message: 'Email y contraseña (mínimo 6 caracteres) requeridos' },
         { status: 400 }
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
     // Create user
     const user = await db.user.create({

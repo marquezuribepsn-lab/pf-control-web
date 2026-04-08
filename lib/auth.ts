@@ -8,6 +8,58 @@ const db = prisma as any;
 const REMEMBERED_SESSION_MAX_AGE = 30 * 24 * 60 * 60;
 const SHORT_SESSION_MAX_AGE = 24 * 60 * 60;
 
+type AuthUserRecord = {
+  id: string;
+  email: string;
+  password: string;
+  role: 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
+  emailVerified: boolean;
+};
+
+function normalizeEmailInput(raw: unknown): string {
+  return typeof raw === 'string' ? raw.trim().toLowerCase() : '';
+}
+
+function getPasswordCandidates(rawPassword: string): string[] {
+  const normalized = rawPassword.normalize('NFKC');
+  const trimmed = normalized.trim();
+
+  if (trimmed && trimmed !== normalized) {
+    return [normalized, trimmed];
+  }
+
+  return [normalized];
+}
+
+async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
+  const exactMatch = await db.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      password: true,
+      role: true,
+      emailVerified: true,
+    },
+  });
+
+  if (exactMatch) {
+    return exactMatch as AuthUserRecord;
+  }
+
+  // Legacy compatibility for accounts stored with mixed-case emails.
+  const caseInsensitiveMatch = await db.$queryRaw<AuthUserRecord[]>`
+    SELECT id, email, password, role, "emailVerified"
+    FROM users
+    WHERE lower(email) = lower(${email})
+    LIMIT 1
+  `;
+
+  return Array.isArray(caseInsensitiveMatch) && caseInsensitiveMatch.length > 0
+    ? caseInsensitiveMatch[0]
+    : null;
+}
+
 export const authConfig = {
   trustHost: true,
   providers: [
@@ -20,7 +72,7 @@ export const authConfig = {
         rememberMe: { label: 'Remember me', type: 'checkbox' },
       },
       async authorize(credentials) {
-        const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : null;
+        const email = normalizeEmailInput(credentials?.email);
         const password = typeof credentials?.password === 'string' ? credentials.password : null;
         const loginToken =
           typeof credentials?.loginToken === 'string' ? credentials.loginToken.trim() : null;
@@ -34,9 +86,7 @@ export const authConfig = {
           return null;
         }
 
-        const user = await db.user.findUnique({
-          where: { email },
-        });
+        const user = await findUserByEmail(email);
 
         if (!user || !user.emailVerified) {
           return null;
@@ -78,10 +128,15 @@ export const authConfig = {
           return null;
         }
 
-        const passwordMatch = await bcrypt.compare(
-          password,
-          user.password
-        );
+        const passwordCandidates = getPasswordCandidates(password);
+        let passwordMatch = false;
+
+        for (const candidate of passwordCandidates) {
+          if (await bcrypt.compare(candidate, user.password)) {
+            passwordMatch = true;
+            break;
+          }
+        }
 
         if (!passwordMatch) {
           return null;
