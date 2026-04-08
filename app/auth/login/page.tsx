@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 const LOGIN_FAILED_ATTEMPTS_KEY = 'pf_login_failed_attempts';
 const LOGIN_REMEMBER_EMAIL_KEY = 'pf_login_remembered_email';
 const LOGIN_REMEMBER_ENABLED_KEY = 'pf_login_remember_enabled';
+const LOGIN_REQUEST_TIMEOUT_MS = 12000;
+const LOGIN_HARD_REDIRECT_FALLBACK_MS = 1500;
 
 function isSignInFailure(result: unknown) {
   if (typeof result === 'string') {
@@ -65,6 +67,31 @@ function redirectAfterSuccessfulLogin(result: unknown, router: ReturnType<typeof
       router.replace(targetHref);
     }
   }, 240);
+
+  // If client-side navigation is blocked by browser/session quirks, force hard redirect.
+  window.setTimeout(() => {
+    if (window.location.pathname.startsWith('/auth/login')) {
+      window.location.replace(targetHref);
+    }
+  }, LOGIN_HARD_REDIRECT_FALLBACK_MS);
+}
+
+async function signInWithTimeout(options: Parameters<typeof signIn>[1]) {
+  let timeoutId: number | undefined;
+
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = window.setTimeout(() => {
+        reject(new Error('LOGIN_TIMEOUT'));
+      }, LOGIN_REQUEST_TIMEOUT_MS);
+    });
+
+    return await Promise.race([signIn('credentials', options), timeoutPromise]);
+  } finally {
+    if (typeof timeoutId === 'number') {
+      window.clearTimeout(timeoutId);
+    }
+  }
 }
 
 function LoginPageContent() {
@@ -196,7 +223,7 @@ function LoginPageContent() {
     const normalizedEmail = email.trim().toLowerCase();
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signInWithTimeout({
         email: normalizedEmail,
         password,
         rememberMe,
@@ -218,7 +245,11 @@ function LoginPageContent() {
       setFailedAttempts(0);
       redirectAfterSuccessfulLogin(result, router);
     } catch (err) {
-      setError('Error al conectar. Intenta de nuevo.');
+      if (err instanceof Error && err.message === 'LOGIN_TIMEOUT') {
+        setError('El inicio de sesion esta tardando demasiado. Revisa la conexion e intenta nuevamente.');
+      } else {
+        setError('Error al conectar. Intenta de nuevo.');
+      }
     } finally {
       setLoading(false);
     }

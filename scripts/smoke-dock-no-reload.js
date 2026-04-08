@@ -1,9 +1,13 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { randomBytes } = require('crypto');
 const { chromium } = require('playwright');
+const { PrismaClient } = require('@prisma/client');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+
+const prisma = new PrismaClient();
 
 const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
@@ -53,7 +57,20 @@ function toCookieHeader(setCookieValues) {
     .join('; ');
 }
 
+function normalizeEmail(rawEmail) {
+  return String(rawEmail || '').trim().toLowerCase();
+}
+
 async function loginByCredentials() {
+  if (!adminPassword) {
+    return {
+      ok: false,
+      status: 400,
+      location: 'missing-password',
+      cookieHeader: '',
+    };
+  }
+
   const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
   if (!csrfResponse.ok) {
     throw new Error(`csrf fallo (${csrfResponse.status})`);
@@ -94,20 +111,127 @@ async function loginByCredentials() {
   };
 }
 
+async function createOneTimeLoginToken(email) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  const exactUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true, email: true },
+  });
+
+  let user = exactUser;
+  if (!user) {
+    const fallbackRows = await prisma.$queryRaw`
+      SELECT id, email
+      FROM users
+      WHERE lower(email) = lower(${normalizedEmail})
+      LIMIT 1
+    `;
+
+    if (Array.isArray(fallbackRows) && fallbackRows.length > 0) {
+      user = fallbackRows[0];
+    }
+  }
+
+  if (!user?.id || !user?.email) {
+    return null;
+  }
+
+  const token = `login-link-smoke-${randomBytes(24).toString('hex')}`;
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.verificationToken.create({
+    data: {
+      email: user.email,
+      token,
+      expiresAt,
+      userId: user.id,
+    },
+  });
+
+  return {
+    token,
+    email: user.email,
+  };
+}
+
+async function loginByOneTimeToken(loginEmail, loginToken) {
+  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
+  if (!csrfResponse.ok) {
+    throw new Error(`csrf fallo (${csrfResponse.status})`);
+  }
+
+  const csrfData = await csrfResponse.json();
+  if (!csrfData?.csrfToken) {
+    throw new Error('csrf token ausente');
+  }
+
+  const csrfCookies = getSetCookieValues(csrfResponse.headers);
+  const body = new URLSearchParams({
+    email: normalizeEmail(loginEmail),
+    loginToken,
+    csrfToken: csrfData.csrfToken,
+    callbackUrl: `${baseUrl}/`,
+    json: 'true',
+  }).toString();
+
+  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Cookie: toCookieHeader(csrfCookies),
+    },
+    body,
+    redirect: 'manual',
+  });
+
+  const location = loginResponse.headers.get('location') || '';
+  const loginCookies = getSetCookieValues(loginResponse.headers);
+
+  return {
+    ok: loginResponse.status === 302 && !/error=/i.test(location),
+    status: loginResponse.status,
+    location,
+    cookieHeader: toCookieHeader([...csrfCookies, ...loginCookies]),
+  };
+}
+
+async function loginForSmoke() {
+  const credentialsLogin = await loginByCredentials();
+  if (credentialsLogin.ok) {
+    return { ...credentialsLogin, method: 'credentials' };
+  }
+
+  const tokenData = await createOneTimeLoginToken(adminEmail);
+  if (!tokenData?.token) {
+    return { ...credentialsLogin, method: 'credentials' };
+  }
+
+  const tokenLogin = await loginByOneTimeToken(tokenData.email, tokenData.token);
+  if (tokenLogin.ok) {
+    return { ...tokenLogin, method: 'login-token' };
+  }
+
+  return { ...credentialsLogin, method: 'credentials' };
+}
+
 async function ensureParentDir(filePath) {
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 }
 
 async function main() {
-  if (!adminEmail || !adminPassword) {
-    throw new Error('SMOKE_MAIN_EMAIL y SMOKE_MAIN_PASSWORD son requeridos.');
+  if (!adminEmail) {
+    throw new Error('SMOKE_MAIN_EMAIL es requerido.');
   }
 
   if (dockTargetHrefs.length === 0) {
     throw new Error('SMOKE_DOCK_TARGET_HREFS no tiene destinos validos.');
   }
 
-  const login = await loginByCredentials();
+  const login = await loginForSmoke();
   if (!login.ok) {
     throw new Error(`admin login fallo: status=${login.status} location=${login.location}`);
   }
@@ -197,6 +321,7 @@ async function main() {
       auth: {
         responseStatus: login.status,
         location: login.location,
+        method: login.method,
       },
       initialUrl: `${baseUrl}${dockFromPath}`,
       finalUrl,
@@ -222,4 +347,6 @@ async function main() {
 main().catch((error) => {
   console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
   process.exit(1);
+}).finally(async () => {
+  await prisma.$disconnect().catch(() => {});
 });
