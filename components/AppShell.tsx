@@ -46,6 +46,7 @@ const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
+const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -159,6 +160,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const { data: session } = useSession();
   const pathname = usePathname();
   const interactionGuardLastRunRef = useRef(0);
+  const optimisticNavResetTimerRef = useRef<number | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -172,6 +174,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const [toasts, setToasts] = useState<InlineToast[]>([]);
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+  const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
 
   const pushToast = (type: InlineToast["type"], message: string, title?: string) => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
@@ -202,6 +205,31 @@ export default function AppShell({ links, children, initialRole = null, initialP
       console.warn("[interaction-guard] bloqueo neutralizado", result);
     }
   };
+
+  const markOptimisticSidebarNav = (targetHref: string) => {
+    const normalizedTarget = normalizePath(targetHref);
+    setOptimisticNavHref(normalizedTarget);
+
+    if (optimisticNavResetTimerRef.current !== null) {
+      window.clearTimeout(optimisticNavResetTimerRef.current);
+      optimisticNavResetTimerRef.current = null;
+    }
+
+    optimisticNavResetTimerRef.current = window.setTimeout(() => {
+      optimisticNavResetTimerRef.current = null;
+      setOptimisticNavHref((current) => (current === normalizedTarget ? null : current));
+    }, SIDEBAR_NAV_OPTIMISTIC_MS);
+  };
+
+  useEffect(
+    () => () => {
+      if (optimisticNavResetTimerRef.current !== null) {
+        window.clearTimeout(optimisticNavResetTimerRef.current);
+        optimisticNavResetTimerRef.current = null;
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -386,8 +414,15 @@ export default function AppShell({ links, children, initialRole = null, initialP
       window.setTimeout(() => runInteractionGuard(), delayMs)
     );
 
-    const onPointerDownCapture = () => {
-      runInteractionGuard();
+    const onPointerDownCapture = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".pf-shell-nav-link")) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        runInteractionGuard();
+      }, 0);
     };
 
     const onFocus = () => {
@@ -489,6 +524,12 @@ export default function AppShell({ links, children, initialRole = null, initialP
 
   useEffect(() => {
     setMobileOpen(false);
+    setOptimisticNavHref(null);
+
+    if (optimisticNavResetTimerRef.current !== null) {
+      window.clearTimeout(optimisticNavResetTimerRef.current);
+      optimisticNavResetTimerRef.current = null;
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -606,7 +647,6 @@ export default function AppShell({ links, children, initialRole = null, initialP
         <div className="pointer-events-auto m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
-            prefetch={false}
             reliabilityMode="hard"
             className="mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             title="Ir a cuenta"
@@ -642,19 +682,21 @@ export default function AppShell({ links, children, initialRole = null, initialP
                   normalizedPathname === normalizedHref ||
                   (!hasChildLink &&
                     normalizedHref !== "/" &&
-                    normalizedPathname.startsWith(`${normalizedHref}/`));
+                    normalizedPathname.startsWith(`${normalizedHref}/`)) ||
+                  optimisticNavHref === normalizedHref;
 
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    prefetch={false}
                     reliabilityMode="hard"
-                    className={`group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
+                    className={`pf-shell-nav-link group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
                     }`}
+                    onPointerDown={() => markOptimisticSidebarNav(link.href)}
+                    onClick={() => markOptimisticSidebarNav(link.href)}
                     style={{
                       height: `${sidebarItemHeight}px`,
                       minHeight: `${sidebarItemHeight}px`,

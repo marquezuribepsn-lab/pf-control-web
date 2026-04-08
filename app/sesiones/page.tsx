@@ -2,7 +2,7 @@
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -25,6 +25,8 @@ type SesionForm = {
   jugadoraAsignada: string;
   alumnoAsignado: string;
 };
+
+type EntrenamientoSection = "sesiones" | "ejercicios";
 
 const EMPTY_FORM: SesionForm = {
   titulo: "",
@@ -281,11 +283,12 @@ const findMetricNumber = (
 
 export default function SesionesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { sesiones, agregarSesion, editarSesion, eliminarSesion } = useSessions();
   const { categorias } = useCategories();
   const { alumnos } = useAlumnos();
   const { jugadoras } = usePlayers();
-  const { ejercicios, agregarEjercicio, editarEjercicio } = useEjercicios();
+  const { ejercicios, agregarEjercicio, editarEjercicio, eliminarEjercicio } = useEjercicios();
   const [jornadas] = useSharedState<JornadaEntrenamiento[]>([], {
     key: ASISTENCIAS_JORNADAS_KEY,
     legacyLocalStorageKey: ASISTENCIAS_JORNADAS_KEY,
@@ -296,6 +299,7 @@ export default function SesionesPage() {
   });
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [entrenamientoSection, setEntrenamientoSection] = useState<EntrenamientoSection>("sesiones");
   const [editandoSesion, setEditandoSesion] = useState<string | null>(null);
   const [editandoBloquesId, setEditandoBloquesId] = useState<string | null>(null);
   const [formData, setFormData] = useState<SesionForm>(EMPTY_FORM);
@@ -320,6 +324,23 @@ export default function SesionesPage() {
       (a, b) => a.localeCompare(b)
     );
   }, [ejercicios]);
+
+  const ejerciciosOrdenados = useMemo(
+    () => [...ejercicios].sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    [ejercicios]
+  );
+
+  const totalCategoriasBiblioteca = useMemo(
+    () => new Set(ejercicios.map((item) => item.categoria).filter(Boolean)).size,
+    [ejercicios]
+  );
+
+  useEffect(() => {
+    const sectionRaw = String(searchParams.get("seccion") || searchParams.get("panel") || "")
+      .trim()
+      .toLowerCase();
+    setEntrenamientoSection(sectionRaw === "ejercicios" ? "ejercicios" : "sesiones");
+  }, [searchParams]);
 
   const jugadorasFiltradas = useMemo(
     () =>
@@ -576,7 +597,7 @@ export default function SesionesPage() {
   };
 
   const openQuickExerciseEditor = (
-    blockIndex: number,
+    blockIndex: number | null = null,
     prefillName = "",
     existingExerciseId?: string
   ) => {
@@ -1012,6 +1033,27 @@ export default function SesionesPage() {
     router.push(href);
   };
 
+  const setEntrenamientoSectionView = (nextSection: EntrenamientoSection) => {
+    setEntrenamientoSection(nextSection);
+
+    if (typeof window === "undefined") return;
+    const nextUrl = new URL(window.location.href);
+
+    if (nextSection === "ejercicios") {
+      nextUrl.searchParams.set("seccion", "ejercicios");
+    } else {
+      nextUrl.searchParams.delete("seccion");
+      nextUrl.searchParams.delete("panel");
+    }
+
+    const next = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (next !== current) {
+      window.history.pushState({}, "", next);
+    }
+  };
+
   const totalRegistrosAsistencia =
     sesionesOperativas.totalPresentes + sesionesOperativas.totalAusentes;
   const tasaAsistencia =
@@ -1031,55 +1073,108 @@ export default function SesionesPage() {
               Centro de operaciones
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">
-              Sesiones
+              Entrenamiento
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
-              Planifica cada bloque, ejecuta progresiones automatizadas y abre una nueva sesion en pantalla dedicada.
+              Unifica sesiones y ejercicios en un mismo modulo para planificar, ajustar y ejecutar sin salir de contexto.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <ReliableActionButton
               type="button"
-              onClick={() => abrirPantalla("/nueva-sesion")}
+              onClick={() =>
+                entrenamientoSection === "ejercicios"
+                  ? openQuickExerciseEditor(null, "")
+                  : abrirPantalla("/nueva-sesion")
+              }
               className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
             >
-              + Nueva sesion
+              {entrenamientoSection === "ejercicios" ? "+ Nuevo ejercicio" : "+ Nueva sesion"}
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
-              onClick={() => abrirPantalla("/semana")}
+              onClick={() =>
+                entrenamientoSection === "ejercicios"
+                  ? setEntrenamientoSectionView("sesiones")
+                  : abrirPantalla("/semana")
+              }
               className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
             >
-              Ver plan semanal
+              {entrenamientoSection === "ejercicios" ? "Ver sesiones" : "Ver plan semanal"}
             </ReliableActionButton>
           </div>
         </div>
 
+        <div className="relative mt-4 inline-flex rounded-xl border border-white/15 bg-slate-950/60 p-1">
+          <ReliableActionButton
+            type="button"
+            onClick={() => setEntrenamientoSectionView("sesiones")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+              entrenamientoSection === "sesiones"
+                ? "bg-cyan-300 text-slate-950"
+                : "text-slate-200 hover:bg-white/10"
+            }`}
+          >
+            Sesiones
+          </ReliableActionButton>
+          <ReliableActionButton
+            type="button"
+            onClick={() => setEntrenamientoSectionView("ejercicios")}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+              entrenamientoSection === "ejercicios"
+                ? "bg-emerald-300 text-slate-950"
+                : "text-slate-200 hover:bg-white/10"
+            }`}
+          >
+            Ejercicios
+          </ReliableActionButton>
+        </div>
+
         <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-cyan-100">Sesiones activas</p>
-            <p className="text-3xl font-black text-white">{sesionesOperativas.totalSesiones}</p>
+            <p className="text-[11px] uppercase tracking-wide text-cyan-100">
+              {entrenamientoSection === "ejercicios" ? "Ejercicios cargados" : "Sesiones activas"}
+            </p>
+            <p className="text-3xl font-black text-white">
+              {entrenamientoSection === "ejercicios" ? ejerciciosOrdenados.length : sesionesOperativas.totalSesiones}
+            </p>
           </div>
           <div className="rounded-2xl border border-emerald-200/25 bg-emerald-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-emerald-100">Jornadas proximas</p>
-            <p className="text-3xl font-black text-white">{sesionesOperativas.jornadasProximas}</p>
+            <p className="text-[11px] uppercase tracking-wide text-emerald-100">
+              {entrenamientoSection === "ejercicios" ? "Categorias" : "Jornadas proximas"}
+            </p>
+            <p className="text-3xl font-black text-white">
+              {entrenamientoSection === "ejercicios" ? totalCategoriasBiblioteca : sesionesOperativas.jornadasProximas}
+            </p>
           </div>
           <div className="rounded-2xl border border-lime-200/25 bg-lime-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-lime-100">Asistencia</p>
+            <p className="text-[11px] uppercase tracking-wide text-lime-100">
+              {entrenamientoSection === "ejercicios" ? "Con video" : "Asistencia"}
+            </p>
             <p className="text-3xl font-black text-white">
-              {tasaAsistencia === null ? "-" : `${tasaAsistencia}%`}
+              {entrenamientoSection === "ejercicios"
+                ? ejerciciosOrdenados.filter((item) => String(item.videoUrl || "").trim().length > 0).length
+                : tasaAsistencia === null
+                ? "-"
+                : `${tasaAsistencia}%`}
             </p>
           </div>
           <div className="rounded-2xl border border-white/20 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-slate-300">Plantel / Alumnos</p>
+            <p className="text-[11px] uppercase tracking-wide text-slate-300">
+              {entrenamientoSection === "ejercicios" ? "Sin video" : "Plantel / Alumnos"}
+            </p>
             <p className="text-3xl font-black text-white">
-              {sesionesOperativas.totalJugadoras}/{sesionesOperativas.totalAlumnos}
+              {entrenamientoSection === "ejercicios"
+                ? ejerciciosOrdenados.filter((item) => String(item.videoUrl || "").trim().length === 0).length
+                : `${sesionesOperativas.totalJugadoras}/${sesionesOperativas.totalAlumnos}`}
             </p>
           </div>
         </div>
       </section>
 
+      {entrenamientoSection === "sesiones" ? (
+      <>
       <section className="grid gap-3 md:grid-cols-3">
         <ReliableActionButton
           type="button"
@@ -1090,7 +1185,7 @@ export default function SesionesPage() {
         </ReliableActionButton>
         <ReliableActionButton
           type="button"
-          onClick={() => abrirPantalla("/plantel")}
+          onClick={() => abrirPantalla("/clientes?seccion=plantel")}
           className="rounded-2xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
         >
           Abrir plantel
@@ -1859,6 +1954,95 @@ export default function SesionesPage() {
           </div>
         ))}
       </div>
+      </>
+      ) : (
+      <section className="rounded-3xl border border-white/15 bg-slate-900/80 p-5 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-black text-white">Biblioteca de ejercicios</h2>
+            <p className="text-sm text-slate-300">
+              Gestiona ejercicios dentro del modulo Entrenamiento.
+            </p>
+          </div>
+          <ReliableActionButton
+            type="button"
+            onClick={() => openQuickExerciseEditor(null, "")}
+            className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+          >
+            + Nuevo ejercicio
+          </ReliableActionButton>
+        </div>
+
+        {ejerciciosOrdenados.length === 0 ? (
+          <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+            No hay ejercicios cargados todavia.
+          </p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {ejerciciosOrdenados.map((ejercicio) => (
+              <article key={ejercicio.id} className="rounded-2xl border border-white/10 bg-slate-900/65 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-base font-bold text-white">{ejercicio.nombre}</p>
+                    <p className="mt-1 text-xs text-cyan-100">{ejercicio.categoria || "Sin categoria"}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => openQuickExerciseEditor(null, "", ejercicio.id)}
+                      className="rounded-lg border border-white/20 px-2 py-1 text-[11px] font-semibold text-slate-200"
+                    >
+                      Editar
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Eliminar ejercicio ${ejercicio.nombre}?`)) {
+                          eliminarEjercicio(ejercicio.id);
+                        }
+                      }}
+                      className="rounded-lg border border-rose-300/30 px-2 py-1 text-[11px] font-semibold text-rose-200"
+                    >
+                      Eliminar
+                    </ReliableActionButton>
+                  </div>
+                </div>
+
+                {ejercicio.objetivo ? (
+                  <p className="mt-2 text-xs text-slate-300">Objetivo: {ejercicio.objetivo}</p>
+                ) : null}
+                {ejercicio.descripcion ? (
+                  <p className="mt-1 line-clamp-3 text-xs text-slate-400">{ejercicio.descripcion}</p>
+                ) : null}
+
+                {(ejercicio.gruposMusculares || []).length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {(ejercicio.gruposMusculares || []).slice(0, 4).map((grupo) => (
+                      <span
+                        key={`${ejercicio.id}-${grupo}`}
+                        className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-100"
+                      >
+                        {grupo}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-3">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => setExerciseDetailId(ejercicio.id)}
+                    className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                  >
+                    Ver detalle
+                  </ReliableActionButton>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      )}
 
       {exerciseDetailId ? (() => {
         const detailEx = ejercicios.find((e) => e.id === exerciseDetailId);
@@ -1987,7 +2171,7 @@ export default function SesionesPage() {
                   {quickExerciseEditId ? "Editar ejercicio" : "Nuevo ejercicio rapido"}
                 </h2>
                 <p className="text-xs text-slate-300">
-                  Crea o edita ejercicios sin salir de Sesiones.
+                  Crea o edita ejercicios sin salir de Entrenamiento.
                 </p>
               </div>
               <ReliableActionButton

@@ -64,11 +64,11 @@ function guessAppHrefByLabel(label: string): string | null {
   if (!normalized) return null;
   if (normalized.includes("inicio")) return "/";
   if (normalized.includes("sesion")) return "/sesiones";
-  if (normalized.includes("ejercicio")) return "/ejercicios";
+  if (normalized.includes("ejercicio")) return "/sesiones?seccion=ejercicios";
   if (normalized.includes("cliente")) return "/clientes";
   if (normalized.includes("semana")) return "/semana";
   if (normalized.includes("plantel") || normalized.includes("jugadora") || normalized.includes("alumno")) {
-    return "/plantel";
+    return "/clientes?seccion=plantel";
   }
   if (normalized.includes("registro")) return "/registros";
   if (normalized.includes("categoria")) return "/categorias";
@@ -106,11 +106,11 @@ function resolveDashboardStatHref(title: string, index: number): string {
   const normalized = title.toLowerCase();
 
   if (normalized.includes("categoria")) return "/categorias";
-  if (normalized.includes("jugadora") || normalized.includes("alumno") || normalized.includes("plantel")) return "/plantel";
+  if (normalized.includes("jugadora") || normalized.includes("alumno") || normalized.includes("plantel")) return "/clientes?seccion=plantel";
   if (normalized.includes("wellness")) return "/wellness";
   if (normalized.includes("carga") || normalized.includes("sesion")) return "/semana";
 
-  const fallbackByIndex = ["/categorias", "/plantel", "/semana", "/wellness"];
+  const fallbackByIndex = ["/categorias", "/clientes?seccion=plantel", "/semana", "/wellness"];
   return fallbackByIndex[index] || "/registros";
 }
 
@@ -162,8 +162,8 @@ const defaultConfig: HomeConfig = {
     "Inicio con energia visual: colores vivos, foco en accion y accesos directos para trabajar rapido desde campo, gimnasio o escritorio.",
   botonPrimarioLabel: "Planificar sesion",
   botonPrimarioHref: "/sesiones",
-  botonSecundarioLabel: "Ver ejercicios",
-  botonSecundarioHref: "/ejercicios",
+  botonSecundarioLabel: "Biblioteca ejercicios",
+  botonSecundarioHref: "/sesiones?seccion=ejercicios",
   radarTitulo: "Radar de entrenamiento",
   radarDetalle:
     "Fuerza de tren inferior, aceleracion y control de carga con monitoreo de wellness.",
@@ -179,7 +179,7 @@ const defaultConfig: HomeConfig = {
   modulos: [
     {
       label: "Plantel",
-      href: "/plantel",
+      href: "/clientes?seccion=plantel",
       desc: "Gestiona jugadoras y su estado deportivo.",
       tone: "from-cyan-500 to-sky-600",
     },
@@ -190,9 +190,9 @@ const defaultConfig: HomeConfig = {
       tone: "from-emerald-500 to-teal-600",
     },
     {
-      label: "Sesiones",
+      label: "Entrenamiento",
       href: "/sesiones",
-      desc: "Crea y organiza sesiones de entrenamiento.",
+      desc: "Gestiona sesiones y biblioteca de ejercicios en un solo modulo.",
       tone: "from-blue-600 to-indigo-600",
     },
     {
@@ -200,12 +200,6 @@ const defaultConfig: HomeConfig = {
       href: "/asistencias",
       desc: "Controla jornadas, presentes y ausencias por categoria.",
       tone: "from-teal-500 to-cyan-600",
-    },
-    {
-      label: "Ejercicios",
-      href: "/ejercicios",
-      desc: "Biblioteca de ejercicios con video y objetivo.",
-      tone: "from-fuchsia-500 to-pink-600",
     },
     {
       label: "Registros",

@@ -284,7 +284,7 @@ export default function RegistrosPage() {
           <Link href="/sesiones" className="rounded-xl border border-violet-300/35 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/10">
             Sesiones
           </Link>
-          <Link href="/plantel" className="rounded-xl border border-emerald-300/35 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
+          <Link href="/clientes?seccion=plantel" className="rounded-xl border border-emerald-300/35 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
             Plantel
           </Link>
         </div>

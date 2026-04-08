@@ -281,7 +281,7 @@ function LoginPageContent() {
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <FeatureCard title="Sesiones" text="Planificación y progresiones con acceso protegido." />
+              <FeatureCard title="Entrenamiento" text="Sesiones y ejercicios con acceso protegido." />
               <FeatureCard title="Plantel" text="Datos, control operativo y seguimiento centralizado." />
               <FeatureCard title="Registros" text="Historial de trabajo y reportes bajo sesión activa." />
               <FeatureCard title="Cuenta" text="Perfil, verificación y cierre de sesión en un solo lugar." />

@@ -314,7 +314,7 @@ export default function AsistenciasPage() {
             Ver sesiones
           </Link>
           <Link
-            href="/plantel"
+            href="/clientes?seccion=plantel"
             className="rounded-xl bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
           >
             Ir a plantel

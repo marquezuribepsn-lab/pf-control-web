@@ -2,7 +2,8 @@
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
-import { usePathname, useRouter } from "next/navigation";
+import PlantelPanel from "@/components/PlantelPanel";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -47,6 +48,8 @@ type ClienteView = {
   wellness?: number;
   carga?: number;
 };
+
+type ClientesSection = "clientes" | "plantel";
 
 type ClienteForm = {
   nombre: string;
@@ -468,7 +471,9 @@ function defaultMeta(cliente: ClienteView): ClienteMeta {
 export default function ClientesPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const [clientesSection, setClientesSection] = useState<ClientesSection>("clientes");
   const [isDetailMode, setIsDetailMode] = useState(false);
   const [detailClientId, setDetailClientId] = useState<string | null>(null);
   const [detailTabId, setDetailTabId] = useState<string | null>(null);
@@ -572,6 +577,7 @@ export default function ClientesPage() {
       const detailPathMatch = normalizedPath.match(/^\/clientes\/ficha\/([^/]+)(?:\/([^/]+))?$/i);
 
       if (detailPathMatch) {
+        setClientesSection("clientes");
         setIsDetailMode(true);
         setDetailClientId(safeDecodeParam(detailPathMatch[1]));
         setDetailTabId(safeDecodeParam(detailPathMatch[2] || "datos"));
@@ -579,7 +585,13 @@ export default function ClientesPage() {
       }
 
       const params = new URLSearchParams(window.location.search);
-      setIsDetailMode(params.get("detalle") === "1");
+      const isDetail = params.get("detalle") === "1";
+      const section = String(params.get("seccion") || params.get("panel") || params.get("vista") || "")
+        .trim()
+        .toLowerCase();
+
+      setClientesSection(!isDetail && section === "plantel" ? "plantel" : "clientes");
+      setIsDetailMode(isDetail);
       setDetailClientId(safeDecodeParam(params.get("cliente")));
       setDetailTabId(safeDecodeParam(params.get("tab")));
     };
@@ -589,7 +601,14 @@ export default function ClientesPage() {
     return () => {
       window.removeEventListener("popstate", syncFromLocation);
     };
-  }, [pathname]);
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (clientesSection !== "plantel") return;
+    setIsDetailMode(false);
+    setDetailClientId(null);
+    setDetailTabId(null);
+  }, [clientesSection]);
 
   const categoriasOptions = useMemo(
     () => categorias.filter((cat) => cat.habilitada).map((cat) => cat.nombre),
@@ -1466,6 +1485,32 @@ export default function ClientesPage() {
     window.history.pushState({}, "", next);
   };
 
+  const setClientesSectionView = (nextSection: ClientesSection) => {
+    setClientesSection(nextSection);
+
+    if (typeof window === "undefined") return;
+
+    const nextUrl = new URL(window.location.href);
+
+    if (nextSection === "plantel") {
+      nextUrl.searchParams.set("seccion", "plantel");
+      nextUrl.searchParams.delete("detalle");
+      nextUrl.searchParams.delete("cliente");
+      nextUrl.searchParams.delete("tab");
+    } else {
+      nextUrl.searchParams.delete("seccion");
+      nextUrl.searchParams.delete("panel");
+      nextUrl.searchParams.delete("vista");
+    }
+
+    const next = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (next !== current) {
+      window.history.pushState({}, "", next);
+    }
+  };
+
   useEffect(() => {
     router.prefetch("/clientes/plan");
     router.prefetch("/registros");
@@ -1476,6 +1521,7 @@ export default function ClientesPage() {
   }
 
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
+    setClientesSection("clientes");
     setIsDetailMode(true);
     setDetailClientId(clientId);
     setDetailTabId(tab);
@@ -1548,6 +1594,42 @@ export default function ClientesPage() {
 
   return (
     <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
+      <section className="rounded-2xl border border-cyan-300/20 bg-slate-900/70 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex rounded-xl border border-white/15 bg-slate-950/55 p-1">
+            <ReliableActionButton
+              type="button"
+              onClick={() => setClientesSectionView("clientes")}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                clientesSection === "clientes"
+                  ? "bg-cyan-300 text-slate-950"
+                  : "text-slate-200 hover:bg-white/10"
+              }`}
+            >
+              Clientes
+            </ReliableActionButton>
+            <ReliableActionButton
+              type="button"
+              onClick={() => setClientesSectionView("plantel")}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                clientesSection === "plantel"
+                  ? "bg-emerald-300 text-slate-950"
+                  : "text-slate-200 hover:bg-white/10"
+              }`}
+            >
+              Plantel
+            </ReliableActionButton>
+          </div>
+          <p className="text-xs text-slate-300">
+            Plantel ahora vive dentro del modulo Clientes.
+          </p>
+        </div>
+      </section>
+
+      {clientesSection === "plantel" ? (
+        <PlantelPanel embedded />
+      ) : (
+        <>
       {!isDetailMode ? (
       <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/50 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
         <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
@@ -2481,6 +2563,8 @@ export default function ClientesPage() {
         </div>
         ) : null}
       </section>
+        </>
+      )}
     </main>
   );
 }

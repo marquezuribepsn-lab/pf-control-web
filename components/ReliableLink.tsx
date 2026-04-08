@@ -56,7 +56,7 @@ export default function ReliableLink({
   href,
   replace,
   scroll,
-  prefetch = false,
+  prefetch,
   ...props
 }: ReliableLinkProps) {
   const mode =

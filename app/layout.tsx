@@ -57,11 +57,9 @@ export default async function RootLayout({
 
   const links = [
     { href: "/", label: "Inicio", icon: "🏠", tone: "from-cyan-500 to-blue-600" },
-    { href: "/plantel", label: "Plantel", icon: "👥", tone: "from-emerald-500 to-teal-600" },
     { href: "/semana", label: "Semana", icon: "📅", tone: "from-violet-500 to-purple-600" },
-    { href: "/sesiones", label: "Sesiones", icon: "🏋️", tone: "from-blue-600 to-indigo-600" },
+    { href: "/sesiones", label: "Entrenamiento", icon: "🏋️", tone: "from-blue-600 to-indigo-600" },
     { href: "/asistencias", label: "Asistencias", icon: "✅", tone: "from-teal-500 to-cyan-600" },
-    { href: "/ejercicios", label: "Ejercicios", icon: "🎯", tone: "from-fuchsia-500 to-pink-600" },
     { href: "/registros", label: "Registros", icon: "📊", tone: "from-amber-500 to-orange-600" },
     { href: "/categorias", label: "Categorías", icon: "🏷️", tone: "from-rose-500 to-red-600" },
     { href: "/categorias/Nutricion", label: "Nutricion", icon: "🥗", tone: "from-emerald-500 to-lime-600" },
