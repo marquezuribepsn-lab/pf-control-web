@@ -48,8 +48,40 @@ const PLATFORM_OPTIONS: Array<{ value: FormPlatform; label: string }> = [
 ];
 
 const WEEKDAY_OPTIONS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+const ALL_DAYS_VALUE = "todos-los-dias";
 
 const mkId = () => `music-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+function getPlatformLabel(platform: MusicPlatform): string {
+  const labels: Record<MusicPlatform, string> = {
+    SPOTIFY: "Spotify",
+    YOUTUBE: "YouTube",
+    YOUTUBE_MUSIC: "YouTube Music",
+    SOUNDCLOUD: "SoundCloud",
+    APPLE_MUSIC: "Apple Music",
+    DEEZER: "Deezer",
+    AMAZON_MUSIC: "Amazon Music",
+    AUDIO_FILE: "Audio",
+    OTHER: "Playlist",
+  };
+
+  return labels[platform] || "Playlist";
+}
+
+function buildDefaultPlaylistName(rawUrl: string, platform: MusicPlatform): string {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) {
+    return "Playlist";
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    const host = parsed.hostname.replace(/^www\./i, "");
+    return `${getPlatformLabel(platform)} · ${host}`;
+  } catch {
+    return getPlatformLabel(platform);
+  }
+}
 
 function normalizeUrl(rawUrl: string): string {
   const value = rawUrl.trim();
@@ -226,10 +258,9 @@ function normalizeAssignments(rawValue: unknown): MusicaAlumno[] {
     }
 
     const row = rawRow as Record<string, unknown>;
-    const playlistName = String(row.playlistName || row.nombre || row.title || "").trim();
     const playlistUrl = normalizeUrl(String(row.playlistUrl || row.url || row.link || ""));
 
-    if (!playlistName || !playlistUrl) {
+    if (!playlistUrl) {
       continue;
     }
 
@@ -247,6 +278,9 @@ function normalizeAssignments(rawValue: unknown): MusicaAlumno[] {
     ].includes(rowPlatform)
       ? (rowPlatform as MusicPlatform)
       : inferPlatformFromUrl(playlistUrl);
+
+    const playlistNameRaw = String(row.playlistName || row.nombre || row.title || "").trim();
+    const playlistName = playlistNameRaw || buildDefaultPlaylistName(playlistUrl, platform);
 
     normalizedRows.push({
       id: String(row.id || mkId()),
@@ -378,13 +412,14 @@ export default function ClientesMusicaPage() {
   }, [previewAlumno, sortedAssignments]);
 
   const previewPlatform = platform === "AUTO" ? inferPlatformFromUrl(playlistUrl) : platform;
+  const effectivePreviewName = playlistName.trim() || buildDefaultPlaylistName(playlistUrl, previewPlatform);
   const previewItem: MusicaAlumno | null =
-    playlistName.trim() && normalizeUrl(playlistUrl)
+    normalizeUrl(playlistUrl)
       ? {
           id: "preview",
           platform: previewPlatform,
           alumnoNombre: alumnoNombre.trim(),
-          playlistName: playlistName.trim(),
+          playlistName: effectivePreviewName,
           playlistUrl: normalizeUrl(playlistUrl),
           objetivo: objetivo.trim() || undefined,
           diaSemana: diaSemana.trim() || undefined,
@@ -399,21 +434,21 @@ export default function ClientesMusicaPage() {
     setError("");
 
     const target = alumnoNombre.trim();
-    const name = playlistName.trim();
     const url = normalizeUrl(playlistUrl);
 
-    if (!name || !url) {
-      setError("Completa al menos nombre de playlist y URL.");
+    if (!url) {
+      setError("Completa al menos la URL de la playlist.");
       return;
     }
 
     const resolvedPlatform = platform === "AUTO" ? inferPlatformFromUrl(url) : platform;
+    const resolvedName = playlistName.trim() || buildDefaultPlaylistName(url, resolvedPlatform);
 
     const next: MusicaAlumno = {
       id: mkId(),
       platform: resolvedPlatform,
       alumnoNombre: target,
-      playlistName: name,
+      playlistName: resolvedName,
       playlistUrl: url,
       objetivo: objetivo.trim() || undefined,
       diaSemana: diaSemana.trim() || undefined,
@@ -524,20 +559,12 @@ export default function ClientesMusicaPage() {
           </label>
 
           <label className="text-xs text-slate-300">
-            Playlist / lista
-            <input
-              value={playlistName}
-              onChange={(e) => setPlaylistName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-            />
-          </label>
-
-          <label className="text-xs text-slate-300">
             URL de la playlist
             <input
               value={playlistUrl}
               onChange={(e) => {
                 setPlaylistUrl(e.target.value);
+                setPlaylistName("");
                 if (platform === "AUTO") {
                   const inferred = inferPlatformFromUrl(e.target.value);
                   if (inferred !== "OTHER") {
@@ -568,6 +595,7 @@ export default function ClientesMusicaPage() {
               className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
             >
               <option value="">Sin dia definido</option>
+              <option value={ALL_DAYS_VALUE}>Todos los dias</option>
               {WEEKDAY_OPTIONS.map((day) => (
                 <option key={day} value={day}>
                   {day}
@@ -602,6 +630,13 @@ export default function ClientesMusicaPage() {
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Preview del reproductor</p>
             <p className="mt-1 text-sm font-semibold text-slate-100">{previewItem.playlistName}</p>
             <MusicPlayer item={previewItem} />
+            <ReliableActionButton
+              type="button"
+              onClick={addAssignment}
+              className="mt-3 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
+            >
+              Guardar asignacion musical
+            </ReliableActionButton>
           </div>
         ) : null}
 
@@ -642,40 +677,43 @@ export default function ClientesMusicaPage() {
             <p className="text-sm text-slate-400">No hay musica asignada.</p>
           ) : null}
 
-          {previewRows.map((item) => (
-            <article
-              key={item.id}
-              className="rounded-lg border border-white/10 bg-slate-800/60 p-3 text-xs text-slate-300"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-slate-100">{item.alumnoNombre || "Musica general"}</p>
-                <span className="rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-200">
-                  {item.platform}
-                </span>
-              </div>
-
-              <p className="font-semibold text-fuchsia-200">{item.playlistName}</p>
-              <a href={item.playlistUrl} target="_blank" rel="noreferrer" className="text-cyan-300 underline">
-                {item.playlistUrl}
-              </a>
-              <p>Objetivo: {item.objetivo || "-"}</p>
-              <p>Dia: {item.diaSemana || "-"}</p>
-              <p>
-                Cancion: {item.recommendedSongTitle || "-"}
-                {item.recommendedSongArtist ? ` · ${item.recommendedSongArtist}` : ""}
-              </p>
-
-              <MusicPlayer item={item} />
-
-              <ReliableActionButton
-                type="button"
-                onClick={() => removeAssignment(item.id)}
-                className="mt-2 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-rose-200"
+          {previewRows.map((item) => {
+            const showDistinctName = normalizeUrl(item.playlistName) !== normalizeUrl(item.playlistUrl);
+            return (
+              <article
+                key={item.id}
+                className="rounded-lg border border-white/10 bg-slate-800/60 p-3 text-xs text-slate-300"
               >
-                Eliminar
-              </ReliableActionButton>
-            </article>
-          ))}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-slate-100">{item.alumnoNombre || "Musica general"}</p>
+                  <span className="rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-200">
+                    {item.platform}
+                  </span>
+                </div>
+
+                {showDistinctName ? <p className="font-semibold text-fuchsia-200">{item.playlistName}</p> : null}
+                <a href={item.playlistUrl} target="_blank" rel="noreferrer" className="text-cyan-300 underline">
+                  {item.playlistUrl}
+                </a>
+                <p>Objetivo: {item.objetivo || "-"}</p>
+                <p>Dia: {item.diaSemana || "-"}</p>
+                <p>
+                  Cancion: {item.recommendedSongTitle || "-"}
+                  {item.recommendedSongArtist ? ` · ${item.recommendedSongArtist}` : ""}
+                </p>
+
+                <MusicPlayer item={item} />
+
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => removeAssignment(item.id)}
+                  className="mt-2 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-rose-200"
+                >
+                  Eliminar
+                </ReliableActionButton>
+              </article>
+            );
+          })}
         </div>
       </section>
     </main>
