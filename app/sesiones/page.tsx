@@ -1,8 +1,9 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import Link from "@/components/ReliableLink";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -282,7 +283,6 @@ const findMetricNumber = (
 };
 
 export default function SesionesPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { sesiones, agregarSesion, editarSesion, eliminarSesion } = useSessions();
   const { categorias } = useCategories();
@@ -1029,10 +1029,6 @@ export default function SesionesPage() {
     };
   }, [alumnos.length, asistencias, jornadas, jugadoras.length, sesiones.length]);
 
-  const abrirPantalla = (href: string) => {
-    router.push(href);
-  };
-
   const setEntrenamientoSectionView = (nextSection: EntrenamientoSection) => {
     setEntrenamientoSection(nextSection);
 
@@ -1081,28 +1077,39 @@ export default function SesionesPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <ReliableActionButton
-              type="button"
-              onClick={() =>
-                entrenamientoSection === "ejercicios"
-                  ? openQuickExerciseEditor(null, "")
-                  : abrirPantalla("/nueva-sesion")
-              }
-              className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
-            >
-              {entrenamientoSection === "ejercicios" ? "+ Nuevo ejercicio" : "+ Nueva sesion"}
-            </ReliableActionButton>
-            <ReliableActionButton
-              type="button"
-              onClick={() =>
-                entrenamientoSection === "ejercicios"
-                  ? setEntrenamientoSectionView("sesiones")
-                  : abrirPantalla("/semana")
-              }
-              className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              {entrenamientoSection === "ejercicios" ? "Ver sesiones" : "Ver plan semanal"}
-            </ReliableActionButton>
+            {entrenamientoSection === "ejercicios" ? (
+              <ReliableActionButton
+                type="button"
+                onClick={() => openQuickExerciseEditor(null, "")}
+                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+              >
+                + Nuevo ejercicio
+              </ReliableActionButton>
+            ) : (
+              <Link
+                href="/nueva-sesion"
+                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+              >
+                + Nueva sesion
+              </Link>
+            )}
+
+            {entrenamientoSection === "ejercicios" ? (
+              <ReliableActionButton
+                type="button"
+                onClick={() => setEntrenamientoSectionView("sesiones")}
+                className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              >
+                Ver sesiones
+              </ReliableActionButton>
+            ) : (
+              <Link
+                href="/semana"
+                className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              >
+                Ver plan semanal
+              </Link>
+            )}
           </div>
         </div>
 
@@ -1176,27 +1183,24 @@ export default function SesionesPage() {
       {entrenamientoSection === "sesiones" ? (
       <>
       <section className="grid gap-3 md:grid-cols-3">
-        <ReliableActionButton
-          type="button"
-          onClick={() => abrirPantalla("/asistencias")}
+        <Link
+          href="/asistencias"
           className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-left text-sm font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-500/20"
         >
           Abrir asistencias
-        </ReliableActionButton>
-        <ReliableActionButton
-          type="button"
-          onClick={() => abrirPantalla("/clientes?seccion=plantel")}
+        </Link>
+        <Link
+          href="/clientes?seccion=plantel"
           className="rounded-2xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
         >
           Abrir plantel
-        </ReliableActionButton>
-        <ReliableActionButton
-          type="button"
-          onClick={() => abrirPantalla("/registros")}
+        </Link>
+        <Link
+          href="/registros"
           className="rounded-2xl border border-violet-300/35 bg-violet-500/10 px-4 py-3 text-left text-sm font-semibold text-violet-100 transition hover:-translate-y-0.5 hover:bg-violet-500/20"
         >
           Ver registros
-        </ReliableActionButton>
+        </Link>
       </section>
 
       <SesionesAIPlanner />
