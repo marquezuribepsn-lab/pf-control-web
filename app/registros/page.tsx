@@ -1,7 +1,6 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import Link from "@/components/ReliableLink";
 import { useMemo } from "react";
 import * as XLSX from "xlsx";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -43,6 +42,8 @@ type AsistenciaRegistro = {
   estado: "presente" | "ausente";
 };
 
+type CardTone = "cyan" | "emerald" | "rose" | "violet" | "amber" | "slate";
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const PAGOS_KEY = "pf-control-pagos-v1";
 const ASISTENCIAS_JORNADAS_KEY = "pf-control-asistencias-jornadas-v1";
@@ -52,33 +53,41 @@ function StatCard({
   label,
   value,
   sub,
-  accent,
+  tone = "slate",
 }: {
   label: string;
   value: string | number;
   sub?: string;
-  accent?: "green" | "red" | "blue" | "yellow";
+  tone?: CardTone;
 }) {
-  const accentClass = {
-    green: "text-green-600",
-    red: "text-red-500",
-    blue: "text-blue-600",
-    yellow: "text-yellow-500",
-  }[accent ?? "blue"] ?? "text-neutral-800";
+  const palette: Record<CardTone, { border: string; value: string }> = {
+    cyan: { border: "border-cyan-300/35 bg-cyan-500/10", value: "text-cyan-100" },
+    emerald: { border: "border-emerald-300/35 bg-emerald-500/10", value: "text-emerald-100" },
+    rose: { border: "border-rose-300/35 bg-rose-500/10", value: "text-rose-100" },
+    violet: { border: "border-violet-300/35 bg-violet-500/10", value: "text-violet-100" },
+    amber: { border: "border-amber-300/35 bg-amber-500/10", value: "text-amber-100" },
+    slate: { border: "border-white/15 bg-white/[0.03]", value: "text-slate-100" },
+  };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-      <p className="text-sm text-slate-300">{label}</p>
-      <h2 className={`mt-2 text-2xl font-semibold ${accentClass}`}>{value}</h2>
-      {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
-    </div>
+    <article className={`rounded-2xl border p-4 ${palette[tone].border}`}>
+      <p className="text-xs uppercase tracking-wide text-slate-300">{label}</p>
+      <p className={`mt-2 text-3xl font-black ${palette[tone].value}`}>{value}</p>
+      {sub ? <p className="mt-1 text-xs text-slate-400">{sub}</p> : null}
+    </article>
   );
+}
+
+function formatCurrency(value: number): string {
+  if (value <= 0) return "-";
+  return `$${value.toLocaleString("es-AR")}`;
 }
 
 export default function RegistrosPage() {
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
+
   const [clientesMeta] = useSharedState<Record<string, ClienteMeta>>({}, {
     key: CLIENTE_META_KEY,
     legacyLocalStorageKey: CLIENTE_META_KEY,
@@ -212,10 +221,7 @@ export default function RegistrosPage() {
   }, [jugadoras, alumnos]);
 
   const resumenMensualIngresos = useMemo(() => {
-    const agrupado: Record<
-      string,
-      { cantidadPagos: number; total: number; clientes: Set<string>; moneda: string }
-    > = {};
+    const agrupado: Record<string, { cantidadPagos: number; total: number; clientes: Set<string>; moneda: string }> = {};
 
     for (const pago of pagos) {
       if (!pago.fecha) continue;
@@ -274,61 +280,58 @@ export default function RegistrosPage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-3xl font-bold">Registros</h1>
-        <div className="flex gap-2">
-          <Link href="/asistencias" className="rounded-xl border border-cyan-300/35 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10">
-            Asistencias
-          </Link>
-          <Link href="/sesiones" className="rounded-xl border border-violet-300/35 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/10">
-            Sesiones
-          </Link>
-          <Link href="/clientes?seccion=plantel" className="rounded-xl border border-emerald-300/35 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10">
-            Plantel
-          </Link>
-        </div>
-      </div>
-      <p className="mb-6 text-sm text-slate-300">
-        Resumen de clientes, pagos y operacion diaria conectada con asistencias.
-      </p>
+    <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
+      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/45 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
+        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
 
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-5">
-        <StatCard label="Jornadas activas" value={stats.jornadasActivas} accent="blue" />
-        <StatCard label="Categorias activas" value={stats.categoriasConJornadas} accent="yellow" />
-        <StatCard label="Presentes" value={stats.presentesAsistencia} accent="green" />
-        <StatCard label="Ausentes" value={stats.ausentesAsistencia} accent="red" />
-        <StatCard label="Presentismo general" value={`${stats.presentismoGeneral}%`} accent="blue" />
-      </section>
-
-      {/* Clientes */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Clientes
-      </h2>
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-        <StatCard label="Total clientes" value={stats.totalClientes} accent="blue" />
-        <StatCard label="Activos" value={stats.activos} accent="green" />
-        <StatCard label="Finalizados" value={stats.finalizados} />
-        <StatCard
-          label="Nuevos este mes"
-          value={stats.nuevosEsteMes}
-          sub={mesNombre}
-          accent="blue"
-        />
-      </section>
-
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Resumen mensual de ingresos
-      </h2>
-      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-slate-300">
-            Consolidado por mes en base a pagos registrados en Clientes.
+        <div className="relative">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">Hub de analitica operativa</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Registros</h1>
+          <p className="mt-2 text-sm text-slate-200/90">
+            Vista consolidada de clientes, pagos y asistencia con la misma linea visual del modulo Clientes.
           </p>
+        </div>
+
+        <div className="relative mt-5 grid gap-3 md:grid-cols-3">
+          <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
+          <StatCard label="Ingresos confirmados" value={formatCurrency(stats.ingresosBrutos)} tone="emerald" />
+          <StatCard label="Presentismo general" value={`${stats.presentismoGeneral}%`} tone="violet" />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <h2 className="text-xl font-bold">Asistencia</h2>
+        <p className="mt-1 text-sm text-slate-300">Estado actual de jornadas y presentismo.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
+          <StatCard label="Jornadas activas" value={stats.jornadasActivas} tone="cyan" />
+          <StatCard label="Categorias activas" value={stats.categoriasConJornadas} tone="amber" />
+          <StatCard label="Presentes" value={stats.presentesAsistencia} tone="emerald" />
+          <StatCard label="Ausentes" value={stats.ausentesAsistencia} tone="rose" />
+          <StatCard label="Presentismo" value={`${stats.presentismoGeneral}%`} tone="violet" />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <h2 className="text-xl font-bold">Clientes</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+          <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
+          <StatCard label="Activos" value={stats.activos} tone="emerald" />
+          <StatCard label="Finalizados" value={stats.finalizados} tone="slate" />
+          <StatCard label="Nuevos este mes" value={stats.nuevosEsteMes} sub={mesNombre} tone="violet" />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold">Resumen mensual de ingresos</h2>
+            <p className="mt-1 text-sm text-slate-300">Consolidado por mes en base a pagos registrados en Clientes.</p>
+          </div>
           <ReliableActionButton
             type="button"
             onClick={exportarExcelIngresos}
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="rounded-xl border border-emerald-200/40 bg-emerald-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
           >
             Descargar Excel
           </ReliableActionButton>
@@ -353,7 +356,7 @@ export default function RegistrosPage() {
                     <td className="px-3 py-2 font-medium text-slate-100">{row.mes}</td>
                     <td className="px-3 py-2 text-slate-300">{row.cantidadPagos}</td>
                     <td className="px-3 py-2 text-slate-300">{row.clientesUnicos}</td>
-                    <td className="px-3 py-2 font-semibold text-green-700">
+                    <td className="px-3 py-2 font-semibold text-emerald-200">
                       {row.moneda} {row.total.toLocaleString("es-AR")}
                     </td>
                   </tr>
@@ -364,134 +367,115 @@ export default function RegistrosPage() {
         )}
       </section>
 
-      {/* Pagos */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Pagos
-      </h2>
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-        <StatCard
-          label="Pagos confirmados"
-          value={stats.pagosConfirmados}
-          accent="green"
-        />
-        <StatCard
-          label="Pagos pendientes"
-          value={stats.pagosPendientes}
-          accent={stats.pagosPendientes > 0 ? "red" : "green"}
-        />
-        <StatCard
-          label="Ingresos confirmados"
-          value={
-            stats.ingresosBrutos > 0
-              ? `$${stats.ingresosBrutos.toLocaleString("es-AR")}`
-              : "—"
-          }
-          accent="green"
-        />
-        <StatCard
-          label="Saldo pendiente"
-          value={
-            stats.saldoPendiente > 0
-              ? `$${stats.saldoPendiente.toLocaleString("es-AR")}`
-              : "—"
-          }
-          accent={stats.saldoPendiente > 0 ? "yellow" : "green"}
-        />
-      </section>
-
-      {/* Sesiones y tipo */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Sesiones y asesoría
-      </h2>
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        <StatCard
-          label="Sesiones creadas"
-          value={stats.sesionesTotales}
-          accent="blue"
-        />
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-sm text-slate-300">Tipo de asesoría</p>
-          <div className="mt-3 space-y-1">
-            {(["completa", "entrenamiento", "nutricion"] as const).map((tipo) => (
-              <div key={tipo} className="flex items-center justify-between text-sm">
-                <span className="capitalize text-slate-300">{tipo}</span>
-                <span className="font-semibold text-white">{stats.tipoAsesoria[tipo] ?? 0}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-sm text-slate-300">Modalidad</p>
-          <div className="mt-3 space-y-1">
-            {(["presencial", "virtual"] as const).map((mod) => (
-              <div key={mod} className="flex items-center justify-between text-sm">
-                <span className="capitalize text-slate-300">{mod}</span>
-                <span className="font-semibold text-white">{stats.modalidades[mod] ?? 0}</span>
-              </div>
-            ))}
-          </div>
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <h2 className="text-xl font-bold">Pagos</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+          <StatCard label="Pagos confirmados" value={stats.pagosConfirmados} tone="emerald" />
+          <StatCard label="Pagos pendientes" value={stats.pagosPendientes} tone={stats.pagosPendientes > 0 ? "rose" : "emerald"} />
+          <StatCard label="Ingresos confirmados" value={formatCurrency(stats.ingresosBrutos)} tone="emerald" />
+          <StatCard label="Saldo pendiente" value={formatCurrency(stats.saldoPendiente)} tone={stats.saldoPendiente > 0 ? "amber" : "emerald"} />
         </div>
       </section>
 
-      {/* Listado de clientes */}
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Todos los clientes ({allClientes.length})
-      </h2>
-      <section className="grid gap-3">
-        {allClientes.length === 0 && (
-          <p className="text-sm text-slate-400">No hay clientes registrados aún.</p>
-        )}
-        {allClientes.map((cliente) => {
-          const meta = clientesMeta[cliente.id] as ClienteMeta | undefined;
-          return (
-            <div
-              key={cliente.id}
-              className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <p className="font-semibold text-slate-100">{cliente.nombre}</p>
-                <p className="text-xs text-slate-400">
-                  {cliente.tipo}
-                  {cliente.categoria ? ` · ${cliente.categoria}` : ""}
-                  {cliente.club ? ` · ${cliente.club}` : ""}
-                </p>
-              </div>
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <h2 className="text-xl font-bold">Sesiones y asesoria</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          <StatCard label="Sesiones creadas" value={stats.sesionesTotales} tone="cyan" />
 
-              <div className="flex flex-wrap items-center gap-2">
-                {meta?.startDate && (
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">
-                    Desde {new Date(meta.startDate).toLocaleDateString("es-AR")}
-                  </span>
-                )}
-                {meta?.tipoAsesoria && (
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 capitalize">
-                    {meta.tipoAsesoria}
-                  </span>
-                )}
-                {meta?.pagoEstado ? (
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      meta.pagoEstado === "confirmado"
-                        ? "bg-green-50 text-green-600"
-                        : "bg-red-50 text-red-500"
-                    }`}
-                  >
-                    Pago {meta.pagoEstado}
-                  </span>
-                ) : null}
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    cliente.estado === "activo"
-                      ? "bg-green-50 text-green-600"
-                      : "bg-neutral-100 text-neutral-500"
-                  }`}
-                >
-                  {cliente.estado}
-                </span>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+            <p className="text-sm font-semibold text-slate-300">Tipo de asesoria</p>
+            <div className="mt-3 space-y-1 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Completa</span>
+                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.completa ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Entrenamiento</span>
+                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.entrenamiento ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Nutricion</span>
+                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.nutricion ?? 0}</span>
               </div>
             </div>
-          );
-        })}
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+            <p className="text-sm font-semibold text-slate-300">Modalidad</p>
+            <div className="mt-3 space-y-1 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Presencial</span>
+                <span className="font-semibold text-slate-100">{stats.modalidades.presencial ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300">Virtual</span>
+                <span className="font-semibold text-slate-100">{stats.modalidades.virtual ?? 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <h2 className="mb-3 text-xl font-bold">Todos los clientes ({allClientes.length})</h2>
+        <div className="grid gap-3">
+          {allClientes.length === 0 ? (
+            <p className="text-sm text-slate-400">No hay clientes registrados aun.</p>
+          ) : null}
+
+          {allClientes.map((cliente) => {
+            const meta = clientesMeta[cliente.id] as ClienteMeta | undefined;
+            const estadoClienteClass =
+              cliente.estado === "activo"
+                ? "bg-emerald-500/10 text-emerald-200 border-emerald-300/35"
+                : "bg-slate-500/10 text-slate-200 border-slate-300/35";
+
+            const estadoPagoClass =
+              meta?.pagoEstado === "confirmado"
+                ? "bg-emerald-500/10 text-emerald-200 border-emerald-300/35"
+                : "bg-rose-500/10 text-rose-200 border-rose-300/35";
+
+            return (
+              <article
+                key={cliente.id}
+                className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-slate-100">{cliente.nombre}</p>
+                  <p className="text-xs text-slate-400">
+                    {cliente.tipo}
+                    {cliente.categoria ? ` · ${cliente.categoria}` : ""}
+                    {cliente.club ? ` · ${cliente.club}` : ""}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {meta?.startDate ? (
+                    <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      Desde {new Date(meta.startDate).toLocaleDateString("es-AR")}
+                    </span>
+                  ) : null}
+
+                  {meta?.tipoAsesoria ? (
+                    <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-medium capitalize text-cyan-100">
+                      {meta.tipoAsesoria}
+                    </span>
+                  ) : null}
+
+                  {meta?.pagoEstado ? (
+                    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${estadoPagoClass}`}>
+                      Pago {meta.pagoEstado}
+                    </span>
+                  ) : null}
+
+                  <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${estadoClienteClass}`}>
+                    {cliente.estado}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
       </section>
     </main>
   );
