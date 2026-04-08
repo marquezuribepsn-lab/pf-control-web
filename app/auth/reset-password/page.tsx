@@ -14,6 +14,7 @@ function ResetPasswordContent() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+  const [showManualRedirect, setShowManualRedirect] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -26,12 +27,32 @@ function ResetPasswordContent() {
       return;
     }
 
+    const targetHref = '/auth/login';
+    setShowManualRedirect(false);
+
     const softRedirect = window.setTimeout(() => {
-      router.replace('/auth/login');
-    }, 900);
+      router.replace(targetHref);
+    }, 350);
+
+    const softRetry = window.setTimeout(() => {
+      router.replace(targetHref);
+    }, 1000);
+
+    const hardFallback = window.setTimeout(() => {
+      if (window.location.pathname.startsWith('/auth/reset-password')) {
+        window.location.replace(targetHref);
+      }
+    }, 1800);
+
+    const manualFallback = window.setTimeout(() => {
+      setShowManualRedirect(true);
+    }, 2600);
 
     return () => {
       window.clearTimeout(softRedirect);
+      window.clearTimeout(softRetry);
+      window.clearTimeout(hardFallback);
+      window.clearTimeout(manualFallback);
     };
   }, [redirecting, router]);
 
@@ -66,6 +87,7 @@ function ResetPasswordContent() {
       }
 
       setMessage((data.message || 'Contraseña actualizada') + ' Redirigiendo al login...');
+      setShowManualRedirect(false);
       setRedirecting(true);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'No se pudo restablecer la contraseña');
@@ -120,8 +142,18 @@ function ResetPasswordContent() {
               disabled={loading || redirecting || !token}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading || redirecting ? 'Guardando...' : 'Guardar nueva contraseña'}
+              {redirecting ? 'Redirigiendo al login...' : loading ? 'Guardando...' : 'Guardar nueva contraseña'}
             </ReliableActionButton>
+
+            {showManualRedirect ? (
+              <ReliableActionButton
+                type="button"
+                onClick={() => window.location.replace('/auth/login')}
+                className="w-full rounded-2xl border border-cyan-300/45 bg-cyan-500/15 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/25"
+              >
+                Ir al login ahora
+              </ReliableActionButton>
+            ) : null}
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-300">
