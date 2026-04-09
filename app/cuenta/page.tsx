@@ -8,6 +8,12 @@ type AccountData = {
   id: string;
   email: string;
   role: string;
+  nombreCompleto: string;
+  edad: number;
+  fechaNacimiento: string;
+  altura: number;
+  telefono: string | null;
+  direccion: string | null;
   emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
@@ -15,6 +21,12 @@ type AccountData = {
 
 export default function CuentaPage() {
   const [account, setAccount] = useState<AccountData | null>(null);
+  const [nombreCompleto, setNombreCompleto] = useState("");
+  const [edad, setEdad] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [altura, setAltura] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
   const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -38,6 +50,12 @@ export default function CuentaPage() {
       }
 
       setAccount(data);
+      setNombreCompleto(String(data.nombreCompleto || ""));
+      setEdad(String(data.edad ?? ""));
+      setFechaNacimiento(formatDateForInput(data.fechaNacimiento));
+      setAltura(data.altura !== undefined && data.altura !== null ? String(data.altura) : "");
+      setTelefono(String(data.telefono || ""));
+      setDireccion(String(data.direccion || ""));
       setEmail(data.email);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "No se pudo cargar la cuenta");
@@ -64,6 +82,12 @@ export default function CuentaPage() {
           email,
           currentPassword,
           newPassword,
+          nombreCompleto,
+          edad,
+          fechaNacimiento,
+          altura,
+          telefono,
+          direccion,
         }),
       });
 
@@ -78,6 +102,12 @@ export default function CuentaPage() {
       setNewPassword("");
       if (data.user) {
         setAccount(data.user);
+        setNombreCompleto(String(data.user.nombreCompleto || ""));
+        setEdad(String(data.user.edad ?? ""));
+        setFechaNacimiento(formatDateForInput(data.user.fechaNacimiento));
+        setAltura(data.user.altura !== undefined && data.user.altura !== null ? String(data.user.altura) : "");
+        setTelefono(String(data.user.telefono || ""));
+        setDireccion(String(data.user.direccion || ""));
         setEmail(data.user.email);
       } else {
         await loadAccount();
@@ -159,6 +189,12 @@ export default function CuentaPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
+            <InfoCard label="Nombre completo" value={account?.nombreCompleto || "-"} />
+            <InfoCard label="Telefono" value={account?.telefono || "-"} />
+            <InfoCard label="Direccion" value={account?.direccion || "-"} />
+            <InfoCard label="Edad" value={account?.edad !== undefined ? String(account.edad) : "-"} />
+            <InfoCard label="Fecha de nacimiento" value={formatDate(account?.fechaNacimiento)} />
+            <InfoCard label="Altura" value={account?.altura !== undefined ? `${account.altura} cm` : "-"} />
             <InfoCard label="Email" value={account?.email || "-"} />
             <InfoCard label="Rol" value={account?.role || "-"} />
             <InfoCard label="ID" value={account?.id || "-"} mono />
@@ -186,10 +222,88 @@ export default function CuentaPage() {
         <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg">
           <h2 className="text-xl font-bold">Editar cuenta</h2>
           <p className="mt-1 text-sm text-slate-300">
-            Para modificar email o contraseña te pedimos la contraseña actual.
+            Los datos personales se guardan directo. Para cambiar email o contraseña te pedimos la contraseña actual.
           </p>
 
           <form className="mt-5 grid gap-4" onSubmit={handleSave}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="grid gap-2 text-sm font-medium text-slate-200 md:col-span-2">
+                Nombre completo
+                <input
+                  type="text"
+                  value={nombreCompleto}
+                  onChange={(event) => setNombreCompleto(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  placeholder="Nombre y apellido"
+                  required
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Edad
+                <input
+                  type="number"
+                  min={0}
+                  max={120}
+                  step={1}
+                  value={edad}
+                  onChange={(event) => setEdad(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  placeholder="34"
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Fecha de nacimiento
+                <input
+                  type="date"
+                  value={fechaNacimiento}
+                  onChange={(event) => setFechaNacimiento(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Altura (cm)
+                <input
+                  type="number"
+                  min={0}
+                  max={250}
+                  step={0.1}
+                  value={altura}
+                  onChange={(event) => setAltura(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  placeholder="172"
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200">
+                Telefono
+                <input
+                  type="text"
+                  value={telefono}
+                  onChange={(event) => setTelefono(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  placeholder="+54 ..."
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm font-medium text-slate-200 md:col-span-2">
+                Direccion
+                <input
+                  type="text"
+                  value={direccion}
+                  onChange={(event) => setDireccion(event.target.value)}
+                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  placeholder="Calle y numero"
+                />
+              </label>
+            </div>
+
+            <div className="mt-1 border-t border-white/10 pt-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Credenciales</p>
+            </div>
+
             <label className="grid gap-2 text-sm font-medium text-slate-200">
               Email
               <input
@@ -264,4 +378,14 @@ function InfoCard({ label, value, mono = false }: { label: string; value: string
 function formatDate(value?: string) {
   if (!value) return "-";
   return new Date(value).toLocaleString("es-AR");
+}
+
+function formatDateForInput(value?: string) {
+  if (!value) return "";
+  if (value.length >= 10) return value.slice(0, 10);
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString().slice(0, 10);
 }

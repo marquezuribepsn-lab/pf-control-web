@@ -13,6 +13,12 @@ const ACCOUNT_SELECT = {
   id: true,
   email: true,
   role: true,
+  nombreCompleto: true,
+  edad: true,
+  fechaNacimiento: true,
+  altura: true,
+  telefono: true,
+  direccion: true,
   puedeEditarRegistros: true,
   puedeEditarPlanes: true,
   puedeVerTodosAlumnos: true,
@@ -32,6 +38,77 @@ function normalizePasswordInput(raw: unknown): string {
 
 function normalizePasswordForStorage(raw: unknown): string {
   return normalizePasswordInput(raw).trim();
+}
+
+function normalizeNameInput(raw: unknown): string {
+  if (typeof raw !== 'string') {
+    return '';
+  }
+
+  return raw.trim().replace(/\s+/g, ' ');
+}
+
+function normalizeOptionalTextInput(raw: unknown): string | null {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+
+  const normalized = raw.trim().replace(/\s+/g, ' ');
+  return normalized.length > 0 ? normalized : null;
+}
+
+function parseBoundedInteger(raw: unknown, min: number, max: number): number | null {
+  const parsed = Number(raw);
+
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+    return null;
+  }
+
+  if (parsed < min || parsed > max) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function parseBoundedFloat(raw: unknown, min: number, max: number): number | null {
+  const parsed = Number(raw);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  if (parsed < min || parsed > max) {
+    return null;
+  }
+
+  return Number(parsed.toFixed(2));
+}
+
+function parseDateInput(raw: unknown): Date | null {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+
+  const normalized = raw.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+function sameDayUTC(a: Date, b: Date): boolean {
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+  );
 }
 
 function normalizeSidebarImageInput(raw: unknown): string | null | undefined {
@@ -178,7 +255,18 @@ export async function PATCH(req: NextRequest) {
   }
 
   const payload = await req.json().catch(() => ({}));
-  const { email, currentPassword, newPassword, sidebarImage } = payload || {};
+  const {
+    email,
+    currentPassword,
+    newPassword,
+    sidebarImage,
+    nombreCompleto,
+    edad,
+    fechaNacimiento,
+    altura,
+    telefono,
+    direccion,
+  } = payload || {};
   const requestedSidebarImage = normalizeSidebarImageInput(sidebarImage);
   const currentPasswordInput = normalizePasswordInput(currentPassword);
 
@@ -197,11 +285,71 @@ export async function PATCH(req: NextRequest) {
   const emailChanged = normalizedEmail !== currentEmailNormalized;
   const passwordChanged = nextPassword.length > 0;
 
+  const personalPayloadProvided =
+    nombreCompleto !== undefined ||
+    edad !== undefined ||
+    fechaNacimiento !== undefined ||
+    altura !== undefined ||
+    telefono !== undefined ||
+    direccion !== undefined;
+
+  let normalizedNombreCompleto = String(user.nombreCompleto || '').trim();
+  if (nombreCompleto !== undefined) {
+    normalizedNombreCompleto = normalizeNameInput(nombreCompleto);
+    if (!normalizedNombreCompleto) {
+      return NextResponse.json({ message: 'El nombre completo es obligatorio' }, { status: 400 });
+    }
+  }
+
+  let normalizedEdad = Number(user.edad || 0);
+  if (edad !== undefined) {
+    const parsedEdad = parseBoundedInteger(edad, 0, 120);
+    if (parsedEdad === null) {
+      return NextResponse.json({ message: 'La edad debe ser un numero entero entre 0 y 120' }, { status: 400 });
+    }
+    normalizedEdad = parsedEdad;
+  }
+
+  const currentBirthDate = user.fechaNacimiento instanceof Date ? user.fechaNacimiento : new Date(user.fechaNacimiento);
+  let normalizedFechaNacimiento = currentBirthDate;
+  if (fechaNacimiento !== undefined) {
+    const parsedFechaNacimiento = parseDateInput(fechaNacimiento);
+    if (!parsedFechaNacimiento) {
+      return NextResponse.json({ message: 'La fecha de nacimiento no es valida' }, { status: 400 });
+    }
+    normalizedFechaNacimiento = parsedFechaNacimiento;
+  }
+
+  let normalizedAltura = Number(user.altura || 0);
+  if (altura !== undefined) {
+    const parsedAltura = parseBoundedFloat(altura, 0, 250);
+    if (parsedAltura === null) {
+      return NextResponse.json({ message: 'La altura debe estar entre 0 y 250 cm' }, { status: 400 });
+    }
+    normalizedAltura = parsedAltura;
+  }
+
+  const normalizedTelefono =
+    telefono !== undefined ? normalizeOptionalTextInput(telefono) : user.telefono;
+  const normalizedDireccion =
+    direccion !== undefined ? normalizeOptionalTextInput(direccion) : user.direccion;
+
+  const personalDataChanged =
+    personalPayloadProvided &&
+    (
+      normalizedNombreCompleto !== String(user.nombreCompleto || '').trim() ||
+      normalizedEdad !== Number(user.edad || 0) ||
+      !sameDayUTC(normalizedFechaNacimiento, currentBirthDate) ||
+      Math.abs(normalizedAltura - Number(user.altura || 0)) > 0.0001 ||
+      normalizedTelefono !== user.telefono ||
+      normalizedDireccion !== user.direccion
+    );
+
   const currentSidebarImage = await getSidebarImageForUser(user.id);
   const sidebarImageChanged = requestedSidebarImage !== undefined && requestedSidebarImage !== currentSidebarImage;
   const hasCredentialChanges = emailChanged || passwordChanged;
 
-  if (!hasCredentialChanges && !sidebarImageChanged) {
+  if (!hasCredentialChanges && !sidebarImageChanged && !personalDataChanged) {
     return NextResponse.json({ message: 'No hay cambios para guardar' }, { status: 400 });
   }
 
@@ -245,7 +393,16 @@ export async function PATCH(req: NextRequest) {
     data.password = await bcrypt.hash(nextPassword, 10);
   }
 
-  if (hasCredentialChanges) {
+  if (personalDataChanged) {
+    data.nombreCompleto = normalizedNombreCompleto;
+    data.edad = normalizedEdad;
+    data.fechaNacimiento = normalizedFechaNacimiento;
+    data.altura = normalizedAltura;
+    data.telefono = normalizedTelefono;
+    data.direccion = normalizedDireccion;
+  }
+
+  if (Object.keys(data).length > 0) {
     await db.user.update({
       where: { id: user.id },
       data,
@@ -299,10 +456,16 @@ export async function PATCH(req: NextRequest) {
     message = 'Cuenta actualizada. Te enviamos un mail para verificar el nuevo email';
   } else if (hasCredentialChanges) {
     message = 'Cuenta actualizada correctamente';
+  } else if (personalDataChanged && !sidebarImageChanged) {
+    message = 'Datos personales guardados correctamente';
   }
 
   if (sidebarImageChanged) {
-    message = hasCredentialChanges ? `${message} y foto de perfil guardada` : 'Foto de perfil guardada correctamente';
+    if (!hasCredentialChanges && !personalDataChanged) {
+      message = 'Foto de perfil guardada correctamente';
+    } else {
+      message = `${message} y foto de perfil guardada`;
+    }
   }
 
   return NextResponse.json({
