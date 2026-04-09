@@ -1,6 +1,13 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import {
+  SIDEBAR_WIDGET_OPTIONS,
+  SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
+  normalizeSidebarWidgetSettings,
+  readSidebarWidgetSettingsFromStorage,
+  writeSidebarWidgetSettingsToStorage,
+} from "@/lib/sidebarWidget";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -44,6 +51,10 @@ export default function ConfiguracionPage() {
   const [pushLoading, setPushLoading] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
+  const [widgetTransitionMs, setWidgetTransitionMs] = useState(SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS);
+  const [widgetSelectedHrefs, setWidgetSelectedHrefs] = useState<string[]>(
+    SIDEBAR_WIDGET_OPTIONS.map((option) => option.href)
+  );
 
   useEffect(() => {
     const nextScale = clampScale(Number(localStorage.getItem(SCREEN_SCALE_KEY) || "1"));
@@ -58,6 +69,10 @@ export default function ConfiguracionPage() {
     setNotificationsEnabled(nextNotifications);
     setSidebarImage(nextSidebarImage);
     setDockLabelMode(nextDockLabelMode);
+
+    const widgetSettings = readSidebarWidgetSettingsFromStorage();
+    setWidgetTransitionMs(widgetSettings.transitionMs);
+    setWidgetSelectedHrefs(widgetSettings.selectedHrefs);
 
     if (typeof window !== "undefined" && "Notification" in window) {
       setPermission(Notification.permission);
@@ -87,6 +102,37 @@ export default function ConfiguracionPage() {
   }, []);
 
   const scalePercent = useMemo(() => Math.round(draftScale * 100), [draftScale]);
+  const widgetTransitionSeconds = useMemo(
+    () => Math.max(2, Math.round(widgetTransitionMs / 1000)),
+    [widgetTransitionMs]
+  );
+
+  const applyWidgetSettings = (nextTransitionMs: number, nextSelectedHrefs: string[]) => {
+    const normalized = normalizeSidebarWidgetSettings({
+      transitionMs: nextTransitionMs,
+      selectedHrefs: nextSelectedHrefs,
+    });
+    setWidgetTransitionMs(normalized.transitionMs);
+    setWidgetSelectedHrefs(normalized.selectedHrefs);
+    writeSidebarWidgetSettingsToStorage(normalized);
+  };
+
+  const onWidgetTransitionChange = (seconds: number) => {
+    applyWidgetSettings(seconds * 1000, widgetSelectedHrefs);
+  };
+
+  const toggleWidgetOption = (href: string) => {
+    const alreadySelected = widgetSelectedHrefs.includes(href);
+    if (alreadySelected && widgetSelectedHrefs.length === 1) {
+      return;
+    }
+
+    const nextSelected = alreadySelected
+      ? widgetSelectedHrefs.filter((value) => value !== href)
+      : [...widgetSelectedHrefs, href];
+
+    applyWidgetSettings(widgetTransitionMs, nextSelected);
+  };
 
   const activarModificacion = () => {
     setEditMode(true);
@@ -346,6 +392,61 @@ export default function ConfiguracionPage() {
               <option value="icon">Solo iconos</option>
             </select>
           </div>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-slate-950/65 p-3">
+          <p className="text-sm font-semibold text-cyan-100">Widget rotativo del sidebar</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Configura el carrusel de accesos rapidos que aparece abajo del menu lateral.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <label className="text-xs font-semibold text-slate-200">
+                Tiempo de transicion: {widgetTransitionSeconds}s
+              </label>
+              <input
+                type="range"
+                min={2}
+                max={20}
+                step={1}
+                value={widgetTransitionSeconds}
+                onChange={(event) => onWidgetTransitionChange(Number(event.target.value))}
+                className="mt-2 w-full"
+              />
+            </div>
+            <div className="rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-xs text-slate-300">
+              {widgetSelectedHrefs.length} seleccionados
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {SIDEBAR_WIDGET_OPTIONS.map((option) => {
+              const checked = widgetSelectedHrefs.includes(option.href);
+              return (
+                <label
+                  key={option.href}
+                  className="flex items-start gap-2 rounded-lg border border-white/15 bg-slate-900/70 px-3 py-2 text-xs"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleWidgetOption(option.href)}
+                    className="mt-0.5"
+                  />
+                  <span className="min-w-0">
+                    <span className="font-semibold text-slate-100">
+                      {option.icon} {option.label}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-slate-400">{option.hint}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] text-slate-500">
+            Debe quedar al menos una opcion marcada.
+          </p>
         </div>
       </section>
 

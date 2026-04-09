@@ -4,6 +4,14 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { installButtonFailsafe } from "@/lib/buttonFailsafe";
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
+import {
+  SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
+  SIDEBAR_WIDGET_OPTIONS,
+  SIDEBAR_WIDGET_SETTINGS_EVENT,
+  SIDEBAR_WIDGET_SETTINGS_KEY,
+  normalizeSidebarWidgetSettings,
+  type SidebarWidgetSettings,
+} from "@/lib/sidebarWidget";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -42,11 +50,20 @@ type WindowWithDockSmokeToken = Window & {
   __pfDockSmokeToken?: string;
 };
 
+type SidebarWidgetItem = {
+  href: string;
+  label: string;
+  icon: string;
+  tone: string;
+  hint: string;
+};
+
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
+const SIDEBAR_WIDGET_FADE_MS = 260;
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -161,6 +178,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const pathname = usePathname();
   const interactionGuardLastRunRef = useRef(0);
   const optimisticNavResetTimerRef = useRef<number | null>(null);
+  const widgetTransitionTimeoutRef = useRef<number | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -175,6 +193,14 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
+  const [sidebarWidgetSettings, setSidebarWidgetSettings] = useState<SidebarWidgetSettings>(() =>
+    normalizeSidebarWidgetSettings({
+      transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
+      selectedHrefs: SIDEBAR_WIDGET_OPTIONS.map((option) => option.href),
+    })
+  );
+  const [sidebarWidgetIndex, setSidebarWidgetIndex] = useState(0);
+  const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
 
   const pushToast = (type: InlineToast["type"], message: string, title?: string) => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
@@ -227,6 +253,11 @@ export default function AppShell({ links, children, initialRole = null, initialP
         window.clearTimeout(optimisticNavResetTimerRef.current);
         optimisticNavResetTimerRef.current = null;
       }
+
+      if (widgetTransitionTimeoutRef.current !== null) {
+        window.clearTimeout(widgetTransitionTimeoutRef.current);
+        widgetTransitionTimeoutRef.current = null;
+      }
     },
     []
   );
@@ -235,6 +266,17 @@ export default function AppShell({ links, children, initialRole = null, initialP
     setMounted(true);
     try {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
+
+      const rawWidgetSettings = localStorage.getItem(SIDEBAR_WIDGET_SETTINGS_KEY);
+      if (rawWidgetSettings) {
+        try {
+          setSidebarWidgetSettings(normalizeSidebarWidgetSettings(JSON.parse(rawWidgetSettings)));
+        } catch {
+          setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
+        }
+      } else {
+        setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
+      }
 
       const normalizedInitialName = typeof initialProfileName === "string" ? initialProfileName.trim() : "";
       if (normalizedInitialName) {
@@ -276,6 +318,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
       setResolvedRole(null);
       setCachedProfileName("");
       setCachedProfileRole(null);
+      setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
     }
   }, [initialRole, initialProfileName]);
 
@@ -392,18 +435,39 @@ export default function AppShell({ links, children, initialRole = null, initialP
         const nextProfileRole = String(event.newValue || "").trim().toUpperCase();
         setCachedProfileRole(nextProfileRole || null);
       }
+
+      if (event.key === SIDEBAR_WIDGET_SETTINGS_KEY) {
+        try {
+          const parsed = event.newValue ? JSON.parse(event.newValue) : null;
+          setSidebarWidgetSettings(normalizeSidebarWidgetSettings(parsed));
+        } catch {
+          setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
+        }
+      }
     };
 
     const onSidebarImageChange = () => {
       setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
     };
 
+    const onSidebarWidgetSettingsChange = () => {
+      try {
+        const raw = localStorage.getItem(SIDEBAR_WIDGET_SETTINGS_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        setSidebarWidgetSettings(normalizeSidebarWidgetSettings(parsed));
+      } catch {
+        setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
+      }
+    };
+
     window.addEventListener("storage", onStorage);
     window.addEventListener("pf-sidebar-image-updated", onSidebarImageChange);
+    window.addEventListener(SIDEBAR_WIDGET_SETTINGS_EVENT, onSidebarWidgetSettingsChange);
 
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("pf-sidebar-image-updated", onSidebarImageChange);
+      window.removeEventListener(SIDEBAR_WIDGET_SETTINGS_EVENT, onSidebarWidgetSettingsChange);
     };
   }, []);
 
@@ -608,6 +672,75 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const sidebarIconSize = "1rem";
   const sidebarLabelSize = "11px";
 
+  const sidebarWidgetItems = useMemo<SidebarWidgetItem[]>(() => {
+    const hintByHref = new Map(
+      SIDEBAR_WIDGET_OPTIONS.map((option) => [normalizePath(option.href), option.hint])
+    );
+    const selectedSet = new Set(
+      sidebarWidgetSettings.selectedHrefs.map((href) => normalizePath(String(href || "")))
+    );
+
+    const dedupedVisible = visibleLinks.reduce<SidebarWidgetItem[]>((acc, link) => {
+      const normalizedHref = normalizePath(link.href);
+      if (acc.some((item) => item.href === normalizedHref)) {
+        return acc;
+      }
+
+      acc.push({
+        href: normalizedHref,
+        label: compactSidebarLabel(link.label),
+        icon: link.icon,
+        tone: link.tone,
+        hint: hintByHref.get(normalizedHref) || "Acceso rapido",
+      });
+
+      return acc;
+    }, []);
+
+    const filtered = dedupedVisible.filter((item) => selectedSet.has(item.href));
+    return filtered.length > 0 ? filtered : dedupedVisible;
+  }, [visibleLinks, sidebarWidgetSettings.selectedHrefs]);
+
+  const activeSidebarWidgetItem = sidebarWidgetItems[sidebarWidgetIndex] || null;
+
+  useEffect(() => {
+    if (sidebarWidgetItems.length === 0) {
+      setSidebarWidgetIndex(0);
+      return;
+    }
+
+    setSidebarWidgetIndex((prev) => (prev >= sidebarWidgetItems.length ? 0 : prev));
+  }, [sidebarWidgetItems.length]);
+
+  useEffect(() => {
+    if (!mounted || sidebarWidgetItems.length <= 1) {
+      setSidebarWidgetPhase("enter");
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setSidebarWidgetPhase("exit");
+
+      if (widgetTransitionTimeoutRef.current !== null) {
+        window.clearTimeout(widgetTransitionTimeoutRef.current);
+      }
+
+      widgetTransitionTimeoutRef.current = window.setTimeout(() => {
+        setSidebarWidgetIndex((prev) => (prev + 1) % sidebarWidgetItems.length);
+        setSidebarWidgetPhase("enter");
+        widgetTransitionTimeoutRef.current = null;
+      }, SIDEBAR_WIDGET_FADE_MS);
+    }, sidebarWidgetSettings.transitionMs);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (widgetTransitionTimeoutRef.current !== null) {
+        window.clearTimeout(widgetTransitionTimeoutRef.current);
+        widgetTransitionTimeoutRef.current = null;
+      }
+    };
+  }, [mounted, sidebarWidgetItems.length, sidebarWidgetSettings.transitionMs]);
+
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
     const labels = pendingSaveKeys.slice(0, 2).map((key) => formatPendingKeyLabel(key));
@@ -716,6 +849,55 @@ export default function AppShell({ links, children, initialRole = null, initialP
               })}
             </div>
           </nav>
+
+          {activeSidebarWidgetItem ? (
+            <div className="px-2 pb-2">
+              <Link
+                href={activeSidebarWidgetItem.href}
+                reliabilityMode="hard"
+                onPointerDown={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
+                onClick={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
+                className="mx-auto block w-full max-w-[130px] rounded-2xl border border-cyan-300/35 bg-gradient-to-br from-cyan-500/18 via-slate-900/70 to-violet-500/18 px-2 py-2 shadow-[0_10px_22px_rgba(8,47,73,0.4)]"
+                title={`Widget: ${activeSidebarWidgetItem.label}`}
+                aria-label={`Widget: ${activeSidebarWidgetItem.label}`}
+              >
+                <div
+                  className={`transition-all duration-300 ${
+                    sidebarWidgetPhase === "enter" ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+                  }`}
+                >
+                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-100/90">Widget</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-400/20 text-sm">
+                      {activeSidebarWidgetItem.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-black text-cyan-50">{activeSidebarWidgetItem.label}</p>
+                      <p className="line-clamp-2 text-[9px] leading-tight text-slate-300">
+                        {activeSidebarWidgetItem.hint}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {sidebarWidgetItems.length > 1 ? (
+                <div className="mx-auto mt-1 flex w-full max-w-[130px] items-center justify-center gap-1.5">
+                  {sidebarWidgetItems.slice(0, 5).map((item, idx) => {
+                    const isActive = sidebarWidgetItems[sidebarWidgetIndex]?.href === item.href;
+                    return (
+                      <span
+                        key={`${item.href}-${idx}`}
+                        className={`h-1.5 rounded-full transition-all ${
+                          isActive ? "w-4 bg-cyan-200" : "w-1.5 bg-slate-500"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {pendingSaveKeys.length > 0 ? (
             <div className="px-2 pb-2">
