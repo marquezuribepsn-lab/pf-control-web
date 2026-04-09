@@ -176,8 +176,8 @@ export default function CuentaPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold">Datos del profesor / admin</h2>
@@ -219,27 +219,27 @@ export default function CuentaPage() {
           )}
         </section>
 
-        <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg">
+        <section className="min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg">
           <h2 className="text-xl font-bold">Editar cuenta</h2>
           <p className="mt-1 text-sm text-slate-300">
             Los datos personales se guardan directo. Para cambiar email o contraseña te pedimos la contraseña actual.
           </p>
 
-          <form className="mt-5 grid gap-4" onSubmit={handleSave}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-medium text-slate-200 md:col-span-2">
+          <form className="pf-account-form mt-5 grid min-w-0 gap-4" onSubmit={handleSave}>
+            <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200 xl:col-span-2">
                 Nombre completo
                 <input
                   type="text"
                   value={nombreCompleto}
                   onChange={(event) => setNombreCompleto(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                   placeholder="Nombre y apellido"
                   required
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-slate-200">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
                 Edad
                 <input
                   type="number"
@@ -248,22 +248,22 @@ export default function CuentaPage() {
                   step={1}
                   value={edad}
                   onChange={(event) => setEdad(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                   placeholder="34"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-slate-200">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
                 Fecha de nacimiento
                 <input
                   type="date"
                   value={fechaNacimiento}
                   onChange={(event) => setFechaNacimiento(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-slate-200">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
                 Altura (cm)
                 <input
                   type="number"
@@ -272,29 +272,29 @@ export default function CuentaPage() {
                   step={0.1}
                   value={altura}
                   onChange={(event) => setAltura(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                   placeholder="172"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-slate-200">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
                 Telefono
                 <input
-                  type="text"
+                  type="tel"
                   value={telefono}
                   onChange={(event) => setTelefono(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                   placeholder="+54 ..."
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-slate-200 md:col-span-2">
+              <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200 xl:col-span-2">
                 Direccion
                 <input
                   type="text"
                   value={direccion}
                   onChange={(event) => setDireccion(event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                  className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                   placeholder="Calle y numero"
                 />
               </label>
@@ -304,35 +304,35 @@ export default function CuentaPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Credenciales</p>
             </div>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-200">
+            <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
               Email
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                 placeholder="tuemail@dominio.com"
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-200">
+            <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
               Contraseña actual
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(event) => setCurrentPassword(event.target.value)}
-                className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                 placeholder="Obligatoria para guardar cambios"
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-200">
+            <label className="grid min-w-0 gap-2 text-sm font-medium text-slate-200">
               Nueva contraseña
               <input
                 type="password"
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
-                className="rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
+                className="box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60"
                 placeholder="Opcional"
               />
             </label>

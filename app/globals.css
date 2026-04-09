@@ -138,6 +138,22 @@ h6 {
   font-weight: 700 !important;
 }
 
+.pf-account-form {
+  min-width: 0;
+}
+
+.pf-account-form :where(label) {
+  min-width: 0;
+}
+
+.pf-account-form :where(input, textarea, select) {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
 ::selection {
   background: rgba(57, 210, 255, 0.42);
   color: #ffffff;
