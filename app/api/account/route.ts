@@ -6,7 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 
 const db = prisma as any;
-const MAX_SIDEBAR_IMAGE_LENGTH = 1_500_000;
+const MAX_SIDEBAR_IMAGE_LENGTH = 850_000;
+const SIDEBAR_IMAGE_SYNC_KEY_PREFIX = 'pf-control-user-sidebar-image:';
 
 const ACCOUNT_SELECT = {
   id: true,
@@ -50,23 +51,82 @@ function normalizeSidebarImageInput(raw: unknown): string | null | undefined {
   return normalized.length > 0 ? normalized : null;
 }
 
+function getSidebarImageSyncKey(userId: string): string {
+  return `${SIDEBAR_IMAGE_SYNC_KEY_PREFIX}${userId}`;
+}
+
+async function readSidebarImageFromSyncEntry(userId: string): Promise<string | null> {
+  try {
+    const entry = await db.syncEntry.findUnique({
+      where: { key: getSidebarImageSyncKey(userId) },
+      select: { value: true },
+    });
+
+    const value = entry?.value;
+    if (typeof value === 'string') {
+      const normalized = value.trim();
+      return normalized.length > 0 ? normalized : null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSidebarImageToSyncEntry(userId: string, sidebarImage: string | null): Promise<boolean> {
+  try {
+    await db.syncEntry.upsert({
+      where: { key: getSidebarImageSyncKey(userId) },
+      update: { value: sidebarImage },
+      create: {
+        key: getSidebarImageSyncKey(userId),
+        value: sidebarImage,
+      },
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function getSidebarImageForUser(userId: string): Promise<string | null> {
+  const fallbackValue = await readSidebarImageFromSyncEntry(userId);
+
   try {
     const rows = (await db.$queryRaw(
       Prisma.sql`SELECT sidebarImage FROM users WHERE id = ${userId} LIMIT 1`
     )) as Array<{ sidebarImage: string | null }>;
 
     const value = rows?.[0]?.sidebarImage;
-    return typeof value === 'string' && value.trim().length > 0 ? value : null;
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+
+    return fallbackValue;
   } catch {
-    return null;
+    return fallbackValue;
   }
 }
 
 async function writeSidebarImageForUser(userId: string, sidebarImage: string | null) {
-  await db.$executeRaw(
-    Prisma.sql`UPDATE users SET sidebarImage = ${sidebarImage}, updatedAt = CURRENT_TIMESTAMP WHERE id = ${userId}`
-  );
+  let persistedInUsersTable = false;
+
+  try {
+    await db.$executeRaw(
+      Prisma.sql`UPDATE users SET sidebarImage = ${sidebarImage}, updatedAt = CURRENT_TIMESTAMP WHERE id = ${userId}`
+    );
+    persistedInUsersTable = true;
+  } catch {
+    // fallback handled below via sync entry
+  }
+
+  const persistedInSyncEntry = await writeSidebarImageToSyncEntry(userId, sidebarImage);
+
+  if (!persistedInUsersTable && !persistedInSyncEntry) {
+    throw new Error('No se pudo persistir la foto de perfil');
+  }
 }
 
 async function compareCurrentPassword(input: string, passwordHash: string): Promise<boolean> {
@@ -193,7 +253,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (sidebarImageChanged) {
-    await writeSidebarImageForUser(user.id, requestedSidebarImage ?? null);
+    try {
+      await writeSidebarImageForUser(user.id, requestedSidebarImage ?? null);
+    } catch {
+      return NextResponse.json({ message: 'No se pudo guardar la foto de perfil. Intenta nuevamente' }, { status: 500 });
+    }
   }
 
   const updatedUser = await db.user.findUnique({

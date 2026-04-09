@@ -20,6 +20,9 @@ const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const HOME_EDIT_MODE_KEY = "pf-control-home-edit-mode-v1";
 const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+const MAX_PROFILE_IMAGE_DATA_URL_LENGTH = 850_000;
+const PROFILE_IMAGE_MAX_DIMENSION = 720;
+const PROFILE_IMAGE_MIN_DIMENSION = 220;
 
 const MIN_SCALE = 0.8;
 const MAX_SCALE = 1.35;
@@ -57,6 +60,90 @@ function emitInlineToast(type: "success" | "error" | "warning", message: string,
       detail: { type, message, title },
     })
   );
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result) {
+        reject(new Error("No se pudo leer la imagen seleccionada"));
+        return;
+      }
+      resolve(result);
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen seleccionada"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImageFromDataUrl(dataUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("No se pudo procesar la imagen seleccionada"));
+    image.src = dataUrl;
+  });
+}
+
+async function optimizeProfileImage(file: File): Promise<string> {
+  const originalDataUrl = await readFileAsDataUrl(file);
+  if (originalDataUrl.length <= MAX_PROFILE_IMAGE_DATA_URL_LENGTH) {
+    return originalDataUrl;
+  }
+
+  const image = await loadImageFromDataUrl(originalDataUrl);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("No se pudo preparar la imagen para guardar");
+  }
+
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+  const maxSide = Math.max(width, height);
+
+  if (maxSide > PROFILE_IMAGE_MAX_DIMENSION) {
+    const ratio = PROFILE_IMAGE_MAX_DIMENSION / maxSide;
+    width = Math.max(1, Math.round(width * ratio));
+    height = Math.max(1, Math.round(height * ratio));
+  }
+
+  let quality = 0.88;
+  let attempts = 0;
+
+  while (attempts < 12) {
+    canvas.width = width;
+    canvas.height = height;
+    context.clearRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    const optimized = canvas.toDataURL("image/jpeg", quality);
+    if (optimized.length <= MAX_PROFILE_IMAGE_DATA_URL_LENGTH) {
+      return optimized;
+    }
+
+    if (quality > 0.46) {
+      quality = Math.max(0.42, Number((quality - 0.08).toFixed(2)));
+    } else {
+      const nextWidth = Math.max(PROFILE_IMAGE_MIN_DIMENSION, Math.round(width * 0.85));
+      const nextHeight = Math.max(PROFILE_IMAGE_MIN_DIMENSION, Math.round(height * 0.85));
+
+      if (nextWidth === width && nextHeight === height) {
+        break;
+      }
+
+      width = nextWidth;
+      height = nextHeight;
+      quality = 0.78;
+    }
+
+    attempts += 1;
+  }
+
+  throw new Error("La imagen es demasiado pesada. Prueba con una mas liviana");
 }
 
 export default function ConfiguracionPage() {
@@ -252,21 +339,34 @@ export default function ConfiguracionPage() {
 
   const handleSidebarImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.currentTarget.value = "";
+
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      if (!result) {
-        return;
+    if (!file.type.startsWith("image/")) {
+      const message = "Selecciona un archivo de imagen valido";
+      setSidebarImageError(message);
+      emitInlineToast("error", message, "Error");
+      return;
+    }
+
+    setSidebarImageError(null);
+
+    void (async () => {
+      try {
+        const optimized = await optimizeProfileImage(file);
+        setSidebarImageDraft(optimized);
+        emitInlineToast("success", "Imagen lista. Presiona Guardar cambios");
+      } catch (processError) {
+        const message = processError instanceof Error
+          ? processError.message
+          : "No se pudo preparar la imagen de perfil";
+        setSidebarImageError(message);
+        emitInlineToast("error", message, "Error");
       }
-      setSidebarImageDraft(result);
-      setSidebarImageError(null);
-    };
-    reader.readAsDataURL(file);
-    event.currentTarget.value = "";
+    })();
   };
 
   const removeSidebarImage = () => {
