@@ -6,6 +6,7 @@ export const SIDEBAR_WIDGET_MAX_TRANSITION_MS = 20000;
 export const SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS = 5200;
 
 export type SidebarWidgetOption = {
+  id: string;
   href: string;
   label: string;
   icon: string;
@@ -14,25 +15,69 @@ export type SidebarWidgetOption = {
 
 export type SidebarWidgetSettings = {
   transitionMs: number;
-  selectedHrefs: string[];
+  selectedCards: string[];
 };
 
 export const SIDEBAR_WIDGET_OPTIONS: SidebarWidgetOption[] = [
-  { href: "/", label: "Inicio", icon: "🏠", hint: "Vista general diaria" },
-  { href: "/semana", label: "Semana", icon: "📅", hint: "Planificacion semanal" },
-  { href: "/sesiones", label: "Entrenamiento", icon: "🤸", hint: "Sesiones y cargas" },
-  { href: "/asistencias", label: "Asistencias", icon: "✅", hint: "Control de presencia" },
-  { href: "/registros", label: "Registros", icon: "📊", hint: "Metricas operativas" },
-  { href: "/categorias", label: "Categorias", icon: "🏷️", hint: "Organizacion del contenido" },
-  { href: "/categorias/Nutricion", label: "Nutricion", icon: "🥗", hint: "Planificacion nutricional" },
-  { href: "/deportes", label: "Deportes", icon: "⚽", hint: "Gestion deportiva" },
-  { href: "/equipos", label: "Equipos", icon: "🛡️", hint: "Estructura de equipos" },
-  { href: "/clientes", label: "Clientes", icon: "👤", hint: "Ficha y seguimiento" },
-  { href: "/clientes/musica", label: "Musica", icon: "🎧", hint: "Playlists y motivacion" },
-  { href: "/admin/usuarios", label: "Usuarios", icon: "🛠️", hint: "Permisos y seguridad" },
-  { href: "/admin/whatsapp", label: "WhatsApp", icon: "💬", hint: "Automatizacion y envios" },
-  { href: "/configuracion", label: "Configuracion", icon: "⚙️", hint: "Preferencias de la app" },
+  {
+    id: "pending-saves",
+    href: "/configuracion",
+    label: "Pendientes de guardado",
+    icon: "🟠",
+    hint: "Cambios locales que faltan guardar",
+  },
+  {
+    id: "payments-completed",
+    href: "/registros",
+    label: "Pagos hechos",
+    icon: "💸",
+    hint: "Pagos confirmados de clientes",
+  },
+  {
+    id: "payments-pending",
+    href: "/registros",
+    label: "Pagos pendientes",
+    icon: "🧾",
+    hint: "Monto pendiente por cobrar",
+  },
+  {
+    id: "attendance-rate",
+    href: "/asistencias",
+    label: "Presentismo",
+    icon: "✅",
+    hint: "Porcentaje general de asistencias",
+  },
+  {
+    id: "sessions-loaded",
+    href: "/sesiones",
+    label: "Sesiones cargadas",
+    icon: "🏋️",
+    hint: "Sesiones de entrenamiento en el sistema",
+  },
+  {
+    id: "active-clients",
+    href: "/registros",
+    label: "Clientes activos",
+    icon: "👥",
+    hint: "Clientes en estado activo",
+  },
 ];
+
+type LegacySidebarWidgetSettings = {
+  transitionMs?: number;
+  selectedHrefs?: string[];
+  selectedCards?: string[];
+};
+
+const LEGACY_HREF_TO_CARD_ID: Record<string, string> = {
+  "/": "active-clients",
+  "/semana": "sessions-loaded",
+  "/sesiones": "sessions-loaded",
+  "/asistencias": "attendance-rate",
+  "/registros": "payments-completed",
+  "/clientes": "active-clients",
+  "/configuracion": "pending-saves",
+};
 
 const normalizePath = (value: string): string => {
   const path = value.split("?")[0] || "/";
@@ -54,7 +99,7 @@ export function clampSidebarWidgetTransitionMs(value: number): number {
 }
 
 export function getDefaultSidebarWidgetSelection(): string[] {
-  return SIDEBAR_WIDGET_OPTIONS.map((option) => option.href);
+  return SIDEBAR_WIDGET_OPTIONS.map((option) => option.id);
 }
 
 export function normalizeSidebarWidgetSettings(raw: unknown): SidebarWidgetSettings {
@@ -63,23 +108,31 @@ export function normalizeSidebarWidgetSettings(raw: unknown): SidebarWidgetSetti
   if (!raw || typeof raw !== "object") {
     return {
       transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
-      selectedHrefs: defaultSelected,
+      selectedCards: defaultSelected,
     };
   }
 
-  const input = raw as Partial<SidebarWidgetSettings>;
-  const selectedSet = new Set(defaultSelected.map((href) => normalizePath(href)));
-  const selectedInput = Array.isArray(input.selectedHrefs)
+  const input = raw as LegacySidebarWidgetSettings;
+  const selectedSet = new Set(defaultSelected);
+
+  const selectedFromCards = Array.isArray(input.selectedCards)
+    ? input.selectedCards.map((value) => String(value || "").trim())
+    : [];
+
+  const selectedFromLegacyHrefs = Array.isArray(input.selectedHrefs)
     ? input.selectedHrefs
-        .map((value) => normalizePath(String(value || "").trim()))
-        .filter((value) => value.length > 0 && selectedSet.has(value))
-    : defaultSelected;
+        .map((value) => LEGACY_HREF_TO_CARD_ID[normalizePath(String(value || "").trim())])
+        .filter((value): value is string => typeof value === "string" && value.length > 0)
+    : [];
+
+  const selectedInput = (selectedFromCards.length > 0 ? selectedFromCards : selectedFromLegacyHrefs)
+    .filter((value) => selectedSet.has(value));
 
   const dedupedSelected = Array.from(new Set(selectedInput));
 
   return {
     transitionMs: clampSidebarWidgetTransitionMs(Number(input.transitionMs)),
-    selectedHrefs: dedupedSelected.length > 0 ? dedupedSelected : defaultSelected,
+    selectedCards: dedupedSelected.length > 0 ? dedupedSelected : defaultSelected,
   };
 }
 

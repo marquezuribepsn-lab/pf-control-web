@@ -52,8 +52,8 @@ export default function ConfiguracionPage() {
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
   const [widgetTransitionMs, setWidgetTransitionMs] = useState(SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS);
-  const [widgetSelectedHrefs, setWidgetSelectedHrefs] = useState<string[]>(
-    SIDEBAR_WIDGET_OPTIONS.map((option) => option.href)
+  const [widgetSelectedCards, setWidgetSelectedCards] = useState<string[]>(
+    SIDEBAR_WIDGET_OPTIONS.map((option) => option.id)
   );
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function ConfiguracionPage() {
 
     const widgetSettings = readSidebarWidgetSettingsFromStorage();
     setWidgetTransitionMs(widgetSettings.transitionMs);
-    setWidgetSelectedHrefs(widgetSettings.selectedHrefs);
+    setWidgetSelectedCards(widgetSettings.selectedCards);
 
     if (typeof window !== "undefined" && "Notification" in window) {
       setPermission(Notification.permission);
@@ -107,29 +107,29 @@ export default function ConfiguracionPage() {
     [widgetTransitionMs]
   );
 
-  const applyWidgetSettings = (nextTransitionMs: number, nextSelectedHrefs: string[]) => {
+  const applyWidgetSettings = (nextTransitionMs: number, nextSelectedCards: string[]) => {
     const normalized = normalizeSidebarWidgetSettings({
       transitionMs: nextTransitionMs,
-      selectedHrefs: nextSelectedHrefs,
+      selectedCards: nextSelectedCards,
     });
     setWidgetTransitionMs(normalized.transitionMs);
-    setWidgetSelectedHrefs(normalized.selectedHrefs);
+    setWidgetSelectedCards(normalized.selectedCards);
     writeSidebarWidgetSettingsToStorage(normalized);
   };
 
   const onWidgetTransitionChange = (seconds: number) => {
-    applyWidgetSettings(seconds * 1000, widgetSelectedHrefs);
+    applyWidgetSettings(seconds * 1000, widgetSelectedCards);
   };
 
-  const toggleWidgetOption = (href: string) => {
-    const alreadySelected = widgetSelectedHrefs.includes(href);
-    if (alreadySelected && widgetSelectedHrefs.length === 1) {
+  const toggleWidgetOption = (id: string) => {
+    const alreadySelected = widgetSelectedCards.includes(id);
+    if (alreadySelected && widgetSelectedCards.length === 1) {
       return;
     }
 
     const nextSelected = alreadySelected
-      ? widgetSelectedHrefs.filter((value) => value !== href)
-      : [...widgetSelectedHrefs, href];
+      ? widgetSelectedCards.filter((value) => value !== id)
+      : [...widgetSelectedCards, id];
 
     applyWidgetSettings(widgetTransitionMs, nextSelected);
   };
@@ -397,7 +397,7 @@ export default function ConfiguracionPage() {
         <div className="mt-4 rounded-xl border border-cyan-300/25 bg-slate-950/65 p-3">
           <p className="text-sm font-semibold text-cyan-100">Widget rotativo del sidebar</p>
           <p className="mt-1 text-xs text-slate-400">
-            Configura el carrusel de accesos rapidos que aparece abajo del menu lateral.
+            Configura el carrusel de indicadores operativos que aparece abajo del menu lateral.
           </p>
 
           <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
@@ -416,22 +416,22 @@ export default function ConfiguracionPage() {
               />
             </div>
             <div className="rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-xs text-slate-300">
-              {widgetSelectedHrefs.length} seleccionados
+              {widgetSelectedCards.length} seleccionados
             </div>
           </div>
 
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {SIDEBAR_WIDGET_OPTIONS.map((option) => {
-              const checked = widgetSelectedHrefs.includes(option.href);
+              const checked = widgetSelectedCards.includes(option.id);
               return (
                 <label
-                  key={option.href}
+                  key={option.id}
                   className="flex items-start gap-2 rounded-lg border border-white/15 bg-slate-900/70 px-3 py-2 text-xs"
                 >
                   <input
                     type="checkbox"
                     checked={checked}
-                    onChange={() => toggleWidgetOption(option.href)}
+                    onChange={() => toggleWidgetOption(option.id)}
                     className="mt-0.5"
                   />
                   <span className="min-w-0">

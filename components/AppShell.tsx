@@ -15,7 +15,10 @@ import {
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { getPendingSaveStatus } from "./useSharedState";
+import { useAlumnos } from "./AlumnosProvider";
+import { usePlayers } from "./PlayersProvider";
+import { useSessions } from "./SessionsProvider";
+import { getPendingSaveStatus, useSharedState } from "./useSharedState";
 
 type NavLink = {
   href: string;
@@ -50,20 +53,42 @@ type WindowWithDockSmokeToken = Window & {
   __pfDockSmokeToken?: string;
 };
 
+type ClienteMetaSnapshot = {
+  pagoEstado?: "confirmado" | "pendiente" | string;
+  importe?: string | number | null;
+};
+
+type AsistenciaRegistroSnapshot = {
+  estado?: "presente" | "ausente" | string;
+};
+
 type SidebarWidgetItem = {
+  id: string;
   href: string;
   label: string;
   icon: string;
-  tone: string;
-  hint: string;
+  value: string;
+  detail: string;
+  toneClass: string;
 };
 
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
+const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
+const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
+
+const WIDGET_TONE_CLASS_BY_ID: Record<string, string> = {
+  "pending-saves": "border-amber-300/45 bg-gradient-to-br from-amber-500/20 via-slate-900/75 to-orange-500/22",
+  "payments-completed": "border-emerald-300/45 bg-gradient-to-br from-emerald-500/22 via-slate-900/75 to-cyan-500/20",
+  "payments-pending": "border-rose-300/45 bg-gradient-to-br from-rose-500/20 via-slate-900/75 to-amber-500/20",
+  "attendance-rate": "border-cyan-300/45 bg-gradient-to-br from-cyan-500/20 via-slate-900/75 to-blue-500/20",
+  "sessions-loaded": "border-violet-300/40 bg-gradient-to-br from-violet-500/20 via-slate-900/75 to-indigo-500/20",
+  "active-clients": "border-lime-300/40 bg-gradient-to-br from-lime-500/20 via-slate-900/75 to-emerald-500/20",
+};
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -173,9 +198,38 @@ const formatPendingKeyLabel = (key: string) => {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
+const parseMoneyValue = (value: unknown): number => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
+const formatCurrency = (value: number): string => {
+  const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0;
+  return `$${Math.round(safeValue).toLocaleString("es-AR")}`;
+};
+
 export default function AppShell({ links, children, initialRole = null, initialProfileName = null }: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { jugadoras } = usePlayers();
+  const { alumnos } = useAlumnos();
+  const { sesiones } = useSessions();
+  const [clientesMeta] = useSharedState<Record<string, ClienteMetaSnapshot>>({}, {
+    key: CLIENTE_META_KEY,
+    legacyLocalStorageKey: CLIENTE_META_KEY,
+  });
+  const [asistenciaRegistros] = useSharedState<AsistenciaRegistroSnapshot[]>([], {
+    key: ASISTENCIAS_REGISTROS_KEY,
+    legacyLocalStorageKey: ASISTENCIAS_REGISTROS_KEY,
+  });
   const interactionGuardLastRunRef = useRef(0);
   const optimisticNavResetTimerRef = useRef<number | null>(null);
   const widgetTransitionTimeoutRef = useRef<number | null>(null);
@@ -196,7 +250,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const [sidebarWidgetSettings, setSidebarWidgetSettings] = useState<SidebarWidgetSettings>(() =>
     normalizeSidebarWidgetSettings({
       transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
-      selectedHrefs: SIDEBAR_WIDGET_OPTIONS.map((option) => option.href),
+      selectedCards: SIDEBAR_WIDGET_OPTIONS.map((option) => option.id),
     })
   );
   const [sidebarWidgetIndex, setSidebarWidgetIndex] = useState(0);
@@ -672,34 +726,139 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const sidebarIconSize = "1rem";
   const sidebarLabelSize = "11px";
 
-  const sidebarWidgetItems = useMemo<SidebarWidgetItem[]>(() => {
-    const hintByHref = new Map(
-      SIDEBAR_WIDGET_OPTIONS.map((option) => [normalizePath(option.href), option.hint])
-    );
-    const selectedSet = new Set(
-      sidebarWidgetSettings.selectedHrefs.map((href) => normalizePath(String(href || "")))
+  const sidebarOperationalStats = useMemo(() => {
+    const clientesActivos =
+      jugadoras.filter((jugadora) => (jugadora.estado || "activo") === "activo").length +
+      alumnos.filter((alumno) => (alumno.estado || "activo") === "activo").length;
+    const totalClientes = jugadoras.length + alumnos.length;
+
+    const metas = Object.values(clientesMeta || {}).filter(
+      (value): value is ClienteMetaSnapshot => Boolean(value) && typeof value === "object"
     );
 
-    const dedupedVisible = visibleLinks.reduce<SidebarWidgetItem[]>((acc, link) => {
-      const normalizedHref = normalizePath(link.href);
-      if (acc.some((item) => item.href === normalizedHref)) {
-        return acc;
+    const pagosConfirmados = metas.filter((meta) => meta.pagoEstado === "confirmado").length;
+    const pagosPendientes = metas.filter((meta) => meta.pagoEstado === "pendiente").length;
+
+    const ingresosConfirmados = metas
+      .filter((meta) => meta.pagoEstado === "confirmado")
+      .reduce((total, meta) => total + parseMoneyValue(meta.importe), 0);
+
+    const saldoPendiente = metas
+      .filter((meta) => meta.pagoEstado === "pendiente")
+      .reduce((total, meta) => total + parseMoneyValue(meta.importe), 0);
+
+    const presentes = asistenciaRegistros.filter((registro) => registro.estado === "presente").length;
+    const ausentes = asistenciaRegistros.filter((registro) => registro.estado === "ausente").length;
+    const totalAsistencia = presentes + ausentes;
+    const presentismo = totalAsistencia > 0 ? Math.round((presentes / totalAsistencia) * 100) : 0;
+
+    return {
+      clientesActivos,
+      totalClientes,
+      pagosConfirmados,
+      pagosPendientes,
+      ingresosConfirmados,
+      saldoPendiente,
+      presentes,
+      totalAsistencia,
+      presentismo,
+      sesionesTotales: sesiones.length,
+    };
+  }, [jugadoras, alumnos, sesiones.length, clientesMeta, asistenciaRegistros]);
+
+  const sidebarWidgetItems = useMemo<SidebarWidgetItem[]>(() => {
+    const selectedSet = new Set(
+      sidebarWidgetSettings.selectedCards.map((id) => String(id || "").trim()).filter((id) => id.length > 0)
+    );
+
+    const preferredOptions = SIDEBAR_WIDGET_OPTIONS.filter((option) => selectedSet.has(option.id));
+    const options = preferredOptions.length > 0 ? preferredOptions : SIDEBAR_WIDGET_OPTIONS;
+
+    const uniqueVisibleHrefs = Array.from(new Set(allVisibleHrefs));
+    const fallbackHref = uniqueVisibleHrefs[0] || "/";
+
+    const resolveWidgetHref = (href: string) => {
+      const normalizedHref = normalizePath(href);
+      return uniqueVisibleHrefs.includes(normalizedHref) ? normalizedHref : fallbackHref;
+    };
+
+    const pendingSummary = pendingSaveKeys.slice(0, 2).map((key) => formatPendingKeyLabel(key)).join(" + ");
+    const pendingDetail =
+      pendingSaveKeys.length === 0
+        ? "Sin modulos pendientes"
+        : pendingSaveKeys.length > 2
+        ? `${pendingSummary} +${pendingSaveKeys.length - 2}`
+        : pendingSummary;
+
+    return options.map((option) => {
+      const base = {
+        id: option.id,
+        href: resolveWidgetHref(option.href),
+        label: option.label,
+        icon: option.icon,
+        toneClass:
+          WIDGET_TONE_CLASS_BY_ID[option.id] ||
+          "border-cyan-300/35 bg-gradient-to-br from-cyan-500/16 via-slate-900/75 to-blue-500/16",
+      };
+
+      if (option.id === "pending-saves") {
+        return {
+          ...base,
+          value: String(pendingSaveKeys.length),
+          detail: pendingDetail,
+        };
       }
 
-      acc.push({
-        href: normalizedHref,
-        label: compactSidebarLabel(link.label),
-        icon: link.icon,
-        tone: link.tone,
-        hint: hintByHref.get(normalizedHref) || "Acceso rapido",
-      });
+      if (option.id === "payments-completed") {
+        return {
+          ...base,
+          value: String(sidebarOperationalStats.pagosConfirmados),
+          detail: `Confirmados · ${formatCurrency(sidebarOperationalStats.ingresosConfirmados)}`,
+        };
+      }
 
-      return acc;
-    }, []);
+      if (option.id === "payments-pending") {
+        return {
+          ...base,
+          value: String(sidebarOperationalStats.pagosPendientes),
+          detail: `Pendiente · ${formatCurrency(sidebarOperationalStats.saldoPendiente)}`,
+        };
+      }
 
-    const filtered = dedupedVisible.filter((item) => selectedSet.has(item.href));
-    return filtered.length > 0 ? filtered : dedupedVisible;
-  }, [visibleLinks, sidebarWidgetSettings.selectedHrefs]);
+      if (option.id === "attendance-rate") {
+        return {
+          ...base,
+          value: `${sidebarOperationalStats.presentismo}%`,
+          detail:
+            sidebarOperationalStats.totalAsistencia > 0
+              ? `${sidebarOperationalStats.presentes} presentes de ${sidebarOperationalStats.totalAsistencia}`
+              : "Sin asistencias registradas",
+        };
+      }
+
+      if (option.id === "sessions-loaded") {
+        return {
+          ...base,
+          value: String(sidebarOperationalStats.sesionesTotales),
+          detail: `${sidebarOperationalStats.sesionesTotales} sesiones cargadas`,
+        };
+      }
+
+      if (option.id === "active-clients") {
+        return {
+          ...base,
+          value: String(sidebarOperationalStats.clientesActivos),
+          detail: `${sidebarOperationalStats.totalClientes} clientes totales`,
+        };
+      }
+
+      return {
+        ...base,
+        value: "--",
+        detail: option.hint,
+      };
+    });
+  }, [allVisibleHrefs, pendingSaveKeys, sidebarOperationalStats, sidebarWidgetSettings.selectedCards]);
 
   const activeSidebarWidgetItem = sidebarWidgetItems[sidebarWidgetIndex] || null;
 
@@ -857,7 +1016,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
                 reliabilityMode="hard"
                 onPointerDown={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
                 onClick={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
-                className="mx-auto block w-full max-w-[130px] rounded-2xl border border-cyan-300/35 bg-gradient-to-br from-cyan-500/18 via-slate-900/70 to-violet-500/18 px-2 py-2 shadow-[0_10px_22px_rgba(8,47,73,0.4)]"
+                className={`mx-auto block w-full max-w-[130px] min-h-[116px] rounded-2xl border px-2.5 py-2.5 shadow-[0_10px_22px_rgba(8,47,73,0.42)] ${activeSidebarWidgetItem.toneClass}`}
                 title={`Widget: ${activeSidebarWidgetItem.label}`}
                 aria-label={`Widget: ${activeSidebarWidgetItem.label}`}
               >
@@ -866,28 +1025,27 @@ export default function AppShell({ links, children, initialRole = null, initialP
                     sidebarWidgetPhase === "enter" ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
                   }`}
                 >
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-100/90">Widget</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-400/20 text-sm">
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-200/85">Resumen</p>
+                  <p className="mt-1 truncate text-[10px] font-black text-slate-100">{activeSidebarWidgetItem.label}</p>
+                  <div className="mt-2 flex items-end justify-between gap-2">
+                    <p className="text-[24px] font-black leading-none text-white">{activeSidebarWidgetItem.value}</p>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-sm">
                       {activeSidebarWidgetItem.icon}
                     </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-[11px] font-black text-cyan-50">{activeSidebarWidgetItem.label}</p>
-                      <p className="line-clamp-2 text-[9px] leading-tight text-slate-300">
-                        {activeSidebarWidgetItem.hint}
-                      </p>
-                    </div>
                   </div>
+                  <p className="mt-1.5 line-clamp-3 text-[9px] leading-tight text-slate-300">
+                    {activeSidebarWidgetItem.detail}
+                  </p>
                 </div>
               </Link>
 
               {sidebarWidgetItems.length > 1 ? (
                 <div className="mx-auto mt-1 flex w-full max-w-[130px] items-center justify-center gap-1.5">
                   {sidebarWidgetItems.slice(0, 5).map((item, idx) => {
-                    const isActive = sidebarWidgetItems[sidebarWidgetIndex]?.href === item.href;
+                    const isActive = sidebarWidgetItems[sidebarWidgetIndex]?.id === item.id;
                     return (
                       <span
-                        key={`${item.href}-${idx}`}
+                        key={`${item.id}-${idx}`}
                         className={`h-1.5 rounded-full transition-all ${
                           isActive ? "w-4 bg-cyan-200" : "w-1.5 bg-slate-500"
                         }`}
