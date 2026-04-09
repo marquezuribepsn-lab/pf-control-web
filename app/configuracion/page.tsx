@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_EDIT_MODE_KEY = "pf-control-screen-edit-mode-v1";
+const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
 const NOTIFICATIONS_ENABLED_KEY = "pf-control-notifications-enabled-v1";
 const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
@@ -38,6 +39,26 @@ function normalizeDockLabelMode(value: string | null): DockLabelMode {
   return "compact";
 }
 
+function applyScreenScalePreview(value: number) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.documentElement.style.setProperty("--pf-screen-scale", String(clampScale(value)));
+}
+
+function emitInlineToast(type: "success" | "error" | "warning", message: string, title?: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("pf-inline-toast", {
+      detail: { type, message, title },
+    })
+  );
+}
+
 export default function ConfiguracionPage() {
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
@@ -50,6 +71,9 @@ export default function ConfiguracionPage() {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(null);
+  const [sidebarImageDraft, setSidebarImageDraft] = useState<string | null>(null);
+  const [savingSidebarImage, setSavingSidebarImage] = useState(false);
+  const [sidebarImageError, setSidebarImageError] = useState<string | null>(null);
   const [dockLabelMode, setDockLabelMode] = useState<DockLabelMode>("compact");
   const [widgetTransitionMs, setWidgetTransitionMs] = useState(SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS);
   const [widgetSelectedCards, setWidgetSelectedCards] = useState<string[]>(
@@ -68,7 +92,9 @@ export default function ConfiguracionPage() {
     setEditMode(nextEditMode);
     setNotificationsEnabled(nextNotifications);
     setSidebarImage(nextSidebarImage);
+    setSidebarImageDraft(nextSidebarImage);
     setDockLabelMode(nextDockLabelMode);
+    applyScreenScalePreview(nextScale);
 
     const widgetSettings = readSidebarWidgetSettingsFromStorage();
     setWidgetTransitionMs(widgetSettings.transitionMs);
@@ -77,6 +103,34 @@ export default function ConfiguracionPage() {
     if (typeof window !== "undefined" && "Notification" in window) {
       setPermission(Notification.permission);
     }
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/account", { cache: "no-store" });
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        const remoteImage =
+          typeof data?.sidebarImage === "string" && data.sidebarImage.trim().length > 0
+            ? data.sidebarImage
+            : null;
+
+        setSidebarImage(remoteImage);
+        setSidebarImageDraft(remoteImage);
+
+        if (remoteImage) {
+          localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
+        } else {
+          localStorage.removeItem(SIDEBAR_IMAGE_KEY);
+        }
+
+        window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+      } catch {
+        // no bloquear configuracion si falla la sincronizacion remota
+      }
+    })();
 
     setLoaded(true);
   }, []);
@@ -121,6 +175,8 @@ export default function ConfiguracionPage() {
     applyWidgetSettings(seconds * 1000, widgetSelectedCards);
   };
 
+  const sidebarImageDirty = sidebarImageDraft !== sidebarImage;
+
   const toggleWidgetOption = (id: string) => {
     const alreadySelected = widgetSelectedCards.includes(id);
     if (alreadySelected && widgetSelectedCards.length === 1) {
@@ -141,6 +197,7 @@ export default function ConfiguracionPage() {
 
   const cancelarModificacion = () => {
     setDraftScale(savedScale);
+    applyScreenScalePreview(savedScale);
     setEditMode(false);
     localStorage.removeItem(SCREEN_EDIT_MODE_KEY);
   };
@@ -151,15 +208,19 @@ export default function ConfiguracionPage() {
     localStorage.removeItem(SCREEN_EDIT_MODE_KEY);
     setSavedScale(nextScale);
     setDraftScale(nextScale);
+    applyScreenScalePreview(nextScale);
     setEditMode(false);
-    window.dispatchEvent(new Event("pf-screen-scale-updated"));
+    window.dispatchEvent(new Event(SCREEN_SCALE_EVENT));
+    emitInlineToast("success", "Escala de pantalla guardada correctamente");
   };
 
   const resetPantalla = () => {
     setDraftScale(1);
     localStorage.setItem(SCREEN_SCALE_KEY, "1");
     setSavedScale(1);
-    window.dispatchEvent(new Event("pf-screen-scale-updated"));
+    applyScreenScalePreview(1);
+    window.dispatchEvent(new Event(SCREEN_SCALE_EVENT));
+    emitInlineToast("success", "Escala de pantalla reseteada al 100%");
   };
 
   const solicitarPermisoNotificaciones = async () => {
@@ -201,18 +262,63 @@ export default function ConfiguracionPage() {
       if (!result) {
         return;
       }
-      setSidebarImage(result);
-      localStorage.setItem(SIDEBAR_IMAGE_KEY, result);
-      window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+      setSidebarImageDraft(result);
+      setSidebarImageError(null);
     };
     reader.readAsDataURL(file);
     event.currentTarget.value = "";
   };
 
   const removeSidebarImage = () => {
-    setSidebarImage(null);
-    localStorage.removeItem(SIDEBAR_IMAGE_KEY);
-    window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+    setSidebarImageDraft(null);
+    setSidebarImageError(null);
+  };
+
+  const revertSidebarImageDraft = () => {
+    setSidebarImageDraft(sidebarImage);
+    setSidebarImageError(null);
+  };
+
+  const guardarSidebarImage = async () => {
+    setSavingSidebarImage(true);
+    setSidebarImageError(null);
+
+    try {
+      const response = await fetch("/api/account", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sidebarImage: sidebarImageDraft }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo guardar la foto de perfil");
+      }
+
+      const persistedImage =
+        typeof data?.user?.sidebarImage === "string" && data.user.sidebarImage.trim().length > 0
+          ? data.user.sidebarImage
+          : null;
+
+      setSidebarImage(persistedImage);
+      setSidebarImageDraft(persistedImage);
+
+      if (persistedImage) {
+        localStorage.setItem(SIDEBAR_IMAGE_KEY, persistedImage);
+      } else {
+        localStorage.removeItem(SIDEBAR_IMAGE_KEY);
+      }
+
+      window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+      emitInlineToast("success", data?.message || "Foto de perfil guardada correctamente");
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : "No se pudo guardar la foto de perfil";
+      setSidebarImageError(message);
+      emitInlineToast("error", message, "Error");
+    } finally {
+      setSavingSidebarImage(false);
+    }
   };
 
   const cambiarModoEtiquetasDock = (mode: DockLabelMode) => {
@@ -358,17 +464,56 @@ export default function ConfiguracionPage() {
           </label>
         </div>
 
-        {sidebarImage ? (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-3">
-            <img src={sidebarImage} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
-            <ReliableActionButton
-              type="button"
-              onClick={removeSidebarImage}
-              className="rounded-lg border border-rose-300/45 px-3 py-1.5 text-xs font-semibold text-rose-100"
-            >
-              Quitar imagen
-            </ReliableActionButton>
+        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
+          <div className="flex items-center gap-3">
+            {sidebarImageDraft ? (
+              <img src={sidebarImageDraft} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/15 bg-slate-800 text-xs text-slate-300">
+                Sin foto
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={removeSidebarImage}
+                disabled={savingSidebarImage || !sidebarImageDraft}
+                className="rounded-lg border border-rose-300/45 px-3 py-1.5 text-xs font-semibold text-rose-100"
+              >
+                Quitar
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={guardarSidebarImage}
+                disabled={!sidebarImageDirty || savingSidebarImage}
+                className="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {savingSidebarImage ? "Guardando..." : "Guardar cambios"}
+              </ReliableActionButton>
+              {sidebarImageDirty ? (
+                <ReliableActionButton
+                  type="button"
+                  onClick={revertSidebarImageDraft}
+                  disabled={savingSidebarImage}
+                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white"
+                >
+                  Revertir
+                </ReliableActionButton>
+              ) : null}
+            </div>
           </div>
+
+          {!sidebarImageDraft ? (
+            <p className="mt-2 text-xs text-slate-300">Todavia no tienes foto de perfil cargada.</p>
+          ) : null}
+        </div>
+
+        {sidebarImageDirty ? (
+          <p className="mt-2 text-xs text-amber-200">Hay cambios de foto pendientes de guardar.</p>
+        ) : null}
+
+        {sidebarImageError ? (
+          <p className="mt-2 text-xs text-rose-200">{sidebarImageError}</p>
         ) : null}
 
         <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
@@ -468,7 +613,14 @@ export default function ConfiguracionPage() {
               step={0.01}
               value={draftScale}
               disabled={!editMode}
-              onChange={(e) => setDraftScale(clampScale(Number(e.target.value)))}
+              onChange={(e) => {
+                const nextScale = clampScale(Number(e.target.value));
+                setDraftScale(nextScale);
+
+                if (editMode) {
+                  applyScreenScalePreview(nextScale);
+                }
+              }}
               className="w-full"
             />
             <p className="mt-2 text-xs text-slate-400">

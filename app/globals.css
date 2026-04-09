@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --pf-screen-scale: 1;
   --pf-bg-0: #050711;
   --pf-bg-1: #0a1429;
   --pf-bg-2: #111f38;
@@ -37,6 +38,7 @@ body {
   letter-spacing: 0.01em;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  zoom: var(--pf-screen-scale);
 }
 
 body::before,
@@ -78,6 +80,15 @@ h6 {
 .pf-root-atmosphere {
   position: relative;
   min-height: 100vh;
+}
+
+@supports not (zoom: 1) {
+  .pf-root-atmosphere {
+    transform: scale(var(--pf-screen-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--pf-screen-scale));
+    min-height: calc(100svh / var(--pf-screen-scale));
+  }
 }
 
 .pf-neo-shell :where(.rounded-2xl, .rounded-3xl) {

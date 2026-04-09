@@ -76,6 +76,8 @@ const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
+const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
+const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
@@ -214,6 +216,18 @@ const parseMoneyValue = (value: unknown): number => {
 const formatCurrency = (value: number): string => {
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0;
   return `$${Math.round(safeValue).toLocaleString("es-AR")}`;
+};
+
+const clampScreenScale = (value: number): number => {
+  if (!Number.isFinite(value)) return 1;
+  if (value < 0.8) return 0.8;
+  if (value > 1.35) return 1.35;
+  return Number(value.toFixed(2));
+};
+
+const applyScreenScale = (value: number) => {
+  if (typeof document === "undefined") return;
+  document.documentElement.style.setProperty("--pf-screen-scale", String(clampScreenScale(value)));
 };
 
 export default function AppShell({ links, children, initialRole = null, initialProfileName = null }: AppShellProps) {
@@ -377,18 +391,21 @@ export default function AppShell({ links, children, initialRole = null, initialP
   }, [initialRole, initialProfileName]);
 
   useEffect(() => {
-    if (!mounted || !session?.user) return;
+    if (!mounted || !session?.user || typeof window === "undefined") return;
 
     let cancelled = false;
 
-    void (async () => {
+    const syncAccountSnapshot = async () => {
       try {
         const response = await fetch("/api/account", { cache: "no-store" });
         if (!response.ok || cancelled) return;
 
         const data = await response.json();
+        const hasSidebarImageField = Object.prototype.hasOwnProperty.call(data || {}, "sidebarImage");
         const remoteImage =
-          typeof data.sidebarImage === "string" && data.sidebarImage.trim() ? data.sidebarImage : null;
+          hasSidebarImageField && typeof data.sidebarImage === "string" && data.sidebarImage.trim()
+            ? data.sidebarImage
+            : null;
 
         const rawAccess =
           data?.permisosGranulares && typeof data.permisosGranulares === "object"
@@ -406,25 +423,71 @@ export default function AppShell({ links, children, initialRole = null, initialP
 
         if (cancelled) return;
 
-        setSidebarImage(remoteImage);
         setColaboradorAccessMap(normalizedAccess);
 
-        if (remoteImage) {
-          localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
-        } else {
-          localStorage.removeItem(SIDEBAR_IMAGE_KEY);
-        }
+        if (hasSidebarImageField) {
+          const localImage = localStorage.getItem(SIDEBAR_IMAGE_KEY);
+          const normalizedLocalImage = localImage && localImage.trim() ? localImage : null;
 
-        window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+          setSidebarImage(remoteImage);
+
+          if (remoteImage) {
+            if (normalizedLocalImage !== remoteImage) {
+              localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
+              window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+            }
+          } else if (normalizedLocalImage) {
+            localStorage.removeItem(SIDEBAR_IMAGE_KEY);
+            window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+          }
+        }
       } catch {
         // do not block shell render
       }
-    })();
+    };
+
+    void syncAccountSnapshot();
+
+    const intervalId = window.setInterval(() => {
+      void syncAccountSnapshot();
+    }, 30000);
+
+    const onFocus = () => {
+      void syncAccountSnapshot();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void syncAccountSnapshot();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [mounted, session?.user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncScaleFromStorage = () => {
+      const raw = localStorage.getItem(SCREEN_SCALE_KEY);
+      applyScreenScale(clampScreenScale(Number(raw || "1")));
+    };
+
+    syncScaleFromStorage();
+    window.addEventListener(SCREEN_SCALE_EVENT, syncScaleFromStorage);
+
+    return () => {
+      window.removeEventListener(SCREEN_SCALE_EVENT, syncScaleFromStorage);
+    };
+  }, []);
 
   useEffect(() => {
     const initialPending = getPendingSaveStatus();
@@ -497,6 +560,10 @@ export default function AppShell({ links, children, initialRole = null, initialP
         } catch {
           setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
         }
+      }
+
+      if (event.key === SCREEN_SCALE_KEY) {
+        applyScreenScale(clampScreenScale(Number(event.newValue || "1")));
       }
     };
 

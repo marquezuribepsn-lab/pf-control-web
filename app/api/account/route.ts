@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 
 const db = prisma as any;
+const MAX_SIDEBAR_IMAGE_LENGTH = 1_500_000;
+
+const ACCOUNT_SELECT = {
+  id: true,
+  email: true,
+  role: true,
+  puedeEditarRegistros: true,
+  puedeEditarPlanes: true,
+  puedeVerTodosAlumnos: true,
+  permisosGranulares: true,
+  emailVerified: true,
+  createdAt: true,
+  updatedAt: true,
+};
 
 function normalizeEmailInput(raw: unknown): string {
   return typeof raw === 'string' ? raw.trim().toLowerCase() : '';
@@ -16,6 +31,42 @@ function normalizePasswordInput(raw: unknown): string {
 
 function normalizePasswordForStorage(raw: unknown): string {
   return normalizePasswordInput(raw).trim();
+}
+
+function normalizeSidebarImageInput(raw: unknown): string | null | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  if (raw === null) {
+    return null;
+  }
+
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+
+  const normalized = raw.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+async function getSidebarImageForUser(userId: string): Promise<string | null> {
+  try {
+    const rows = (await db.$queryRaw(
+      Prisma.sql`SELECT sidebarImage FROM users WHERE id = ${userId} LIMIT 1`
+    )) as Array<{ sidebarImage: string | null }>;
+
+    const value = rows?.[0]?.sidebarImage;
+    return typeof value === 'string' && value.trim().length > 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSidebarImageForUser(userId: string, sidebarImage: string | null) {
+  await db.$executeRaw(
+    Prisma.sql`UPDATE users SET sidebarImage = ${sidebarImage}, updatedAt = CURRENT_TIMESTAMP WHERE id = ${userId}`
+  );
 }
 
 async function compareCurrentPassword(input: string, passwordHash: string): Promise<boolean> {
@@ -44,25 +95,19 @@ export async function GET() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      puedeEditarRegistros: true,
-      puedeEditarPlanes: true,
-      puedeVerTodosAlumnos: true,
-      permisosGranulares: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ACCOUNT_SELECT,
   });
 
   if (!user) {
     return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  const sidebarImage = await getSidebarImageForUser(session.user.id);
+
+  return NextResponse.json({
+    ...user,
+    sidebarImage,
+  });
 }
 
 export async function PATCH(req: NextRequest) {
@@ -73,12 +118,9 @@ export async function PATCH(req: NextRequest) {
   }
 
   const payload = await req.json().catch(() => ({}));
-  const { email, currentPassword, newPassword } = payload || {};
+  const { email, currentPassword, newPassword, sidebarImage } = payload || {};
+  const requestedSidebarImage = normalizeSidebarImageInput(sidebarImage);
   const currentPasswordInput = normalizePasswordInput(currentPassword);
-
-  if (!currentPasswordInput.trim()) {
-    return NextResponse.json({ message: 'Debes ingresar tu contraseña actual' }, { status: 400 });
-  }
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
@@ -88,11 +130,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
   }
 
-  const passwordMatch = await compareCurrentPassword(currentPasswordInput, user.password);
-  if (!passwordMatch) {
-    return NextResponse.json({ message: 'La contraseña actual no es correcta' }, { status: 400 });
-  }
-
   const currentEmailNormalized = normalizeEmailInput(user.email);
   const requestedEmail = normalizeEmailInput(email);
   const normalizedEmail = requestedEmail || currentEmailNormalized;
@@ -100,8 +137,27 @@ export async function PATCH(req: NextRequest) {
   const emailChanged = normalizedEmail !== currentEmailNormalized;
   const passwordChanged = nextPassword.length > 0;
 
-  if (!emailChanged && !passwordChanged) {
+  const currentSidebarImage = await getSidebarImageForUser(user.id);
+  const sidebarImageChanged = requestedSidebarImage !== undefined && requestedSidebarImage !== currentSidebarImage;
+  const hasCredentialChanges = emailChanged || passwordChanged;
+
+  if (!hasCredentialChanges && !sidebarImageChanged) {
     return NextResponse.json({ message: 'No hay cambios para guardar' }, { status: 400 });
+  }
+
+  if (requestedSidebarImage && requestedSidebarImage.length > MAX_SIDEBAR_IMAGE_LENGTH) {
+    return NextResponse.json({ message: 'La imagen es demasiado grande. Usa una imagen mas liviana' }, { status: 400 });
+  }
+
+  if (hasCredentialChanges && !currentPasswordInput.trim()) {
+    return NextResponse.json({ message: 'Debes ingresar tu contraseña actual' }, { status: 400 });
+  }
+
+  if (hasCredentialChanges) {
+    const passwordMatch = await compareCurrentPassword(currentPasswordInput, user.password);
+    if (!passwordMatch) {
+      return NextResponse.json({ message: 'La contraseña actual no es correcta' }, { status: 400 });
+    }
   }
 
   if (emailChanged) {
@@ -129,26 +185,29 @@ export async function PATCH(req: NextRequest) {
     data.password = await bcrypt.hash(nextPassword, 10);
   }
 
-  const updatedUser = await db.user.update({
+  if (hasCredentialChanges) {
+    await db.user.update({
+      where: { id: user.id },
+      data,
+    });
+  }
+
+  if (sidebarImageChanged) {
+    await writeSidebarImageForUser(user.id, requestedSidebarImage ?? null);
+  }
+
+  const updatedUser = await db.user.findUnique({
     where: { id: user.id },
-    data,
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      puedeEditarRegistros: true,
-      puedeEditarPlanes: true,
-      puedeVerTodosAlumnos: true,
-      permisosGranulares: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ACCOUNT_SELECT,
   });
+
+  if (!updatedUser) {
+    return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+  }
 
   let message = 'Cuenta actualizada correctamente';
 
-  if (passwordChanged || emailChanged) {
+  if (hasCredentialChanges) {
     await db.verificationToken
       .deleteMany({
         where: {
@@ -174,7 +233,19 @@ export async function PATCH(req: NextRequest) {
     const token = await generateVerificationToken(updatedUser.email);
     await sendVerificationEmail(updatedUser.email, token);
     message = 'Cuenta actualizada. Te enviamos un mail para verificar el nuevo email';
+  } else if (hasCredentialChanges) {
+    message = 'Cuenta actualizada correctamente';
   }
 
-  return NextResponse.json({ message, user: updatedUser });
+  if (sidebarImageChanged) {
+    message = hasCredentialChanges ? `${message} y foto de perfil guardada` : 'Foto de perfil guardada correctamente';
+  }
+
+  return NextResponse.json({
+    message,
+    user: {
+      ...updatedUser,
+      sidebarImage: sidebarImageChanged ? requestedSidebarImage ?? null : currentSidebarImage,
+    },
+  });
 }
