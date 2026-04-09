@@ -19,6 +19,9 @@ export type DispatchResult = {
   ok: boolean;
   skipped?: boolean;
   reason?: string;
+  payloadType?: "text" | "template";
+  senderPhoneNumberId?: string | null;
+  providerStatus?: number;
   providerMessageId?: string | null;
   renderedMessage?: string;
 };
@@ -88,6 +91,9 @@ export async function dispatchWhatsAppBatch(input: {
           phone,
           ok: false,
           reason: sent.error || `provider_status_${sent.status}`,
+          payloadType: sent.payloadType,
+          senderPhoneNumberId: sent.senderPhoneNumberId,
+          providerStatus: sent.status,
           providerMessageId: sent.providerMessageId,
           renderedMessage,
         });
@@ -99,6 +105,9 @@ export async function dispatchWhatsAppBatch(input: {
         label,
         phone,
         ok: true,
+        payloadType: sent.payloadType,
+        senderPhoneNumberId: sent.senderPhoneNumberId,
+        providerStatus: sent.status,
         providerMessageId: sent.providerMessageId,
         renderedMessage,
       });

@@ -28,6 +28,7 @@ export type ExecuteAutomationRunInput = {
   dryRun?: boolean;
   categoryKey?: string;
   ruleKey?: string;
+  deliveryModeOverride?: "test" | "prod";
   forceWindow?: boolean;
   includeDisabled?: boolean;
   forceFailureForTest?: boolean;
@@ -221,11 +222,16 @@ export async function executeAutomationRun(
   });
 
   const runnerCfg = matchesResult.config.automationRunner;
+  const configuredDeliveryMode =
+    matchesResult.config.connection.mode === "prod" ? "prod" : "test";
+  const deliveryMode =
+    input.deliveryModeOverride === "prod" || input.deliveryModeOverride === "test"
+      ? input.deliveryModeOverride
+      : configuredDeliveryMode;
   const canSend =
     matchesResult.config.connection.enabled !== false &&
     !dryRun &&
     !forceFailureForTest;
-  const deliveryMode = matchesResult.config.connection.mode === "prod" ? "prod" : "test";
 
   const ruleStats = buildRuleStats(matchesResult.matches);
 
@@ -271,7 +277,10 @@ export async function executeAutomationRun(
 
   const total = results.length;
   const okCount = results.filter((row) => row.ok).length;
-  const failedCount = forceFailureForTest ? results.length : results.filter((row) => !row.ok).length;
+  const sentCount = results.filter((row) => row.ok && !row.skipped).length;
+  const failedCount = forceFailureForTest
+    ? results.length
+    : results.filter((row) => !row.ok && !row.skipped).length;
   const skippedCount = results.filter((row) => row.skipped).length;
 
   let summary = {
@@ -284,9 +293,10 @@ export async function executeAutomationRun(
     rulesExecuted: matchesResult.rulesEvaluated,
     totalMatched: matchesResult.totalMatched,
     total,
-    sent: canSend ? okCount : 0,
+    sent: canSend ? sentCount : 0,
     failed: canSend ? failedCount : forceFailureForTest ? failedCount : 0,
     skipped: skippedCount,
+    deliveryMode,
     retryCount,
     retriedRecipients,
     forceWindow: Boolean(input.forceWindow),
@@ -332,7 +342,7 @@ export async function executeAutomationRun(
     mode: dryRun ? "test" : matchesResult.config.connection.mode,
     mensaje: matchesResult.matches[0]?.message || "",
     total,
-    ok: okCount,
+    ok: canSend ? sentCount : 0,
     failed: canSend ? failedCount : forceFailureForTest ? failedCount : 0,
     skipped: skippedCount,
     results,

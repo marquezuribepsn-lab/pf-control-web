@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     dryRun?: boolean;
     categoryKey?: string;
     ruleKey?: string;
+    mode?: string;
     forceWindow?: boolean;
     includeDisabled?: boolean;
     forceFailureForTest?: boolean;
@@ -61,6 +62,8 @@ export async function POST(req: NextRequest) {
     dryRun: body.dryRun,
     categoryKey: body.categoryKey,
     ruleKey: body.ruleKey,
+    deliveryModeOverride:
+      body.mode === "prod" || body.mode === "test" ? body.mode : undefined,
     forceWindow: body.forceWindow,
     includeDisabled: body.includeDisabled,
     forceFailureForTest: body.forceFailureForTest,

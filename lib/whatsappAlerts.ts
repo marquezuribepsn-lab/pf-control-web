@@ -10,6 +10,7 @@ type SendWhatsAppResult = {
   ok: boolean;
   status: number;
   payloadType: "text" | "template";
+  senderPhoneNumberId: string | null;
   providerMessageId: string | null;
   error: string | null;
 };
@@ -111,6 +112,7 @@ export async function sendWhatsAppText(
       ok: false,
       status: 500,
       payloadType: "text",
+      senderPhoneNumberId: null,
       providerMessageId: null,
       error: "config_missing",
     };
@@ -122,6 +124,7 @@ export async function sendWhatsAppText(
       ok: false,
       status: 400,
       payloadType: "text",
+      senderPhoneNumberId: cfg.phoneNumberId,
       providerMessageId: null,
       error: "invalid_phone",
     };
@@ -167,6 +170,7 @@ export async function sendWhatsAppText(
     ok: response.ok,
     status: response.status,
     payloadType,
+    senderPhoneNumberId: cfg.phoneNumberId,
     providerMessageId,
     error: response.ok ? null : body?.error?.message || `provider_status_${response.status}`,
   };

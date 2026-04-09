@@ -564,9 +564,9 @@ export default function AdminWhatsAppPage() {
           subcategoria: subcategoryKey,
           categoryKey,
           subcategoryKey,
-          mode: "test",
+          mode: "prod",
           forceText: true,
-          triggeredBy: "admin_test",
+          triggeredBy: "admin_test_prod",
         }),
       });
 
@@ -575,7 +575,7 @@ export default function AdminWhatsAppPage() {
         throw new Error(data?.error || "No se pudo probar mensaje");
       }
 
-      setStatus(`Prueba enviada para ${sub.label}.`);
+      setStatus(`Prueba real enviada para ${sub.label}.`);
       await loadAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al probar mensaje");
@@ -644,6 +644,7 @@ export default function AdminWhatsAppPage() {
           dryRun,
           categoryKey,
           ruleKey: subcategoryKey,
+          mode: dryRun ? "test" : "prod",
           forceWindow: true,
           includeDisabled: false,
           limit: 200,
