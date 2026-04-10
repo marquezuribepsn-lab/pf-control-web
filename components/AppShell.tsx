@@ -33,6 +33,7 @@ type AppShellProps = {
   children: ReactNode;
   initialRole?: string | null;
   initialProfileName?: string | null;
+  initialSidebarImage?: string | null;
 };
 
 type InlineToast = {
@@ -281,7 +282,13 @@ const resolveSidebarLedColors = (tone: string | undefined) => {
   return { start, end };
 };
 
-export default function AppShell({ links, children, initialRole = null, initialProfileName = null }: AppShellProps) {
+export default function AppShell({
+  links,
+  children,
+  initialRole = null,
+  initialProfileName = null,
+  initialSidebarImage = null,
+}: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const { jugadoras } = usePlayers();
@@ -302,8 +309,14 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return normalizeSidebarImageValue(window.localStorage.getItem(SIDEBAR_IMAGE_KEY));
+    if (typeof window === "undefined") {
+      return normalizeSidebarImageValue(initialSidebarImage);
+    }
+
+    return (
+      normalizeSidebarImageValue(window.localStorage.getItem(SIDEBAR_IMAGE_KEY)) ||
+      normalizeSidebarImageValue(initialSidebarImage)
+    );
   });
   const [resolvedRole, setResolvedRole] = useState<string | null>(initialRole);
   const [cachedProfileName, setCachedProfileName] = useState<string>(() =>
@@ -323,7 +336,9 @@ export default function AppShell({ links, children, initialRole = null, initialP
   );
   const [sidebarWidgetIndex, setSidebarWidgetIndex] = useState(0);
   const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
-  const stableSidebarImageRef = useRef<string | null>(sidebarImage);
+  const stableSidebarImageRef = useRef<string | null>(
+    normalizeSidebarImageValue(sidebarImage || initialSidebarImage)
+  );
 
   const setSidebarImageStable = (nextImage: string | null | undefined, allowClear = false) => {
     const normalized = normalizeSidebarImageValue(nextImage);
@@ -411,6 +426,14 @@ export default function AppShell({ links, children, initialRole = null, initialP
   useEffect(() => {
     setMounted(true);
     try {
+      const initialImageFromServer = normalizeSidebarImageValue(initialSidebarImage);
+      const localSidebarImage = normalizeSidebarImageValue(localStorage.getItem(SIDEBAR_IMAGE_KEY));
+
+      if (!localSidebarImage && initialImageFromServer) {
+        localStorage.setItem(SIDEBAR_IMAGE_KEY, initialImageFromServer);
+      }
+
+      setSidebarImageStable(localSidebarImage || initialImageFromServer);
       syncSidebarImageFromStorage();
 
       const rawWidgetSettings = localStorage.getItem(SIDEBAR_WIDGET_SETTINGS_KEY);
@@ -466,10 +489,10 @@ export default function AppShell({ links, children, initialRole = null, initialP
       setCachedProfileRole(null);
       setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
     }
-  }, [initialRole, initialProfileName]);
+  }, [initialRole, initialProfileName, initialSidebarImage]);
 
   useEffect(() => {
-    if (!mounted || !session?.user || typeof window === "undefined") return;
+    if (!mounted || typeof window === "undefined") return;
 
     let cancelled = false;
 
@@ -505,6 +528,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
 
         if (hasSidebarImageField) {
           const normalizedLocalImage = normalizeSidebarImageValue(localStorage.getItem(SIDEBAR_IMAGE_KEY));
+          const normalizedStableImage = normalizeSidebarImageValue(stableSidebarImageRef.current);
 
           if (remoteImage) {
             setSidebarImageStable(remoteImage);
@@ -515,6 +539,9 @@ export default function AppShell({ links, children, initialRole = null, initialP
           } else if (normalizedLocalImage) {
             // Keep locally cached image to avoid sidebar flicker on transient null snapshots.
             setSidebarImageStable(normalizedLocalImage);
+          } else if (normalizedStableImage) {
+            // Keep in-memory snapshot to avoid fallback flashes on delayed hydration.
+            setSidebarImageStable(normalizedStableImage);
           } else {
             setSidebarImageStable(null, true);
           }
@@ -549,7 +576,12 @@ export default function AppShell({ links, children, initialRole = null, initialP
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [mounted, session?.user]);
+  }, [mounted, session?.user, pathname]);
+
+  useEffect(() => {
+    if (!mounted || typeof window === "undefined") return;
+    syncSidebarImageFromStorage();
+  }, [mounted, pathname]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -645,8 +677,10 @@ export default function AppShell({ links, children, initialRole = null, initialP
       }
     };
 
-    const onSidebarImageChange = () => {
-      syncSidebarImageFromStorage(true);
+    const onSidebarImageChange = (event: Event) => {
+      const custom = event as CustomEvent<{ forceClear?: boolean }>;
+      const forceClear = custom.detail?.forceClear === true;
+      syncSidebarImageFromStorage(forceClear);
     };
 
     const onSidebarWidgetSettingsChange = () => {
@@ -1338,3 +1372,5 @@ export default function AppShell({ links, children, initialRole = null, initialP
     </div>
   );
 }
+
+

@@ -62,6 +62,17 @@ function emitInlineToast(type: "success" | "error" | "warning", message: string,
   );
 }
 
+function emitSidebarImageUpdated(forceClear = false) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("pf-sidebar-image-updated", {
+      detail: { forceClear },
+    })
+  );
+}
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -209,11 +220,9 @@ export default function ConfiguracionPage() {
 
         if (remoteImage) {
           localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
-        } else {
-          localStorage.removeItem(SIDEBAR_IMAGE_KEY);
         }
 
-        window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+        emitSidebarImageUpdated(false);
       } catch {
         // no bloquear configuracion si falla la sincronizacion remota
       }
@@ -410,7 +419,7 @@ export default function ConfiguracionPage() {
         localStorage.removeItem(SIDEBAR_IMAGE_KEY);
       }
 
-      window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+      emitSidebarImageUpdated(!persistedImage);
       emitInlineToast("success", data?.message || "Foto de perfil guardada correctamente");
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : "No se pudo guardar la foto de perfil";
