@@ -460,6 +460,49 @@ button[disabled] {
   backface-visibility: hidden;
 }
 
+.pf-sidebar-avatar-shell {
+  display: inline-flex;
+  overflow: hidden;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  background: rgba(8, 47, 73, 0.2);
+}
+
+.pf-sidebar-avatar-shell img {
+  display: block;
+}
+
+.pf-sidebar-avatar-fallback {
+  pointer-events: none;
+}
+
+.pf-profile-link:hover,
+.pf-profile-link:focus-visible {
+  transform: none !important;
+}
+
+@keyframes pf-sidebar-led-breathe {
+  0% {
+    opacity: 0.72;
+    filter: saturate(1) brightness(0.95);
+  }
+  50% {
+    opacity: 1;
+    filter: saturate(1.26) brightness(1.16);
+  }
+  100% {
+    opacity: 0.78;
+    filter: saturate(1.04) brightness(1);
+  }
+}
+
+.pf-sidebar-led-strip {
+  animation: pf-sidebar-led-breathe 2.2s cubic-bezier(0.42, 0, 0.25, 1) infinite;
+  transition: background 320ms ease, box-shadow 320ms ease, opacity 320ms ease;
+  will-change: opacity, filter, box-shadow;
+}
+
 .pf-dock-scroll {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -478,5 +521,10 @@ button[disabled] {
     animation: none;
     transform: none !important;
     box-shadow: none;
+  }
+
+  .pf-sidebar-led-strip {
+    animation: none;
+    opacity: 0.92;
   }
 }

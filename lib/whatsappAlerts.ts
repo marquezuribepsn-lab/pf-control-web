@@ -15,6 +15,15 @@ type SendWhatsAppResult = {
   error: string | null;
 };
 
+type ProviderAttempt = {
+  ok: boolean;
+  status: number;
+  payloadType: "text" | "template";
+  providerMessageId: string | null;
+  error: string | null;
+  errorCode: string | null;
+};
+
 function isEnabled() {
   return process.env.WHATSAPP_ALERTS_ENABLED === "1";
 }
@@ -23,12 +32,22 @@ function getConfig() {
   const token = String(process.env.WHATSAPP_TOKEN || "").trim();
   const phoneNumberId = String(process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
   const to = String(process.env.WHATSAPP_TO || "").trim();
+  const senderPhones = parsePhoneList(
+    [
+      process.env.WHATSAPP_SENDER_PHONE,
+      process.env.WHATSAPP_SENDER_NUMBERS,
+      process.env.WHATSAPP_BUSINESS_PHONE,
+      process.env.WHATSAPP_SENDER_E164,
+    ]
+      .filter((value) => typeof value === "string" && String(value).trim().length > 0)
+      .join(",")
+  );
 
   if (!token || !phoneNumberId) {
     return null;
   }
 
-  return { token, phoneNumberId, to };
+  return { token, phoneNumberId, to, senderPhones };
 }
 
 function asArray(value: unknown): unknown[] {
@@ -41,6 +60,128 @@ function parsePhoneList(raw: string | undefined): string[] {
     .split(",")
     .map((item) => normalizeWhatsAppPhone(item))
     .filter((value): value is string => Boolean(value));
+}
+
+function getFallbackTemplateName() {
+  return String(
+    process.env.WHATSAPP_FALLBACK_TEMPLATE_NAME ||
+      process.env.WHATSAPP_TEMPLATE_NAME ||
+      "pf_alerta_general"
+  ).trim();
+}
+
+function getFallbackTemplateLanguageCode() {
+  return (
+    String(process.env.WHATSAPP_FALLBACK_TEMPLATE_LANG || process.env.WHATSAPP_TEMPLATE_LANG || "es_AR").trim() ||
+    "es_AR"
+  );
+}
+
+function resolveProviderError(body: any, status: number) {
+  const message = String(body?.error?.message || "").trim();
+  const codeRaw = body?.error?.code ?? body?.error?.error_subcode ?? null;
+  const code = codeRaw === null || codeRaw === undefined || codeRaw === "" ? null : String(codeRaw);
+
+  if (message && code) {
+    return {
+      error: `${message} (code ${code})`,
+      errorCode: code,
+    };
+  }
+
+  if (message) {
+    return {
+      error: message,
+      errorCode: code,
+    };
+  }
+
+  if (code) {
+    return {
+      error: `provider_code_${code}`,
+      errorCode: code,
+    };
+  }
+
+  return {
+    error: `provider_status_${status}`,
+    errorCode: null,
+  };
+}
+
+function isOutside24hWindowError(errorCode: string | null, errorText: string | null) {
+  if (String(errorCode || "").trim() === "131047") {
+    return true;
+  }
+
+  const message = String(errorText || "").toLowerCase();
+  return (
+    message.includes("24-hour") ||
+    message.includes("24 hour") ||
+    message.includes("24h") ||
+    message.includes("outside the allowed window") ||
+    message.includes("outside of the customer care window") ||
+    message.includes("re-engagement")
+  );
+}
+
+function buildTextPayload(to: string, message: string) {
+  return {
+    messaging_product: "whatsapp",
+    to,
+    type: "text",
+    text: { body: String(message || "") },
+  };
+}
+
+function buildTemplatePayload(input: {
+  to: string;
+  templateName: string;
+  languageCode: string;
+  components?: unknown[];
+}) {
+  return {
+    messaging_product: "whatsapp",
+    to: input.to,
+    type: "template",
+    template: {
+      name: input.templateName,
+      language: { code: input.languageCode || "es_AR" },
+      components: Array.isArray(input.components) && input.components.length > 0 ? input.components : undefined,
+    },
+  };
+}
+
+async function postWhatsAppPayload(input: {
+  token: string;
+  phoneNumberId: string;
+  payloadType: "text" | "template";
+  payload: Record<string, unknown>;
+}): Promise<ProviderAttempt> {
+  const response = await fetch(
+    `https://graph.facebook.com/v22.0/${input.phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input.payload),
+    }
+  );
+
+  const body = (await response.json().catch(() => ({}))) as any;
+  const providerMessageId = body?.messages?.[0]?.id || null;
+  const providerError = response.ok ? { error: null, errorCode: null } : resolveProviderError(body, response.status);
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    payloadType: input.payloadType,
+    providerMessageId,
+    error: providerError.error,
+    errorCode: providerError.errorCode,
+  };
 }
 
 function toDateTimeString() {
@@ -130,50 +271,101 @@ export async function sendWhatsAppText(
     };
   }
 
-  const payloadType =
-    options.templateName && !options.forceText ? ("template" as const) : ("text" as const);
+  if (cfg.senderPhones.includes(to)) {
+    return {
+      ok: false,
+      status: 400,
+      payloadType: "text",
+      senderPhoneNumberId: cfg.phoneNumberId,
+      providerMessageId: null,
+      error: "recipient_is_sender_number",
+    };
+  }
 
-  const payload =
-    payloadType === "template"
-      ? {
-          messaging_product: "whatsapp",
-          to,
-          type: "template",
-          template: {
-            name: options.templateName,
-            language: { code: options.templateLanguageCode || "es_AR" },
-            components: Array.isArray(options.templateComponents)
-              ? options.templateComponents
-              : undefined,
-          },
-        }
-      : {
-          messaging_product: "whatsapp",
-          to,
-          type: "text",
-          text: { body: String(message || "") },
-        };
+  const requestedTemplateName = String(options.templateName || "").trim();
+  const requestedTemplateLanguageCode = String(options.templateLanguageCode || "es_AR").trim() || "es_AR";
+  const requestedTemplateComponents = Array.isArray(options.templateComponents)
+    ? options.templateComponents
+    : undefined;
+  const shouldSendTemplateFirst = Boolean(requestedTemplateName) && options.forceText !== true;
 
-  const response = await fetch(`https://graph.facebook.com/v22.0/${cfg.phoneNumberId}/messages`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${cfg.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+  const toResult = (attempt: ProviderAttempt): SendWhatsAppResult => ({
+    ok: attempt.ok,
+    status: attempt.status,
+    payloadType: attempt.payloadType,
+    senderPhoneNumberId: cfg.phoneNumberId,
+    providerMessageId: attempt.providerMessageId,
+    error: attempt.error,
   });
 
-  const body = (await response.json().catch(() => ({}))) as any;
-  const providerMessageId = body?.messages?.[0]?.id || null;
+  if (shouldSendTemplateFirst) {
+    const templateAttempt = await postWhatsAppPayload({
+      token: cfg.token,
+      phoneNumberId: cfg.phoneNumberId,
+      payloadType: "template",
+      payload: buildTemplatePayload({
+        to,
+        templateName: requestedTemplateName,
+        languageCode: requestedTemplateLanguageCode,
+        components: requestedTemplateComponents,
+      }),
+    });
+    return toResult(templateAttempt);
+  }
 
-  return {
-    ok: response.ok,
-    status: response.status,
-    payloadType,
-    senderPhoneNumberId: cfg.phoneNumberId,
-    providerMessageId,
-    error: response.ok ? null : body?.error?.message || `provider_status_${response.status}`,
-  };
+  const textPayload = buildTextPayload(to, message);
+  const textAttempt = await postWhatsAppPayload({
+    token: cfg.token,
+    phoneNumberId: cfg.phoneNumberId,
+    payloadType: "text",
+    payload: textPayload,
+  });
+
+  if (textAttempt.ok) {
+    return toResult(textAttempt);
+  }
+
+  const fallbackTemplateName = getFallbackTemplateName();
+  if (
+    !options.toOverride ||
+    !fallbackTemplateName ||
+    !isOutside24hWindowError(textAttempt.errorCode, textAttempt.error)
+  ) {
+    return toResult(textAttempt);
+  }
+
+  const fallbackTemplateAttempt = await postWhatsAppPayload({
+    token: cfg.token,
+    phoneNumberId: cfg.phoneNumberId,
+    payloadType: "template",
+    payload: buildTemplatePayload({
+      to,
+      templateName: fallbackTemplateName,
+      languageCode: getFallbackTemplateLanguageCode(),
+      components: requestedTemplateComponents,
+    }),
+  });
+
+  if (!fallbackTemplateAttempt.ok) {
+    return {
+      ...toResult(textAttempt),
+      error: `${textAttempt.error || "send_failed"}; template_fallback_failed: ${fallbackTemplateAttempt.error || `provider_status_${fallbackTemplateAttempt.status}`}`,
+    };
+  }
+
+  const retryTextAttempt = await postWhatsAppPayload({
+    token: cfg.token,
+    phoneNumberId: cfg.phoneNumberId,
+    payloadType: "text",
+    payload: textPayload,
+  });
+
+  if (retryTextAttempt.ok) {
+    return toResult(retryTextAttempt);
+  }
+
+  // If the template fallback was delivered but text retry still failed, keep the send as delivered.
+  return toResult(fallbackTemplateAttempt);
 }
 
 export async function sendWhatsAppAlertForSyncChange(

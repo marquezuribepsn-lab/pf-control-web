@@ -459,10 +459,11 @@ export default function Home() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-[#061026] text-slate-100"
+      className="relative -mx-4 min-h-screen overflow-x-clip text-slate-100"
       style={{ fontFamily: '"Trebuchet MS", "Segoe UI", sans-serif' }}
     >
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
+        <div className="absolute inset-0 bg-[#061026]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(56,189,248,0.24),transparent_28%),radial-gradient(circle_at_86%_8%,rgba(16,185,129,0.22),transparent_30%),radial-gradient(circle_at_70%_85%,rgba(249,115,22,0.16),transparent_26%)]" />
         <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(148,163,184,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:62px_62px]" />
         <div className="absolute -left-16 top-14 h-72 w-72 rounded-full border border-cyan-300/25 bg-cyan-400/18 blur-3xl" />

@@ -50,7 +50,11 @@ export async function POST(req: NextRequest) {
     limit?: number;
     categoryKey?: string;
     ruleKey?: string;
+    mode?: string;
   };
+
+  const deliveryModeOverride =
+    body.mode === "prod" || body.mode === "test" ? body.mode : "prod";
 
   const force = body.force === true;
   const now = new Date();
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest) {
   try {
     const runResult = await executeAutomationRun({
       dryRun: false,
+      deliveryModeOverride,
       forceWindow: false,
       includeDisabled: false,
       limit: Math.max(1, Math.min(500, Number(body.limit) || 500)),

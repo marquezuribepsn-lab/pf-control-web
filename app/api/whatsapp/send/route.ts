@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
       forceText,
     });
 
+    const firstFailure = batch.results.find((row) => !row.ok);
+
     const now = new Date().toISOString();
     const triggeredBy = String(body.triggeredBy || "admin_manual");
     await appendWhatsAppHistory({
@@ -72,7 +74,14 @@ export async function POST(req: NextRequest) {
       results: batch.results,
     });
 
-    return NextResponse.json({ ok: batch.ok, results: batch.results });
+    return NextResponse.json({
+      ok: batch.ok,
+      total: batch.total,
+      okCount: batch.okCount,
+      failedCount: batch.failedCount,
+      firstFailureReason: firstFailure?.reason || null,
+      results: batch.results,
+    });
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Error al enviar WhatsApp" },

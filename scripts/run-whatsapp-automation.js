@@ -2,6 +2,12 @@ const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || "http:
 const secret = String(process.env.WHATSAPP_AUTOMATION_SECRET || "").trim();
 const dryRun = process.argv.includes("--dry-run") || process.env.WHATSAPP_AUTOMATION_DRY_RUN === "1";
 const forceRunner = process.argv.includes("--force") || process.env.WHATSAPP_AUTOMATION_FORCE_RUN === "1";
+const requestedMode =
+  process.env.WHATSAPP_AUTOMATION_MODE === "test" || process.env.WHATSAPP_AUTOMATION_MODE === "prod"
+    ? process.env.WHATSAPP_AUTOMATION_MODE
+    : dryRun
+    ? "test"
+    : "prod";
 const adminEmail = process.env.SMOKE_MAIN_EMAIL || "marquezuribepsn@gmail.com";
 const adminPassword = process.env.SMOKE_MAIN_PASSWORD || "pfcontrol2026";
 
@@ -78,7 +84,7 @@ async function main() {
   const endpoint = dryRun
     ? "/api/whatsapp/automation/run"
     : "/api/whatsapp/automation/runner";
-  const body = dryRun ? { dryRun: true } : { force: forceRunner };
+  const body = dryRun ? { dryRun: true, mode: requestedMode } : { force: forceRunner, mode: requestedMode };
 
   const response = await fetch(`${baseUrl}${endpoint}`, {
     method: "POST",
@@ -103,6 +109,7 @@ async function main() {
     baseUrl,
     dryRun,
     forceRunner,
+    requestedMode,
     endpoint,
     authMode: secret ? "secret" : "admin-session",
     status: response.status,

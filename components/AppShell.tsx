@@ -82,6 +82,8 @@ const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
+const TRANSPARENT_PIXEL_DATA_URL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 const WIDGET_TONE_CLASS_BY_ID: Record<string, string> = {
   "pending-saves": "border-amber-300/45 bg-gradient-to-br from-amber-500/20 via-slate-900/75 to-orange-500/22",
@@ -90,6 +92,27 @@ const WIDGET_TONE_CLASS_BY_ID: Record<string, string> = {
   "attendance-rate": "border-cyan-300/45 bg-gradient-to-br from-cyan-500/20 via-slate-900/75 to-blue-500/20",
   "sessions-loaded": "border-violet-300/40 bg-gradient-to-br from-violet-500/20 via-slate-900/75 to-indigo-500/20",
   "active-clients": "border-lime-300/40 bg-gradient-to-br from-lime-500/20 via-slate-900/75 to-emerald-500/20",
+};
+
+const TONE_RGB_BY_NAME: Record<string, string> = {
+  cyan: "56,189,248",
+  blue: "59,130,246",
+  violet: "139,92,246",
+  purple: "168,85,247",
+  teal: "20,184,166",
+  amber: "245,158,11",
+  orange: "249,115,22",
+  rose: "244,63,94",
+  red: "239,68,68",
+  emerald: "16,185,129",
+  lime: "132,204,22",
+  sky: "14,165,233",
+  indigo: "99,102,241",
+  slate: "100,116,139",
+  gray: "107,114,128",
+  fuchsia: "217,70,239",
+  pink: "236,72,153",
+  green: "34,197,94",
 };
 
 const COLABORADOR_ACCESS_HREFS = [
@@ -230,6 +253,34 @@ const applyScreenScale = (value: number) => {
   document.documentElement.style.setProperty("--pf-screen-scale", String(clampScreenScale(value)));
 };
 
+const normalizeSidebarImageValue = (value: string | null | undefined): string | null => {
+  const normalized = String(value || "").trim();
+  return normalized || null;
+};
+
+const resolveToneEndpointColor = (tone: string | undefined, endpoint: "from" | "to") => {
+  const match = String(tone || "").match(new RegExp(`\\b${endpoint}-([a-z]+)-\\d{2,3}\\b`, "i"));
+  const toneName = String(match?.[1] || "").toLowerCase();
+  const rgb = TONE_RGB_BY_NAME[toneName];
+  if (!rgb) {
+    return null;
+  }
+
+  return `rgba(${rgb},0.96)`;
+};
+
+const resolveSidebarLedColors = (tone: string | undefined) => {
+  const fallback = {
+    start: "rgba(56,189,248,0.96)",
+    end: "rgba(59,130,246,0.96)",
+  };
+
+  const start = resolveToneEndpointColor(tone, "from") || fallback.start;
+  const end = resolveToneEndpointColor(tone, "to") || fallback.end;
+
+  return { start, end };
+};
+
 export default function AppShell({ links, children, initialRole = null, initialProfileName = null }: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -250,7 +301,10 @@ export default function AppShell({ links, children, initialRole = null, initialP
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarImage, setSidebarImage] = useState<string | null>(null);
+  const [sidebarImage, setSidebarImage] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return normalizeSidebarImageValue(window.localStorage.getItem(SIDEBAR_IMAGE_KEY));
+  });
   const [resolvedRole, setResolvedRole] = useState<string | null>(initialRole);
   const [cachedProfileName, setCachedProfileName] = useState<string>(() =>
     typeof initialProfileName === "string" ? initialProfileName.trim() : ""
@@ -269,6 +323,30 @@ export default function AppShell({ links, children, initialRole = null, initialP
   );
   const [sidebarWidgetIndex, setSidebarWidgetIndex] = useState(0);
   const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
+  const stableSidebarImageRef = useRef<string | null>(sidebarImage);
+
+  const setSidebarImageStable = (nextImage: string | null | undefined, allowClear = false) => {
+    const normalized = normalizeSidebarImageValue(nextImage);
+
+    if (normalized) {
+      stableSidebarImageRef.current = normalized;
+      setSidebarImage(normalized);
+      return;
+    }
+
+    if (allowClear) {
+      stableSidebarImageRef.current = null;
+      setSidebarImage(null);
+      return;
+    }
+
+    setSidebarImage((current) => current || stableSidebarImageRef.current || null);
+  };
+
+  const syncSidebarImageFromStorage = (allowClear = false) => {
+    if (typeof window === "undefined") return;
+    setSidebarImageStable(window.localStorage.getItem(SIDEBAR_IMAGE_KEY), allowClear);
+  };
 
   const pushToast = (type: InlineToast["type"], message: string, title?: string) => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
@@ -333,7 +411,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   useEffect(() => {
     setMounted(true);
     try {
-      setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
+      syncSidebarImageFromStorage();
 
       const rawWidgetSettings = localStorage.getItem(SIDEBAR_WIDGET_SETTINGS_KEY);
       if (rawWidgetSettings) {
@@ -382,7 +460,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
         }
       }
     } catch {
-      setSidebarImage(null);
+      setSidebarImageStable(null, true);
       setResolvedRole(null);
       setCachedProfileName("");
       setCachedProfileRole(null);
@@ -426,19 +504,19 @@ export default function AppShell({ links, children, initialRole = null, initialP
         setColaboradorAccessMap(normalizedAccess);
 
         if (hasSidebarImageField) {
-          const localImage = localStorage.getItem(SIDEBAR_IMAGE_KEY);
-          const normalizedLocalImage = localImage && localImage.trim() ? localImage : null;
-
-          setSidebarImage(remoteImage);
+          const normalizedLocalImage = normalizeSidebarImageValue(localStorage.getItem(SIDEBAR_IMAGE_KEY));
 
           if (remoteImage) {
+            setSidebarImageStable(remoteImage);
             if (normalizedLocalImage !== remoteImage) {
               localStorage.setItem(SIDEBAR_IMAGE_KEY, remoteImage);
               window.dispatchEvent(new Event("pf-sidebar-image-updated"));
             }
           } else if (normalizedLocalImage) {
-            localStorage.removeItem(SIDEBAR_IMAGE_KEY);
-            window.dispatchEvent(new Event("pf-sidebar-image-updated"));
+            // Keep locally cached image to avoid sidebar flicker on transient null snapshots.
+            setSidebarImageStable(normalizedLocalImage);
+          } else {
+            setSidebarImageStable(null, true);
           }
         }
       } catch {
@@ -536,7 +614,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === SIDEBAR_IMAGE_KEY) {
-        setSidebarImage(event.newValue || null);
+        setSidebarImageStable(event.newValue, true);
       }
 
       if (event.key === SIDEBAR_ROLE_KEY) {
@@ -568,7 +646,7 @@ export default function AppShell({ links, children, initialRole = null, initialP
     };
 
     const onSidebarImageChange = () => {
-      setSidebarImage(localStorage.getItem(SIDEBAR_IMAGE_KEY));
+      syncSidebarImageFromStorage(true);
     };
 
     const onSidebarWidgetSettingsChange = () => {
@@ -750,6 +828,9 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const displayName = sessionKnownName || cachedProfileName || resolveUserDisplayName();
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
+  const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
+  const hasSidebarImage = Boolean(sidebarImageToRender);
+  const avatarImageSrc = sidebarImageToRender || TRANSPARENT_PIXEL_DATA_URL;
 
   const visibleLinks = useMemo(
     () =>
@@ -792,6 +873,30 @@ export default function AppShell({ links, children, initialRole = null, initialP
   const sidebarItemHeight = 38;
   const sidebarIconSize = "1rem";
   const sidebarLabelSize = "11px";
+  const activeSidebarLink = useMemo(() => {
+    for (const link of visibleLinks) {
+      const normalizedHref = normalizePath(link.href);
+      const hasChildLink = allVisibleHrefs.some(
+        (candidate) => candidate !== normalizedHref && candidate.startsWith(`${normalizedHref}/`)
+      );
+      const isCurrent =
+        normalizedPathname === normalizedHref ||
+        (!hasChildLink &&
+          normalizedHref !== "/" &&
+          normalizedPathname.startsWith(`${normalizedHref}/`)) ||
+        optimisticNavHref === normalizedHref;
+
+      if (isCurrent) {
+        return link;
+      }
+    }
+
+    return visibleLinks[0] || null;
+  }, [visibleLinks, allVisibleHrefs, normalizedPathname, optimisticNavHref]);
+  const sidebarLedColors = useMemo(
+    () => resolveSidebarLedColors(activeSidebarLink?.tone),
+    [activeSidebarLink?.tone]
+  );
 
   const sidebarOperationalStats = useMemo(() => {
     const clientesActivos =
@@ -999,29 +1104,55 @@ export default function AppShell({ links, children, initialRole = null, initialP
       ) : null}
 
       <aside
-        className={`pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] translate-x-0 transition-transform duration-200 ${
+        className={`pf-sidebar-static pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] overflow-visible bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] translate-x-0 transition-transform duration-200 ${
           mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
         }`}
       >
-        <div className="pointer-events-auto m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
+        <div
+          className="pf-sidebar-led-strip absolute inset-y-2 left-0 z-[1] w-[3px] rounded-r-full"
+          style={{
+            background: `linear-gradient(180deg, ${sidebarLedColors.start} 0%, ${sidebarLedColors.end} 100%)`,
+            boxShadow: `0 0 12px ${sidebarLedColors.start}, 0 0 24px ${sidebarLedColors.end}`,
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="pf-sidebar-led-strip absolute inset-y-2 right-0 z-[1] w-[3px] rounded-l-full"
+          style={{
+            background: `linear-gradient(180deg, ${sidebarLedColors.start} 0%, ${sidebarLedColors.end} 100%)`,
+            boxShadow: `0 0 12px ${sidebarLedColors.start}, 0 0 24px ${sidebarLedColors.end}`,
+          }}
+          aria-hidden="true"
+        />
+        <div className="pointer-events-auto relative z-[2] m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
             reliabilityMode="hard"
-            className="mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
+            className="pf-profile-link mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
+            onClick={() => markOptimisticSidebarNav("/cuenta")}
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
           >
-            {sidebarImage ? (
+            <span className="pf-sidebar-avatar-shell relative h-11 w-11 rounded-full border border-cyan-100/45">
               <img
-                src={sidebarImage}
+                src={avatarImageSrc}
                 alt="Cuenta"
-                className="h-11 w-11 rounded-full border border-cyan-100/45 object-cover"
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
+                className={`h-full w-full object-cover transition-opacity duration-150 ${
+                  hasSidebarImage ? "opacity-100" : "opacity-0"
+                }`}
               />
-            ) : (
-              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-100/50 bg-cyan-500/25 text-sm font-black text-cyan-50">
+              <span
+                className={`pf-sidebar-avatar-fallback absolute inset-0 flex items-center justify-center rounded-full border border-cyan-100/50 bg-cyan-500/25 text-sm font-black text-cyan-50 transition-opacity duration-150 ${
+                  hasSidebarImage ? "opacity-0" : "opacity-100"
+                }`}
+                aria-hidden={hasSidebarImage}
+              >
                 {profileInitials}
               </span>
-            )}
+            </span>
             <span className="w-full truncate text-[10px] font-black uppercase tracking-[0.05em] text-cyan-50">
               {displayName}
             </span>

@@ -2,6 +2,7 @@
 
 import NextLink from "next/link";
 import type { LinkProps } from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, type AnchorHTMLAttributes } from "react";
 import type { UrlObject } from "url";
 
@@ -16,6 +17,7 @@ type ReliableLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> &
 };
 
 const HARD_MODE_FALLBACK_DELAY_MS = 520;
+const HARD_MODE_LAST_RESORT_DELAY_MS = 260;
 
 function resolveHrefString(href: ReliableLinkProps["href"]): string | null {
   if (typeof href === "string") {
@@ -59,6 +61,7 @@ export default function ReliableLink({
   prefetch,
   ...props
 }: ReliableLinkProps) {
+  const router = useRouter();
   const mode =
     reliabilityMode === "off" || reliabilityMode === "soft" || reliabilityMode === "hard"
       ? reliabilityMode
@@ -149,10 +152,30 @@ export default function ReliableLink({
         return;
       }
 
-      // Last-resort recovery for dead clicks when App Router transition does not start.
-      window.location.assign(targetComparable);
+      // Try SPA recovery first to avoid hard reload flicker in persistent shell UI.
+      try {
+        if (replace) {
+          router.replace(targetComparable, { scroll });
+        } else {
+          router.push(targetComparable, { scroll });
+        }
+      } catch {
+        // ignore and keep last-resort fallback
+      }
+
+      window.setTimeout(() => {
+        const afterSpaAttempt = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (afterSpaAttempt !== fromComparable || document.visibilityState !== "visible") {
+          return;
+        }
+
+        // Last-resort recovery for dead clicks when App Router transition does not start.
+        window.location.assign(targetComparable);
+      }, HARD_MODE_LAST_RESORT_DELAY_MS);
     }, HARD_MODE_FALLBACK_DELAY_MS);
   };
+
+  const resolvedOnClick = mode === "hard" ? handleClick : onClick;
 
   return (
     <NextLink
@@ -162,7 +185,7 @@ export default function ReliableLink({
       scroll={scroll}
       data-button-failsafe-mode={mode}
       className={resolvedClassName}
-      onClick={handleClick}
+      onClick={resolvedOnClick}
       {...props}
     />
   );

@@ -228,8 +228,10 @@ export async function executeAutomationRun(
     input.deliveryModeOverride === "prod" || input.deliveryModeOverride === "test"
       ? input.deliveryModeOverride
       : configuredDeliveryMode;
+  const connectionDisabled = matchesResult.config.connection.enabled === false;
+  const blockedByConnectionDisabled = connectionDisabled && !dryRun && !forceFailureForTest;
   const canSend =
-    matchesResult.config.connection.enabled !== false &&
+    !connectionDisabled &&
     !dryRun &&
     !forceFailureForTest;
 
@@ -310,8 +312,18 @@ export async function executeAutomationRun(
     triggeredByUserEmail: input.actor?.userEmail || null,
     triggeredByUserName: input.actor?.userName || null,
     rules: Array.from(ruleStats.values()),
-    ok: forceFailureForTest ? false : canSend ? failedCount === 0 : true,
-    error: forceFailureForTest ? "forceFailureForTest" : null,
+    ok: forceFailureForTest
+      ? false
+      : blockedByConnectionDisabled
+      ? false
+      : canSend
+      ? failedCount === 0
+      : true,
+    error: forceFailureForTest
+      ? "forceFailureForTest"
+      : blockedByConnectionDisabled
+      ? "connection_disabled"
+      : null,
   };
 
   await setSyncValue(runId, summary);
@@ -339,7 +351,7 @@ export async function executeAutomationRun(
     triggeredByUserEmail: input.actor?.userEmail || null,
     triggeredByUserName: input.actor?.userName || null,
     runId,
-    mode: dryRun ? "test" : matchesResult.config.connection.mode,
+    mode: dryRun ? "test" : deliveryMode,
     mensaje: matchesResult.matches[0]?.message || "",
     total,
     ok: canSend ? sentCount : 0,

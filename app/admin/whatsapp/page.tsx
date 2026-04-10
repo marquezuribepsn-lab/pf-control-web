@@ -487,10 +487,69 @@ export default function AdminWhatsAppPage() {
     );
   };
 
-  const sendManual = async (mode: "test" | "prod") => {
+  const summarizeDispatch = (data: any) => {
+    const results = Array.isArray(data?.results) ? data.results : [];
+    const total = Number(data?.total ?? results.length);
+    const okCount = Number(
+      data?.okCount ?? results.filter((row: any) => row?.ok === true && row?.skipped !== true).length
+    );
+    const failedCount = Number(
+      data?.failedCount ?? results.filter((row: any) => row?.ok !== true && row?.skipped !== true).length
+    );
+    const firstFailureReason =
+      String(data?.firstFailureReason || "").trim() ||
+      String(results.find((row: any) => row?.ok !== true)?.reason || "").trim() ||
+      String(data?.error || "").trim() ||
+      "sin_detalle";
+
+    return {
+      total,
+      okCount,
+      failedCount,
+      firstFailureReason,
+    };
+  };
+
+  const summarizeRun = (data: any) => {
+    const summary = data?.summary && typeof data.summary === "object" ? data.summary : {};
+    return {
+      sent: Number((summary as any).sent || 0),
+      failed: Number((summary as any).failed || 0),
+      skipped: Number((summary as any).skipped || 0),
+      totalMatched: Number((summary as any).totalMatched || 0),
+      error: String((summary as any).error || data?.error || "").trim(),
+    };
+  };
+
+  const formatDispatchReason = (rawReason: string) => {
+    const reason = String(rawReason || "").trim();
+    if (!reason) {
+      return "sin_detalle";
+    }
+
+    if (reason === "recipient_is_sender_number") {
+      return "No se puede enviar al mismo numero emisor de la API de WhatsApp. Usa un numero destinatario distinto.";
+    }
+
+    if (reason === "invalid_phone") {
+      return "El numero de destino no es valido para WhatsApp.";
+    }
+
+    if (reason.includes("(#100) Invalid parameter")) {
+      return "Meta rechazo el destino. Si estas probando con el mismo numero emisor, no se puede autoenviar.";
+    }
+
+    return reason;
+  };
+
+  const sendManual = async (mode: "test" | "prod", singleRecipientOnly = false) => {
     resetFeedback();
 
-    if (selectedManualRecipients.length === 0) {
+    const recipientsToSend = singleRecipientOnly
+      ? selectedManualRecipients.slice(0, 1)
+      : selectedManualRecipients;
+
+    if (recipientsToSend.length === 0) {
       setError("Selecciona al menos un destinatario para envio manual.");
       return;
     }
@@ -506,7 +565,7 @@ export default function AdminWhatsAppPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          destinatarios: selectedManualRecipients,
+          destinatarios: recipientsToSend,
           mensaje: manualMessage,
           tipo: "Manual",
           subcategoria: manualSubcategoryKey || "manual",
@@ -514,7 +573,7 @@ export default function AdminWhatsAppPage() {
           subcategoryKey: manualSubcategoryKey || "manual",
           mode,
           forceText: true,
-          triggeredBy: "admin_manual",
+          triggeredBy: singleRecipientOnly ? "admin_manual_test_prod" : "admin_manual",
         }),
       });
 
@@ -523,11 +582,20 @@ export default function AdminWhatsAppPage() {
         throw new Error(data?.error || "No se pudo enviar mensaje manual");
       }
 
-      setStatus(
-        mode === "test"
-          ? "Prueba de mensaje manual ejecutada."
-          : "Envio manual ejecutado."
-      );
+      const summary = summarizeDispatch(data);
+      if (summary.okCount <= 0) {
+        throw new Error(`No se pudo entregar el mensaje: ${formatDispatchReason(summary.firstFailureReason)}`);
+      }
+
+      if (summary.failedCount > 0) {
+        setStatus(
+          `Envio parcial (${summary.okCount}/${summary.total}) - fallidos: ${summary.failedCount}.`
+        );
+      } else if (singleRecipientOnly) {
+        setStatus("Prueba real de mensaje manual enviada.");
+      } else {
+        setStatus("Envio manual ejecutado.");
+      }
 
       await loadAll();
     } catch (err) {
@@ -575,7 +643,18 @@ export default function AdminWhatsAppPage() {
         throw new Error(data?.error || "No se pudo probar mensaje");
       }
 
-      setStatus(`Prueba real enviada para ${sub.label}.`);
+      const summary = summarizeDispatch(data);
+      if (summary.okCount <= 0) {
+        throw new Error(`No se pudo entregar la prueba: ${formatDispatchReason(summary.firstFailureReason)}`);
+      }
+
+      if (summary.failedCount > 0) {
+        setStatus(
+          `Prueba parcial para ${sub.label} (${summary.okCount}/${summary.total}) - fallidos: ${summary.failedCount}.`
+        );
+      } else {
+        setStatus(`Prueba real enviada para ${sub.label}.`);
+      }
       await loadAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al probar mensaje");
@@ -656,11 +735,34 @@ export default function AdminWhatsAppPage() {
         throw new Error(data?.error || "No se pudo ejecutar automatizacion");
       }
 
-      setStatus(
-        dryRun
-          ? `Dry run ejecutado para ${subcategoryKey}.`
-          : `Ejecucion real enviada para ${subcategoryKey}.`
-      );
+      const runSummary = summarizeRun(data);
+
+      if (dryRun) {
+        setStatus(`Dry run ejecutado para ${subcategoryKey}. Coincidencias: ${runSummary.totalMatched}.`);
+      } else {
+        if (data?.ok !== true) {
+          if (runSummary.error === "connection_disabled") {
+            throw new Error("La conexion de WhatsApp esta desactivada en Configuracion general.");
+          }
+          throw new Error(
+            `No se entregaron mensajes (sent=${runSummary.sent}, failed=${runSummary.failed}, skipped=${runSummary.skipped}). ${runSummary.error || "Revisa historial para detalle."}`
+          );
+        }
+
+        if (runSummary.totalMatched === 0) {
+          setStatus(`Ejecucion real sin coincidencias para ${subcategoryKey}.`);
+        } else if (runSummary.sent <= 0) {
+          throw new Error(
+            `No se entregaron mensajes (sent=${runSummary.sent}, failed=${runSummary.failed}, skipped=${runSummary.skipped}).`
+          );
+        } else if (runSummary.failed > 0) {
+          setStatus(
+            `Ejecucion parcial para ${subcategoryKey}: enviados ${runSummary.sent}, fallidos ${runSummary.failed}.`
+          );
+        } else {
+          setStatus(`Ejecucion real enviada para ${subcategoryKey}.`);
+        }
+      }
 
       await loadAll();
     } catch (err) {
@@ -677,7 +779,7 @@ export default function AdminWhatsAppPage() {
       const response = await fetch("/api/whatsapp/automation/runner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ force }),
+        body: JSON.stringify({ force, mode: "prod" }),
       });
       const data = await response.json();
 
@@ -873,11 +975,11 @@ export default function AdminWhatsAppPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               <ReliableActionButton
                 type="button"
-                onClick={() => sendManual("test")}
+                onClick={() => sendManual("prod", true)}
                 disabled={actionLoading}
                 className="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Probar Mensaje
+                Probar Mensaje (1 contacto)
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
