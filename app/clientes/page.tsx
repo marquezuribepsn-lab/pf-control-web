@@ -171,6 +171,18 @@ type NutritionFood = {
   fatPer100g: number;
 };
 
+type PresenceSnapshot = {
+  userId: string | null;
+  email: string | null;
+  name: string | null;
+  state: "online" | "offline";
+  isOnline: boolean;
+  lastHeartbeatAt: string | null;
+  lastSeenAt: string | null;
+  lastOnlineAt: string | null;
+  lastOfflineAt: string | null;
+};
+
 type VisibleClientColumn = "etiquetas" | "vencimiento" | "ultimo-pago";
 
 type ClientTableColumnKey =
@@ -202,6 +214,7 @@ const CLIENT_TABLE_UI_KEY_PREFIX = "pf-control-clientes-table-ui-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const PRESENCE_REFRESH_MS = 30_000;
 
 const DEFAULT_COLUMN_WIDTHS: Record<ClientTableColumnKey, number> = {
   cliente: 300,
@@ -328,6 +341,33 @@ function parseDateAtStart(dateValue: string): Date | null {
   const parsed = new Date(`${dateValue}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed;
+}
+
+function normalizePresenceEmail(value: string | null | undefined): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function formatPresenceLastSeen(value: string | null): string {
+  if (!value) return "Sin actividad";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Sin actividad";
+
+  const diffMs = Date.now() - parsed.getTime();
+  if (diffMs < 45_000) return "Hace instantes";
+
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 60) return `Hace ${diffMin} min`;
+
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `Hace ${diffHours} h`;
+
+  return parsed.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function normalizeWhatsAppNumber(meta: ClienteMeta): string {
@@ -559,6 +599,7 @@ export default function ClientesPage() {
     importe: "",
     moneda: "ARS",
   });
+  const [presenceByEmail, setPresenceByEmail] = useState<Record<string, PresenceSnapshot>>({});
 
   useEffect(() => {
     const safeDecodeParam = (value: string | null) => {
@@ -927,6 +968,27 @@ export default function ClientesPage() {
     vista,
   ]);
 
+  const presenceEmails = useMemo(() => {
+    const source = isDetailMode
+      ? selectedClient
+        ? [selectedClient]
+        : []
+      : clientesFiltrados;
+
+    return Array.from(
+      new Set(
+        source
+          .map((cliente) => normalizePresenceEmail(clientesMeta[cliente.id]?.email))
+          .filter(Boolean)
+      )
+    ).slice(0, 180);
+  }, [clientesFiltrados, clientesMeta, isDetailMode, selectedClient]);
+
+  const presenceEmailParam = useMemo(
+    () => presenceEmails.map((email) => encodeURIComponent(email)).join(","),
+    [presenceEmails]
+  );
+
   const planStatusSummary = useMemo(() => {
     const query = search.trim().toLowerCase();
     const clubQuery = filtroClub.trim().toLowerCase();
@@ -997,6 +1059,26 @@ export default function ClientesPage() {
     vista,
   ]);
 
+  const presenceSummary = useMemo(() => {
+    let online = 0;
+    let withLastSeen = 0;
+
+    for (const cliente of clientesFiltrados) {
+      const email = normalizePresenceEmail(clientesMeta[cliente.id]?.email);
+      if (!email) continue;
+
+      const snapshot = presenceByEmail[email];
+      if (snapshot?.isOnline) {
+        online += 1;
+      }
+      if (snapshot?.lastSeenAt) {
+        withLastSeen += 1;
+      }
+    }
+
+    return { online, withLastSeen };
+  }, [clientesFiltrados, clientesMeta, presenceByEmail]);
+
   useEffect(() => {
     const missingUserIds = clientesFiltrados
       .map((cliente) => cliente.id.split(":")[1])
@@ -1023,6 +1105,54 @@ export default function ClientesPage() {
       });
     });
   }, [clientesFiltrados, etiquetasByUserId]);
+
+  useEffect(() => {
+    if (!presenceEmailParam) {
+      setPresenceByEmail({});
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncPresence = async () => {
+      try {
+        const response = await fetch(
+          `/api/presence?emails=${presenceEmailParam}&includeCurrent=0`,
+          { cache: "no-store" }
+        );
+
+        if (!response.ok || cancelled) return;
+
+        const data = (await response.json()) as {
+          byEmail?: Record<string, PresenceSnapshot>;
+        };
+
+        const normalized: Record<string, PresenceSnapshot> = {};
+        for (const [rawEmail, snapshot] of Object.entries(data.byEmail || {})) {
+          const key = normalizePresenceEmail(rawEmail || snapshot?.email);
+          if (key) {
+            normalized[key] = snapshot;
+          }
+        }
+
+        if (!cancelled) {
+          setPresenceByEmail(normalized);
+        }
+      } catch {
+        // Mantiene el ultimo snapshot valido cuando hay un error temporal de red.
+      }
+    };
+
+    void syncPresence();
+    const intervalId = window.setInterval(() => {
+      void syncPresence();
+    }, PRESENCE_REFRESH_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [presenceEmailParam]);
 
   const selectedMeta = useMemo(() => {
     if (!selectedClient) return null;
@@ -1948,7 +2078,7 @@ export default function ClientesPage() {
             </ReliableActionButton>
           </div>
 
-          <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
             <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-3 py-2.5">
               <p className="text-[11px] uppercase tracking-wide text-slate-400">Total visibles</p>
               <p className="text-xl font-black text-white">{clientesFiltrados.length}</p>
@@ -1961,9 +2091,17 @@ export default function ClientesPage() {
               <p className="text-[11px] uppercase tracking-wide text-cyan-200">Nutricional</p>
               <p className="text-xl font-black text-cyan-100">{planStatusSummary.conNutricional}</p>
             </div>
+            <div className="rounded-2xl border border-lime-300/20 bg-lime-500/10 px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide text-lime-200">En linea</p>
+              <p className="text-xl font-black text-lime-100">{presenceSummary.online}</p>
+            </div>
             <div className="rounded-2xl border border-rose-300/20 bg-rose-500/10 px-3 py-2.5">
               <p className="text-[11px] uppercase tracking-wide text-rose-200">Sin plan</p>
               <p className="text-xl font-black text-rose-100">{planStatusSummary.sinPlan}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-300/20 bg-slate-500/10 px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide text-slate-200">Con actividad</p>
+              <p className="text-xl font-black text-slate-100">{presenceSummary.withLastSeen}</p>
             </div>
           </div>
 
@@ -1975,6 +2113,21 @@ export default function ClientesPage() {
                 const active = cliente.id === selectedClientId;
                 const sesionesCount = sesionesPorCliente[cliente.id] || 0;
                 const meta = getMeta(cliente);
+                const presenceEmail = normalizePresenceEmail(meta.email);
+                const presenceSnapshot = presenceEmail ? presenceByEmail[presenceEmail] : null;
+                const presenceLabel = !presenceEmail
+                  ? "Sin email"
+                  : presenceSnapshot?.isOnline
+                    ? "En linea"
+                    : "Desconectado";
+                const presenceTone = !presenceEmail
+                  ? "bg-slate-700/60 text-slate-300"
+                  : presenceSnapshot?.isOnline
+                    ? "bg-emerald-500/20 text-emerald-100"
+                    : "bg-slate-700/60 text-slate-200";
+                const presenceLastSeenLabel = !presenceEmail
+                  ? "Agrega email para monitorear"
+                  : formatPresenceLastSeen(presenceSnapshot?.lastSeenAt || null);
                 const userId = cliente.id.split(":")[1];
                 const etiquetasCliente = etiquetasByUserId[userId] || [];
                 const lastPayment = latestPaymentByClientId.get(cliente.id);
@@ -2001,6 +2154,15 @@ export default function ClientesPage() {
                       <div className="min-w-[140px] flex-1">
                         <p className="truncate text-sm font-bold text-white">{cliente.nombre}</p>
                         <p className="truncate text-xs text-slate-300">{cliente.club || "Sin club"}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${presenceTone}`}>
+                            <span
+                              className={`h-2 w-2 rounded-full ${presenceSnapshot?.isOnline ? "bg-emerald-300 shadow-[0_0_0_2px_rgba(16,185,129,0.26)]" : "bg-slate-400"}`}
+                            />
+                            {presenceLabel}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{presenceLastSeenLabel}</span>
+                        </div>
                       </div>
 
                       <div className="flex shrink-0 items-center">

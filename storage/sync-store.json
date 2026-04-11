@@ -87,6 +87,143 @@
   ],
   "pf-control-sesiones": [
     {
+      "id": "demo-sesion-alumno-prueba",
+      "titulo": "Sesion base alumno prueba",
+      "objetivo": "Sesion completa con calentamiento, bloque efectivo y vuelta a la calma.",
+      "duracion": "55",
+      "equipo": "Alumno/a: Alumno Prueba",
+      "asignacionTipo": "alumnos",
+      "alumnoAsignado": "Alumno Prueba",
+      "bloques": [
+        {
+          "id": "demo-bloque-ap-calentamiento",
+          "titulo": "Bloque de calentamiento",
+          "objetivo": "Activacion general, movilidad y preparacion de patrones.",
+          "ejercicios": [
+            {
+              "ejercicioId": "3",
+              "series": 3,
+              "repeticiones": "1",
+              "carga": "Tecnica",
+              "observaciones": "Aceleraciones cortas con salida prolija y progresiva."
+            },
+            {
+              "ejercicioId": "4",
+              "series": 3,
+              "repeticiones": "4-6",
+              "carga": "Reactivo",
+              "observaciones": "Responder rapido al estimulo y frenar con control."
+            }
+          ]
+        },
+        {
+          "id": "demo-bloque-ap-efectivo",
+          "titulo": "Bloque efectivo",
+          "objetivo": "Trabajo principal de fuerza y control tecnico.",
+          "ejercicios": [
+            {
+              "ejercicioId": "1",
+              "series": 4,
+              "repeticiones": "8-10",
+              "carga": "65-75%",
+              "observaciones": "Controlar el descenso y mantener estabilidad unilateral."
+            },
+            {
+              "ejercicioId": "6",
+              "series": 4,
+              "repeticiones": "8-10",
+              "carga": "Moderada-alta",
+              "observaciones": "Cadena posterior activa, espalda neutra y ritmo constante."
+            }
+          ]
+        },
+        {
+          "id": "demo-bloque-ap-vuelta-calma",
+          "titulo": "Bloque de vuelta a la calma",
+          "objetivo": "Bajar pulsaciones, movilidad final y recuperacion.",
+          "ejercicios": [
+            {
+              "ejercicioId": "8",
+              "series": 2,
+              "repeticiones": "30-40s",
+              "carga": "Peso corporal",
+              "observaciones": "Respiracion diafragmatica y tension de core moderada."
+            }
+          ]
+        }
+      ],
+      "prescripciones": [
+        {
+          "id": "demo-prescripcion-ap-1",
+          "personaNombre": "Alumno Prueba",
+          "personaTipo": "alumnos",
+          "createdAt": "2026-04-10T23:55:14.273Z",
+          "intensidadDelta": 5,
+          "volumenDelta": 0,
+          "readinessScore": 8,
+          "resumen": "Semana inicial estructurada en 3 bloques: calentamiento, efectivo y vuelta a la calma.",
+          "bloques": [
+            {
+              "id": "demo-presc-bloque-ap-calentamiento",
+              "titulo": "Calentamiento adaptado",
+              "objetivo": "Activacion suave y movilidad previa",
+              "ejercicios": [
+                {
+                  "ejercicioId": "19",
+                  "series": 2,
+                  "repeticiones": "10-12",
+                  "carga": "Muy liviana",
+                  "observaciones": "Subida controlada y apoyo estable en cada repeticion"
+                },
+                {
+                  "ejercicioId": "17",
+                  "series": 2,
+                  "repeticiones": "20-24",
+                  "carga": "Peso corporal",
+                  "observaciones": "Ritmo sostenido con foco en activacion del core"
+                }
+              ]
+            },
+            {
+              "id": "demo-presc-bloque-ap-efectivo",
+              "titulo": "Bloque efectivo adaptado",
+              "objetivo": "Trabajo principal con carga progresiva",
+              "ejercicios": [
+                {
+                  "ejercicioId": "15",
+                  "series": 4,
+                  "repeticiones": "8-10",
+                  "carga": "60-70%",
+                  "observaciones": "Rango completo con tecnica estable y respiracion controlada"
+                },
+                {
+                  "ejercicioId": "11",
+                  "series": 4,
+                  "repeticiones": "6-8",
+                  "carga": "Moderada",
+                  "observaciones": "Traccion pareja, escapulas activas y control postural"
+                }
+              ]
+            },
+            {
+              "id": "demo-presc-bloque-ap-vuelta-calma",
+              "titulo": "Vuelta a la calma adaptada",
+              "objetivo": "Recuperacion activa y cierre de sesion",
+              "ejercicios": [
+                {
+                  "ejercicioId": "18",
+                  "series": 2,
+                  "repeticiones": "12-16",
+                  "carga": "Muy liviana",
+                  "observaciones": "Movimientos suaves y respiracion pausada para recuperar"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "1",
       "titulo": "Fuerza tren inferior + aceleración",
       "objetivo": "Desarrollar fuerza, prevención y aceleración inicial.",
@@ -317,5 +454,303 @@
       "videoUrl": "https://youtube.com/shorts/aM5tDFTkryM?si=IbBG6Zm64tYbRZs9",
       "id": "1773618792465"
     }
-  ]
+  ],
+  "pf-control-alumnos": [
+    {
+      "nombre": "Alumno Prueba",
+      "estado": "activo",
+      "fechaNacimiento": "2004-08-12",
+      "altura": "178",
+      "peso": "74",
+      "club": "Club Demo",
+      "objetivo": "Mejorar fuerza y movilidad",
+      "observaciones": "Cuenta de prueba para validar portal de alumnos",
+      "practicaDeporte": false
+    }
+  ],
+  "pf-control-clientes-meta-v1": {
+    "alumno:Alumno Prueba": {
+      "apellido": "Prueba",
+      "segundoApellido": "",
+      "email": "alumno.prueba@pfcontrol.test",
+      "codigoPais": "+54",
+      "telefono": "91100000000",
+      "pais": "Argentina",
+      "provincia": "Buenos Aires",
+      "calle": "Demo",
+      "numero": "123",
+      "piso": "",
+      "depto": "",
+      "sexo": "masculino",
+      "startDate": "2026-04-10",
+      "endDate": "2026-12-31",
+      "lastCheck": "2026-04-10",
+      "nextCheck": "2026-04-24",
+      "objNutricional": "Mantenimiento",
+      "colaboradores": "",
+      "chats": "",
+      "tipoAsesoria": "entrenamiento",
+      "modalidad": "virtual",
+      "categoriaPlan": "General",
+      "pagoEstado": "confirmado",
+      "moneda": "ARS",
+      "importe": "0",
+      "saldo": "0",
+      "emailPagador": "alumno.prueba@pfcontrol.test",
+      "autoRenewPlan": true,
+      "renewalDays": 30,
+      "tabNotas": {}
+    }
+  },
+  "pf-control-music-playlists-v1": [
+    {
+      "id": "demo-music-alumno-prueba",
+      "platform": "SPOTIFY",
+      "alumnoNombre": "Alumno Prueba",
+      "playlistName": "Modo Entreno - Prueba",
+      "playlistUrl": "https://open.spotify.com/playlist/37i9dQZF1DX70RN3TfWWJh",
+      "objetivo": "Activacion pre rutina",
+      "diaSemana": "lunes",
+      "recommendedSongTitle": "Titanium",
+      "recommendedSongArtist": "David Guetta",
+      "createdAt": "2026-04-10T23:55:14.273Z"
+    }
+  ],
+  "pf-control-semana-plan": {
+    "version": 3,
+    "planes": [
+      {
+        "ownerKey": "alumnos:alumno prueba",
+        "tipo": "alumnos",
+        "nombre": "Alumno Prueba",
+        "semanas": [
+          {
+            "id": "demo-week-ap-1",
+            "nombre": "Semana 1",
+            "objetivo": "Adaptacion tecnica y base de fuerza",
+            "dias": [
+              {
+                "id": "demo-week-ap-1-lun",
+                "dia": "Lunes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Fuerza base",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-mar",
+                "dia": "Martes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Control tecnico",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-mie",
+                "dia": "Miercoles",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Control de tempo",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-jue",
+                "dia": "Jueves",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Estabilidad y postura",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-vie",
+                "dia": "Viernes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Consolidar tecnica",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-sab",
+                "dia": "Sabado",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Trabajo tecnico complementario",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-1-dom",
+                "dia": "Domingo",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Sesion liviana de movilidad",
+                "sesionId": "demo-sesion-alumno-prueba"
+              }
+            ]
+          },
+          {
+            "id": "demo-week-ap-2",
+            "nombre": "Semana 2",
+            "objetivo": "Aumentar volumen total de trabajo",
+            "dias": [
+              {
+                "id": "demo-week-ap-2-lun",
+                "dia": "Lunes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Volumen controlado",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-mar",
+                "dia": "Martes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Cadencia y coordinacion",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-mie",
+                "dia": "Miercoles",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Control de repeticiones",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-jue",
+                "dia": "Jueves",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Trabajo de estabilidad",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-vie",
+                "dia": "Viernes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Resistencia de fuerza",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-sab",
+                "dia": "Sabado",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Tecnica bajo fatiga moderada",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-2-dom",
+                "dia": "Domingo",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Movilidad y recuperacion",
+                "sesionId": "demo-sesion-alumno-prueba"
+              }
+            ]
+          },
+          {
+            "id": "demo-week-ap-3",
+            "nombre": "Semana 3",
+            "objetivo": "Progresion de carga y eficiencia",
+            "dias": [
+              {
+                "id": "demo-week-ap-3-lun",
+                "dia": "Lunes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Foco en carga tecnica",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-mar",
+                "dia": "Martes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Transiciones fluidas",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-mie",
+                "dia": "Miercoles",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Control de descanso",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-jue",
+                "dia": "Jueves",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Trabajo tecnico de soporte",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-vie",
+                "dia": "Viernes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Series efectivas",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-sab",
+                "dia": "Sabado",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Revision de tecnica",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-3-dom",
+                "dia": "Domingo",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Recuperacion activa",
+                "sesionId": "demo-sesion-alumno-prueba"
+              }
+            ]
+          },
+          {
+            "id": "demo-week-ap-4",
+            "nombre": "Semana 4",
+            "objetivo": "Consolidacion y evaluacion final",
+            "dias": [
+              {
+                "id": "demo-week-ap-4-lun",
+                "dia": "Lunes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Ejecucion precisa",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-mar",
+                "dia": "Martes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Control de ritmo",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-mie",
+                "dia": "Miercoles",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Calidad de repeticiones",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-jue",
+                "dia": "Jueves",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Respiracion y postura",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-vie",
+                "dia": "Viernes",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Cierre de semana con tecnica",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-sab",
+                "dia": "Sabado",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Sesion controlada de ajuste",
+                "sesionId": "demo-sesion-alumno-prueba"
+              },
+              {
+                "id": "demo-week-ap-4-dom",
+                "dia": "Domingo",
+                "planificacion": "Sesion base alumno prueba",
+                "objetivo": "Movilidad y cierre del bloque",
+                "sesionId": "demo-sesion-alumno-prueba"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "templates": []
+  }
 }

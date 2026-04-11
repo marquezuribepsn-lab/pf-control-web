@@ -473,6 +473,33 @@ button[disabled] {
   display: block;
 }
 
+.pf-sidebar-avatar-dot {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  height: 11px;
+  width: 11px;
+  border-radius: 999px;
+  border: 2px solid rgba(2, 6, 23, 0.95);
+  background: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.65);
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+html[data-pf-presence="online"] .pf-sidebar-avatar-dot {
+  background: #4ade80;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.65), 0 0 12px rgba(74, 222, 128, 0.66);
+}
+
+html[data-pf-presence="offline"] .pf-sidebar-avatar-dot {
+  background: #94a3b8;
+}
+
+html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.65), 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
 .pf-sidebar-avatar-fallback {
   pointer-events: none;
 }

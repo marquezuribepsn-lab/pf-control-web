@@ -1,4 +1,4 @@
-import "./globals.css";
+﻿import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Sora, Space_Grotesk } from "next/font/google";
 import { Prisma } from "@prisma/client";
@@ -12,6 +12,7 @@ import EjerciciosProvider from "../components/EjerciciosProvider";
 import AppShell from "../components/AppShell";
 import AlumnosProvider from "../components/AlumnosProvider";
 import { AuthSessionProvider } from "../components/AuthSessionProvider";
+import PresenceBeacon from "../components/PresenceBeacon";
 import { auth } from "../lib/auth";
 import { prisma } from "../lib/prisma";
 
@@ -29,7 +30,7 @@ const displayFont = Sora({
 
 export const metadata: Metadata = {
   title: "PF Control",
-  description: "Plataforma para preparadores físicos",
+  description: "Plataforma para preparadores fisicos",
 };
 
 export const viewport: Viewport = {
@@ -104,32 +105,46 @@ export default async function RootLayout({
   const initialSidebarImage = await resolveInitialSidebarImage(sessionUserId);
 
   const links = [
-    { href: "/", label: "Inicio", icon: "🏠", tone: "from-cyan-500 to-blue-600" },
-    { href: "/semana", label: "Semana", icon: "📅", tone: "from-violet-500 to-purple-600" },
-    { href: "/sesiones", label: "Entrenamiento", icon: "🏋️", tone: "from-blue-600 to-indigo-600" },
-    { href: "/asistencias", label: "Asistencias", icon: "✅", tone: "from-teal-500 to-cyan-600" },
-    { href: "/registros", label: "Registros", icon: "📊", tone: "from-amber-500 to-orange-600" },
-    { href: "/categorias", label: "Categorías", icon: "🏷️", tone: "from-rose-500 to-red-600" },
-    { href: "/categorias/Nutricion", label: "Nutricion", icon: "🥗", tone: "from-emerald-500 to-lime-600" },
-    { href: "/deportes", label: "Deportes", icon: "⚽", tone: "from-sky-500 to-cyan-600" },
-    { href: "/equipos", label: "Equipos", icon: "🛡️", tone: "from-indigo-500 to-violet-600" },
-    { href: "/clientes", label: "Clientes", icon: "👤", tone: "from-lime-500 to-green-600" },
-    { href: "/clientes/musica", label: "Musica", icon: "🎧", tone: "from-fuchsia-500 to-pink-600" },
+    { href: "/", label: "Inicio", icon: "\u{1F3E0}", tone: "from-cyan-500 to-blue-600" },
+    { href: "/semana", label: "Semana", icon: "\u{1F4C5}", tone: "from-violet-500 to-purple-600" },
+    { href: "/sesiones", label: "Entrenamiento", icon: "\u{1F3CB}\uFE0F", tone: "from-blue-600 to-indigo-600" },
+    { href: "/asistencias", label: "Asistencias", icon: "\u2705", tone: "from-teal-500 to-cyan-600" },
+    { href: "/registros", label: "Registros", icon: "\u{1F4CA}", tone: "from-amber-500 to-orange-600" },
+    { href: "/categorias", label: "Categorias", icon: "\u{1F3F7}\uFE0F", tone: "from-rose-500 to-red-600" },
+    { href: "/categorias/Nutricion", label: "Nutricion", icon: "\u{1F957}", tone: "from-emerald-500 to-lime-600" },
+    { href: "/deportes", label: "Deportes", icon: "\u26BD", tone: "from-sky-500 to-cyan-600" },
+    { href: "/equipos", label: "Equipos", icon: "\u{1F6E1}\uFE0F", tone: "from-indigo-500 to-violet-600" },
+    {
+      href: "/alumnos",
+      label: "Mi panel",
+      icon: "\u{1F3AF}",
+      tone: "from-cyan-500 to-emerald-600",
+      clientOnly: true,
+    },
+    { href: "/clientes", label: "Clientes", icon: "\u{1F464}", tone: "from-lime-500 to-green-600" },
+    { href: "/clientes/musica", label: "Musica", icon: "\u{1F3A7}", tone: "from-fuchsia-500 to-pink-600" },
     {
       href: "/admin/usuarios",
       label: "Usuarios y permisos",
-      icon: "🛠️",
+      icon: "\u{1F6E0}\uFE0F",
       tone: "from-orange-500 to-amber-600",
       adminOnly: true,
     },
-    { href: "/admin/whatsapp", label: "WhatsApp", icon: "💬", tone: "from-emerald-500 to-green-600", adminOnly: true },
-    { href: "/configuracion", label: "Configuración", icon: "⚙️", tone: "from-slate-500 to-gray-600" },
+    {
+      href: "/admin/whatsapp",
+      label: "WhatsApp",
+      icon: "\u{1F4AC}",
+      tone: "from-emerald-500 to-green-600",
+      adminOnly: true,
+    },
+    { href: "/configuracion", label: "Configuracion", icon: "\u2699\uFE0F", tone: "from-slate-500 to-gray-600" },
   ];
 
   return (
     <html lang="es">
       <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
         <AuthSessionProvider>
+          <PresenceBeacon />
           <div className="pf-root-atmosphere">
             <CategoriesProvider>
               <EquiposProvider>

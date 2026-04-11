@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
@@ -26,6 +26,7 @@ type NavLink = {
   icon: string;
   tone: string;
   adminOnly?: boolean;
+  clientOnly?: boolean;
 };
 
 type AppShellProps = {
@@ -132,6 +133,7 @@ const COLABORADOR_ACCESS_HREFS = [
 ];
 
 const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
+const CLIENTE_ACCESS_HREFS = ["/alumnos"];
 
 const normalizePath = (value: string) => {
   const path = value.split("?")[0] || "/";
@@ -173,6 +175,7 @@ const resolveInitials = (name: string): string => {
 const roleToLabel = (role: string | null | undefined): string => {
   if (role === "ADMIN") return "ADMIN";
   if (role === "COLABORADOR") return "COLAB";
+  if (role === "CLIENTE") return "ALUMNO";
   return "USUARIO";
 };
 
@@ -862,6 +865,7 @@ export default function AppShell({
   const displayName = sessionKnownName || cachedProfileName || resolveUserDisplayName();
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
+  const isClienteRole = normalizedRole === "CLIENTE";
   const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
   const hasSidebarImage = Boolean(sidebarImageToRender);
   const avatarImageSrc = sidebarImageToRender || TRANSPARENT_PIXEL_DATA_URL;
@@ -869,12 +873,20 @@ export default function AppShell({
   const visibleLinks = useMemo(
     () =>
       links.filter((link) => {
+        if (link.clientOnly && normalizedRole !== "CLIENTE") {
+          return false;
+        }
+
         if (link.adminOnly && normalizedRole !== "ADMIN") {
           // Keep admin links visible while role is unresolved to avoid icon reordering flicker.
           if (!normalizedRole) {
             return true;
           }
           return false;
+        }
+
+        if (normalizedRole === "CLIENTE") {
+          return CLIENTE_ACCESS_HREFS.includes(link.href);
         }
 
         if (normalizedRole === "COLABORADOR" && COLABORADOR_ACCESS_HREFS.includes(link.href)) {
@@ -973,6 +985,10 @@ export default function AppShell({
   }, [jugadoras, alumnos, sesiones.length, clientesMeta, asistenciaRegistros]);
 
   const sidebarWidgetItems = useMemo<SidebarWidgetItem[]>(() => {
+    if (isClienteRole) {
+      return [];
+    }
+
     const selectedSet = new Set(
       sidebarWidgetSettings.selectedCards.map((id) => String(id || "").trim()).filter((id) => id.length > 0)
     );
@@ -1064,7 +1080,7 @@ export default function AppShell({
         detail: option.hint,
       };
     });
-  }, [allVisibleHrefs, pendingSaveKeys, sidebarOperationalStats, sidebarWidgetSettings.selectedCards]);
+  }, [allVisibleHrefs, isClienteRole, pendingSaveKeys, sidebarOperationalStats, sidebarWidgetSettings.selectedCards]);
 
   const activeSidebarWidgetItem = sidebarWidgetItems[sidebarWidgetIndex] || null;
 
@@ -1186,6 +1202,7 @@ export default function AppShell({
               >
                 {profileInitials}
               </span>
+              <span className="pf-sidebar-avatar-dot" aria-hidden="true" />
             </span>
             <span className="w-full truncate text-[10px] font-black uppercase tracking-[0.05em] text-cyan-50">
               {displayName}
@@ -1289,7 +1306,7 @@ export default function AppShell({
             </div>
           ) : null}
 
-          {pendingSaveKeys.length > 0 ? (
+          {!isClienteRole && pendingSaveKeys.length > 0 ? (
             <div className="px-2 pb-2">
               <ReliableActionButton
                 type="button"
@@ -1304,7 +1321,7 @@ export default function AppShell({
         </div>
       </aside>
 
-      {pendingSaveKeys.length > 0 && pendingPanelOpen ? (
+      {!isClienteRole && pendingSaveKeys.length > 0 && pendingPanelOpen ? (
         <div className="fixed left-[138px] top-4 z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">
             Modulos pendientes
