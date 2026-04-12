@@ -1,13 +1,13 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSessions } from "../SessionsProvider";
 import { useEjercicios } from "../EjerciciosProvider";
+import { useSharedState } from "../useSharedState";
 
 import type {
   TrainingPlan,
-  TrainingPlanEvent,
   TrainingPlanSession,
   TrainingPlanWeek,
 } from "@/lib/trainingPlanAI";
@@ -24,6 +24,14 @@ type DraftEvent = {
   type: "partido" | "especial" | "control";
   description: string;
   importance: number;
+};
+
+type StoredAITrainingPlan = {
+  id: string;
+  nombre: string;
+  createdAt: string;
+  updatedAt: string;
+  plan: TrainingPlan;
 };
 
 const CAPABILITY_OPTIONS = [
@@ -66,6 +74,7 @@ const guessExerciseCategory = (name: string) => {
 };
 
 const TODAY = new Date().toISOString().slice(0, 10);
+const AI_TRAINING_PLANS_KEY = "pf-control-ai-training-plans-v1";
 
 export default function SesionesAIPlanner() {
   const { agregarSesion } = useSessions();
@@ -106,6 +115,22 @@ export default function SesionesAIPlanner() {
   const [loadingAction, setLoadingAction] = useState<"create" | "extend" | "recalculate" | null>(null);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [storedPlansRaw, setStoredPlansRaw] = useSharedState<StoredAITrainingPlan[]>([], {
+    key: AI_TRAINING_PLANS_KEY,
+    legacyLocalStorageKey: AI_TRAINING_PLANS_KEY,
+  });
+  const [expandedPlanId, setExpandedPlanId] = useState<string>("");
+
+  const storedPlans = useMemo(() => {
+    const rows = Array.isArray(storedPlansRaw) ? storedPlansRaw : [];
+    return rows
+      .filter((item) => item && item.plan && item.id)
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+      );
+  }, [storedPlansRaw]);
 
   const availableSessions = useMemo(
     () => plan?.weeks.reduce((acc, week) => acc + week.sessions.length, 0) || 0,
@@ -142,6 +167,20 @@ export default function SesionesAIPlanner() {
         })),
     [events]
   );
+
+  useEffect(() => {
+    if (storedPlans.length === 0) {
+      if (expandedPlanId) {
+        setExpandedPlanId("");
+      }
+      return;
+    }
+
+    const exists = storedPlans.some((item) => item.id === expandedPlanId);
+    if (!exists) {
+      setExpandedPlanId(storedPlans[0].id);
+    }
+  }, [expandedPlanId, storedPlans]);
 
   const toggleCapability = (capability: string) => {
     setSelectedCapabilities((prev) => {
@@ -236,6 +275,58 @@ export default function SesionesAIPlanner() {
     }
   };
 
+  const savePlanToLibrary = () => {
+    if (!plan) return;
+
+    const now = new Date().toISOString();
+    const planName = `${plan.targetName} · ${plan.sport}`;
+
+    setStoredPlansRaw((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const existing = current.find((item) => item.id === plan.id) || null;
+      const nextPlan: StoredAITrainingPlan = {
+        id: plan.id,
+        nombre: planName,
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
+        plan: {
+          ...plan,
+          updatedAt: now,
+        },
+      };
+
+      if (existing) {
+        return current.map((item) => (item.id === plan.id ? nextPlan : item));
+      }
+
+      return [nextPlan, ...current];
+    });
+
+    setExpandedPlanId(plan.id);
+    setMessage(`Plan IA guardado en biblioteca: ${planName}`);
+    setError("");
+  };
+
+  const loadPlanFromLibrary = (storedPlan: StoredAITrainingPlan) => {
+    setPlan(storedPlan.plan);
+    setWeekToImport(1);
+    setWeekToRecalculate(1);
+    setExpandedPlanId(storedPlan.id);
+    setMessage(`Plan cargado: ${storedPlan.nombre}`);
+    setError("");
+  };
+
+  const deletePlanFromLibrary = (planId: string) => {
+    setStoredPlansRaw((prev) => (Array.isArray(prev) ? prev.filter((item) => item.id !== planId) : []));
+
+    if (plan?.id === planId) {
+      setPlan(null);
+    }
+
+    setMessage("Plan eliminado de la biblioteca IA.");
+    setError("");
+  };
+
   const ensureExerciseId = (exerciseName: string) => {
     const normalized = normalizeText(exerciseName);
     const existing = normalizedExerciseMap.get(normalized);
@@ -280,18 +371,6 @@ export default function SesionesAIPlanner() {
         })),
       })),
     });
-  };
-
-  const importPlanToSessions = () => {
-    if (!plan) return;
-
-    for (const week of plan.weeks) {
-      for (const session of week.sessions) {
-        importSession(session, plan);
-      }
-    }
-
-    setMessage(`Importadas ${availableSessions} sesiones IA a la grilla`);
   };
 
   const importSingleWeek = () => {
@@ -520,6 +599,9 @@ export default function SesionesAIPlanner() {
         <ReliableActionButton type="button" onClick={() => callAi("create")} disabled={loadingAction !== null} className="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500 disabled:opacity-60">
           {loadingAction === "create" ? "Generando..." : "Generar plan IA"}
         </ReliableActionButton>
+        <ReliableActionButton type="button" onClick={savePlanToLibrary} disabled={!plan || loadingAction !== null} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">
+          Guardar plan en biblioteca
+        </ReliableActionButton>
         <ReliableActionButton type="button" onClick={() => callAi("extend")} disabled={loadingAction !== null || !plan} className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
           {loadingAction === "extend" ? "Extendiendo..." : `Extender plan (+${extendWeeks} semanas)`}
         </ReliableActionButton>
@@ -541,13 +623,13 @@ export default function SesionesAIPlanner() {
               ))}
             </select>
           </label>
-          <div className="flex items-end gap-2">
-            <ReliableActionButton type="button" onClick={importPlanToSessions} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
-              Importar todo el plan
-            </ReliableActionButton>
+          <div className="flex items-end gap-2 md:col-span-2">
             <ReliableActionButton type="button" onClick={importSingleWeek} className="rounded-lg border border-emerald-300/40 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10">
-              Importar semana
+              Importar semana puntual
             </ReliableActionButton>
+            <p className="text-xs text-slate-300">
+              Para evitar saturacion, asigna el plan completo desde Clientes &gt; Asignar entrenamiento.
+            </p>
           </div>
 
           <div className="grid gap-2 md:grid-cols-3 md:col-span-3">
@@ -628,6 +710,92 @@ export default function SesionesAIPlanner() {
           </div>
         </div>
       ) : null}
+
+      <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/55 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-slate-100">Biblioteca de planes IA</p>
+          <p className="text-xs text-slate-400">
+            {storedPlans.length} plan{storedPlans.length === 1 ? "" : "es"} guardado{storedPlans.length === 1 ? "" : "s"}
+          </p>
+        </div>
+
+        {storedPlans.length === 0 ? (
+          <p className="mt-2 text-xs text-slate-300">
+            Aun no guardaste planes. Genera un plan IA y presiona "Guardar plan en biblioteca".
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {storedPlans.map((item) => {
+              const isExpanded = expandedPlanId === item.id;
+              const totalSessions = item.plan.weeks.reduce((acc, week) => acc + week.sessions.length, 0);
+              return (
+                <article key={item.id} className="rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{item.nombre}</p>
+                      <p className="text-[11px] text-slate-300">
+                        {item.plan.totalWeeks} semanas · {totalSessions} sesiones · actualizado {new Date(item.updatedAt || 0).toLocaleDateString("es-AR")}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => loadPlanFromLibrary(item)}
+                        className="rounded-md border border-cyan-300/40 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                      >
+                        Abrir
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => setExpandedPlanId(isExpanded ? "" : item.id)}
+                        className="rounded-md border border-white/20 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                      >
+                        {isExpanded ? "Ocultar" : "Ver detalle"}
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => deletePlanFromLibrary(item.id)}
+                        className="rounded-md border border-rose-300/40 px-2.5 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/10"
+                      >
+                        Eliminar
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+
+                  {isExpanded ? (
+                    <div className="mt-3 space-y-2">
+                      {item.plan.weeks.map((week) => (
+                        <details
+                          key={`${item.id}-week-${week.weekNumber}`}
+                          className="rounded-md border border-white/10 bg-slate-950/50 p-2"
+                        >
+                          <summary className="cursor-pointer text-xs font-semibold text-cyan-100">
+                            Semana {week.weekNumber} · {week.phase} · {week.sessions.length} sesiones
+                          </summary>
+                          <div className="mt-2 space-y-2 text-xs text-slate-200">
+                            <p>{week.focus}</p>
+                            <p className="text-slate-300">{week.startDate} a {week.endDate}</p>
+                            {week.sessions.map((session) => (
+                              <div
+                                key={session.id}
+                                className="rounded border border-white/10 bg-slate-900/50 px-2 py-1"
+                              >
+                                <p className="font-semibold text-white">{session.title}</p>
+                                <p className="text-slate-300">{session.goal}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -671,10 +671,10 @@ export default function Home() {
                 Crear cliente
               </Link>
               <Link
-                href="/sesiones"
+                href="/clientes"
                 className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
               >
-                Gestionar sesiones
+                Asignar entrenamiento
               </Link>
             </div>
           </div>

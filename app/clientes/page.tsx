@@ -2546,10 +2546,14 @@ export default function ClientesPage() {
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <h3 className="text-lg font-black text-white">Plan de entrenamiento</h3>
                       <Link
-                        href="/sesiones"
+                        href={
+                          selectedClient
+                            ? `${buildPlanViewHref(selectedClient.id, "plan-entrenamiento")}#asignar-entrenamiento`
+                            : "/clientes"
+                        }
                         className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
                       >
-                        Gestionar sesiones
+                        Asignar entrenamiento
                       </Link>
                     </div>
 

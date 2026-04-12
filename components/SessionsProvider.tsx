@@ -10,7 +10,7 @@ import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type SessionsContextType = {
   sesiones: Sesion[];
-  agregarSesion: (sesion: Omit<Sesion, 'id'>) => void;
+  agregarSesion: (sesion: Omit<Sesion, 'id'>) => string;
   editarSesion: (id: string, sesion: Partial<Sesion>) => void;
   eliminarSesion: (id: string) => void;
 };
@@ -38,6 +38,7 @@ export default function SessionsProvider({
       id: Date.now().toString(),
     };
     setSesiones((prev) => [nuevaSesion, ...prev]);
+    return nuevaSesion.id;
   }
 
   function editarSesion(id: string, sesionActualizada: Partial<Sesion>) {
