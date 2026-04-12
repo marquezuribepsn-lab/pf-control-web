@@ -573,6 +573,11 @@ function toLocalDateInputValue(date = new Date()): string {
   return shifted.toISOString().slice(0, 16);
 }
 
+function getLocalDateKey(date = new Date()): string {
+  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return shifted.toISOString().slice(0, 10);
+}
+
 function emptySessionAnswers(): SessionAnswers {
   return {
     trainedAt: toLocalDateInputValue(),
@@ -2077,6 +2082,60 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
   const quickActivity = latestAnthro?.actividadNivel ?? null;
 
   const todayExerciseCount = todayExerciseNames.filter(Boolean).length;
+  const todayDateKey = useMemo(() => getLocalDateKey(), []);
+
+  const todayWorkoutLogs = useMemo(
+    () => alumnoWorkoutLogs.filter((item) => item.fecha === todayDateKey),
+    [alumnoWorkoutLogs, todayDateKey]
+  );
+
+  const todayExercisesDoneCount = useMemo(() => {
+    const unique = new Set(
+      todayWorkoutLogs.map((item) =>
+        String(item.exerciseKey || item.exerciseId || item.exerciseName || item.id || "")
+      )
+    );
+    return unique.size;
+  }, [todayWorkoutLogs]);
+
+  const todaySeriesDone = useMemo(
+    () => todayWorkoutLogs.reduce((acc, item) => acc + Math.max(0, Number(item.series) || 0), 0),
+    [todayWorkoutLogs]
+  );
+
+  const todayProgressText = useMemo(() => {
+    if (!todayPlanContext.day) {
+      return "Hoy no hay sesion planificada. Usa el dia para recuperar o moverte suave.";
+    }
+
+    if (todayWorkoutLogs.length === 0) {
+      return "Aun no registraste entreno hoy.";
+    }
+
+    return `Llevas ${todayExercisesDoneCount} ejercicio(s) y ${todaySeriesDone} serie(s) registradas hoy.`;
+  }, [todayExercisesDoneCount, todayPlanContext.day, todaySeriesDone, todayWorkoutLogs.length]);
+
+  const comfortSuggestions = useMemo(() => {
+    const tips: string[] = [];
+
+    if (quickWater !== null && quickWater < 2) {
+      tips.push("Sube tu hidratacion: intenta llegar al menos a 2L hoy.");
+    }
+
+    if (quickSleep !== null && quickSleep < 7) {
+      tips.push("Dormiste menos de 7h: baja un punto la intensidad si te sientes cargado.");
+    }
+
+    if (todayPlanContext.day && todayWorkoutLogs.length === 0) {
+      tips.push("Activa la rutina de hoy y registra al menos el primer bloque para mantener constancia.");
+    }
+
+    if (tips.length === 0) {
+      tips.push("Muy buen ritmo: mantiene tu proceso y cierra el dia con movilidad ligera.");
+    }
+
+    return tips.slice(0, 2);
+  }, [quickSleep, quickWater, todayPlanContext.day, todayWorkoutLogs.length]);
 
   const activeQuestion = SESSION_QUESTIONS[questionIndex];
 
@@ -2264,6 +2323,21 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
 
     setWorkoutLogsRaw((prev) => normalizeWorkoutLogs(prev).filter((item) => item.id !== recordId));
     setRecordStatus("Registro eliminado.");
+  };
+
+  const jumpToTodayRoutine = () => {
+    if (todayPlanContext.week?.id) {
+      setSelectedWeekId(todayPlanContext.week.id);
+    }
+    if (todayPlanContext.day?.id) {
+      setSelectedDayId(todayPlanContext.day.id);
+    }
+    if (todayPlanContext.routine?.sesion?.id) {
+      setSelectedSessionId(todayPlanContext.routine.sesion.id);
+    }
+
+    setMainCategory("rutina");
+    setTrainingView("descripcion");
   };
 
   const handleSaveAnthropometry = () => {
@@ -2465,14 +2539,40 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               </div>
               <ReliableActionButton
                 type="button"
-                onClick={() => {
-                  setMainCategory("rutina");
-                  setTrainingView("descripcion");
-                }}
+                onClick={jumpToTodayRoutine}
                 className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20"
               >
                 Ver rutina
               </ReliableActionButton>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">Estado de hoy</p>
+              <p className="text-xs text-emerald-100/85">{todayDateKey}</p>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-white">{todayProgressText}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-white/15 bg-slate-950/40 p-2">
+                <p className="text-[11px] uppercase tracking-wide text-slate-300">Ejercicios hoy</p>
+                <p className="mt-1 text-lg font-black text-white">{todayExercisesDoneCount}</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-slate-950/40 p-2">
+                <p className="text-[11px] uppercase tracking-wide text-slate-300">Series hoy</p>
+                <p className="mt-1 text-lg font-black text-white">{todaySeriesDone}</p>
+              </div>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Sugerencias inteligentes</p>
+            <div className="mt-2 space-y-2 text-sm text-slate-100">
+              {comfortSuggestions.map((tip, index) => (
+                <p key={`${tip}-${index}`} className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2">
+                  {tip}
+                </p>
+              ))}
             </div>
           </article>
 
@@ -2597,8 +2697,17 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
                 Vista de entrenamiento con semanas, dias, ejercicios, registro rapido y cierre de sesion.
               </p>
             </div>
-            <div className="rounded-xl border border-white/15 bg-slate-900/50 px-3 py-2 text-xs text-slate-300">
-              {weekPlanForAlumno.totalSemanas} semanas · {weekPlanForAlumno.totalDias} dias
+            <div className="flex items-center gap-2">
+              <div className="rounded-xl border border-white/15 bg-slate-900/50 px-3 py-2 text-xs text-slate-300">
+                {weekPlanForAlumno.totalSemanas} semanas · {weekPlanForAlumno.totalDias} dias
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={jumpToTodayRoutine}
+                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-3 py-2 text-xs font-bold text-cyan-100"
+              >
+                Hoy
+              </ReliableActionButton>
             </div>
           </div>
 
