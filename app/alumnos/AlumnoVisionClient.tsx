@@ -19,9 +19,19 @@ type AlumnoVisionClientProps = {
   currentEmail: string;
 };
 
-type MainCategory = "entrenamiento" | "nutricion" | "progreso" | "musica";
+type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
 type TrainingView = "descripcion" | "registros";
 type NutritionView = "plan" | "recetas";
+type ProgressView = "semanal-rutina" | "antropometria";
+type TrainingFocus =
+  | "piernas"
+  | "tren-superior"
+  | "core"
+  | "movilidad"
+  | "cardio"
+  | "potencia"
+  | "descanso"
+  | "full-body";
 
 type ClienteMetaLite = {
   email?: string;
@@ -288,6 +298,27 @@ const FALLBACK_WEEK_OBJECTIVES = [
   "Ajuste final con foco en calidad de movimiento",
 ];
 
+const HOME_DAILY_QUOTES = [
+  "La constancia de hoy construye tu mejor version de manana.",
+  "No entrenas por obligacion, entrenas por evolucion.",
+  "Cada repeticion bien hecha cuenta para tu objetivo.",
+  "Disciplina primero, resultados despues.",
+  "PF Control: foco, proceso y progreso real.",
+  "Tu mejor sesion siempre puede ser la de hoy.",
+  "Pequenos avances sostenidos ganan a cualquier atajo.",
+  "Entrenar inteligente tambien es entrenar fuerte.",
+];
+
+const TODAY_WEEKDAY_NAMES = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado",
+];
+
 const SESSION_QUESTIONS: SessionQuestion[] = [
   {
     id: "trainedAt",
@@ -357,6 +388,73 @@ function namesLikelyMatch(a: string, b: string): boolean {
   const shared = leftTokens.filter((token) => rightTokens.includes(token));
 
   return shared.length >= 2 || shared.some((token) => token.length >= 5);
+}
+
+function resolveGreetingLabel(date = new Date()): string {
+  const hour = date.getHours();
+  if (hour < 12) return "Buenos dias";
+  if (hour < 20) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+function resolvePhraseOfDay(date = new Date()): string {
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  const dayNumber = Math.floor((date.getTime() - yearStart.getTime()) / 86400000);
+  return HOME_DAILY_QUOTES[Math.abs(dayNumber) % HOME_DAILY_QUOTES.length];
+}
+
+function resolveTrainingFocusFromText(raw: string): TrainingFocus | null {
+  const text = normalizePersonKey(raw);
+  if (!text) return null;
+
+  if (/descanso|off|libre|recuperacion/.test(text)) return "descanso";
+  if (/pierna|cuadricep|isquio|glute|sentadilla|zancada/.test(text)) return "piernas";
+  if (/pecho|espalda|hombro|bicep|tricep|empuje|traccion|tren superior/.test(text)) {
+    return "tren-superior";
+  }
+  if (/core|abdomen|oblicuo|plancha|plank/.test(text)) return "core";
+  if (/movilidad|flexibilidad|estiramiento/.test(text)) return "movilidad";
+  if (/cardio|resistencia|aerobico|hiit|metabolico/.test(text)) return "cardio";
+  if (/potencia|salto|pliometria|sprint|aceleracion|velocidad/.test(text)) return "potencia";
+
+  return null;
+}
+
+function resolveTrainingFocusFromExercises(exerciseNames: string[]): TrainingFocus {
+  const combined = normalizePersonKey(exerciseNames.join(" "));
+  const focus = resolveTrainingFocusFromText(combined);
+  if (focus) return focus;
+  return "full-body";
+}
+
+function buildTrainingReminderLine(focus: TrainingFocus): string {
+  switch (focus) {
+    case "piernas":
+      return "Hoy toca piernas";
+    case "tren-superior":
+      return "Hoy toca tren superior";
+    case "core":
+      return "Hoy toca core y estabilidad";
+    case "movilidad":
+      return "Hoy toca movilidad y control";
+    case "cardio":
+      return "Hoy toca cardio y resistencia";
+    case "potencia":
+      return "Hoy toca potencia y velocidad";
+    case "descanso":
+      return "Hoy toca recuperacion";
+    default:
+      return "Hoy toca sesion completa";
+  }
+}
+
+function countMembershipDays(startDate: string | undefined, endDate: string | undefined): number | null {
+  if (!startDate || !endDate) return null;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+  if (end.getTime() < start.getTime()) return null;
+  return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
 }
 
 function normalizeEmail(value: string | null | undefined): string {
@@ -1113,9 +1211,10 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
   const { sesiones } = useSessions();
   const { ejercicios } = useEjercicios();
 
-  const [mainCategory, setMainCategory] = useState<MainCategory>("entrenamiento");
+  const [mainCategory, setMainCategory] = useState<MainCategory>("inicio");
   const [trainingView, setTrainingView] = useState<TrainingView>("descripcion");
   const [nutritionView, setNutritionView] = useState<NutritionView>("plan");
+  const [progressView, setProgressView] = useState<ProgressView>("semanal-rutina");
 
   const [selectedWeekId, setSelectedWeekId] = useState("");
   const [selectedDayId, setSelectedDayId] = useState("");
@@ -1622,6 +1721,75 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
       );
   }, [alumnoName, musicAssignmentsRaw]);
 
+  const alumnoWorkoutLogs = useMemo(() => {
+    if (!alumnoName) return [];
+    return workoutLogs.filter((item) => namesLikelyMatch(item.alumnoNombre, alumnoName));
+  }, [alumnoName, workoutLogs]);
+
+  const alumnoFeedbackHistory = useMemo(() => {
+    if (!alumnoName) return [];
+    return feedbackRecords.filter((item) => namesLikelyMatch(item.alumnoNombre, alumnoName));
+  }, [alumnoName, feedbackRecords]);
+
+  const weeklyRoutineProgress = useMemo(() => {
+    return weekPlanForAlumno.semanas.map((week) => {
+      const dayProgress = (week.dias || []).map((day) => {
+        const hasLog = alumnoWorkoutLogs.some((log) => {
+          if (log.weekId && log.dayId) {
+            return log.weekId === week.id && log.dayId === day.id;
+          }
+
+          if (log.dayId) {
+            return log.dayId === day.id;
+          }
+
+          if (day.sesionId && log.sessionId !== day.sesionId) {
+            return false;
+          }
+
+          if (log.dayName) {
+            return namesLikelyMatch(log.dayName, day.dia);
+          }
+
+          return Boolean(day.sesionId) && log.sessionId === day.sesionId;
+        });
+
+        return {
+          ...day,
+          hasLog,
+        };
+      });
+
+      const totalDays = dayProgress.length;
+      const completedDays = dayProgress.filter((day) => day.hasLog).length;
+      const completionPct = totalDays === 0 ? 0 : Math.round((completedDays / totalDays) * 100);
+
+      return {
+        ...week,
+        dayProgress,
+        totalDays,
+        completedDays,
+        completionPct,
+      };
+    });
+  }, [alumnoWorkoutLogs, weekPlanForAlumno.semanas]);
+
+  const weeklyProgressTotals = useMemo(() => {
+    const totalWeeks = weeklyRoutineProgress.length;
+    const totalDays = weeklyRoutineProgress.reduce((acc, week) => acc + week.totalDays, 0);
+    const completedDays = weeklyRoutineProgress.reduce((acc, week) => acc + week.completedDays, 0);
+    const completionPct = totalDays === 0 ? 0 : Math.round((completedDays / totalDays) * 100);
+
+    return {
+      totalWeeks,
+      totalDays,
+      completedDays,
+      completionPct,
+      lastWorkoutAt: alumnoWorkoutLogs[0]?.createdAt || null,
+      lastFeedbackAt: alumnoFeedbackHistory[0]?.createdAt || null,
+    };
+  }, [alumnoFeedbackHistory, alumnoWorkoutLogs, weeklyRoutineProgress]);
+
   const routineEntryForLogs = selectedDay ? selectedDayRoutineEntry : activeRoutineEntry;
 
   const sessionWorkoutLogs = useMemo(() => {
@@ -1784,6 +1952,131 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     carbohidratos: 0,
     grasas: 0,
   };
+
+  const greetingLabel = useMemo(() => resolveGreetingLabel(), []);
+  const phraseOfDay = useMemo(() => resolvePhraseOfDay(), []);
+  const todayWeekdayLabel = useMemo(
+    () => TODAY_WEEKDAY_NAMES[new Date().getDay()] || "Hoy",
+    []
+  );
+
+  const todayPlanContext = useMemo(() => {
+    const todayKey = normalizePersonKey(todayWeekdayLabel);
+
+    let matchedWeek: NormalizedWeekPlan | null = null;
+    let matchedDay: NormalizedWeekDayPlan | null = null;
+
+    for (const week of weekPlanForAlumno.semanas) {
+      const foundDay = (week.dias || []).find((day) => normalizePersonKey(day.dia) === todayKey) || null;
+      if (foundDay) {
+        matchedWeek = week;
+        matchedDay = foundDay;
+        break;
+      }
+    }
+
+    if (!matchedWeek) {
+      matchedWeek = selectedWeek || weekPlanForAlumno.semanas[0] || null;
+    }
+
+    if (!matchedDay) {
+      if (selectedDay && matchedWeek?.dias.some((day) => day.id === selectedDay.id)) {
+        matchedDay = selectedDay;
+      } else {
+        matchedDay = matchedWeek?.dias[0] || null;
+      }
+    }
+
+    const routine = resolveRoutineEntryForDay(matchedDay, routineBySessionId, routineEntries);
+
+    return {
+      week: matchedWeek,
+      day: matchedDay,
+      routine,
+    };
+  }, [
+    routineBySessionId,
+    routineEntries,
+    selectedDay,
+    selectedWeek,
+    todayWeekdayLabel,
+    weekPlanForAlumno.semanas,
+  ]);
+
+  const todayExerciseNames = useMemo(() => {
+    if (!todayPlanContext.routine) return [] as string[];
+
+    return (todayPlanContext.routine.bloques || []).flatMap((block) =>
+      (block.ejercicios || []).map((exercise) => {
+        const detail = resolveExerciseById(exerciseById, String(exercise.ejercicioId || ""));
+        return detail?.nombre || "";
+      })
+    );
+  }, [exerciseById, todayPlanContext.routine]);
+
+  const todayTrainingFocus = useMemo(() => {
+    const textSignal = [
+      todayPlanContext.week?.nombre || "",
+      todayPlanContext.week?.objetivo || "",
+      todayPlanContext.day?.planificacion || "",
+      todayPlanContext.day?.objetivo || "",
+      todayPlanContext.routine?.sesion?.titulo || "",
+      todayPlanContext.routine?.sesion?.objetivo || "",
+    ].join(" ");
+
+    const focusFromText = resolveTrainingFocusFromText(textSignal);
+    if (focusFromText) return focusFromText;
+
+    if (todayExerciseNames.length > 0) {
+      return resolveTrainingFocusFromExercises(todayExerciseNames);
+    }
+
+    return todayPlanContext.day ? "full-body" : "descanso";
+  }, [todayExerciseNames, todayPlanContext.day, todayPlanContext.routine, todayPlanContext.week]);
+
+  const todayTrainingReminder = useMemo(
+    () => buildTrainingReminderLine(todayTrainingFocus),
+    [todayTrainingFocus]
+  );
+
+  const todayTrainingCaption = useMemo(() => {
+    if (!todayPlanContext.day) {
+      return "No hay sesion cargada para hoy. Te recomendamos movilidad y recuperacion activa.";
+    }
+
+    if (!todayPlanContext.routine) {
+      return `${todayPlanContext.day.dia}: plan sin sesion vinculada.`;
+    }
+
+    return `${todayPlanContext.day.dia} · ${todayPlanContext.routine.sesion.titulo}`;
+  }, [todayPlanContext.day, todayPlanContext.routine]);
+
+  const membershipDays = useMemo(
+    () => countMembershipDays(alumnoMetaMatch?.meta?.startDate, alumnoMetaMatch?.meta?.endDate),
+    [alumnoMetaMatch?.meta?.endDate, alumnoMetaMatch?.meta?.startDate]
+  );
+
+  const passPlanLabel =
+    membershipDays && membershipDays > 0
+      ? `Plan de ${membershipDays} dias`
+      : weekPlanForAlumno.totalDias > 0
+        ? `Plan de ${weekPlanForAlumno.totalDias} sesiones`
+        : "Plan activo";
+
+  const alumnoInitials = useMemo(() => {
+    const base = String(alumnoName || currentName || "Alumno").trim();
+    const parts = base.split(" ").filter(Boolean);
+    if (parts.length === 0) return "AL";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  }, [alumnoName, currentName]);
+
+  const quickWater = latestAnthro?.aguaLitros ?? null;
+  const quickSleep = latestAnthro?.suenoHoras ?? null;
+  const quickWeight = latestAnthro?.pesoKg ?? null;
+  const quickActivity = latestAnthro?.actividadNivel ?? null;
+
+  const todayExerciseCount = todayExerciseNames.filter(Boolean).length;
 
   const activeQuestion = SESSION_QUESTIONS[questionIndex];
 
@@ -2052,14 +2345,25 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
         <div className="flex flex-wrap gap-2">
           <ReliableActionButton
             type="button"
-            onClick={() => setMainCategory("entrenamiento")}
+            onClick={() => setMainCategory("inicio")}
             className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "entrenamiento"
+              mainCategory === "inicio"
                 ? "bg-fuchsia-500 text-white"
                 : "border border-white/20 bg-white/5 text-slate-100"
             }`}
           >
-            Entrenamiento
+            Inicio
+          </ReliableActionButton>
+          <ReliableActionButton
+            type="button"
+            onClick={() => setMainCategory("rutina")}
+            className={`rounded-xl px-4 py-2 text-sm font-bold ${
+              mainCategory === "rutina"
+                ? "bg-fuchsia-500 text-white"
+                : "border border-white/20 bg-white/5 text-slate-100"
+            }`}
+          >
+            Rutina
           </ReliableActionButton>
           <ReliableActionButton
             type="button"
@@ -2070,7 +2374,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
                 : "border border-white/20 bg-white/5 text-slate-100"
             }`}
           >
-            Nutricion
+            Plan nutricional
           </ReliableActionButton>
           <ReliableActionButton
             type="button"
@@ -2097,7 +2401,194 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
         </div>
       </section>
 
-      {mainCategory === "entrenamiento" ? (
+      {mainCategory === "inicio" ? (
+        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-3xl font-black tracking-tight text-white">{greetingLabel}</p>
+              <p className="text-3xl font-black text-cyan-200">{alumnoName || "Alumno"}</p>
+              <p className="mt-1 text-sm text-slate-300">Inicio personalizado de PF Control.</p>
+            </div>
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-cyan-500/35 to-fuchsia-500/35 text-lg font-black text-white">
+              {alumnoInitials}
+            </div>
+          </div>
+
+          <article className="rounded-2xl border border-white/15 bg-slate-950/60 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-cyan-200">Pase del alumno</p>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xl font-black text-white">{alumnoName || "Alumno PF Control"}</p>
+                <p className="text-sm text-slate-300">{passPlanLabel}</p>
+              </div>
+              <span className="rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-100">
+                Activo
+              </span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">Desde</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {formatDate(alumnoMetaMatch?.meta?.startDate || null)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">Hasta</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {formatDate(alumnoMetaMatch?.meta?.endDate || null)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2 sm:col-span-1 col-span-2">
+                <p className="text-[11px] uppercase tracking-wide text-slate-400">Objetivo</p>
+                <p className="mt-1 line-clamp-2 text-sm font-semibold text-white">{objetivo}</p>
+              </div>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Frase del dia</p>
+            <p className="mt-2 text-xl font-black leading-tight text-white">"{phraseOfDay}"</p>
+          </article>
+
+          <article className="rounded-2xl border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-500/20 to-rose-500/20 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-fuchsia-100">Recordatorio de hoy</p>
+                <p className="mt-2 text-2xl font-black text-white">{todayTrainingReminder}</p>
+                <p className="mt-1 text-sm text-fuchsia-100/95">{todayTrainingCaption}</p>
+                <p className="mt-1 text-xs text-fuchsia-100/80">
+                  {todayExerciseCount > 0
+                    ? `${todayExerciseCount} ejercicio(s) detectados en la sesion del dia.`
+                    : "No se detectaron ejercicios para hoy."}
+                </p>
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("rutina");
+                  setTrainingView("descripcion");
+                }}
+                className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20"
+              >
+                Ver rutina
+              </ReliableActionButton>
+            </div>
+          </article>
+
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-black text-white">Carga rapida</h3>
+              <p className="text-xs text-slate-300">actualiza tus metricas</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 p-3 text-left"
+              >
+                <p className="text-lg font-black text-white">Agua</p>
+                <p className="text-xs text-cyan-100">{quickWater === null ? "Sin dato" : `${quickWater} L`}</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="rounded-xl border border-indigo-300/35 bg-indigo-500/15 p-3 text-left"
+              >
+                <p className="text-lg font-black text-white">Sueno</p>
+                <p className="text-xs text-indigo-100">{quickSleep === null ? "Sin dato" : `${quickSleep} h`}</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="rounded-xl border border-emerald-300/35 bg-emerald-500/15 p-3 text-left"
+              >
+                <p className="text-lg font-black text-white">Peso</p>
+                <p className="text-xs text-emerald-100">{quickWeight === null ? "Sin dato" : `${quickWeight} kg`}</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="rounded-xl border border-rose-300/35 bg-rose-500/15 p-3 text-left"
+              >
+                <p className="text-lg font-black text-white">Actividad</p>
+                <p className="text-xs text-rose-100">{quickActivity === null ? "Sin dato" : `${quickActivity}/10`}</p>
+              </ReliableActionButton>
+            </div>
+          </section>
+
+          <section className="space-y-2">
+            <h3 className="text-2xl font-black text-white">Hub PF Control</h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => setMainCategory("rutina")}
+                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
+              >
+                <p className="text-base font-black text-white">Rutina</p>
+                <p className="text-xs text-slate-300">{weekPlanForAlumno.totalSemanas} semanas activas</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setMainCategory("nutricion")}
+                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
+              >
+                <p className="text-base font-black text-white">Plan nutricional</p>
+                <p className="text-xs text-slate-300">{selectedNutritionPlan ? "Plan activo" : "Sin plan cargado"}</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setMainCategory("progreso");
+                  setProgressView("semanal-rutina");
+                }}
+                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
+              >
+                <p className="text-base font-black text-white">Progreso</p>
+                <p className="text-xs text-slate-300">{weeklyProgressTotals.completionPct}% de cumplimiento</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setMainCategory("musica")}
+                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
+              >
+                <p className="text-base font-black text-white">Musica</p>
+                <p className="text-xs text-slate-300">{musicAssignments.length} playlist(s) asignada(s)</p>
+              </ReliableActionButton>
+            </div>
+          </section>
+
+          {musicAssignments[0] ? (
+            <article className="rounded-2xl border border-white/15 bg-slate-950/55 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Musica de hoy</p>
+              <p className="mt-1 text-lg font-black text-white">{musicAssignments[0].playlistName}</p>
+              <p className="text-xs text-slate-300">
+                Objetivo: {musicAssignments[0].objetivo || "General"} · Dia: {musicAssignments[0].diaSemana || "Libre"}
+              </p>
+              <MusicPlayer item={musicAssignments[0]} />
+            </article>
+          ) : null}
+        </section>
+      ) : null}
+
+      {mainCategory === "rutina" ? (
         <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -2817,179 +3308,315 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
         <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black">Progreso antropometrico</h2>
-              <p className="mt-1 text-sm text-slate-300">Seguimiento de peso, medidas corporales y estado general del alumno.</p>
-            </div>
-            <ReliableActionButton
-              type="button"
-              onClick={() => setShowAnthroForm((prev) => !prev)}
-              className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-bold text-white"
-            >
-              {showAnthroForm ? "Cerrar carga" : "Cargar medicion"}
-            </ReliableActionButton>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Peso 7 dias" value={formatWeight(weight7Days)} tone="cyan" />
-            <StatCard label="Peso 15 dias" value={formatWeight(weight15Days)} tone="emerald" />
-            <StatCard label="Peso historico" value={formatWeight(weightHistoric)} tone="fuchsia" />
-            <StatCard label="IMC" value={bmi === null ? "-" : bmi.toFixed(1)} />
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-300">Edad</p>
-              <p className="text-2xl font-black text-white">{age === null ? "-" : `${age}`}</p>
-            </article>
-            <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-300">Altura</p>
-              <p className="text-2xl font-black text-white">{heightCm ? `${heightCm} cm` : "-"}</p>
-            </article>
-            <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-300">Telefono</p>
-              <p className="text-sm font-semibold text-white">{telefono}</p>
-            </article>
-            <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-300">Tendencia peso</p>
-              <p className="text-2xl font-black text-white">
-                {weightDelta === null ? "-" : `${weightDelta > 0 ? "+" : ""}${weightDelta} kg`}
+              <h2 className="text-2xl font-black">Progreso</h2>
+              <p className="mt-1 text-sm text-slate-300">
+                Sigue tu progreso semanal de rutina y tus cambios corporales en antropometria.
               </p>
-            </article>
+            </div>
+
+            <div className="rounded-xl border border-white/15 bg-slate-900/50 p-2">
+              <div className="flex gap-2">
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setProgressView("semanal-rutina")}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                    progressView === "semanal-rutina"
+                      ? "bg-cyan-400 text-slate-950"
+                      : "border border-white/20 bg-white/5 text-slate-100"
+                  }`}
+                >
+                  Progreso semanal
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setProgressView("antropometria")}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                    progressView === "antropometria"
+                      ? "bg-cyan-400 text-slate-950"
+                      : "border border-white/20 bg-white/5 text-slate-100"
+                  }`}
+                >
+                  Antropometria
+                </ReliableActionButton>
+              </div>
+            </div>
           </div>
 
-          {showAnthroForm ? (
-            <article className="rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
-              <h3 className="text-lg font-black text-white">Nueva medicion antropometrica</h3>
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <label className="text-sm text-slate-200">
-                  Peso (kg)
-                  <input
-                    value={anthroForm.pesoKg}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, pesoKg: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Agua (litros)
-                  <input
-                    value={anthroForm.aguaLitros}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, aguaLitros: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Sueno (horas)
-                  <input
-                    value={anthroForm.suenoHoras}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, suenoHoras: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Actividad (1-10)
-                  <input
-                    value={anthroForm.actividadNivel}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, actividadNivel: e.target.value }))}
-                    inputMode="numeric"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-
-                <label className="text-sm text-slate-200">
-                  Cintura (cm)
-                  <input
-                    value={anthroForm.cinturaCm}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, cinturaCm: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Cadera (cm)
-                  <input
-                    value={anthroForm.caderaCm}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, caderaCm: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Grasa (%)
-                  <input
-                    value={anthroForm.grasaPct}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, grasaPct: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-                <label className="text-sm text-slate-200">
-                  Musculo (%)
-                  <input
-                    value={anthroForm.musculoPct}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, musculoPct: e.target.value }))}
-                    inputMode="decimal"
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                  />
-                </label>
-
-                <label className="text-sm text-slate-200 md:col-span-2 xl:col-span-4">
-                  Notas
-                  <textarea
-                    value={anthroForm.notas}
-                    onChange={(e) => setAnthroForm((prev) => ({ ...prev, notas: e.target.value }))}
-                    rows={3}
-                    className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
-                    placeholder="Observaciones sobre la evolucion..."
-                  />
-                </label>
+          {progressView === "semanal-rutina" ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard label="Semanas activas" value={String(weeklyProgressTotals.totalWeeks)} tone="cyan" />
+                <StatCard label="Dias planificados" value={String(weeklyProgressTotals.totalDays)} tone="emerald" />
+                <StatCard label="Dias con registro" value={String(weeklyProgressTotals.completedDays)} tone="fuchsia" />
+                <StatCard label="Cumplimiento" value={`${weeklyProgressTotals.completionPct}%`} />
               </div>
 
-              <ReliableActionButton
-                type="button"
-                onClick={handleSaveAnthropometry}
-                className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400"
-              >
-                Guardar medicion
-              </ReliableActionButton>
-            </article>
-          ) : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Ultimo registro de rutina</p>
+                  <p className="mt-2 text-sm font-semibold text-white">
+                    {weeklyProgressTotals.lastWorkoutAt
+                      ? formatDateTime(weeklyProgressTotals.lastWorkoutAt)
+                      : "Sin registros aun"}
+                  </p>
+                </article>
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Ultima autoevaluacion</p>
+                  <p className="mt-2 text-sm font-semibold text-white">
+                    {weeklyProgressTotals.lastFeedbackAt
+                      ? formatDateTime(weeklyProgressTotals.lastFeedbackAt)
+                      : "Sin evaluaciones aun"}
+                  </p>
+                </article>
+              </div>
 
-          {anthroStatus ? <p className="text-sm text-cyan-200">{anthroStatus}</p> : null}
+              {weeklyRoutineProgress.length === 0 ? (
+                <div className="rounded-2xl border border-white/15 bg-slate-900/60 p-5 text-sm text-slate-300">
+                  No hay una rutina semanal cargada para mostrar progreso.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {weeklyRoutineProgress.map((week) => (
+                    <article key={week.id} className="rounded-2xl border border-white/15 bg-slate-900/60 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="text-lg font-black text-white">{week.nombre}</h3>
+                        <p className="text-sm text-cyan-100">
+                          {week.completedDays}/{week.totalDays} dias con registro ({week.completionPct}%)
+                        </p>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+                          style={{ width: `${week.completionPct}%` }}
+                        />
+                      </div>
 
-          <article className="rounded-2xl border border-white/15 bg-slate-900/60 p-4">
-            <h3 className="text-lg font-black text-white">Historial antropometrico</h3>
-            {alumnoAnthropometry.length === 0 ? (
-              <p className="mt-2 text-sm text-slate-300">No se encontraron datos.</p>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {alumnoAnthropometry.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-xl border border-white/10 bg-slate-950/55 p-3 text-sm text-slate-200"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-white">{formatDateTime(entry.createdAt)}</p>
-                      <p className="text-xs text-slate-300">Peso: {formatWeight(entry.pesoKg)}</p>
-                    </div>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-4">
-                      <p>Agua: {entry.aguaLitros ?? "-"}</p>
-                      <p>Sueno: {entry.suenoHoras ?? "-"}</p>
-                      <p>Actividad: {entry.actividadNivel ?? "-"}</p>
-                      <p>Grasa: {entry.grasaPct ?? "-"}</p>
-                    </div>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                      <p>Cintura: {entry.cinturaCm ?? "-"} cm</p>
-                      <p>Cadera: {entry.caderaCm ?? "-"} cm</p>
-                    </div>
-                    {entry.notas ? <p className="mt-2 text-slate-300">{entry.notas}</p> : null}
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+                        {week.dayProgress.map((day) => (
+                          <div
+                            key={day.id}
+                            className={`rounded-lg border px-2 py-2 text-xs ${
+                              day.hasLog
+                                ? "border-emerald-300/35 bg-emerald-500/10 text-emerald-100"
+                                : "border-white/15 bg-slate-950/50 text-slate-300"
+                            }`}
+                          >
+                            <p className="font-semibold">{day.dia}</p>
+                            <p className="mt-1">{day.hasLog ? "Completado" : "Pendiente"}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              <article className="rounded-2xl border border-white/15 bg-slate-900/60 p-4">
+                <h3 className="text-lg font-black text-white">Ultimas evaluaciones de sesion</h3>
+                {alumnoFeedbackHistory.length === 0 ? (
+                  <p className="mt-2 text-sm text-slate-300">Todavia no hay evaluaciones cargadas.</p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {alumnoFeedbackHistory.slice(0, 5).map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="rounded-xl border border-white/10 bg-slate-950/55 p-3 text-sm text-slate-200"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-semibold text-white">{entry.sessionTitle}</p>
+                          <p className="text-xs text-slate-300">{formatDateTime(entry.createdAt)}</p>
+                        </div>
+                        <p className="mt-2 text-xs text-slate-300">
+                          Exigencia {entry.effort}/10 · Cansancio {entry.fatigue}/10 · Estado {entry.mood} · Objetivo {entry.goalResult}
+                        </p>
+                        {entry.comment ? <p className="mt-1 text-xs text-slate-300">{entry.comment}</p> : null}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </article>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-xl font-black">Antropometria del alumno</h3>
+                  <p className="mt-1 text-sm text-slate-300">
+                    Seguimiento de peso, medidas corporales y estado general.
+                  </p>
+                </div>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setShowAnthroForm((prev) => !prev)}
+                  className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-bold text-white"
+                >
+                  {showAnthroForm ? "Cerrar carga" : "Cargar medicion"}
+                </ReliableActionButton>
               </div>
-            )}
-          </article>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard label="Peso 7 dias" value={formatWeight(weight7Days)} tone="cyan" />
+                <StatCard label="Peso 15 dias" value={formatWeight(weight15Days)} tone="emerald" />
+                <StatCard label="Peso historico" value={formatWeight(weightHistoric)} tone="fuchsia" />
+                <StatCard label="IMC" value={bmi === null ? "-" : bmi.toFixed(1)} />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Edad</p>
+                  <p className="text-2xl font-black text-white">{age === null ? "-" : `${age}`}</p>
+                </article>
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Altura</p>
+                  <p className="text-2xl font-black text-white">{heightCm ? `${heightCm} cm` : "-"}</p>
+                </article>
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Telefono</p>
+                  <p className="text-sm font-semibold text-white">{telefono}</p>
+                </article>
+                <article className="rounded-xl border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-300">Tendencia peso</p>
+                  <p className="text-2xl font-black text-white">
+                    {weightDelta === null ? "-" : `${weightDelta > 0 ? "+" : ""}${weightDelta} kg`}
+                  </p>
+                </article>
+              </div>
+
+              {showAnthroForm ? (
+                <article className="rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
+                  <h3 className="text-lg font-black text-white">Nueva medicion antropometrica</h3>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <label className="text-sm text-slate-200">
+                      Peso (kg)
+                      <input
+                        value={anthroForm.pesoKg}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, pesoKg: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Agua (litros)
+                      <input
+                        value={anthroForm.aguaLitros}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, aguaLitros: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Sueno (horas)
+                      <input
+                        value={anthroForm.suenoHoras}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, suenoHoras: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Actividad (1-10)
+                      <input
+                        value={anthroForm.actividadNivel}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, actividadNivel: e.target.value }))}
+                        inputMode="numeric"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+
+                    <label className="text-sm text-slate-200">
+                      Cintura (cm)
+                      <input
+                        value={anthroForm.cinturaCm}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, cinturaCm: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Cadera (cm)
+                      <input
+                        value={anthroForm.caderaCm}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, caderaCm: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Grasa (%)
+                      <input
+                        value={anthroForm.grasaPct}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, grasaPct: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+                    <label className="text-sm text-slate-200">
+                      Musculo (%)
+                      <input
+                        value={anthroForm.musculoPct}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, musculoPct: e.target.value }))}
+                        inputMode="decimal"
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                      />
+                    </label>
+
+                    <label className="text-sm text-slate-200 md:col-span-2 xl:col-span-4">
+                      Notas
+                      <textarea
+                        value={anthroForm.notas}
+                        onChange={(e) => setAnthroForm((prev) => ({ ...prev, notas: e.target.value }))}
+                        rows={3}
+                        className="mt-1 w-full rounded-xl border border-white/20 bg-slate-900 px-3 py-2"
+                        placeholder="Observaciones sobre la evolucion..."
+                      />
+                    </label>
+                  </div>
+
+                  <ReliableActionButton
+                    type="button"
+                    onClick={handleSaveAnthropometry}
+                    className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400"
+                  >
+                    Guardar medicion
+                  </ReliableActionButton>
+                </article>
+              ) : null}
+
+              {anthroStatus ? <p className="text-sm text-cyan-200">{anthroStatus}</p> : null}
+
+              <article className="rounded-2xl border border-white/15 bg-slate-900/60 p-4">
+                <h3 className="text-lg font-black text-white">Historial antropometrico</h3>
+                {alumnoAnthropometry.length === 0 ? (
+                  <p className="mt-2 text-sm text-slate-300">No se encontraron datos.</p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {alumnoAnthropometry.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="rounded-xl border border-white/10 bg-slate-950/55 p-3 text-sm text-slate-200"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-semibold text-white">{formatDateTime(entry.createdAt)}</p>
+                          <p className="text-xs text-slate-300">Peso: {formatWeight(entry.pesoKg)}</p>
+                        </div>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-4">
+                          <p>Agua: {entry.aguaLitros ?? "-"}</p>
+                          <p>Sueno: {entry.suenoHoras ?? "-"}</p>
+                          <p>Actividad: {entry.actividadNivel ?? "-"}</p>
+                          <p>Grasa: {entry.grasaPct ?? "-"}</p>
+                        </div>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          <p>Cintura: {entry.cinturaCm ?? "-"} cm</p>
+                          <p>Cadera: {entry.caderaCm ?? "-"} cm</p>
+                        </div>
+                        {entry.notas ? <p className="mt-2 text-slate-300">{entry.notas}</p> : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </article>
+            </>
+          )}
         </section>
       ) : null}
 
