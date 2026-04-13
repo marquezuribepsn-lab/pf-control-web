@@ -113,6 +113,20 @@ type StoredAITrainingPlan = {
   plan: TrainingPlan;
 };
 
+type TemplateLibraryItem = {
+  optionId: string;
+  source: "template" | "ia";
+  nombre: string;
+  categoria?: string;
+  deporte?: string;
+  totalSemanas: number;
+  totalDias: number;
+  diasConSesion: number;
+  searchText: string;
+  template?: WeekPlanTemplate;
+  aiPlan?: StoredAITrainingPlan;
+};
+
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
@@ -395,7 +409,7 @@ function ClientePlanContent() {
   const [selectedWeekId, setSelectedWeekId] = useState("");
   const [selectedDayId, setSelectedDayId] = useState("");
   const [selectedAiPlanId, setSelectedAiPlanId] = useState("");
-  const [assignmentTargetClientId, setAssignmentTargetClientId] = useState("");
+  const [templateSourceFilter, setTemplateSourceFilter] = useState<"todos" | "template" | "ia">("todos");
   const [templateCategoryFilter, setTemplateCategoryFilter] = useState("todas");
   const [templateSearchTerm, setTemplateSearchTerm] = useState("");
   const [editingTemplateId, setEditingTemplateId] = useState("");
@@ -458,40 +472,35 @@ function ClientePlanContent() {
     return [...jugadorasMapped, ...alumnosMapped];
   }, [alumnos, jugadoras]);
 
-  const selectedClient = useMemo(
-    () => clientes.find((cliente) => cliente.id === rawClientId) || null,
-    [clientes, rawClientId]
-  );
+  const selectedClient = useMemo(() => {
+    const fromCollection = clientes.find((cliente) => cliente.id === rawClientId) || null;
+    if (fromCollection) return fromCollection;
 
-  const alumnosClientes = useMemo(
-    () => clientes.filter((cliente) => cliente.tipo === "alumno"),
-    [clientes]
-  );
+    const separatorIndex = rawClientId.indexOf(":");
+    if (separatorIndex < 0) return null;
 
-  const assignmentTargetClient = useMemo(
-    () => alumnosClientes.find((cliente) => cliente.id === assignmentTargetClientId) || null,
-    [alumnosClientes, assignmentTargetClientId]
-  );
+    const tipoRaw = rawClientId.slice(0, separatorIndex).trim().toLowerCase();
+    const nombreRaw = rawClientId.slice(separatorIndex + 1).trim();
+    if (!nombreRaw) return null;
 
-  useEffect(() => {
-    if (alumnosClientes.length === 0) {
-      if (assignmentTargetClientId) {
-        setAssignmentTargetClientId("");
-      }
-      return;
+    if (tipoRaw === "alumno") {
+      return {
+        id: rawClientId,
+        tipo: "alumno" as const,
+        nombre: nombreRaw,
+      };
     }
 
-    const selectedClientAsAlumno =
-      selectedClient?.tipo === "alumno" &&
-      alumnosClientes.some((cliente) => cliente.id === selectedClient.id)
-        ? selectedClient.id
-        : "";
-
-    const exists = alumnosClientes.some((cliente) => cliente.id === assignmentTargetClientId);
-    if (!exists) {
-      setAssignmentTargetClientId(selectedClientAsAlumno || alumnosClientes[0].id);
+    if (tipoRaw === "jugadora") {
+      return {
+        id: rawClientId,
+        tipo: "jugadora" as const,
+        nombre: nombreRaw,
+      };
     }
-  }, [alumnosClientes, assignmentTargetClientId, selectedClient]);
+
+    return null;
+  }, [clientes, rawClientId]);
 
   const weekStore = useMemo(() => normalizeWeekStore(weekStoreRaw), [weekStoreRaw]);
 
@@ -518,15 +527,21 @@ function ClientePlanContent() {
 
   const templateCategoryOptions = useMemo(() => {
     const options = new Set<string>();
+
     for (const template of templatesAsignablesAlumnos) {
       options.add(templateCategoryKey(template.categoria));
     }
+
+    for (const aiPlan of aiTrainingPlans) {
+      options.add(templateCategoryKey(aiPlan.plan?.category));
+    }
+
     return Array.from(options).sort((a, b) => {
       if (a === "__sin_categoria__") return 1;
       if (b === "__sin_categoria__") return -1;
       return a.localeCompare(b, "es");
     });
-  }, [templatesAsignablesAlumnos]);
+  }, [aiTrainingPlans, templatesAsignablesAlumnos]);
 
   useEffect(() => {
     if (templateCategoryFilter === "todas") return;
@@ -535,27 +550,85 @@ function ClientePlanContent() {
     }
   }, [templateCategoryFilter, templateCategoryOptions]);
 
-  const compatibleSessionTemplates = useMemo(() => {
+  const templateLibraryItems = useMemo<TemplateLibraryItem[]>(() => {
     const query = normalizeText(templateSearchTerm);
 
-    return templatesAsignablesAlumnos.filter((template) => {
+    const templateItems: TemplateLibraryItem[] = templatesAsignablesAlumnos.map((template) => {
+      const totalDias = (template.semanas || []).reduce(
+        (acc, week) => acc + (week.dias || []).length,
+        0
+      );
+      const diasConSesion = (template.semanas || []).reduce(
+        (acc, week) =>
+          acc + (week.dias || []).filter((day) => Boolean((day.sesionId || "").trim())).length,
+        0
+      );
+
+      const searchText = normalizeText(
+        `${template.nombre} ${template.categoria || ""} ${(template.semanas || [])
+          .map((week) => week.nombre)
+          .join(" ")}`
+      );
+
+      return {
+        optionId: `template:${template.id}`,
+        source: "template",
+        nombre: template.nombre,
+        categoria: template.categoria,
+        totalSemanas: (template.semanas || []).length,
+        totalDias,
+        diasConSesion,
+        searchText,
+        template,
+      };
+    });
+
+    const aiItems: TemplateLibraryItem[] = aiTrainingPlans.map((plan) => {
+      const weeks = Array.isArray(plan.plan?.weeks) ? plan.plan.weeks : [];
+      const totalDias = weeks.reduce((acc, week) => acc + (week.sessions || []).length, 0);
+
+      const searchText = normalizeText(
+        `${plan.nombre} ${plan.plan?.category || ""} ${plan.plan?.sport || ""} ${weeks
+          .map((week) => `${week.focus || ""} ${week.rationale || ""}`)
+          .join(" ")}`
+      );
+
+      return {
+        optionId: `ai:${plan.id}`,
+        source: "ia",
+        nombre: plan.nombre,
+        categoria: plan.plan?.category,
+        deporte: plan.plan?.sport,
+        totalSemanas: weeks.length,
+        totalDias,
+        diasConSesion: totalDias,
+        searchText,
+        aiPlan: plan,
+      };
+    });
+
+    return [...templateItems, ...aiItems].filter((item) => {
+      if (templateSourceFilter !== "todos" && item.source !== templateSourceFilter) {
+        return false;
+      }
+
       if (templateCategoryFilter !== "todas") {
-        if (templateCategoryKey(template.categoria) !== templateCategoryFilter) {
+        if (templateCategoryKey(item.categoria) !== templateCategoryFilter) {
           return false;
         }
       }
 
       if (!query) return true;
 
-      const haystack = normalizeText(
-        `${template.nombre} ${template.categoria || ""} ${(template.semanas || [])
-          .map((week) => week.nombre)
-          .join(" ")}`
-      );
-
-      return haystack.includes(query);
+      return item.searchText.includes(query);
     });
-  }, [templateCategoryFilter, templateSearchTerm, templatesAsignablesAlumnos]);
+  }, [
+    aiTrainingPlans,
+    templateCategoryFilter,
+    templateSearchTerm,
+    templateSourceFilter,
+    templatesAsignablesAlumnos,
+  ]);
 
   const selectedAiPlan = useMemo(
     () => {
@@ -569,8 +642,8 @@ function ClientePlanContent() {
   const selectedTemplate = useMemo(() => {
     if (!selectedAiPlanId.startsWith("template:")) return null;
     const rawId = selectedAiPlanId.slice("template:".length);
-    return compatibleSessionTemplates.find((item) => item.id === rawId) || null;
-  }, [compatibleSessionTemplates, selectedAiPlanId]);
+    return templatesAsignablesAlumnos.find((item) => item.id === rawId) || null;
+  }, [selectedAiPlanId, templatesAsignablesAlumnos]);
 
   const normalizedExerciseMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -674,21 +747,19 @@ function ClientePlanContent() {
   }, [selectedDayId, selectedTrainingWeek]);
 
   useEffect(() => {
-    if (compatibleSessionTemplates.length === 0) {
-      if (selectedAiPlanId.startsWith("template:")) {
+    if (templateLibraryItems.length === 0) {
+      if (selectedAiPlanId) {
         setSelectedAiPlanId("");
       }
       return;
     }
 
-    const exists = compatibleSessionTemplates.some(
-      (template) => `template:${template.id}` === selectedAiPlanId
-    );
+    const exists = templateLibraryItems.some((item) => item.optionId === selectedAiPlanId);
 
     if (!exists) {
-      setSelectedAiPlanId(`template:${compatibleSessionTemplates[0].id}`);
+      setSelectedAiPlanId(templateLibraryItems[0].optionId);
     }
-  }, [compatibleSessionTemplates, selectedAiPlanId]);
+  }, [selectedAiPlanId, templateLibraryItems]);
 
   const nutritionFoodsById = useMemo(() => {
     const mergedFoods: NutritionFood[] = [
@@ -1062,17 +1133,17 @@ function ClientePlanContent() {
       return;
     }
 
-    if (!assignmentTargetClient) {
-      setAssignmentError("Selecciona un alumno destino para asignar el template.");
+    if (selectedClient.tipo !== "alumno") {
+      setAssignmentError("La asignacion de templates se habilita solo desde la ficha de alumno.");
       return;
     }
 
     if (!selectedAiPlan && !selectedTemplate) {
-      setAssignmentError("Selecciona un plan IA o template para asignar.");
+      setAssignmentError("Selecciona un template para asignar.");
       return;
     }
 
-    const targetClient = assignmentTargetClient;
+    const targetClient = selectedClient;
 
     setAssigningPlan(true);
     setAssignmentError("");
@@ -1135,7 +1206,7 @@ function ClientePlanContent() {
         }
 
         setAssignmentMessage(
-          `Plan ${selectedAiPlan.nombre} asignado a ${targetClient.nombre}. Sesiones nuevas: ${createdSessions}. Sesiones actualizadas: ${updatedSessions}.`
+          `Template IA ${selectedAiPlan.nombre} asignado a ${targetClient.nombre}. Sesiones nuevas: ${createdSessions}. Sesiones actualizadas: ${updatedSessions}.`
         );
       } else if (selectedTemplate) {
         let createdSessions = 0;
@@ -1494,7 +1565,7 @@ function ClientePlanContent() {
                 prefetch
                 className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
               >
-                Asignar entrenamiento
+                Templates
               </Link>
               <ReliableActionButton
                 type="button"
@@ -1509,10 +1580,13 @@ function ClientePlanContent() {
           <section id="asignar-entrenamiento" className="mb-4 rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Asignar entrenamiento</p>
-                <h3 className="mt-1 text-lg font-black text-white">Templates disponibles</h3>
+                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Templates</p>
+                <h3 className="mt-1 text-lg font-black text-white">Templates</h3>
                 <p className="mt-1 text-sm text-slate-300">
-                  Selecciona un template en formato multi-choice (una sola opcion) y asignalo al alumno que elijas.
+                  Biblioteca unificada de templates: combina templates guardados y entrenamiento IA en una sola seleccion.
+                </p>
+                <p className="mt-2 text-xs text-cyan-100/90">
+                  Destino actual: <span className="font-semibold">{selectedClient.nombre}</span>
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -1526,28 +1600,26 @@ function ClientePlanContent() {
               </div>
             </div>
 
-            {alumnosClientes.length === 0 ? (
+            {selectedClient.tipo !== "alumno" ? (
               <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                No hay alumnos disponibles para asignar templates en este momento.
+                La asignacion de templates esta habilitada solo desde la ficha de alumno.
               </div>
             ) : (
               <div className="mt-3 grid gap-2 md:grid-cols-3">
                 <label className="space-y-1">
-                  <span className="text-xs uppercase tracking-wide text-slate-300">Alumno destino</span>
+                  <span className="text-xs uppercase tracking-wide text-slate-300">Origen</span>
                   <select
-                    value={assignmentTargetClientId}
+                    value={templateSourceFilter}
                     onChange={(event) => {
-                      setAssignmentTargetClientId(event.target.value);
+                      setTemplateSourceFilter(event.target.value as "todos" | "template" | "ia");
                       setAssignmentMessage("");
                       setAssignmentError("");
                     }}
                     className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
                   >
-                    {alumnosClientes.map((alumnoCliente) => (
-                      <option key={alumnoCliente.id} value={alumnoCliente.id}>
-                        {alumnoCliente.nombre}
-                      </option>
-                    ))}
+                    <option value="todos">Todos</option>
+                    <option value="template">Templates guardados</option>
+                    <option value="ia">Entrenamiento IA</option>
                   </select>
                 </label>
 
@@ -1583,49 +1655,43 @@ function ClientePlanContent() {
               </div>
             )}
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
-                Guardados total: <span className="font-semibold text-white">{weekStore.templates.length}</span>
+                En biblioteca: <span className="font-semibold text-white">{templatesAsignablesAlumnos.length + aiTrainingPlans.length}</span>
               </div>
               <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
-                Asignables a alumnos: <span className="font-semibold">{templatesAsignablesAlumnos.length}</span>
+                Templates guardados: <span className="font-semibold">{templatesAsignablesAlumnos.length}</span>
+              </div>
+              <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+                Templates IA: <span className="font-semibold">{aiTrainingPlans.length}</span>
               </div>
               <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 p-3 text-xs text-amber-100">
                 No asignables: <span className="font-semibold">{templatesNoAsignablesAlumnos.length}</span>
               </div>
             </div>
 
-            {templatesAsignablesAlumnos.length === 0 ? (
+            {templatesAsignablesAlumnos.length === 0 && aiTrainingPlans.length === 0 ? (
               <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                No hay templates de alumnos guardados. Puedes crearlos en Templates o convertir uno de los no asignables abajo.
+                No hay templates disponibles. Puedes crearlos en Templates o generar nuevos desde el modulo IA.
               </div>
-            ) : compatibleSessionTemplates.length === 0 ? (
+            ) : templateLibraryItems.length === 0 ? (
               <div className="mt-3 rounded-xl border border-cyan-300/25 bg-cyan-500/10 p-3 text-sm text-cyan-100">
                 No hay templates que coincidan con los filtros actuales.
               </div>
             ) : (
               <>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {compatibleSessionTemplates.map((template) => {
-                    const optionValue = `template:${template.id}`;
-                    const isSelected = selectedAiPlanId === optionValue;
-                    const totalDays = template.semanas.reduce(
-                      (acc, week) => acc + (week.dias || []).length,
-                      0
-                    );
-                    const daysWithSession = template.semanas.reduce(
-                      (acc, week) =>
-                        acc +
-                        (week.dias || []).filter((day) => Boolean((day.sesionId || "").trim())).length,
-                      0
-                    );
+                  {templateLibraryItems.map((item) => {
+                    const isSelected = selectedAiPlanId === item.optionId;
+                    const isSavedTemplate = item.source === "template";
+                    const editableTemplate = item.template || null;
 
                     return (
                       <ReliableActionButton
-                        key={template.id}
+                        key={item.optionId}
                         type="button"
                         onClick={() => {
-                          setSelectedAiPlanId(optionValue);
+                          setSelectedAiPlanId(item.optionId);
                           setAssignmentMessage("");
                           setAssignmentError("");
                         }}
@@ -1636,7 +1702,7 @@ function ClientePlanContent() {
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-bold text-white">{template.nombre}</p>
+                          <p className="text-sm font-bold text-white">{item.nombre}</p>
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
                               isSelected
@@ -1648,49 +1714,62 @@ function ClientePlanContent() {
                           </span>
                         </div>
                         <p className="mt-1 text-xs text-slate-300">
-                          {template.semanas.length} semanas · {totalDays} dias · {daysWithSession} dias con sesion
+                          {item.totalSemanas} semanas · {item.totalDias} dias · {item.diasConSesion} dias con sesion
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-100">
-                            Asignable a alumnos
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              item.source === "ia"
+                                ? "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
+                                : "border-emerald-300/30 bg-emerald-500/10 text-emerald-100"
+                            }`}
+                          >
+                            {item.source === "ia" ? "Entrenamiento IA" : "Template guardado"}
                           </span>
                           <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                            {templateCategoryLabel(template.categoria)}
+                            {templateCategoryLabel(item.categoria)}
                           </span>
+                          {item.deporte ? (
+                            <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100">
+                              {item.deporte}
+                            </span>
+                          ) : null}
                         </div>
 
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openTemplateEdit(template);
-                            }}
-                            className="rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-100 hover:bg-white/10"
-                          >
-                            Editar
-                          </ReliableActionButton>
-                          <ReliableActionButton
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              duplicateTemplateForAlumnos(template);
-                            }}
-                            className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-500/20"
-                          >
-                            Duplicar
-                          </ReliableActionButton>
-                          <ReliableActionButton
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              removeTemplate(template.id);
-                            }}
-                            className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100 hover:bg-rose-500/20"
-                          >
-                            Eliminar
-                          </ReliableActionButton>
-                        </div>
+                        {isSavedTemplate && editableTemplate ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <ReliableActionButton
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openTemplateEdit(editableTemplate);
+                              }}
+                              className="rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-100 hover:bg-white/10"
+                            >
+                              Editar
+                            </ReliableActionButton>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                duplicateTemplateForAlumnos(editableTemplate);
+                              }}
+                              className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                            >
+                              Duplicar
+                            </ReliableActionButton>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                removeTemplate(editableTemplate.id);
+                              }}
+                              className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100 hover:bg-rose-500/20"
+                            >
+                              Eliminar
+                            </ReliableActionButton>
+                          </div>
+                        ) : null}
                       </ReliableActionButton>
                     );
                   })}
@@ -1744,14 +1823,44 @@ function ClientePlanContent() {
                   <ReliableActionButton
                     type="button"
                     onClick={assignSelectedAiPlanToClient}
-                    disabled={!selectedTemplate || assigningPlan || !assignmentTargetClient}
+                    disabled={(!selectedTemplate && !selectedAiPlan) || assigningPlan || selectedClient.tipo !== "alumno"}
                     className="rounded-xl border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-50"
                   >
-                    {assigningPlan ? "Asignando..." : "Asignar template al alumno"}
+                    {assigningPlan
+                      ? "Asignando..."
+                      : selectedAiPlan
+                      ? "Asignar template IA al alumno actual"
+                      : "Asignar template al alumno actual"}
                   </ReliableActionButton>
                 </div>
 
-                {selectedTemplate ? (
+                {selectedAiPlan ? (
+                  <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                    <p className="text-sm font-semibold text-white">{selectedAiPlan.nombre}</p>
+                    <p className="text-xs text-slate-300">
+                      Template IA · {selectedAiPlan.plan.sport || "Sin deporte"} · {selectedAiPlan.plan.category || "Sin categoria"} · {selectedAiPlan.plan.weeks.length} semanas
+                    </p>
+
+                    <div className="space-y-2">
+                      {selectedAiPlan.plan.weeks.map((week) => (
+                        <details key={`${selectedAiPlan.id}-week-${week.weekNumber}`} className="rounded-lg border border-white/10 bg-slate-900/55 p-2">
+                          <summary className="cursor-pointer text-sm font-semibold text-cyan-100">
+                            Semana {week.weekNumber} · {(week.sessions || []).length} sesiones
+                          </summary>
+                          <div className="mt-2 space-y-2 text-xs text-slate-200">
+                            {week.focus ? <p>{week.focus}</p> : null}
+                            {(week.sessions || []).map((session) => (
+                              <article key={session.id} className="rounded-md border border-white/10 bg-slate-950/45 p-2">
+                                <p className="font-semibold text-white">{session.title}</p>
+                                <p className="text-slate-300">{session.goal || "Sin objetivo"}</p>
+                              </article>
+                            ))}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                ) : selectedTemplate ? (
                   <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-slate-950/45 p-3">
                     <p className="text-sm font-semibold text-white">{selectedTemplate.nombre}</p>
                     <p className="text-xs text-slate-300">

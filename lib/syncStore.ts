@@ -2,8 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { PrismaClient } from "@prisma/client";
 
-const STORE_PATH =
-  process.env.SYNC_STORE_PATH || path.join(process.cwd(), "storage", "sync-store.json");
+const STORE_PATH = path.join(process.cwd(), "storage", "sync-store.json");
 const LEGACY_STORE_PATH = path.join(process.cwd(), "data", "sync-store.json");
 const HAS_DATABASE_URL = Boolean(process.env.DATABASE_URL);
 

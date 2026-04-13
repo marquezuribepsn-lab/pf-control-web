@@ -991,18 +991,6 @@ export default function SemanaPage() {
     return ejercicio ? ejercicio.nombre : "Ejercicio";
   };
 
-  const templatesCompatibles = useMemo(() => {
-    if (!personaSeleccionada) return [];
-    return storeV3.templates.filter((template) => {
-      if (template.tipo !== personaSeleccionada.tipo) return false;
-      if (template.tipo === "jugadoras") {
-        if (!template.categoria) return true;
-        return template.categoria === (personaSeleccionada.categoria || "");
-      }
-      return true;
-    });
-  }, [personaSeleccionada, storeV3.templates]);
-
   const templatesOrdenados = useMemo(() => {
     return [...storeV3.templates].sort((a, b) => {
       const left = new Date(b.updatedAt || b.createdAt || 0).getTime();
@@ -2217,50 +2205,6 @@ export default function SemanaPage() {
     notifySuccess("Template guardado correctamente");
   };
 
-  const aplicarPlantilla = (templateId?: string) => {
-    const id = templateId || selectedTemplateId;
-    if (!id) {
-      notifyWarning("Selecciona un template para aplicar");
-      return;
-    }
-
-    const plantilla = storeV3.templates.find((item) => item.id === id);
-    if (!plantilla) {
-      notifyError("No se encontro el template seleccionado");
-      return;
-    }
-
-    if (personaSeleccionada) {
-      if (plantilla.tipo !== personaSeleccionada.tipo) {
-        notifyError("El template no coincide con el tipo de persona seleccionada");
-        return;
-      }
-
-      if (
-        plantilla.tipo === "jugadoras" &&
-        plantilla.categoria &&
-        plantilla.categoria !== (personaSeleccionada.categoria || "")
-      ) {
-        notifyError("La categoria del template no coincide con la jugadora seleccionada");
-        return;
-      }
-    }
-
-    if (
-      !window.confirm(
-        "Aplicar este template reemplazara las semanas actuales de la persona seleccionada. Continuar?"
-      )
-    ) {
-      notifyWarning("Operacion cancelada");
-      return;
-    }
-
-    markManualSaveIntent(STORAGE_KEY);
-    actualizarSemanasSeleccionadas(() => cloneSemanas(plantilla.semanas));
-    setSelectedTemplateId(id);
-    notifySuccess("Template aplicado correctamente");
-  };
-
   const eliminarPlantilla = (templateId?: string) => {
     const id = templateId || selectedTemplateId;
     if (!id) {
@@ -2588,7 +2532,7 @@ export default function SemanaPage() {
           <div className="mt-5 rounded-2xl bg-slate-950/40 p-5 ring-1 ring-white/10">
             <h3 className="text-base font-semibold text-white">Biblioteca de templates</h3>
             <p className="mt-1 text-xs text-slate-300">
-              Gestiona, edita y aplica tus templates guardados.
+              Gestiona y edita tus templates guardados.
             </p>
 
             {templatesFiltrados.length === 0 ? (
@@ -2601,9 +2545,6 @@ export default function SemanaPage() {
                   const totalDias = template.semanas.reduce(
                     (acc, week) => acc + week.dias.length,
                     0
-                  );
-                  const isCompatible = templatesCompatibles.some(
-                    (item) => item.id === template.id
                   );
 
                   return (
@@ -2644,14 +2585,6 @@ export default function SemanaPage() {
                             className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
                           >
                             Editar
-                          </ReliableActionButton>
-                          <ReliableActionButton
-                            type="button"
-                            onClick={() => aplicarPlantilla(template.id)}
-                            disabled={!personaSeleccionada || !isCompatible}
-                            className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Aplicar
                           </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
