@@ -85,7 +85,7 @@ type ColaboradorCreateForm = {
 
 const ACCESS_OPTIONS: AccessOption[] = [
   { href: "/plantel", label: "Plantel", category: "Base" },
-  { href: "/semana", label: "Semana", category: "Planificacion" },
+  { href: "/semana", label: "Templates", category: "Planificacion" },
   { href: "/sesiones", label: "Entrenamiento", category: "Planificacion" },
   { href: "/asistencias", label: "Asistencias", category: "Seguimiento" },
   { href: "/registros", label: "Registros", category: "Seguimiento" },

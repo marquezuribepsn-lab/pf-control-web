@@ -21,6 +21,9 @@ const SessionsContext = createContext<SessionsContextType | undefined>(
 
 const STORAGE_KEY = "pf-control-sesiones";
 
+const createSessionId = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default function SessionsProvider({
   children,
 }: {
@@ -35,7 +38,7 @@ export default function SessionsProvider({
     markManualSaveIntent(STORAGE_KEY);
     const nuevaSesion: Sesion = {
       ...sesion,
-      id: Date.now().toString(),
+      id: createSessionId(),
     };
     setSesiones((prev) => [nuevaSesion, ...prev]);
     return nuevaSesion.id;

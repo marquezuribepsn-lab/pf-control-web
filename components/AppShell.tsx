@@ -133,7 +133,13 @@ const COLABORADOR_ACCESS_HREFS = [
 ];
 
 const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
-const CLIENTE_ACCESS_HREFS = ["/alumnos"];
+const CLIENTE_ACCESS_HREFS = [
+  "/alumnos/inicio",
+  "/alumnos/rutina",
+  "/alumnos/nutricion",
+  "/alumnos/progreso",
+  "/alumnos/musica",
+];
 
 const normalizePath = (value: string) => {
   const path = value.split("?")[0] || "/";
@@ -200,8 +206,8 @@ const formatPendingKeyLabel = (key: string) => {
     "pf-control-clientes-meta-v1": "Clientes · Fichas",
     "pf-control-pagos-v1": "Clientes · Pagos",
     "pf-control-sesiones": "Sesiones",
-    "pf-control-semana-plan": "Semana · Plan",
-    "pf-control-alumno-week-notifications": "Semana · Alertas",
+    "pf-control-semana-plan": "Templates · Plan",
+    "pf-control-alumno-week-notifications": "Templates · Alertas",
     "pf-control-asistencias-jornadas-v1": "Asistencias · Jornadas",
     "pf-control-asistencias-registros-v1": "Asistencias · Registros",
     "pf-control-alumnos": "Alumnos",

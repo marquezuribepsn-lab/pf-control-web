@@ -1107,7 +1107,7 @@ export default function SesionesPage() {
                 href="/semana"
                 className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
               >
-                Ver plan semanal
+                Ver templates
               </Link>
             )}
           </div>

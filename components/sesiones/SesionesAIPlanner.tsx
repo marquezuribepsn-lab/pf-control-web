@@ -4,7 +4,7 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import { useSessions } from "../SessionsProvider";
 import { useEjercicios } from "../EjerciciosProvider";
-import { useSharedState } from "../useSharedState";
+import { markManualSaveIntent, useSharedState } from "../useSharedState";
 
 import type {
   TrainingPlan,
@@ -281,6 +281,8 @@ export default function SesionesAIPlanner() {
     const now = new Date().toISOString();
     const planName = `${plan.targetName} · ${plan.sport}`;
 
+    markManualSaveIntent(AI_TRAINING_PLANS_KEY);
+
     setStoredPlansRaw((prev) => {
       const current = Array.isArray(prev) ? prev : [];
       const existing = current.find((item) => item.id === plan.id) || null;
@@ -317,6 +319,7 @@ export default function SesionesAIPlanner() {
   };
 
   const deletePlanFromLibrary = (planId: string) => {
+    markManualSaveIntent(AI_TRAINING_PLANS_KEY);
     setStoredPlansRaw((prev) => (Array.isArray(prev) ? prev.filter((item) => item.id !== planId) : []));
 
     if (plan?.id === planId) {

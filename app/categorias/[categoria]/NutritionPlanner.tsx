@@ -1665,52 +1665,84 @@ export default function NutritionPlanner() {
           </label>
         </div>
 
-        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-slate-900/65 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">Plantillas IA</p>
-          <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,220px)] lg:grid-cols-[minmax(0,1fr)_220px_auto_auto]">
-            <input
-              value={aiTemplateName}
-              onChange={(event) => setAiTemplateName(event.target.value)}
-              placeholder="Nombre de plantilla"
-              className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-            />
-            <select
-              value={selectedTemplateId}
-              onChange={(event) => setSelectedTemplateId(event.target.value)}
-              className="rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-            >
-              <option value="">Seleccionar plantilla</option>
-              {aiTemplates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name} - {template.goal}
-                </option>
-              ))}
-            </select>
-            <ReliableActionButton
-              type="button"
-              onClick={saveCurrentAIBriefAsTemplate}
-              className="rounded-lg border border-emerald-300/50 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
-            >
-              Guardar plantilla
-            </ReliableActionButton>
-            <ReliableActionButton
-              type="button"
-              onClick={applySelectedTemplate}
-              disabled={!selectedTemplateId}
-              className="rounded-lg border border-cyan-300/50 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 disabled:opacity-50"
-            >
-              Aplicar
-            </ReliableActionButton>
+        <div className="mt-4 rounded-2xl border border-cyan-300/25 bg-slate-900/65 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">Templates</p>
+            <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-slate-200">
+              {aiTemplates.length} guardados
+            </span>
           </div>
-          <div className="mt-2 flex justify-end">
-            <ReliableActionButton
-              type="button"
-              onClick={deleteSelectedTemplate}
-              disabled={!selectedTemplateId}
-              className="rounded-lg border border-rose-300/50 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:opacity-50"
-            >
-              Eliminar plantilla
-            </ReliableActionButton>
+
+          <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+            <div className="rounded-xl border border-white/15 bg-slate-950/45 p-3">
+              <p className="text-[11px] uppercase tracking-wide text-slate-300">Nuevo template</p>
+              <input
+                value={aiTemplateName}
+                onChange={(event) => setAiTemplateName(event.target.value)}
+                placeholder="Nombre del template"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              />
+              <ReliableActionButton
+                type="button"
+                onClick={saveCurrentAIBriefAsTemplate}
+                className="mt-2 w-full rounded-lg border border-emerald-300/50 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
+              >
+                Guardar template
+              </ReliableActionButton>
+              <p className="mt-2 text-[11px] text-slate-400">
+                Guarda el brief IA actual para reutilizarlo rapido.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {aiTemplates.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-white/20 bg-slate-950/35 p-3 text-xs text-slate-300">
+                  Todavia no hay templates guardados.
+                </div>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {aiTemplates.map((template) => {
+                    const isSelected = selectedTemplateId === template.id;
+                    return (
+                      <ReliableActionButton
+                        key={template.id}
+                        type="button"
+                        onClick={() => setSelectedTemplateId(template.id)}
+                        className={`rounded-xl border p-3 text-left transition ${
+                          isSelected
+                            ? "border-cyan-200/55 bg-cyan-500/15"
+                            : "border-white/15 bg-slate-950/40 hover:border-cyan-300/35"
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-white">{template.name}</p>
+                        <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-300">
+                          Objetivo: {template.goal}
+                        </p>
+                      </ReliableActionButton>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <ReliableActionButton
+                  type="button"
+                  onClick={applySelectedTemplate}
+                  disabled={!selectedTemplateId}
+                  className="rounded-lg border border-cyan-300/50 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 disabled:opacity-50"
+                >
+                  Aplicar template
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="button"
+                  onClick={deleteSelectedTemplate}
+                  disabled={!selectedTemplateId}
+                  className="rounded-lg border border-rose-300/50 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-100 disabled:opacity-50"
+                >
+                  Eliminar template
+                </ReliableActionButton>
+              </div>
+            </div>
           </div>
         </div>
 

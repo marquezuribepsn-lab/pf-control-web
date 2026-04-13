@@ -12,11 +12,13 @@ import type {
   PrescripcionSesionPersona,
   Sesion,
 } from "@/data/mockData";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 type AlumnoVisionClientProps = {
   currentName: string;
   currentEmail: string;
+  initialCategory?: MainCategory;
 };
 
 type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
@@ -229,6 +231,33 @@ type AnthropometryEntry = {
   notas?: string;
 };
 
+type ClientInteractionType =
+  | "cambio-rutina"
+  | "ajuste-nutricion"
+  | "pregunta-profesor";
+
+type ClientInteractionRequest = {
+  id: string;
+  alumnoNombre: string;
+  alumnoEmail: string;
+  telefono?: string;
+  type: ClientInteractionType;
+  title: string;
+  detail: string;
+  status: "pendiente" | "atendida";
+  createdAt: string;
+  sourceCategory: MainCategory;
+};
+
+type ProfesorContacto = {
+  id: string;
+  nombre: string;
+  role: string;
+  telefono: string;
+  waPhone: string;
+  source: "asignado" | "colaborador" | "admin";
+};
+
 type SessionQuestionId =
   | "trainedAt"
   | "effort"
@@ -268,6 +297,7 @@ const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const SESSION_FEEDBACK_KEY = "pf-control-alumno-session-feedback-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
+const CLIENT_INTERACTIONS_KEY = "pf-control-alumno-interacciones-v1";
 
 const SESSION_MOOD_OPTIONS = [
   "Motivado",
@@ -280,6 +310,35 @@ const SESSION_MOOD_OPTIONS = [
 ];
 
 const SESSION_GOAL_OPTIONS = ["Cumplido", "Parcialmente", "No cumplido"];
+
+const ROUTINE_INTERACTION_COPY: Record<
+  ClientInteractionType,
+  {
+    title: string;
+    prompt: string;
+    defaultDetail: string;
+    success: string;
+  }
+> = {
+  "cambio-rutina": {
+    title: "Solicitar cambio de rutina",
+    prompt: "Explica por que quieres ajustar tu rutina.",
+    defaultDetail: "Necesito ajustar la rutina por disponibilidad, sensaciones de carga o molestias.",
+    success: "Solicitud de cambio de rutina enviada.",
+  },
+  "ajuste-nutricion": {
+    title: "Solicitar ajuste de plan nutricional",
+    prompt: "Describe que ajuste nutricional necesitas.",
+    defaultDetail: "Quiero revisar porciones, horarios o alimentos del plan nutricional.",
+    success: "Solicitud de ajuste nutricional enviada.",
+  },
+  "pregunta-profesor": {
+    title: "Hacer una pregunta al profesor",
+    prompt: "Escribe tu pregunta para el profesor.",
+    defaultDetail: "Tengo una consulta sobre tecnica, progresion o recuperacion.",
+    success: "Pregunta enviada al profesor.",
+  },
+};
 
 const WEEK_DAY_NAMES = [
   "Lunes",
@@ -1041,6 +1100,49 @@ function normalizeAnthropometry(rawValue: unknown): AnthropometryEntry[] {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
+function normalizeClientInteractionRequests(rawValue: unknown): ClientInteractionRequest[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  const allowedTypes: ClientInteractionType[] = [
+    "cambio-rutina",
+    "ajuste-nutricion",
+    "pregunta-profesor",
+  ];
+  const allowedCategories: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row) => {
+      const item = row as Record<string, unknown>;
+      const rawType = String(item.type || "").trim() as ClientInteractionType;
+      const type = allowedTypes.includes(rawType) ? rawType : "pregunta-profesor";
+
+      const rawStatus = String(item.status || "").trim().toLowerCase();
+      const rawCategory = String(item.sourceCategory || "").trim() as MainCategory;
+      const status: ClientInteractionRequest["status"] =
+        rawStatus === "atendida" ? "atendida" : "pendiente";
+
+      return {
+        id: String(item.id || createId("interaction")),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        alumnoEmail: String(item.alumnoEmail || item.email || "").trim(),
+        telefono: String(item.telefono || "").trim() || undefined,
+        type,
+        title:
+          String(item.title || ROUTINE_INTERACTION_COPY[type].title).trim() ||
+          ROUTINE_INTERACTION_COPY[type].title,
+        detail: String(item.detail || item.mensaje || "").trim(),
+        status,
+        createdAt: String(item.createdAt || new Date().toISOString()),
+        sourceCategory: allowedCategories.includes(rawCategory) ? rawCategory : "rutina",
+      };
+    })
+    .filter((item) => item.alumnoNombre && item.detail)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 function formatWeight(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "-";
   return `${value.toFixed(2)} kg`;
@@ -1211,12 +1313,17 @@ function MusicPlayer({ item }: { item: MusicAssignment }) {
   );
 }
 
-export default function AlumnoVisionClient({ currentName, currentEmail }: AlumnoVisionClientProps) {
+export default function AlumnoVisionClient({
+  currentName,
+  currentEmail,
+  initialCategory = "inicio",
+}: AlumnoVisionClientProps) {
+  const router = useRouter();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
   const { ejercicios } = useEjercicios();
 
-  const [mainCategory, setMainCategory] = useState<MainCategory>("inicio");
+  const [mainCategory, setMainCategory] = useState<MainCategory>(initialCategory);
   const [trainingView, setTrainingView] = useState<TrainingView>("descripcion");
   const [nutritionView, setNutritionView] = useState<NutritionView>("plan");
   const [progressView, setProgressView] = useState<ProgressView>("semanal-rutina");
@@ -1227,6 +1334,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
 
   const [recordStatus, setRecordStatus] = useState("");
   const [anthroStatus, setAnthroStatus] = useState("");
+  const [interactionStatus, setInteractionStatus] = useState("");
 
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -1270,6 +1378,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
   });
 
   const [accountData, setAccountData] = useState<AccountSnapshot | null>(null);
+  const [profesorContacto, setProfesorContacto] = useState<ProfesorContacto | null>(null);
 
   const [clientesMeta] = useSharedState<Record<string, ClienteMetaLite>>({}, {
     key: CLIENTE_META_KEY,
@@ -1322,6 +1431,15 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     legacyLocalStorageKey: ANTHROPOMETRY_KEY,
   });
 
+  const [interactionRaw, setInteractionRaw] = useSharedState<unknown[]>([], {
+    key: CLIENT_INTERACTIONS_KEY,
+    legacyLocalStorageKey: CLIENT_INTERACTIONS_KEY,
+  });
+
+  useEffect(() => {
+    setMainCategory(initialCategory);
+  }, [initialCategory]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -1346,6 +1464,30 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProfesorContacto = async () => {
+      try {
+        const response = await fetch("/api/alumnos/profesor-contacto", { cache: "no-store" });
+        if (!response.ok || cancelled) return;
+
+        const data = (await response.json()) as { contacto?: ProfesorContacto };
+        if (!cancelled && data?.contacto?.waPhone) {
+          setProfesorContacto(data.contacto);
+        }
+      } catch {
+        // Keep rutina panel usable even if contact lookup fails.
+      }
+    };
+
+    void loadProfesorContacto();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const nutritionPlans = useMemo(() => normalizeNutritionPlans(nutritionPlansRaw), [nutritionPlansRaw]);
   const nutritionAssignments = useMemo(
     () => normalizeNutritionAssignments(nutritionAssignmentsRaw),
@@ -1361,6 +1503,10 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
   const anthropometryEntries = useMemo(
     () => normalizeAnthropometry(anthropometryRaw),
     [anthropometryRaw]
+  );
+  const interactionRequests = useMemo(
+    () => normalizeClientInteractionRequests(interactionRaw),
+    [interactionRaw]
   );
 
   const normalizedSessionEmail = normalizeEmail(currentEmail);
@@ -1419,6 +1565,27 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     if (alumnoNameFromEmail) return alumnoNameFromEmail;
     return "";
   }, [alumnoNameFromEmail, alumnoNameFromMeta, alumnoNameFromSession, alumnoRecord?.nombre]);
+
+  const alumnoInteractionRequests = useMemo(() => {
+    if (!alumnoName && !normalizedSessionEmail) return [];
+
+    return interactionRequests.filter((item) => {
+      const byName = alumnoName ? namesLikelyMatch(item.alumnoNombre, alumnoName) : false;
+      const byEmail =
+        normalizedSessionEmail && item.alumnoEmail
+          ? normalizeEmail(item.alumnoEmail) === normalizedSessionEmail
+          : false;
+
+      return byName || byEmail;
+    });
+  }, [alumnoName, interactionRequests, normalizedSessionEmail]);
+
+  const pendingInteractionCount = useMemo(
+    () => alumnoInteractionRequests.filter((item) => item.status === "pendiente").length,
+    [alumnoInteractionRequests]
+  );
+
+  const latestInteractionRequest = alumnoInteractionRequests[0] || null;
 
   const exerciseById = useMemo(
     () => new Map(ejercicios.map((item) => [String(item.id), item])),
@@ -1529,18 +1696,6 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
       };
     }
 
-    const fallbackWeeks = createFourWeekFallbackPlan(routineEntries);
-
-    if (fallbackWeeks.length > 0) {
-      const totalDias = fallbackWeeks.reduce((acc, week) => acc + week.dias.length, 0);
-      return {
-        nombre: matchedPlan?.nombre || alumnoName || "Rutina de prueba",
-        semanas: fallbackWeeks,
-        totalSemanas: fallbackWeeks.length,
-        totalDias,
-      };
-    }
-
     return {
       nombre: "Sin plan",
       semanas: [],
@@ -1552,7 +1707,6 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     alumnoNameFromEmail,
     alumnoNameFromMeta,
     alumnoNameFromSession,
-    routineEntries,
     weekStoreRaw?.planes,
   ]);
 
@@ -2325,6 +2479,11 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
     setRecordStatus("Registro eliminado.");
   };
 
+  const goToAlumnoCategory = (category: MainCategory) => {
+    setMainCategory(category);
+    router.push(`/alumnos/${category}`);
+  };
+
   const jumpToTodayRoutine = () => {
     if (todayPlanContext.week?.id) {
       setSelectedWeekId(todayPlanContext.week.id);
@@ -2336,8 +2495,71 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
       setSelectedSessionId(todayPlanContext.routine.sesion.id);
     }
 
-    setMainCategory("rutina");
+    goToAlumnoCategory("rutina");
     setTrainingView("descripcion");
+  };
+
+  const handleSendRoutineInteraction = (type: ClientInteractionType) => {
+    setInteractionStatus("");
+
+    if (!alumnoName) {
+      setInteractionStatus("No pudimos identificar al alumno para enviar la solicitud.");
+      return;
+    }
+
+    const copy = ROUTINE_INTERACTION_COPY[type];
+    let detail = copy.defaultDetail;
+
+    if (typeof window !== "undefined") {
+      const response = window.prompt(copy.prompt, copy.defaultDetail);
+      if (response === null) {
+        setInteractionStatus("Solicitud cancelada.");
+        return;
+      }
+
+      detail = response.trim() || copy.defaultDetail;
+    }
+
+    if (type === "pregunta-profesor") {
+      if (!profesorContacto?.waPhone) {
+        setInteractionStatus("No hay numero de WhatsApp del profesor/admin configurado.");
+        return;
+      }
+
+      const profesorNombre = profesorContacto.nombre || "profe";
+      const intro = `Hola ${profesorNombre}, soy ${alumnoName}.`;
+      const source = currentEmail ? ` (${currentEmail})` : "";
+      const message = encodeURIComponent(`${intro}${source} ${detail}`.trim());
+
+      if (typeof window !== "undefined") {
+        window.open(
+          `https://wa.me/${profesorContacto.waPhone}?text=${message}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }
+    }
+
+    const payload: ClientInteractionRequest = {
+      id: createId("interaction"),
+      alumnoNombre: alumnoName,
+      alumnoEmail: currentEmail,
+      telefono: telefono !== "Sin telefono" ? telefono : undefined,
+      type,
+      title: copy.title,
+      detail,
+      status: "pendiente",
+      createdAt: new Date().toISOString(),
+      sourceCategory: "rutina",
+    };
+
+    setInteractionRaw((prev) => [payload, ...normalizeClientInteractionRequests(prev)]);
+    if (type === "pregunta-profesor") {
+      setInteractionStatus(`Abriendo WhatsApp con ${profesorContacto?.nombre || "el profesor"}.`);
+      return;
+    }
+
+    setInteractionStatus(copy.success);
   };
 
   const handleSaveAnthropometry = () => {
@@ -2382,24 +2604,28 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
   };
 
   const progressPct = Math.round(((questionIndex + 1) / SESSION_QUESTIONS.length) * 100);
+  const panelEyebrow = "Panel Alumno";
+  const panelDescription =
+    "Entrenamiento por semanas y dias, plan nutricional completo, progreso antropometrico y musica recomendada en un solo lugar.";
+  const objectiveLabel = "Objetivo actual";
+  const canOpenProfessorWhatsApp = Boolean(profesorContacto?.waPhone);
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 p-6 text-slate-100">
+      {mainCategory !== "rutina" ? (
       <section className="relative overflow-hidden rounded-3xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_24px_80px_rgba(6,182,212,0.14)]">
         <div className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-fuchsia-500/16 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200/85">Panel Alumno</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200/85">{panelEyebrow}</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-white">{alumnoName || "Mi panel"}</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">
-              Entrenamiento por semanas y dias, plan nutricional completo, progreso antropometrico y musica recomendada en un solo lugar.
-            </p>
+            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">{panelDescription}</p>
           </div>
 
           <div className="rounded-2xl border border-cyan-200/30 bg-cyan-500/10 px-4 py-3 text-right">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">Objetivo actual</p>
+            <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">{objectiveLabel}</p>
             <p className="mt-1 text-sm font-semibold text-cyan-50">{objetivo}</p>
             <p className="mt-1 text-xs text-cyan-100/80">
               Vigencia: {formatDate(alumnoMetaMatch?.meta?.startDate || null)} - {formatDate(alumnoMetaMatch?.meta?.endDate || null)}
@@ -2414,66 +2640,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
           <StatCard label="Playlists" value={String(musicAssignments.length)} />
         </div>
       </section>
-
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-2">
-        <div className="flex flex-wrap gap-2">
-          <ReliableActionButton
-            type="button"
-            onClick={() => setMainCategory("inicio")}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "inicio"
-                ? "bg-fuchsia-500 text-white"
-                : "border border-white/20 bg-white/5 text-slate-100"
-            }`}
-          >
-            Inicio
-          </ReliableActionButton>
-          <ReliableActionButton
-            type="button"
-            onClick={() => setMainCategory("rutina")}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "rutina"
-                ? "bg-fuchsia-500 text-white"
-                : "border border-white/20 bg-white/5 text-slate-100"
-            }`}
-          >
-            Rutina
-          </ReliableActionButton>
-          <ReliableActionButton
-            type="button"
-            onClick={() => setMainCategory("nutricion")}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "nutricion"
-                ? "bg-fuchsia-500 text-white"
-                : "border border-white/20 bg-white/5 text-slate-100"
-            }`}
-          >
-            Plan nutricional
-          </ReliableActionButton>
-          <ReliableActionButton
-            type="button"
-            onClick={() => setMainCategory("progreso")}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "progreso"
-                ? "bg-fuchsia-500 text-white"
-                : "border border-white/20 bg-white/5 text-slate-100"
-            }`}
-          >
-            Progreso
-          </ReliableActionButton>
-          <ReliableActionButton
-            type="button"
-            onClick={() => setMainCategory("musica")}
-            className={`rounded-xl px-4 py-2 text-sm font-bold ${
-              mainCategory === "musica"
-                ? "bg-fuchsia-500 text-white"
-                : "border border-white/20 bg-white/5 text-slate-100"
-            }`}
-          >
-            Musica
-          </ReliableActionButton>
-        </div>
-      </section>
+      ) : null}
 
       {mainCategory === "inicio" ? (
         <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
@@ -2586,7 +2753,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               <ReliableActionButton
                 type="button"
                 onClick={() => {
-                  setMainCategory("progreso");
+                  goToAlumnoCategory("progreso");
                   setProgressView("antropometria");
                   setShowAnthroForm(true);
                 }}
@@ -2598,7 +2765,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               <ReliableActionButton
                 type="button"
                 onClick={() => {
-                  setMainCategory("progreso");
+                  goToAlumnoCategory("progreso");
                   setProgressView("antropometria");
                   setShowAnthroForm(true);
                 }}
@@ -2610,7 +2777,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               <ReliableActionButton
                 type="button"
                 onClick={() => {
-                  setMainCategory("progreso");
+                  goToAlumnoCategory("progreso");
                   setProgressView("antropometria");
                   setShowAnthroForm(true);
                 }}
@@ -2622,7 +2789,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               <ReliableActionButton
                 type="button"
                 onClick={() => {
-                  setMainCategory("progreso");
+                  goToAlumnoCategory("progreso");
                   setProgressView("antropometria");
                   setShowAnthroForm(true);
                 }}
@@ -2639,7 +2806,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
             <div className="grid gap-2 sm:grid-cols-2">
               <ReliableActionButton
                 type="button"
-                onClick={() => setMainCategory("rutina")}
+                onClick={() => goToAlumnoCategory("rutina")}
                 className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
               >
                 <p className="text-base font-black text-white">Rutina</p>
@@ -2647,7 +2814,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
-                onClick={() => setMainCategory("nutricion")}
+                onClick={() => goToAlumnoCategory("nutricion")}
                 className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
               >
                 <p className="text-base font-black text-white">Plan nutricional</p>
@@ -2656,7 +2823,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               <ReliableActionButton
                 type="button"
                 onClick={() => {
-                  setMainCategory("progreso");
+                  goToAlumnoCategory("progreso");
                   setProgressView("semanal-rutina");
                 }}
                 className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
@@ -2666,7 +2833,7 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
-                onClick={() => setMainCategory("musica")}
+                onClick={() => goToAlumnoCategory("musica")}
                 className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
               >
                 <p className="text-base font-black text-white">Musica</p>
@@ -2692,9 +2859,9 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
         <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black">Rutina y sesion</h2>
+              <h2 className="text-2xl font-black">Rutina de entrenamiento</h2>
               <p className="mt-1 text-sm text-slate-300">
-                Vista de entrenamiento con semanas, dias, ejercicios, registro rapido y cierre de sesion.
+                Espacio enfocado en ejecutar la planificacion, registrar tus cargas y mantener progreso semanal.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -2710,6 +2877,61 @@ export default function AlumnoVisionClient({ currentName, currentEmail }: Alumno
               </ReliableActionButton>
             </div>
           </div>
+
+          <article className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">Interaccion con el staff</p>
+                <h3 className="mt-1 text-lg font-black text-white">Solicitudes rapidas del alumno</h3>
+                <p className="mt-1 text-sm text-emerald-100/90">
+                  Envia cambios o dudas mientras entrenas para que el equipo te responda en el siguiente seguimiento.
+                </p>
+              </div>
+              <div className="rounded-xl border border-emerald-200/30 bg-emerald-950/40 px-3 py-2 text-right">
+                <p className="text-[11px] uppercase tracking-[0.12em] text-emerald-100/85">Pendientes</p>
+                <p className="mt-1 text-2xl font-black text-white">{pendingInteractionCount}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <ReliableActionButton
+                type="button"
+                onClick={() => handleSendRoutineInteraction("cambio-rutina")}
+                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 p-3 text-left"
+              >
+                <p className="text-sm font-black text-white">Solicitar cambio de rutina</p>
+                <p className="mt-1 text-xs text-cyan-100">Ajustes por carga, tiempo o molestias.</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => handleSendRoutineInteraction("ajuste-nutricion")}
+                className="rounded-xl border border-fuchsia-300/35 bg-fuchsia-500/15 p-3 text-left"
+              >
+                <p className="text-sm font-black text-white">Solicitar plan nutricional</p>
+                <p className="mt-1 text-xs text-fuchsia-100">Cambios de porciones, horarios o comidas.</p>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => handleSendRoutineInteraction("pregunta-profesor")}
+                disabled={!canOpenProfessorWhatsApp}
+                className="rounded-xl border border-white/20 bg-slate-950/60 p-3 text-left disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <p className="text-sm font-black text-white">Pregunta al profesor (WhatsApp)</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  {canOpenProfessorWhatsApp
+                    ? `Chat directo con ${profesorContacto?.nombre || "profesor"}.`
+                    : "Sin numero de WhatsApp configurado."}
+                </p>
+              </ReliableActionButton>
+            </div>
+
+            {interactionStatus ? <p className="mt-3 text-xs text-emerald-100">{interactionStatus}</p> : null}
+            {latestInteractionRequest ? (
+              <p className="mt-1 text-xs text-emerald-100/80">
+                Ultima solicitud: {latestInteractionRequest.title} · {formatDateTime(latestInteractionRequest.createdAt)}
+              </p>
+            ) : null}
+          </article>
 
           {weekPlanForAlumno.semanas.length > 0 ? (
             <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/45 p-4">

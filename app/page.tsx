@@ -66,6 +66,7 @@ function guessAppHrefByLabel(label: string): string | null {
   if (normalized.includes("sesion")) return "/sesiones";
   if (normalized.includes("ejercicio")) return "/sesiones?seccion=ejercicios";
   if (normalized.includes("cliente")) return "/clientes";
+  if (normalized.includes("template")) return "/semana";
   if (normalized.includes("semana")) return "/semana";
   if (normalized.includes("plantel") || normalized.includes("jugadora") || normalized.includes("alumno")) {
     return "/clientes?seccion=plantel";
@@ -122,7 +123,7 @@ function resolveDashboardStatHint(title: string, index: number): string {
     return "Ver plantilla operativa";
   }
   if (normalized.includes("wellness")) return "Revisar balance de carga";
-  if (normalized.includes("carga") || normalized.includes("sesion")) return "Entrar al plan semanal";
+  if (normalized.includes("carga") || normalized.includes("sesion")) return "Entrar a templates";
 
   const fallbackHints = [
     "Explorar indicadores",
@@ -137,6 +138,30 @@ function resolveDashboardStatHint(title: string, index: number): string {
 function isWellnessModulo(modulo: Modulo): boolean {
   const href = modulo.href.trim().toLowerCase();
   return href === "/wellness" || href === "/nuevo-wellness";
+}
+
+function isTemplatesModulo(modulo: Modulo): boolean {
+  const href = String(modulo.href || "").trim().toLowerCase();
+  const label = String(modulo.label || "").trim().toLowerCase();
+  return href === "/semana" || label === "semana" || label === "templates" || label.includes("template");
+}
+
+function normalizeTemplatesModulo(modulo: Modulo): Modulo {
+  if (!isTemplatesModulo(modulo)) {
+    return modulo;
+  }
+
+  const rawDesc = String(modulo.desc || "").trim();
+  const desc = rawDesc.toLowerCase().includes("planificacion semanal") || !rawDesc
+    ? "Biblioteca de templates y objetivos de carga."
+    : rawDesc;
+
+  return {
+    ...modulo,
+    label: "Templates",
+    desc,
+    href: "/semana",
+  };
 }
 
 const STORAGE_KEY = "pf-control-home-config-v2";
@@ -184,9 +209,9 @@ const defaultConfig: HomeConfig = {
       tone: "from-cyan-500 to-sky-600",
     },
     {
-      label: "Semana",
+      label: "Templates",
       href: "/semana",
-      desc: "Planificacion semanal de cargas y objetivos.",
+      desc: "Biblioteca de templates y objetivos de carga.",
       tone: "from-emerald-500 to-teal-600",
     },
     {
@@ -342,7 +367,9 @@ export default function Home() {
       try {
         const parsed = JSON.parse(raw) as Partial<HomeConfig>;
         const modulosGuardados = Array.isArray(parsed.modulos)
-          ? parsed.modulos.filter((modulo) => !isWellnessModulo(modulo))
+          ? parsed.modulos
+              .filter((modulo) => !isWellnessModulo(modulo))
+              .map((modulo) => normalizeTemplatesModulo(modulo))
           : defaultConfig.modulos;
 
         const modulosConAsistencias = modulosGuardados.some(
@@ -372,10 +399,17 @@ export default function Home() {
             hydratedConfig.botonSecundarioLabel,
             defaultConfig.botonSecundarioHref
           ),
-          modulos: hydratedConfig.modulos.map((modulo) => ({
-            ...modulo,
-            href: resolveActionHref(modulo.href, modulo.label, guessAppHrefByLabel(modulo.label) || "/"),
-          })),
+          modulos: hydratedConfig.modulos.map((modulo) => {
+            const normalizedModulo = normalizeTemplatesModulo(modulo);
+            return {
+              ...normalizedModulo,
+              href: resolveActionHref(
+                normalizedModulo.href,
+                normalizedModulo.label,
+                guessAppHrefByLabel(normalizedModulo.label) || "/"
+              ),
+            };
+          }),
         };
 
         setConfig(sanitizedConfig);
@@ -765,7 +799,7 @@ export default function Home() {
                             href="/semana"
                             className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
                           >
-                            Abrir semana
+                            Abrir templates
                           </Link>
                         </td>
                       </tr>
