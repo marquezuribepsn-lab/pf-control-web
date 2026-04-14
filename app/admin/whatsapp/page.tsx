@@ -24,6 +24,7 @@ type Recipient = {
   id: string;
   label: string;
   tipo: "alumno" | "colaborador";
+  estado?: string;
   telefono: string;
   actividad?: string;
   daysToDue?: number | null;
@@ -31,6 +32,16 @@ type Recipient = {
   planStatus?: string;
   hasPendingPlanUpdate?: boolean;
   variables: Record<string, string>;
+};
+
+type MissingPhoneRow = {
+  id: string;
+  label: string;
+  tipo: "alumno";
+  ownerKey?: string;
+  estado?: string;
+  rawPhone: string;
+  reason: "missing_phone" | "invalid_phone";
 };
 
 type HistoryRecipientResult = {
@@ -101,12 +112,15 @@ type RunnerState = {
 type RunnerAlertRow = {
   id?: string;
   createdAt?: string;
+  type?: string;
   runId?: string;
   categoryKey?: string;
   ruleKey?: string;
   sent?: number;
   failed?: number;
   retryCount?: number;
+  totalMissing?: number;
+  previewNames?: string;
   emailAlertSent?: boolean;
   whatsappAlertSent?: boolean;
   alertError?: string | null;
@@ -249,6 +263,7 @@ export default function AdminWhatsAppPage() {
 
   const [config, setConfig] = useState<WhatsAppConfig>(getDefaultWhatsAppConfig());
   const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [missingPhoneRows, setMissingPhoneRows] = useState<MissingPhoneRow[]>([]);
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [runs, setRuns] = useState<RunRow[]>([]);
   const [runnerState, setRunnerState] = useState<RunnerState>({});
@@ -517,6 +532,7 @@ export default function AdminWhatsAppPage() {
 
       const nextRecipients = Array.isArray(recipientsJson?.recipients) ? recipientsJson.recipients : [];
       setRecipients(nextRecipients);
+      setMissingPhoneRows(Array.isArray(recipientsJson?.missingPhones) ? recipientsJson.missingPhones : []);
 
       const nextHistory = Array.isArray(historyJson?.history) ? historyJson.history : [];
       setHistory(nextHistory);
@@ -1145,7 +1161,7 @@ export default function AdminWhatsAppPage() {
           </div>
         </div>
 
-        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
             Conexion
             <p className="mt-1 text-base font-black text-white">
@@ -1163,6 +1179,10 @@ export default function AdminWhatsAppPage() {
           <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
             Destinatarios
             <p className="mt-1 text-base font-black text-white">{recipients.length}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Alumnos sin numero
+            <p className="mt-1 text-base font-black text-white">{missingPhoneRows.length}</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
             Runner
@@ -1338,6 +1358,9 @@ export default function AdminWhatsAppPage() {
                     <p className="font-semibold">{recipient.label}</p>
                     <p className="text-[11px] opacity-80">{recipient.telefono}</p>
                     <p className="text-[11px] opacity-80">{recipient.tipo}</p>
+                    {recipient.estado ? (
+                      <p className="text-[11px] opacity-80">estado: {recipient.estado}</p>
+                    ) : null}
                     {recipient.actividad ? (
                       <p className="text-[11px] opacity-80">actividad: {recipient.actividad}</p>
                     ) : null}
@@ -1722,19 +1745,37 @@ export default function AdminWhatsAppPage() {
                 {runnerAlerts.map((alert) => (
                   <article
                     key={String(alert.id || `${alert.runId}-${alert.createdAt}`)}
-                    className="rounded-lg border border-rose-300/30 bg-rose-500/10 p-3 text-xs text-rose-100"
+                    className={`rounded-lg border p-3 text-xs ${
+                      alert.type === "missing_phone_push"
+                        ? "border-amber-300/30 bg-amber-500/10 text-amber-100"
+                        : "border-rose-300/30 bg-rose-500/10 text-rose-100"
+                    }`}
                   >
                     <p className="font-semibold">{formatDateTime(alert.createdAt)}</p>
-                    <p>
-                      run={alert.runId || "-"} · {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
-                    </p>
-                    <p>
-                      sent={alert.sent ?? 0} · failed={alert.failed ?? 0} · retries={alert.retryCount ?? 0}
-                    </p>
-                    <p>
-                      email={String(alert.emailAlertSent)} · whatsapp={String(alert.whatsappAlertSent)}
-                    </p>
-                    {alert.alertError ? <p>error={alert.alertError}</p> : null}
+
+                    {alert.type === "missing_phone_push" ? (
+                      <>
+                        <p>
+                          run={alert.runId || "-"} · {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
+                        </p>
+                        <p>alumnos_sin_numero={alert.totalMissing ?? 0}</p>
+                        {alert.previewNames ? <p>ejemplos={alert.previewNames}</p> : null}
+                        {alert.alertError ? <p>error={alert.alertError}</p> : <p>push=enviado</p>}
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          run={alert.runId || "-"} · {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
+                        </p>
+                        <p>
+                          sent={alert.sent ?? 0} · failed={alert.failed ?? 0} · retries={alert.retryCount ?? 0}
+                        </p>
+                        <p>
+                          email={String(alert.emailAlertSent)} · whatsapp={String(alert.whatsappAlertSent)}
+                        </p>
+                        {alert.alertError ? <p>error={alert.alertError}</p> : null}
+                      </>
+                    )}
                   </article>
                 ))}
               </div>
@@ -1944,6 +1985,56 @@ export default function AdminWhatsAppPage() {
               />
               Alerta por WhatsApp interno
             </label>
+
+            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={config.automationRunner.alertMissingPhonePush !== false}
+                onChange={(event) =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    automationRunner: {
+                      ...prev.automationRunner,
+                      alertMissingPhonePush: event.target.checked,
+                    },
+                  }))
+                }
+                className="mr-2"
+              />
+              Aviso automatico push: alumnos sin numero
+            </label>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-amber-300/35 bg-amber-500/10 p-4">
+            <p className="text-sm font-semibold text-amber-100">
+              Alumnos sin numero de WhatsApp ({missingPhoneRows.length})
+            </p>
+            {missingPhoneRows.length === 0 ? (
+              <p className="mt-2 text-xs text-amber-100/80">Todos los alumnos detectados tienen numero valido.</p>
+            ) : (
+              <div className="mt-2 max-h-44 overflow-auto rounded-lg border border-amber-200/20">
+                <table className="min-w-full text-left text-xs text-amber-100">
+                  <thead>
+                    <tr className="border-b border-amber-200/20 text-amber-50">
+                      <th className="px-2 py-1">Alumno</th>
+                      <th className="px-2 py-1">Estado</th>
+                      <th className="px-2 py-1">Motivo</th>
+                      <th className="px-2 py-1">Valor actual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {missingPhoneRows.map((row) => (
+                      <tr key={row.id} className="border-b border-amber-200/10">
+                        <td className="px-2 py-1">{row.label}</td>
+                        <td className="px-2 py-1">{row.estado || "activo"}</td>
+                        <td className="px-2 py-1">{row.reason === "invalid_phone" ? "Numero invalido" : "Sin numero"}</td>
+                        <td className="px-2 py-1">{row.rawPhone || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900/90 to-slate-950 p-5 shadow-[0_24px_70px_-36px_rgba(45,212,191,0.65)]">

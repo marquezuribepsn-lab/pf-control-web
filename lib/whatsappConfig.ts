@@ -36,6 +36,7 @@ export type WhatsAppAutomationRunnerConfig = {
   retryBackoffSeconds: number;
   alertEmailOnFailure: boolean;
   alertWhatsAppOnFailure: boolean;
+  alertMissingPhonePush: boolean;
 };
 
 export type WhatsAppConfig = {
@@ -71,6 +72,7 @@ function buildDefaultConfig(): WhatsAppConfig {
       retryBackoffSeconds: 20,
       alertEmailOnFailure: true,
       alertWhatsAppOnFailure: true,
+      alertMissingPhonePush: true,
     },
     categories: {
       cobranzas: {
@@ -89,7 +91,19 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "20:00",
             message:
               "*Aviso de vencimiento*\n\nHola {{nombre}},\ntu cuota de la actividad *{{actividad}}* vence dentro de *{{dias}}* dias.",
-            variables: ["nombre", "actividad", "dias", "vencimiento", "total"],
+            variables: [
+              "nombre",
+              "actividad",
+              "dias",
+              "fecha",
+              "vencimiento",
+              "total",
+              "pago_estado",
+              "saldo",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
           dia_vencimiento: {
             key: "dia_vencimiento",
@@ -102,7 +116,18 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "20:00",
             message:
               "*Vencimiento hoy*\n\nHola {{nombre}},\ntu cuota de la actividad *{{actividad}}* vence *hoy*.",
-            variables: ["nombre", "actividad", "vencimiento", "total"],
+            variables: [
+              "nombre",
+              "actividad",
+              "fecha",
+              "vencimiento",
+              "total",
+              "pago_estado",
+              "saldo",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
           ya_vencio: {
             key: "ya_vencio",
@@ -115,7 +140,18 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "20:00",
             message:
               "*Cuota vencida*\n\nHola {{nombre}},\nregistramos que tu cuota de *{{actividad}}* ya vencio.\nSi ya abonaste, ignora este mensaje.",
-            variables: ["nombre", "actividad", "vencimiento", "total"],
+            variables: [
+              "nombre",
+              "actividad",
+              "fecha",
+              "vencimiento",
+              "total",
+              "pago_estado",
+              "saldo",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
           renovacion_plan: {
             key: "renovacion_plan",
@@ -128,7 +164,18 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "21:00",
             message:
               "*Renovacion confirmada*\n\nHola {{nombre}},\nse acredito tu renovacion de *{{actividad}}*.\nNuevo vencimiento: *{{vencimiento}}*.",
-            variables: ["nombre", "actividad", "vencimiento", "total"],
+            variables: [
+              "nombre",
+              "actividad",
+              "fecha",
+              "vencimiento",
+              "total",
+              "pago_estado",
+              "saldo",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
         },
       },
@@ -148,7 +195,16 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "20:00",
             message:
               "Hola {{nombre}},\nactualizamos informacion importante de tu plan de {{actividad}}.",
-            variables: ["nombre", "actividad", "fecha"],
+            variables: [
+              "nombre",
+              "actividad",
+              "fecha",
+              "pago_estado",
+              "saldo",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
           encuesta_fin_semana: {
             key: "encuesta_fin_semana",
@@ -161,7 +217,14 @@ function buildDefaultConfig(): WhatsAppConfig {
             sendTo: "21:00",
             message:
               "Hola {{nombre}},\nqueremos saber como te sentiste esta semana con {{actividad}}.\nResponde esta encuesta breve.",
-            variables: ["nombre", "actividad"],
+            variables: [
+              "nombre",
+              "actividad",
+              "fecha",
+              "plan_estado",
+              "plan_items",
+              "actualizacion_plan",
+            ],
           },
         },
       },
@@ -192,6 +255,16 @@ function normalizeStringArray(value: unknown, fallback: string[]) {
     .slice(0, 50);
 
   return next.length > 0 ? next : fallback;
+}
+
+function mergeVariableKeys(primary: string[], required: string[]) {
+  return Array.from(
+    new Set(
+      [...primary, ...required]
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+    )
+  );
 }
 
 export function getDefaultWhatsAppConfig(): WhatsAppConfig {
@@ -265,7 +338,10 @@ export function normalizeWhatsAppConfig(raw: unknown): WhatsAppConfig {
         sendFrom: normalizeTime(rawSub.sendFrom, defaultSub.sendFrom),
         sendTo: normalizeTime(rawSub.sendTo, defaultSub.sendTo),
         message: String(rawSub.message || defaultSub.message),
-        variables: normalizeStringArray(rawSub.variables, defaultSub.variables),
+        variables: mergeVariableKeys(
+          normalizeStringArray(rawSub.variables, defaultSub.variables),
+          defaultSub.variables
+        ),
       };
     }
 
@@ -311,6 +387,10 @@ export function normalizeWhatsAppConfig(raw: unknown): WhatsAppConfig {
         typeof runnerRaw.alertWhatsAppOnFailure === "boolean"
           ? runnerRaw.alertWhatsAppOnFailure
           : defaults.automationRunner.alertWhatsAppOnFailure,
+      alertMissingPhonePush:
+        typeof runnerRaw.alertMissingPhonePush === "boolean"
+          ? runnerRaw.alertMissingPhonePush
+          : defaults.automationRunner.alertMissingPhonePush,
     },
     categories,
     updatedAt:

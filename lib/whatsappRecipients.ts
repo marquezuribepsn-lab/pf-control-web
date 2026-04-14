@@ -36,6 +36,7 @@ export type WhatsAppRecipient = {
   label: string;
   tipo: "alumno" | "colaborador";
   ownerKey?: string;
+  estado?: string;
   telefono: string;
   actividad?: string;
   daysToDue?: number | null;
@@ -46,6 +47,21 @@ export type WhatsAppRecipient = {
   lastPaymentDate?: string;
   lastPaymentAmount?: number;
   variables: Record<string, string>;
+};
+
+export type WhatsAppMissingPhoneRow = {
+  id: string;
+  label: string;
+  tipo: "alumno";
+  ownerKey?: string;
+  estado?: string;
+  rawPhone: string;
+  reason: "missing_phone" | "invalid_phone";
+};
+
+export type WhatsAppRecipientsAudit = {
+  recipients: WhatsAppRecipient[];
+  missingPhones: WhatsAppMissingPhoneRow[];
 };
 
 const db = prisma as any;
@@ -60,6 +76,17 @@ function normalizeKey(value: string) {
 
 function compactLookupKey(value: string) {
   return normalizeKey(value).replace(/[^a-z0-9]/g, "");
+}
+
+function normalizeStatus(value: unknown) {
+  const normalized = normalizeKey(String(value || ""));
+  if (normalized === "finalizado") {
+    return "finalizado";
+  }
+  if (normalized === "activo") {
+    return "activo";
+  }
+  return "activo";
 }
 
 function parseDateOnly(value: string): Date | null {
@@ -209,6 +236,28 @@ function pickAlumnoPhone(alumno: unknown) {
   return "";
 }
 
+function pickMetaPhone(meta: unknown) {
+  const source = meta && typeof meta === "object" ? (meta as Record<string, unknown>) : {};
+  const candidates = [
+    source.telefono,
+    source.celular,
+    source.whatsapp,
+    source.telefonoWhatsapp,
+    source.telefonoWhatsApp,
+    source.phone,
+    source.mobile,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate || "").trim();
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
 function buildPlanSummaryByOwner(raw: unknown) {
   const store = raw && typeof raw === "object" ? (raw as SemanaPlanStore) : {};
   const planes = Array.isArray(store.planes) ? store.planes : [];
@@ -243,7 +292,7 @@ function buildPlanSummaryByOwner(raw: unknown) {
   return summary;
 }
 
-export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
+async function buildWhatsAppRecipientsAudit(): Promise<WhatsAppRecipientsAudit> {
   const [users, alumnosRaw, clientesMetaRaw, pagosRaw, dataUpdateEventsRaw, semanaPlanRaw] = await Promise.all([
     db.user.findMany({
       where: {
@@ -289,6 +338,8 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
 
   const latestPaymentByName = pickLatestPaymentByClientName(pagos);
   const recipients: WhatsAppRecipient[] = [];
+  const missingPhones: WhatsAppMissingPhoneRow[] = [];
+  const missingByOwner = new Set<string>();
 
   const pushRecipient = (candidate: {
     id: string;
@@ -304,11 +355,30 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     saldo?: number | null;
     paymentDate?: string;
     paymentAmount?: number;
+    estado?: string;
   }) => {
-    const phone = normalizeWhatsAppPhone(candidate.telefono);
-    if (!phone) return;
-
     const ownerKey = String(candidate.ownerKey || getOwnerKeyFromName(candidate.nombre));
+    const rawPhone = String(candidate.telefono || "").trim();
+    const phone = normalizeWhatsAppPhone(rawPhone);
+
+    if (!phone) {
+      if (candidate.tipo === "alumno") {
+        const dedupeKey = ownerKey || candidate.id;
+        if (!missingByOwner.has(dedupeKey)) {
+          missingByOwner.add(dedupeKey);
+          missingPhones.push({
+            id: candidate.id,
+            label: candidate.label,
+            tipo: "alumno",
+            ownerKey,
+            estado: normalizeStatus(candidate.estado),
+            rawPhone,
+            reason: rawPhone ? "invalid_phone" : "missing_phone",
+          });
+        }
+      }
+      return;
+    }
 
     if (
       recipients.some(
@@ -335,12 +405,14 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
       typeof candidate.saldo === "number" && Number.isFinite(candidate.saldo)
         ? candidate.saldo
         : null;
+    const estado = normalizeStatus(candidate.estado);
 
     recipients.push({
       id: candidate.id,
       label: candidate.label,
       tipo: candidate.tipo,
       ownerKey,
+      estado,
       telefono: phone,
       actividad: candidate.actividad,
       daysToDue: days,
@@ -362,6 +434,7 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
         plan_estado: planStatus,
         plan_items: String(planItems),
         actualizacion_plan: hasPendingPlanUpdate ? "si" : "no",
+        estado,
         total:
           typeof candidate.paymentAmount === "number" && Number.isFinite(candidate.paymentAmount)
             ? String(candidate.paymentAmount)
@@ -383,7 +456,7 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
       id: `user-${user.id}`,
       label: `${displayName}${isColab ? " (colaborador)" : ""}`,
       tipo: isColab ? "colaborador" : "alumno",
-      telefono: String(user.telefono || meta?.telefono || ""),
+      telefono: String(user.telefono || pickMetaPhone(meta) || ""),
       nombre: displayName,
       ownerKey: getOwnerKeyFromName(displayName),
       email: String(user.email || ""),
@@ -396,6 +469,7 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
         typeof payment?.importe === "number" && Number.isFinite(payment.importe)
           ? payment.importe
           : undefined,
+      estado: String((meta as any)?.estado || ""),
     });
   }
 
@@ -407,12 +481,13 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     const meta = resolveMetaByName(nombre, metaLookup);
     const payment = latestPaymentByName.get(normalized) || null;
     const alumnoPhone = pickAlumnoPhone(alumno);
+    const metaPhone = pickMetaPhone(meta);
 
     pushRecipient({
       id: `alumno-${normalized}`,
       label: nombre,
       tipo: "alumno",
-      telefono: String(meta?.telefono || alumnoPhone || ""),
+      telefono: String(metaPhone || alumnoPhone || ""),
       nombre,
       ownerKey: `alumnos:${normalized}`,
       actividad: String(meta?.tipoAsesoria || "entrenamiento"),
@@ -424,9 +499,24 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
         typeof payment?.importe === "number" && Number.isFinite(payment.importe)
           ? payment.importe
           : undefined,
+      estado: String((alumno as any)?.estado || (meta as any)?.estado || "activo"),
     });
   }
 
   recipients.sort((a, b) => a.label.localeCompare(b.label));
-  return recipients;
+  missingPhones.sort((a, b) => a.label.localeCompare(b.label));
+
+  return {
+    recipients,
+    missingPhones,
+  };
+}
+
+export async function listWhatsAppRecipientsAudit(): Promise<WhatsAppRecipientsAudit> {
+  return buildWhatsAppRecipientsAudit();
+}
+
+export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
+  const audit = await buildWhatsAppRecipientsAudit();
+  return audit.recipients;
 }

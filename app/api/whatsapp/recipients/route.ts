@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { listWhatsAppRecipients } from "@/lib/whatsappRecipients";
+import { listWhatsAppRecipientsAudit } from "@/lib/whatsappRecipients";
 
 export async function GET() {
   const session = await auth();
@@ -8,6 +8,15 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const recipients = await listWhatsAppRecipients();
-  return NextResponse.json({ ok: true, recipients });
+  const audit = await listWhatsAppRecipientsAudit();
+
+  return NextResponse.json({
+    ok: true,
+    recipients: audit.recipients,
+    missingPhones: audit.missingPhones,
+    summary: {
+      totalRecipients: audit.recipients.length,
+      missingPhones: audit.missingPhones.length,
+    },
+  });
 }

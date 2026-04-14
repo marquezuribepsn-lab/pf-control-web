@@ -11,8 +11,10 @@ import {
 } from "@/lib/whatsappAutomation";
 import { sendWhatsAppAutomationFailureEmail } from "@/lib/email";
 import { sendWhatsAppInternalAlert } from "@/lib/whatsappAlerts";
+import { sendPushNotificationToAll } from "@/lib/pushNotifications";
 
 const ALERTS_KEY = "whatsapp-automation-alerts-v1";
+const MISSING_PHONE_ALERT_STATE_KEY = "whatsapp-missing-phone-alert-state-v1";
 const RUN_PREFIX = "whatsapp-automation-run-";
 
 export const RUNNER_STATE_KEY = "whatsapp-automation-runner-state-v1";
@@ -58,8 +60,69 @@ type RunnerState = {
   nextRunAt?: string | null;
 };
 
+type MissingPhoneAlertState = {
+  signature?: string;
+  lastSentAt?: string;
+};
+
+type MissingPhoneRow = {
+  id: string;
+  label: string;
+  reason: "missing_phone" | "invalid_phone";
+  rawPhone: string;
+};
+
 function mkRunId() {
   return `${RUN_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildMissingPhoneSignature(rows: MissingPhoneRow[]) {
+  return rows
+    .map((row) => `${row.id}:${row.reason}:${String(row.rawPhone || "").trim()}`)
+    .sort((a, b) => a.localeCompare(b))
+    .join("|");
+}
+
+async function readMissingPhoneAlertState(): Promise<MissingPhoneAlertState> {
+  const raw = await getSyncValue(MISSING_PHONE_ALERT_STATE_KEY);
+  return raw && typeof raw === "object" ? (raw as MissingPhoneAlertState) : {};
+}
+
+async function writeMissingPhoneAlertState(next: MissingPhoneAlertState) {
+  await setSyncValue(MISSING_PHONE_ALERT_STATE_KEY, next);
+}
+
+function shouldSendMissingPhonePush(input: {
+  rows: MissingPhoneRow[];
+  previous: MissingPhoneAlertState;
+  now: Date;
+}) {
+  if (input.rows.length === 0) {
+    return {
+      send: false,
+      reason: "no_missing_phones",
+      signature: "",
+    };
+  }
+
+  const signature = buildMissingPhoneSignature(input.rows);
+  const previousSignature = String(input.previous.signature || "");
+  const previousAt = input.previous.lastSentAt ? new Date(input.previous.lastSentAt) : null;
+  const cooldownMs = 6 * 60 * 60 * 1000;
+
+  if (previousSignature === signature && previousAt && input.now.getTime() - previousAt.getTime() < cooldownMs) {
+    return {
+      send: false,
+      reason: "cooldown_same_list",
+      signature,
+    };
+  }
+
+  return {
+    send: true,
+    reason: "send_now",
+    signature,
+  };
 }
 
 function sleep(ms: number) {
@@ -221,6 +284,15 @@ export async function executeAutomationRun(
     limit: input.limit,
   });
 
+  const missingPhoneRows: MissingPhoneRow[] = Array.isArray(matchesResult.missingPhones)
+    ? matchesResult.missingPhones.map((row) => ({
+        id: String(row.id || ""),
+        label: String(row.label || "alumno"),
+        reason: row.reason === "invalid_phone" ? "invalid_phone" : "missing_phone",
+        rawPhone: String(row.rawPhone || ""),
+      }))
+    : [];
+
   const runnerCfg = matchesResult.config.automationRunner;
   const configuredDeliveryMode =
     matchesResult.config.connection.mode === "prod" ? "prod" : "test";
@@ -301,6 +373,10 @@ export async function executeAutomationRun(
     deliveryMode,
     retryCount,
     retriedRecipients,
+    missingPhonesCount: missingPhoneRows.length,
+    missingPhones: missingPhoneRows.slice(0, 30),
+    missingPhonePushSent: false,
+    missingPhonePushReason: "not_evaluated",
     forceWindow: Boolean(input.forceWindow),
     includeDisabled: Boolean(input.includeDisabled),
     emailAlertSent: false,
@@ -359,6 +435,110 @@ export async function executeAutomationRun(
     skipped: skippedCount,
     results,
     rules: Array.from(ruleStats.values()),
+    missingPhonesCount: missingPhoneRows.length,
+    missingPhones: missingPhoneRows.slice(0, 30),
+  });
+
+  if (!dryRun && runnerCfg.alertMissingPhonePush !== false) {
+    const now = new Date();
+    const previousMissingState = await readMissingPhoneAlertState().catch(() => ({}));
+    const decision = shouldSendMissingPhonePush({
+      rows: missingPhoneRows,
+      previous: previousMissingState,
+      now,
+    });
+
+    if (!decision.send) {
+      summary = {
+        ...summary,
+        missingPhonePushReason: decision.reason,
+      };
+    } else {
+      try {
+        const previewRows = missingPhoneRows.slice(0, 12);
+        const previewNames = previewRows.map((row) => row.label).join(", ");
+
+        await sendPushNotificationToAll({
+          title: "PF Control · Alumnos sin numero",
+          body: `${missingPhoneRows.length} alumno(s) sin numero de WhatsApp. Completar ficha para activar automatizaciones.`,
+          type: "whatsapp_missing_phone",
+          runId,
+          categoryKey,
+          ruleKey,
+          totalMissing: missingPhoneRows.length,
+          missing: previewRows,
+          previewNames,
+          at: now.toISOString(),
+        });
+
+        summary = {
+          ...summary,
+          missingPhonePushSent: true,
+          missingPhonePushReason: "sent",
+        };
+
+        await writeMissingPhoneAlertState({
+          signature: decision.signature,
+          lastSentAt: now.toISOString(),
+        }).catch(() => {
+          // Keep runner resilient if missing-phone alert state fails to persist.
+        });
+
+        await appendAutomationAlertLog({
+          id: `wh-missing-phone-alert-${Date.now()}`,
+          createdAt: now.toISOString(),
+          type: "missing_phone_push",
+          runId,
+          categoryKey,
+          ruleKey,
+          totalMissing: missingPhoneRows.length,
+          previewNames,
+          alertError: null,
+        }).catch(() => {
+          // Non-blocking alert log.
+        });
+      } catch (error) {
+        const pushError = error instanceof Error ? error.message : String(error);
+
+        summary = {
+          ...summary,
+          missingPhonePushSent: false,
+          missingPhonePushReason: `error:${pushError}`,
+        };
+
+        await appendAutomationAlertLog({
+          id: `wh-missing-phone-alert-${Date.now()}`,
+          createdAt: now.toISOString(),
+          type: "missing_phone_push",
+          runId,
+          categoryKey,
+          ruleKey,
+          totalMissing: missingPhoneRows.length,
+          previewNames: missingPhoneRows.slice(0, 12).map((row) => row.label).join(", "),
+          alertError: pushError,
+        }).catch(() => {
+          // Non-blocking alert log.
+        });
+      }
+
+      await setSyncValue(runId, summary).catch(() => {
+        // Keep response resilient if summary update fails.
+      });
+    }
+  } else if (!dryRun) {
+    summary = {
+      ...summary,
+      missingPhonePushReason: runnerCfg.alertMissingPhonePush === false ? "disabled_by_config" : "not_applicable",
+    };
+  } else {
+    summary = {
+      ...summary,
+      missingPhonePushReason: "dry_run",
+    };
+  }
+
+  await setSyncValue(runId, summary).catch(() => {
+    // Keep response resilient if summary update fails.
   });
 
   const shouldAlert = !dryRun && !summary.ok && !forceFailureForTest;

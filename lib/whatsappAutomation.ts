@@ -4,7 +4,11 @@ import {
   type WhatsAppSubcategoryConfig,
   normalizeWhatsAppConfig,
 } from "@/lib/whatsappConfig";
-import { listWhatsAppRecipients, type WhatsAppRecipient } from "@/lib/whatsappRecipients";
+import {
+  listWhatsAppRecipientsAudit,
+  type WhatsAppMissingPhoneRow,
+  type WhatsAppRecipient,
+} from "@/lib/whatsappRecipients";
 import { interpolateMessage } from "@/lib/whatsappDispatch";
 
 type BuildOptions = {
@@ -35,6 +39,15 @@ export type AutomationMatch = {
   variables: Record<string, string>;
   reason: string;
   dataUpdateEventId?: string;
+};
+
+export type BuildAutomationMatchesResult = {
+  config: WhatsAppConfig;
+  rulesEvaluated: number;
+  totalMatched: number;
+  limitedTo: number;
+  matches: AutomationMatch[];
+  missingPhones: WhatsAppMissingPhoneRow[];
 };
 
 function normalizeName(value: string) {
@@ -132,6 +145,11 @@ function shouldIncludeByRule(
 }
 
 function recipientAllowedForCategory(recipient: WhatsAppRecipient, categoryKey: string) {
+  const recipientStatus = normalizeName(recipient.estado || recipient.variables?.estado || "");
+  if (recipient.tipo === "alumno" && recipientStatus === "finalizado") {
+    return false;
+  }
+
   if (categoryKey === "cobranzas" || categoryKey === "asistencia_rutinas") {
     return recipient.tipo === "alumno";
   }
@@ -149,9 +167,10 @@ async function getPendingDataUpdateEvents() {
   return rows.filter((event) => !event.consumedAt);
 }
 
-export async function buildAutomationMatches(options: BuildOptions) {
+export async function buildAutomationMatches(options: BuildOptions): Promise<BuildAutomationMatchesResult> {
   const config = await loadWhatsAppConfigFromStore();
-  const recipients = await listWhatsAppRecipients();
+  const recipientsAudit = await listWhatsAppRecipientsAudit();
+  const recipients = recipientsAudit.recipients;
   const pendingDataUpdateEvents = await getPendingDataUpdateEvents();
 
   const dataUpdateByName = new Map<string, DataUpdateEvent>();
@@ -247,6 +266,7 @@ export async function buildAutomationMatches(options: BuildOptions) {
             totalMatched: matches.length,
             limitedTo: limit,
             matches,
+            missingPhones: recipientsAudit.missingPhones,
           };
         }
       }
@@ -259,6 +279,7 @@ export async function buildAutomationMatches(options: BuildOptions) {
     totalMatched: matches.length,
     limitedTo: limit,
     matches,
+    missingPhones: recipientsAudit.missingPhones,
   };
 }
 
