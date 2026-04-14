@@ -124,6 +124,25 @@ npm run whatsapp:automation:cron:setup
 	- `WHATSAPP_AUTOMATION_CRON_SCHEDULE="* * * * *"`.
 	- `WHATSAPP_INTERNAL_ALERT_TO="54911...,54922..."` para alertas internas por WhatsApp.
 
+## Release automatico total (sin parametros)
+
+Ejecuta todo en cadena con un solo comando:
+
+```bash
+npm run release:auto
+```
+
+Este flujo hace automaticamente:
+
+- git add de todos los cambios,
+- commit automatico (si hay cambios),
+- build local de produccion,
+- deploy completo a VPS,
+- creacion de tag de restore point,
+- push de branch y tag a GitHub.
+
+No necesitas pasar flags ni completar nada manualmente.
+
 ## Getting Started
 
 First, run the development server:
