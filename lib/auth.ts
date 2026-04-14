@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthConfig } from 'next-auth';
+import NextAuth, { CredentialsSignin, type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { decode as jwtDecode, encode as jwtEncode } from 'next-auth/jwt';
 import { prisma } from './prisma';
@@ -13,8 +13,13 @@ type AuthUserRecord = {
   email: string;
   password: string;
   role: 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
+  estado: string;
   emailVerified: boolean;
 };
+
+class PendingApprovalSigninError extends CredentialsSignin {
+  code = 'pending_approval';
+}
 
 function normalizeEmailInput(raw: unknown): string {
   return typeof raw === 'string' ? raw.trim().toLowerCase() : '';
@@ -39,6 +44,7 @@ async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
       email: true,
       password: true,
       role: true,
+      estado: true,
       emailVerified: true,
     },
   });
@@ -49,7 +55,7 @@ async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
 
   // Legacy compatibility for accounts stored with mixed-case emails.
   const caseInsensitiveMatch = await db.$queryRaw<AuthUserRecord[]>`
-    SELECT id, email, password, role, "emailVerified"
+    SELECT id, email, password, role, estado, "emailVerified"
     FROM users
     WHERE lower(email) = lower(${email})
     LIMIT 1
@@ -90,6 +96,11 @@ export const authConfig = {
 
         if (!user || !user.emailVerified) {
           return null;
+        }
+
+        const userStatus = String((user as any).estado || 'activo').trim().toLowerCase();
+        if (user.role === 'CLIENTE' && userStatus !== 'activo') {
+          throw new PendingApprovalSigninError();
         }
 
         if (loginToken) {

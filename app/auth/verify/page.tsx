@@ -29,8 +29,10 @@ function VerifyPageContent() {
 
         if (res.ok) {
           setStatus('success');
-          setMessage('¡Email verificado! Redirigiendo...');
-          setTimeout(() => router.push('/auth/login'), 3000);
+          setMessage(
+            data.message ||
+              'Mail verificado. Tu cuenta quedo pendiente de alta del profesor. Te avisaremos cuando puedas ingresar.'
+          );
         } else {
           setStatus('error');
           setMessage(data.message || 'Error al verificar email');
@@ -62,6 +64,13 @@ function VerifyPageContent() {
           <div className="space-y-4">
             <div className="text-4xl">✓</div>
             <p className="text-green-600 font-medium">{message}</p>
+            <button
+              type="button"
+              onClick={() => router.push('/auth/login')}
+              className="inline-block mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Ir al login
+            </button>
           </div>
         )}
 

@@ -20,6 +20,13 @@ export async function GET(req: NextRequest) {
       id: true,
       email: true,
       role: true,
+      estado: true,
+      nombreCompleto: true,
+      edad: true,
+      fechaNacimiento: true,
+      altura: true,
+      telefono: true,
+      direccion: true,
       emailVerified: true,
       createdAt: true,
     },
@@ -40,22 +47,54 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const { userId, role } = await req.json();
+    const { userId, role, estado } = await req.json();
 
-    if (!userId || !role || !['ADMIN', 'COLABORADOR', 'CLIENTE'].includes(role)) {
+    const hasRole = typeof role === 'string' && role.length > 0;
+    const hasEstado = typeof estado === 'string' && estado.length > 0;
+
+    if (!userId || (!hasRole && !hasEstado)) {
       return NextResponse.json(
         { message: 'Datos inválidos' },
         { status: 400 }
       );
     }
 
+    if (hasRole && !['ADMIN', 'COLABORADOR', 'CLIENTE'].includes(role)) {
+      return NextResponse.json(
+        { message: 'Rol invalido' },
+        { status: 400 }
+      );
+    }
+
+    if (hasEstado && !['activo', 'suspendido', 'baja', 'pendiente_alta'].includes(String(estado))) {
+      return NextResponse.json(
+        { message: 'Estado invalido' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (hasRole) {
+      updateData.role = role;
+    }
+    if (hasEstado) {
+      updateData.estado = estado;
+    }
+
     const user = await db.user.update({
       where: { id: userId },
-      data: { role },
+      data: updateData,
       select: {
         id: true,
         email: true,
         role: true,
+        estado: true,
+        nombreCompleto: true,
+        edad: true,
+        fechaNacimiento: true,
+        altura: true,
+        telefono: true,
+        direccion: true,
         emailVerified: true,
         createdAt: true,
       },
@@ -149,6 +188,13 @@ export async function POST(req: NextRequest) {
         id: true,
         email: true,
         role: true,
+        estado: true,
+        nombreCompleto: true,
+        edad: true,
+        fechaNacimiento: true,
+        altura: true,
+        telefono: true,
+        direccion: true,
         emailVerified: true,
         createdAt: true,
       },

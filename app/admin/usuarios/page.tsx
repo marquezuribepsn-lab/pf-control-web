@@ -47,6 +47,13 @@ type ClienteUsuario = {
   id: string;
   email: string;
   role: "ADMIN" | "COLABORADOR" | "CLIENTE";
+  estado?: string;
+  emailVerified?: boolean;
+  nombreCompleto?: string;
+  edad?: number | null;
+  fechaNacimiento?: string | null;
+  altura?: number | null;
+  telefono?: string | null;
 };
 
 type AsignacionSeleccionada = {
@@ -198,6 +205,7 @@ export default function AdminUsuariosPermisosPage() {
   const [detailSavingId, setDetailSavingId] = useState<string | null>(null);
   const [assignSavingId, setAssignSavingId] = useState<string | null>(null);
   const [detailActionLoadingId, setDetailActionLoadingId] = useState<string | null>(null);
+  const [clientActionLoadingId, setClientActionLoadingId] = useState<string | null>(null);
 
   const [detailDraftById, setDetailDraftById] = useState<Record<string, ColaboradorDetailDraft>>({});
   const [detailAsignacionesById, setDetailAsignacionesById] = useState<Record<string, AsignacionSeleccionada[]>>({});
@@ -266,6 +274,22 @@ export default function AdminUsuariosPermisosPage() {
     const suspendidos = total - activos;
     return { total, activos, suspendidos };
   }, [items]);
+
+  const clientesPendientesAlta = useMemo(
+    () =>
+      clientes.filter(
+        (cliente) =>
+          cliente.role === "CLIENTE" &&
+          cliente.emailVerified === true &&
+          String(cliente.estado || "activo").trim().toLowerCase() !== "activo"
+      ),
+    [clientes]
+  );
+
+  const clientesSinVerificar = useMemo(
+    () => clientes.filter((cliente) => cliente.role === "CLIENTE" && cliente.emailVerified !== true),
+    [clientes]
+  );
 
   const updateItem = (id: string, updater: (prev: ColaboradorDraft) => ColaboradorDraft) => {
     setItems((prev) => prev.map((item) => (item.id === id ? updater(item) : item)));
@@ -376,6 +400,51 @@ export default function AdminUsuariosPermisosPage() {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "Error al crear colaborador" });
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const buildClienteFichaHref = (cliente: ClienteUsuario) => {
+    const nombre = String(cliente.nombreCompleto || "").trim();
+    if (!nombre) {
+      return "/clientes";
+    }
+
+    return `/clientes/ficha/${encodeURIComponent(`alumno:${nombre}`)}/datos`;
+  };
+
+  const darAltaCliente = async (cliente: ClienteUsuario) => {
+    try {
+      setClientActionLoadingId(cliente.id);
+      setMessage(null);
+
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: cliente.id,
+          role: "CLIENTE",
+          estado: "activo",
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo dar de alta al cliente");
+      }
+
+      setMessage({
+        type: "success",
+        text: `Alta aplicada: ${String(cliente.nombreCompleto || cliente.email)}`,
+      });
+
+      await loadClientes();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Error al dar de alta al cliente",
+      });
+    } finally {
+      setClientActionLoadingId(null);
     }
   };
 
@@ -763,6 +832,62 @@ export default function AdminUsuariosPermisosPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-rose-200">Suspendidos</p>
             <p className="mt-1 text-2xl font-black text-rose-100">{colaboradoresStats.suspendidos}</p>
           </div>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-amber-300/25 bg-amber-500/10 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-black text-amber-100">Clientes pendientes de alta</p>
+              <p className="text-xs text-amber-100/80">
+                Cuando un alumno verifica su mail, aparece aqui para revision y activacion.
+              </p>
+            </div>
+            <div className="text-right text-xs text-amber-100/90">
+              <p>Pendientes: {clientesPendientesAlta.length}</p>
+              <p>Sin verificar: {clientesSinVerificar.length}</p>
+            </div>
+          </div>
+
+          {clientesPendientesAlta.length === 0 ? (
+            <p className="mt-3 text-sm text-amber-100/85">No hay clientes pendientes de alta.</p>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {clientesPendientesAlta.map((cliente) => (
+                <article
+                  key={`cliente-pendiente-${cliente.id}`}
+                  className="rounded-lg border border-amber-200/20 bg-slate-900/55 p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-white">{String(cliente.nombreCompleto || "Sin nombre")}</p>
+                      <p className="text-xs text-slate-300">{cliente.email}</p>
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        estado={String(cliente.estado || "pendiente_alta")} · verificado={String(cliente.emailVerified)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void darAltaCliente(cliente)}
+                        disabled={clientActionLoadingId === cliente.id}
+                        className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {clientActionLoadingId === cliente.id ? "Dando alta..." : "Dar alta"}
+                      </ReliableActionButton>
+
+                      <a
+                        href={buildClienteFichaHref(cliente)}
+                        className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/25"
+                      >
+                        Ver ficha en Clientes
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
 
         {showColaboradoresPanel ? (

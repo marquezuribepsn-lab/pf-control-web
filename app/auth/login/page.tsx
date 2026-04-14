@@ -25,6 +25,47 @@ function isSignInFailure(result: unknown) {
   return explicitFailure || Boolean(errorCode) || hasErrorInUrl;
 }
 
+function extractSignInFailureCode(result: unknown): string {
+  if (typeof result === 'string') {
+    try {
+      const parsed = new URL(result, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+      return String(parsed.searchParams.get('code') || '').trim().toLowerCase();
+    } catch {
+      return '';
+    }
+  }
+
+  const payload = (result || {}) as { code?: string | null; url?: string | null };
+  const directCode = String(payload.code || '').trim().toLowerCase();
+  if (directCode) {
+    return directCode;
+  }
+
+  const responseUrl = String(payload.url || '').trim();
+  if (!responseUrl) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(responseUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    return String(parsed.searchParams.get('code') || '').trim().toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function resolveLoginErrorMessage(failureCode: string, fallbackToMagicLink: boolean): string {
+  if (failureCode === 'pending_approval') {
+    return 'Tu cuenta está verificada pero sigue pendiente de alta del profesor. Te avisaremos cuando quede habilitada.';
+  }
+
+  if (fallbackToMagicLink) {
+    return 'Email o contraseña incorrectos. Revisa tus datos o usa el acceso por enlace al email.';
+  }
+
+  return 'Email o contraseña incorrectos. Revisa tus datos e intenta nuevamente.';
+}
+
 function resolvePostLoginHref(result: unknown): string {
   if (typeof window === 'undefined') {
     return '/';
@@ -110,6 +151,7 @@ function LoginPageContent() {
   const magicToken = String(searchParams.get('magic') || '').trim();
   const magicEmail = String(searchParams.get('email') || '').trim().toLowerCase();
   const authError = String(searchParams.get('error') || '').trim();
+  const authCode = String(searchParams.get('code') || '').trim().toLowerCase();
   const canUseMagicAccess = failedAttempts >= 3;
 
   useEffect(() => {
@@ -151,8 +193,8 @@ function LoginPageContent() {
     if (authError !== 'CredentialsSignin') {
       return;
     }
-    setError('Email o contraseña incorrectos. Revisa tus datos e intenta nuevamente.');
-  }, [authError]);
+    setError(resolveLoginErrorMessage(authCode, false));
+  }, [authError, authCode]);
 
   useEffect(() => {
     try {
@@ -198,7 +240,12 @@ function LoginPageContent() {
         });
 
         if (isSignInFailure(result)) {
-          setError('El enlace de acceso es invalido o expiro. Solicita uno nuevo.');
+          const failureCode = extractSignInFailureCode(result);
+          if (failureCode === 'pending_approval') {
+            setError(resolveLoginErrorMessage(failureCode, false));
+          } else {
+            setError('El enlace de acceso es invalido o expiro. Solicita uno nuevo.');
+          }
           return;
         }
 
@@ -232,13 +279,15 @@ function LoginPageContent() {
       });
 
       if (isSignInFailure(result)) {
+        const failureCode = extractSignInFailureCode(result);
+        if (failureCode === 'pending_approval') {
+          setError(resolveLoginErrorMessage(failureCode, false));
+          return;
+        }
+
         const nextAttempts = Math.min(failedAttempts + 1, 10);
         setFailedAttempts(nextAttempts);
-        if (nextAttempts >= 3) {
-          setError('Email o contraseña incorrectos. Revisa tus datos o usa el acceso por enlace al email.');
-        } else {
-          setError('Email o contraseña incorrectos. Revisa tus datos e intenta nuevamente.');
-        }
+        setError(resolveLoginErrorMessage('', nextAttempts >= 3));
         return;
       }
 
