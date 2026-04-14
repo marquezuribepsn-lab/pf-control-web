@@ -58,6 +58,10 @@ function normalizeKey(value: string) {
     .trim();
 }
 
+function compactLookupKey(value: string) {
+  return normalizeKey(value).replace(/[^a-z0-9]/g, "");
+}
+
 function parseDateOnly(value: string): Date | null {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -139,6 +143,72 @@ function getOwnerKeyFromName(nombre: string) {
   return `alumnos:${normalized}`;
 }
 
+function buildMetaLookup(metaStore: Record<string, any>) {
+  const byNormalized = new Map<string, any>();
+  const byCompact = new Map<string, any>();
+
+  for (const [rawKey, meta] of Object.entries(metaStore)) {
+    const key = String(rawKey || "").trim();
+    if (!key) continue;
+
+    const variants = new Set<string>();
+    variants.add(normalizeKey(key));
+
+    const colonIndex = key.indexOf(":");
+    if (colonIndex >= 0 && colonIndex < key.length - 1) {
+      variants.add(normalizeKey(key.slice(colonIndex + 1)));
+    }
+
+    for (const variant of variants) {
+      if (!variant) continue;
+      byNormalized.set(variant, meta);
+
+      const compact = compactLookupKey(variant);
+      if (compact) {
+        byCompact.set(compact, meta);
+      }
+    }
+  }
+
+  return { byNormalized, byCompact };
+}
+
+function resolveMetaByName(name: string, lookup: ReturnType<typeof buildMetaLookup>) {
+  const normalized = normalizeKey(name);
+  if (normalized && lookup.byNormalized.has(normalized)) {
+    return lookup.byNormalized.get(normalized) || null;
+  }
+
+  const compact = compactLookupKey(name);
+  if (compact && lookup.byCompact.has(compact)) {
+    return lookup.byCompact.get(compact) || null;
+  }
+
+  return null;
+}
+
+function pickAlumnoPhone(alumno: unknown) {
+  const source = alumno && typeof alumno === "object" ? (alumno as Record<string, unknown>) : {};
+  const candidates = [
+    source.telefono,
+    source.celular,
+    source.whatsapp,
+    source.telefonoWhatsapp,
+    source.telefonoWhatsApp,
+    source.phone,
+    source.mobile,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate || "").trim();
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
 function buildPlanSummaryByOwner(raw: unknown) {
   const store = raw && typeof raw === "object" ? (raw as SemanaPlanStore) : {};
   const planes = Array.isArray(store.planes) ? store.planes : [];
@@ -215,10 +285,7 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
 
   const planSummaryByOwner = buildPlanSummaryByOwner(semanaPlanRaw);
 
-  const metaByName = new Map<string, any>();
-  for (const [key, value] of Object.entries(clientesMeta)) {
-    metaByName.set(normalizeKey(key), value);
-  }
+  const metaLookup = buildMetaLookup(clientesMeta);
 
   const latestPaymentByName = pickLatestPaymentByClientName(pagos);
   const recipients: WhatsAppRecipient[] = [];
@@ -241,7 +308,15 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     const phone = normalizeWhatsAppPhone(candidate.telefono);
     if (!phone) return;
 
-    if (recipients.some((item) => item.id === candidate.id || item.telefono === phone)) {
+    const ownerKey = String(candidate.ownerKey || getOwnerKeyFromName(candidate.nombre));
+
+    if (
+      recipients.some(
+        (item) =>
+          item.id === candidate.id ||
+          (ownerKey && item.ownerKey === ownerKey && item.tipo === candidate.tipo)
+      )
+    ) {
       return;
     }
 
@@ -249,7 +324,6 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     const paymentStatus = derivePaymentStatus(days, candidate.pagoEstado);
     const updateEvent = pendingUpdateByName.get(normalizeKey(candidate.nombre));
     const hasPendingPlanUpdate = Boolean(updateEvent);
-    const ownerKey = String(candidate.ownerKey || getOwnerKeyFromName(candidate.nombre));
     const planSummary = planSummaryByOwner.get(ownerKey);
     const planItems = Number(planSummary?.planItems || 0);
     const planStatus = hasPendingPlanUpdate
@@ -301,7 +375,7 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     if (!displayName) continue;
 
     const normalized = normalizeKey(displayName);
-    const meta = metaByName.get(normalized) || null;
+    const meta = resolveMetaByName(displayName, metaLookup);
     const payment = latestPaymentByName.get(normalized) || null;
     const isColab = user.role === "COLABORADOR";
 
@@ -330,14 +404,15 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     if (!nombre) continue;
 
     const normalized = normalizeKey(nombre);
-    const meta = metaByName.get(normalized) || null;
+    const meta = resolveMetaByName(nombre, metaLookup);
     const payment = latestPaymentByName.get(normalized) || null;
+    const alumnoPhone = pickAlumnoPhone(alumno);
 
     pushRecipient({
       id: `alumno-${normalized}`,
       label: nombre,
       tipo: "alumno",
-      telefono: String(meta?.telefono || ""),
+      telefono: String(meta?.telefono || alumnoPhone || ""),
       nombre,
       ownerKey: `alumnos:${normalized}`,
       actividad: String(meta?.tipoAsesoria || "entrenamiento"),
