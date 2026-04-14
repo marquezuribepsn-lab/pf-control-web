@@ -1,7 +1,12 @@
 import { getSyncValue, setSyncValue } from "@/lib/syncStore";
 import { normalizeWhatsAppPhone, sendWhatsAppText } from "@/lib/whatsappAlerts";
+import { getDefaultWhatsAppConfig, normalizeWhatsAppConfig } from "@/lib/whatsappConfig";
+import { sendWhatsAppWebText } from "@/lib/whatsappWebClient";
 
 const HISTORY_KEY = "whatsapp-history-v1";
+const CONFIG_KEY = "whatsapp-config-v1";
+
+type DispatchProvider = "meta_cloud" | "whatsapp_web";
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -51,6 +56,7 @@ export async function dispatchWhatsAppBatch(input: {
   const message = String(input.message || "").trim();
   const mode = input.mode === "prod" ? "prod" : "test";
   const forceText = input.forceText !== false;
+  const provider = await resolveDispatchProvider();
 
   const results: DispatchResult[] = [];
 
@@ -74,6 +80,41 @@ export async function dispatchWhatsAppBatch(input: {
           ok: true,
           skipped: true,
           reason: "test_mode",
+          renderedMessage,
+        });
+        continue;
+      }
+
+      if (provider === "whatsapp_web") {
+        const sent = await sendWhatsAppWebText(renderedMessage, {
+          to: phone,
+        });
+
+        if (!sent.ok) {
+          results.push({
+            id,
+            label,
+            phone,
+            ok: false,
+            reason: sent.error || `provider_status_${sent.status}`,
+            payloadType: "text",
+            senderPhoneNumberId: null,
+            providerStatus: sent.status,
+            providerMessageId: sent.providerMessageId,
+            renderedMessage,
+          });
+          continue;
+        }
+
+        results.push({
+          id,
+          label,
+          phone,
+          ok: true,
+          payloadType: "text",
+          senderPhoneNumberId: null,
+          providerStatus: sent.status,
+          providerMessageId: sent.providerMessageId,
           renderedMessage,
         });
         continue;
@@ -130,6 +171,12 @@ export async function dispatchWhatsAppBatch(input: {
     failedCount: results.filter((row) => !row.ok).length,
     ok: results.every((row) => row.ok),
   };
+}
+
+async function resolveDispatchProvider(): Promise<DispatchProvider> {
+  const raw = await getSyncValue(CONFIG_KEY);
+  const config = normalizeWhatsAppConfig(raw || getDefaultWhatsAppConfig());
+  return config.connection.provider === "whatsapp_web" ? "whatsapp_web" : "meta_cloud";
 }
 
 export async function appendWhatsAppHistory(entry: Record<string, unknown>) {

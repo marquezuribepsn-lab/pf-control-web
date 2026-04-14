@@ -8,11 +8,40 @@ type RawPago = {
   importe?: number;
 };
 
+type DataUpdateEvent = {
+  id?: string;
+  clientKey?: string;
+  nombre?: string;
+  updatedAt?: string;
+  consumedAt?: string | null;
+};
+
+type SemanaPlanStore = {
+  planes?: Array<{
+    ownerKey?: string;
+    semanas?: Array<{
+      dias?: Array<{
+        planificacion?: string;
+        sesionId?: string;
+      }>;
+    }>;
+    historial?: Array<{
+      createdAt?: string;
+    }>;
+  }>;
+};
+
 export type WhatsAppRecipient = {
   id: string;
   label: string;
   tipo: "alumno" | "colaborador";
+  ownerKey?: string;
   telefono: string;
+  actividad?: string;
+  daysToDue?: number | null;
+  paymentStatus?: string;
+  planStatus?: string;
+  hasPendingPlanUpdate?: boolean;
   endDate?: string;
   lastPaymentDate?: string;
   lastPaymentAmount?: number;
@@ -73,8 +102,79 @@ function pickLatestPaymentByClientName(rows: RawPago[]) {
   return latest;
 }
 
+function toNumberOrNull(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  const raw = String(value ?? "").trim().replace(",", ".");
+  if (!raw) return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function derivePaymentStatus(daysToDue: number | null, rawPagoEstado: unknown) {
+  const fromMeta = normalizeKey(String(rawPagoEstado || ""));
+
+  if (fromMeta.includes("vencid") || fromMeta.includes("moros")) {
+    return "vencido";
+  }
+  if (fromMeta.includes("pend")) {
+    return "pendiente";
+  }
+  if (fromMeta.includes("confirm") || fromMeta.includes("pag")) {
+    return "al_dia";
+  }
+
+  if (daysToDue === null) return "sin_vencimiento";
+  if (daysToDue < 0) return "vencido";
+  if (daysToDue === 0) return "vence_hoy";
+  if (daysToDue <= 3) return "vence_pronto";
+  return "al_dia";
+}
+
+function getOwnerKeyFromName(nombre: string) {
+  const normalized = String(nombre || "").trim().toLowerCase();
+  if (!normalized) return "";
+  return `alumnos:${normalized}`;
+}
+
+function buildPlanSummaryByOwner(raw: unknown) {
+  const store = raw && typeof raw === "object" ? (raw as SemanaPlanStore) : {};
+  const planes = Array.isArray(store.planes) ? store.planes : [];
+  const summary = new Map<string, { planItems: number; latestHistoryAt: string | null }>();
+
+  for (const plan of planes) {
+    const ownerKey = String(plan.ownerKey || "").trim();
+    if (!ownerKey) continue;
+
+    let planItems = 0;
+    const semanas = Array.isArray(plan.semanas) ? plan.semanas : [];
+    for (const semana of semanas) {
+      const dias = Array.isArray(semana?.dias) ? semana.dias : [];
+      for (const dia of dias) {
+        const hasContent = Boolean(String(dia?.planificacion || "").trim() || String(dia?.sesionId || "").trim());
+        if (hasContent) {
+          planItems += 1;
+        }
+      }
+    }
+
+    const historial = Array.isArray(plan.historial) ? plan.historial : [];
+    const latestHistoryAt = historial
+      .map((item) => String(item?.createdAt || "").trim())
+      .filter(Boolean)
+      .sort()
+      .at(-1) || null;
+
+    summary.set(ownerKey, { planItems, latestHistoryAt });
+  }
+
+  return summary;
+}
+
 export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
-  const [users, alumnosRaw, clientesMetaRaw, pagosRaw] = await Promise.all([
+  const [users, alumnosRaw, clientesMetaRaw, pagosRaw, dataUpdateEventsRaw, semanaPlanRaw] = await Promise.all([
     db.user.findMany({
       where: {
         OR: [{ role: "COLABORADOR" }, { role: "CLIENTE" }],
@@ -92,6 +192,8 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     getSyncValue("pf-control-alumnos"),
     getSyncValue("pf-control-clientes-meta-v1"),
     getSyncValue("pf-control-pagos-v1"),
+    getSyncValue("whatsapp-data-update-events-v1"),
+    getSyncValue("pf-control-semana-plan"),
   ]);
 
   const alumnos = Array.isArray(alumnosRaw) ? alumnosRaw : [];
@@ -100,6 +202,18 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
       ? (clientesMetaRaw as Record<string, any>)
       : {};
   const pagos = Array.isArray(pagosRaw) ? (pagosRaw as RawPago[]) : [];
+  const pendingDataUpdateEvents = Array.isArray(dataUpdateEventsRaw)
+    ? (dataUpdateEventsRaw as DataUpdateEvent[]).filter((item) => !item?.consumedAt)
+    : [];
+
+  const pendingUpdateByName = new Map<string, DataUpdateEvent>();
+  for (const event of pendingDataUpdateEvents) {
+    const key = normalizeKey(String(event?.nombre || ""));
+    if (!key) continue;
+    pendingUpdateByName.set(key, event);
+  }
+
+  const planSummaryByOwner = buildPlanSummaryByOwner(semanaPlanRaw);
 
   const metaByName = new Map<string, any>();
   for (const [key, value] of Object.entries(clientesMeta)) {
@@ -115,9 +229,12 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     tipo: "alumno" | "colaborador";
     telefono: string;
     nombre: string;
+    ownerKey?: string;
     email?: string;
     actividad: string;
     endDate?: string;
+    pagoEstado?: string;
+    saldo?: number | null;
     paymentDate?: string;
     paymentAmount?: number;
   }) => {
@@ -129,12 +246,33 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
     }
 
     const days = candidate.endDate ? diffInDaysFromToday(candidate.endDate) : null;
+    const paymentStatus = derivePaymentStatus(days, candidate.pagoEstado);
+    const updateEvent = pendingUpdateByName.get(normalizeKey(candidate.nombre));
+    const hasPendingPlanUpdate = Boolean(updateEvent);
+    const ownerKey = String(candidate.ownerKey || getOwnerKeyFromName(candidate.nombre));
+    const planSummary = planSummaryByOwner.get(ownerKey);
+    const planItems = Number(planSummary?.planItems || 0);
+    const planStatus = hasPendingPlanUpdate
+      ? "actualizacion_pendiente"
+      : planItems > 0
+      ? "plan_asignado"
+      : "sin_plan";
+    const saldo =
+      typeof candidate.saldo === "number" && Number.isFinite(candidate.saldo)
+        ? candidate.saldo
+        : null;
 
     recipients.push({
       id: candidate.id,
       label: candidate.label,
       tipo: candidate.tipo,
+      ownerKey,
       telefono: phone,
+      actividad: candidate.actividad,
+      daysToDue: days,
+      paymentStatus,
+      planStatus,
+      hasPendingPlanUpdate,
       endDate: candidate.endDate,
       lastPaymentDate: candidate.paymentDate,
       lastPaymentAmount: candidate.paymentAmount,
@@ -145,6 +283,11 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
         dias: days === null ? "" : String(days),
         fecha: String(candidate.endDate || ""),
         vencimiento: String(candidate.endDate || ""),
+        pago_estado: paymentStatus,
+        saldo: saldo === null ? "" : String(saldo),
+        plan_estado: planStatus,
+        plan_items: String(planItems),
+        actualizacion_plan: hasPendingPlanUpdate ? "si" : "no",
         total:
           typeof candidate.paymentAmount === "number" && Number.isFinite(candidate.paymentAmount)
             ? String(candidate.paymentAmount)
@@ -168,9 +311,12 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
       tipo: isColab ? "colaborador" : "alumno",
       telefono: String(user.telefono || meta?.telefono || ""),
       nombre: displayName,
+      ownerKey: getOwnerKeyFromName(displayName),
       email: String(user.email || ""),
-      actividad: isColab ? "colaboracion" : "entrenamiento",
+      actividad: String(meta?.tipoAsesoria || (isColab ? "colaboracion" : "entrenamiento")),
       endDate: String(meta?.endDate || ""),
+      pagoEstado: String(meta?.pagoEstado || ""),
+      saldo: toNumberOrNull(meta?.saldo),
       paymentDate: String(payment?.fecha || ""),
       paymentAmount:
         typeof payment?.importe === "number" && Number.isFinite(payment.importe)
@@ -193,8 +339,11 @@ export async function listWhatsAppRecipients(): Promise<WhatsAppRecipient[]> {
       tipo: "alumno",
       telefono: String(meta?.telefono || ""),
       nombre,
-      actividad: "entrenamiento",
+      ownerKey: `alumnos:${normalized}`,
+      actividad: String(meta?.tipoAsesoria || "entrenamiento"),
       endDate: String(meta?.endDate || ""),
+      pagoEstado: String(meta?.pagoEstado || ""),
+      saldo: toNumberOrNull(meta?.saldo),
       paymentDate: String(payment?.fecha || ""),
       paymentAmount:
         typeof payment?.importe === "number" && Number.isFinite(payment.importe)

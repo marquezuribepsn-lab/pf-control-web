@@ -132,7 +132,7 @@ function shouldIncludeByRule(
 }
 
 function recipientAllowedForCategory(recipient: WhatsAppRecipient, categoryKey: string) {
-  if (categoryKey === "cobranzas") {
+  if (categoryKey === "cobranzas" || categoryKey === "asistencia_rutinas") {
     return recipient.tipo === "alumno";
   }
   return true;
@@ -155,10 +155,16 @@ export async function buildAutomationMatches(options: BuildOptions) {
   const pendingDataUpdateEvents = await getPendingDataUpdateEvents();
 
   const dataUpdateByName = new Map<string, DataUpdateEvent>();
+  const dataUpdateByClientKey = new Map<string, DataUpdateEvent>();
   for (const event of pendingDataUpdateEvents) {
     const key = normalizeName(event.nombre);
     if (!key) continue;
     dataUpdateByName.set(key, event);
+
+    const clientKey = String(event.clientKey || "").trim();
+    if (clientKey) {
+      dataUpdateByClientKey.set(clientKey, event);
+    }
   }
 
   const includeDisabled = options.includeDisabled === true;
@@ -205,8 +211,11 @@ export async function buildAutomationMatches(options: BuildOptions) {
         let dataUpdateEventId: string | undefined;
 
         if (sub.triggerType === "on_data_update") {
+          const ownerKey = String(recipient.ownerKey || "").trim();
+          const byOwner = ownerKey ? dataUpdateByClientKey.get(ownerKey) : null;
           const nameKey = normalizeName(recipient.variables.nombre || recipient.label);
-          const event = dataUpdateByName.get(nameKey);
+          const byName = dataUpdateByName.get(nameKey);
+          const event = byOwner || byName;
           if (!event) {
             continue;
           }

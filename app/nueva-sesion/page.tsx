@@ -1,19 +1,36 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useRouter } from "next/navigation";
+import Link from "@/components/ReliableLink";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 
+function resolveReturnTo(rawValue: string | null): string {
+  const raw = (rawValue || "").trim();
+  if (!raw) {
+    return "/sesiones";
+  }
+
+  if (!raw.startsWith("/") || raw.startsWith("//")) {
+    return "/sesiones";
+  }
+
+  return raw;
+}
+
 export default function NuevaSesionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { agregarSesion } = useSessions();
   const { categorias } = useCategories();
   const { alumnos } = useAlumnos();
   const { jugadoras } = usePlayers();
+
+  const returnTo = useMemo(() => resolveReturnTo(searchParams.get("returnTo")), [searchParams]);
 
   const [form, setForm] = useState({
     titulo: "",
@@ -42,8 +59,17 @@ export default function NuevaSesionPage() {
     }));
   }
 
-  function goToSesiones() {
-    router.replace("/sesiones");
+  function goToPreviousScreen() {
+    const beforeNavigation = `${window.location.pathname}${window.location.search}`;
+    router.replace(returnTo);
+
+    // Fallback duro por si la navegacion SPA queda bloqueada por algun guard.
+    window.setTimeout(() => {
+      const current = `${window.location.pathname}${window.location.search}`;
+      if (current === beforeNavigation) {
+        window.location.assign(returnTo);
+      }
+    }, 420);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -69,7 +95,7 @@ export default function NuevaSesionPage() {
       bloques: [],
     });
 
-    goToSesiones();
+    goToPreviousScreen();
   }
 
   return (
@@ -91,13 +117,12 @@ export default function NuevaSesionPage() {
             </p>
           </div>
 
-          <ReliableActionButton
-            type="button"
-            onClick={goToSesiones}
+          <Link
+            href={returnTo}
             className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Volver a Sesiones
-          </ReliableActionButton>
+          </Link>
         </div>
       </section>
 
@@ -219,13 +244,12 @@ export default function NuevaSesionPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <ReliableActionButton
-            type="button"
-            onClick={goToSesiones}
+          <Link
+            href={returnTo}
             className="rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
           >
             Volver sin guardar
-          </ReliableActionButton>
+          </Link>
           <ReliableActionButton
             type="submit"
             className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-200"

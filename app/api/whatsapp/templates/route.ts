@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSyncValue, setSyncValue } from "@/lib/syncStore";
+import {
+  DEFAULT_TEMPLATE_VARIABLE_KEYS,
+  normalizeTemplateMessage,
+} from "@/lib/whatsappTemplateVariables";
 
 const TEMPLATES_KEY = "whatsapp-templates-v1";
 
@@ -45,11 +49,16 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as Partial<WhatsAppTemplate>;
   const nombre = String(body.nombre || "").trim();
   const categoria = String(body.categoria || "General").trim();
-  const mensaje = String(body.mensaje || "").trim();
+  const mensajeRaw = String(body.mensaje || "").trim();
 
-  if (!nombre || !mensaje) {
+  if (!nombre || !mensajeRaw) {
     return NextResponse.json({ error: "nombre y mensaje son requeridos" }, { status: 400 });
   }
+
+  const normalizedMessage = normalizeTemplateMessage(mensajeRaw, {
+    allowedVariables: Array.from(DEFAULT_TEMPLATE_VARIABLE_KEYS),
+  });
+  const mensaje = normalizedMessage.message;
 
   const templates = await readTemplates();
   const now = new Date().toISOString();
@@ -65,7 +74,15 @@ export async function POST(req: NextRequest) {
   const next = [template, ...templates].slice(0, 500);
   await setSyncValue(TEMPLATES_KEY, next);
 
-  return NextResponse.json({ ok: true, template });
+  return NextResponse.json({
+    ok: true,
+    template,
+    validation: {
+      changed: normalizedMessage.changed,
+      unknownVariables: normalizedMessage.unknownVariables,
+      missingRequiredVariables: normalizedMessage.missingRequiredVariables,
+    },
+  });
 }
 
 export async function DELETE(req: NextRequest) {
@@ -95,14 +112,19 @@ export async function PUT(req: NextRequest) {
   const key = String(body.key || "").trim();
   const nombre = String(body.nombre || "").trim();
   const categoria = String(body.categoria || "General").trim();
-  const mensaje = String(body.mensaje || "").trim();
+  const mensajeRaw = String(body.mensaje || "").trim();
 
-  if (!key || !nombre || !mensaje) {
+  if (!key || !nombre || !mensajeRaw) {
     return NextResponse.json(
       { error: "key, nombre y mensaje son requeridos" },
       { status: 400 }
     );
   }
+
+  const normalizedMessage = normalizeTemplateMessage(mensajeRaw, {
+    allowedVariables: Array.from(DEFAULT_TEMPLATE_VARIABLE_KEYS),
+  });
+  const mensaje = normalizedMessage.message;
 
   const templates = await readTemplates();
   const index = templates.findIndex((item) => item.key === key);
@@ -122,5 +144,13 @@ export async function PUT(req: NextRequest) {
   next[index] = updated;
   await setSyncValue(TEMPLATES_KEY, next);
 
-  return NextResponse.json({ ok: true, template: updated });
+  return NextResponse.json({
+    ok: true,
+    template: updated,
+    validation: {
+      changed: normalizedMessage.changed,
+      unknownVariables: normalizedMessage.unknownVariables,
+      missingRequiredVariables: normalizedMessage.missingRequiredVariables,
+    },
+  });
 }

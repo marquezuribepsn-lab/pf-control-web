@@ -1,4 +1,5 @@
 export type WhatsAppMode = "test" | "prod";
+export type WhatsAppProvider = "meta_cloud" | "whatsapp_web";
 
 export type WhatsAppTriggerType =
   | "days_before"
@@ -42,6 +43,7 @@ export type WhatsAppConfig = {
   connection: {
     enabled: boolean;
     mode: WhatsAppMode;
+    provider: WhatsAppProvider;
   };
   automationRunner: WhatsAppAutomationRunnerConfig;
   categories: Record<string, WhatsAppCategoryConfig>;
@@ -60,6 +62,7 @@ function buildDefaultConfig(): WhatsAppConfig {
     connection: {
       enabled: true,
       mode: "test",
+      provider: "meta_cloud",
     },
     automationRunner: {
       enabled: true,
@@ -207,6 +210,12 @@ export function normalizeWhatsAppConfig(raw: unknown): WhatsAppConfig {
   const modeRaw = String(connectionRaw.mode || defaults.connection.mode).toLowerCase();
   const mode: WhatsAppMode = modeRaw === "prod" ? "prod" : "test";
 
+  const providerRaw = String(connectionRaw.provider || defaults.connection.provider)
+    .trim()
+    .toLowerCase();
+  const provider: WhatsAppProvider =
+    providerRaw === "whatsapp_web" ? "whatsapp_web" : "meta_cloud";
+
   const runnerRaw =
     input.automationRunner && typeof input.automationRunner === "object"
       ? (input.automationRunner as Record<string, unknown>)
@@ -278,6 +287,7 @@ export function normalizeWhatsAppConfig(raw: unknown): WhatsAppConfig {
           ? connectionRaw.enabled
           : defaults.connection.enabled,
       mode,
+      provider,
     },
     automationRunner: {
       enabled:

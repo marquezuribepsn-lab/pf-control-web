@@ -25,6 +25,11 @@ type Recipient = {
   label: string;
   tipo: "alumno" | "colaborador";
   telefono: string;
+  actividad?: string;
+  daysToDue?: number | null;
+  paymentStatus?: string;
+  planStatus?: string;
+  hasPendingPlanUpdate?: boolean;
   variables: Record<string, string>;
 };
 
@@ -107,6 +112,25 @@ type RunnerAlertRow = {
   alertError?: string | null;
 };
 
+type WebSessionStatus =
+  | "disconnected"
+  | "connecting"
+  | "qr_ready"
+  | "connected"
+  | "auth_failure"
+  | "error";
+
+type WhatsAppWebSession = {
+  status: WebSessionStatus;
+  connected: boolean;
+  phone: string | null;
+  pushname: string | null;
+  qr: string | null;
+  qrImageDataUrl: string | null;
+  lastError: string | null;
+  lastEventAt: string | null;
+};
+
 type SimMatch = {
   id: string;
   nombre: string;
@@ -178,6 +202,41 @@ function getRule(config: WhatsAppConfig, categoryKey: string, subKey: string): W
   return category.subcategories[subKey] || null;
 }
 
+function getWebSessionStatusLabel(status: WebSessionStatus | undefined) {
+  switch (status) {
+    case "connected":
+      return "Conectada";
+    case "qr_ready":
+      return "QR listo";
+    case "connecting":
+      return "Conectando";
+    case "auth_failure":
+      return "Error de auth";
+    case "error":
+      return "Error";
+    case "disconnected":
+    default:
+      return "Desconectada";
+  }
+}
+
+function getWebSessionStatusTone(status: WebSessionStatus | undefined) {
+  switch (status) {
+    case "connected":
+      return "border-emerald-300/30 bg-emerald-500/15 text-emerald-100";
+    case "qr_ready":
+      return "border-cyan-300/30 bg-cyan-500/15 text-cyan-100";
+    case "connecting":
+      return "border-amber-300/30 bg-amber-500/15 text-amber-100";
+    case "auth_failure":
+    case "error":
+      return "border-rose-300/40 bg-rose-500/15 text-rose-100";
+    case "disconnected":
+    default:
+      return "border-slate-300/20 bg-slate-500/10 text-slate-200";
+  }
+}
+
 export default function AdminWhatsAppPage() {
   const { data: session, status: sessionStatus } = useSession();
 
@@ -194,6 +253,9 @@ export default function AdminWhatsAppPage() {
   const [runs, setRuns] = useState<RunRow[]>([]);
   const [runnerState, setRunnerState] = useState<RunnerState>({});
   const [runnerAlerts, setRunnerAlerts] = useState<RunnerAlertRow[]>([]);
+  const [webSession, setWebSession] = useState<WhatsAppWebSession | null>(null);
+  const [webSessionLoading, setWebSessionLoading] = useState(false);
+  const [webSessionBusy, setWebSessionBusy] = useState(false);
 
   const [historyFilters, setHistoryFilters] = useState<HistoryFilters>({
     from: "",
@@ -212,6 +274,8 @@ export default function AdminWhatsAppPage() {
   const [manualCategoryKey, setManualCategoryKey] = useState("cobranzas");
   const [manualSubcategoryKey, setManualSubcategoryKey] = useState("aviso_anticipado");
   const [manualMessage, setManualMessage] = useState("");
+  const [manualRecipientSearch, setManualRecipientSearch] = useState("");
+  const [manualRecipientTypeFilter, setManualRecipientTypeFilter] = useState<"all" | "alumno" | "colaborador">("all");
 
   const role = (session?.user as any)?.role;
 
@@ -224,6 +288,45 @@ export default function AdminWhatsAppPage() {
     () => manualRecipientIds.map((id) => recipientById.get(id)).filter(Boolean) as Recipient[],
     [manualRecipientIds, recipientById]
   );
+
+  const filteredManualRecipients = useMemo(() => {
+    const search = manualRecipientSearch.trim().toLowerCase();
+
+    return recipients.filter((recipient) => {
+      if (manualRecipientTypeFilter !== "all" && recipient.tipo !== manualRecipientTypeFilter) {
+        return false;
+      }
+
+      if (!search) {
+        return true;
+      }
+
+      const haystack = [
+        recipient.label,
+        recipient.telefono,
+        recipient.tipo,
+        recipient.actividad,
+        recipient.paymentStatus,
+        recipient.planStatus,
+      ]
+        .map((value) => String(value || "").toLowerCase())
+        .join(" ");
+
+      return haystack.includes(search);
+    });
+  }, [recipients, manualRecipientSearch, manualRecipientTypeFilter]);
+
+  const visibleManualRecipientIds = useMemo(
+    () => filteredManualRecipients.map((recipient) => recipient.id),
+    [filteredManualRecipients]
+  );
+
+  const allVisibleManualSelected = useMemo(() => {
+    if (visibleManualRecipientIds.length === 0) {
+      return false;
+    }
+    return visibleManualRecipientIds.every((id) => manualRecipientIds.includes(id));
+  }, [visibleManualRecipientIds, manualRecipientIds]);
 
   const testRecipient = testRecipientId ? recipientById.get(testRecipientId) || null : null;
 
@@ -337,6 +440,11 @@ export default function AdminWhatsAppPage() {
     return subcategoryOptions.filter((row) => row.categoryKey === manualCategoryKey);
   }, [manualCategoryKey, subcategoryOptions]);
 
+  const manualRequiredVariables = useMemo(() => {
+    const rule = getRule(config, manualCategoryKey, manualSubcategoryKey);
+    return Array.isArray(rule?.variables) ? rule.variables : [];
+  }, [config, manualCategoryKey, manualSubcategoryKey]);
+
   useEffect(() => {
     const firstSub = manualSubcategories[0]?.subcategoryKey || "";
     if (!firstSub) {
@@ -360,6 +468,25 @@ export default function AdminWhatsAppPage() {
   const resetFeedback = () => {
     setStatus("");
     setError("");
+  };
+
+  const loadWhatsAppWebSession = async (includeQr = true) => {
+    try {
+      setWebSessionLoading(true);
+      const response = await fetch(
+        `/api/admin/whatsapp-web/session?includeQr=${includeQr ? "1" : "0"}`,
+        { cache: "no-store" }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo cargar sesion de WhatsApp Web");
+      }
+      setWebSession((data?.session || null) as WhatsAppWebSession | null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cargar sesion de WhatsApp Web");
+    } finally {
+      setWebSessionLoading(false);
+    }
   };
 
   const loadAll = async () => {
@@ -406,6 +533,12 @@ export default function AdminWhatsAppPage() {
       if (!testRecipientId && nextRecipients.length > 0) {
         setTestRecipientId(nextRecipients[0].id);
       }
+
+      if (nextConfig?.connection?.provider === "whatsapp_web") {
+        await loadWhatsAppWebSession(true);
+      } else {
+        setWebSession(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cargar panel de WhatsApp");
     } finally {
@@ -418,6 +551,26 @@ export default function AdminWhatsAppPage() {
       void loadAll();
     }
   }, [sessionStatus]);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") return;
+    if (config.connection.provider !== "whatsapp_web") return;
+
+    const timer = window.setInterval(() => {
+      void loadWhatsAppWebSession(true);
+    }, 4000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [sessionStatus, config.connection.provider]);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") return;
+    if (config.connection.provider !== "whatsapp_web") return;
+    if (webSession || webSessionLoading) return;
+    void loadWhatsAppWebSession(true);
+  }, [sessionStatus, config.connection.provider, webSession, webSessionLoading]);
 
   const saveConfig = async () => {
     resetFeedback();
@@ -434,7 +587,15 @@ export default function AdminWhatsAppPage() {
       }
 
       setConfig(data?.config || config);
-      setStatus("Configuracion guardada.");
+      const validationWarnings = Array.isArray(data?.validationWarnings)
+        ? data.validationWarnings
+        : [];
+
+      if (validationWarnings.length > 0) {
+        setStatus(`Configuracion guardada con validacion automatica (${validationWarnings.length} aviso/s de variables).`);
+      } else {
+        setStatus("Configuracion guardada.");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar configuracion");
     } finally {
@@ -485,6 +646,62 @@ export default function AdminWhatsAppPage() {
         ? prev.filter((id) => id !== recipientId)
         : [...prev, recipientId]
     );
+  };
+
+  const toggleSelectAllVisibleManualRecipients = () => {
+    setManualRecipientIds((prev) => {
+      const visibleSet = new Set(visibleManualRecipientIds);
+
+      if (allVisibleManualSelected) {
+        return prev.filter((id) => !visibleSet.has(id));
+      }
+
+      const next = new Set(prev);
+      for (const id of visibleManualRecipientIds) {
+        next.add(id);
+      }
+      return Array.from(next);
+    });
+  };
+
+  const clearManualSelection = () => {
+    setManualRecipientIds([]);
+  };
+
+  const autoSelectManualRecipientsByRule = async () => {
+    resetFeedback();
+
+    try {
+      setActionLoading(true);
+      const response = await fetch("/api/whatsapp/automation/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categoryKey: manualCategoryKey,
+          ruleKey: manualSubcategoryKey,
+          limit: 500,
+          forceWindow: true,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo auto-seleccionar destinatarios");
+      }
+
+      const matches = Array.isArray(data?.matches) ? data.matches : [];
+      const candidateIds = matches
+        .map((row: any) => String(row?.id || "").trim())
+        .filter(Boolean)
+        .filter((id: string) => recipientById.has(id));
+
+      setManualRecipientIds(Array.from(new Set(candidateIds)));
+      setStatus(`Auto-seleccion completada: ${candidateIds.length} alumno(s) segun la ficha y la regla.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error en auto-seleccion de destinatarios");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const summarizeDispatch = (data: any) => {
@@ -582,19 +799,38 @@ export default function AdminWhatsAppPage() {
         throw new Error(data?.error || "No se pudo enviar mensaje manual");
       }
 
+      if (typeof data?.normalizedMessage === "string" && data.normalizedMessage.trim()) {
+        setManualMessage(data.normalizedMessage);
+      }
+
       const summary = summarizeDispatch(data);
       if (summary.okCount <= 0) {
         throw new Error(`No se pudo entregar el mensaje: ${formatDispatchReason(summary.firstFailureReason)}`);
       }
 
+      const unknownVariables = Array.isArray(data?.validation?.unknownVariables)
+        ? data.validation.unknownVariables
+        : [];
+      const hasUnknownVariables = unknownVariables.length > 0;
+
       if (summary.failedCount > 0) {
         setStatus(
-          `Envio parcial (${summary.okCount}/${summary.total}) - fallidos: ${summary.failedCount}.`
+          `Envio parcial (${summary.okCount}/${summary.total}) - fallidos: ${summary.failedCount}.${
+            hasUnknownVariables ? ` Variables no resueltas: ${unknownVariables.join(", ")}.` : ""
+          }`
         );
       } else if (singleRecipientOnly) {
-        setStatus("Prueba real de mensaje manual enviada.");
+        setStatus(
+          `Prueba real de mensaje manual enviada.${
+            hasUnknownVariables ? ` Variables no resueltas: ${unknownVariables.join(", ")}.` : ""
+          }`
+        );
       } else {
-        setStatus("Envio manual ejecutado.");
+        setStatus(
+          `Envio manual ejecutado.${
+            hasUnknownVariables ? ` Variables no resueltas: ${unknownVariables.join(", ")}.` : ""
+          }`
+        );
       }
 
       await loadAll();
@@ -801,6 +1037,42 @@ export default function AdminWhatsAppPage() {
     }
   };
 
+  const executeWebSessionAction = async (
+    action: "connect" | "disconnect" | "logout" | "restart"
+  ) => {
+    resetFeedback();
+
+    try {
+      setWebSessionBusy(true);
+      const response = await fetch("/api/admin/whatsapp-web/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo actualizar sesion de WhatsApp Web");
+      }
+
+      setWebSession((data?.session || null) as WhatsAppWebSession | null);
+
+      if (action === "connect") {
+        setStatus("Sesión WhatsApp Web iniciada. Escanea el QR para vincular.");
+      } else if (action === "disconnect") {
+        setStatus("Sesión WhatsApp Web desconectada.");
+      } else if (action === "logout") {
+        setStatus("Sesión WhatsApp Web cerrada y desvinculada.");
+      } else {
+        setStatus("Sesión WhatsApp Web reiniciada.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al gestionar sesion de WhatsApp Web");
+    } finally {
+      setWebSessionBusy(false);
+    }
+  };
+
   const buildHistoryExportUrl = () => {
     const params = new URLSearchParams();
     params.set("format", "csv");
@@ -812,6 +1084,9 @@ export default function AdminWhatsAppPage() {
     if (historyFilters.rule !== "all") params.set("rule", historyFilters.rule);
     return `/api/admin/whatsapp-history?${params.toString()}`;
   };
+
+  const providerLabel =
+    config.connection.provider === "whatsapp_web" ? "WhatsApp Web" : "Meta Cloud API";
 
   if (sessionStatus === "loading") {
     return (
@@ -832,38 +1107,68 @@ export default function AdminWhatsAppPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
-      <header className="mb-5 rounded-2xl border border-emerald-400/30 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <main className="mx-auto max-w-[1240px] space-y-6 p-6 text-slate-100">
+      <header className="relative overflow-hidden rounded-[30px] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_24px_70px_-34px_rgba(6,182,212,0.7)]">
+        <div className="pointer-events-none absolute -left-8 top-1 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-6 top-8 h-40 w-40 rounded-full bg-emerald-400/15 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black">Configuracion de WhatsApp</h1>
-            <p className="mt-1 text-sm text-slate-300">
-              Administra mensajes manuales y automatizaciones por subcategoria.
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100/85">
+              Centro de mensajeria
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">
+              Hub de WhatsApp
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">
+              Automatizaciones, envios manuales e historial operativo en una vista unificada.
             </p>
           </div>
 
-          <ReliableActionButton
-            type="button"
-            onClick={saveConfig}
-            disabled={saving}
-            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? "Guardando..." : "Guardar cambios"}
-          </ReliableActionButton>
+          <div className="flex flex-wrap gap-2">
+            <ReliableActionButton
+              type="button"
+              onClick={() => void loadAll()}
+              disabled={loading}
+              className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+            >
+              Actualizar panel
+            </ReliableActionButton>
+            <ReliableActionButton
+              type="button"
+              onClick={saveConfig}
+              disabled={saving}
+              className="rounded-xl border border-cyan-200/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? "Guardando..." : "Guardar cambios"}
+            </ReliableActionButton>
+          </div>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
-            Conexion: <span className="font-bold text-white">{config.connection.enabled ? "Activa" : "Desactivada"}</span>
+        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Conexion
+            <p className="mt-1 text-base font-black text-white">
+              {config.connection.enabled ? "Activa" : "Desactivada"}
+            </p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
-            Modo: <span className="font-bold text-white">{config.connection.mode}</span>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Proveedor
+            <p className="mt-1 text-base font-black text-white">{providerLabel}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
-            Destinatarios: <span className="font-bold text-white">{recipients.length}</span>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Modo
+            <p className="mt-1 text-base font-black text-white">{config.connection.mode}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
-            Runner cada <span className="font-bold text-white">{config.automationRunner.intervalMinutes} min</span>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Destinatarios
+            <p className="mt-1 text-base font-black text-white">{recipients.length}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+            Runner
+            <p className="mt-1 text-base font-black text-white">
+              cada {config.automationRunner.intervalMinutes} min
+            </p>
             <p className="mt-1 text-[11px] text-slate-400">
               Proxima: {runnerState.nextRunAt ? formatDateTime(runnerState.nextRunAt) : "-"}
             </p>
@@ -871,26 +1176,40 @@ export default function AdminWhatsAppPage() {
         </div>
       </header>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {TAB_ITEMS.map((tab) => (
-          <ReliableActionButton
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-              activeTab === tab.id
-                ? "bg-emerald-500/25 text-emerald-100"
-                : "bg-slate-800/70 text-slate-300 hover:bg-slate-700"
-            }`}
-          >
-            {tab.label}
-          </ReliableActionButton>
-        ))}
-      </div>
+      <section className="rounded-3xl border border-white/15 bg-slate-900/65 p-3 shadow-[0_14px_40px_-30px_rgba(148,163,184,0.6)]">
+        <div className="flex flex-wrap gap-2">
+          {TAB_ITEMS.map((tab) => (
+            <ReliableActionButton
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-2xl px-4 py-2 text-xs font-bold tracking-wide transition ${
+                activeTab === tab.id
+                  ? "bg-gradient-to-r from-cyan-300 to-emerald-300 text-slate-950 shadow-[0_10px_24px_-16px_rgba(45,212,191,0.9)]"
+                  : "bg-slate-800/70 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              {tab.label}
+            </ReliableActionButton>
+          ))}
+        </div>
+      </section>
 
-      {status ? <p className="mb-3 text-sm text-emerald-300">{status}</p> : null}
-      {error ? <p className="mb-3 text-sm text-rose-300">{error}</p> : null}
-      {loading ? <p className="mb-3 text-sm text-cyan-200">Cargando datos del panel...</p> : null}
+      {status ? (
+        <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100">
+          {status}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="rounded-2xl border border-rose-300/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
+          {error}
+        </div>
+      ) : null}
+      {loading ? (
+        <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/15 px-4 py-3 text-sm text-cyan-100">
+          Cargando datos del panel...
+        </div>
+      ) : null}
 
       {activeTab === "envio_manual" ? (
         <section className="space-y-4">
@@ -936,8 +1255,70 @@ export default function AdminWhatsAppPage() {
               </label>
             </div>
 
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <label className="text-sm text-slate-300 md:col-span-2">
+                Buscar alumno/contacto
+                <input
+                  type="text"
+                  value={manualRecipientSearch}
+                  onChange={(event) => setManualRecipientSearch(event.target.value)}
+                  placeholder="nombre, telefono, estado o actividad"
+                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                />
+              </label>
+
+              <label className="text-sm text-slate-300">
+                Tipo
+                <select
+                  value={manualRecipientTypeFilter}
+                  onChange={(event) =>
+                    setManualRecipientTypeFilter(
+                      event.target.value === "alumno" || event.target.value === "colaborador"
+                        ? event.target.value
+                        : "all"
+                    )
+                  }
+                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                >
+                  <option value="all">Todos</option>
+                  <option value="alumno">Solo alumnos</option>
+                  <option value="colaborador">Solo colaboradores</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={toggleSelectAllVisibleManualRecipients}
+                disabled={actionLoading || visibleManualRecipientIds.length === 0}
+                className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20 disabled:opacity-50"
+              >
+                {allVisibleManualSelected ? "Quitar seleccion visible" : "Seleccionar visibles"}
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={clearManualSelection}
+                disabled={actionLoading || manualRecipientIds.length === 0}
+                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+              >
+                Limpiar seleccion
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={autoSelectManualRecipientsByRule}
+                disabled={actionLoading}
+                className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-50"
+              >
+                Auto-seleccionar por ficha
+              </ReliableActionButton>
+              <span className="text-xs text-slate-300">
+                Seleccionados: <strong>{manualRecipientIds.length}</strong> / {recipients.length}
+              </span>
+            </div>
+
             <div className="mt-3 grid max-h-72 gap-2 overflow-auto md:grid-cols-2 xl:grid-cols-3">
-              {recipients.map((recipient) => {
+              {filteredManualRecipients.map((recipient) => {
                 const selected = manualRecipientIds.includes(recipient.id);
                 return (
                   <label
@@ -957,9 +1338,23 @@ export default function AdminWhatsAppPage() {
                     <p className="font-semibold">{recipient.label}</p>
                     <p className="text-[11px] opacity-80">{recipient.telefono}</p>
                     <p className="text-[11px] opacity-80">{recipient.tipo}</p>
+                    {recipient.actividad ? (
+                      <p className="text-[11px] opacity-80">actividad: {recipient.actividad}</p>
+                    ) : null}
+                    {recipient.paymentStatus ? (
+                      <p className="text-[11px] opacity-80">pago: {recipient.paymentStatus}</p>
+                    ) : null}
+                    {recipient.planStatus ? (
+                      <p className="text-[11px] opacity-80">plan: {recipient.planStatus}</p>
+                    ) : null}
                   </label>
                 );
               })}
+              {filteredManualRecipients.length === 0 ? (
+                <div className="col-span-full rounded-lg border border-white/15 bg-slate-800/60 p-3 text-xs text-slate-300">
+                  No hay destinatarios para el filtro actual.
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-3">
@@ -968,6 +1363,7 @@ export default function AdminWhatsAppPage() {
                 value={manualMessage}
                 onChange={setManualMessage}
                 variables={previewVariables}
+                requiredVariables={manualRequiredVariables}
                 disabled={actionLoading}
               />
             </div>
@@ -1390,6 +1786,27 @@ export default function AdminWhatsAppPage() {
               </select>
             </label>
 
+            <label className="text-sm text-slate-300">
+              Proveedor de envio
+              <select
+                value={config.connection.provider || "meta_cloud"}
+                onChange={(event) =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    connection: {
+                      ...prev.connection,
+                      provider:
+                        event.target.value === "whatsapp_web" ? "whatsapp_web" : "meta_cloud",
+                    },
+                  }))
+                }
+                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+              >
+                <option value="meta_cloud">Meta Cloud API</option>
+                <option value="whatsapp_web">WhatsApp Web (QR)</option>
+              </select>
+            </label>
+
             <label className="text-sm text-slate-300 md:col-span-2">
               Destinatario para pruebas rapidas
               <select
@@ -1404,6 +1821,12 @@ export default function AdminWhatsAppPage() {
                 ))}
               </select>
             </label>
+
+            {config.connection.provider === "whatsapp_web" ? (
+              <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/10 p-4 text-sm text-cyan-100 md:col-span-2">
+                Vinculacion WhatsApp Web habilitada en esta seccion de Configuracion.
+              </div>
+            ) : null}
 
             <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm md:col-span-2">
               <input
@@ -1521,6 +1944,130 @@ export default function AdminWhatsAppPage() {
               />
               Alerta por WhatsApp interno
             </label>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900/90 to-slate-950 p-5 shadow-[0_24px_70px_-36px_rgba(45,212,191,0.65)]">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/85">
+                  Vinculacion WhatsApp Web
+                </p>
+                <h3 className="mt-2 text-xl font-black text-white">QR y control de sesion</h3>
+                <p className="mt-1 text-sm text-slate-300">
+                  Esta sesion se mantiene activa con reconexion automatica y almacenamiento local.
+                </p>
+              </div>
+
+              {config.connection.provider === "whatsapp_web" ? (
+                <span
+                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getWebSessionStatusTone(
+                    webSession?.status
+                  )}`}
+                >
+                  {getWebSessionStatusLabel(webSession?.status)}
+                </span>
+              ) : (
+                <span className="inline-flex rounded-full border border-slate-300/20 bg-slate-500/10 px-3 py-1 text-xs font-semibold text-slate-200">
+                  Inactivo (proveedor actual: Meta Cloud API)
+                </span>
+              )}
+            </div>
+
+            {config.connection.provider !== "whatsapp_web" ? (
+              <div className="mt-4 rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-200">
+                Activa el proveedor <span className="font-semibold text-white">WhatsApp Web (QR)</span> para
+                habilitar la vinculacion por QR.
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                  <p className="text-sm font-semibold text-white">Estado de la sesion</p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300">
+                      Numero
+                      <p className="mt-1 text-sm font-bold text-white">{webSession?.phone || "-"}</p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300">
+                      Perfil
+                      <p className="mt-1 text-sm font-bold text-white">{webSession?.pushname || "-"}</p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300 sm:col-span-2">
+                      Ultimo evento
+                      <p className="mt-1 text-sm font-bold text-white">
+                        {webSession?.lastEventAt ? formatDateTime(webSession.lastEventAt) : "-"}
+                      </p>
+                    </div>
+                    {webSession?.lastError ? (
+                      <div className="rounded-xl border border-rose-300/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-100 sm:col-span-2">
+                        Error: {webSession.lastError}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => executeWebSessionAction("connect")}
+                      disabled={webSessionBusy}
+                      className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white hover:bg-cyan-500 disabled:opacity-50"
+                    >
+                      Iniciar / Generar QR
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => executeWebSessionAction("restart")}
+                      disabled={webSessionBusy}
+                      className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+                    >
+                      Reiniciar sesion
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => executeWebSessionAction("disconnect")}
+                      disabled={webSessionBusy}
+                      className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+                    >
+                      Desconectar
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => executeWebSessionAction("logout")}
+                      disabled={webSessionBusy}
+                      className="rounded-lg border border-rose-300/40 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-500/30 disabled:opacity-50"
+                    >
+                      Cerrar sesion
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => void loadWhatsAppWebSession(true)}
+                      disabled={webSessionLoading || webSessionBusy}
+                      className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+                    >
+                      Actualizar estado
+                    </ReliableActionButton>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                  <p className="text-sm font-semibold text-white">QR de vinculacion</p>
+                  {webSession?.qrImageDataUrl ? (
+                    <div className="mt-3 inline-flex rounded-2xl border border-white/20 bg-white p-2">
+                      <img
+                        src={webSession.qrImageDataUrl}
+                        alt="QR de vinculacion de WhatsApp Web"
+                        className="h-56 w-56"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-slate-800/60 p-4 text-xs text-slate-300">
+                      {webSession?.connected
+                        ? "Sesion conectada y persistida. La automatizacion seguira usando esta vinculacion."
+                        : "No hay QR visible todavia. Usa Iniciar / Generar QR para vincular el telefono."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       ) : null}
@@ -1642,6 +2189,7 @@ export default function AdminWhatsAppPage() {
                           value={sub.message}
                           onChange={(value) => updateRule(activeTab, subcategoryKey, { message: value })}
                           variables={previewVariables}
+                          requiredVariables={sub.variables}
                           disabled={actionLoading}
                         />
                       </div>
@@ -1724,6 +2272,7 @@ export default function AdminWhatsAppPage() {
           })()}
         </section>
       ) : null}
+
     </main>
   );
 }

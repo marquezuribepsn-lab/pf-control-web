@@ -3,7 +3,7 @@
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useSessions } from "../../components/SessionsProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useAlumnos } from "../../components/AlumnosProvider";
@@ -283,6 +283,7 @@ const findMetricNumber = (
 };
 
 export default function SesionesPage() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { sesiones, agregarSesion, editarSesion, eliminarSesion } = useSessions();
   const { categorias } = useCategories();
@@ -333,6 +334,16 @@ export default function SesionesPage() {
   const totalCategoriasBiblioteca = useMemo(
     () => new Set(ejercicios.map((item) => item.categoria).filter(Boolean)).size,
     [ejercicios]
+  );
+
+  const returnToHref = useMemo(() => {
+    const search = searchParams.toString();
+    return `${pathname}${search ? `?${search}` : ""}`;
+  }, [pathname, searchParams]);
+
+  const nuevaSesionHref = useMemo(
+    () => `/nueva-sesion?returnTo=${encodeURIComponent(returnToHref)}`,
+    [returnToHref]
   );
 
   useEffect(() => {
@@ -1087,7 +1098,7 @@ export default function SesionesPage() {
               </ReliableActionButton>
             ) : (
               <Link
-                href="/nueva-sesion"
+                href={nuevaSesionHref}
                 className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
               >
                 + Nueva sesion

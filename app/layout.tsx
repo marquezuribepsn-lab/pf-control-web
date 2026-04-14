@@ -107,7 +107,6 @@ export default async function RootLayout({
   const links = [
     { href: "/", label: "Inicio", icon: "\u{1F3E0}", tone: "from-cyan-500 to-blue-600" },
     { href: "/semana", label: "Templates", icon: "\u{1F4C5}", tone: "from-violet-500 to-purple-600" },
-    { href: "/sesiones", label: "Entrenamiento", icon: "\u{1F3CB}\uFE0F", tone: "from-blue-600 to-indigo-600" },
     { href: "/asistencias", label: "Asistencias", icon: "\u2705", tone: "from-teal-500 to-cyan-600" },
     { href: "/registros", label: "Registros", icon: "\u{1F4CA}", tone: "from-amber-500 to-orange-600" },
     { href: "/categorias", label: "Categorias", icon: "\u{1F3F7}\uFE0F", tone: "from-rose-500 to-red-600" },

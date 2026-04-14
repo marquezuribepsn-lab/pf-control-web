@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { appendWhatsAppHistory, dispatchWhatsAppBatch, type DispatchRecipient } from "@/lib/whatsappDispatch";
+import { normalizeTemplateMessage } from "@/lib/whatsappTemplateVariables";
 
 async function requireAdminSession() {
   const session = await auth();
@@ -31,8 +32,26 @@ export async function POST(req: NextRequest) {
     };
 
     const recipients = Array.isArray(body.destinatarios) ? body.destinatarios : [];
-    const message = String(body.mensaje || "").trim();
+    const messageRaw = String(body.mensaje || "").trim();
     const mode = String(body.mode || "prod").trim().toLowerCase();
+
+    const allowedVariables = Array.from(
+      new Set(
+        recipients.flatMap((recipient) => {
+          const variables =
+            recipient?.variables && typeof recipient.variables === "object"
+              ? (recipient.variables as Record<string, unknown>)
+              : {};
+          return Object.keys(variables);
+        })
+      )
+    );
+
+    const messageNormalization = normalizeTemplateMessage(messageRaw, {
+      allowedVariables,
+    });
+
+    const message = String(messageNormalization.message || "").trim();
 
     if (!message || recipients.length === 0) {
       return NextResponse.json(
@@ -80,6 +99,12 @@ export async function POST(req: NextRequest) {
       okCount: batch.okCount,
       failedCount: batch.failedCount,
       firstFailureReason: firstFailure?.reason || null,
+      validation: {
+        changed: messageNormalization.changed,
+        unknownVariables: messageNormalization.unknownVariables,
+        missingRequiredVariables: messageNormalization.missingRequiredVariables,
+      },
+      normalizedMessage: message,
       results: batch.results,
     });
   } catch (error) {

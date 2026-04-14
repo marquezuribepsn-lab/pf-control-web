@@ -1,7 +1,9 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import SesionesPage from "../sesiones/page";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
@@ -62,6 +64,7 @@ type SemanaPlan = {
 };
 
 type PersonaTipo = "jugadoras" | "alumnos";
+type WorkspaceTab = "templates" | "entrenamiento";
 
 type PersonaItem = {
   tipo: PersonaTipo;
@@ -488,6 +491,8 @@ const ensurePlanForPersona = (store: SemanaStoreV3, persona: PersonaItem): Seman
 };
 
 export default function SemanaPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
   const { categorias } = useCategories();
@@ -2304,8 +2309,71 @@ export default function SemanaPage() {
       ? "[x]"
       : "[OK]";
 
+  const workspaceTab: WorkspaceTab =
+    (searchParams.get("panel") || searchParams.get("seccion") || "")
+      .trim()
+      .toLowerCase() === "entrenamiento"
+      ? "entrenamiento"
+      : "templates";
+
+  const setWorkspaceTab = (nextTab: WorkspaceTab) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (nextTab === "entrenamiento") {
+      nextParams.set("panel", "entrenamiento");
+    } else {
+      nextParams.delete("panel");
+      nextParams.delete("seccion");
+    }
+
+    const query = nextParams.toString();
+    router.replace(query ? `/semana?${query}` : "/semana");
+  };
+
+  const workspaceTabSwitcher = (
+    <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+        Categoria Templates
+      </p>
+      <div className="mt-3 inline-flex rounded-2xl bg-slate-950/70 p-1 ring-1 ring-white/10">
+        <ReliableActionButton
+          type="button"
+          onClick={() => setWorkspaceTab("templates")}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+            workspaceTab === "templates"
+              ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(34,211,238,0.8)]"
+              : "text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-100"
+          }`}
+        >
+          Templates
+        </ReliableActionButton>
+        <ReliableActionButton
+          type="button"
+          onClick={() => setWorkspaceTab("entrenamiento")}
+          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+            workspaceTab === "entrenamiento"
+              ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(34,211,238,0.8)]"
+              : "text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-100"
+          }`}
+        >
+          Entrenamiento
+        </ReliableActionButton>
+      </div>
+    </section>
+  );
+
+  if (workspaceTab === "entrenamiento") {
+    return (
+      <>
+        <div className="mx-auto max-w-7xl p-6 pb-0 text-slate-100">{workspaceTabSwitcher}</div>
+        <SesionesPage />
+      </>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-7xl p-6 text-slate-100">
+      {workspaceTabSwitcher}
       {toast && (
         <div className="pointer-events-none fixed right-4 top-4 z-50 w-full max-w-xs">
           <div
