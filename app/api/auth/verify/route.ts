@@ -8,7 +8,30 @@ const SIGNUP_PROFILES_KEY = 'pf-control-signup-profiles-v1';
 const ALUMNOS_KEY = 'pf-control-alumnos';
 const CLIENTES_META_KEY = 'pf-control-clientes-meta-v1';
 
+type SignupAnamnesis = {
+  tratamientoMedico?: string;
+  lesionesLimitaciones?: string;
+  medicacionRegular?: string;
+  cirugiasRecientes?: string;
+  antecedentesClinicos?: string;
+  autorizacionMedica?: string;
+  experienciaEntrenamiento?: string;
+  alimentacionActual?: string[];
+  alimentacionDetalle?: string;
+  desordenAlimentario?: string;
+  consumoSustancias?: string;
+  suplementos?: string;
+  interesEntrenamiento?: string[];
+  interesDetalle?: string;
+  compromisoObjetivo?: number | null;
+  origenContacto?: string[];
+  origenDetalle?: string;
+  consentimientoSalud?: string;
+};
+
 type SignupProfile = {
+  nombre?: string;
+  apellido?: string;
   nombreCompleto?: string;
   edad?: number | null;
   altura?: string;
@@ -22,6 +45,7 @@ type SignupProfile = {
   deporte?: string;
   categoria?: string;
   posicion?: string;
+  anamnesis?: SignupAnamnesis;
 };
 
 function normalizeName(value: unknown) {
@@ -46,6 +70,54 @@ function addDays(dateOnly: string, days: number) {
   if (Number.isNaN(parsed.getTime())) return '';
   parsed.setDate(parsed.getDate() + days);
   return parsed.toISOString().slice(0, 10);
+}
+
+function formatList(raw: unknown): string {
+  if (!Array.isArray(raw)) {
+    return '';
+  }
+
+  return raw
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+function buildAnamnesisSummary(anamnesis: SignupAnamnesis | undefined): string {
+  if (!anamnesis || typeof anamnesis !== 'object') {
+    return '';
+  }
+
+  const parts = [
+    `Tratamiento medico: ${String(anamnesis.tratamientoMedico || 'No informado').trim()}`,
+    `Lesiones/limitaciones: ${String(anamnesis.lesionesLimitaciones || 'No informado').trim()}`,
+    `Medicacion: ${String(anamnesis.medicacionRegular || 'No informado').trim()}`,
+    `Cirugias ultimos 2 anos: ${String(anamnesis.cirugiasRecientes || 'No informado').trim()}`,
+    `Antecedentes clinicos: ${String(anamnesis.antecedentesClinicos || 'No informado').trim()}`,
+    `Autorizacion medica: ${String(anamnesis.autorizacionMedica || 'No informado').trim()}`,
+    `Experiencia entrenando: ${String(anamnesis.experienciaEntrenamiento || 'No informado').trim()}`,
+    `Alimentacion actual: ${formatList(anamnesis.alimentacionActual) || 'No informado'}`,
+    anamnesis.alimentacionDetalle
+      ? `Detalle alimentacion: ${String(anamnesis.alimentacionDetalle).trim()}`
+      : '',
+    `Desorden alimentario: ${String(anamnesis.desordenAlimentario || 'No informado').trim()}`,
+    `Alcohol/cigarrillos/sustancias: ${String(anamnesis.consumoSustancias || 'No informado').trim()}`,
+    `Suplementos: ${String(anamnesis.suplementos || 'No informado').trim()}`,
+    `Interes de entrenamiento: ${formatList(anamnesis.interesEntrenamiento) || 'No informado'}`,
+    anamnesis.interesDetalle
+      ? `Detalle interes: ${String(anamnesis.interesDetalle).trim()}`
+      : '',
+    `Compromiso: ${Number.isFinite(Number(anamnesis.compromisoObjetivo)) ? String(anamnesis.compromisoObjetivo) : 'No informado'}`,
+    `Origen de contacto: ${formatList(anamnesis.origenContacto) || 'No informado'}`,
+    anamnesis.origenDetalle
+      ? `Detalle origen: ${String(anamnesis.origenDetalle).trim()}`
+      : '',
+    `Declaracion aceptada: ${String(anamnesis.consentimientoSalud || 'No').trim().toUpperCase() === 'SI' ? 'SI' : 'NO'}`,
+  ]
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return parts.join(' | ');
 }
 
 function buildDefaultMeta(input: { email: string; telefono: string; categoria: string }) {
@@ -108,7 +180,12 @@ async function syncVerifiedAlumnoToClientes(email: string) {
       : {};
   const profile = profileMap[normalizedEmail] || {};
 
-  const nombre = String(profile.nombreCompleto || user.nombreCompleto || '').trim();
+  const nombreFromParts = `${String(profile.nombre || '').trim()} ${String(profile.apellido || '').trim()}`
+    .trim()
+    .replace(/\s+/g, ' ');
+  const nombre = String(profile.nombreCompleto || nombreFromParts || user.nombreCompleto || '')
+    .trim()
+    .replace(/\s+/g, ' ');
   if (!nombre) {
     return;
   }
@@ -121,9 +198,11 @@ async function syncVerifiedAlumnoToClientes(email: string) {
   const telefono = String(profile.telefono || user.telefono || '').trim();
   const categoria = String(profile.categoria || '').trim();
   const extraObs = String(profile.observaciones || '').trim();
+  const anamnesisSummary = buildAnamnesisSummary(profile.anamnesis);
   const observaciones = [
     'Cuenta verificada. Pendiente de alta del profesor.',
     extraObs,
+    anamnesisSummary ? `Anamnesis: ${anamnesisSummary}` : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -168,6 +247,11 @@ async function syncVerifiedAlumnoToClientes(email: string) {
       ? (metaMap[metaKey] as Record<string, unknown>)
       : {};
 
+  const previousTabNotas =
+    previousMeta.tabNotas && typeof previousMeta.tabNotas === 'object'
+      ? (previousMeta.tabNotas as Record<string, unknown>)
+      : {};
+
   metaMap[metaKey] = {
     ...buildDefaultMeta({
       email: normalizedEmail,
@@ -183,6 +267,12 @@ async function syncVerifiedAlumnoToClientes(email: string) {
     nextCheck: String(previousMeta.nextCheck || 'PENDIENTE DE ALTA'),
     colaboradores: String(previousMeta.colaboradores || 'Pendiente de asignacion'),
     chats: String(previousMeta.chats || 'Pendiente de asignacion'),
+    tabNotas: {
+      ...previousTabNotas,
+      cuestionario:
+        anamnesisSummary ||
+        String(previousTabNotas.cuestionario || ''),
+    },
   };
 
   await setSyncValue(CLIENTES_META_KEY, metaMap);

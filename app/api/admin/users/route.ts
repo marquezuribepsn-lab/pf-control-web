@@ -2,8 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { filterOperationalUsers, isTestAccountEmail } from '@/lib/operationalUsers';
+import { getSyncValue } from '@/lib/syncStore';
 
 const db = prisma as any;
+const SIGNUP_PROFILES_KEY = 'pf-control-signup-profiles-v1';
+
+async function loadSignupProfiles() {
+  const raw = await getSyncValue(SIGNUP_PROFILES_KEY);
+  if (!raw || typeof raw !== 'object') {
+    return {} as Record<string, unknown>;
+  }
+
+  return raw as Record<string, unknown>;
+}
+
+function attachSignupProfile<T extends { email?: string | null }>(
+  users: T[],
+  profileMap: Record<string, unknown>
+) {
+  return users.map((user) => {
+    const email = String(user.email || '').trim().toLowerCase();
+    return {
+      ...user,
+      signupProfile: email ? profileMap[email] || null : null,
+    };
+  });
+}
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -33,7 +57,9 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(filterOperationalUsers(users));
+  const profileMap = await loadSignupProfiles();
+  const operationalUsers = filterOperationalUsers(users);
+  return NextResponse.json(attachSignupProfile(operationalUsers, profileMap));
 }
 
 export async function PUT(req: NextRequest) {
@@ -201,10 +227,12 @@ export async function POST(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
+    const profileMap = await loadSignupProfiles();
+
     return NextResponse.json({
       message: `Se eliminaron ${deletedCount} cuentas de prueba`,
       deletedCount,
-      users: filterOperationalUsers(remainingUsers),
+      users: attachSignupProfile(filterOperationalUsers(remainingUsers), profileMap),
     });
   } catch (error) {
     console.error('Cleanup test users error:', error);

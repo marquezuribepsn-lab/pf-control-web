@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 function VerifyPageContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
+  const [redirectIn, setRedirectIn] = useState<number | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -44,7 +45,28 @@ function VerifyPageContent() {
     };
 
     verify();
-  }, [token, router]);
+  }, [token]);
+
+  useEffect(() => {
+    if (status !== 'success') {
+      setRedirectIn(null);
+      return;
+    }
+
+    setRedirectIn(3);
+    const intervalId = window.setInterval(() => {
+      setRedirectIn((prev) => (prev && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    const timeoutId = window.setTimeout(() => {
+      router.replace('/auth/login?verified=1');
+    }, 3000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [router, status]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
@@ -64,6 +86,9 @@ function VerifyPageContent() {
           <div className="space-y-4">
             <div className="text-4xl">✓</div>
             <p className="text-green-600 font-medium">{message}</p>
+            <p className="text-sm text-slate-500">
+              {redirectIn === null ? 'Preparando redireccion...' : `Redirigiendo al login en ${redirectIn}s...`}
+            </p>
             <button
               type="button"
               onClick={() => router.push('/auth/login')}

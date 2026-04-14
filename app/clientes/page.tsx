@@ -99,6 +99,33 @@ type ClienteMeta = {
   tabNotas: Partial<Record<ClienteTab, string>>;
 };
 
+type SignupAnamnesisLite = {
+  compromisoObjetivo?: number | null;
+  consentimientoSalud?: string;
+};
+
+type SignupProfileLite = {
+  nombre?: string;
+  apellido?: string;
+  nombreCompleto?: string;
+  telefono?: string;
+  fechaNacimiento?: string;
+  objetivo?: string;
+  anamnesis?: SignupAnamnesisLite;
+};
+
+type PendingIngresante = {
+  id: string;
+  email: string;
+  role: 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
+  estado?: string;
+  emailVerified?: boolean;
+  nombreCompleto?: string;
+  telefono?: string;
+  fechaNacimiento?: string;
+  signupProfile?: SignupProfileLite | null;
+};
+
 type DatosDraft = {
   nombre: string;
   fechaNacimiento: string;
@@ -327,6 +354,47 @@ function namesLikelyMatch(a: string, b: string): boolean {
 
   // Considera match cuando comparte al menos 2 tokens, o 1 token largo.
   return shared.length >= 2 || shared.some((token) => token.length >= 5);
+}
+
+function splitDisplayName(fullName: string) {
+  const normalized = String(fullName || '').trim().replace(/\s+/g, ' ');
+  if (!normalized) {
+    return { nombre: '', apellido: '' };
+  }
+
+  const parts = normalized.split(' ');
+  if (parts.length <= 1) {
+    return { nombre: normalized, apellido: '' };
+  }
+
+  return {
+    nombre: parts[0],
+    apellido: parts.slice(1).join(' '),
+  };
+}
+
+function resolveIngresanteDisplayName(cliente: PendingIngresante) {
+  const nombre = String(cliente.signupProfile?.nombre || '').trim();
+  const apellido = String(cliente.signupProfile?.apellido || '').trim();
+  const nombreCompleto = String(
+    cliente.signupProfile?.nombreCompleto || cliente.nombreCompleto || `${nombre} ${apellido}`
+  )
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  if (nombre || apellido) {
+    return {
+      nombre,
+      apellido,
+      nombreCompleto: `${nombre} ${apellido}`.trim(),
+    };
+  }
+
+  const guessed = splitDisplayName(nombreCompleto);
+  return {
+    ...guessed,
+    nombreCompleto,
+  };
 }
 
 function sumarDias(dateValue: string, days: number): string {
@@ -600,6 +668,16 @@ export default function ClientesPage() {
     moneda: "ARS",
   });
   const [presenceByEmail, setPresenceByEmail] = useState<Record<string, PresenceSnapshot>>({});
+  const [ingresantesPendientes, setIngresantesPendientes] = useState<PendingIngresante[]>([]);
+  const [ingresantesLoading, setIngresantesLoading] = useState(false);
+  const [ingresantesActionId, setIngresantesActionId] = useState<string | null>(null);
+  const [ingresantesMessage, setIngresantesMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
+  const isAdmin = userRole === 'ADMIN';
 
   useEffect(() => {
     const safeDecodeParam = (value: string | null) => {
@@ -650,6 +728,75 @@ export default function ClientesPage() {
     setDetailClientId(null);
     setDetailTabId(null);
   }, [clientesSection]);
+
+  const loadIngresantesPendientes = async () => {
+    if (!isAdmin) {
+      setIngresantesPendientes([]);
+      return;
+    }
+
+    try {
+      setIngresantesLoading(true);
+      const response = await fetch('/api/admin/users', { cache: 'no-store' });
+      const data = await response.json().catch(() => []);
+      const list = Array.isArray(data) ? (data as PendingIngresante[]) : [];
+      setIngresantesPendientes(
+        list.filter(
+          (item) =>
+            item.role === 'CLIENTE' &&
+            item.emailVerified === true &&
+            String(item.estado || 'activo').trim().toLowerCase() !== 'activo'
+        )
+      );
+    } catch {
+      setIngresantesPendientes([]);
+    } finally {
+      setIngresantesLoading(false);
+    }
+  };
+
+  const darAltaIngresante = async (ingresante: PendingIngresante) => {
+    if (!isAdmin) {
+      return;
+    }
+
+    try {
+      setIngresantesActionId(ingresante.id);
+      setIngresantesMessage(null);
+
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: ingresante.id,
+          role: 'CLIENTE',
+          estado: 'activo',
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(String((data as { message?: string }).message || 'No se pudo dar de alta al ingresante'));
+      }
+
+      setIngresantesMessage({
+        type: 'success',
+        text: `Alta aplicada: ${resolveIngresanteDisplayName(ingresante).nombreCompleto || ingresante.email}`,
+      });
+      await loadIngresantesPendientes();
+    } catch (error) {
+      setIngresantesMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Error al dar de alta',
+      });
+    } finally {
+      setIngresantesActionId(null);
+    }
+  };
+
+  useEffect(() => {
+    void loadIngresantesPendientes();
+  }, [isAdmin]);
 
   const categoriasOptions = useMemo(
     () => categorias.filter((cat) => cat.habilitada).map((cat) => cat.nombre),
@@ -1823,6 +1970,78 @@ export default function ClientesPage() {
             <p className="text-3xl font-black">{resumen.total}</p>
           </div>
         </div>
+      </section>
+      ) : null}
+
+      {!isDetailMode && isAdmin ? (
+      <section className="mb-6 rounded-3xl border border-cyan-300/25 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_50%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_20px_60px_rgba(2,10,26,0.45)]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/85">Admin</p>
+            <h2 className="mt-1 text-xl font-black text-white">Nuevos ingresantes</h2>
+            <p className="mt-1 text-sm text-slate-300">
+              Esta vista replica el alta pendiente para que puedas activarlos tambien desde Clientes.
+            </p>
+          </div>
+          <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/15 px-3 py-2 text-sm font-bold text-cyan-100">
+            {ingresantesLoading ? 'Cargando...' : `Pendientes: ${ingresantesPendientes.length}`}
+          </div>
+        </div>
+
+        {ingresantesMessage ? (
+          <div
+            className={`mt-3 rounded-xl border px-3 py-2 text-sm font-semibold ${
+              ingresantesMessage.type === 'success'
+                ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100'
+                : 'border-rose-300/35 bg-rose-500/15 text-rose-100'
+            }`}
+          >
+            {ingresantesMessage.text}
+          </div>
+        ) : null}
+
+        {ingresantesPendientes.length === 0 ? (
+          <p className="mt-3 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-3 text-sm text-slate-300">
+            No hay ingresantes pendientes de alta en este momento.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {ingresantesPendientes.map((ingresante) => {
+              const nombre = resolveIngresanteDisplayName(ingresante);
+              return (
+                <article key={`ingresante-${ingresante.id}`} className="rounded-2xl border border-cyan-200/20 bg-slate-900/70 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
+                  <p className="mt-1 text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
+                  <p className="text-xs text-slate-300">{ingresante.email}</p>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Telefono: {String(ingresante.signupProfile?.telefono || ingresante.telefono || 'Sin dato')}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Nacimiento: {String(ingresante.signupProfile?.fechaNacimiento || ingresante.fechaNacimiento || 'Sin dato')}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => void darAltaIngresante(ingresante)}
+                      disabled={ingresantesActionId === ingresante.id}
+                      className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {ingresantesActionId === ingresante.id ? 'Dando alta...' : 'Dar de Alta'}
+                    </ReliableActionButton>
+
+                    <Link
+                      href="/admin/usuarios"
+                      className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/25"
+                    >
+                      Abrir panel de Admin
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
       ) : null}
 

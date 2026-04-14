@@ -43,6 +43,43 @@ type ColaboradorDraft = {
   permisosGranulares: Record<string, unknown>;
 };
 
+type SignupAnamnesis = {
+  tratamientoMedico?: string;
+  lesionesLimitaciones?: string;
+  medicacionRegular?: string;
+  cirugiasRecientes?: string;
+  antecedentesClinicos?: string;
+  autorizacionMedica?: string;
+  experienciaEntrenamiento?: string;
+  alimentacionActual?: string[];
+  alimentacionDetalle?: string;
+  desordenAlimentario?: string;
+  consumoSustancias?: string;
+  suplementos?: string;
+  interesEntrenamiento?: string[];
+  interesDetalle?: string;
+  compromisoObjetivo?: number | null;
+  origenContacto?: string[];
+  origenDetalle?: string;
+  consentimientoSalud?: string;
+};
+
+type SignupProfile = {
+  nombre?: string;
+  apellido?: string;
+  nombreCompleto?: string;
+  edad?: number | null;
+  altura?: string;
+  peso?: string;
+  telefono?: string;
+  fechaNacimiento?: string;
+  club?: string;
+  objetivo?: string;
+  observaciones?: string;
+  anamnesis?: SignupAnamnesis;
+  updatedAt?: string;
+};
+
 type ClienteUsuario = {
   id: string;
   email: string;
@@ -54,6 +91,8 @@ type ClienteUsuario = {
   fechaNacimiento?: string | null;
   altura?: number | null;
   telefono?: string | null;
+  createdAt?: string | null;
+  signupProfile?: SignupProfile | null;
 };
 
 type AsignacionSeleccionada = {
@@ -185,6 +224,160 @@ function mapColaboradorToDetailDraft(colab: Colaborador): ColaboradorDetailDraft
   };
 }
 
+function splitName(fullName: string) {
+  const normalized = String(fullName || '').trim().replace(/\s+/g, ' ');
+  if (!normalized) {
+    return { nombre: '', apellido: '' };
+  }
+
+  const parts = normalized.split(' ');
+  if (parts.length === 1) {
+    return { nombre: parts[0], apellido: '' };
+  }
+
+  return {
+    nombre: parts.slice(0, 1).join(' '),
+    apellido: parts.slice(1).join(' '),
+  };
+}
+
+function resolveIngresanteNombre(cliente: ClienteUsuario) {
+  const fromProfileNombre = String(cliente.signupProfile?.nombre || '').trim();
+  const fromProfileApellido = String(cliente.signupProfile?.apellido || '').trim();
+  const fallbackNombreCompleto = String(
+    cliente.signupProfile?.nombreCompleto || cliente.nombreCompleto || ''
+  )
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  if (fromProfileNombre || fromProfileApellido) {
+    return {
+      nombre: fromProfileNombre,
+      apellido: fromProfileApellido,
+      nombreCompleto: `${fromProfileNombre} ${fromProfileApellido}`.trim(),
+    };
+  }
+
+  const guessed = splitName(fallbackNombreCompleto);
+  return {
+    ...guessed,
+    nombreCompleto: fallbackNombreCompleto,
+  };
+}
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return 'Sin dato';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Sin dato';
+  return parsed.toLocaleString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatListValue(raw: unknown) {
+  if (!Array.isArray(raw)) {
+    return 'Sin dato';
+  }
+
+  const value = raw
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(', ');
+
+  return value || 'Sin dato';
+}
+
+function buildAnamnesisRows(anamnesis: SignupAnamnesis | null | undefined) {
+  if (!anamnesis) {
+    return [] as Array<{ pregunta: string; respuesta: string }>;
+  }
+
+  return [
+    {
+      pregunta: 'Tratamiento medico actual',
+      respuesta: String(anamnesis.tratamientoMedico || 'Sin dato'),
+    },
+    {
+      pregunta: 'Lesion, dolor o limitacion fisica',
+      respuesta: String(anamnesis.lesionesLimitaciones || 'Sin dato'),
+    },
+    {
+      pregunta: 'Medicacion regular',
+      respuesta: String(anamnesis.medicacionRegular || 'Sin dato'),
+    },
+    {
+      pregunta: 'Cirugias en ultimos 2 anos',
+      respuesta: String(anamnesis.cirugiasRecientes || 'Sin dato'),
+    },
+    {
+      pregunta: 'Antecedentes clinicos',
+      respuesta: String(anamnesis.antecedentesClinicos || 'Sin dato'),
+    },
+    {
+      pregunta: 'Autorizacion medica',
+      respuesta: String(anamnesis.autorizacionMedica || 'Sin dato'),
+    },
+    {
+      pregunta: 'Experiencia entrenando',
+      respuesta: String(anamnesis.experienciaEntrenamiento || 'Sin dato'),
+    },
+    {
+      pregunta: 'Alimentacion actual',
+      respuesta: formatListValue(anamnesis.alimentacionActual),
+    },
+    {
+      pregunta: 'Detalle de alimentacion',
+      respuesta: String(anamnesis.alimentacionDetalle || 'Sin dato'),
+    },
+    {
+      pregunta: 'Desorden alimentario',
+      respuesta: String(anamnesis.desordenAlimentario || 'Sin dato'),
+    },
+    {
+      pregunta: 'Consumo de sustancias',
+      respuesta: String(anamnesis.consumoSustancias || 'Sin dato'),
+    },
+    {
+      pregunta: 'Suplementos',
+      respuesta: String(anamnesis.suplementos || 'Sin dato'),
+    },
+    {
+      pregunta: 'Interes de entrenamiento',
+      respuesta: formatListValue(anamnesis.interesEntrenamiento),
+    },
+    {
+      pregunta: 'Detalle del interes',
+      respuesta: String(anamnesis.interesDetalle || 'Sin dato'),
+    },
+    {
+      pregunta: 'Compromiso (1-10)',
+      respuesta:
+        Number.isFinite(Number(anamnesis.compromisoObjetivo))
+          ? String(anamnesis.compromisoObjetivo)
+          : 'Sin dato',
+    },
+    {
+      pregunta: 'Origen del contacto',
+      respuesta: formatListValue(anamnesis.origenContacto),
+    },
+    {
+      pregunta: 'Detalle del origen',
+      respuesta: String(anamnesis.origenDetalle || 'Sin dato'),
+    },
+    {
+      pregunta: 'Declaracion de aptitud',
+      respuesta:
+        String(anamnesis.consentimientoSalud || '').trim().toLowerCase() === 'si'
+          ? 'Aceptada'
+          : 'No aceptada',
+    },
+  ];
+}
+
 export default function AdminUsuariosPermisosPage() {
   const [items, setItems] = useState<ColaboradorDraft[]>([]);
   const [clientes, setClientes] = useState<ClienteUsuario[]>([]);
@@ -206,6 +399,8 @@ export default function AdminUsuariosPermisosPage() {
   const [assignSavingId, setAssignSavingId] = useState<string | null>(null);
   const [detailActionLoadingId, setDetailActionLoadingId] = useState<string | null>(null);
   const [clientActionLoadingId, setClientActionLoadingId] = useState<string | null>(null);
+  const [ingresanteModalId, setIngresanteModalId] = useState<string | null>(null);
+  const [confirmAltaId, setConfirmAltaId] = useState<string | null>(null);
 
   const [detailDraftById, setDetailDraftById] = useState<Record<string, ColaboradorDetailDraft>>({});
   const [detailAsignacionesById, setDetailAsignacionesById] = useState<Record<string, AsignacionSeleccionada[]>>({});
@@ -289,6 +484,16 @@ export default function AdminUsuariosPermisosPage() {
   const clientesSinVerificar = useMemo(
     () => clientes.filter((cliente) => cliente.role === "CLIENTE" && cliente.emailVerified !== true),
     [clientes]
+  );
+
+  const ingresanteModal = useMemo(
+    () => clientesPendientesAlta.find((cliente) => cliente.id === ingresanteModalId) || null,
+    [clientesPendientesAlta, ingresanteModalId]
+  );
+
+  const confirmAltaCliente = useMemo(
+    () => clientesPendientesAlta.find((cliente) => cliente.id === confirmAltaId) || null,
+    [clientesPendientesAlta, confirmAltaId]
   );
 
   const updateItem = (id: string, updater: (prev: ColaboradorDraft) => ColaboradorDraft) => {
@@ -412,7 +617,7 @@ export default function AdminUsuariosPermisosPage() {
     return `/clientes/ficha/${encodeURIComponent(`alumno:${nombre}`)}/datos`;
   };
 
-  const darAltaCliente = async (cliente: ClienteUsuario) => {
+  const darAltaCliente = async (cliente: ClienteUsuario): Promise<boolean> => {
     try {
       setClientActionLoadingId(cliente.id);
       setMessage(null);
@@ -434,18 +639,40 @@ export default function AdminUsuariosPermisosPage() {
 
       setMessage({
         type: "success",
-        text: `Alta aplicada: ${String(cliente.nombreCompleto || cliente.email)}`,
+        text: `Alta aplicada: ${String(resolveIngresanteNombre(cliente).nombreCompleto || cliente.email)}`,
       });
 
       await loadClientes();
+      setConfirmAltaId(null);
+      setIngresanteModalId((prev) => (prev === cliente.id ? null : prev));
+      return true;
     } catch (error) {
       setMessage({
         type: "error",
         text: error instanceof Error ? error.message : "Error al dar de alta al cliente",
       });
+      return false;
     } finally {
       setClientActionLoadingId(null);
     }
+  };
+
+  const abrirIngresante = (clienteId: string) => {
+    setIngresanteModalId(clienteId);
+    setConfirmAltaId(null);
+  };
+
+  const abrirConfirmacionAlta = (clienteId: string) => {
+    setIngresanteModalId(clienteId);
+    setConfirmAltaId(clienteId);
+  };
+
+  const confirmarAltaIngresante = async () => {
+    if (!confirmAltaCliente) {
+      return;
+    }
+
+    await darAltaCliente(confirmAltaCliente);
   };
 
   const loadColaboradorDetail = async (id: string) => {
@@ -834,58 +1061,78 @@ export default function AdminUsuariosPermisosPage() {
           </div>
         </div>
 
-        <div className="mb-4 rounded-xl border border-amber-300/25 bg-amber-500/10 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-4 overflow-hidden rounded-2xl border border-cyan-300/25 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),rgba(15,23,42,0.96)_52%,rgba(2,6,23,0.96)_100%)] p-4 shadow-[0_18px_50px_rgba(8,17,35,0.45)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-black text-amber-100">Clientes pendientes de alta</p>
-              <p className="text-xs text-amber-100/80">
-                Cuando un alumno verifica su mail, aparece aqui para revision y activacion.
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/80">Onboarding</p>
+              <p className="text-lg font-black text-white">Nuevo ingresante</p>
+              <p className="text-xs text-slate-300">
+                Revisa la ficha inicial, valida anamnesis y aplica Dar de Alta.
               </p>
             </div>
-            <div className="text-right text-xs text-amber-100/90">
+            <div className="rounded-xl border border-cyan-200/30 bg-cyan-500/15 px-3 py-2 text-right text-xs text-cyan-100">
               <p>Pendientes: {clientesPendientesAlta.length}</p>
               <p>Sin verificar: {clientesSinVerificar.length}</p>
             </div>
           </div>
 
           {clientesPendientesAlta.length === 0 ? (
-            <p className="mt-3 text-sm text-amber-100/85">No hay clientes pendientes de alta.</p>
+            <p className="mt-3 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-3 text-sm text-slate-300">
+              No hay nuevos ingresantes pendientes de alta.
+            </p>
           ) : (
-            <div className="mt-3 space-y-2">
-              {clientesPendientesAlta.map((cliente) => (
-                <article
-                  key={`cliente-pendiente-${cliente.id}`}
-                  className="rounded-lg border border-amber-200/20 bg-slate-900/55 p-3"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold text-white">{String(cliente.nombreCompleto || "Sin nombre")}</p>
-                      <p className="text-xs text-slate-300">{cliente.email}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">
-                        estado={String(cliente.estado || "pendiente_alta")} · verificado={String(cliente.emailVerified)}
-                      </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {clientesPendientesAlta.map((cliente) => {
+                const nombre = resolveIngresanteNombre(cliente);
+                return (
+                  <article
+                    key={`cliente-pendiente-${cliente.id}`}
+                    className="rounded-xl border border-cyan-200/20 bg-slate-900/70 p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
+                        <p className="text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
+                        <p className="text-xs text-slate-300">{cliente.email}</p>
+                      </div>
+                      <span className="rounded-full border border-amber-200/40 bg-amber-500/15 px-2 py-1 text-[10px] font-bold text-amber-100">
+                        Pendiente
+                      </span>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-3 grid gap-2 text-[11px] text-slate-300 sm:grid-cols-2">
+                      <p>Telefono: {String(cliente.signupProfile?.telefono || cliente.telefono || 'Sin dato')}</p>
+                      <p>Nacimiento: {String(cliente.signupProfile?.fechaNacimiento || cliente.fechaNacimiento || 'Sin dato')}</p>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <ReliableActionButton
                         type="button"
-                        onClick={() => void darAltaCliente(cliente)}
+                        onClick={() => abrirIngresante(cliente.id)}
+                        className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/25"
+                      >
+                        Nuevo ingresante
+                      </ReliableActionButton>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => abrirConfirmacionAlta(cliente.id)}
                         disabled={clientActionLoadingId === cliente.id}
                         className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {clientActionLoadingId === cliente.id ? "Dando alta..." : "Dar alta"}
+                        {clientActionLoadingId === cliente.id ? 'Dando alta...' : 'Dar de Alta'}
                       </ReliableActionButton>
 
                       <a
                         href={buildClienteFichaHref(cliente)}
-                        className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/25"
+                        className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
                       >
                         Ver ficha en Clientes
                       </a>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1291,7 +1538,138 @@ export default function AdminUsuariosPermisosPage() {
           No se encontraron colaboradores para mostrar.
         </div>
       ) : null}
+
+      {ingresanteModal ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-4xl rounded-2xl border border-cyan-200/30 bg-slate-950/95 p-5 shadow-[0_35px_90px_rgba(2,8,24,0.65)]">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/80">Nuevo ingresante</p>
+                <h2 className="mt-1 text-2xl font-black text-white">
+                  {resolveIngresanteNombre(ingresanteModal).nombreCompleto || 'Sin nombre'}
+                </h2>
+                <p className="text-sm text-slate-300">{ingresanteModal.email}</p>
+              </div>
+
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setIngresanteModalId(null);
+                  setConfirmAltaId(null);
+                }}
+                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
+              >
+                Cerrar
+              </ReliableActionButton>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <InfoTile label="Nombre" value={resolveIngresanteNombre(ingresanteModal).nombre || 'Sin dato'} />
+              <InfoTile label="Apellido" value={resolveIngresanteNombre(ingresanteModal).apellido || 'Sin dato'} />
+              <InfoTile label="Telefono" value={String(ingresanteModal.signupProfile?.telefono || ingresanteModal.telefono || 'Sin dato')} />
+              <InfoTile label="Nacimiento" value={String(ingresanteModal.signupProfile?.fechaNacimiento || ingresanteModal.fechaNacimiento || 'Sin dato')} />
+              <InfoTile label="Altura" value={String(ingresanteModal.signupProfile?.altura || ingresanteModal.altura || 'Sin dato')} />
+              <InfoTile label="Peso" value={String(ingresanteModal.signupProfile?.peso || 'Sin dato')} />
+              <InfoTile label="Objetivo" value={String(ingresanteModal.signupProfile?.objetivo || 'Sin dato')} />
+              <InfoTile label="Registrado" value={formatDateTime(ingresanteModal.createdAt)} />
+            </div>
+
+            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-3">
+              <p className="text-sm font-black text-white">Observaciones iniciales</p>
+              <p className="mt-1 text-sm text-slate-200">
+                {String(ingresanteModal.signupProfile?.observaciones || 'Sin observaciones')}
+              </p>
+            </div>
+
+            <details className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-3" open>
+              <summary className="cursor-pointer text-sm font-black text-cyan-100">Anamnesis de ingreso</summary>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {buildAnamnesisRows(ingresanteModal.signupProfile?.anamnesis).length === 0 ? (
+                  <p className="rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2 text-sm text-slate-300 sm:col-span-2">
+                    Sin respuestas de anamnesis disponibles.
+                  </p>
+                ) : (
+                  buildAnamnesisRows(ingresanteModal.signupProfile?.anamnesis).map((entry) => (
+                    <div key={`${entry.pregunta}-${entry.respuesta}`} className="rounded-lg border border-white/10 bg-slate-950/70 p-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{entry.pregunta}</p>
+                      <p className="mt-1 text-sm text-slate-100">{entry.respuesta}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </details>
+
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <a
+                href={buildClienteFichaHref(ingresanteModal)}
+                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-2 text-xs font-bold uppercase tracking-wide text-cyan-100 transition hover:bg-cyan-500/25"
+              >
+                Ver ficha en Clientes
+              </a>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setConfirmAltaId(ingresanteModal.id)}
+                disabled={clientActionLoadingId === ingresanteModal.id}
+                className="rounded-xl border border-emerald-300/45 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase tracking-wide text-emerald-100 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {clientActionLoadingId === ingresanteModal.id ? 'Aplicando alta...' : 'Dar de Alta'}
+              </ReliableActionButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {confirmAltaCliente ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-2xl border border-amber-200/35 bg-[#0b1220] p-6 text-center shadow-[0_28px_80px_rgba(2,6,20,0.7)]">
+            <p className="text-5xl font-black text-amber-200">!</p>
+            <h3 className="mt-2 text-4xl font-black text-white">Atencion</h3>
+            <p className="mt-2 text-lg text-slate-100">Se creara una membresia:</p>
+
+            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-4 text-left text-sm text-slate-100">
+              <p>
+                Titular: <strong>{resolveIngresanteNombre(confirmAltaCliente).nombreCompleto || 'Sin nombre'}</strong>
+              </p>
+              <p>Email: {confirmAltaCliente.email}</p>
+              <p>
+                Fecha nacimiento:{' '}
+                {String(confirmAltaCliente.signupProfile?.fechaNacimiento || confirmAltaCliente.fechaNacimiento || 'Sin dato')}
+              </p>
+              <p>Estado actual: {String(confirmAltaCliente.estado || 'pendiente_alta')}</p>
+            </div>
+
+            <p className="mt-5 text-lg text-white">Estas seguro que desea continuar?</p>
+
+            <div className="mt-4 flex justify-center gap-3">
+              <ReliableActionButton
+                type="button"
+                onClick={() => void confirmarAltaIngresante()}
+                disabled={clientActionLoadingId === confirmAltaCliente.id}
+                className="rounded-lg bg-[#e76f51] px-6 py-2 text-sm font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {clientActionLoadingId === confirmAltaCliente.id ? 'Aplicando...' : 'OK'}
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setConfirmAltaId(null)}
+                className="rounded-lg bg-slate-500 px-6 py-2 text-sm font-black text-white transition hover:bg-slate-400"
+              >
+                Cancelar
+              </ReliableActionButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-slate-900/70 p-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{label}</p>
+      <p className="mt-1 text-sm font-bold text-white">{value || 'Sin dato'}</p>
+    </div>
   );
 }
 
