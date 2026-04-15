@@ -1,7 +1,7 @@
 'use client';
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ALIMENTACION_OPTIONS = [
@@ -82,7 +82,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showAnamnesis, setShowAnamnesis] = useState(false);
+  const [anamnesisUnlocked, setAnamnesisUnlocked] = useState(false);
   const [anamnesis, setAnamnesis] = useState<AnamnesisForm>(INITIAL_ANAMNESIS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -90,6 +90,14 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const commitmentScale = useMemo(() => Array.from({ length: 10 }, (_, index) => index + 1), []);
+  const phoneDigits = useMemo(() => telefono.replace(/\D/g, ''), [telefono]);
+  const showAnamnesis = anamnesisUnlocked;
+
+  useEffect(() => {
+    if (!anamnesisUnlocked && phoneDigits.length >= 8) {
+      setAnamnesisUnlocked(true);
+    }
+  }, [anamnesisUnlocked, phoneDigits]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +113,18 @@ export default function RegisterPage() {
 
     if (!nombre.trim() || !apellido.trim() || !edad.trim() || !altura.trim() || !peso.trim() || !telefono.trim() || !fechaNacimiento.trim()) {
       setError('Completa nombre, apellido, edad, altura, peso, telefono y fecha de nacimiento.');
+      setLoading(false);
+      return;
+    }
+
+    if (phoneDigits.length < 8) {
+      setError('Completa un numero de telefono valido para habilitar la anamnesis.');
+      setLoading(false);
+      return;
+    }
+
+    if (!showAnamnesis) {
+      setError('Completa telefono para desplegar y responder la anamnesis.');
       setLoading(false);
       return;
     }
@@ -186,7 +206,7 @@ export default function RegisterPage() {
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:46px_46px]" />
 
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-[1880px] items-start gap-6 px-4 py-6 lg:grid-cols-[minmax(320px,0.62fr)_minmax(0,1.38fr)] lg:gap-7 lg:px-6 lg:py-8 xl:gap-8 xl:px-8">
-        <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:min-h-[calc(100vh-4rem)] lg:max-w-[560px]">
+        <div className="flex flex-col gap-6 lg:max-w-[560px]">
           <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl">
             <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-100/85">Alta inicial</p>
             <h1 className="mt-3 text-4xl font-black leading-tight text-white">Registro de ingresante</h1>
@@ -207,34 +227,42 @@ export default function RegisterPage() {
             </div>
           </section>
 
-          <aside className="relative overflow-hidden rounded-[2rem] border border-emerald-200/20 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.22),rgba(3,7,18,0.88)_45%,rgba(3,7,18,0.98)_100%)] p-5 shadow-[0_30px_70px_rgba(2,8,25,0.45)] lg:flex-1 lg:p-6">
+          <aside className="relative overflow-hidden rounded-[2rem] border border-emerald-200/20 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.22),rgba(3,7,18,0.88)_45%,rgba(3,7,18,0.98)_100%)] p-5 shadow-[0_30px_70px_rgba(2,8,25,0.45)] lg:p-6">
             <div className="pointer-events-none absolute -right-12 -top-10 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
 
-            <div className="relative flex h-full flex-col">
+            <div className="relative">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.32em] text-emerald-100/85">Programa Premium</p>
-                <h3 className="mt-2 text-2xl font-black leading-tight text-white">Tu cuerpo, tu plan, tu seguimiento real</h3>
+                <p className="text-[11px] font-black uppercase tracking-[0.32em] text-emerald-100/85">Programa de ingreso</p>
+                <h3 className="mt-2 text-2xl font-black leading-tight text-white">Entrás con plan, no improvisando</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-200/90">
-                  Al registrarte entrás al circuito completo de evaluación física, planificación y monitoreo continuo.
+                  Tu alta queda lista para revisión profesional con datos completos, anamnesis y objetivos claros.
                 </p>
               </div>
 
-              <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <PromoBadge title="Evaluación inicial" value="24 hs" />
-                <PromoBadge title="Chequeos activos" value="Semanal" />
-                <PromoBadge title="Plan ajustable" value="100%" />
-                <PromoBadge title="Seguimiento" value="Directo" />
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                <PromoBadge title="Aprobación" value="Con alta del profe" />
+                <PromoBadge title="Anamnesis" value="Integrada" />
+                <PromoBadge title="Plan inicial" value="Personalizado" />
+                <PromoBadge title="Seguimiento" value="Constante" />
               </div>
 
-              <div className="mt-5 rounded-2xl border border-white/15 bg-slate-950/55 px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Incluye</p>
-                <p className="mt-2 text-sm text-slate-100">
-                  Entrenamiento + nutrición + control de progreso para llegar mejor preparado/a a cada objetivo.
-                </p>
+              <div className="mt-5 grid gap-2">
+                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 1</p>
+                  <p className="mt-1 text-sm text-slate-100">Completás tus datos y contacto.</p>
+                </div>
+                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 2</p>
+                  <p className="mt-1 text-sm text-slate-100">Se habilita anamnesis y cargás aptitud física.</p>
+                </div>
+                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 3</p>
+                  <p className="mt-1 text-sm text-slate-100">Verificás mail y esperás aprobación final.</p>
+                </div>
               </div>
 
-              <p className="mt-4 text-[11px] font-semibold text-emerald-100/85 lg:mt-auto">
+              <p className="mt-5 text-[11px] font-semibold text-emerald-100/85">
                 Cupos administrados por alta del profesor.
               </p>
             </div>
@@ -242,19 +270,12 @@ export default function RegisterPage() {
         </div>
 
         <section className="min-w-0 rounded-[2rem] border border-white/12 bg-slate-950/65 p-5 shadow-[0_28px_90px_rgba(4,10,24,0.5)] backdrop-blur-2xl sm:p-7 md:p-8 xl:p-9">
-          <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+          <div className="mb-7">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-100/85">Formulario</p>
               <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">Crea tu cuenta</h2>
               <p className="mt-2 text-sm text-slate-300">La plataforma te pedira validacion de profesor antes de habilitar acceso.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowAnamnesis((prev) => !prev)}
-              className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-2 text-xs font-black uppercase tracking-wide text-cyan-100 transition hover:bg-cyan-500/25"
-            >
-              {showAnamnesis ? 'Ocultar anamnesis' : 'Mostrar anamnesis'}
-            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -363,43 +384,15 @@ export default function RegisterPage() {
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Club (opcional)
-              <input
-                type="text"
-                value={club}
-                onChange={(e) => setClub(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Club / institucion"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Objetivo (opcional)
-              <input
-                type="text"
-                value={objetivo}
-                onChange={(e) => setObjetivo(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Objetivo principal"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Observaciones (opcional)
-              <textarea
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
-                className="min-h-[96px] rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Info adicional"
-              />
-            </label>
-
             <section className="rounded-2xl border border-white/10 bg-slate-900/45 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-sm font-black text-white">Cuestionario de ingreso (anamnesis)</p>
-                <span className="rounded-full border border-cyan-300/35 bg-cyan-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-cyan-100">
-                  Desplegable
+                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                  showAnamnesis
+                    ? 'border-emerald-300/45 bg-emerald-500/15 text-emerald-100'
+                    : 'border-cyan-300/35 bg-cyan-500/15 text-cyan-100'
+                }`}>
+                  {showAnamnesis ? 'Habilitado' : 'Se habilita al completar telefono'}
                 </span>
               </div>
 
@@ -579,10 +572,42 @@ export default function RegisterPage() {
                 </div>
               ) : (
                 <p className="rounded-xl border border-white/10 bg-slate-900/65 px-3 py-2 text-xs text-slate-300">
-                  Desplega este bloque para cargar la anamnesis de ingreso.
+                  Completá un número de telefono valido y la anamnesis se despliega automáticamente acá abajo.
                 </p>
               )}
             </section>
+
+            <label className="grid gap-2 text-sm font-semibold text-slate-200">
+              Club (opcional)
+              <input
+                type="text"
+                value={club}
+                onChange={(e) => setClub(e.target.value)}
+                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
+                placeholder="Club / institucion"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-semibold text-slate-200">
+              Objetivo (opcional)
+              <input
+                type="text"
+                value={objetivo}
+                onChange={(e) => setObjetivo(e.target.value)}
+                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
+                placeholder="Objetivo principal"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-semibold text-slate-200">
+              Observaciones (opcional)
+              <textarea
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                className="min-h-[96px] rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
+                placeholder="Info adicional"
+              />
+            </label>
 
             <label className="grid gap-2 text-sm font-semibold text-slate-200">
               Email
