@@ -185,8 +185,8 @@ export default function RegisterPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(34,211,238,0.24),transparent_25%),radial-gradient(circle_at_86%_18%,rgba(56,189,248,0.2),transparent_28%),radial-gradient(circle_at_24%_82%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(150deg,#040a17_0%,#0b1d3c_44%,#1e3a8a_100%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:46px_46px]" />
 
-      <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-[1360px] items-start gap-8 px-5 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10 lg:px-8 lg:py-10">
-        <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl lg:sticky lg:top-6">
+      <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-[1880px] items-start gap-6 px-4 py-6 lg:grid-cols-[minmax(320px,0.62fr)_minmax(0,1.38fr)] lg:gap-7 lg:px-6 lg:py-8 xl:gap-8 xl:px-8">
+        <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl lg:sticky lg:top-6 lg:max-w-[560px]">
           <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-100/85">Alta inicial</p>
           <h1 className="mt-3 text-4xl font-black leading-tight text-white">Registro de ingresante</h1>
           <p className="mt-4 text-sm leading-7 text-slate-200/90">
@@ -206,7 +206,7 @@ export default function RegisterPage() {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-white/12 bg-slate-950/65 p-5 shadow-[0_28px_90px_rgba(4,10,24,0.5)] backdrop-blur-2xl sm:p-7">
+        <section className="min-w-0 rounded-[2rem] border border-white/12 bg-slate-950/65 p-5 shadow-[0_28px_90px_rgba(4,10,24,0.5)] backdrop-blur-2xl sm:p-7 md:p-8 xl:p-9">
           <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-100/85">Formulario</p>
