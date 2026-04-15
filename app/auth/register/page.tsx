@@ -186,25 +186,60 @@ export default function RegisterPage() {
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:46px_46px]" />
 
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-[1880px] items-start gap-6 px-4 py-6 lg:grid-cols-[minmax(320px,0.62fr)_minmax(0,1.38fr)] lg:gap-7 lg:px-6 lg:py-8 xl:gap-8 xl:px-8">
-        <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl lg:sticky lg:top-6 lg:max-w-[560px]">
-          <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-100/85">Alta inicial</p>
-          <h1 className="mt-3 text-4xl font-black leading-tight text-white">Registro de ingresante</h1>
-          <p className="mt-4 text-sm leading-7 text-slate-200/90">
-            Completas tus datos, dejas la anamnesis de aptitud fisica y recibes validacion por mail.
-            Luego el profesor revisa y habilita tu cuenta.
-          </p>
+        <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:min-h-[calc(100vh-4rem)] lg:max-w-[560px]">
+          <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl">
+            <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-100/85">Alta inicial</p>
+            <h1 className="mt-3 text-4xl font-black leading-tight text-white">Registro de ingresante</h1>
+            <p className="mt-4 text-sm leading-7 text-slate-200/90">
+              Completas tus datos, dejas la anamnesis de aptitud fisica y recibes validacion por mail.
+              Luego el profesor revisa y habilita tu cuenta.
+            </p>
 
-          <div className="mt-7 space-y-3">
-            <StepItem index="1" title="Datos personales" text="Nombre, contacto y datos base de salud." />
-            <StepItem index="2" title="Anamnesis" text="Cuestionario clinico y habitos en formato desplegable." />
-            <StepItem index="3" title="Credenciales" text="Email y contraseña para acceso seguro." />
-            <StepItem index="4" title="Verificacion" text="Confirmas mail y el sistema te redirige al login." />
-          </div>
+            <div className="mt-7 space-y-3">
+              <StepItem index="1" title="Datos personales" text="Nombre, contacto y datos base de salud." />
+              <StepItem index="2" title="Anamnesis" text="Cuestionario clinico y habitos en formato desplegable." />
+              <StepItem index="3" title="Credenciales" text="Email y contraseña para acceso seguro." />
+              <StepItem index="4" title="Verificacion" text="Confirmas mail y el sistema te redirige al login." />
+            </div>
 
-          <div className="mt-8 rounded-2xl border border-amber-200/35 bg-amber-500/12 px-4 py-3 text-sm text-amber-100">
-            Importante: para continuar debes aceptar la declaracion de aptitud y responsabilidad.
-          </div>
-        </section>
+            <div className="mt-8 rounded-2xl border border-amber-200/35 bg-amber-500/12 px-4 py-3 text-sm text-amber-100">
+              Importante: para continuar debes aceptar la declaracion de aptitud y responsabilidad.
+            </div>
+          </section>
+
+          <aside className="relative overflow-hidden rounded-[2rem] border border-emerald-200/20 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.22),rgba(3,7,18,0.88)_45%,rgba(3,7,18,0.98)_100%)] p-5 shadow-[0_30px_70px_rgba(2,8,25,0.45)] lg:flex-1 lg:p-6">
+            <div className="pointer-events-none absolute -right-12 -top-10 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
+
+            <div className="relative flex h-full flex-col">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.32em] text-emerald-100/85">Programa Premium</p>
+                <h3 className="mt-2 text-2xl font-black leading-tight text-white">Tu cuerpo, tu plan, tu seguimiento real</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-200/90">
+                  Al registrarte entrás al circuito completo de evaluación física, planificación y monitoreo continuo.
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                <PromoBadge title="Evaluación inicial" value="24 hs" />
+                <PromoBadge title="Chequeos activos" value="Semanal" />
+                <PromoBadge title="Plan ajustable" value="100%" />
+                <PromoBadge title="Seguimiento" value="Directo" />
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-white/15 bg-slate-950/55 px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Incluye</p>
+                <p className="mt-2 text-sm text-slate-100">
+                  Entrenamiento + nutrición + control de progreso para llegar mejor preparado/a a cada objetivo.
+                </p>
+              </div>
+
+              <p className="mt-4 text-[11px] font-semibold text-emerald-100/85 lg:mt-auto">
+                Cupos administrados por alta del profesor.
+              </p>
+            </div>
+          </aside>
+        </div>
 
         <section className="min-w-0 rounded-[2rem] border border-white/12 bg-slate-950/65 p-5 shadow-[0_28px_90px_rgba(4,10,24,0.5)] backdrop-blur-2xl sm:p-7 md:p-8 xl:p-9">
           <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
@@ -618,6 +653,15 @@ function StepItem({ index, title, text }: { index: string; title: string; text: 
         <p className="text-sm font-black text-white">{title}</p>
         <p className="text-xs text-slate-300">{text}</p>
       </div>
+    </div>
+  );
+}
+
+function PromoBadge({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">{title}</p>
+      <p className="mt-1 text-lg font-black text-cyan-100">{value}</p>
     </div>
   );
 }
