@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function Run-Step {
+function Invoke-Step {
   param(
     [string]$Name,
     [scriptblock]$Action
@@ -28,7 +28,7 @@ if (-not $branch -or $branch -eq "HEAD") {
   throw "Cannot run auto release on detached HEAD. Checkout a branch first."
 }
 
-Run-Step -Name "Staging all changes" -Action {
+Invoke-Step -Name "Staging all changes" -Action {
   git add -A
 }
 
@@ -37,7 +37,7 @@ if ($LASTEXITCODE -eq 1) {
   $stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
   $commitMessage = "$CommitPrefix - $stamp"
 
-  Run-Step -Name "Creating commit" -Action {
+  Invoke-Step -Name "Creating commit" -Action {
     git commit -m $commitMessage
   }
 } elseif ($LASTEXITCODE -ne 0) {
@@ -52,25 +52,25 @@ if (-not $shortCommit) {
   throw "Could not resolve current commit hash."
 }
 
-Run-Step -Name "Running local production build" -Action {
+Invoke-Step -Name "Running local production build" -Action {
   npm run build
 }
 
-Run-Step -Name "Deploying to VPS" -Action {
+Invoke-Step -Name "Deploying to VPS" -Action {
   npm run deploy:vps
 }
 
 $tagName = "restore-point-" + (Get-Date -Format "yyyy-MM-dd-HHmmss")
 
-Run-Step -Name "Creating restore tag $tagName" -Action {
+Invoke-Step -Name "Creating restore tag $tagName" -Action {
   git tag -a $tagName -m "Auto restore point after successful deploy ($shortCommit)"
 }
 
-Run-Step -Name "Pushing branch to remote" -Action {
+Invoke-Step -Name "Pushing branch to remote" -Action {
   git push $Remote $branch
 }
 
-Run-Step -Name "Pushing restore tag to remote" -Action {
+Invoke-Step -Name "Pushing restore tag to remote" -Action {
   git push $Remote $tagName
 }
 

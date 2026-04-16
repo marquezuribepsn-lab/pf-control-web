@@ -69,6 +69,7 @@ function toggleListValue(current: string[], value: string) {
 }
 
 export default function RegisterPage() {
+  const loginHref = '/auth/login?registered=1';
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [edad, setEdad] = useState('');
@@ -87,6 +88,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [redirectIn, setRedirectIn] = useState<number | null>(null);
   const router = useRouter();
 
   const commitmentScale = useMemo(() => Array.from({ length: 10 }, (_, index) => index + 1), []);
@@ -98,6 +100,35 @@ export default function RegisterPage() {
       setAnamnesisUnlocked(true);
     }
   }, [anamnesisUnlocked, phoneDigits]);
+
+  useEffect(() => {
+    if (!success) {
+      setRedirectIn(null);
+      return;
+    }
+
+    setRedirectIn(3);
+
+    const intervalId = window.setInterval(() => {
+      setRedirectIn((prev) => (prev && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    const timeoutId = window.setTimeout(() => {
+      router.replace(loginHref);
+
+      // Fallback duro para casos donde la navegacion SPA no aplica.
+      window.setTimeout(() => {
+        if (!window.location.pathname.startsWith('/auth/login')) {
+          window.location.replace(loginHref);
+        }
+      }, 180);
+    }, 3000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [loginHref, router, success]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,8 +222,11 @@ export default function RegisterPage() {
         return;
       }
 
-      setSuccess(data.message || '¡Registro exitoso! Revisa tu email para verificar tu cuenta.');
-      setTimeout(() => router.replace('/auth/login?registered=1'), 2200);
+      setSuccess(
+        res.status === 201
+          ? 'Registro finalizado. No se olvide de verificar su mail.'
+          : data.message || 'Registro finalizado. No se olvide de verificar su mail.'
+      );
     } catch (err) {
       setError('Error al conectar. Intenta de nuevo.');
     } finally {
@@ -288,6 +322,11 @@ export default function RegisterPage() {
             {success && (
               <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100">
                 {success}
+                {redirectIn !== null ? (
+                  <p className="mt-2 text-xs text-emerald-50/90">
+                    Redirigiendo al login en {redirectIn}s...
+                  </p>
+                ) : null}
               </div>
             )}
 

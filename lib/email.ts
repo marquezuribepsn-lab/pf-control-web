@@ -535,6 +535,34 @@ export async function sendLoginAccessLinkEmail(email: string, token: string) {
   });
 }
 
+export async function sendClienteAltaAprobadaEmail(email: string, nombreCompleto?: string | null) {
+  ensureMailConfigured();
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!isValidEmail(normalizedEmail)) {
+    throw new Error('Email invalido para notificacion de alta de cliente.');
+  }
+
+  const displayName = String(nombreCompleto || '').trim() || 'alumno';
+
+  await sendMail({
+    to: normalizedEmail,
+    subject: 'Tu profesor ya te dio el alta - PF Control',
+    html: renderEmailLayout({
+      preheader: 'Tu cuenta ya esta habilitada en PF Control',
+      title: `Hola ${displayName}`,
+      intro: 'Tu profesor ya te dio el alta. Ya puedes ingresar a la plataforma para comenzar.',
+      bodyHtml: `
+        <p style="margin:0 0 10px;color:#cbd5e1;">Tu cuenta esta activa para entrenar, registrar avances y seguir tu plan.</p>
+        <p style="margin:0;color:#cbd5e1;">Ingresa con tu email y contrasena para empezar hoy mismo.</p>
+      `,
+      ctaLabel: 'Acceder a la plataforma',
+      ctaUrl: mailPanelUrl,
+      footerNote: 'Si tienes dudas, responde este correo y te ayudamos.',
+    }),
+  });
+}
+
 export async function sendWhatsAppAutomationFailureEmail(input: {
   runId: string;
   categoryKey?: string;

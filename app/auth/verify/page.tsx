@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 function VerifyPageContent() {
+  const loginHref = '/auth/login?verified=1';
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const [redirectIn, setRedirectIn] = useState<number | null>(null);
@@ -59,14 +60,21 @@ function VerifyPageContent() {
     }, 1000);
 
     const timeoutId = window.setTimeout(() => {
-      router.replace('/auth/login?verified=1');
+      router.replace(loginHref);
+
+      // Fallback duro para casos donde el router SPA no navega (webview/bloqueos de historial).
+      window.setTimeout(() => {
+        if (!window.location.pathname.startsWith('/auth/login')) {
+          window.location.replace(loginHref);
+        }
+      }, 180);
     }, 3000);
 
     return () => {
       window.clearInterval(intervalId);
       window.clearTimeout(timeoutId);
     };
-  }, [router, status]);
+  }, [loginHref, router, status]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
@@ -91,7 +99,14 @@ function VerifyPageContent() {
             </p>
             <button
               type="button"
-              onClick={() => router.push('/auth/login')}
+              onClick={() => {
+                router.replace(loginHref);
+                window.setTimeout(() => {
+                  if (!window.location.pathname.startsWith('/auth/login')) {
+                    window.location.replace(loginHref);
+                  }
+                }, 120);
+              }}
               className="inline-block mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Ir al login

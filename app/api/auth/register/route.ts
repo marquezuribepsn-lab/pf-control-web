@@ -353,7 +353,7 @@ export async function POST(req: NextRequest) {
     await sendVerificationEmail(user.email, token);
 
     return NextResponse.json(
-      { message: 'Usuario creado. Revisa tu email para verificar.' },
+      { message: 'Registro finalizado. No se olvide de verificar su mail.' },
       { status: 201 }
     );
   } catch (error) {

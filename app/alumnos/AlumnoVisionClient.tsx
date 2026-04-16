@@ -2605,42 +2605,126 @@ export default function AlumnoVisionClient({
 
   const progressPct = Math.round(((questionIndex + 1) / SESSION_QUESTIONS.length) * 100);
   const panelEyebrow = "Panel Alumno";
-  const panelDescription =
-    "Entrenamiento por semanas y dias, plan nutricional completo, progreso antropometrico y musica recomendada en un solo lugar.";
-  const objectiveLabel = "Objetivo actual";
+  const sectionHeadlines: Record<MainCategory, { title: string; description: string }> = {
+    inicio: {
+      title: `Hola, ${alumnoName || "alumno"}`,
+      description: "Resumen diario con foco en constancia, recuperacion y proximos pasos.",
+    },
+    rutina: {
+      title: "Rutina de entrenamiento",
+      description: "Ejecuta tu plan por semanas y dias, registra cargas y cierra la sesion con feedback.",
+    },
+    nutricion: {
+      title: "Plan nutricional",
+      description: "Objetivos de macros, comidas del dia y referencias de ingesta para mantener rumbo.",
+    },
+    progreso: {
+      title: "Progreso y metricas",
+      description: "Lectura semanal del cumplimiento y seguimiento antropometrico para ajustar decisiones.",
+    },
+    musica: {
+      title: "Musica para entrenar",
+      description: "Playlists y recomendaciones para activar foco durante entrenamiento y recuperacion.",
+    },
+  };
+
+  const activeHeadline = sectionHeadlines[mainCategory];
+  const topCategoryCards: Array<{
+    id: MainCategory;
+    label: string;
+    helper: string;
+    value: string;
+  }> = [
+    {
+      id: "inicio",
+      label: "Inicio",
+      helper: "resumen diario",
+      value:
+        todayWorkoutLogs.length > 0
+          ? `${todayExercisesDoneCount} ejercicio(s) hoy`
+          : "Sin registro hoy",
+    },
+    {
+      id: "rutina",
+      label: "Rutina",
+      helper: "entrenamiento",
+      value: `${weekPlanForAlumno.totalSemanas} semana(s)`,
+    },
+    {
+      id: "nutricion",
+      label: "Nutricion",
+      helper: "plan activo",
+      value: selectedNutritionPlan ? `${nutritionTargets.calorias || 0} kcal` : "Sin plan",
+    },
+    {
+      id: "progreso",
+      label: "Progreso",
+      helper: "cumplimiento",
+      value: `${weeklyProgressTotals.completionPct}%`,
+    },
+    {
+      id: "musica",
+      label: "Musica",
+      helper: "playlists",
+      value: `${musicAssignments.length} lista(s)`,
+    },
+  ];
+
   const canOpenProfessorWhatsApp = Boolean(profesorContacto?.waPhone);
 
   return (
-    <main className="mx-auto max-w-7xl space-y-5 p-6 text-slate-100">
-      {mainCategory !== "rutina" ? (
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_24px_80px_rgba(6,182,212,0.14)]">
+    <main className="mx-auto max-w-7xl space-y-5 p-4 text-slate-100 sm:p-6">
+      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 shadow-[0_24px_80px_rgba(6,182,212,0.14)] sm:p-6">
         <div className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-fuchsia-500/16 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200/85">{panelEyebrow}</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">{alumnoName || "Mi panel"}</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">{panelDescription}</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">{activeHeadline.title}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">{activeHeadline.description}</p>
           </div>
 
           <div className="rounded-2xl border border-cyan-200/30 bg-cyan-500/10 px-4 py-3 text-right">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">{objectiveLabel}</p>
+            <p className="text-[11px] uppercase tracking-[0.12em] text-cyan-100/80">Objetivo actual</p>
             <p className="mt-1 text-sm font-semibold text-cyan-50">{objetivo}</p>
             <p className="mt-1 text-xs text-cyan-100/80">
               Vigencia: {formatDate(alumnoMetaMatch?.meta?.startDate || null)} - {formatDate(alumnoMetaMatch?.meta?.endDate || null)}
             </p>
+            <p className="mt-1 text-xs text-cyan-100/80">{todayWeekdayLabel} · {todayDateKey}</p>
           </div>
         </div>
 
-        <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="relative -mx-1 mt-5 flex snap-x gap-2 overflow-x-auto px-1 pb-1 xl:mx-0 xl:grid xl:grid-cols-5 xl:overflow-visible xl:px-0 xl:pb-0">
+          {topCategoryCards.map((item) => {
+            const isActive = mainCategory === item.id;
+
+            return (
+              <ReliableActionButton
+                key={item.id}
+                type="button"
+                onClick={() => goToAlumnoCategory(item.id)}
+                className={`min-w-[168px] snap-start rounded-2xl border px-3 py-3 text-left transition ${
+                  isActive
+                    ? "border-cyan-200/60 bg-cyan-400/20 shadow-[0_10px_24px_rgba(34,211,238,0.2)]"
+                    : "border-white/15 bg-slate-900/55 hover:border-cyan-200/35 hover:bg-slate-900/80"
+                }`}
+              >
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-cyan-100">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
+                <p className="mt-1 text-xs text-slate-300">{item.helper}</p>
+              </ReliableActionButton>
+            );
+          })}
+        </div>
+
+        <div className="relative mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Rutinas activas" value={String(routineEntries.length)} tone="cyan" />
           <StatCard label="Prescripciones" value={String(latestPrescriptionCount)} tone="emerald" />
           <StatCard label="Plan nutricional" value={selectedNutritionPlan ? "Activo" : "Sin plan"} tone="fuchsia" />
           <StatCard label="Playlists" value={String(musicAssignments.length)} />
         </div>
       </section>
-      ) : null}
 
       {mainCategory === "inicio" ? (
         <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
