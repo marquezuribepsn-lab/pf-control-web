@@ -33,6 +33,7 @@ type AppShellProps = {
   links: NavLink[];
   children: ReactNode;
   initialRole?: string | null;
+  initialEstado?: string | null;
   initialProfileName?: string | null;
   initialSidebarImage?: string | null;
 };
@@ -49,6 +50,16 @@ type UserLike = {
   name?: string | null;
   email?: string | null;
   role?: string | null;
+  estado?: string | null;
+};
+
+type ProfesorContacto = {
+  id: string;
+  nombre: string;
+  role: string;
+  telefono: string;
+  waPhone: string;
+  source: string;
 };
 
 type WindowWithDockSmokeToken = Window & {
@@ -295,6 +306,7 @@ export default function AppShell({
   links,
   children,
   initialRole = null,
+  initialEstado = null,
   initialProfileName = null,
   initialSidebarImage = null,
 }: AppShellProps) {
@@ -328,12 +340,16 @@ export default function AppShell({
     );
   });
   const [resolvedRole, setResolvedRole] = useState<string | null>(initialRole);
+  const [resolvedEstado, setResolvedEstado] = useState<string | null>(initialEstado);
   const [cachedProfileName, setCachedProfileName] = useState<string>(() =>
     typeof initialProfileName === "string" ? initialProfileName.trim() : ""
   );
   const [cachedProfileRole, setCachedProfileRole] = useState<string | null>(null);
   const [colaboradorAccessMap, setColaboradorAccessMap] = useState<Record<string, boolean> | null>(null);
   const [toasts, setToasts] = useState<InlineToast[]>([]);
+  const [profesorContacto, setProfesorContacto] = useState<ProfesorContacto | null>(null);
+  const [profesorContactoLoading, setProfesorContactoLoading] = useState(false);
+  const [profesorContactoError, setProfesorContactoError] = useState("");
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
@@ -491,14 +507,20 @@ export default function AppShell({
           setResolvedRole(cachedRole);
         }
       }
+
+      const normalizedInitialEstado = typeof initialEstado === "string" ? initialEstado.trim() : "";
+      if (normalizedInitialEstado) {
+        setResolvedEstado(normalizedInitialEstado.toUpperCase());
+      }
     } catch {
       setSidebarImageStable(null, true);
       setResolvedRole(null);
+      setResolvedEstado(null);
       setCachedProfileName("");
       setCachedProfileRole(null);
       setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
     }
-  }, [initialRole, initialProfileName, initialSidebarImage]);
+  }, [initialRole, initialEstado, initialProfileName, initialSidebarImage]);
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
@@ -841,6 +863,7 @@ export default function AppShell({
   useEffect(() => {
     const nextUser = session?.user as UserLike | undefined;
     const nextRole = nextUser?.role;
+    const nextEstado = nextUser?.estado;
     const nextKnownName = resolveKnownUserDisplayName(nextUser);
 
     if (typeof nextKnownName === "string" && nextKnownName.length > 0) {
@@ -859,6 +882,10 @@ export default function AppShell({
         localStorage.setItem(SIDEBAR_PROFILE_ROLE_KEY, normalizedNextRole);
       }
     }
+
+    if (typeof nextEstado === "string" && nextEstado.length > 0) {
+      setResolvedEstado(nextEstado.trim().toUpperCase());
+    }
   }, [session?.user]);
 
   const role =
@@ -866,15 +893,82 @@ export default function AppShell({
     resolvedRole ??
     (pathname.startsWith("/admin") ? "ADMIN" : null);
   const normalizedRole = typeof role === "string" ? role.trim().toUpperCase() : null;
+  const userEstado =
+    ((session?.user as UserLike | undefined)?.estado as string | undefined) ??
+    resolvedEstado ??
+    null;
+  const normalizedEstado = typeof userEstado === "string" ? userEstado.trim().toUpperCase() : null;
 
   const sessionKnownName = resolveKnownUserDisplayName(session?.user as UserLike | undefined);
   const displayName = sessionKnownName || cachedProfileName || resolveUserDisplayName();
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
   const isClienteRole = normalizedRole === "CLIENTE";
+  const isClientePendingApproval = isClienteRole && normalizedEstado === "PENDIENTE_ALTA";
   const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
   const hasSidebarImage = Boolean(sidebarImageToRender);
   const avatarImageSrc = sidebarImageToRender || TRANSPARENT_PIXEL_DATA_URL;
+
+  useEffect(() => {
+    if (!isClientePendingApproval || pathname.startsWith("/auth")) {
+      setProfesorContacto(null);
+      setProfesorContactoError("");
+      setProfesorContactoLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setProfesorContactoLoading(true);
+    setProfesorContactoError("");
+
+    const loadContacto = async () => {
+      try {
+        const response = await fetch("/api/alumnos/profesor-contacto", {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (cancelled) return;
+
+        if (!response.ok || !payload?.ok || !payload?.contacto) {
+          setProfesorContacto(null);
+          setProfesorContactoError(
+            String(payload?.error || "No pudimos obtener el contacto del profesor.")
+          );
+          return;
+        }
+
+        setProfesorContacto(payload.contacto as ProfesorContacto);
+      } catch {
+        if (cancelled) return;
+        setProfesorContacto(null);
+        setProfesorContactoError("No pudimos obtener el contacto del profesor.");
+      } finally {
+        if (!cancelled) {
+          setProfesorContactoLoading(false);
+        }
+      }
+    };
+
+    void loadContacto();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isClientePendingApproval, pathname]);
+
+  const pendingApprovalWhatsappHref = useMemo(() => {
+    const waPhone = String(profesorContacto?.waPhone || "").trim();
+    if (!waPhone) {
+      return "";
+    }
+
+    const sessionEmail = String((session?.user as UserLike | undefined)?.email || "").trim().toLowerCase();
+    const message = `Hola ${profesorContacto?.nombre || "profe"}, ya verifique mi mail y quedé pendiente de alta. Mi cuenta es ${sessionEmail || displayName}.`;
+
+    return `https://wa.me/${encodeURIComponent(waPhone)}?text=${encodeURIComponent(message)}`;
+  }, [profesorContacto, session?.user, displayName]);
 
   const visibleLinks = useMemo(
     () =>
@@ -1388,6 +1482,52 @@ export default function AppShell({
           </div>
         ))}
       </div>
+
+      {isClientePendingApproval ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/88 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-3xl border border-cyan-200/30 bg-slate-950/95 p-6 text-center shadow-[0_30px_80px_rgba(2,8,25,0.65)] sm:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-200/85">Cuenta pendiente</p>
+            <h2 className="mt-3 text-3xl font-black text-white">Espera a que tu profesor te de alta</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-200/90">
+              Ya verificaste tu mail y puedes iniciar sesion, pero la plataforma queda bloqueada hasta que el profesor
+              confirme tu alta.
+            </p>
+
+            <div className="mt-5 rounded-2xl border border-amber-300/35 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-100">
+              Estado actual: pendiente de alta
+            </div>
+
+            {profesorContactoLoading ? (
+              <p className="mt-4 text-sm text-cyan-100">Buscando contacto del profesor...</p>
+            ) : null}
+
+            {profesorContactoError ? (
+              <p className="mt-4 rounded-xl border border-rose-300/35 bg-rose-500/12 px-3 py-2 text-sm text-rose-100">
+                {profesorContactoError}
+              </p>
+            ) : null}
+
+            {pendingApprovalWhatsappHref ? (
+              <a
+                href={pendingApprovalWhatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300"
+              >
+                Comunicarme con el profesor
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-300"
+              >
+                Contacto del profesor no disponible
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[clamp(132px,14vw,170px)] md:pt-4">
         <div className="px-4">{children}</div>

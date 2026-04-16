@@ -99,6 +99,9 @@ export default async function RootLayout({
   const initialRole = typeof (session?.user as { role?: string | null } | undefined)?.role === "string"
     ? String((session?.user as { role?: string | null }).role || "").trim().toUpperCase() || null
     : null;
+  const initialEstado = typeof (session?.user as { estado?: string | null } | undefined)?.estado === "string"
+    ? String((session?.user as { estado?: string | null }).estado || "").trim().toUpperCase() || null
+    : null;
   const initialProfileName = resolveInitialProfileName(
     session?.user as { name?: string | null; email?: string | null } | null
   );
@@ -184,6 +187,7 @@ export default async function RootLayout({
                             <AppShell
                               links={links}
                               initialRole={initialRole}
+                              initialEstado={initialEstado}
                               initialProfileName={initialProfileName}
                               initialSidebarImage={initialSidebarImage}
                             >

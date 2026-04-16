@@ -389,13 +389,50 @@ export async function sendColaboradorCredentials(email: string, password: string
   });
 }
 
+function generateSixDigitVerificationCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function extractVerificationCodeFromToken(token: string): string {
+  const normalized = String(token || '').trim();
+  if (!normalized) return '';
+
+  const firstSegment = normalized.split('.')[0] || '';
+  if (/^\d{6}$/.test(firstSegment)) {
+    return firstSegment;
+  }
+
+  if (/^\d{6}$/.test(normalized)) {
+    return normalized;
+  }
+
+  return '';
+}
+
 export async function generateVerificationToken(email: string): Promise<string> {
-  const token = randomBytes(32).toString('hex');
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    throw new Error('Email requerido para generar token de verificacion.');
+  }
+
+  const verificationCode = generateSixDigitVerificationCode();
+  const token = `${verificationCode}.${randomBytes(24).toString('hex')}`;
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  await db.verificationToken.deleteMany({
+    where: {
+      email: normalizedEmail,
+      NOT: {
+        token: {
+          startsWith: 'login-link-',
+        },
+      },
+    },
+  });
 
   await db.verificationToken.create({
     data: {
-      email,
+      email: normalizedEmail,
       token,
       expiresAt,
     },
@@ -406,21 +443,31 @@ export async function generateVerificationToken(email: string): Promise<string> 
 
 export async function sendVerificationEmail(email: string, token: string) {
   ensureMailConfigured();
-  const verifyUrl = `${mailAppUrl}/auth/verify?token=${token}`;
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    throw new Error('Email requerido para enviar verificacion.');
+  }
+
+  const verificationCode = extractVerificationCodeFromToken(token);
+  const verifyUrl = `${mailAppUrl}/auth/verify?email=${encodeURIComponent(normalizedEmail)}`;
 
   await sendMail({
-    to: email,
+    to: normalizedEmail,
     subject: 'Verifica tu email - PF Control',
     html: renderEmailLayout({
-      preheader: 'Verifica tu cuenta de PF Control',
+      preheader: 'Codigo de verificacion de PF Control',
       title: 'Verifica tu email',
-      intro: 'Haz clic en el boton para validar tu cuenta y habilitar todas las funciones.',
+      intro: 'Ingresa este codigo en la pantalla de verificacion para activar tu cuenta.',
       bodyHtml: `
-        <p style="margin:0 0 10px;color:#cbd5e1;">Si no funciona el boton, copia este enlace en tu navegador:</p>
-        <p style="margin:0 0 10px;word-break:break-all;"><a href="${escapeHtml(safeHref(verifyUrl))}" style="color:#7dd3fc;text-decoration:none;">${escapeHtml(verifyUrl)}</a></p>
-        <p style="margin:0;color:#94a3b8;font-size:12px;">Este enlace expira en 24 horas.</p>
+        <p style="margin:0 0 12px;color:#cbd5e1;">Tu codigo de verificacion es:</p>
+        <div style="margin:0 0 14px;padding:12px 16px;border-radius:12px;border:1px solid rgba(148,163,184,0.25);background:#020617;display:inline-block;">
+          <span style="font-size:28px;letter-spacing:0.22em;font-weight:900;color:#f8fafc;">${escapeHtml(verificationCode || '------')}</span>
+        </div>
+        <p style="margin:0 0 10px;color:#cbd5e1;">Abre la pantalla de verificacion, escribe tu email y este codigo.</p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;">El codigo expira en 24 horas.</p>
       `,
-      ctaLabel: 'Verificar email',
+      ctaLabel: 'Ir a verificar email',
       ctaUrl: verifyUrl,
     }),
   });

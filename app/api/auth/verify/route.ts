@@ -48,6 +48,14 @@ type SignupProfile = {
   anamnesis?: SignupAnamnesis;
 };
 
+function normalizeEmail(value: unknown): string {
+  return String(value || '').trim().toLowerCase();
+}
+
+function normalizeVerificationCode(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, '');
+}
+
 function normalizeName(value: unknown) {
   return String(value || '')
     .normalize('NFD')
@@ -278,23 +286,67 @@ async function syncVerifiedAlumnoToClientes(email: string) {
   await setSyncValue(CLIENTES_META_KEY, metaMap);
 }
 
+async function resolveVerificationToken(input: {
+  token?: string;
+  email?: string;
+  code?: string;
+}) {
+  const directToken = String(input.token || '').trim();
+  if (directToken) {
+    return verifyToken(directToken);
+  }
+
+  const email = normalizeEmail(input.email);
+  const code = normalizeVerificationCode(input.code);
+  if (!email || !code) {
+    return null;
+  }
+
+  const verificationToken = await db.verificationToken.findFirst({
+    where: {
+      email,
+      OR: [
+        { token: { startsWith: `${code}.` } },
+        { token: code },
+      ],
+    },
+    orderBy: { expiresAt: 'desc' },
+  });
+
+  if (!verificationToken) {
+    return null;
+  }
+
+  if (verificationToken.expiresAt < new Date()) {
+    await db.verificationToken.delete({
+      where: { token: verificationToken.token },
+    }).catch(() => null);
+
+    return null;
+  }
+
+  return verificationToken;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { token } = await req.json();
+    const payload = await req.json().catch(() => ({}));
+    const token = String(payload?.token || '').trim();
+    const email = normalizeEmail(payload?.email);
+    const code = normalizeVerificationCode(payload?.code);
 
-    if (!token) {
+    if (!token && (!email || !code)) {
       return NextResponse.json(
-        { message: 'Token requerido' },
+        { message: 'Ingresa email y codigo de verificacion.' },
         { status: 400 }
       );
     }
 
-    // Verify token
-    const verificationToken = await verifyToken(token);
+    const verificationToken = await resolveVerificationToken({ token, email, code });
 
     if (!verificationToken) {
       return NextResponse.json(
-        { message: 'Token inválido o expirado' },
+        { message: 'Codigo o token invalido/expirado.' },
         { status: 400 }
       );
     }
@@ -315,13 +367,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Delete verification token
     await db.verificationToken.delete({
-      where: { token },
-    });
+      where: { token: verificationToken.token },
+    }).catch(() => null);
 
     return NextResponse.json(
-      { message: 'Mail verificado. Tu cuenta quedo pendiente de alta del profesor.' },
+      { message: 'Mail verificado con exito. Redirigiendo al login.' },
       { status: 200 }
     );
   } catch (error) {

@@ -55,6 +55,10 @@ function extractSignInFailureCode(result: unknown): string {
 }
 
 function resolveLoginErrorMessage(failureCode: string, fallbackToMagicLink: boolean): string {
+  if (failureCode === 'account_blocked') {
+    return 'Tu cuenta esta suspendida o dada de baja. Contacta al profesor para revisar el estado.';
+  }
+
   if (failureCode === 'pending_approval') {
     return 'Tu cuenta está verificada pero sigue pendiente de alta del profesor. Te avisaremos cuando quede habilitada.';
   }
@@ -241,7 +245,7 @@ function LoginPageContent() {
 
         if (isSignInFailure(result)) {
           const failureCode = extractSignInFailureCode(result);
-          if (failureCode === 'pending_approval') {
+          if (failureCode === 'pending_approval' || failureCode === 'account_blocked') {
             setError(resolveLoginErrorMessage(failureCode, false));
           } else {
             setError('El enlace de acceso es invalido o expiro. Solicita uno nuevo.');
@@ -280,7 +284,7 @@ function LoginPageContent() {
 
       if (isSignInFailure(result)) {
         const failureCode = extractSignInFailureCode(result);
-        if (failureCode === 'pending_approval') {
+        if (failureCode === 'pending_approval' || failureCode === 'account_blocked') {
           setError(resolveLoginErrorMessage(failureCode, false));
           return;
         }

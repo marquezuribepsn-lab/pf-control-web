@@ -17,8 +17,8 @@ type AuthUserRecord = {
   emailVerified: boolean;
 };
 
-class PendingApprovalSigninError extends CredentialsSignin {
-  code = 'pending_approval';
+class AccountBlockedSigninError extends CredentialsSignin {
+  code = 'account_blocked';
 }
 
 function normalizeEmailInput(raw: unknown): string {
@@ -99,8 +99,8 @@ export const authConfig = {
         }
 
         const userStatus = String((user as any).estado || 'activo').trim().toLowerCase();
-        if (user.role === 'CLIENTE' && userStatus !== 'activo') {
-          throw new PendingApprovalSigninError();
+        if (user.role === 'CLIENTE' && (userStatus === 'suspendido' || userStatus === 'baja')) {
+          throw new AccountBlockedSigninError();
         }
 
         if (loginToken) {
@@ -131,6 +131,7 @@ export const authConfig = {
             id: user.id,
             email: user.email,
             role: user.role,
+            estado: userStatus,
             rememberMe,
           };
         }
@@ -157,6 +158,7 @@ export const authConfig = {
           id: user.id,
           email: user.email,
           role: user.role,
+          estado: userStatus,
           rememberMe,
         };
       },
@@ -170,6 +172,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.estado = (user as any).estado;
         token.rememberMe = Boolean((user as any).rememberMe);
       }
       return token;
@@ -178,6 +181,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as any).role = token.role as string;
+        (session.user as any).estado = token.estado as string;
       }
       return session;
     },
