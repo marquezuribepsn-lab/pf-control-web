@@ -219,13 +219,15 @@ const createTemplateSetDraft = (serie: number): TemplateSetDraft => ({
   observaciones: "",
 });
 
-const createTemplateSuperSerieDraft = (): TemplateSuperSerieDraft => ({
+const createTemplateSuperSerieDraft = (
+  seed?: Partial<Pick<TemplateSuperSerieDraft, "ejercicioId" | "series" | "repeticiones" | "descanso" | "carga">>
+): TemplateSuperSerieDraft => ({
   id: createId(),
-  ejercicioId: "",
-  series: "",
-  repeticiones: "",
-  descanso: "",
-  carga: "",
+  ejercicioId: seed?.ejercicioId || "",
+  series: seed?.series || "",
+  repeticiones: seed?.repeticiones || "",
+  descanso: seed?.descanso || "",
+  carga: seed?.carga || "",
 });
 
 const createTemplateExercise = (): TemplateExerciseDraft => ({
@@ -2352,11 +2354,23 @@ export default function SemanaPage() {
   };
 
   const getTemplateSpecValue = (exercise: TemplateExerciseDraft, token: string) => {
-    const lowerToken = token.toLowerCase();
-    const found = (exercise.especificaciones || []).find((spec) =>
-      String(spec.nombre || "").toLowerCase().includes(lowerToken)
+    const normalizedToken = String(token || "").trim().toLowerCase();
+    if (!normalizedToken) {
+      return "";
+    }
+
+    const specs = exercise.especificaciones || [];
+    const exactMatch = specs.find(
+      (spec) => String(spec.nombre || "").trim().toLowerCase() === normalizedToken
     );
-    return found?.valor || "";
+    if (exactMatch) {
+      return exactMatch.valor || "";
+    }
+
+    const includesMatch = specs.find((spec) =>
+      String(spec.nombre || "").trim().toLowerCase().includes(normalizedToken)
+    );
+    return includesMatch?.valor || "";
   };
 
   const upsertTemplateSpecValue = (
@@ -2630,9 +2644,17 @@ export default function SemanaPage() {
           ...block,
           ejercicios: block.ejercicios.map((exercise) => {
             if (exercise.id !== exerciseId) return exercise;
+
+            const nextSuperItem = createTemplateSuperSerieDraft({
+              series: exercise.series,
+              repeticiones: exercise.repeticiones,
+              descanso: exercise.descanso,
+              carga: exercise.carga,
+            });
+
             return {
               ...exercise,
-              superSerie: [...(exercise.superSerie || []), createTemplateSuperSerieDraft()],
+              superSerie: [...(exercise.superSerie || []), nextSuperItem],
             };
           }),
         };
@@ -3287,7 +3309,7 @@ export default function SemanaPage() {
           </div>
         </div>
 
-      <section className="mt-6 border-t border-cyan-300/20 pt-6">
+      <section className="mt-6 rounded-[28px] border border-cyan-300/18 bg-slate-950/24 p-5 shadow-[0_24px_56px_-46px_rgba(8,47,73,0.9)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div>
@@ -3431,8 +3453,8 @@ export default function SemanaPage() {
             )}
           </div>
         ) : (
-          <div className="mt-5 space-y-5">
-            <div className="border-l-2 border-cyan-300/35 bg-slate-950/30 p-5">
+          <div className="mt-5 space-y-5 rounded-[24px] border border-white/10 bg-slate-950/22 p-4 sm:p-5">
+            <div className="rounded-[22px] border border-cyan-300/20 bg-slate-950/36 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
               <h2 className="text-2xl font-semibold text-white">{templateDraft.nombre || "NUEVO PLAN BLANCO"}</h2>
 
               <div className="mt-3 space-y-3">
@@ -3494,7 +3516,7 @@ export default function SemanaPage() {
               </label>
             </div>
 
-            <div className="border border-white/10 bg-slate-950/15 p-5">
+            <div className="rounded-[22px] border border-white/10 bg-slate-950/22 p-5">
               <div className="hidden pb-5">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-200/85">Semanas</p>
                 <p className="mt-1 text-xs text-slate-400">Estructura general del template.</p>
@@ -3749,6 +3771,9 @@ export default function SemanaPage() {
                     <div className="space-y-3">
                       {templateDraftDay.entrenamiento.bloques.map((block, blockIndex) => {
                         const blockGridColumns = block.ejercicios[0]?.especificaciones || [];
+                        const optionalGridColumns = blockGridColumns.filter(
+                          (spec) => spec.nombre.trim().length > 0
+                        );
 
                         return (
                           <article
@@ -3886,7 +3911,8 @@ export default function SemanaPage() {
                                   Configuracion grilla plan:
                                 </p>
                                 <p className="mt-1 text-xs text-slate-400">
-                                  Puede agregar/quitar columnas dinamicamente.
+                                  Series, repeticiones, descanso y carga kg son columnas base. El resto es
+                                  opcional.
                                 </p>
 
                                 <div className="mt-3 space-y-2">
@@ -3896,12 +3922,17 @@ export default function SemanaPage() {
                                     className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
                                   />
                                   <input
-                                    value="Rep.:"
+                                    value="Repeticiones:"
                                     readOnly
                                     className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
                                   />
                                   <input
-                                    value="Desc.:"
+                                    value="Descanso:"
+                                    readOnly
+                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                  />
+                                  <input
+                                    value="Carga kg:"
                                     readOnly
                                     className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
                                   />
@@ -3988,17 +4019,41 @@ export default function SemanaPage() {
                                 const selectorQuery = getTemplateExerciseQuery(exercise);
                                 const selectorItems = getTemplateExerciseCandidates(exercise.id);
                                 const thumb = getExerciseThumbnail(selectedExercise?.videoUrl);
-                                const rirValue = getTemplateSpecValue(exercise, "rir");
-                                const observacionesValue = getTemplateSpecValue(exercise, "observ");
                                 const hasSeriesBreakdown = (exercise.serieDesglose || []).length > 0;
+                                const hasSuperSerieGroup = (exercise.superSerie || []).length > 0;
+                                const exerciseRowGridClass = hasSuperSerieGroup
+                                  ? "grid gap-y-2 gap-x-1.5 md:grid-cols-[104px_minmax(0,1fr)] lg:grid-cols-[104px_minmax(0,1.35fr)_repeat(4,minmax(0,0.95fr))]"
+                                  : "grid gap-y-2 gap-x-1.5 md:grid-cols-[104px_minmax(0,1fr)] lg:grid-cols-[104px_repeat(7,minmax(0,1fr))]";
 
                                 return (
                                   <div
                                     key={exercise.id}
-                                    className="relative rounded-xl border border-white/10 bg-slate-900/35 p-3"
+                                    className={`relative rounded-2xl px-1.5 py-2.5 ${
+                                      hasSuperSerieGroup ? "bg-transparent" : "bg-slate-900/[0.06]"
+                                    }`}
                                   >
-                                    <div className="grid gap-2 xl:grid-cols-[72px_minmax(0,1.5fr)_repeat(6,minmax(0,0.8fr))]">
-                                      <div className="h-14 w-[72px] overflow-hidden rounded-md border border-white/15 bg-slate-950/55">
+                                    {hasSuperSerieGroup ? (
+                                      <div className="mb-1.5 flex items-center gap-2">
+                                        <span className="h-5 w-[2px] rounded-full bg-violet-300/75" />
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-100">
+                                          Super serie 🔥
+                                        </p>
+                                        <span className="h-5 w-[2px] rounded-full bg-violet-300/45" />
+                                      </div>
+                                    ) : null}
+
+                                    {hasSuperSerieGroup ? (
+                                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100/90">
+                                        Inicio super serie
+                                      </p>
+                                    ) : null}
+
+                                    <div
+                                      className={`${exerciseRowGridClass} ${
+                                        hasSuperSerieGroup ? "border-l-2 border-violet-300/35 pl-2.5 py-1" : ""
+                                      }`}
+                                    >
+                                      <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-white/15 bg-slate-950/55">
                                         {thumb ? (
                                           // eslint-disable-next-line @next/next/no-img-element
                                           <img
@@ -4013,7 +4068,11 @@ export default function SemanaPage() {
                                         )}
                                       </div>
 
-                                      <div className="relative">
+                                      <div
+                                        className={`relative md:col-span-1 ${
+                                          hasSuperSerieGroup ? "lg:col-span-1" : "lg:col-span-2"
+                                        }`}
+                                      >
                                         <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
                                           Ejercicio
                                         </label>
@@ -4099,7 +4158,7 @@ export default function SemanaPage() {
                                         ) : null}
                                       </div>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
                                         Series
                                         <input
                                           value={exercise.series}
@@ -4117,8 +4176,8 @@ export default function SemanaPage() {
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                        Rep
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                        Repeticiones
                                         <input
                                           value={exercise.repeticiones}
                                           onChange={(event) =>
@@ -4135,8 +4194,8 @@ export default function SemanaPage() {
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                        Desc
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                        Descanso
                                         <input
                                           value={exercise.descanso}
                                           onChange={(event) =>
@@ -4153,25 +4212,7 @@ export default function SemanaPage() {
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                        RIR
-                                        <input
-                                          value={rirValue}
-                                          onChange={(event) =>
-                                            upsertTemplateSpecValue(
-                                              templateDraftWeek.id,
-                                              templateDraftDay.id,
-                                              block.id,
-                                              exercise.id,
-                                              "RIR",
-                                              event.target.value
-                                            )
-                                          }
-                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                        />
-                                      </label>
-
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
                                         Carga (kg)
                                         <input
                                           value={exercise.carga}
@@ -4189,23 +4230,29 @@ export default function SemanaPage() {
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 xl:col-start-8 xl:row-start-1">
-                                        Observaciones
-                                        <input
-                                          value={observacionesValue}
-                                          onChange={(event) =>
-                                            upsertTemplateSpecValue(
-                                              templateDraftWeek.id,
-                                              templateDraftDay.id,
-                                              block.id,
-                                              exercise.id,
-                                              "Observaciones",
-                                              event.target.value
-                                            )
-                                          }
-                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                        />
-                                      </label>
+                                      {optionalGridColumns.map((spec, specIndex) => (
+                                        <label
+                                          key={`${exercise.id}-optional-col-${spec.id}`}
+                                          className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1"
+                                        >
+                                          {spec.nombre}
+                                          <input
+                                            value={getTemplateSpecValue(exercise, spec.nombre)}
+                                            onChange={(event) =>
+                                              upsertTemplateSpecValue(
+                                                templateDraftWeek.id,
+                                                templateDraftDay.id,
+                                                block.id,
+                                                exercise.id,
+                                                spec.nombre,
+                                                event.target.value
+                                              )
+                                            }
+                                            className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                            placeholder={`Campo ${specIndex + 1}`}
+                                          />
+                                        </label>
+                                      ))}
                                     </div>
 
                                     <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold">
@@ -4233,7 +4280,8 @@ export default function SemanaPage() {
                                             exercise.id
                                           )
                                         }
-                                        className="text-cyan-300"
+                                        disabled={!exercise.ejercicioId}
+                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
                                       >
                                         Agregar ejercicio super-serie
                                       </ReliableActionButton>
@@ -4295,7 +4343,7 @@ export default function SemanaPage() {
                                     </div>
 
                                     {hasSeriesBreakdown ? (
-                                      <div className="mt-3 rounded-lg border border-cyan-300/20 bg-cyan-500/5 p-2">
+                                      <div className="mt-3 rounded-xl bg-cyan-500/[0.06] px-2.5 py-2">
                                         <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-100">
                                           Desglose de series
                                         </p>
@@ -4394,125 +4442,210 @@ export default function SemanaPage() {
                                       </div>
                                     ) : null}
 
-                                    {(exercise.superSerie || []).length > 0 ? (
-                                      <div className="mt-3 rounded-lg border border-violet-300/20 bg-violet-500/5 p-2">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-100">
-                                          Inicio super serie
-                                        </p>
-                                        <div className="mt-2 space-y-2">
-                                          {(exercise.superSerie || []).map((superItem) => (
+                                    {hasSuperSerieGroup ? (
+                                      <div className="mt-1 space-y-2">
+                                        {(exercise.superSerie || []).map((superItem) => {
+                                          const superExercise = ejercicios.find(
+                                            (item) => item.id === superItem.ejercicioId
+                                          );
+                                          const superThumb = getExerciseThumbnail(superExercise?.videoUrl);
+                                          const superCanTrackWeight = Boolean(superItem.ejercicioId);
+
+                                          return (
                                             <div
                                               key={superItem.id}
-                                              className="grid gap-2 md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))_auto]"
+                                              className="space-y-2 border-l-2 border-violet-300/35 pl-2.5 py-1"
                                             >
-                                              <select
-                                                value={superItem.ejercicioId}
-                                                onChange={(event) =>
-                                                  actualizarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id,
-                                                    "ejercicioId",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                              >
-                                                <option value="">Seleccione ejercicio</option>
-                                                {ejercicios.map((item) => (
-                                                  <option key={`${superItem.id}-${item.id}`} value={item.id}>
-                                                    {item.nombre}
-                                                  </option>
-                                                ))}
-                                              </select>
-                                              <input
-                                                value={superItem.series}
-                                                onChange={(event) =>
-                                                  actualizarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id,
-                                                    "series",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                placeholder="Series"
-                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                              />
-                                              <input
-                                                value={superItem.repeticiones}
-                                                onChange={(event) =>
-                                                  actualizarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id,
-                                                    "repeticiones",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                placeholder="Rep"
-                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                              />
-                                              <input
-                                                value={superItem.descanso}
-                                                onChange={(event) =>
-                                                  actualizarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id,
-                                                    "descanso",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                placeholder="Desc"
-                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                              />
-                                              <input
-                                                value={superItem.carga}
-                                                onChange={(event) =>
-                                                  actualizarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id,
-                                                    "carga",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                placeholder="Carga"
-                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                              />
-                                              <ReliableActionButton
-                                                type="button"
-                                                onClick={() =>
-                                                  eliminarSuperSerieTemplate(
-                                                    templateDraftWeek.id,
-                                                    templateDraftDay.id,
-                                                    block.id,
-                                                    exercise.id,
-                                                    superItem.id
-                                                  )
-                                                }
-                                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-2 text-[11px] font-semibold text-rose-100"
-                                              >
-                                                Eliminar
-                                              </ReliableActionButton>
+                                              <div className="grid gap-y-2 gap-x-1.5 md:grid-cols-[104px_minmax(0,1fr)] lg:grid-cols-[104px_minmax(0,1.35fr)_repeat(4,minmax(0,0.95fr))]">
+                                                <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-violet-200/20 bg-slate-950/55">
+                                                  {superThumb ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                      src={superThumb}
+                                                      alt={superExercise?.nombre || "Ejercicio"}
+                                                      className="h-full w-full object-cover"
+                                                    />
+                                                  ) : (
+                                                    <div className="flex h-full items-center justify-center text-[10px] text-slate-400">
+                                                      Sin preview
+                                                    </div>
+                                                  )}
+                                                </div>
+
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 lg:col-span-1">
+                                                  Ejercicio
+                                                  <select
+                                                    value={superItem.ejercicioId}
+                                                    onChange={(event) =>
+                                                      actualizarSuperSerieTemplate(
+                                                        templateDraftWeek.id,
+                                                        templateDraftDay.id,
+                                                        block.id,
+                                                        exercise.id,
+                                                        superItem.id,
+                                                        "ejercicioId",
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                                                  >
+                                                    <option value="">Seleccione ejercicio</option>
+                                                    {ejercicios.map((item) => (
+                                                      <option key={`${superItem.id}-${item.id}`} value={item.id}>
+                                                        {item.nombre}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+                                                </label>
+
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                                  Series
+                                                  <input
+                                                    value={superItem.series}
+                                                    onChange={(event) =>
+                                                      actualizarSuperSerieTemplate(
+                                                        templateDraftWeek.id,
+                                                        templateDraftDay.id,
+                                                        block.id,
+                                                        exercise.id,
+                                                        superItem.id,
+                                                        "series",
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                                  />
+                                                </label>
+
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                                  Repeticiones
+                                                  <input
+                                                    value={superItem.repeticiones}
+                                                    onChange={(event) =>
+                                                      actualizarSuperSerieTemplate(
+                                                        templateDraftWeek.id,
+                                                        templateDraftDay.id,
+                                                        block.id,
+                                                        exercise.id,
+                                                        superItem.id,
+                                                        "repeticiones",
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                                  />
+                                                </label>
+
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                                  Descanso
+                                                  <input
+                                                    value={superItem.descanso}
+                                                    onChange={(event) =>
+                                                      actualizarSuperSerieTemplate(
+                                                        templateDraftWeek.id,
+                                                        templateDraftDay.id,
+                                                        block.id,
+                                                        exercise.id,
+                                                        superItem.id,
+                                                        "descanso",
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                                  />
+                                                </label>
+
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2 lg:col-span-1">
+                                                  Carga (kg)
+                                                  <input
+                                                    value={superItem.carga}
+                                                    onChange={(event) =>
+                                                      actualizarSuperSerieTemplate(
+                                                        templateDraftWeek.id,
+                                                        templateDraftDay.id,
+                                                        block.id,
+                                                        exercise.id,
+                                                        superItem.id,
+                                                        "carga",
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                                  />
+                                                </label>
+                                              </div>
+
+                                              <div className="flex flex-wrap gap-3 text-[11px] font-semibold">
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  disabled
+                                                  className="text-slate-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                                >
+                                                  Desglosar serie
+                                                </ReliableActionButton>
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  onClick={() =>
+                                                    abrirVerPesos(
+                                                      block.id,
+                                                      block.titulo,
+                                                      superItem.ejercicioId,
+                                                      superExercise?.nombre || "Ejercicio"
+                                                    )
+                                                  }
+                                                  disabled={!superCanTrackWeight}
+                                                  className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                                >
+                                                  Ver pesos
+                                                </ReliableActionButton>
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  onClick={() =>
+                                                    abrirRegistrarPeso(
+                                                      block.id,
+                                                      block.titulo,
+                                                      superItem.ejercicioId,
+                                                      superExercise?.nombre || "Ejercicio"
+                                                    )
+                                                  }
+                                                  disabled={!superCanTrackWeight}
+                                                  className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                                >
+                                                  Registrar peso
+                                                </ReliableActionButton>
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  disabled
+                                                  className="text-slate-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                                >
+                                                  Configuracion
+                                                </ReliableActionButton>
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  onClick={() =>
+                                                    eliminarSuperSerieTemplate(
+                                                      templateDraftWeek.id,
+                                                      templateDraftDay.id,
+                                                      block.id,
+                                                      exercise.id,
+                                                      superItem.id
+                                                    )
+                                                  }
+                                                  className="text-rose-300"
+                                                >
+                                                  Eliminar
+                                                </ReliableActionButton>
+                                              </div>
                                             </div>
-                                          ))}
-                                        </div>
-                                        <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-violet-100">
-                                          Fin super serie
-                                        </p>
+                                          );
+                                        })}
                                       </div>
+                                    ) : null}
+
+                                    {hasSuperSerieGroup ? (
+                                      <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-violet-100/90">
+                                        Fin super serie
+                                      </p>
                                     ) : null}
                                   </div>
                                 );
