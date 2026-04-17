@@ -282,7 +282,11 @@ const findMetricNumber = (
   return found ? parseNumericValue(found.valor) : null;
 };
 
-export default function SesionesPage() {
+type SesionesPageProps = {
+  embedded?: boolean;
+};
+
+export default function SesionesPage({ embedded = false }: SesionesPageProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { sesiones, agregarSesion, editarSesion, eliminarSesion } = useSessions();
@@ -1067,9 +1071,13 @@ export default function SesionesPage() {
     totalRegistrosAsistencia > 0
       ? Math.round((sesionesOperativas.totalPresentes / totalRegistrosAsistencia) * 100)
       : null;
+  const ContainerTag: "main" | "div" = embedded ? "div" : "main";
+  const containerClassName = embedded
+    ? "w-full space-y-6 px-1 py-2 text-slate-100 lg:px-2"
+    : "mx-auto max-w-7xl space-y-6 p-6 text-slate-100";
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 p-6 text-slate-100">
+    <ContainerTag className={containerClassName}>
       <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/55 to-slate-900 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] md:p-7">
         <div className="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full bg-cyan-400/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
@@ -2325,6 +2333,6 @@ export default function SesionesPage() {
           </div>
         </div>
       ) : null}
-    </main>
+    </ContainerTag>
   );
 }

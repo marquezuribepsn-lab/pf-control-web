@@ -1,11 +1,8 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import SesionesPage from "../sesiones/page";
 import { useAlumnos } from "../../components/AlumnosProvider";
-import { useCategories } from "../../components/CategoriesProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSessions } from "../../components/SessionsProvider";
@@ -23,6 +20,25 @@ type TemplateExerciseSpec = {
   valor: string;
 };
 
+type TemplateSetDraft = {
+  id: string;
+  serie: number;
+  repeticiones: string;
+  cargaKg: string;
+  rir: string;
+  descanso: string;
+  observaciones: string;
+};
+
+type TemplateSuperSerieDraft = {
+  id: string;
+  ejercicioId: string;
+  series: string;
+  repeticiones: string;
+  descanso: string;
+  carga: string;
+};
+
 type TemplateExerciseDraft = {
   id: string;
   ejercicioId: string;
@@ -31,6 +47,8 @@ type TemplateExerciseDraft = {
   descanso: string;
   carga: string;
   especificaciones: TemplateExerciseSpec[];
+  serieDesglose: TemplateSetDraft[];
+  superSerie: TemplateSuperSerieDraft[];
 };
 
 type TemplateBlockDraft = {
@@ -64,7 +82,6 @@ type SemanaPlan = {
 };
 
 type PersonaTipo = "jugadoras" | "alumnos";
-type WorkspaceTab = "templates" | "entrenamiento";
 
 type PersonaItem = {
   tipo: PersonaTipo;
@@ -130,8 +147,57 @@ type AlumnoWeekNotification = {
   totalDias: number;
 };
 
+type OwnerOption = {
+  ownerKey: string;
+  label: string;
+  detail: string;
+};
+
+type TemplateWeightLog = {
+  id: string;
+  templateId: string;
+  templateNombre: string;
+  alumnoNombre?: string;
+  blockId: string;
+  blockTitulo: string;
+  exerciseId: string;
+  exerciseNombre: string;
+  fecha: string;
+  nroSerie: number;
+  nroRep: number;
+  pesoKg: number;
+  molestia: boolean;
+  comentario?: string;
+  createdAt: string;
+};
+
+type AlumnoWorkoutLogLite = {
+  id: string;
+  alumnoNombre: string;
+  sessionId: string;
+  sessionTitle: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId?: string;
+  blockTitle?: string;
+  exerciseId?: string;
+  exerciseName?: string;
+  exerciseKey?: string;
+  fecha: string;
+  series: number;
+  repeticiones: number;
+  pesoKg: number;
+  molestia: boolean;
+  comentario?: string;
+  createdAt: string;
+};
+
 const STORAGE_KEY = "pf-control-semana-plan";
 const ALUMNO_NOTIFICATIONS_KEY = "pf-control-alumno-week-notifications";
+const TEMPLATE_WEIGHT_LOGS_KEY = "pf-control-template-weight-logs-v1";
+const ALUMNO_WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const GENERAL_OWNER_KEY = "general:plan";
 const AUTO_OBJECTIVE_PREFIX = "[AUTO-PRESCRIPCION]";
 
@@ -143,6 +209,25 @@ const createTemplateSpec = (): TemplateExerciseSpec => ({
   valor: "",
 });
 
+const createTemplateSetDraft = (serie: number): TemplateSetDraft => ({
+  id: createId(),
+  serie,
+  repeticiones: "",
+  cargaKg: "",
+  rir: "",
+  descanso: "",
+  observaciones: "",
+});
+
+const createTemplateSuperSerieDraft = (): TemplateSuperSerieDraft => ({
+  id: createId(),
+  ejercicioId: "",
+  series: "",
+  repeticiones: "",
+  descanso: "",
+  carga: "",
+});
+
 const createTemplateExercise = (): TemplateExerciseDraft => ({
   id: createId(),
   ejercicioId: "",
@@ -151,6 +236,8 @@ const createTemplateExercise = (): TemplateExerciseDraft => ({
   descanso: "0",
   carga: "",
   especificaciones: [],
+  serieDesglose: [],
+  superSerie: [],
 });
 
 const createTemplateBlock = (index: number): TemplateBlockDraft => ({
@@ -182,6 +269,15 @@ const cloneTemplateTraining = (
         id: createId(),
         especificaciones: (exercise.especificaciones || []).map((spec) => ({
           ...spec,
+          id: createId(),
+        })),
+        serieDesglose: (exercise.serieDesglose || []).map((setDraft, setIndex) => ({
+          ...setDraft,
+          id: createId(),
+          serie: Number.isFinite(Number(setDraft.serie)) ? Number(setDraft.serie) : setIndex + 1,
+        })),
+        superSerie: (exercise.superSerie || []).map((superExercise) => ({
+          ...superExercise,
           id: createId(),
         })),
       })),
@@ -240,6 +336,30 @@ const normalizeText = (value: string) =>
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+const normalizePersonKey = (value: string) =>
+  (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const namesLikelyMatch = (a: string, b: string) => {
+  const left = normalizePersonKey(a);
+  const right = normalizePersonKey(b);
+
+  if (!left || !right) return false;
+  if (left === right) return true;
+  if (left.includes(right) || right.includes(left)) return true;
+
+  const leftTokens = left.split(" ").filter(Boolean);
+  const rightTokens = right.split(" ").filter(Boolean);
+  const shared = leftTokens.filter((token) => rightTokens.includes(token));
+
+  return shared.length >= 2 || shared.some((token) => token.length >= 5);
+};
 
 const tokenizeText = (value: string) =>
   new Set(normalizeText(value).split(" ").filter((token) => token.length >= 4));
@@ -490,12 +610,80 @@ const ensurePlanForPersona = (store: SemanaStoreV3, persona: PersonaItem): Seman
   };
 };
 
+const getYouTubeVideoId = (value: string): string | null => {
+  const input = (value || "").trim();
+  if (!input) return null;
+
+  const match = input.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
+  );
+  return match ? match[1] : null;
+};
+
+const getExerciseThumbnail = (videoUrl?: string) => {
+  const raw = (videoUrl || "").trim();
+  if (!raw) return "";
+
+  const ytId = getYouTubeVideoId(raw);
+  if (ytId) {
+    return `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+  }
+
+  if (/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(raw)) {
+    return raw;
+  }
+
+  return "";
+};
+
+const normalizeAlumnoWorkoutLogs = (rawValue: unknown): AlumnoWorkoutLogLite[] => {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row) => {
+      const item = row as Record<string, unknown>;
+      return {
+        id: String(item.id || createId()),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        sessionId: String(item.sessionId || "").trim(),
+        sessionTitle: String(item.sessionTitle || item.sesion || "Sesion").trim() || "Sesion",
+        weekId: String(item.weekId || "").trim() || undefined,
+        weekName: String(item.weekName || item.week || "").trim() || undefined,
+        dayId: String(item.dayId || "").trim() || undefined,
+        dayName: String(item.dayName || item.dia || "").trim() || undefined,
+        blockId: String(item.blockId || "").trim() || undefined,
+        blockTitle: String(item.blockTitle || item.block || "").trim() || undefined,
+        exerciseId: String(item.exerciseId || "").trim() || undefined,
+        exerciseName: String(item.exerciseName || item.ejercicio || "").trim() || undefined,
+        exerciseKey: String(item.exerciseKey || "").trim() || undefined,
+        fecha: String(item.fecha || "").slice(0, 10),
+        series: Math.max(1, Math.round(Number(item.series || 1))),
+        repeticiones: Math.max(0, Math.round(Number(item.repeticiones || 0))),
+        pesoKg: Math.max(0, Number(item.pesoKg ?? item.peso ?? 0)),
+        molestia: Boolean(item.molestia),
+        comentario: String(item.comentarios || item.comentario || "").trim() || undefined,
+        createdAt: String(item.createdAt || new Date().toISOString()),
+      };
+    })
+    .filter((item) => item.alumnoNombre && item.sessionId)
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+};
+
+const parseSeriesCount = (seriesValue: string) => {
+  const parsed = Math.round(Number(seriesValue || 0));
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, parsed);
+};
+
+const buildTemplateExerciseKey = (blockId: string, exerciseId: string, exerciseIndex: number) =>
+  `${blockId}::${exerciseId || "sin-ejercicio"}::${exerciseIndex}`;
+
 export default function SemanaPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
-  const { categorias } = useCategories();
   const { sesiones } = useSessions();
   const { ejercicios } = useEjercicios();
 
@@ -512,13 +700,19 @@ export default function SemanaPage() {
       legacyLocalStorageKey: ALUMNO_NOTIFICATIONS_KEY,
     }
   );
+  const [templateWeightLogs, setTemplateWeightLogs] = useSharedState<TemplateWeightLog[]>([], {
+    key: TEMPLATE_WEIGHT_LOGS_KEY,
+    legacyLocalStorageKey: TEMPLATE_WEIGHT_LOGS_KEY,
+  });
+  const [alumnoWorkoutLogsRaw, setAlumnoWorkoutLogsRaw] = useSharedState<unknown[]>([], {
+    key: ALUMNO_WORKOUT_LOGS_KEY,
+    legacyLocalStorageKey: ALUMNO_WORKOUT_LOGS_KEY,
+  });
 
   const migratedRef = useRef(false);
   const alumnoPlanHashesRef = useRef<Record<string, string>>({});
   const alumnoNotificationCooldownRef = useRef<Record<string, number>>({});
   const [tipoFiltro, setTipoFiltro] = useState<PersonaTipo>("jugadoras");
-  const [categoriaFiltro, setCategoriaFiltro] = useState<string>("todas");
-  const [busqueda, setBusqueda] = useState("");
   const [selectedOwnerKey, setSelectedOwnerKey] = useState<string>(GENERAL_OWNER_KEY);
   const [nuevoDiaPorSemana, setNuevoDiaPorSemana] = useState<Record<string, string>>({});
   const [nuevaPlanPorSemana, setNuevaPlanPorSemana] = useState<Record<string, string>>({});
@@ -536,6 +730,31 @@ export default function SemanaPage() {
   const [feedbackConfigOpen, setFeedbackConfigOpen] = useState(false);
   const [blockMenuOpenId, setBlockMenuOpenId] = useState<string | null>(null);
   const [blockGridConfigOpenId, setBlockGridConfigOpenId] = useState<string | null>(null);
+  const [exerciseSelectorOpenId, setExerciseSelectorOpenId] = useState<string | null>(null);
+  const [exerciseSelectorQuery, setExerciseSelectorQuery] = useState<Record<string, string>>({});
+  const [weightViewer, setWeightViewer] = useState<{
+    blockId: string;
+    blockTitulo: string;
+    exerciseId: string;
+    exerciseNombre: string;
+  } | null>(null);
+  const [weightRegister, setWeightRegister] = useState<{
+    blockId: string;
+    blockTitulo: string;
+    exerciseId: string;
+    exerciseNombre: string;
+  } | null>(null);
+  const [weightRegisterScope, setWeightRegisterScope] = useState<"template" | "alumno">(
+    "template"
+  );
+  const [weightForm, setWeightForm] = useState({
+    fecha: new Date().toISOString().slice(0, 10),
+    nroSerie: "1",
+    nroRep: "0",
+    pesoKg: "0",
+    molestia: false,
+    comentario: "",
+  });
   const [blockTitleEdit, setBlockTitleEdit] = useState<{
     blockId: string;
     value: string;
@@ -781,14 +1000,6 @@ export default function SemanaPage() {
     showToast(toastMessage, "warning", 3200);
   }, [loaded, setAlumnoNotifications, showToast, store]);
 
-  const categoriasJugadoras = useMemo(() => {
-    const fromJugadoras = jugadoras
-      .map((jugadora) => jugadora.categoria?.trim() || "")
-      .filter((cat) => Boolean(cat));
-    const fromCategorias = categorias.filter((cat) => cat.habilitada).map((cat) => cat.nombre);
-    return Array.from(new Set([...fromCategorias, ...fromJugadoras]));
-  }, [categorias, jugadoras]);
-
   const todasLasPersonas = useMemo<PersonaItem[]>(() => {
     const listJugadoras: PersonaItem[] = jugadoras.map((jugadora) => ({
       tipo: "jugadoras",
@@ -804,27 +1015,55 @@ export default function SemanaPage() {
     return [...listJugadoras, ...listAlumnos];
   }, [alumnos, jugadoras]);
 
-  const personasFiltradas = useMemo(() => {
-    const texto = busqueda.trim().toLowerCase();
+  const ownerOptions = useMemo<OwnerOption[]>(() => {
+    const byKey = new Map<string, OwnerOption>();
 
-    return todasLasPersonas.filter((persona) => {
-      if (persona.tipo !== tipoFiltro) return false;
+    byKey.set(GENERAL_OWNER_KEY, {
+      ownerKey: GENERAL_OWNER_KEY,
+      label: "Plan general",
+      detail: "Vista global",
+    });
 
-      if (
-        tipoFiltro === "jugadoras" &&
-        categoriaFiltro !== "todas" &&
-        (persona.categoria || "") !== categoriaFiltro
-      ) {
-        return false;
+    for (const persona of todasLasPersonas) {
+      const ownerKey = toOwnerKey(persona);
+      byKey.set(ownerKey, {
+        ownerKey,
+        label: persona.nombre,
+        detail:
+          persona.tipo === "alumnos"
+            ? "Alumno"
+            : persona.categoria
+            ? `Jugadora - ${persona.categoria}`
+            : "Jugadora",
+      });
+    }
+
+    for (const plan of storeV3.planes) {
+      if (byKey.has(plan.ownerKey)) {
+        continue;
       }
 
-      return persona.nombre.toLowerCase().includes(texto);
-    });
-  }, [busqueda, categoriaFiltro, tipoFiltro, todasLasPersonas]);
+      byKey.set(plan.ownerKey, {
+        ownerKey: plan.ownerKey,
+        label: plan.nombre,
+        detail: plan.tipo === "alumnos" ? "Alumno" : "Jugadora",
+      });
+    }
+
+    const generalOption = byKey.get(GENERAL_OWNER_KEY);
+    const rest = Array.from(byKey.values())
+      .filter((option) => option.ownerKey !== GENERAL_OWNER_KEY)
+      .sort((left, right) => left.label.localeCompare(right.label));
+
+    return generalOption ? [generalOption, ...rest] : rest;
+  }, [storeV3.planes, todasLasPersonas]);
 
   const personaSeleccionada = useMemo(() => {
     return todasLasPersonas.find((persona) => toOwnerKey(persona) === selectedOwnerKey) || null;
   }, [selectedOwnerKey, todasLasPersonas]);
+
+  const alumnoDestinoActivo =
+    personaSeleccionada?.tipo === "alumnos" ? personaSeleccionada : null;
 
   useEffect(() => {
     if (!loaded || !isSemanaStoreV3(store)) return;
@@ -832,11 +1071,14 @@ export default function SemanaPage() {
     const hasSelected = store.planes.some((plan) => plan.ownerKey === selectedOwnerKey);
     if (hasSelected) return;
 
-    const fromFilter = personasFiltradas[0];
-    if (fromFilter) {
-      const key = toOwnerKey(fromFilter);
+    const preferredPersona =
+      todasLasPersonas.find((persona) => persona.tipo === tipoFiltro) || todasLasPersonas[0];
+    if (preferredPersona) {
+      const key = toOwnerKey(preferredPersona);
       setSelectedOwnerKey(key);
-      setStore((prev) => (isSemanaStoreV3(prev) ? ensurePlanForPersona(prev, fromFilter) : prev));
+      setStore((prev) =>
+        isSemanaStoreV3(prev) ? ensurePlanForPersona(prev, preferredPersona) : prev
+      );
       return;
     }
 
@@ -844,7 +1086,7 @@ export default function SemanaPage() {
     if (firstPlan) {
       setSelectedOwnerKey(firstPlan.ownerKey);
     }
-  }, [loaded, personasFiltradas, selectedOwnerKey, setStore, store]);
+  }, [loaded, selectedOwnerKey, setStore, store, tipoFiltro, todasLasPersonas]);
 
   const planSeleccionado = useMemo(() => {
     return storeV3.planes.find((plan) => plan.ownerKey === selectedOwnerKey) || null;
@@ -1029,6 +1271,71 @@ export default function SemanaPage() {
     () => templateDraftWeek?.dias.find((day) => day.id === templateDraftDayId) || null,
     [templateDraftDayId, templateDraftWeek]
   );
+
+  const templateScopeWeek = useMemo(
+    () => templateDraft.semanas[0] || templateDraftWeek || null,
+    [templateDraft.semanas, templateDraftWeek]
+  );
+
+  const templateScopeDay = useMemo(
+    () => templateScopeWeek?.dias[0] || templateDraftDay || null,
+    [templateDraftDay, templateScopeWeek]
+  );
+
+  const templateScopeWeekId = templateScopeWeek?.id || "";
+  const templateScopeDayId = templateScopeDay?.id || "";
+
+  const alumnoWorkoutLogs = useMemo(
+    () => normalizeAlumnoWorkoutLogs(alumnoWorkoutLogsRaw),
+    [alumnoWorkoutLogsRaw]
+  );
+
+  const templateWeightLogsSorted = useMemo(
+    () => [...templateWeightLogs].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
+    [templateWeightLogs]
+  );
+
+  const weightViewerRows = useMemo(() => {
+    if (!weightViewer) return [];
+
+    const fromTemplate = templateWeightLogsSorted.filter(
+      (row) => row.templateId === templateDraft.id && row.blockId === weightViewer.blockId && row.exerciseId === weightViewer.exerciseId
+    );
+
+    const fromAlumno = alumnoWorkoutLogs
+      .filter((row) => {
+        const matchesAlumno = alumnoDestinoActivo
+          ? namesLikelyMatch(row.alumnoNombre, alumnoDestinoActivo.nombre)
+          : true;
+
+        return (
+          matchesAlumno &&
+          row.exerciseId === weightViewer.exerciseId &&
+          (!weightViewer.blockId || row.blockId === weightViewer.blockId)
+        );
+      })
+      .map((row) => ({
+        id: row.id,
+        templateId: templateDraft.id,
+        templateNombre: templateDraft.nombre,
+        alumnoNombre: row.alumnoNombre,
+        blockId: row.blockId || "",
+        blockTitulo: row.blockTitle || "",
+        exerciseId: row.exerciseId || "",
+        exerciseNombre: row.exerciseName || weightViewer.exerciseNombre,
+        fecha: row.fecha,
+        nroSerie: row.series,
+        nroRep: row.repeticiones,
+        pesoKg: row.pesoKg,
+        molestia: row.molestia,
+        comentario: row.comentario,
+        createdAt: row.createdAt,
+      }));
+
+    return [...fromTemplate, ...fromAlumno]
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(0, 120);
+  }, [alumnoDestinoActivo, alumnoWorkoutLogs, templateDraft.id, templateDraft.nombre, templateWeightLogsSorted, weightViewer]);
 
   const historialPlanSeleccionado = planSeleccionado?.historial || [];
 
@@ -2044,6 +2351,60 @@ export default function SemanaPage() {
     }));
   };
 
+  const getTemplateSpecValue = (exercise: TemplateExerciseDraft, token: string) => {
+    const lowerToken = token.toLowerCase();
+    const found = (exercise.especificaciones || []).find((spec) =>
+      String(spec.nombre || "").toLowerCase().includes(lowerToken)
+    );
+    return found?.valor || "";
+  };
+
+  const upsertTemplateSpecValue = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    specName: string,
+    value: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            const specs = [...(exercise.especificaciones || [])];
+            const existingIndex = specs.findIndex(
+              (spec) => String(spec.nombre || "").toLowerCase() === specName.toLowerCase()
+            );
+
+            if (existingIndex >= 0) {
+              specs[existingIndex] = {
+                ...specs[existingIndex],
+                valor: value,
+              };
+            } else {
+              specs.push({
+                ...createTemplateSpec(),
+                nombre: specName,
+                valor: value,
+              });
+            }
+
+            return {
+              ...exercise,
+              especificaciones: specs,
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
   const agregarColumnaGrillaBloque = (weekId: string, dayId: string, blockId: string) => {
     actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
       ...training,
@@ -2120,6 +2481,321 @@ export default function SemanaPage() {
     }));
   };
 
+  const getTemplateExerciseLabel = (exerciseId: string) => {
+    if (!exerciseId) return "Seleccione ejercicio";
+    return getExerciseName(exerciseId);
+  };
+
+  const getTemplateExerciseQuery = (exercise: TemplateExerciseDraft) => {
+    return exerciseSelectorQuery[exercise.id] ?? getTemplateExerciseLabel(exercise.ejercicioId);
+  };
+
+  const updateTemplateExerciseQuery = (exerciseRowId: string, value: string) => {
+    setExerciseSelectorQuery((prev) => ({
+      ...prev,
+      [exerciseRowId]: value,
+    }));
+  };
+
+  const getTemplateExerciseCandidates = (exerciseRowId: string) => {
+    const query = (exerciseSelectorQuery[exerciseRowId] || "").trim().toLowerCase();
+    const base = ejercicios.slice();
+
+    const sorted = base.sort((left, right) => {
+      const leftHasVideo = Boolean((left.videoUrl || "").trim());
+      const rightHasVideo = Boolean((right.videoUrl || "").trim());
+      if (leftHasVideo !== rightHasVideo) {
+        return leftHasVideo ? -1 : 1;
+      }
+      return left.nombre.localeCompare(right.nombre, "es");
+    });
+
+    if (!query) {
+      return sorted.slice(0, 8);
+    }
+
+    return sorted
+      .filter((item) => {
+        const text = `${item.nombre} ${item.categoria || ""} ${item.descripcion || ""}`.toLowerCase();
+        return text.includes(query);
+      })
+      .slice(0, 8);
+  };
+
+  const seleccionarEjercicioTemplateDesdePicker = (
+    blockId: string,
+    exerciseId: string,
+    selectedExerciseId: string
+  ) => {
+    if (!templateScopeWeekId || !templateScopeDayId) {
+      notifyWarning("No hay una estructura activa para editar");
+      return;
+    }
+
+    actualizarEjercicioTemplate(
+      templateScopeWeekId,
+      templateScopeDayId,
+      blockId,
+      exerciseId,
+      "ejercicioId",
+      selectedExerciseId
+    );
+
+    const selected = ejercicios.find((item) => item.id === selectedExerciseId);
+    setExerciseSelectorQuery((prev) => ({
+      ...prev,
+      [exerciseId]: selected ? selected.nombre : "",
+    }));
+    setExerciseSelectorOpenId(null);
+  };
+
+  const toggleDesgloseSeriesTemplate = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            if ((exercise.serieDesglose || []).length > 0) {
+              return {
+                ...exercise,
+                serieDesglose: [],
+              };
+            }
+
+            const totalSeries = parseSeriesCount(exercise.series);
+            const nextBreakdown = Array.from({ length: totalSeries }, (_, index) =>
+              createTemplateSetDraft(index + 1)
+            );
+
+            return {
+              ...exercise,
+              serieDesglose: nextBreakdown,
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const actualizarSerieDesgloseTemplate = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    setId: string,
+    key: "repeticiones" | "cargaKg" | "rir" | "descanso" | "observaciones",
+    value: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+            return {
+              ...exercise,
+              serieDesglose: (exercise.serieDesglose || []).map((setRow) =>
+                setRow.id === setId ? { ...setRow, [key]: value } : setRow
+              ),
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const agregarSuperSerieTemplate = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+            return {
+              ...exercise,
+              superSerie: [...(exercise.superSerie || []), createTemplateSuperSerieDraft()],
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const actualizarSuperSerieTemplate = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    superId: string,
+    key: "ejercicioId" | "series" | "repeticiones" | "descanso" | "carga",
+    value: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+            return {
+              ...exercise,
+              superSerie: (exercise.superSerie || []).map((row) =>
+                row.id === superId ? { ...row, [key]: value } : row
+              ),
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const eliminarSuperSerieTemplate = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    superId: string
+  ) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => ({
+      ...training,
+      bloques: training.bloques.map((block) => {
+        if (block.id !== blockId) return block;
+        return {
+          ...block,
+          ejercicios: block.ejercicios.map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+            return {
+              ...exercise,
+              superSerie: (exercise.superSerie || []).filter((row) => row.id !== superId),
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const abrirVerPesos = (
+    blockId: string,
+    blockTitulo: string,
+    exerciseId: string,
+    exerciseNombre: string
+  ) => {
+    setWeightViewer({ blockId, blockTitulo, exerciseId, exerciseNombre });
+  };
+
+  const abrirRegistrarPeso = (
+    blockId: string,
+    blockTitulo: string,
+    exerciseId: string,
+    exerciseNombre: string
+  ) => {
+    setWeightRegister({ blockId, blockTitulo, exerciseId, exerciseNombre });
+    setWeightRegisterScope("template");
+    setWeightForm({
+      fecha: new Date().toISOString().slice(0, 10),
+      nroSerie: "1",
+      nroRep: "0",
+      pesoKg: "0",
+      molestia: false,
+      comentario: "",
+    });
+  };
+
+  const eliminarTemplatePeso = (logId: string) => {
+    setTemplateWeightLogs((prev) => prev.filter((row) => row.id !== logId));
+  };
+
+  const guardarRegistroPeso = () => {
+    if (!weightRegister) {
+      return;
+    }
+
+    const parsedSerie = Math.max(1, Math.round(Number(weightForm.nroSerie || 0)));
+    const parsedRep = Math.max(0, Math.round(Number(weightForm.nroRep || 0)));
+    const parsedPeso = Math.max(0, Number(weightForm.pesoKg || 0));
+
+    if (!Number.isFinite(parsedSerie) || !Number.isFinite(parsedRep) || !Number.isFinite(parsedPeso)) {
+      notifyWarning("Completa serie, repeticiones y peso con valores validos");
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    const payload: TemplateWeightLog = {
+      id: createId(),
+      templateId: templateDraft.id,
+      templateNombre: templateDraft.nombre,
+      alumnoNombre: alumnoDestinoActivo?.nombre,
+      blockId: weightRegister.blockId,
+      blockTitulo: weightRegister.blockTitulo,
+      exerciseId: weightRegister.exerciseId,
+      exerciseNombre: weightRegister.exerciseNombre,
+      fecha: weightForm.fecha || new Date().toISOString().slice(0, 10),
+      nroSerie: parsedSerie,
+      nroRep: parsedRep,
+      pesoKg: parsedPeso,
+      molestia: weightForm.molestia,
+      comentario: weightForm.comentario.trim() || undefined,
+      createdAt: now,
+    };
+
+    setTemplateWeightLogs((prev) => [payload, ...prev]);
+
+    if (weightRegisterScope === "alumno") {
+      if (!alumnoDestinoActivo) {
+        notifyWarning("Selecciona un alumno destino para sincronizar al perfil");
+      } else {
+        const syncPayload: AlumnoWorkoutLogLite = {
+          id: createId(),
+          alumnoNombre: alumnoDestinoActivo.nombre,
+          sessionId: `template:${templateDraft.id}`,
+          sessionTitle: templateDraft.nombre || "Template",
+          weekId: templateScopeWeekId || undefined,
+          weekName: templateScopeWeek?.nombre || undefined,
+          dayId: templateScopeDayId || undefined,
+          dayName: templateScopeDay?.dia || undefined,
+          blockId: weightRegister.blockId,
+          blockTitle: weightRegister.blockTitulo,
+          exerciseId: weightRegister.exerciseId,
+          exerciseName: weightRegister.exerciseNombre,
+          exerciseKey: buildTemplateExerciseKey(weightRegister.blockId, weightRegister.exerciseId, 0),
+          fecha: weightForm.fecha || new Date().toISOString().slice(0, 10),
+          series: parsedSerie,
+          repeticiones: parsedRep,
+          pesoKg: parsedPeso,
+          molestia: weightForm.molestia,
+          comentario: weightForm.comentario.trim() || undefined,
+          createdAt: now,
+        };
+
+        setAlumnoWorkoutLogsRaw((prev) => [syncPayload, ...normalizeAlumnoWorkoutLogs(prev)]);
+      }
+    }
+
+    setWeightRegister(null);
+    notifySuccess("Peso registrado correctamente");
+  };
+
   const agregarFeedbackQuestion = () => {
     const question = templateFeedbackInput.trim();
     if (!question) return;
@@ -2161,6 +2837,9 @@ export default function SemanaPage() {
         ? personaSeleccionada?.categoria || templateDraft.categoria
         : undefined;
 
+    const baseWeek = templateScopeWeek || createTemplateWeek(0);
+    const baseDay = templateScopeDay || createTemplateDay(0);
+
     const payload: PlanTemplate = {
       ...templateDraft,
       nombre,
@@ -2173,14 +2852,22 @@ export default function SemanaPage() {
         .filter(Boolean),
       createdAt: templateDraft.createdAt || now,
       updatedAt: now,
-      semanas: cloneSemanas(templateDraft.semanas).map((week) => ({
-        ...week,
-        dias: week.dias.map((day) => ({
-          ...day,
-          planificacion: (day.planificacion || "").trim() || day.entrenamiento?.titulo || "",
-          objetivo: (day.objetivo || "").trim() || day.entrenamiento?.descripcion || "",
-        })),
-      })),
+      semanas: cloneSemanas([
+        {
+          ...baseWeek,
+          nombre: baseWeek.nombre || "Plantilla",
+          dias: [
+            {
+              ...baseDay,
+              dia: baseDay.dia || "Entrenamiento",
+              planificacion:
+                (baseDay.planificacion || "").trim() || baseDay.entrenamiento?.titulo || "",
+              objetivo:
+                (baseDay.objetivo || "").trim() || baseDay.entrenamiento?.descripcion || "",
+            },
+          ],
+        },
+      ]),
     };
 
     markManualSaveIntent(STORAGE_KEY);
@@ -2242,6 +2929,85 @@ export default function SemanaPage() {
     notifySuccess("Template eliminado correctamente");
   };
 
+  const asignarTemplateAAlumno = (templateId: string) => {
+    const template = storeV3.templates.find((item) => item.id === templateId);
+    if (!template) {
+      notifyError("No se encontro el template seleccionado");
+      return;
+    }
+
+    if (!personaSeleccionada || personaSeleccionada.tipo !== "alumnos") {
+      notifyWarning("Selecciona un alumno en Persona activa para asignar el template");
+      return;
+    }
+
+    const ownerKey = toOwnerKey(personaSeleccionada);
+    const existingPlan = storeV3.planes.find((plan) => plan.ownerKey === ownerKey);
+
+    if (
+      existingPlan &&
+      !window.confirm(
+        `Esto reemplazara el plan semanal actual de ${personaSeleccionada.nombre}. Continuar?`
+      )
+    ) {
+      notifyWarning("Operacion cancelada");
+      return;
+    }
+
+    const semanasTemplate = cloneSemanas(template.semanas);
+    markManualSaveIntent(STORAGE_KEY);
+
+    setStore((prev) => {
+      if (!isSemanaStoreV3(prev)) return prev;
+
+      const planIndex = prev.planes.findIndex((plan) => plan.ownerKey === ownerKey);
+
+      if (planIndex === -1) {
+        return {
+          ...prev,
+          planes: [
+            ...prev.planes,
+            {
+              ownerKey,
+              tipo: "alumnos",
+              nombre: personaSeleccionada.nombre,
+              semanas: semanasTemplate,
+              historial: [],
+            },
+          ],
+        };
+      }
+
+      return {
+        ...prev,
+        planes: prev.planes.map((plan, index) => {
+          if (index !== planIndex) {
+            return plan;
+          }
+
+          const snapshot: PlanHistoryItem = {
+            id: createId(),
+            createdAt: new Date().toISOString(),
+            etiqueta: `Respaldo antes de asignar template ${template.nombre}`,
+            semanas: cloneSemanas(plan.semanas),
+          };
+
+          return {
+            ...plan,
+            tipo: "alumnos",
+            nombre: personaSeleccionada.nombre,
+            semanas: semanasTemplate,
+            historial: [snapshot, ...(plan.historial || [])].slice(0, 30),
+          };
+        }),
+      };
+    });
+
+    setTipoFiltro("alumnos");
+    setSelectedOwnerKey(ownerKey);
+    notifySuccess(`Template asignado a ${personaSeleccionada.nombre}`);
+  };
+
   const guardarEnHistorial = () => {
     if (!planSeleccionado) return;
 
@@ -2290,11 +3056,6 @@ export default function SemanaPage() {
     notifySuccess("Version restaurada correctamente");
   };
 
-  const tituloFiltro =
-    tipoFiltro === "jugadoras"
-      ? `${personasFiltradas.length} jugadoras encontradas`
-      : `${personasFiltradas.length} alumnos encontrados`;
-
   const toastStyle =
     toast?.kind === "warning"
       ? "border-amber-300/40 bg-amber-500/15"
@@ -2309,71 +3070,69 @@ export default function SemanaPage() {
       ? "[x]"
       : "[OK]";
 
-  const workspaceTab: WorkspaceTab =
-    (searchParams.get("panel") || searchParams.get("seccion") || "")
-      .trim()
-      .toLowerCase() === "entrenamiento"
-      ? "entrenamiento"
-      : "templates";
+  const canEditTemplateTraining = Boolean(templateScopeWeekId && templateScopeDayId);
+  const activeTemplateTraining = templateScopeDay?.entrenamiento;
+  const activeTemplateBlocks = activeTemplateTraining?.bloques || [];
 
-  const setWorkspaceTab = (nextTab: WorkspaceTab) => {
-    const nextParams = new URLSearchParams(searchParams.toString());
-
-    if (nextTab === "entrenamiento") {
-      nextParams.set("panel", "entrenamiento");
-    } else {
-      nextParams.delete("panel");
-      nextParams.delete("seccion");
-    }
-
-    const query = nextParams.toString();
-    router.replace(query ? `/semana?${query}` : "/semana");
-  };
-
-  const workspaceTabSwitcher = (
-    <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-        Categoria Templates
-      </p>
-      <div className="mt-3 inline-flex rounded-2xl bg-slate-950/70 p-1 ring-1 ring-white/10">
-        <ReliableActionButton
-          type="button"
-          onClick={() => setWorkspaceTab("templates")}
-          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-            workspaceTab === "templates"
-              ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(34,211,238,0.8)]"
-              : "text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-100"
-          }`}
-        >
-          Templates
-        </ReliableActionButton>
-        <ReliableActionButton
-          type="button"
-          onClick={() => setWorkspaceTab("entrenamiento")}
-          className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-            workspaceTab === "entrenamiento"
-              ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(34,211,238,0.8)]"
-              : "text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-100"
-          }`}
-        >
-          Entrenamiento
-        </ReliableActionButton>
-      </div>
-    </section>
+  const templateWeightLogIds = useMemo(
+    () => new Set(templateWeightLogsSorted.map((row) => row.id)),
+    [templateWeightLogsSorted]
   );
 
-  if (workspaceTab === "entrenamiento") {
-    return (
-      <>
-        <div className="mx-auto max-w-7xl p-6 pb-0 text-slate-100">{workspaceTabSwitcher}</div>
-        <SesionesPage />
-      </>
+  const weightRegisterRows = useMemo(() => {
+    if (!weightRegister) return [];
+
+    const fromTemplate = templateWeightLogsSorted.filter(
+      (row) =>
+        row.templateId === templateDraft.id &&
+        row.blockId === weightRegister.blockId &&
+        row.exerciseId === weightRegister.exerciseId
     );
-  }
+
+    const fromAlumno = alumnoWorkoutLogs
+      .filter((row) => {
+        const matchesAlumno = alumnoDestinoActivo
+          ? namesLikelyMatch(row.alumnoNombre, alumnoDestinoActivo.nombre)
+          : true;
+
+        return (
+          matchesAlumno &&
+          row.exerciseId === weightRegister.exerciseId &&
+          (!weightRegister.blockId || row.blockId === weightRegister.blockId)
+        );
+      })
+      .map((row) => ({
+        id: row.id,
+        templateId: templateDraft.id,
+        templateNombre: templateDraft.nombre,
+        alumnoNombre: row.alumnoNombre,
+        blockId: row.blockId || "",
+        blockTitulo: row.blockTitle || "",
+        exerciseId: row.exerciseId || "",
+        exerciseNombre: row.exerciseName || weightRegister.exerciseNombre,
+        fecha: row.fecha,
+        nroSerie: row.series,
+        nroRep: row.repeticiones,
+        pesoKg: row.pesoKg,
+        molestia: row.molestia,
+        comentario: row.comentario,
+        createdAt: row.createdAt,
+      }));
+
+    return [...fromTemplate, ...fromAlumno]
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(0, 80);
+  }, [
+    alumnoDestinoActivo,
+    alumnoWorkoutLogs,
+    templateDraft.id,
+    templateDraft.nombre,
+    templateWeightLogsSorted,
+    weightRegister,
+  ]);
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
-      {workspaceTabSwitcher}
+    <main className="mx-auto w-full max-w-[1820px] px-4 py-6 text-slate-100 sm:px-6">
       {toast && (
         <div className="pointer-events-none fixed right-4 top-4 z-50 w-full max-w-xs">
           <div
@@ -2393,170 +3152,155 @@ export default function SemanaPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Semana</h1>
+          <h1 className="text-3xl font-bold">Templates de entrenamiento</h1>
           <p className="text-sm text-slate-300">
-            Selecciona una persona y gestiona su plan semanal por semanas y dias.
+            Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
           <div className="flex flex-wrap gap-2">
             <ReliableActionButton
-              onClick={agregarSemana}
-              disabled={!planSeleccionado}
+              type="button"
+              onClick={iniciarNuevoTemplate}
               className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              + Semana
+              Nuevo template
             </ReliableActionButton>
             <ReliableActionButton
-              onClick={resetearPlanSeleccionado}
-              disabled={!planSeleccionado}
-              className="rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              onClick={() => setTemplatesTab("mis")}
+              className="rounded-xl border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100"
             >
-              Resetear plan seleccionado
+              Mis templates
             </ReliableActionButton>
           </div>
 
           <ReliableActionButton
             type="button"
-            onClick={() => setHistorialScreenOpen((prev) => !prev)}
-            className="w-full rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-100 sm:w-auto"
+            onClick={guardarTemplateActual}
+            className="w-full rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 sm:w-auto"
           >
-            {historialScreenOpen ? "Ocultar funciones" : "Ver mas funciones"}
+            Guardar template
           </ReliableActionButton>
         </div>
       </div>
 
-      {alumnoNotifications.length > 0 ? (
-        <section className="mb-6 rounded-2xl border border-amber-300/20 bg-amber-500/5 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-amber-100">Alertas de alumnos</h2>
-              <p className="text-xs text-slate-300">
-                Registro automatico de cambios recientes en semanas de alumnos.
-              </p>
-            </div>
-            <ReliableActionButton
-              type="button"
-              onClick={() => setAlumnoNotifications([])}
-              className="rounded-xl border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-200"
-            >
-              Limpiar alertas
-            </ReliableActionButton>
-          </div>
-
-          <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {alumnoNotifications.slice(0, 6).map((notification) => (
-              <ReliableActionButton
-                key={notification.id}
-                type="button"
-                onClick={() => {
-                  setTipoFiltro("alumnos");
-                  setSelectedOwnerKey(notification.ownerKey);
-                }}
-                className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-left transition hover:border-amber-300/35 hover:bg-slate-900"
-              >
-                <p className="text-sm font-semibold text-white">{notification.alumnoNombre}</p>
-                <p className="mt-1 text-xs text-slate-300">{notification.summary}</p>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-amber-200">
-                  <span className="rounded-full border border-amber-300/20 px-2 py-1">
-                    {notification.totalSemanas} semanas
-                  </span>
-                  <span className="rounded-full border border-amber-300/20 px-2 py-1">
-                    {notification.totalDias} dias
-                  </span>
-                </div>
-                <p className="mt-3 text-[11px] text-slate-400">
-                  {new Date(notification.createdAt).toLocaleString("es-AR")}
-                </p>
-              </ReliableActionButton>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-        <h2 className="text-lg font-semibold">Browser de personas</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-4">
+      <section className="mb-6 rounded-[30px] border border-cyan-300/20 bg-gradient-to-b from-slate-900/88 via-slate-900/64 to-slate-950/80 px-5 py-6 shadow-[0_26px_72px_-42px_rgba(34,211,238,0.52)] sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Tipo</label>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200/90">
+              Panel integral
+            </p>
+            <p className="mt-1 text-sm text-slate-200">
+              Un solo apartado con sectorizacion clara: templates, entrenamiento y plan semanal activo.
+            </p>
+          </div>
+          <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+            {alumnoDestinoActivo
+              ? `Alumno destino: ${alumnoDestinoActivo.nombre}`
+              : "Alumno destino: no seleccionado"}
+          </span>
+        </div>
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <div className="border-b border-white/10 pb-4 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-5">
+            <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
+              Persona activa
+            </label>
             <select
-              value={tipoFiltro}
-              onChange={(e) => setTipoFiltro(e.target.value as PersonaTipo)}
+              value={selectedOwnerKey}
+              onChange={(event) => {
+                const nextOwnerKey = event.target.value;
+
+                if (nextOwnerKey === GENERAL_OWNER_KEY) {
+                  setSelectedOwnerKey(GENERAL_OWNER_KEY);
+                  return;
+                }
+
+                const persona = todasLasPersonas.find(
+                  (item) => toOwnerKey(item) === nextOwnerKey
+                );
+
+                if (persona) {
+                  setTipoFiltro(persona.tipo);
+                  seleccionarPersona(persona);
+                  return;
+                }
+
+                setSelectedOwnerKey(nextOwnerKey);
+              }}
               className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
             >
-              <option value="jugadoras">Jugadoras</option>
-              <option value="alumnos">Alumnos</option>
+              {ownerOptions.map((option) => (
+                <option key={option.ownerKey} value={option.ownerKey}>
+                  {option.label} - {option.detail}
+                </option>
+              ))}
             </select>
-          </div>
-
-          {tipoFiltro === "jugadoras" && (
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-                Categoria
-              </label>
-              <select
-                value={categoriaFiltro}
-                onChange={(e) => setCategoriaFiltro(e.target.value)}
-                className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-              >
-                <option value="todas">Todas</option>
-                {categoriasJugadoras.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
+            <div className="mt-3 border-l-2 border-cyan-300/40 bg-cyan-500/[0.07] px-3 py-2 text-xs text-cyan-100">
+              <p className="font-semibold uppercase tracking-wide">Plan activo</p>
+              <p className="mt-1 text-sm text-white">
+                {planSeleccionado?.nombre || "Sin plan seleccionado"}
+              </p>
+              {personaSeleccionada?.categoria ? (
+                <p className="mt-1 text-[11px] text-cyan-200">Categoria: {personaSeleccionada.categoria}</p>
+              ) : null}
             </div>
-          )}
+          </div>
 
-          <div className={tipoFiltro === "jugadoras" ? "md:col-span-2" : "md:col-span-3"}>
-            <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-              Buscar persona
-            </label>
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Escribe nombre..."
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-            />
+          <div className="xl:pl-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold text-amber-100">Alertas de alumnos</h2>
+                <p className="text-[11px] text-slate-300">Cambios recientes para acceso rapido.</p>
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setAlumnoNotifications([])}
+                disabled={alumnoNotifications.length === 0}
+                className="rounded-lg border border-white/15 px-2.5 py-1 text-[11px] font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Limpiar
+              </ReliableActionButton>
+            </div>
+
+            {alumnoNotifications.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {alumnoNotifications.slice(0, 4).map((notification) => (
+                  <ReliableActionButton
+                    key={notification.id}
+                    type="button"
+                    onClick={() => {
+                      setTipoFiltro("alumnos");
+                      setSelectedOwnerKey(notification.ownerKey);
+                    }}
+                    className="w-full border-l-2 border-amber-300/35 bg-slate-900/55 px-3 py-2 text-left transition hover:border-amber-200"
+                  >
+                    <p className="text-xs font-semibold text-white">{notification.alumnoNombre}</p>
+                    <p className="mt-1 text-[11px] text-slate-300">{notification.summary}</p>
+                  </ReliableActionButton>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-slate-400">Sin alertas activas por ahora.</p>
+            )}
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-slate-300">{tituloFiltro}</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {personasFiltradas.slice(0, 20).map((persona) => {
-            const ownerKey = toOwnerKey(persona);
-            const isSelected = ownerKey === selectedOwnerKey;
-
-            return (
-              <ReliableActionButton
-                key={ownerKey}
-                type="button"
-                onClick={() => seleccionarPersona(persona)}
-                className={`rounded-full border px-3 py-1 text-xs transition ${
-                  isSelected
-                    ? "border-cyan-300 bg-cyan-400/25 text-cyan-100"
-                    : "border-cyan-400/30 bg-cyan-400/10"
-                }`}
-              >
-                {persona.nombre}
-                {persona.categoria ? ` - ${persona.categoria}` : ""}
-              </ReliableActionButton>
-            );
-          })}
-          {personasFiltradas.length === 0 && (
-            <p className="text-xs text-slate-400">No hay resultados para ese filtro.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="mb-6 rounded-[30px] border border-cyan-300/20 bg-gradient-to-b from-slate-900/85 via-slate-900/65 to-slate-950/75 p-5 shadow-[0_20px_55px_-28px_rgba(34,211,238,0.5)]">
+      <section className="mt-6 border-t border-cyan-300/20 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-white">Templates</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-white">
+                Templates + entrenamiento
+              </h2>
               <p className="text-xs text-slate-300">
-                Crea planes base limpios y reutilizables para asignar en segundos.
+                Crea planes base con su entrenamiento integrado y reutilizable.
+              </p>
+              <p className="mt-2 text-[11px] text-cyan-100/90">
+                {alumnoDestinoActivo
+                  ? `Alumno destino activo: ${alumnoDestinoActivo.nombre}`
+                  : "Selecciona un alumno en Persona activa para habilitar Asignar desde la biblioteca."}
               </p>
             </div>
 
@@ -2597,7 +3341,7 @@ export default function SemanaPage() {
         </div>
 
         {templatesTab === "mis" ? (
-          <div className="mt-5 rounded-2xl bg-slate-950/40 p-5 ring-1 ring-white/10">
+          <div className="mt-5 border-t border-white/10 pt-5">
             <h3 className="text-base font-semibold text-white">Biblioteca de templates</h3>
             <p className="mt-1 text-xs text-slate-300">
               Gestiona y edita tus templates guardados.
@@ -2614,11 +3358,20 @@ export default function SemanaPage() {
                     (acc, week) => acc + week.dias.length,
                     0
                   );
+                  const totalBloques = template.semanas.reduce(
+                    (acc, week) =>
+                      acc +
+                      week.dias.reduce(
+                        (dayAcc, day) => dayAcc + (day.entrenamiento?.bloques?.length || 0),
+                        0
+                      ),
+                    0
+                  );
 
                   return (
                     <article
                       key={template.id}
-                      className="rounded-2xl bg-slate-900/55 p-4 ring-1 ring-white/10 transition hover:ring-cyan-300/30"
+                      className="border-b border-white/10 pb-4 transition last:border-b-0"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -2641,12 +3394,20 @@ export default function SemanaPage() {
                           ) : null}
 
                           <p className="mt-2 text-[11px] text-slate-400">
-                            {template.semanas.length} semanas · {totalDias} dias ·
+                            {totalBloques} bloques · {totalDias} dias activos ·
                             actualizado {new Date(template.updatedAt || template.createdAt || 0).toLocaleString("es-AR")}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => asignarTemplateAAlumno(template.id)}
+                            disabled={!alumnoDestinoActivo}
+                            className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Asignar a alumno
+                          </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={() => editarTemplate(template.id)}
@@ -2671,7 +3432,7 @@ export default function SemanaPage() {
           </div>
         ) : (
           <div className="mt-5 space-y-5">
-            <div className="rounded-3xl bg-slate-950/45 p-5 ring-1 ring-cyan-300/20 shadow-[0_14px_35px_-25px_rgba(34,211,238,0.7)]">
+            <div className="border-l-2 border-cyan-300/35 bg-slate-950/30 p-5">
               <h2 className="text-2xl font-semibold text-white">{templateDraft.nombre || "NUEVO PLAN BLANCO"}</h2>
 
               <div className="mt-3 space-y-3">
@@ -2733,8 +3494,8 @@ export default function SemanaPage() {
               </label>
             </div>
 
-            <div className="rounded-3xl bg-slate-950/20 p-5 ring-1 ring-white/10">
-              <div className="pb-5">
+            <div className="border border-white/10 bg-slate-950/15 p-5">
+              <div className="hidden pb-5">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-200/85">Semanas</p>
                 <p className="mt-1 text-xs text-slate-400">Estructura general del template.</p>
 
@@ -2799,7 +3560,7 @@ export default function SemanaPage() {
               </div>
 
               {templateDraftWeek ? (
-                <div className="mt-5 border-t border-white/10 pt-5">
+                <div className="mt-5 hidden border-t border-white/10 pt-5">
                   <p className="text-[11px] uppercase tracking-[0.16em] text-emerald-200/85">Dias</p>
                   <p className="mt-1 text-xs text-slate-400">Selecciona un dia y define su enfoque.</p>
 
@@ -3221,143 +3982,541 @@ export default function SemanaPage() {
                               />
                             </div>
 
-                            <div className="mt-2 space-y-2">
-                              {block.ejercicios.map((exercise) => (
-                                <div
-                                  key={exercise.id}
-                                  className="rounded-xl border border-white/10 bg-slate-900/20 p-3"
-                                >
-                                  <div className="grid gap-2 md:grid-cols-5">
-                                    <label className="space-y-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300 md:col-span-2">
-                                      Ejercicio
-                                      <select
-                                        value={exercise.ejercicioId}
-                                        onChange={(e) =>
-                                          actualizarEjercicioTemplate(
-                                            templateDraftWeek.id,
-                                            templateDraftDay.id,
-                                            block.id,
-                                            exercise.id,
-                                            "ejercicioId",
-                                            e.target.value
-                                          )
-                                        }
-                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                      >
-                                        <option value="">Seleccione ejercicio</option>
-                                        {ejercicios.map((item) => (
-                                          <option key={item.id} value={item.id}>
-                                            {item.nombre}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </label>
+                            <div className="mt-2 space-y-3">
+                              {block.ejercicios.map((exercise, exerciseIndex) => {
+                                const selectedExercise = ejercicios.find((item) => item.id === exercise.ejercicioId);
+                                const selectorQuery = getTemplateExerciseQuery(exercise);
+                                const selectorItems = getTemplateExerciseCandidates(exercise.id);
+                                const thumb = getExerciseThumbnail(selectedExercise?.videoUrl);
+                                const rirValue = getTemplateSpecValue(exercise, "rir");
+                                const observacionesValue = getTemplateSpecValue(exercise, "observ");
+                                const hasSeriesBreakdown = (exercise.serieDesglose || []).length > 0;
 
-                                    <label className="space-y-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                      Series
-                                      <input
-                                        value={exercise.series}
-                                        onChange={(e) =>
-                                          actualizarEjercicioTemplate(
-                                            templateDraftWeek.id,
-                                            templateDraftDay.id,
-                                            block.id,
-                                            exercise.id,
-                                            "series",
-                                            e.target.value
-                                          )
-                                        }
-                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                        placeholder="0"
-                                      />
-                                    </label>
-
-                                    <label className="space-y-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                      Repeticiones
-                                      <input
-                                        value={exercise.repeticiones}
-                                        onChange={(e) =>
-                                          actualizarEjercicioTemplate(
-                                            templateDraftWeek.id,
-                                            templateDraftDay.id,
-                                            block.id,
-                                            exercise.id,
-                                            "repeticiones",
-                                            e.target.value
-                                          )
-                                        }
-                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                        placeholder="0"
-                                      />
-                                    </label>
-
-                                    <label className="space-y-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                                      Descanso
-                                      <input
-                                        value={exercise.descanso}
-                                        onChange={(e) =>
-                                          actualizarEjercicioTemplate(
-                                            templateDraftWeek.id,
-                                            templateDraftDay.id,
-                                            block.id,
-                                            exercise.id,
-                                            "descanso",
-                                            e.target.value
-                                          )
-                                        }
-                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                        placeholder="0"
-                                      />
-                                    </label>
-                                  </div>
-
-                                  {exercise.especificaciones.length > 0 ? (
-                                    <div className="mt-2 grid gap-2 md:grid-cols-3">
-                                      {exercise.especificaciones.map((spec, specIndex) => (
-                                        <label
-                                          key={spec.id}
-                                          className="space-y-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300"
-                                        >
-                                          {spec.nombre || `Campo ${specIndex + 1}`}
-                                          <input
-                                            value={spec.valor}
-                                            onChange={(e) =>
-                                              actualizarEspecificacionEjercicio(
-                                                templateDraftWeek.id,
-                                                templateDraftDay.id,
-                                                block.id,
-                                                exercise.id,
-                                                spec.id,
-                                                "valor",
-                                                e.target.value
-                                              )
-                                            }
-                                            className="w-full rounded border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
-                                            placeholder="0"
+                                return (
+                                  <div
+                                    key={exercise.id}
+                                    className="relative rounded-xl border border-white/10 bg-slate-900/35 p-3"
+                                  >
+                                    <div className="grid gap-2 xl:grid-cols-[72px_minmax(0,1.5fr)_repeat(6,minmax(0,0.8fr))]">
+                                      <div className="h-14 w-[72px] overflow-hidden rounded-md border border-white/15 bg-slate-950/55">
+                                        {thumb ? (
+                                          // eslint-disable-next-line @next/next/no-img-element
+                                          <img
+                                            src={thumb}
+                                            alt={selectedExercise?.nombre || "Ejercicio"}
+                                            className="h-full w-full object-cover"
                                           />
-                                        </label>
-                                      ))}
-                                    </div>
-                                  ) : null}
+                                        ) : (
+                                          <div className="flex h-full items-center justify-center text-[10px] text-slate-400">
+                                            Sin preview
+                                          </div>
+                                        )}
+                                      </div>
 
-                                  <div className="mt-2 flex flex-wrap gap-2">
-                                    <ReliableActionButton
-                                      type="button"
-                                      onClick={() =>
-                                        eliminarEjercicioTemplate(
-                                          templateDraftWeek.id,
-                                          templateDraftDay.id,
-                                          block.id,
-                                          exercise.id
-                                        )
-                                      }
-                                      className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
-                                    >
-                                      Eliminar ejercicio
-                                    </ReliableActionButton>
+                                      <div className="relative">
+                                        <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                          Ejercicio
+                                        </label>
+                                        <input
+                                          value={selectorQuery}
+                                          onFocus={() => setExerciseSelectorOpenId(exercise.id)}
+                                          onChange={(event) => {
+                                            updateTemplateExerciseQuery(exercise.id, event.target.value);
+                                            setExerciseSelectorOpenId(exercise.id);
+                                          }}
+                                          onKeyDown={(event) => {
+                                            if (event.key === "Escape") {
+                                              setExerciseSelectorOpenId(null);
+                                            }
+
+                                            if (event.key === "Enter") {
+                                              event.preventDefault();
+                                              const first = selectorItems[0];
+                                              if (first) {
+                                                seleccionarEjercicioTemplateDesdePicker(
+                                                  block.id,
+                                                  exercise.id,
+                                                  first.id
+                                                );
+                                              }
+                                            }
+                                          }}
+                                          placeholder="Seleccione ejercicio"
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                                        />
+
+                                        {exerciseSelectorOpenId === exercise.id ? (
+                                          <div className="absolute left-0 top-[68px] z-20 max-h-72 w-full overflow-y-auto rounded-lg border border-white/15 bg-slate-900/95 p-1 shadow-2xl">
+                                            {selectorItems.length === 0 ? (
+                                              <p className="px-2 py-2 text-xs text-slate-400">Sin resultados.</p>
+                                            ) : (
+                                              selectorItems.map((item, itemIndex) => {
+                                                const optionThumb = getExerciseThumbnail(item.videoUrl);
+                                                return (
+                                                  <ReliableActionButton
+                                                    key={`${exercise.id}-${item.id}`}
+                                                    type="button"
+                                                    onClick={() =>
+                                                      seleccionarEjercicioTemplateDesdePicker(
+                                                        block.id,
+                                                        exercise.id,
+                                                        item.id
+                                                      )
+                                                    }
+                                                    className={`grid w-full grid-cols-[42px_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-1.5 text-left transition ${
+                                                      itemIndex === 0
+                                                        ? "bg-cyan-500/20 text-cyan-100"
+                                                        : "text-slate-200 hover:bg-white/10"
+                                                    }`}
+                                                  >
+                                                    <div className="h-9 w-[42px] overflow-hidden rounded border border-white/10 bg-slate-800">
+                                                      {optionThumb ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img
+                                                          src={optionThumb}
+                                                          alt={item.nombre}
+                                                          className="h-full w-full object-cover"
+                                                        />
+                                                      ) : (
+                                                        <div className="flex h-full items-center justify-center text-[9px] text-slate-400">
+                                                          Sin
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                    <div>
+                                                      <p className="line-clamp-1 text-xs font-semibold">{item.nombre}</p>
+                                                      <p className="text-[10px] text-slate-400">
+                                                        {itemIndex === 0
+                                                          ? "Presione enter para asignar"
+                                                          : item.categoria || "Ejercicio"}
+                                                      </p>
+                                                    </div>
+                                                  </ReliableActionButton>
+                                                );
+                                              })
+                                            )}
+                                          </div>
+                                        ) : null}
+                                      </div>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                        Series
+                                        <input
+                                          value={exercise.series}
+                                          onChange={(event) =>
+                                            actualizarEjercicioTemplate(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "series",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                        Rep
+                                        <input
+                                          value={exercise.repeticiones}
+                                          onChange={(event) =>
+                                            actualizarEjercicioTemplate(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "repeticiones",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                        Desc
+                                        <input
+                                          value={exercise.descanso}
+                                          onChange={(event) =>
+                                            actualizarEjercicioTemplate(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "descanso",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                        RIR
+                                        <input
+                                          value={rirValue}
+                                          onChange={(event) =>
+                                            upsertTemplateSpecValue(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "RIR",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
+                                        Carga (kg)
+                                        <input
+                                          value={exercise.carga}
+                                          onChange={(event) =>
+                                            actualizarEjercicioTemplate(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "carga",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 xl:col-start-8 xl:row-start-1">
+                                        Observaciones
+                                        <input
+                                          value={observacionesValue}
+                                          onChange={(event) =>
+                                            upsertTemplateSpecValue(
+                                              templateDraftWeek.id,
+                                              templateDraftDay.id,
+                                              block.id,
+                                              exercise.id,
+                                              "Observaciones",
+                                              event.target.value
+                                            )
+                                          }
+                                          className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                        />
+                                      </label>
+                                    </div>
+
+                                    <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold">
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          toggleDesgloseSeriesTemplate(
+                                            templateDraftWeek.id,
+                                            templateDraftDay.id,
+                                            block.id,
+                                            exercise.id
+                                          )
+                                        }
+                                        className={`${hasSeriesBreakdown ? "text-rose-300" : "text-cyan-300"}`}
+                                      >
+                                        {hasSeriesBreakdown ? "Unificar serie" : "Desglosar serie"}
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          agregarSuperSerieTemplate(
+                                            templateDraftWeek.id,
+                                            templateDraftDay.id,
+                                            block.id,
+                                            exercise.id
+                                          )
+                                        }
+                                        className="text-cyan-300"
+                                      >
+                                        Agregar ejercicio super-serie
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          abrirVerPesos(
+                                            block.id,
+                                            block.titulo,
+                                            exercise.ejercicioId,
+                                            selectedExercise?.nombre || "Ejercicio"
+                                          )
+                                        }
+                                        disabled={!exercise.ejercicioId}
+                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                      >
+                                        Ver pesos
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          abrirRegistrarPeso(
+                                            block.id,
+                                            block.titulo,
+                                            exercise.ejercicioId,
+                                            selectedExercise?.nombre || "Ejercicio"
+                                          )
+                                        }
+                                        disabled={!exercise.ejercicioId}
+                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                      >
+                                        Registrar peso
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          setBlockGridConfigOpenId((current) =>
+                                            current === block.id ? null : block.id
+                                          )
+                                        }
+                                        className="text-cyan-300"
+                                      >
+                                        Configuracion
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          eliminarEjercicioTemplate(
+                                            templateDraftWeek.id,
+                                            templateDraftDay.id,
+                                            block.id,
+                                            exercise.id
+                                          )
+                                        }
+                                        className="text-rose-300"
+                                      >
+                                        Eliminar
+                                      </ReliableActionButton>
+                                    </div>
+
+                                    {hasSeriesBreakdown ? (
+                                      <div className="mt-3 rounded-lg border border-cyan-300/20 bg-cyan-500/5 p-2">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-100">
+                                          Desglose de series
+                                        </p>
+                                        <div className="mt-2 space-y-2">
+                                          {(exercise.serieDesglose || []).map((setRow) => (
+                                            <div
+                                              key={setRow.id}
+                                              className="grid gap-2 md:grid-cols-[auto_repeat(5,minmax(0,1fr))]"
+                                            >
+                                              <span className="rounded-md border border-white/15 bg-slate-900/60 px-2 py-2 text-xs text-slate-200">
+                                                S{setRow.serie}
+                                              </span>
+                                              <input
+                                                value={setRow.repeticiones}
+                                                onChange={(event) =>
+                                                  actualizarSerieDesgloseTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    setRow.id,
+                                                    "repeticiones",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Rep"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={setRow.descanso}
+                                                onChange={(event) =>
+                                                  actualizarSerieDesgloseTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    setRow.id,
+                                                    "descanso",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Desc"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={setRow.rir}
+                                                onChange={(event) =>
+                                                  actualizarSerieDesgloseTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    setRow.id,
+                                                    "rir",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="RIR"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={setRow.cargaKg}
+                                                onChange={(event) =>
+                                                  actualizarSerieDesgloseTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    setRow.id,
+                                                    "cargaKg",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Carga kg"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={setRow.observaciones}
+                                                onChange={(event) =>
+                                                  actualizarSerieDesgloseTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    setRow.id,
+                                                    "observaciones",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Obs"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ) : null}
+
+                                    {(exercise.superSerie || []).length > 0 ? (
+                                      <div className="mt-3 rounded-lg border border-violet-300/20 bg-violet-500/5 p-2">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-100">
+                                          Inicio super serie
+                                        </p>
+                                        <div className="mt-2 space-y-2">
+                                          {(exercise.superSerie || []).map((superItem) => (
+                                            <div
+                                              key={superItem.id}
+                                              className="grid gap-2 md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))_auto]"
+                                            >
+                                              <select
+                                                value={superItem.ejercicioId}
+                                                onChange={(event) =>
+                                                  actualizarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id,
+                                                    "ejercicioId",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              >
+                                                <option value="">Seleccione ejercicio</option>
+                                                {ejercicios.map((item) => (
+                                                  <option key={`${superItem.id}-${item.id}`} value={item.id}>
+                                                    {item.nombre}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                              <input
+                                                value={superItem.series}
+                                                onChange={(event) =>
+                                                  actualizarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id,
+                                                    "series",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Series"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={superItem.repeticiones}
+                                                onChange={(event) =>
+                                                  actualizarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id,
+                                                    "repeticiones",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Rep"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={superItem.descanso}
+                                                onChange={(event) =>
+                                                  actualizarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id,
+                                                    "descanso",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Desc"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <input
+                                                value={superItem.carga}
+                                                onChange={(event) =>
+                                                  actualizarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id,
+                                                    "carga",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                placeholder="Carga"
+                                                className="rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-xs text-white"
+                                              />
+                                              <ReliableActionButton
+                                                type="button"
+                                                onClick={() =>
+                                                  eliminarSuperSerieTemplate(
+                                                    templateDraftWeek.id,
+                                                    templateDraftDay.id,
+                                                    block.id,
+                                                    exercise.id,
+                                                    superItem.id
+                                                  )
+                                                }
+                                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-2 text-[11px] font-semibold text-rose-100"
+                                              >
+                                                Eliminar
+                                              </ReliableActionButton>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-violet-100">
+                                          Fin super serie
+                                        </p>
+                                      </div>
+                                    ) : null}
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </article>
                         );
@@ -3368,7 +4527,7 @@ export default function SemanaPage() {
               </div>
             </div>
 
-            <div className="relative mt-2 flex flex-wrap items-center gap-2 rounded-2xl bg-slate-950/70 p-2 ring-1 ring-white/10 backdrop-blur">
+            <div className="sticky bottom-3 z-10 mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-slate-950/80 p-2 backdrop-blur">
               <ReliableActionButton
                 type="button"
                 onClick={guardarTemplateActual}
@@ -3476,447 +4635,260 @@ export default function SemanaPage() {
         )}
       </section>
 
-      {historialScreenOpen ? (
+      </section>
+
+      {weightViewer ? (
         <section
-          className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/80 p-4 sm:p-6"
-          onClick={() => setHistorialScreenOpen(false)}
+          className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/85 p-4 sm:p-6"
+          onClick={() => setWeightViewer(null)}
         >
           <div
-            className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-900/95 p-5 shadow-2xl"
+            className="w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-900/95 p-4 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold">Historial y Comparacion</h2>
+                <h2 className="text-2xl font-semibold text-white">Pesos</h2>
                 <p className="mt-1 text-xs text-slate-300">
-                  Guarda versiones del plan y compara cambios semana a semana.
+                  {weightViewer.exerciseNombre} · {weightViewer.blockTitulo || "Bloque"}
                 </p>
               </div>
-
               <ReliableActionButton
                 type="button"
-                onClick={() => setHistorialScreenOpen(false)}
+                onClick={() => setWeightViewer(null)}
                 className="rounded-xl border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200"
               >
                 Cerrar
               </ReliableActionButton>
             </div>
 
-            <div className="mt-3 grid gap-2 md:grid-cols-3">
-              <input
-                value={historialEtiqueta}
-                onChange={(e) => setHistorialEtiqueta(e.target.value)}
-                placeholder="Etiqueta opcional (ej: Pretemporada)"
-                className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-              />
-              <ReliableActionButton
-                onClick={guardarEnHistorial}
-                disabled={!planSeleccionado}
-                className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Guardar version en historial
-              </ReliableActionButton>
-              <p className="text-xs text-slate-300">Versiones guardadas: {historialPlanSeleccionado.length}</p>
-            </div>
-
-            <div className="mt-3 grid gap-2 md:grid-cols-2">
-              <select
-                value={compareAId}
-                onChange={(e) => setCompareAId(e.target.value)}
-                className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-              >
-                <option value="">Comparacion A (historial)</option>
-                {historialPlanSeleccionado.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.etiqueta ? `${item.etiqueta} - ` : ""}
-                    {formatHistoryDate(item.createdAt)}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={compareBId}
-                onChange={(e) => setCompareBId(e.target.value)}
-                className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-              >
-                <option value="__current__">Comparar contra plan actual</option>
-                {historialPlanSeleccionado.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.etiqueta ? `${item.etiqueta} - ` : ""}
-                    {formatHistoryDate(item.createdAt)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <ReliableActionButton
-                onClick={restaurarDesdeHistorial}
-                disabled={!compareAId || !planSeleccionado}
-                className="rounded-xl border border-amber-300/40 px-4 py-2 text-sm font-semibold text-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Restaurar version A
-              </ReliableActionButton>
-            </div>
-
-            {comparacion && (
-              <div className="mt-4 rounded-xl border border-white/10 bg-slate-800/60 p-4 text-sm">
-                <p className="font-semibold text-white">
-                  Estado de comparacion: {comparacion.iguales ? "Sin cambios" : "Con cambios"}
-                </p>
-
-                <div className="mt-2 grid gap-2 md:grid-cols-2">
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Version A</p>
-                    <p className="text-xs text-slate-300">Semanas: {comparacion.statsA.totalSemanas}</p>
-                    <p className="text-xs text-slate-300">Dias: {comparacion.statsA.totalDias}</p>
-                    <p className="text-xs text-slate-300">Dias con sesion: {comparacion.statsA.diasConSesion}</p>
-                    <p className="text-xs text-slate-300">Bloques: {comparacion.statsA.totalBloques}</p>
-                    <p className="text-xs text-slate-300">Ejercicios: {comparacion.statsA.totalEjercicios}</p>
-                  </div>
-
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Version B</p>
-                    <p className="text-xs text-slate-300">Semanas: {comparacion.statsB.totalSemanas}</p>
-                    <p className="text-xs text-slate-300">Dias: {comparacion.statsB.totalDias}</p>
-                    <p className="text-xs text-slate-300">Dias con sesion: {comparacion.statsB.diasConSesion}</p>
-                    <p className="text-xs text-slate-300">Bloques: {comparacion.statsB.totalBloques}</p>
-                    <p className="text-xs text-slate-300">Ejercicios: {comparacion.statsB.totalEjercicios}</p>
-                  </div>
-                </div>
-
-                {!comparacion.iguales && (
-                  <div className="mt-3 rounded-lg border border-cyan-400/20 bg-cyan-500/5 p-3">
-                    <p className="text-xs uppercase tracking-wide text-cyan-300">
-                      Semanas con diferencias
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {comparacion.semanasConCambios.map((semanaNombre) => (
-                        <span
-                          key={semanaNombre}
-                          className="rounded-full border border-cyan-400/30 px-2 py-1 text-xs text-cyan-200"
-                        >
-                          {semanaNombre}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            {weightViewerRows.length === 0 ? (
+              <p className="rounded-xl border border-white/10 bg-slate-900/50 p-4 text-sm text-slate-300">
+                No hay registros de peso para este ejercicio todavia.
+              </p>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-white/10 bg-slate-900/55">
+                <table className="min-w-full text-xs text-slate-200">
+                  <thead className="bg-slate-950/60 text-[11px] uppercase tracking-wide text-slate-300">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Fecha</th>
+                      <th className="px-3 py-2 text-left">Nro. serie</th>
+                      <th className="px-3 py-2 text-left">Nro. rep</th>
+                      <th className="px-3 py-2 text-left">Peso</th>
+                      <th className="px-3 py-2 text-left">Molestia</th>
+                      <th className="px-3 py-2 text-left">Comentario</th>
+                      <th className="px-3 py-2 text-left">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {weightViewerRows.map((row) => {
+                      const isTemplateRow = templateWeightLogIds.has(row.id);
+                      return (
+                        <tr key={row.id} className="border-t border-white/10">
+                          <td className="px-3 py-2">{row.fecha || "-"}</td>
+                          <td className="px-3 py-2">{row.nroSerie}</td>
+                          <td className="px-3 py-2">{row.nroRep}</td>
+                          <td className="px-3 py-2">{row.pesoKg}</td>
+                          <td className="px-3 py-2">{row.molestia ? "Si" : "No"}</td>
+                          <td className="px-3 py-2">{row.comentario || "SIN DATOS"}</td>
+                          <td className="px-3 py-2">
+                            {isTemplateRow ? (
+                              <ReliableActionButton
+                                type="button"
+                                onClick={() => eliminarTemplatePeso(row.id)}
+                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                              >
+                                Eliminar
+                              </ReliableActionButton>
+                            ) : (
+                              <span className="text-[11px] text-slate-500">Sin accion</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            )}
-
-            {insightsUnicos && (
-              <section className="mt-4 rounded-2xl border border-cyan-300/20 bg-gradient-to-br from-slate-900/85 to-slate-800/70 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-lg font-semibold text-cyan-100">Motor Unico de Microciclo</h2>
-                  <span className="rounded-full border border-cyan-300/35 px-3 py-1 text-xs font-semibold text-cyan-200">
-                    ADN {insightsUnicos.fingerprint}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid gap-2 md:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs">
-                    <p className="text-slate-400">Indice microciclo</p>
-                    <p className="text-lg font-bold text-emerald-300">{insightsUnicos.microcycleScore}/100</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs">
-                    <p className="text-slate-400">Dias con sesion</p>
-                    <p className="text-lg font-bold text-white">
-                      {insightsUnicos.diasConSesion}/{insightsUnicos.totalDias}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs">
-                    <p className="text-slate-400">Variedad semanal</p>
-                    <p className="text-lg font-bold text-cyan-200">{insightsUnicos.variedad}%</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-slate-900/60 p-3 text-xs">
-                    <p className="text-slate-400">Densidad</p>
-                    <p className="text-lg font-bold text-amber-200">{insightsUnicos.densidad}</p>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/50 p-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">Sugerencias inteligentes</p>
-                  <ul className="mt-2 space-y-1 text-xs text-slate-200">
-                    {insightsUnicos.sugerencias.map((sugerencia) => (
-                      <li key={sugerencia}>- {sugerencia}</li>
-                    ))}
-                  </ul>
-                  {insightsUnicos.acciones.length > 0 ? (
-                    <div className="mt-3 grid gap-2">
-                      {insightsUnicos.acciones.map((action) => (
-                        <ReliableActionButton
-                          key={action.id}
-                          type="button"
-                          onClick={() => applySuggestion(action.id)}
-                          style={{
-                            width: "100%",
-                            border: "1px solid rgba(56, 189, 248, 0.35)",
-                            borderRadius: 14,
-                            padding: "12px 14px",
-                            background:
-                              "linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(16, 185, 129, 0.14))",
-                            color: "#e2f8ff",
-                            textAlign: "left",
-                            cursor: "pointer",
-                            boxShadow: "0 12px 30px rgba(2, 132, 199, 0.14)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 800,
-                              letterSpacing: 0.4,
-                              textTransform: "uppercase",
-                              marginBottom: 4,
-                            }}
-                          >
-                            {action.title}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 13,
-                              color: "rgba(226, 248, 255, 0.78)",
-                              lineHeight: 1.45,
-                            }}
-                          >
-                            {action.detail}
-                          </div>
-                        </ReliableActionButton>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </section>
             )}
           </div>
         </section>
       ) : null}
 
-      {!planSeleccionado ? (
-        <div className="rounded-2xl border border-dashed border-white/20 bg-slate-900/50 p-6 text-sm text-slate-300">
-          Selecciona una jugadora o alumno para crear/editar su plan semanal.
-        </div>
-      ) : (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-300">
-            Plan activo: <span className="font-semibold text-white">{planSeleccionado.nombre}</span>
-            {planSeleccionado.categoria ? ` (${planSeleccionado.categoria})` : ""}
-          </div>
-
-          {planSeleccionado.semanas.map((semana) => (
-            <section
-              key={semana.id}
-              className="rounded-2xl border border-white/10 bg-slate-900/70 p-5"
-            >
-              <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                <div className="grid gap-2 md:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-                      Nombre semana
-                    </label>
-                    <input
-                      value={semana.nombre}
-                      onChange={(e) => actualizarSemana(semana.id, { nombre: e.target.value })}
-                      className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-                      Objetivo
-                    </label>
-                    <input
-                      value={semana.objetivo}
-                      onChange={(e) => actualizarSemana(semana.id, { objetivo: e.target.value })}
-                      className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <ReliableActionButton
-                    onClick={() => duplicarSemana(semana.id)}
-                    className="rounded-lg border border-cyan-400/40 px-3 py-2 text-xs font-semibold text-cyan-200"
-                  >
-                    Duplicar semana
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    onClick={() => eliminarSemana(semana.id)}
-                    className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs font-semibold text-rose-200"
-                  >
-                    Eliminar semana
-                  </ReliableActionButton>
-                </div>
+      {weightRegister ? (
+        <section
+          className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/85 p-4 sm:p-6"
+          onClick={() => setWeightRegister(null)}
+        >
+          <div
+            className="w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-900/95 p-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-semibold text-white">Registrar peso</h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  {weightRegister.exerciseNombre} · {weightRegister.blockTitulo || "Bloque"}
+                </p>
               </div>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setWeightRegister(null)}
+                className="rounded-xl border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200"
+              >
+                Cerrar
+              </ReliableActionButton>
+            </div>
 
-              <div className="grid gap-3 lg:grid-cols-2">
-                {semana.dias.map((dia) => (
-                  <div key={dia.id} className="rounded-xl border border-white/10 bg-slate-800/60 p-4">
-                    <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Dia
-                    </label>
-                    <input
-                      value={dia.dia}
-                      onChange={(e) => actualizarDia(semana.id, dia.id, "dia", e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm"
-                    />
-
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Sesion vinculada
-                    </label>
-                    <select
-                      value={dia.sesionId || ""}
-                      onChange={(e) => {
-                        const nextSesionId = e.target.value;
-
-                        if (!nextSesionId) {
-                          vincularSesionDia(semana.id, dia.id, "", false);
-                          return;
-                        }
-
-                        const hasManualText =
-                          Boolean((dia.planificacion || "").trim()) ||
-                          Boolean((dia.objetivo || "").trim());
-
-                        const shouldReplace = hasManualText
-                          ? window.confirm(
-                              "Quieres reemplazar planificacion y objetivo del dia con los datos de la sesion? Aceptar = reemplazar / Cancelar = mantener textos actuales"
-                            )
-                          : true;
-
-                        vincularSesionDia(semana.id, dia.id, nextSesionId, shouldReplace);
-                      }}
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm"
-                    >
-                      <option value="">Sin sesion vinculada</option>
-                      {sesionesDisponibles.map((sesion) => (
-                        <option key={sesion.id} value={sesion.id}>
-                          {sesion.titulo}
-                        </option>
-                      ))}
-                    </select>
-
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Planificacion
-                    </label>
-                    <textarea
-                      value={dia.planificacion}
-                      onChange={(e) =>
-                        actualizarDia(semana.id, dia.id, "planificacion", e.target.value)
-                      }
-                      rows={3}
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm"
-                    />
-
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Objetivo del dia
-                    </label>
-                    <textarea
-                      value={dia.objetivo || ""}
-                      onChange={(e) => actualizarDia(semana.id, dia.id, "objetivo", e.target.value)}
-                      rows={2}
-                      className="mt-1 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm"
-                    />
-
-                    {dia.sesionId && (
-                      <div className="mt-3 rounded-lg border border-cyan-400/25 bg-slate-900/60 p-3">
-                        {(() => {
-                          const linked = getEffectiveLinkedSession(dia.sesionId || "");
-                          if (!linked) {
-                            return (
-                              <p className="text-xs text-rose-300">
-                                La sesion vinculada ya no existe o no esta disponible.
-                              </p>
-                            );
-                          }
-
-                          const { sesion, bloques, isPersonalized, prescripcion } = linked;
-
-                          return (
-                            <div className="space-y-2">
-                              <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">
-                                {sesion.titulo} - bloques {bloques.length}
-                              </p>
-                              {isPersonalized ? (
-                                <p className="text-[11px] text-emerald-300">
-                                  Prescripcion individual activa: {prescripcion?.resumen || "Ajuste personalizado"}
-                                </p>
-                              ) : null}
-                              {bloques.length === 0 ? (
-                                <p className="text-xs text-slate-400">Esta sesion no tiene bloques todavia.</p>
-                              ) : (
-                                <div className="space-y-2">
-                                  {bloques.map((bloque) => (
-                                    <div
-                                      key={bloque.id}
-                                      className="rounded border border-white/10 bg-slate-800/80 p-2"
-                                    >
-                                      <p className="text-xs font-semibold text-white">{bloque.titulo}</p>
-                                      <p className="text-[11px] text-slate-300">
-                                        {bloque.objetivo || "Sin objetivo"}
-                                      </p>
-                                      <ul className="mt-1 space-y-1 text-[11px] text-slate-300">
-                                        {(bloque.ejercicios || []).map((ejercicio, idx) => (
-                                          <li key={`${bloque.id}-${idx}`}>
-                                            {getExerciseName(ejercicio.ejercicioId)} - {ejercicio.series}x{" "}
-                                            {ejercicio.repeticiones}
-                                            {ejercicio.descanso
-                                              ? ` - Descanso ${ejercicio.descanso}`
-                                              : ""}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-
-                    <ReliableActionButton
-                      onClick={() => eliminarDia(semana.id, dia.id)}
-                      className="mt-3 rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs font-semibold text-rose-200"
-                    >
-                      Eliminar dia
-                    </ReliableActionButton>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-xl border border-white/10 bg-slate-800/40 p-4">
-                <h3 className="text-sm font-semibold">Agregar dia a {semana.nombre}</h3>
-                <div className="mt-2 grid gap-2 md:grid-cols-3">
-                  <input
-                    value={nuevoDiaPorSemana[semana.id] || ""}
-                    onChange={(e) =>
-                      setNuevoDiaPorSemana((prev) => ({ ...prev, [semana.id]: e.target.value }))
-                    }
-                    placeholder="Dia (Ej: Lunes)"
-                    className="rounded-xl border border-white/20 bg-slate-700 px-3 py-2 text-sm"
-                  />
-                  <input
-                    value={nuevaPlanPorSemana[semana.id] || ""}
-                    onChange={(e) =>
-                      setNuevaPlanPorSemana((prev) => ({ ...prev, [semana.id]: e.target.value }))
-                    }
-                    placeholder="Planificacion"
-                    className="rounded-xl border border-white/20 bg-slate-700 px-3 py-2 text-sm md:col-span-2"
-                  />
-                </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+              <div className="mb-3 flex flex-wrap gap-2">
                 <ReliableActionButton
-                  onClick={() => agregarDia(semana.id)}
-                  className="mt-3 rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950"
+                  type="button"
+                  onClick={() => setWeightRegisterScope("template")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    weightRegisterScope === "template"
+                      ? "bg-cyan-300 text-slate-950"
+                      : "border border-white/20 bg-white/5 text-slate-200"
+                  }`}
                 >
-                  Agregar dia
+                  Solo template
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setWeightRegisterScope("alumno")}
+                  disabled={!alumnoDestinoActivo}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    weightRegisterScope === "alumno"
+                      ? "bg-emerald-300 text-slate-950"
+                      : "border border-white/20 bg-white/5 text-slate-200"
+                  } disabled:cursor-not-allowed disabled:opacity-40`}
+                >
+                  Sincronizar con alumno
                 </ReliableActionButton>
               </div>
-            </section>
-          ))}
-        </div>
-      )}
+
+              <div className="grid gap-3 md:grid-cols-4">
+                <label className="text-xs uppercase tracking-wide text-slate-300">
+                  Fecha del registro
+                  <input
+                    type="date"
+                    value={weightForm.fecha}
+                    onChange={(event) => setWeightForm((prev) => ({ ...prev, fecha: event.target.value }))}
+                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="text-xs uppercase tracking-wide text-slate-300">
+                  Nro serie
+                  <input
+                    value={weightForm.nroSerie}
+                    onChange={(event) => setWeightForm((prev) => ({ ...prev, nroSerie: event.target.value }))}
+                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="text-xs uppercase tracking-wide text-slate-300">
+                  Nro rep
+                  <input
+                    value={weightForm.nroRep}
+                    onChange={(event) => setWeightForm((prev) => ({ ...prev, nroRep: event.target.value }))}
+                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="text-xs uppercase tracking-wide text-slate-300">
+                  Peso
+                  <input
+                    value={weightForm.pesoKg}
+                    onChange={(event) => setWeightForm((prev) => ({ ...prev, pesoKg: event.target.value }))}
+                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-3 grid gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-end">
+                <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
+                  Molestia?
+                  <input
+                    type="checkbox"
+                    checked={weightForm.molestia}
+                    onChange={(event) =>
+                      setWeightForm((prev) => ({ ...prev, molestia: event.target.checked }))
+                    }
+                    className="h-4 w-4"
+                  />
+                </label>
+
+                <label className="text-xs uppercase tracking-wide text-slate-300">
+                  Comentario
+                  <input
+                    value={weightForm.comentario}
+                    onChange={(event) => setWeightForm((prev) => ({ ...prev, comentario: event.target.value }))}
+                    className="mt-1 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                  />
+                </label>
+
+                <ReliableActionButton
+                  type="button"
+                  onClick={guardarRegistroPeso}
+                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Guardar
+                </ReliableActionButton>
+              </div>
+            </div>
+
+            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/55">
+              <table className="min-w-full text-xs text-slate-200">
+                <thead className="bg-slate-950/60 text-[11px] uppercase tracking-wide text-slate-300">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Fecha</th>
+                    <th className="px-3 py-2 text-left">Nro. serie</th>
+                    <th className="px-3 py-2 text-left">Nro. rep</th>
+                    <th className="px-3 py-2 text-left">Peso</th>
+                    <th className="px-3 py-2 text-left">Molestia</th>
+                    <th className="px-3 py-2 text-left">Comentario</th>
+                    <th className="px-3 py-2 text-left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weightRegisterRows.length === 0 ? (
+                    <tr>
+                      <td className="px-3 py-3 text-slate-400" colSpan={7}>
+                        Sin registros para este ejercicio.
+                      </td>
+                    </tr>
+                  ) : (
+                    weightRegisterRows.map((row) => {
+                      const isTemplateRow = templateWeightLogIds.has(row.id);
+                      return (
+                        <tr key={`register-row-${row.id}`} className="border-t border-white/10">
+                          <td className="px-3 py-2">{row.fecha || "-"}</td>
+                          <td className="px-3 py-2">{row.nroSerie}</td>
+                          <td className="px-3 py-2">{row.nroRep}</td>
+                          <td className="px-3 py-2">{row.pesoKg}</td>
+                          <td className="px-3 py-2">{row.molestia ? "Si" : "No"}</td>
+                          <td className="px-3 py-2">{row.comentario || "SIN DATOS"}</td>
+                          <td className="px-3 py-2">
+                            {isTemplateRow ? (
+                              <ReliableActionButton
+                                type="button"
+                                onClick={() => eliminarTemplatePeso(row.id)}
+                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                              >
+                                Eliminar
+                              </ReliableActionButton>
+                            ) : (
+                              <span className="text-[11px] text-slate-500">Sin accion</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
