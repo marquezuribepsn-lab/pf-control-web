@@ -3,10 +3,12 @@ import Credentials from 'next-auth/providers/credentials';
 import { decode as jwtDecode, encode as jwtEncode } from 'next-auth/jwt';
 import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
+import { resolveBillingAccessByEmail } from './billing';
 
 const db = prisma as any;
 const REMEMBERED_SESSION_MAX_AGE = 30 * 24 * 60 * 60;
 const SHORT_SESSION_MAX_AGE = 24 * 60 * 60;
+const BILLING_REFRESH_WINDOW_MS = 5 * 1000;
 
 type AuthUserRecord = {
   id: string;
@@ -64,6 +66,31 @@ async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
   return Array.isArray(caseInsensitiveMatch) && caseInsensitiveMatch.length > 0
     ? caseInsensitiveMatch[0]
     : null;
+}
+
+async function refreshClienteBillingClaims(token: Record<string, unknown>, force = false) {
+  const email = normalizeEmailInput(token.email);
+  if (!email) {
+    token.subscriptionActive = true;
+    token.subscriptionReason = 'no-meta';
+    token.subscriptionEndDate = null;
+    token.subscriptionCheckedAt = Date.now();
+    return;
+  }
+
+  const now = Date.now();
+  const checkedAt = Number(token.subscriptionCheckedAt || 0);
+  const recentlyChecked = Number.isFinite(checkedAt) && now - checkedAt < BILLING_REFRESH_WINDOW_MS;
+
+  if (!force && recentlyChecked) {
+    return;
+  }
+
+  const access = await resolveBillingAccessByEmail(email);
+  token.subscriptionActive = access.active;
+  token.subscriptionReason = access.reason;
+  token.subscriptionEndDate = access.meta?.endDate ? String(access.meta.endDate) : null;
+  token.subscriptionCheckedAt = now;
 }
 
 export const authConfig = {
@@ -174,7 +201,26 @@ export const authConfig = {
         token.role = (user as any).role;
         token.estado = (user as any).estado;
         token.rememberMe = Boolean((user as any).rememberMe);
+        token.email = String((user as any).email || token.email || '').trim().toLowerCase();
       }
+
+      const role = String(token.role || '').trim().toUpperCase();
+      if (role === 'CLIENTE') {
+        try {
+          await refreshClienteBillingClaims(token as Record<string, unknown>, Boolean(user));
+        } catch {
+          // Keep auth resilient if billing state cannot be resolved.
+          if (typeof token.subscriptionActive !== 'boolean') {
+            token.subscriptionActive = true;
+            token.subscriptionReason = 'no-meta';
+          }
+        }
+      } else {
+        token.subscriptionActive = true;
+        token.subscriptionReason = 'active';
+        token.subscriptionEndDate = null;
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -182,6 +228,11 @@ export const authConfig = {
         session.user.id = token.id as string;
         (session.user as any).role = token.role as string;
         (session.user as any).estado = token.estado as string;
+        (session.user as any).subscriptionActive = Boolean(token.subscriptionActive !== false);
+        (session.user as any).subscriptionReason = String(token.subscriptionReason || 'active');
+        (session.user as any).subscriptionEndDate = token.subscriptionEndDate
+          ? String(token.subscriptionEndDate)
+          : null;
       }
       return session;
     },

@@ -7,6 +7,9 @@ declare module 'next-auth' {
       id: string;
       role: UserRole;
       estado?: string;
+      subscriptionActive?: boolean;
+      subscriptionReason?: string;
+      subscriptionEndDate?: string | null;
     };
   }
 
@@ -15,6 +18,9 @@ declare module 'next-auth' {
     role: UserRole;
     estado?: string;
     rememberMe?: boolean;
+    subscriptionActive?: boolean;
+    subscriptionReason?: string;
+    subscriptionEndDate?: string | null;
   }
 }
 
@@ -24,6 +30,10 @@ declare module 'next-auth/jwt' {
     role?: UserRole;
     estado?: string;
     rememberMe?: boolean;
+    subscriptionActive?: boolean;
+    subscriptionReason?: string;
+    subscriptionEndDate?: string | null;
+    subscriptionCheckedAt?: number;
   }
 }
 

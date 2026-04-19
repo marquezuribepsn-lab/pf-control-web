@@ -80,6 +80,14 @@ type SignupProfile = {
   updatedAt?: string;
 };
 
+type ClientePasswordAdmin = {
+  visiblePassword: string;
+  source: "register" | "admin_reset" | "account_change" | "password_reset";
+  updatedAt: string;
+  updatedByRole: string;
+  updatedByEmail: string | null;
+};
+
 type ClienteUsuario = {
   id: string;
   email: string;
@@ -93,6 +101,7 @@ type ClienteUsuario = {
   telefono?: string | null;
   createdAt?: string | null;
   signupProfile?: SignupProfile | null;
+  passwordAdmin?: ClientePasswordAdmin | null;
 };
 
 type AsignacionSeleccionada = {
@@ -278,6 +287,23 @@ function formatDateTime(value: string | null | undefined) {
   });
 }
 
+function resolvePasswordSourceLabel(source: string | null | undefined) {
+  const normalized = String(source || '').trim().toLowerCase();
+
+  switch (normalized) {
+    case 'register':
+      return 'Registro';
+    case 'admin_reset':
+      return 'Blanqueo admin';
+    case 'account_change':
+      return 'Cambio en cuenta';
+    case 'password_reset':
+      return 'Recupero por mail';
+    default:
+      return 'Sin fuente';
+  }
+}
+
 function formatListValue(raw: unknown) {
   if (!Array.isArray(raw)) {
     return 'Sin dato';
@@ -399,6 +425,9 @@ export default function AdminUsuariosPermisosPage() {
   const [assignSavingId, setAssignSavingId] = useState<string | null>(null);
   const [detailActionLoadingId, setDetailActionLoadingId] = useState<string | null>(null);
   const [clientActionLoadingId, setClientActionLoadingId] = useState<string | null>(null);
+  const [clientPasswordActionLoadingId, setClientPasswordActionLoadingId] = useState<string | null>(null);
+  const [clientPasswordSearch, setClientPasswordSearch] = useState("");
+  const [clientCustomPasswordById, setClientCustomPasswordById] = useState<Record<string, string>>({});
   const [ingresanteModalId, setIngresanteModalId] = useState<string | null>(null);
   const [confirmAltaId, setConfirmAltaId] = useState<string | null>(null);
 
@@ -454,6 +483,16 @@ export default function AdminUsuariosPermisosPage() {
     void loadClientes();
   }, []);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void loadClientes();
+    }, 60000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return items;
@@ -484,6 +523,21 @@ export default function AdminUsuariosPermisosPage() {
   const clientesSinVerificar = useMemo(
     () => clientes.filter((cliente) => cliente.role === "CLIENTE" && cliente.emailVerified !== true),
     [clientes]
+  );
+
+  const clientesSoportePassword = useMemo(
+    () =>
+      clientes.filter((cliente) => {
+        if (cliente.role !== 'CLIENTE') return false;
+
+        const query = clientPasswordSearch.trim().toLowerCase();
+        if (!query) return true;
+
+        const nombre = String(resolveIngresanteNombre(cliente).nombreCompleto || '').toLowerCase();
+        const email = String(cliente.email || '').toLowerCase();
+        return nombre.includes(query) || email.includes(query);
+      }),
+    [clientes, clientPasswordSearch]
   );
 
   const ingresanteModal = useMemo(
@@ -673,6 +727,56 @@ export default function AdminUsuariosPermisosPage() {
     }
 
     await darAltaCliente(confirmAltaCliente);
+  };
+
+  const blanquearContrasenaCliente = async (cliente: ClienteUsuario, customMode: boolean) => {
+    const customPassword = String(clientCustomPasswordById[cliente.id] || '').trim();
+
+    if (customMode && customPassword.length < 6) {
+      setMessage({
+        type: 'error',
+        text: 'La contrasena personalizada debe tener al menos 6 caracteres.',
+      });
+      return;
+    }
+
+    try {
+      setClientPasswordActionLoadingId(cliente.id);
+      setMessage(null);
+
+      const response = await fetch('/api/admin/users/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: cliente.id,
+          password: customMode ? customPassword : undefined,
+        }),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        visiblePassword?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(String(data.message || 'No se pudo blanquear la contrasena del cliente'));
+      }
+
+      setMessage({
+        type: 'success',
+        text: `Contrasena blanqueada para ${cliente.email}: ${String(data.visiblePassword || '')}`,
+      });
+
+      setClientCustomPasswordById((prev) => ({ ...prev, [cliente.id]: '' }));
+      await loadClientes();
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'No se pudo blanquear la contrasena del cliente',
+      });
+    } finally {
+      setClientPasswordActionLoadingId(null);
+    }
   };
 
   const loadColaboradorDetail = async (id: string) => {
@@ -1135,6 +1239,110 @@ export default function AdminUsuariosPermisosPage() {
               })}
             </div>
           )}
+        </div>
+
+        <div className="mb-4 rounded-2xl border border-amber-300/25 bg-amber-500/10 p-4 shadow-[0_14px_40px_rgba(120,53,15,0.35)]">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-100/85">Soporte claves</p>
+              <p className="text-lg font-black text-white">Contrasenas de clientes</p>
+              <p className="text-xs text-amber-100/90">
+                Puedes blanquear una clave y ver la ultima clave registrada para soporte al cliente.
+              </p>
+            </div>
+
+            <div className="w-full max-w-sm">
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-amber-100/85">
+                Buscar cliente
+              </label>
+              <input
+                value={clientPasswordSearch}
+                onChange={(e) => setClientPasswordSearch(e.target.value)}
+                placeholder="Nombre o email"
+                className="w-full rounded-xl border border-amber-200/30 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-200/60"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/50 p-3">
+            {clientesSoportePassword.length === 0 ? (
+              <p className="rounded-lg border border-white/10 bg-slate-900/70 px-3 py-3 text-sm text-slate-300">
+                No hay clientes para mostrar en soporte de contrasenas.
+              </p>
+            ) : (
+              clientesSoportePassword.map((cliente) => {
+                const nombre = resolveIngresanteNombre(cliente).nombreCompleto || cliente.nombreCompleto || 'Sin nombre';
+                const snapshot = cliente.passwordAdmin;
+                return (
+                  <article
+                    key={`cliente-password-${cliente.id}`}
+                    className="rounded-xl border border-white/10 bg-slate-900/75 p-3"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-black text-white">{String(nombre)}</p>
+                        <p className="text-xs text-slate-300">{cliente.email}</p>
+                      </div>
+                      <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[10px] font-bold text-slate-100">
+                        {String(cliente.estado || 'activo')}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 grid gap-2 text-xs text-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+                      <p>
+                        <span className="text-slate-400">Clave visible:</span>{' '}
+                        <span className="font-mono font-bold text-amber-100">
+                          {snapshot?.visiblePassword || 'Sin registro'}
+                        </span>
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Fuente:</span> {resolvePasswordSourceLabel(snapshot?.source)}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Actualizado:</span> {formatDateTime(snapshot?.updatedAt || null)}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Por:</span>{' '}
+                        {snapshot?.updatedByEmail || snapshot?.updatedByRole || 'Sin dato'}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void blanquearContrasenaCliente(cliente, false)}
+                        disabled={clientPasswordActionLoadingId === cliente.id}
+                        className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {clientPasswordActionLoadingId === cliente.id ? 'Procesando...' : 'Blanquear automatica'}
+                      </ReliableActionButton>
+
+                      <input
+                        value={clientCustomPasswordById[cliente.id] || ''}
+                        onChange={(e) =>
+                          setClientCustomPasswordById((prev) => ({
+                            ...prev,
+                            [cliente.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Contrasena personalizada"
+                        className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs text-white outline-none focus:border-amber-200/65"
+                      />
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void blanquearContrasenaCliente(cliente, true)}
+                        disabled={clientPasswordActionLoadingId === cliente.id}
+                        className="rounded-lg border border-amber-300/45 bg-amber-500/15 px-3 py-1.5 text-xs font-bold text-amber-100 transition hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Aplicar clave
+                      </ReliableActionButton>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {showColaboradoresPanel ? (

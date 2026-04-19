@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { verifyPasswordResetToken } from '@/lib/email';
+import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
 
 const db = prisma as any;
 
@@ -44,8 +45,19 @@ export async function POST(req: NextRequest) {
     const updatedUser = await db.user.update({
       where: tokenUserId ? { id: tokenUserId } : { email: tokenEmail },
       data: { password: hashedPassword },
-      select: { email: true },
+      select: { id: true, email: true, role: true },
     });
+
+    if (String(updatedUser.role || '').trim().toUpperCase() === 'CLIENTE') {
+      await upsertClientPasswordSnapshot({
+        userId: updatedUser.id,
+        email: normalizeEmailInput(updatedUser.email),
+        visiblePassword: normalizedPassword,
+        source: 'password_reset',
+        updatedByRole: 'CLIENTE',
+        updatedByEmail: normalizeEmailInput(updatedUser.email),
+      }).catch(() => null);
+    }
 
     await db.verificationToken
       .deleteMany({

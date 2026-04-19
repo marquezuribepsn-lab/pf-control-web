@@ -985,6 +985,10 @@ export default function AppShell({
           return false;
         }
 
+        if (normalizedRole === "ADMIN" && link.href === "/registros") {
+          return false;
+        }
+
         if (normalizedRole === "CLIENTE") {
           return CLIENTE_ACCESS_HREFS.includes(link.href);
         }

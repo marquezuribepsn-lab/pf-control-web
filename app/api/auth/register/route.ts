@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 import { getSyncValue, setSyncValue } from '@/lib/syncStore';
+import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
 
 const db = prisma as any;
 const SIGNUP_PROFILES_KEY = 'pf-control-signup-profiles-v1';
@@ -315,6 +316,15 @@ export async function POST(req: NextRequest) {
         // Keep auth flow resilient if sync store write fails.
       });
 
+      await upsertClientPasswordSnapshot({
+        userId: existingUser.id,
+        email: normalizedEmail,
+        visiblePassword: normalizedPassword,
+        source: 'register',
+        updatedByRole: 'CLIENTE',
+        updatedByEmail: normalizedEmail,
+      }).catch(() => null);
+
       const token = await generateVerificationToken(existingUser.email);
       await sendVerificationEmail(existingUser.email, token);
 
@@ -345,6 +355,15 @@ export async function POST(req: NextRequest) {
     await saveSignupProfile(normalizedEmail, profile).catch(() => {
       // Keep auth flow resilient if sync store write fails.
     });
+
+    await upsertClientPasswordSnapshot({
+      userId: user.id,
+      email: normalizedEmail,
+      visiblePassword: normalizedPassword,
+      source: 'register',
+      updatedByRole: 'CLIENTE',
+      updatedByEmail: normalizedEmail,
+    }).catch(() => null);
 
     // Generate verification token
     const token = await generateVerificationToken(user.email);

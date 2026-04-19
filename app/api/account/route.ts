@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
+import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
 
 const db = prisma as any;
 const MAX_SIDEBAR_IMAGE_LENGTH = 850_000;
@@ -407,6 +408,17 @@ export async function PATCH(req: NextRequest) {
       where: { id: user.id },
       data,
     });
+  }
+
+  if (passwordChanged && String(user.role || '').trim().toUpperCase() === 'CLIENTE') {
+    await upsertClientPasswordSnapshot({
+      userId: user.id,
+      email: normalizedEmail,
+      visiblePassword: nextPassword,
+      source: 'account_change',
+      updatedByRole: String(user.role || 'CLIENTE'),
+      updatedByEmail: normalizedEmail,
+    }).catch(() => null);
   }
 
   if (sidebarImageChanged) {

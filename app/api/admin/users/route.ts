@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { filterOperationalUsers, isTestAccountEmail } from '@/lib/operationalUsers';
 import { sendClienteAltaAprobadaEmail } from '@/lib/email';
 import { getSyncValue, setSyncValue } from '@/lib/syncStore';
+import { getClientPasswordMap, type ClientPasswordSnapshot } from '@/lib/adminPasswordStore';
 
 const db = prisma as any;
 const SIGNUP_PROFILES_KEY = 'pf-control-signup-profiles-v1';
@@ -437,6 +438,30 @@ function attachSignupProfile<T extends { email?: string | null }>(
   });
 }
 
+function attachAdminPassword<T extends { id?: string | null; role?: string | null }>(
+  users: T[],
+  passwordMap: Record<string, ClientPasswordSnapshot>
+) {
+  return users.map((user) => {
+    const userId = String(user.id || '').trim();
+    const role = String(user.role || '').trim().toUpperCase();
+    const snapshot = userId && role === 'CLIENTE' ? passwordMap[userId] || null : null;
+
+    return {
+      ...user,
+      passwordAdmin: snapshot
+        ? {
+            visiblePassword: snapshot.visiblePassword,
+            source: snapshot.source,
+            updatedAt: snapshot.updatedAt,
+            updatedByRole: snapshot.updatedByRole,
+            updatedByEmail: snapshot.updatedByEmail,
+          }
+        : null,
+    };
+  });
+}
+
 export async function GET(req: NextRequest) {
   const session = await auth();
 
@@ -450,8 +475,10 @@ export async function GET(req: NextRequest) {
   const users = await findManyAdminUsersSafe();
 
   const profileMap = await loadSignupProfiles();
+  const passwordMap = await getClientPasswordMap();
   const operationalUsers = filterOperationalUsers(users);
-  return NextResponse.json(attachSignupProfile(operationalUsers, profileMap));
+  const withSignupProfile = attachSignupProfile(operationalUsers, profileMap);
+  return NextResponse.json(attachAdminPassword(withSignupProfile, passwordMap));
 }
 
 export async function PUT(req: NextRequest) {
@@ -626,11 +653,15 @@ export async function POST(req: NextRequest) {
     const remainingUsers = await findManyAdminUsersSafe();
 
     const profileMap = await loadSignupProfiles();
+    const passwordMap = await getClientPasswordMap();
 
     return NextResponse.json({
       message: `Se eliminaron ${deletedCount} cuentas de prueba`,
       deletedCount,
-      users: attachSignupProfile(filterOperationalUsers(remainingUsers), profileMap),
+      users: attachAdminPassword(
+        attachSignupProfile(filterOperationalUsers(remainingUsers), profileMap),
+        passwordMap
+      ),
     });
   } catch (error) {
     console.error('Cleanup test users error:', error);

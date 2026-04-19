@@ -41,6 +41,7 @@ type ClienteMetaLite = {
   objNutricional?: string;
   startDate?: string;
   endDate?: string;
+  pagoEstado?: string;
 };
 
 type AccountSnapshot = {
@@ -516,6 +517,26 @@ function countMembershipDays(startDate: string | undefined, endDate: string | un
   return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
 }
 
+function isPassActive(meta: ClienteMetaLite | null | undefined, now = new Date()): boolean {
+  if (!meta) return false;
+
+  const paymentState = String(meta.pagoEstado || "").trim().toLowerCase();
+  if (paymentState && paymentState !== "confirmado") {
+    return false;
+  }
+
+  if (!meta.endDate) {
+    return paymentState === "confirmado";
+  }
+
+  const endDate = new Date(`${String(meta.endDate).slice(0, 10)}T23:59:59`);
+  if (Number.isNaN(endDate.getTime())) {
+    return false;
+  }
+
+  return endDate.getTime() >= now.getTime();
+}
+
 function normalizeEmail(value: string | null | undefined): string {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
@@ -856,6 +877,25 @@ function resolveExerciseVideoEmbed(rawUrl: string): string | null {
 
   const vimeo = resolveVimeoEmbed(rawUrl);
   if (vimeo) return vimeo;
+
+  return null;
+}
+
+function resolveExercisePreviewImage(rawUrl: string): string | null {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) return null;
+
+  const youtubeEmbed = resolveYouTubeEmbed(normalized);
+  if (youtubeEmbed) {
+    const id = youtubeEmbed.split("/embed/")[1]?.split(/[?&#]/)[0] || "";
+    if (id) {
+      return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+    }
+  }
+
+  if (/\.(jpg|jpeg|png|webp|gif)(\?|#|$)/i.test(normalized)) {
+    return normalized;
+  }
 
   return null;
 }
@@ -1335,6 +1375,9 @@ export default function AlumnoVisionClient({
   const [recordStatus, setRecordStatus] = useState("");
   const [anthroStatus, setAnthroStatus] = useState("");
   const [interactionStatus, setInteractionStatus] = useState("");
+  const [showInteractionPanel, setShowInteractionPanel] = useState(false);
+  const [isWeekSliding, setIsWeekSliding] = useState(false);
+  const [weekSlideDirection, setWeekSlideDirection] = useState<1 | -1>(1);
 
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -1728,6 +1771,44 @@ export default function AlumnoVisionClient({
     [selectedWeekId, weekPlanForAlumno.semanas]
   );
 
+  const selectedWeekIndex = useMemo(
+    () => weekPlanForAlumno.semanas.findIndex((week) => week.id === selectedWeekId),
+    [selectedWeekId, weekPlanForAlumno.semanas]
+  );
+
+  const canGoPreviousWeek = selectedWeekIndex > 0;
+  const canGoNextWeek =
+    selectedWeekIndex >= 0 && selectedWeekIndex < weekPlanForAlumno.semanas.length - 1;
+
+  const handleShiftWeek = (direction: -1 | 1) => {
+    if (weekPlanForAlumno.semanas.length === 0) return;
+
+    const currentIndex = selectedWeekIndex >= 0 ? selectedWeekIndex : 0;
+    const nextIndex = Math.max(
+      0,
+      Math.min(weekPlanForAlumno.semanas.length - 1, currentIndex + direction)
+    );
+
+    const nextWeek = weekPlanForAlumno.semanas[nextIndex];
+    if (!nextWeek || nextWeek.id === selectedWeekId) return;
+
+    setWeekSlideDirection(direction);
+    setIsWeekSliding(true);
+    setSelectedWeekId(nextWeek.id);
+    const keepDay = nextWeek.dias.find((day) => day.id === selectedDayId);
+    setSelectedDayId(keepDay ? keepDay.id : nextWeek.dias[0]?.id || "");
+  };
+
+  useEffect(() => {
+    if (!isWeekSliding) return;
+
+    const timer = window.setTimeout(() => {
+      setIsWeekSliding(false);
+    }, 220);
+
+    return () => window.clearTimeout(timer);
+  }, [isWeekSliding, selectedWeekId]);
+
   useEffect(() => {
     if (!selectedWeek || selectedWeek.dias.length === 0) {
       setSelectedDayId("");
@@ -1755,30 +1836,16 @@ export default function AlumnoVisionClient({
   useEffect(() => {
     if (sessionIdFromDay && sessionIdFromDay !== selectedSessionId) {
       setSelectedSessionId(sessionIdFromDay);
-      return;
     }
-
-    if (!selectedSessionId && routineEntries.length > 0) {
-      setSelectedSessionId(routineEntries[0].sesion.id);
-    }
-  }, [routineEntries, selectedSessionId, sessionIdFromDay]);
-
-  const activeRoutineEntry = useMemo(
-    () => routineBySessionId.get(selectedSessionId) || routineEntries[0] || null,
-    [routineBySessionId, routineEntries, selectedSessionId]
-  );
+  }, [selectedSessionId, sessionIdFromDay]);
 
   const activeSessionExerciseDetails = useMemo(() => {
     if (selectedDayRoutineEntry) {
       return hydrateRoutineBlocks(selectedDayRoutineEntry.bloques, exerciseById);
     }
 
-    if (activeRoutineEntry) {
-      return hydrateRoutineBlocks(activeRoutineEntry.bloques, exerciseById);
-    }
-
     return [];
-  }, [activeRoutineEntry, exerciseById, selectedDayRoutineEntry]);
+  }, [exerciseById, selectedDayRoutineEntry]);
 
   useEffect(() => {
     setSelectedExerciseKey("");
@@ -1949,7 +2016,7 @@ export default function AlumnoVisionClient({
     };
   }, [alumnoFeedbackHistory, alumnoWorkoutLogs, weeklyRoutineProgress]);
 
-  const routineEntryForLogs = selectedDay ? selectedDayRoutineEntry : activeRoutineEntry;
+  const routineEntryForLogs = selectedDayRoutineEntry;
 
   const sessionWorkoutLogs = useMemo(() => {
     if (!routineEntryForLogs || !alumnoName) return [];
@@ -2200,11 +2267,11 @@ export default function AlumnoVisionClient({
 
   const todayTrainingCaption = useMemo(() => {
     if (!todayPlanContext.day) {
-      return "No hay sesion cargada para hoy. Te recomendamos movilidad y recuperacion activa.";
+      return "No hay rutina cargada para hoy. Te recomendamos movilidad y recuperacion activa.";
     }
 
     if (!todayPlanContext.routine) {
-      return `${todayPlanContext.day.dia}: plan sin sesion vinculada.`;
+      return `${todayPlanContext.day.dia}: plan del dia sin ejercicios cargados.`;
     }
 
     return `${todayPlanContext.day.dia} · ${todayPlanContext.routine.sesion.titulo}`;
@@ -2221,6 +2288,11 @@ export default function AlumnoVisionClient({
       : weekPlanForAlumno.totalDias > 0
         ? `Plan de ${weekPlanForAlumno.totalDias} sesiones`
         : "Plan activo";
+
+  const isPassCurrentlyActive = useMemo(
+    () => isPassActive(alumnoMetaMatch?.meta),
+    [alumnoMetaMatch?.meta]
+  );
 
   const alumnoInitials = useMemo(() => {
     const base = String(alumnoName || currentName || "Alumno").trim();
@@ -2608,19 +2680,19 @@ export default function AlumnoVisionClient({
   const sectionHeadlines: Record<MainCategory, { title: string; description: string }> = {
     inicio: {
       title: `Hola, ${alumnoName || "alumno"}`,
-      description: "Resumen diario con foco en constancia, recuperacion y proximos pasos.",
+      description: "Resumen diario con accesos rapidos a entrenamiento, nutricion y cuenta.",
     },
     rutina: {
       title: "Rutina de entrenamiento",
-      description: "Ejecuta tu plan por semanas y dias, registra cargas y cierra la sesion con feedback.",
+      description: "Plan semanal simple: elige semana y dia, revisa ejercicios y registra tus cargas.",
     },
     nutricion: {
       title: "Plan nutricional",
       description: "Objetivos de macros, comidas del dia y referencias de ingesta para mantener rumbo.",
     },
     progreso: {
-      title: "Progreso y metricas",
-      description: "Lectura semanal del cumplimiento y seguimiento antropometrico para ajustar decisiones.",
+      title: "Cuenta y progreso",
+      description: "Estado del pase, datos personales y evolucion semanal para ajustar el plan.",
     },
     musica: {
       title: "Musica para entrenar",
@@ -2648,7 +2720,7 @@ export default function AlumnoVisionClient({
       id: "rutina",
       label: "Rutina",
       helper: "entrenamiento",
-      value: `${weekPlanForAlumno.totalSemanas} semana(s)`,
+      value: `${weekPlanForAlumno.totalDias} dia(s)`,
     },
     {
       id: "nutricion",
@@ -2658,9 +2730,9 @@ export default function AlumnoVisionClient({
     },
     {
       id: "progreso",
-      label: "Progreso",
-      helper: "cumplimiento",
-      value: `${weeklyProgressTotals.completionPct}%`,
+      label: "Cuenta",
+      helper: "pase y datos",
+      value: isPassCurrentlyActive ? "Pase activo" : "Pase pendiente",
     },
     {
       id: "musica",
@@ -2670,10 +2742,17 @@ export default function AlumnoVisionClient({
     },
   ];
 
+  const mobileDockItems: Array<{ id: MainCategory; label: string; iconLabel: string }> = [
+    { id: "inicio", label: "Inicio", iconLabel: "IN" },
+    { id: "rutina", label: "Entrena", iconLabel: "TR" },
+    { id: "nutricion", label: "Nutricion", iconLabel: "NU" },
+    { id: "progreso", label: "Cuenta", iconLabel: "CU" },
+  ];
+
   const canOpenProfessorWhatsApp = Boolean(profesorContacto?.waPhone);
 
   return (
-    <main className="mx-auto max-w-7xl space-y-5 p-4 text-slate-100 sm:p-6">
+    <main className="mx-auto max-w-7xl space-y-5 p-4 pb-28 text-slate-100 sm:p-6 sm:pb-8">
       <section className="relative overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 shadow-[0_24px_80px_rgba(6,182,212,0.14)] sm:p-6">
         <div className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-fuchsia-500/16 blur-3xl" />
@@ -2695,7 +2774,35 @@ export default function AlumnoVisionClient({
           </div>
         </div>
 
-        <div className="relative -mx-1 mt-5 flex snap-x gap-2 overflow-x-auto px-1 pb-1 xl:mx-0 xl:grid xl:grid-cols-5 xl:overflow-visible xl:px-0 xl:pb-0">
+        <div className="relative mt-4 rounded-2xl border border-white/15 bg-slate-950/50 p-3 xl:hidden">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-black text-white">{greetingLabel}</p>
+            <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-100">
+              {todayWeekdayLabel}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-slate-300">{todayProgressText}</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <ReliableActionButton
+              type="button"
+              onClick={jumpToTodayRoutine}
+              className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-3 py-2 text-left"
+            >
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-cyan-100">Entrenamiento</p>
+              <p className="mt-1 text-sm font-semibold text-white">{todayExerciseCount} ejercicio(s)</p>
+            </ReliableActionButton>
+            <ReliableActionButton
+              type="button"
+              onClick={() => goToAlumnoCategory("progreso")}
+              className="rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-3 py-2 text-left"
+            >
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-emerald-100">Cuenta</p>
+              <p className="mt-1 text-sm font-semibold text-white">{isPassCurrentlyActive ? "Pase activo" : "Revisar pago"}</p>
+            </ReliableActionButton>
+          </div>
+        </div>
+
+        <div className="relative mt-5 hidden gap-2 xl:grid xl:grid-cols-5">
           {topCategoryCards.map((item) => {
             const isActive = mainCategory === item.id;
 
@@ -2704,7 +2811,7 @@ export default function AlumnoVisionClient({
                 key={item.id}
                 type="button"
                 onClick={() => goToAlumnoCategory(item.id)}
-                className={`min-w-[168px] snap-start rounded-2xl border px-3 py-3 text-left transition ${
+                className={`rounded-2xl border px-3 py-3 text-left transition ${
                   isActive
                     ? "border-cyan-200/60 bg-cyan-400/20 shadow-[0_10px_24px_rgba(34,211,238,0.2)]"
                     : "border-white/15 bg-slate-900/55 hover:border-cyan-200/35 hover:bg-slate-900/80"
@@ -2746,10 +2853,31 @@ export default function AlumnoVisionClient({
                 <p className="text-xl font-black text-white">{alumnoName || "Alumno PF Control"}</p>
                 <p className="text-sm text-slate-300">{passPlanLabel}</p>
               </div>
-              <span className="rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-100">
-                Activo
+              <span
+                className={`rounded-full border px-2.5 py-1 text-xs font-bold ${
+                  isPassCurrentlyActive
+                    ? "border-emerald-300/35 bg-emerald-500/15 text-emerald-100"
+                    : "border-rose-300/35 bg-rose-500/15 text-rose-100"
+                }`}
+              >
+                {isPassCurrentlyActive ? "Activo" : "Inhabilitado"}
               </span>
             </div>
+
+            {!isPassCurrentlyActive ? (
+              <div className="mt-3 rounded-xl border border-rose-300/35 bg-rose-500/10 p-3 text-xs text-rose-100">
+                Tu pase esta pendiente o vencido. Regulariza el pago para habilitar nuevamente el acceso completo.
+                <div className="mt-2">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => router.push("/alumnos/pagos")}
+                    className="rounded-lg border border-rose-200/45 bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-50"
+                  >
+                    Ir a pagos
+                  </ReliableActionButton>
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
@@ -2784,7 +2912,7 @@ export default function AlumnoVisionClient({
                 <p className="mt-1 text-sm text-fuchsia-100/95">{todayTrainingCaption}</p>
                 <p className="mt-1 text-xs text-fuchsia-100/80">
                   {todayExerciseCount > 0
-                    ? `${todayExerciseCount} ejercicio(s) detectados en la sesion del dia.`
+                    ? `${todayExerciseCount} ejercicio(s) cargados para el dia de hoy.`
                     : "No se detectaron ejercicios para hoy."}
                 </p>
               </div>
@@ -2962,146 +3090,121 @@ export default function AlumnoVisionClient({
             </div>
           </div>
 
-          <article className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">Interaccion con el staff</p>
-                <h3 className="mt-1 text-lg font-black text-white">Solicitudes rapidas del alumno</h3>
-                <p className="mt-1 text-sm text-emerald-100/90">
-                  Envia cambios o dudas mientras entrenas para que el equipo te responda en el siguiente seguimiento.
-                </p>
-              </div>
-              <div className="rounded-xl border border-emerald-200/30 bg-emerald-950/40 px-3 py-2 text-right">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-emerald-100/85">Pendientes</p>
-                <p className="mt-1 text-2xl font-black text-white">{pendingInteractionCount}</p>
-              </div>
-            </div>
-
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <ReliableActionButton
-                type="button"
-                onClick={() => handleSendRoutineInteraction("cambio-rutina")}
-                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 p-3 text-left"
-              >
-                <p className="text-sm font-black text-white">Solicitar cambio de rutina</p>
-                <p className="mt-1 text-xs text-cyan-100">Ajustes por carga, tiempo o molestias.</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => handleSendRoutineInteraction("ajuste-nutricion")}
-                className="rounded-xl border border-fuchsia-300/35 bg-fuchsia-500/15 p-3 text-left"
-              >
-                <p className="text-sm font-black text-white">Solicitar plan nutricional</p>
-                <p className="mt-1 text-xs text-fuchsia-100">Cambios de porciones, horarios o comidas.</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => handleSendRoutineInteraction("pregunta-profesor")}
-                disabled={!canOpenProfessorWhatsApp}
-                className="rounded-xl border border-white/20 bg-slate-950/60 p-3 text-left disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                <p className="text-sm font-black text-white">Pregunta al profesor (WhatsApp)</p>
-                <p className="mt-1 text-xs text-slate-300">
-                  {canOpenProfessorWhatsApp
-                    ? `Chat directo con ${profesorContacto?.nombre || "profesor"}.`
-                    : "Sin numero de WhatsApp configurado."}
-                </p>
-              </ReliableActionButton>
-            </div>
-
-            {interactionStatus ? <p className="mt-3 text-xs text-emerald-100">{interactionStatus}</p> : null}
-            {latestInteractionRequest ? (
-              <p className="mt-1 text-xs text-emerald-100/80">
-                Ultima solicitud: {latestInteractionRequest.title} · {formatDateTime(latestInteractionRequest.createdAt)}
-              </p>
-            ) : null}
-          </article>
-
-          {weekPlanForAlumno.semanas.length > 0 ? (
-            <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-              <div className="flex flex-wrap gap-2">
-                {weekPlanForAlumno.semanas.map((semana) => (
-                  <ReliableActionButton
-                    key={semana.id}
-                    type="button"
-                    onClick={() => setSelectedWeekId(semana.id)}
-                    className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                      semana.id === selectedWeekId
-                        ? "bg-cyan-400 text-slate-950"
-                        : "border border-white/20 bg-white/5 text-slate-100"
+          <section className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Plan semanal</p>
+            {weekPlanForAlumno.semanas.length === 0 ? (
+              <p className="mt-2 text-sm text-slate-300">No hay semanas cargadas.</p>
+            ) : (
+              <>
+                <div className="relative border-y border-white/10 py-2">
+                  <div
+                    className={`mx-auto w-full max-w-[18rem] text-center transition-all duration-200 ease-out ${
+                      isWeekSliding
+                        ? weekSlideDirection > 0
+                          ? "translate-x-3 opacity-0"
+                          : "-translate-x-3 opacity-0"
+                        : "translate-x-0 opacity-100"
                     }`}
                   >
-                    {semana.nombre}
-                  </ReliableActionButton>
-                ))}
-              </div>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-slate-300">Semana activa</p>
+                    <p className="text-2xl font-black text-white">{selectedWeek?.nombre || "Sin semana"}</p>
+                  </div>
 
-              {selectedWeek?.dias.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedWeek?.dias.map((dia) => (
+                  {canGoPreviousWeek ? (
                     <ReliableActionButton
-                      key={dia.id}
                       type="button"
-                      onClick={() => setSelectedDayId(dia.id)}
-                      className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                        dia.id === selectedDayId
-                          ? "bg-fuchsia-500 text-white"
-                          : "border border-white/20 bg-white/5 text-slate-100"
-                      }`}
+                      onClick={() => handleShiftWeek(-1)}
+                      className="absolute left-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900"
+                      aria-label="Semana anterior"
                     >
-                      {dia.dia}
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
                     </ReliableActionButton>
-                  ))}
-                </div>
-              ) : null}
+                  ) : null}
 
-              {selectedDay ? (
-                <div className="rounded-xl border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-2 text-sm text-fuchsia-100">
-                  <p className="font-semibold">{selectedDay.dia}</p>
-                  <p>{selectedDay.planificacion || "Sin planificacion"}</p>
-                  {selectedDay.objetivo ? <p className="text-xs text-fuchsia-100/90">Objetivo: {selectedDay.objetivo}</p> : null}
+                  {canGoNextWeek ? (
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => handleShiftWeek(1)}
+                      className="absolute right-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900"
+                      aria-label="Semana siguiente"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </ReliableActionButton>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-white/15 bg-slate-900/60 p-5 text-sm text-slate-300">
-              Todavia no tienes semanas cargadas en el plan.
-            </div>
-          )}
 
-          {selectedDayRoutineEntry ? (
-            <article className="rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-2xl font-black text-white">{selectedDayRoutineEntry.sesion.titulo}</h3>
-                  <p className="mt-1 text-sm text-slate-200">{selectedDayRoutineEntry.sesion.objetivo || "Sin objetivo"}</p>
-                  <p className="mt-2 text-xs text-cyan-100">
-                    {selectedDayRoutineEntry.sesion.duracion || "-"} min · {selectedDayRoutineEntry.totalBloques} bloques · {selectedDayRoutineEntry.totalEjercicios} ejercicios
+                {selectedWeek ? (
+                  selectedWeek.dias.length === 0 ? (
+                    <p className="mt-3 text-sm text-slate-300">Semana sin dias cargados.</p>
+                  ) : (
+                    <div className="mt-1 overflow-x-auto pb-1">
+                      <div
+                        className={`flex min-w-max gap-2 transition-all duration-200 ease-out ${
+                          isWeekSliding
+                            ? weekSlideDirection > 0
+                              ? "translate-x-3 opacity-0"
+                              : "-translate-x-3 opacity-0"
+                            : "translate-x-0 opacity-100"
+                        }`}
+                      >
+                        {selectedWeek.dias.map((dia) => {
+                          const isSelectedDia = dia.id === selectedDayId;
+                          return (
+                            <ReliableActionButton
+                              key={dia.id}
+                              type="button"
+                              onClick={() => setSelectedDayId(dia.id)}
+                              className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                                isSelectedDia
+                                  ? "border-fuchsia-300/60 bg-fuchsia-500/80 text-white"
+                                  : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                              }`}
+                            >
+                              {dia.dia}
+                            </ReliableActionButton>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )
+                ) : null}
+
+                {selectedDay ? (
+                  <p className="mt-3 text-sm text-slate-200">
+                    {selectedDay.planificacion || "Sin planificacion"}
                   </p>
-                </div>
-                <div className="rounded-xl border border-white/15 bg-slate-900/55 px-3 py-2 text-xs text-slate-200">
-                  <p>Equipo: {selectedDayRoutineEntry.sesion.equipo || "-"}</p>
-                  <p>Ultima actualizacion: {formatDateTime(selectedDayRoutineEntry.prescripcion?.createdAt || null)}</p>
-                </div>
-              </div>
+                ) : null}
+              </>
+            )}
+          </section>
 
-              {selectedDayRoutineEntry.prescripcion ? (
-                <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-sm text-emerald-100">
-                  <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">Prescripcion personalizada</p>
-                  <p className="mt-1">{selectedDayRoutineEntry.prescripcion.resumen || "Sin resumen"}</p>
-                  <p className="mt-1 text-xs text-emerald-50/90">
-                    Intensidad: {selectedDayRoutineEntry.prescripcion.intensidadDelta >= 0 ? "+" : ""}
-                    {selectedDayRoutineEntry.prescripcion.intensidadDelta}% · Volumen: {selectedDayRoutineEntry.prescripcion.volumenDelta >= 0 ? "+" : ""}
-                    {selectedDayRoutineEntry.prescripcion.volumenDelta}% · Readiness: {selectedDayRoutineEntry.prescripcion.readinessScore}
-                  </p>
-                </div>
-              ) : null}
-            </article>
-          ) : (
-            <div className="rounded-2xl border border-white/15 bg-slate-900/60 p-5 text-sm text-slate-300">
-              No hay sesiones asignadas para mostrar.
+          {selectedWeek && selectedDay && !selectedDayRoutineEntry ? (
+            <div className="rounded-2xl border border-amber-300/35 bg-amber-500/10 p-4 text-sm text-amber-100">
+              Este dia no tiene ejercicios cargados.
             </div>
-          )}
+          ) : null}
 
           <section className="rounded-2xl border border-white/15 bg-slate-950/45 p-2">
             <div className="flex flex-wrap gap-2">
@@ -3110,7 +3213,7 @@ export default function AlumnoVisionClient({
                 onClick={() => setTrainingView("descripcion")}
                 className={`rounded-xl px-4 py-2 text-sm font-bold ${
                   trainingView === "descripcion"
-                    ? "bg-fuchsia-500 text-white"
+                    ? "bg-cyan-400 text-slate-950"
                     : "border border-white/20 bg-white/5 text-slate-100"
                 }`}
               >
@@ -3121,7 +3224,7 @@ export default function AlumnoVisionClient({
                 onClick={() => setTrainingView("registros")}
                 className={`rounded-xl px-4 py-2 text-sm font-bold ${
                   trainingView === "registros"
-                    ? "bg-fuchsia-500 text-white"
+                    ? "bg-cyan-400 text-slate-950"
                     : "border border-white/20 bg-white/5 text-slate-100"
                 }`}
               >
@@ -3132,106 +3235,176 @@ export default function AlumnoVisionClient({
 
           {trainingView === "descripcion" ? (
             <section className="space-y-4">
-              <article className="rounded-2xl border border-cyan-300/25 bg-slate-950/55 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-cyan-100">Entrenamiento seleccionado</p>
-                    <h3 className="mt-1 text-xl font-black text-white">Semana y dia actual</h3>
-                    <p className="mt-1 text-sm text-slate-300">
-                      Vista separada por semana, dia y ejercicio. El registro se guarda en el ejercicio que selecciones.
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
-                    {weekPlanForAlumno.totalSemanas} semanas · {weekPlanForAlumno.totalDias} dias
-                  </div>
-                </div>
-
-                {!selectedWeek || !selectedDay ? (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
-                    Selecciona una semana y un dia para ver los ejercicios.
-                  </div>
-                ) : (
-                  <div className="mt-4 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/5 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h4 className="text-lg font-black text-white">{selectedWeek.nombre}</h4>
-                      <span className="rounded-lg border border-white/15 bg-white/[0.04] px-2 py-1 text-xs text-slate-200">
-                        {selectedDay.dia}
-                      </span>
-                    </div>
-                    {selectedWeek.objetivo ? (
-                      <p className="mt-1 text-sm text-cyan-100">Objetivo semanal: {selectedWeek.objetivo}</p>
-                    ) : null}
-                    <p className="mt-2 text-sm text-slate-100">{selectedDay.planificacion || "Sin planificacion"}</p>
-                    {selectedDay.objetivo ? (
-                      <p className="mt-1 text-xs text-fuchsia-100/90">Objetivo del dia: {selectedDay.objetivo}</p>
-                    ) : null}
-
-                    {selectedDayRoutineEntry ? (
-                      <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/45 p-3 text-xs text-slate-200">
-                        <p className="font-semibold text-white">{selectedDayRoutineEntry.sesion.titulo}</p>
-                        <p>
-                          {selectedDayRoutineEntry.sesion.duracion || "-"} min · {selectedDayRoutineEntry.totalBloques} bloques · {selectedDayRoutineEntry.totalEjercicios} ejercicios
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                        Dia sin sesion vinculada. Asigna una sesion desde el panel de semana para ver el detalle ejercicio por ejercicio.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </article>
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2">
+                <p className="text-sm font-semibold text-slate-100">
+                  {selectedDay
+                    ? `${selectedDay.dia}: ${selectedDay.planificacion || "Entrenamiento del dia"}`
+                    : "Selecciona un dia para ver ejercicios"}
+                </p>
+                <span className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-0.5 text-xs text-slate-300">
+                  {weekPlanForAlumno.totalSemanas} semanas · {weekPlanForAlumno.totalDias} dias
+                </span>
+              </div>
 
               {activeSessionExerciseDetails.length === 0 ? (
                 <div className="rounded-2xl border border-white/15 bg-slate-900/60 p-5 text-sm text-slate-300">
-                  Esta sesion no tiene bloques ni ejercicios cargados.
+                  Este dia no tiene bloques ni ejercicios cargados.
                 </div>
               ) : (
                 activeSessionExerciseDetails.map((bloque) => (
                   <article key={bloque.id} className="rounded-2xl border border-white/15 bg-slate-900/60 p-4">
-                    <h3 className="text-xl font-black text-white">{bloque.titulo}</h3>
-                    <p className="text-sm text-slate-300">{bloque.objetivo || "Sin objetivo"}</p>
-
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                      {(bloque.ejercicios || []).map((item, index) => {
-                        const detail = item.detail;
-                        const exerciseName = detail?.nombre || `Ejercicio ${index + 1}`;
-                        const exerciseKey = buildExerciseUiKey(String(bloque.id || "bloque"), String(item.ejercicioId || ""), index);
-                        const isSelectedExercise = selectedExerciseKey === exerciseKey;
-
-                        return (
-                          <div
-                            key={exerciseKey}
-                            className={`rounded-2xl border p-3 transition ${
-                              isSelectedExercise
-                                ? "border-cyan-300/40 bg-slate-900/75 shadow-[0_10px_24px_rgba(34,211,238,0.14)]"
-                                : "border-white/10 bg-slate-950/55"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleSelectExerciseForRecord(bloque, item, index)}
-                                className="text-left text-base font-black text-white underline decoration-cyan-300/70 underline-offset-4 transition hover:text-cyan-200"
-                              >
-                                {exerciseName}
-                              </button>
-                            </div>
-
-                            <div className="mt-2 grid grid-cols-2 gap-2">
-                              <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-300">Series</p>
-                                <p className="mt-1 text-sm font-bold text-white">{item.series}</p>
-                              </div>
-                              <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-300">Reps</p>
-                                <p className="mt-1 text-sm font-bold text-white">{item.repeticiones || "S/D"}</p>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="text-xl font-black text-white">{bloque.titulo || "Bloque"}</h3>
+                      <span className="rounded-full border border-white/20 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold text-slate-200">
+                        {(bloque.ejercicios || []).length} ejercicio(s)
+                      </span>
                     </div>
+                    <div className="mt-2 rounded-lg border border-white/10 bg-slate-800/45 px-3 py-2">
+                      <p className="text-sm text-slate-300">{bloque.objetivo || "Objetivo bloque"}</p>
+                    </div>
+
+                    {(bloque.ejercicios || []).length === 0 ? (
+                      <p className="mt-3 rounded-lg border border-white/10 bg-slate-950/45 px-3 py-2 text-sm text-slate-400">
+                        Este bloque no tiene ejercicios cargados.
+                      </p>
+                    ) : (
+                      <div className="mt-3 space-y-3">
+                        {(bloque.ejercicios || []).map((item, index) => {
+                          const detail = item.detail;
+                          const exerciseName = detail?.nombre || `Ejercicio ${index + 1}`;
+                          const exerciseKey = buildExerciseUiKey(String(bloque.id || "bloque"), String(item.ejercicioId || ""), index);
+                          const isSelectedExercise = selectedExerciseKey === exerciseKey;
+                          const previewImage = resolveExercisePreviewImage(String(detail?.videoUrl || ""));
+                          const metricas = Array.isArray(item.metricas) ? item.metricas : [];
+                          const descanso =
+                            item.descanso ||
+                            metricas.find((m) => /desc|rest/i.test(String(m.nombre || "")))?.valor ||
+                            "0";
+                          const rir =
+                            metricas.find((m) => /rir/i.test(String(m.nombre || "")))?.valor ||
+                            "S/D";
+                          const carga =
+                            item.carga ||
+                            metricas.find((m) => /peso|kg|carga|load/i.test(String(m.nombre || "")))?.valor ||
+                            "0";
+                          const observaciones =
+                            String(item.observaciones || "").trim() ||
+                            metricas.find((m) => /obs|nota|comment/i.test(String(m.nombre || "")))?.valor ||
+                            "S/D";
+                          const gruposMusculares =
+                            Array.isArray(detail?.gruposMusculares) && detail.gruposMusculares.length > 0
+                              ? detail.gruposMusculares
+                                  .map((group) => String(group || "").trim())
+                                  .filter(Boolean)
+                                  .slice(0, 8)
+                              : [];
+
+                          return (
+                            <article
+                              key={exerciseKey}
+                              className={`rounded-xl border p-3 transition ${
+                                isSelectedExercise
+                                  ? "border-cyan-300/40 bg-slate-900/80 shadow-[0_10px_24px_rgba(34,211,238,0.16)]"
+                                  : "border-white/10 bg-slate-950/45"
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectExerciseForRecord(bloque, item, index)}
+                                  className="h-16 w-24 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-slate-800"
+                                  title="Abrir ejercicio"
+                                >
+                                  {previewImage ? (
+                                    <img
+                                      src={previewImage}
+                                      alt={exerciseName}
+                                      className="h-full w-full object-cover"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <span className="block px-1 text-[10px] font-semibold text-slate-300">Sin preview</span>
+                                  )}
+                                </button>
+
+                                <div className="min-w-0 flex-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleSelectExerciseForRecord(bloque, item, index);
+                                      setSelectedExerciseSubView("nuevo-registro");
+                                    }}
+                                    className="block text-left text-[1.35rem] font-black leading-tight text-white underline decoration-transparent underline-offset-4 transition hover:decoration-cyan-300"
+                                  >
+                                    {exerciseName}
+                                  </button>
+
+                                  <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px] sm:grid-cols-3 xl:grid-cols-6">
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">Series</p>
+                                      <p className="font-semibold text-white">{item.series}</p>
+                                    </div>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">Rep.</p>
+                                      <p className="font-semibold text-white">{item.repeticiones || "0"}</p>
+                                    </div>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">Desc.</p>
+                                      <p className="font-semibold text-white">{descanso}</p>
+                                    </div>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">RIR</p>
+                                      <p className="font-semibold text-white">{rir}</p>
+                                    </div>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">Carga (Kg)</p>
+                                      <p className="font-semibold text-white">{carga}</p>
+                                    </div>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                                      <p className="text-slate-400">Obs.</p>
+                                      <p className="truncate font-semibold text-white">{observaciones}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {gruposMusculares.length > 0 ? (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {gruposMusculares.map((group) => (
+                                    <span
+                                      key={`${exerciseKey}-${group}`}
+                                      className="rounded-md border border-violet-200/30 bg-violet-500/20 px-2 py-0.5 text-[11px] font-semibold text-violet-100"
+                                    >
+                                      {group}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null}
+
+                              <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold">
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => {
+                                    handleSelectExerciseForRecord(bloque, item, index);
+                                    setSelectedExerciseSubView("registros");
+                                  }}
+                                  className="text-cyan-300"
+                                >
+                                  Ver pesos
+                                </ReliableActionButton>
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => handleSelectExerciseForRecord(bloque, item, index)}
+                                  className="text-cyan-300"
+                                >
+                                  Registrar peso
+                                </ReliableActionButton>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    )}
                   </article>
                 ))
               )}
@@ -3276,8 +3449,8 @@ export default function AlumnoVisionClient({
                           </div>
 
                           <div className="flex-1 overflow-y-auto p-4">
-                            <div className="grid gap-4 xl:grid-cols-[1.15fr_1fr]">
-                              <div className="rounded-xl border border-cyan-300/25 bg-slate-900/60 p-3">
+                            <div className="grid gap-4">
+                              <div className="order-2 rounded-xl border border-cyan-300/25 bg-slate-900/60 p-3">
                                 <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">
                                   Descripcion del ejercicio
                                 </p>
@@ -3318,7 +3491,7 @@ export default function AlumnoVisionClient({
                                     <iframe
                                       title={`video-${exerciseKey}`}
                                       src={exerciseVideoEmbed}
-                                      className="mt-2 h-56 w-full rounded-xl border border-white/20"
+                                      className="mt-2 aspect-video w-full min-h-[22rem] rounded-xl border border-white/20 md:min-h-[28rem]"
                                       loading="lazy"
                                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                       allowFullScreen
@@ -3338,7 +3511,7 @@ export default function AlumnoVisionClient({
                                 </div>
                               </div>
 
-                              <div className="rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3">
+                              <div className="order-1 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3">
                                 <div className="flex flex-wrap gap-2">
                                   <ReliableActionButton
                                     type="button"
@@ -3597,8 +3770,88 @@ export default function AlumnoVisionClient({
             disabled={!routineEntryForLogs}
             className="w-full rounded-2xl bg-fuchsia-600 px-4 py-3 text-lg font-black text-white transition hover:bg-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Finalizar sesion
+            Finalizar entrenamiento
           </ReliableActionButton>
+
+          <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-3">
+            <ReliableActionButton
+              type="button"
+              onClick={() => setShowInteractionPanel((prev) => !prev)}
+              className="flex w-full items-center justify-between rounded-xl border border-emerald-200/35 bg-emerald-950/45 px-3 py-2 text-left"
+            >
+              <span className="flex items-center gap-2">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200/35 bg-emerald-500/20 text-emerald-100">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.94 0-3.73-.64-5.17-1.72L3 19l.9-4.08A8.5 8.5 0 1 1 21 11.5Z" />
+                    <path d="M8.5 10.5h7" />
+                    <path d="M8.5 13.5h4.5" />
+                  </svg>
+                </span>
+                <span>
+                  <p className="text-sm font-black text-white">Enviar solicitud al profesor</p>
+                  <p className="text-xs text-emerald-100/85">
+                    {showInteractionPanel ? "Ocultar opciones" : "Abrir opciones rapidas"}
+                  </p>
+                </span>
+              </span>
+              <span className="rounded-lg border border-emerald-200/35 bg-emerald-900/50 px-2 py-1 text-right">
+                <span className="block text-[10px] uppercase tracking-[0.12em] text-emerald-100/85">Pend.</span>
+                <span className="block text-base font-black text-white">{pendingInteractionCount}</span>
+              </span>
+            </ReliableActionButton>
+
+            {showInteractionPanel ? (
+              <>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleSendRoutineInteraction("cambio-rutina")}
+                    className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 p-3 text-left"
+                  >
+                    <p className="text-sm font-black text-white">Solicitar cambio de rutina</p>
+                    <p className="mt-1 text-xs text-cyan-100">Ajustes por carga, tiempo o molestias.</p>
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleSendRoutineInteraction("ajuste-nutricion")}
+                    className="rounded-xl border border-fuchsia-300/35 bg-fuchsia-500/15 p-3 text-left"
+                  >
+                    <p className="text-sm font-black text-white">Solicitar plan nutricional</p>
+                    <p className="mt-1 text-xs text-fuchsia-100">Cambios de porciones, horarios o comidas.</p>
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleSendRoutineInteraction("pregunta-profesor")}
+                    disabled={!canOpenProfessorWhatsApp}
+                    className="rounded-xl border border-white/20 bg-slate-950/60 p-3 text-left disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    <p className="text-sm font-black text-white">Pregunta al profesor (WhatsApp)</p>
+                    <p className="mt-1 text-xs text-slate-300">
+                      {canOpenProfessorWhatsApp
+                        ? `Chat directo con ${profesorContacto?.nombre || "profesor"}.`
+                        : "Sin numero de WhatsApp configurado."}
+                    </p>
+                  </ReliableActionButton>
+                </div>
+
+                {interactionStatus ? <p className="mt-3 text-xs text-emerald-100">{interactionStatus}</p> : null}
+                {latestInteractionRequest ? (
+                  <p className="mt-1 text-xs text-emerald-100/80">
+                    Ultima solicitud: {latestInteractionRequest.title} · {formatDateTime(latestInteractionRequest.createdAt)}
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         </section>
       ) : null}
 
@@ -4093,6 +4346,42 @@ export default function AlumnoVisionClient({
           )}
         </section>
       ) : null}
+
+      <nav className="fixed inset-x-0 bottom-3 z-[95] px-3 xl:hidden" aria-label="Navegacion principal del alumno">
+        <div className="mx-auto max-w-md rounded-2xl border border-white/15 bg-slate-950/92 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.6)] backdrop-blur-md">
+          <div className="grid grid-cols-4 gap-1.5">
+            {mobileDockItems.map((item) => {
+              const isActive = mainCategory === item.id;
+
+              return (
+                <ReliableActionButton
+                  key={item.id}
+                  type="button"
+                  onClick={() => goToAlumnoCategory(item.id)}
+                  className={`rounded-xl border px-1.5 py-2 text-center transition ${
+                    isActive
+                      ? "border-cyan-200/70 bg-cyan-400/20"
+                      : "border-white/15 bg-slate-900/55"
+                  }`}
+                >
+                  <span
+                    className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-black ${
+                      isActive
+                        ? "border-cyan-200/70 bg-cyan-500/35 text-cyan-50"
+                        : "border-white/25 bg-white/5 text-slate-200"
+                    }`}
+                  >
+                    {item.iconLabel}
+                  </span>
+                  <span className={`mt-1 block text-[11px] font-semibold ${isActive ? "text-cyan-100" : "text-slate-300"}`}>
+                    {item.label}
+                  </span>
+                </ReliableActionButton>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
 
       {questionnaireOpen ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/85 p-4">

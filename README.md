@@ -143,6 +143,52 @@ Este flujo hace automaticamente:
 
 No necesitas pasar flags ni completar nada manualmente.
 
+## Pagos de alumnos (Mercado Pago + manual con confirmacion admin)
+
+El flujo de pagos del alumno combina checkout de Mercado Pago y metodos manuales (transferencia/efectivo):
+
+- Checkout del alumno: `/alumnos/pagos`
+- API de estado: `/api/payments/status`
+- API de checkout: `/api/payments/checkout`
+- API de aviso manual alumno: `/api/payments/manual`
+- Webhook: `/api/payments/webhook/mercadopago`
+- Panel admin de confirmaciones: `/admin/pagos`
+- API admin de confirmaciones: `/api/admin/payments/manual`
+
+Variables necesarias:
+
+```bash
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
+MERCADOPAGO_WEBHOOK_TOKEN=token-seguro-webhook
+PF_PAYMENT_DEFAULT_AMOUNT_ARS=15000
+```
+
+Variables opcionales recomendadas:
+
+```bash
+MERCADOPAGO_COLLECTOR_ID=123456789
+PF_MERCADOPAGO_ACCOUNT_LABEL=Mi cuenta Mercado Pago
+```
+
+Notas de configuracion:
+
+- `MERCADOPAGO_ACCESS_TOKEN` debe ser de tu cuenta vendedora de Mercado Pago (la que recibe el dinero).
+- Si defines `MERCADOPAGO_COLLECTOR_ID`, el checkout valida que el token realmente pertenezca a esa cuenta y bloquea cobros con una cuenta equivocada.
+- `PF_MERCADOPAGO_ACCOUNT_LABEL` se muestra en la vista del alumno para identificar la cuenta receptora.
+
+Configura en Mercado Pago la URL de notificacion apuntando a:
+
+```bash
+https://TU_DOMINIO/api/payments/webhook/mercadopago?token=token-seguro-webhook
+```
+
+Comportamiento esperado:
+
+- Si el pase esta vencido o pendiente, el alumno queda inhabilitado para el resto del modulo y es redirigido a pagos.
+- Cuando Mercado Pago confirma `approved`, el sistema renueva automaticamente la vigencia y rehabilita el acceso.
+- Si el alumno informa transferencia o efectivo, queda una orden manual pendiente hasta que un admin la apruebe o rechace en `/admin/pagos`.
+- Al aprobar una orden manual, el sistema renueva el pase automaticamente igual que en Mercado Pago.
+
 ## Getting Started
 
 First, run the development server:

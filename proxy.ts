@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 
 const CLIENTE_ALLOWED_PREFIXES = ['/alumnos', '/cuenta'];
+const CLIENTE_PAYMENT_ALLOWED_PREFIXES = ['/alumnos/pagos', '/cuenta'];
 
 function normalizePath(pathname: string): string {
   if (pathname !== '/' && pathname.endsWith('/')) {
@@ -35,6 +36,18 @@ function canClienteAccess(pathname: string): boolean {
   );
 }
 
+function canClienteAccessWhilePaymentPending(pathname: string): boolean {
+  const normalized = normalizePath(pathname);
+
+  if (normalized === '/') {
+    return false;
+  }
+
+  return CLIENTE_PAYMENT_ALLOWED_PREFIXES.some(
+    (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`)
+  );
+}
+
 export default auth((req) => {
   const session = req.auth;
   const pathname = normalizePath(req.nextUrl.pathname);
@@ -56,6 +69,22 @@ export default auth((req) => {
   }
 
   if (role === 'CLIENTE') {
+    const subscriptionActive =
+      (session.user as { subscriptionActive?: boolean | null } | undefined)?.subscriptionActive !==
+      false;
+
+    if (!subscriptionActive) {
+      if (!canClienteAccessWhilePaymentPending(pathname)) {
+        return NextResponse.redirect(new URL('/alumnos/pagos', req.url));
+      }
+
+      return NextResponse.next();
+    }
+
+    if (pathname === '/alumnos/pagos') {
+      return NextResponse.redirect(new URL('/alumnos/inicio', req.url));
+    }
+
     if (!canClienteAccess(pathname)) {
       return NextResponse.redirect(new URL('/alumnos', req.url));
     }

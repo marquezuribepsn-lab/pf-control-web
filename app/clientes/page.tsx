@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useDeportes } from "../../components/DeportesProvider";
+import { useEjercicios } from "../../components/EjerciciosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
 import { useSessions } from "../../components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "../../components/useSharedState";
@@ -198,6 +199,65 @@ type NutritionFood = {
   fatPer100g: number;
 };
 
+type PersonaTipoPlan = "jugadoras" | "alumnos";
+
+type WeekExerciseLite = {
+  id: string;
+  ejercicioId: string;
+  series: string;
+  repeticiones: string;
+  descanso: string;
+  carga: string;
+  superSerie: Array<{
+    id: string;
+    ejercicioId: string;
+    series: string;
+    repeticiones: string;
+    descanso: string;
+    carga: string;
+  }>;
+};
+
+type WeekBlockLite = {
+  id: string;
+  titulo: string;
+  objetivo: string;
+  ejercicios: WeekExerciseLite[];
+};
+
+type WeekDayTrainingLite = {
+  bloques: WeekBlockLite[];
+};
+
+type WeekDayPlanLite = {
+  id: string;
+  dia: string;
+  planificacion: string;
+  objetivo: string;
+  sesionId: string;
+  entrenamiento?: WeekDayTrainingLite;
+};
+
+type WeekPlanLite = {
+  id: string;
+  nombre: string;
+  objetivo: string;
+  dias: WeekDayPlanLite[];
+};
+
+type WeekPersonPlanLite = {
+  ownerKey: string;
+  tipo: PersonaTipoPlan;
+  nombre: string;
+  categoria?: string;
+  semanas: WeekPlanLite[];
+};
+
+type WeekStoreLite = {
+  version: number;
+  planes: WeekPersonPlanLite[];
+};
+
 type PresenceSnapshot = {
   userId: string | null;
   email: string | null;
@@ -241,6 +301,7 @@ const CLIENT_TABLE_UI_KEY_PREFIX = "pf-control-clientes-table-ui-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const PRESENCE_REFRESH_MS = 30_000;
 
 const DEFAULT_COLUMN_WIDTHS: Record<ClientTableColumnKey, number> = {
@@ -354,6 +415,125 @@ function namesLikelyMatch(a: string, b: string): boolean {
 
   // Considera match cuando comparte al menos 2 tokens, o 1 token largo.
   return shared.length >= 2 || shared.some((token) => token.length >= 5);
+}
+
+function toPlanPersonaTipo(tipo: ClienteTipo): PersonaTipoPlan {
+  return tipo === "jugadora" ? "jugadoras" : "alumnos";
+}
+
+function buildTrainingOwnerKey(tipo: PersonaTipoPlan, nombre: string): string {
+  return `${tipo}:${String(nombre || "").trim().toLowerCase()}`;
+}
+
+function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
+  const source = rawValue && typeof rawValue === "object" ? (rawValue as Record<string, unknown>) : {};
+  const rawPlanes = Array.isArray(source.planes) ? source.planes : [];
+
+  const planes: WeekPersonPlanLite[] = rawPlanes
+    .filter((row) => row && typeof row === "object")
+    .map((row, rowIndex) => {
+      const item = row as Record<string, unknown>;
+      const tipo: PersonaTipoPlan = item.tipo === "jugadoras" ? "jugadoras" : "alumnos";
+      const nombre = String(item.nombre || `Plan ${rowIndex + 1}`).trim() || `Plan ${rowIndex + 1}`;
+      const ownerKey =
+        String(item.ownerKey || buildTrainingOwnerKey(tipo, nombre)).trim().toLowerCase() ||
+        buildTrainingOwnerKey(tipo, nombre);
+      const semanasRaw = Array.isArray(item.semanas) ? item.semanas : [];
+
+      const semanas: WeekPlanLite[] = semanasRaw
+        .filter((week) => week && typeof week === "object")
+        .map((week, weekIndex) => {
+          const weekRow = week as Record<string, unknown>;
+          const diasRaw = Array.isArray(weekRow.dias) ? weekRow.dias : [];
+
+          const dias: WeekDayPlanLite[] = diasRaw
+            .filter((day) => day && typeof day === "object")
+            .map((day, dayIndex) => {
+              const dayRow = day as Record<string, unknown>;
+              const entrenamientoRaw =
+                dayRow.entrenamiento && typeof dayRow.entrenamiento === "object"
+                  ? (dayRow.entrenamiento as Record<string, unknown>)
+                  : null;
+              const bloquesRaw = Array.isArray(entrenamientoRaw?.bloques) ? entrenamientoRaw?.bloques : [];
+
+              const bloques: WeekBlockLite[] = bloquesRaw
+                .filter((block) => block && typeof block === "object")
+                .map((block, blockIndex) => {
+                  const blockRow = block as Record<string, unknown>;
+                  const ejerciciosRaw = Array.isArray(blockRow.ejercicios) ? blockRow.ejercicios : [];
+
+                  const ejercicios: WeekExerciseLite[] = ejerciciosRaw
+                    .filter((exercise) => exercise && typeof exercise === "object")
+                    .map((exercise, exerciseIndex) => {
+                      const exerciseRow = exercise as Record<string, unknown>;
+                      const superSerieRaw = Array.isArray(exerciseRow.superSerie) ? exerciseRow.superSerie : [];
+
+                      return {
+                        id: String(exerciseRow.id || `exercise-${exerciseIndex}`),
+                        ejercicioId: String(exerciseRow.ejercicioId || ""),
+                        series: String(exerciseRow.series || ""),
+                        repeticiones: String(exerciseRow.repeticiones || ""),
+                        descanso: String(exerciseRow.descanso || ""),
+                        carga: String(exerciseRow.carga || ""),
+                        superSerie: superSerieRaw
+                          .filter((superItem) => superItem && typeof superItem === "object")
+                          .map((superItem, superIndex) => {
+                            const superRow = superItem as Record<string, unknown>;
+                            return {
+                              id: String(superRow.id || `super-${superIndex}`),
+                              ejercicioId: String(superRow.ejercicioId || ""),
+                              series: String(superRow.series || ""),
+                              repeticiones: String(superRow.repeticiones || ""),
+                              descanso: String(superRow.descanso || ""),
+                              carga: String(superRow.carga || ""),
+                            };
+                          }),
+                      };
+                    });
+
+                  return {
+                    id: String(blockRow.id || `block-${blockIndex}`),
+                    titulo: String(blockRow.titulo || `Bloque ${blockIndex + 1}`),
+                    objetivo: String(blockRow.objetivo || ""),
+                    ejercicios,
+                  };
+                });
+
+              return {
+                id: String(dayRow.id || `day-${dayIndex}`),
+                dia: String(dayRow.dia || `Dia ${dayIndex + 1}`),
+                planificacion: String(dayRow.planificacion || ""),
+                objetivo: String(dayRow.objetivo || ""),
+                sesionId: String(dayRow.sesionId || ""),
+                entrenamiento: entrenamientoRaw
+                  ? {
+                      bloques,
+                    }
+                  : undefined,
+              };
+            });
+
+          return {
+            id: String(weekRow.id || `week-${weekIndex}`),
+            nombre: String(weekRow.nombre || `Semana ${weekIndex + 1}`),
+            objetivo: String(weekRow.objetivo || ""),
+            dias,
+          };
+        });
+
+      return {
+        ownerKey,
+        tipo,
+        nombre,
+        categoria: String(item.categoria || "").trim() || undefined,
+        semanas,
+      };
+    });
+
+  return {
+    version: Number(source.version) || 3,
+    planes,
+  };
 }
 
 function splitDisplayName(fullName: string) {
@@ -599,6 +779,7 @@ export default function ClientesPage() {
   const { alumnos, agregarAlumno, editarAlumno, eliminarAlumno } = useAlumnos();
   const { categorias } = useCategories();
   const { deportes } = useDeportes();
+  const { ejercicios } = useEjercicios();
   const { sesiones } = useSessions();
 
   const sessionScope = useMemo(() => {
@@ -649,6 +830,16 @@ export default function ClientesPage() {
     key: NUTRITION_CUSTOM_FOODS_KEY,
     legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
   });
+  const [weekStoreRaw] = useSharedState<WeekStoreLite>(
+    {
+      version: 3,
+      planes: [],
+    },
+    {
+      key: WEEK_PLAN_KEY,
+      legacyLocalStorageKey: WEEK_PLAN_KEY,
+    }
+  );
 
   const [vista, setVista] = useState<ClienteEstado>("activo");
   const [search, setSearch] = useState("");
@@ -675,6 +866,8 @@ export default function ClientesPage() {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+  const [trainingPreviewWeekId, setTrainingPreviewWeekId] = useState("");
+  const [trainingPreviewDayId, setTrainingPreviewDayId] = useState("");
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
   const isAdmin = userRole === 'ADMIN';
@@ -1309,6 +1502,113 @@ export default function ClientesPage() {
     };
   }, [clientesMeta, selectedClient]);
 
+  const weekStore = useMemo(() => normalizeWeekStore(weekStoreRaw), [weekStoreRaw]);
+
+  const selectedClientTrainingPlan = useMemo(() => {
+    if (!selectedClient) return null;
+
+    const tipo = toPlanPersonaTipo(selectedClient.tipo);
+    const ownerKey = buildTrainingOwnerKey(tipo, selectedClient.nombre);
+    const exact = weekStore.planes.find((plan) => plan.ownerKey === ownerKey) || null;
+    if (exact) {
+      return exact;
+    }
+
+    return (
+      weekStore.planes.find(
+        (plan) =>
+          plan.tipo === tipo &&
+          (namesLikelyMatch(plan.nombre, selectedClient.nombre) ||
+            namesLikelyMatch(plan.ownerKey.split(":")[1] || "", selectedClient.nombre))
+      ) || null
+    );
+  }, [selectedClient, weekStore.planes]);
+
+  const selectedTrainingWeek = useMemo(
+    () => selectedClientTrainingPlan?.semanas.find((week) => week.id === trainingPreviewWeekId) || null,
+    [selectedClientTrainingPlan?.semanas, trainingPreviewWeekId]
+  );
+
+  const selectedTrainingDay = useMemo(
+    () => selectedTrainingWeek?.dias.find((day) => day.id === trainingPreviewDayId) || null,
+    [selectedTrainingWeek, trainingPreviewDayId]
+  );
+
+  const selectedTrainingLinkedSession = useMemo(() => {
+    if (!selectedTrainingDay?.sesionId) return null;
+    return sesiones.find((session) => session.id === selectedTrainingDay.sesionId) || null;
+  }, [selectedTrainingDay?.sesionId, sesiones]);
+
+  const selectedTrainingDayBlocks = useMemo(() => {
+    if (selectedTrainingDay?.entrenamiento?.bloques && selectedTrainingDay.entrenamiento.bloques.length > 0) {
+      return selectedTrainingDay.entrenamiento.bloques;
+    }
+
+    return selectedTrainingLinkedSession?.bloques || [];
+  }, [selectedTrainingDay?.entrenamiento?.bloques, selectedTrainingLinkedSession?.bloques]);
+
+  const selectedTrainingDayBlockSummary = useMemo(
+    () => selectedTrainingDayBlocks.reduce((acc, block) => acc + (block.ejercicios || []).length, 0),
+    [selectedTrainingDayBlocks]
+  );
+
+  const trainingPreviewStats = useMemo(() => {
+    const weeks = selectedClientTrainingPlan?.semanas || [];
+    const totalDias = weeks.reduce((acc, week) => acc + (week.dias || []).length, 0);
+    const diasConSesion = weeks.reduce(
+      (acc, week) => acc + (week.dias || []).filter((day) => Boolean((day.sesionId || "").trim())).length,
+      0
+    );
+    const totalBloques = weeks.reduce(
+      (acc, week) =>
+        acc +
+        (week.dias || []).reduce(
+          (dayAcc, day) => dayAcc + (day.entrenamiento?.bloques?.length || 0),
+          0
+        ),
+      0
+    );
+
+    return {
+      totalSemanas: weeks.length,
+      totalDias,
+      diasConSesion,
+      totalBloques,
+    };
+  }, [selectedClientTrainingPlan]);
+
+  useEffect(() => {
+    const weeks = selectedClientTrainingPlan?.semanas || [];
+
+    if (weeks.length === 0) {
+      if (trainingPreviewWeekId) {
+        setTrainingPreviewWeekId("");
+      }
+      if (trainingPreviewDayId) {
+        setTrainingPreviewDayId("");
+      }
+      return;
+    }
+
+    const currentWeek = weeks.find((week) => week.id === trainingPreviewWeekId) || weeks[0];
+    if (currentWeek.id !== trainingPreviewWeekId) {
+      setTrainingPreviewWeekId(currentWeek.id);
+    }
+
+    const days = currentWeek.dias || [];
+    if (days.length === 0) {
+      if (trainingPreviewDayId) {
+        setTrainingPreviewDayId("");
+      }
+      return;
+    }
+
+    const currentDay = days.find((day) => day.id === trainingPreviewDayId) || days[0];
+    if (currentDay.id !== trainingPreviewDayId) {
+      setTrainingPreviewDayId(currentDay.id);
+    }
+  }, [selectedClientTrainingPlan, trainingPreviewDayId, trainingPreviewWeekId]);
+
   const sesionesCliente = useMemo(() => {
     if (!selectedClient) return [];
 
@@ -1331,6 +1631,18 @@ export default function ClientesPage() {
       })
       .slice(0, 8);
   }, [selectedClient, sesiones]);
+
+  const sesionesClienteResumen = useMemo(() => {
+    const total = sesionesCliente.length;
+    const conObjetivo = sesionesCliente.filter((session) => Boolean((session.objetivo || "").trim())).length;
+    const bloques = sesionesCliente.reduce((acc, session) => acc + (session.bloques || []).length, 0);
+
+    return {
+      total,
+      conObjetivo,
+      bloques,
+    };
+  }, [sesionesCliente]);
 
   const resumen = useMemo(() => {
     const activos = clientes.filter((item) => item.estado === "activo").length;
@@ -2761,36 +3073,219 @@ export default function ClientesPage() {
                     </div>
                   </div>
                 ) : activeTab === "plan-entrenamiento" ? (
-                  <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <h3 className="text-lg font-black text-white">Plan de entrenamiento</h3>
-                      <Link
-                        href={
-                          selectedClient
-                            ? `${buildPlanViewHref(selectedClient.id, "plan-entrenamiento")}#asignar-entrenamiento`
-                            : "/clientes"
-                        }
-                        className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
-                      >
-                        Asignar entrenamiento
-                      </Link>
+                  <div className="rounded-2xl border-2 border-cyan-300/35 bg-cyan-500/[0.08] p-4 sm:p-5">
+                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Templates</p>
+                        <h3 className="mt-1 text-lg font-black text-white">Plan de entrenamiento</h3>
+                        <p className="mt-1 text-sm text-slate-200/90">
+                          Vista completa del entrenamiento en formato tipo template, con semanas, dias, bloques y ejercicios.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={
+                            selectedClient
+                              ? `${buildPlanViewHref(selectedClient.id, "plan-entrenamiento")}#asignar-entrenamiento`
+                              : "/clientes"
+                          }
+                          className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                        >
+                          Asignar entrenamiento
+                        </Link>
+                        <Link
+                          href={
+                            selectedClient
+                              ? buildPlanViewHref(selectedClient.id, "plan-entrenamiento")
+                              : "/clientes"
+                          }
+                          className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                        >
+                          Editar plan completo
+                        </Link>
+                      </div>
                     </div>
 
-                    {sesionesCliente.length === 0 ? (
-                      <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
-                        No hay sesiones vinculadas para este cliente todavia.
-                      </p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                      <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
+                        Semanas: <span className="font-semibold text-white">{trainingPreviewStats.totalSemanas}</span>
+                      </div>
+                      <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+                        Dias: <span className="font-semibold">{trainingPreviewStats.totalDias}</span>
+                      </div>
+                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
+                        Con sesion: <span className="font-semibold">{trainingPreviewStats.diasConSesion}</span>
+                      </div>
+                      <div className="rounded-xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-3 text-xs text-fuchsia-100">
+                        Bloques: <span className="font-semibold">{trainingPreviewStats.totalBloques}</span>
+                      </div>
+                    </div>
+
+                    {!selectedClientTrainingPlan ? (
+                      <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                        <p>No hay un plan semanal vinculado para este cliente todavia.</p>
+                        {sesionesCliente.length > 0 ? (
+                          <p className="mt-2 text-xs text-cyan-100/90">
+                            Sesiones detectadas: {sesionesClienteResumen.total}. Puedes enlazarlas en el editor completo.
+                          </p>
+                        ) : null}
+                      </div>
                     ) : (
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {sesionesCliente.map((sesion) => (
-                          <article key={sesion.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
-                            <p className="text-lg font-bold text-white">{sesion.titulo}</p>
-                            <p className="mt-1 text-sm text-slate-300">{sesion.objetivo}</p>
-                            <p className="mt-2 text-xs font-semibold text-cyan-100">
-                              {sesion.duracion} min · {sesion.bloques.length} bloques
-                            </p>
-                          </article>
-                        ))}
+                      <div className="mt-4 space-y-4">
+                        <section className="rounded-xl border border-white/15 bg-slate-950/45 p-3">
+                          <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Semanas del template</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(selectedClientTrainingPlan.semanas || []).map((week) => (
+                              <ReliableActionButton
+                                key={week.id}
+                                type="button"
+                                onClick={() => setTrainingPreviewWeekId(week.id)}
+                                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                                  trainingPreviewWeekId === week.id
+                                    ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
+                                    : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                }`}
+                              >
+                                {week.nombre || "Semana"}
+                              </ReliableActionButton>
+                            ))}
+                          </div>
+                        </section>
+
+                        {selectedTrainingWeek ? (
+                          <section className="rounded-xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-3">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.12em] text-fuchsia-100/85">Semana activa</p>
+                                <p className="mt-1 text-base font-black text-white">{selectedTrainingWeek.nombre}</p>
+                                <p className="mt-1 text-xs text-slate-300">
+                                  {selectedTrainingWeek.objetivo || "Sin objetivo semanal"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {(selectedTrainingWeek.dias || []).map((day) => (
+                                <ReliableActionButton
+                                  key={day.id}
+                                  type="button"
+                                  onClick={() => setTrainingPreviewDayId(day.id)}
+                                  className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                                    trainingPreviewDayId === day.id
+                                      ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
+                                      : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                  }`}
+                                >
+                                  {day.dia || "Dia"}
+                                </ReliableActionButton>
+                              ))}
+                            </div>
+                          </section>
+                        ) : null}
+
+                        {selectedTrainingDay ? (
+                          <section className="rounded-xl border border-cyan-300/20 bg-slate-950/45 p-3">
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Dia activo</p>
+                                <h4 className="mt-1 text-base font-black text-white">{selectedTrainingDay.dia}</h4>
+                                <p className="mt-1 text-sm text-slate-200">{selectedTrainingDay.planificacion || "Sin planificacion"}</p>
+                                {selectedTrainingDay.objetivo ? (
+                                  <p className="mt-1 text-xs text-fuchsia-100/90">
+                                    Objetivo del dia: {selectedTrainingDay.objetivo}
+                                  </p>
+                                ) : null}
+                              </div>
+
+                              <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                                {selectedTrainingDayBlockSummary} ejercicios
+                              </span>
+                            </div>
+
+                            {selectedTrainingLinkedSession ? (
+                              <div className="mt-3 rounded-lg border border-cyan-300/20 bg-cyan-500/[0.06] p-3 text-xs text-cyan-100">
+                                Sesion vinculada: {selectedTrainingLinkedSession.titulo} · {selectedTrainingLinkedSession.duracion || "-"} min
+                              </div>
+                            ) : null}
+
+                            {selectedTrainingDayBlocks.length === 0 ? (
+                              <p className="mt-3 rounded-lg border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-300">
+                                Este dia no tiene bloques cargados todavia.
+                              </p>
+                            ) : (
+                              <div className="mt-3 space-y-2">
+                                {selectedTrainingDayBlocks.map((block, blockIndex) => (
+                                  <article
+                                    key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
+                                    className="rounded-lg border border-white/12 bg-slate-900/60 p-3"
+                                  >
+                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                      <p className="text-sm font-bold text-white">
+                                        {block.titulo || `Bloque ${blockIndex + 1}`}
+                                      </p>
+                                      <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                                        {(block.ejercicios || []).length} ejercicios
+                                      </span>
+                                    </div>
+
+                                    {block.objetivo ? (
+                                      <p className="mt-1 text-xs text-slate-300">{block.objetivo}</p>
+                                    ) : null}
+
+                                    {(block.ejercicios || []).length === 0 ? (
+                                      <p className="mt-2 text-xs text-slate-400">Sin ejercicios en este bloque.</p>
+                                    ) : (
+                                      <div className="mt-2 grid gap-2 md:grid-cols-2">
+                                        {(block.ejercicios || []).map((exercise, exerciseIndex) => {
+                                          const baseExerciseName =
+                                            ejercicios.find((item) => item.id === exercise.ejercicioId)?.nombre ||
+                                            "Ejercicio";
+                                          const superSerieRows =
+                                            "superSerie" in exercise &&
+                                            Array.isArray((exercise as { superSerie?: unknown }).superSerie)
+                                              ? (exercise as WeekExerciseLite).superSerie
+                                              : [];
+
+                                          return (
+                                            <div
+                                              key={`${block.id || blockIndex}-exercise-${exerciseIndex}-${exercise.ejercicioId || "base"}`}
+                                              className="rounded-md border border-white/10 bg-slate-950/45 p-2"
+                                            >
+                                              <p className="text-xs font-semibold text-white">{baseExerciseName}</p>
+                                              <p className="mt-1 text-[11px] text-slate-300">
+                                                {exercise.series || "-"} x {exercise.repeticiones || "-"} · Descanso {exercise.descanso || "-"} · Carga {exercise.carga || "-"}
+                                              </p>
+
+                                              {superSerieRows.length > 0 ? (
+                                                <div className="mt-2 space-y-1 border-t border-violet-300/25 pt-2">
+                                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-100">Super serie</p>
+                                                  {superSerieRows.map((superItem, superIndex) => {
+                                                    const superExerciseName =
+                                                      ejercicios.find((item) => item.id === superItem.ejercicioId)
+                                                        ?.nombre || "Ejercicio";
+                                                    return (
+                                                      <p
+                                                        key={superItem.id || `${exerciseIndex}-super-${superIndex}`}
+                                                        className="text-[11px] text-violet-100/90"
+                                                      >
+                                                        {superExerciseName} · {superItem.series || "-"} x {superItem.repeticiones || "-"} · Descanso {superItem.descanso || "-"}
+                                                      </p>
+                                                    );
+                                                  })}
+                                                </div>
+                                              ) : null}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </article>
+                                ))}
+                              </div>
+                            )}
+                          </section>
+                        ) : null}
                       </div>
                     )}
                   </div>

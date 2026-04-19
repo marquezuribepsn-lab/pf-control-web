@@ -1,7 +1,9 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import * as XLSX from "xlsx";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { usePlayers } from "../../components/PlayersProvider";
@@ -84,6 +86,22 @@ function formatCurrency(value: number): string {
 }
 
 export default function RegistrosPage() {
+  const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
+  const role = String((session?.user as { role?: string } | undefined)?.role || "")
+    .trim()
+    .toUpperCase();
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") {
+      return;
+    }
+
+    if (role === "ADMIN") {
+      router.replace("/admin/pagos");
+    }
+  }, [role, router, sessionStatus]);
+
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
@@ -278,6 +296,22 @@ export default function RegistrosPage() {
     const fileDate = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `ingresos_mensuales_${fileDate}.xlsx`);
   };
+
+  if (sessionStatus === "loading") {
+    return (
+      <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
+        <p className="text-sm text-slate-300">Cargando registros...</p>
+      </main>
+    );
+  }
+
+  if (role === "ADMIN") {
+    return (
+      <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
+        <p className="text-sm text-slate-300">Redirigiendo a Pagos mensuales...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">

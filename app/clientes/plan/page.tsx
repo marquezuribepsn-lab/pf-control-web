@@ -717,6 +717,53 @@ function ClientePlanContent() {
     return sesiones.find((sesion) => sesion.id === selectedTrainingDay.sesionId) || null;
   }, [selectedTrainingDay?.sesionId, sesiones]);
 
+  const exerciseNameById = useMemo(
+    () => new Map(ejercicios.map((exercise) => [exercise.id, exercise.nombre])),
+    [ejercicios]
+  );
+
+  const selectedTrainingBlocks = useMemo(
+    () => selectedTrainingSession?.bloques || [],
+    [selectedTrainingSession]
+  );
+
+  const selectedTrainingExerciseCount = useMemo(
+    () => selectedTrainingBlocks.reduce((acc, block) => acc + (block.ejercicios || []).length, 0),
+    [selectedTrainingBlocks]
+  );
+
+  const trainingPlanStats = useMemo(() => {
+    const weeks = editableTrainingPlan?.semanas || [];
+    const totalDias = weeks.reduce((acc, week) => acc + (week.dias || []).length, 0);
+    const diasConObjetivo = weeks.reduce(
+      (acc, week) =>
+        acc +
+        (week.dias || []).filter((day) => Boolean(String(day.objetivo || "").trim())).length,
+      0
+    );
+
+    return {
+      totalSemanas: weeks.length,
+      totalDias,
+      diasConObjetivo,
+    };
+  }, [editableTrainingPlan?.semanas]);
+
+  const selectedWeekStats = useMemo(() => {
+    if (!selectedTrainingWeek) {
+      return {
+        totalDias: 0,
+        diasConObjetivo: 0,
+      };
+    }
+
+    const days = selectedTrainingWeek.dias || [];
+    return {
+      totalDias: days.length,
+      diasConObjetivo: days.filter((day) => Boolean(String(day.objetivo || "").trim())).length,
+    };
+  }, [selectedTrainingWeek]);
+
   const sesionesDisponiblesParaPlan = useMemo(
     () => (sesionesCliente.length > 0 ? sesionesCliente : sesiones),
     [sesiones, sesionesCliente]
@@ -1551,21 +1598,21 @@ function ClientePlanContent() {
       </section>
 
       {tab === "plan-entrenamiento" ? (
-        <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+        <section className="rounded-3xl border-2 border-cyan-300/30 bg-slate-900/75 p-5 shadow-[0_18px_48px_-28px_rgba(6,182,212,0.42)]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-xl font-black text-white">Plan de entrenamiento editable</h2>
               <p className="mt-1 text-sm text-slate-300">
-                Esta planificacion es la misma que ve el alumno en su rutina, pero aqui el admin la puede editar completa.
+                Edicion tipo template: semanas, dias, planificacion y objetivos en un flujo limpio.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
-                href="#asignar-entrenamiento"
+                href="/semana"
                 prefetch
                 className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
               >
-                Templates
+                Abrir Templates
               </Link>
               <ReliableActionButton
                 type="button"
@@ -1577,369 +1624,66 @@ function ClientePlanContent() {
             </div>
           </div>
 
-          <section id="asignar-entrenamiento" className="mb-4 rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
+          <section className="mb-4 rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Templates</p>
-                <h3 className="mt-1 text-lg font-black text-white">Templates</h3>
+                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Modo template</p>
+                <h3 className="mt-1 text-lg font-black text-white">Edicion directa del template</h3>
                 <p className="mt-1 text-sm text-slate-300">
-                  Biblioteca unificada de templates: combina templates guardados y entrenamiento IA en una sola seleccion.
-                </p>
-                <p className="mt-2 text-xs text-cyan-100/90">
-                  Destino actual: <span className="font-semibold">{selectedClient.nombre}</span>
+                  Vista simplificada para trabajar solo estructura semanal, dias, planificacion y objetivos.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/semana"
-                  prefetch
-                  className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
-                >
-                  Gestionar templates
-                </Link>
-              </div>
+              <Link
+                href="/semana"
+                prefetch
+                className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
+              >
+                Ir a Templates
+              </Link>
             </div>
+          </section>
 
-            {selectedClient.tipo !== "alumno" ? (
-              <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                La asignacion de templates esta habilitada solo desde la ficha de alumno.
-              </div>
-            ) : (
-              <div className="mt-3 grid gap-2 md:grid-cols-3">
-                <label className="space-y-1">
-                  <span className="text-xs uppercase tracking-wide text-slate-300">Origen</span>
-                  <select
-                    value={templateSourceFilter}
-                    onChange={(event) => {
-                      setTemplateSourceFilter(event.target.value as "todos" | "template" | "ia");
-                      setAssignmentMessage("");
-                      setAssignmentError("");
-                    }}
-                    className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
-                  >
-                    <option value="todos">Todos</option>
-                    <option value="template">Templates guardados</option>
-                    <option value="ia">Entrenamiento IA</option>
-                  </select>
-                </label>
-
-                <label className="space-y-1">
-                  <span className="text-xs uppercase tracking-wide text-slate-300">Categoria template</span>
-                  <select
-                    value={templateCategoryFilter}
-                    onChange={(event) => {
-                      setTemplateCategoryFilter(event.target.value);
-                      setAssignmentMessage("");
-                      setAssignmentError("");
-                    }}
-                    className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
-                  >
-                    <option value="todas">Todas</option>
-                    {templateCategoryOptions.map((categoryKey) => (
-                      <option key={categoryKey} value={categoryKey}>
-                        {categoryKey === "__sin_categoria__" ? "Sin categoria" : categoryKey}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="space-y-1">
-                  <span className="text-xs uppercase tracking-wide text-slate-300">Buscar template</span>
-                  <input
-                    value={templateSearchTerm}
-                    onChange={(event) => setTemplateSearchTerm(event.target.value)}
-                    placeholder="Nombre, semana o categoria"
-                    className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-              </div>
-            )}
-
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
-                En biblioteca: <span className="font-semibold text-white">{templatesAsignablesAlumnos.length + aiTrainingPlans.length}</span>
-              </div>
-              <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
-                Templates guardados: <span className="font-semibold">{templatesAsignablesAlumnos.length}</span>
-              </div>
-              <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
-                Templates IA: <span className="font-semibold">{aiTrainingPlans.length}</span>
-              </div>
-              <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 p-3 text-xs text-amber-100">
-                No asignables: <span className="font-semibold">{templatesNoAsignablesAlumnos.length}</span>
-              </div>
-            </div>
-
-            {templatesAsignablesAlumnos.length === 0 && aiTrainingPlans.length === 0 ? (
-              <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                No hay templates disponibles. Puedes crearlos en Templates o generar nuevos desde el modulo IA.
-              </div>
-            ) : templateLibraryItems.length === 0 ? (
-              <div className="mt-3 rounded-xl border border-cyan-300/25 bg-cyan-500/10 p-3 text-sm text-cyan-100">
-                No hay templates que coincidan con los filtros actuales.
-              </div>
-            ) : (
-              <>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {templateLibraryItems.map((item) => {
-                    const isSelected = selectedAiPlanId === item.optionId;
-                    const isSavedTemplate = item.source === "template";
-                    const editableTemplate = item.template || null;
-
-                    return (
-                      <ReliableActionButton
-                        key={item.optionId}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAiPlanId(item.optionId);
-                          setAssignmentMessage("");
-                          setAssignmentError("");
-                        }}
-                        className={`rounded-xl border p-3 text-left transition ${
-                          isSelected
-                            ? "border-cyan-200/70 bg-cyan-400/15"
-                            : "border-white/15 bg-slate-950/45 hover:border-cyan-300/35"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-bold text-white">{item.nombre}</p>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
-                              isSelected
-                                ? "bg-cyan-300 text-slate-950"
-                                : "border border-white/20 text-slate-300"
-                            }`}
-                          >
-                            {isSelected ? "Seleccionado" : "Seleccionar"}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-slate-300">
-                          {item.totalSemanas} semanas · {item.totalDias} dias · {item.diasConSesion} dias con sesion
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <span
-                            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                              item.source === "ia"
-                                ? "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
-                                : "border-emerald-300/30 bg-emerald-500/10 text-emerald-100"
-                            }`}
-                          >
-                            {item.source === "ia" ? "Entrenamiento IA" : "Template guardado"}
-                          </span>
-                          <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                            {templateCategoryLabel(item.categoria)}
-                          </span>
-                          {item.deporte ? (
-                            <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100">
-                              {item.deporte}
-                            </span>
-                          ) : null}
-                        </div>
-
-                        {isSavedTemplate && editableTemplate ? (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <ReliableActionButton
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                openTemplateEdit(editableTemplate);
-                              }}
-                              className="rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-100 hover:bg-white/10"
-                            >
-                              Editar
-                            </ReliableActionButton>
-                            <ReliableActionButton
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                duplicateTemplateForAlumnos(editableTemplate);
-                              }}
-                              className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-100 hover:bg-cyan-500/20"
-                            >
-                              Duplicar
-                            </ReliableActionButton>
-                            <ReliableActionButton
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                removeTemplate(editableTemplate.id);
-                              }}
-                              className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100 hover:bg-rose-500/20"
-                            >
-                              Eliminar
-                            </ReliableActionButton>
-                          </div>
-                        ) : null}
-                      </ReliableActionButton>
-                    );
-                  })}
-                </div>
-
-                {editingTemplateId ? (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Editar template</p>
-                    <div className="mt-2 grid gap-2 md:grid-cols-2">
-                      <label className="space-y-1">
-                        <span className="text-[11px] uppercase tracking-wide text-slate-300">Nombre</span>
-                        <input
-                          value={editingTemplateName}
-                          onChange={(event) => setEditingTemplateName(event.target.value)}
-                          className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
-                          placeholder="Nombre del template"
-                        />
-                      </label>
-
-                      <label className="space-y-1">
-                        <span className="text-[11px] uppercase tracking-wide text-slate-300">Categoria</span>
-                        <input
-                          value={editingTemplateCategory}
-                          onChange={(event) => setEditingTemplateCategory(event.target.value)}
-                          className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
-                          placeholder="Categoria opcional"
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={saveTemplateEdit}
-                        className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
-                      >
-                        Guardar cambios
-                      </ReliableActionButton>
-                      <ReliableActionButton
-                        type="button"
-                        onClick={cancelTemplateEdit}
-                        className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
-                      >
-                        Cancelar
-                      </ReliableActionButton>
-                    </div>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-4">
+              <section className="rounded-2xl border border-cyan-300/25 bg-cyan-500/[0.06] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Entrenamiento</p>
+                    <p className="mt-1 text-sm text-slate-200/90">
+                      Estructura visual alineada con Templates para editar semana y dia en el mismo flujo.
+                    </p>
                   </div>
-                ) : null}
-
-                <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
                   <ReliableActionButton
                     type="button"
-                    onClick={assignSelectedAiPlanToClient}
-                    disabled={(!selectedTemplate && !selectedAiPlan) || assigningPlan || selectedClient.tipo !== "alumno"}
-                    className="rounded-xl border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-50"
+                    onClick={addWeekToPlan}
+                    className="rounded-lg border border-emerald-300/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
                   >
-                    {assigningPlan
-                      ? "Asignando..."
-                      : selectedAiPlan
-                      ? "Asignar template IA al alumno actual"
-                      : "Asignar template al alumno actual"}
+                    Agregar semana
                   </ReliableActionButton>
                 </div>
 
-                {selectedAiPlan ? (
-                  <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-slate-950/45 p-3">
-                    <p className="text-sm font-semibold text-white">{selectedAiPlan.nombre}</p>
-                    <p className="text-xs text-slate-300">
-                      Template IA · {selectedAiPlan.plan.sport || "Sin deporte"} · {selectedAiPlan.plan.category || "Sin categoria"} · {selectedAiPlan.plan.weeks.length} semanas
-                    </p>
-
-                    <div className="space-y-2">
-                      {selectedAiPlan.plan.weeks.map((week) => (
-                        <details key={`${selectedAiPlan.id}-week-${week.weekNumber}`} className="rounded-lg border border-white/10 bg-slate-900/55 p-2">
-                          <summary className="cursor-pointer text-sm font-semibold text-cyan-100">
-                            Semana {week.weekNumber} · {(week.sessions || []).length} sesiones
-                          </summary>
-                          <div className="mt-2 space-y-2 text-xs text-slate-200">
-                            {week.focus ? <p>{week.focus}</p> : null}
-                            {(week.sessions || []).map((session) => (
-                              <article key={session.id} className="rounded-md border border-white/10 bg-slate-950/45 p-2">
-                                <p className="font-semibold text-white">{session.title}</p>
-                                <p className="text-slate-300">{session.goal || "Sin objetivo"}</p>
-                              </article>
-                            ))}
-                          </div>
-                        </details>
-                      ))}
-                    </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
+                    Semanas: <span className="font-semibold text-white">{trainingPlanStats.totalSemanas}</span>
                   </div>
-                ) : selectedTemplate ? (
-                  <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-slate-950/45 p-3">
-                    <p className="text-sm font-semibold text-white">{selectedTemplate.nombre}</p>
-                    <p className="text-xs text-slate-300">
-                      Template · {selectedTemplate.tipo} · {selectedTemplate.semanas.length} semanas
-                    </p>
-
-                    <div className="space-y-2">
-                      {selectedTemplate.semanas.map((week, weekIndex) => (
-                        <details key={`${selectedTemplate.id}-week-${week.id || weekIndex}`} className="rounded-lg border border-white/10 bg-slate-900/55 p-2">
-                          <summary className="cursor-pointer text-sm font-semibold text-cyan-100">
-                            {week.nombre || `Semana ${weekIndex + 1}`} · {(week.dias || []).length} dias
-                          </summary>
-                          <div className="mt-2 space-y-2 text-xs text-slate-200">
-                            {week.objetivo ? <p>{week.objetivo}</p> : null}
-                            {(week.dias || []).map((day, dayIndex) => (
-                              <article key={`${week.id || weekIndex}-day-${day.id || dayIndex}`} className="rounded-md border border-white/10 bg-slate-950/45 p-2">
-                                <p className="font-semibold text-white">{day.dia || `Dia ${dayIndex + 1}`}</p>
-                                <p className="text-slate-300">{day.planificacion || "Sin planificacion"}</p>
-                                {day.sesionId ? (
-                                  <p className="text-slate-400">Sesion vinculada: {day.sesionId}</p>
-                                ) : null}
-                              </article>
-                            ))}
-                          </div>
-                        </details>
-                      ))}
-                    </div>
+                  <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+                    Dias: <span className="font-semibold">{trainingPlanStats.totalDias}</span>
                   </div>
-                ) : null}
-              </>
-            )}
-
-            {templatesNoAsignablesAlumnos.length > 0 ? (
-              <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-500/5 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-amber-100">
-                  Templates guardados no asignables a alumnos
-                </p>
-                <p className="mt-1 text-xs text-slate-300">
-                  Puedes convertirlos a template de alumno para dejarlos asignables desde este panel.
-                </p>
-
-                <div className="mt-2 grid gap-2 md:grid-cols-2">
-                  {templatesNoAsignablesAlumnos.map((template) => (
-                    <article key={`non-assignable-${template.id}`} className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                      <p className="text-sm font-semibold text-white">{template.nombre}</p>
-                      <p className="mt-1 text-xs text-slate-300">
-                        Tipo: {template.tipo} · Categoria: {templateCategoryLabel(template.categoria)}
-                      </p>
-                      <ReliableActionButton
-                        type="button"
-                        onClick={() => duplicateTemplateForAlumnos(template)}
-                        className="mt-2 rounded-lg border border-amber-300/35 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-100 hover:bg-amber-500/20"
-                      >
-                        Crear version para alumnos
-                      </ReliableActionButton>
-                    </article>
-                  ))}
+                  <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
+                    Dias con objetivo: <span className="font-semibold">{trainingPlanStats.diasConObjetivo}</span>
+                  </div>
                 </div>
-              </div>
-            ) : null}
 
-            {assignmentMessage ? <p className="mt-3 text-sm text-emerald-200">{assignmentMessage}</p> : null}
-            {assignmentError ? <p className="mt-3 text-sm text-rose-200">{assignmentError}</p> : null}
-          </section>
-
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-4">
-              <section className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Semanas del plan</p>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {(editableTrainingPlan?.semanas || []).map((week) => (
                     <ReliableActionButton
                       key={week.id}
                       type="button"
                       onClick={() => setSelectedWeekId(week.id)}
-                      className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                      className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
                         selectedWeekId === week.id
-                          ? "bg-cyan-300 text-slate-950"
-                          : "border border-white/20 bg-white/5 text-slate-100"
+                          ? "border-cyan-200/70 bg-cyan-400/15 text-cyan-50"
+                          : "border-white/15 bg-slate-950/45 text-slate-100 hover:border-cyan-300/40"
                       }`}
                     >
                       {week.nombre || "Semana"}
@@ -1949,9 +1693,19 @@ function ClientePlanContent() {
               </section>
 
               {selectedTrainingWeek ? (
-                <section className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                <section className="space-y-4 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs uppercase tracking-[0.12em] text-fuchsia-100/85">Semana seleccionada</p>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.12em] text-fuchsia-100/85">Semana seleccionada</p>
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full border border-white/20 bg-slate-900/50 px-2 py-0.5 text-slate-200">
+                          {selectedWeekStats.totalDias} dias
+                        </span>
+                        <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-2 py-0.5 text-cyan-100">
+                          {selectedWeekStats.diasConObjetivo} con objetivo
+                        </span>
+                      </div>
+                    </div>
                     <ReliableActionButton
                       type="button"
                       onClick={() => removeWeekFromPlan(selectedTrainingWeek.id)}
@@ -1987,9 +1741,9 @@ function ClientePlanContent() {
                     </label>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
+                  <div className="rounded-xl border border-fuchsia-300/20 bg-slate-900/55 p-3">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-bold text-white">Dias y sesiones</p>
+                      <p className="text-sm font-bold text-white">Dias del template</p>
                       <ReliableActionButton
                         type="button"
                         onClick={() => addDayToWeek(selectedTrainingWeek.id)}
@@ -2003,17 +1757,21 @@ function ClientePlanContent() {
                       {selectedTrainingWeek.dias.map((day) => (
                         <article
                           key={day.id}
-                          className={`rounded-xl border p-3 ${
+                          className={`rounded-xl border p-3 transition ${
                             selectedDayId === day.id
-                              ? "border-fuchsia-300/40 bg-fuchsia-500/10"
-                              : "border-white/10 bg-slate-950/40"
+                              ? "border-cyan-200/70 bg-cyan-500/10"
+                              : "border-white/10 bg-slate-950/40 hover:border-cyan-300/35"
                           }`}
                         >
                           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                             <ReliableActionButton
                               type="button"
                               onClick={() => setSelectedDayId(day.id)}
-                              className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white"
+                              className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                                selectedDayId === day.id
+                                  ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
+                                  : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                              }`}
                             >
                               {day.dia || "Dia"}
                             </ReliableActionButton>
@@ -2027,7 +1785,7 @@ function ClientePlanContent() {
                             </ReliableActionButton>
                           </div>
 
-                          <div className="grid gap-2 md:grid-cols-2">
+                          <div className="grid gap-2 md:grid-cols-1">
                             <label className="space-y-1">
                               <span className="text-[11px] uppercase tracking-wide text-slate-300">Dia</span>
                               <input
@@ -2038,23 +1796,6 @@ function ClientePlanContent() {
                                 className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-2.5 py-2 text-sm text-white"
                                 placeholder="Lunes"
                               />
-                            </label>
-                            <label className="space-y-1">
-                              <span className="text-[11px] uppercase tracking-wide text-slate-300">Sesion vinculada</span>
-                              <select
-                                value={day.sesionId || ""}
-                                onChange={(event) =>
-                                  linkSessionToDay(selectedTrainingWeek.id, day.id, event.target.value)
-                                }
-                                className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-2.5 py-2 text-sm text-white"
-                              >
-                                <option value="">Sin sesion</option>
-                                {sesionesDisponiblesParaPlan.map((session) => (
-                                  <option key={session.id} value={session.id}>
-                                    {session.titulo}
-                                  </option>
-                                ))}
-                              </select>
                             </label>
                             <label className="space-y-1 md:col-span-2">
                               <span className="text-[11px] uppercase tracking-wide text-slate-300">Planificacion</span>
@@ -2093,6 +1834,30 @@ function ClientePlanContent() {
                       ))}
                     </div>
                   </div>
+
+                  <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/[0.05] p-3">
+                    <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Resumen del dia</p>
+                    {!selectedTrainingDay ? (
+                      <p className="mt-2 rounded-lg border border-white/10 bg-slate-900/60 p-3 text-sm text-slate-300">
+                        Selecciona un dia para ver su resumen.
+                      </p>
+                    ) : (
+                      <div className="mt-2 grid gap-2 md:grid-cols-2">
+                        <div className="rounded-lg border border-white/12 bg-slate-950/45 p-3">
+                          <p className="text-[11px] uppercase tracking-wide text-slate-400">Planificacion</p>
+                          <p className="mt-1 text-sm text-slate-100">
+                            {selectedTrainingDay.planificacion || "Sin planificacion cargada."}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-white/12 bg-slate-950/45 p-3">
+                          <p className="text-[11px] uppercase tracking-wide text-slate-400">Objetivo del dia</p>
+                          <p className="mt-1 text-sm text-slate-100">
+                            {selectedTrainingDay.objetivo || "Sin objetivo cargado."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </section>
               ) : (
                 <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
@@ -2101,7 +1866,7 @@ function ClientePlanContent() {
               )}
             </div>
 
-            <aside className="rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
+            <aside className="rounded-2xl border border-cyan-300/25 bg-cyan-500/[0.06] p-4">
               <p className="text-xs uppercase tracking-[0.14em] text-cyan-100/85">Vista alumno</p>
               <h3 className="mt-1 text-xl font-black text-white">Semana y dia actual</h3>
               <p className="mt-1 text-sm text-slate-300">
@@ -2125,11 +1890,6 @@ function ClientePlanContent() {
                   {selectedTrainingDay.objetivo ? (
                     <p className="text-xs text-fuchsia-100/90">Objetivo del dia: {selectedTrainingDay.objetivo}</p>
                   ) : null}
-                  {selectedTrainingSession ? (
-                    <div className="rounded-lg border border-white/10 bg-slate-950/50 p-2 text-xs text-slate-200">
-                      {selectedTrainingSession.titulo} · {selectedTrainingSession.duracion || "-"} min
-                    </div>
-                  ) : null}
                 </div>
               ) : (
                 <p className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3 text-sm text-slate-300">
@@ -2138,25 +1898,6 @@ function ClientePlanContent() {
               )}
             </aside>
           </div>
-
-          <section className="mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-            <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Sesiones disponibles para vincular</p>
-            {sesionesDisponiblesParaPlan.length === 0 ? (
-              <p className="mt-2 text-sm text-slate-300">No hay sesiones cargadas para este cliente.</p>
-            ) : (
-              <div className="mt-2 grid gap-2 md:grid-cols-2">
-                {sesionesDisponiblesParaPlan.map((session) => (
-                  <article key={session.id} className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-sm font-bold text-white">{session.titulo}</p>
-                    <p className="mt-1 text-xs text-slate-300">{session.objetivo || "Sin objetivo"}</p>
-                    <p className="mt-1 text-[11px] text-cyan-100">
-                      {session.duracion || "-"} min · {(session.bloques || []).length} bloques
-                    </p>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
         </section>
       ) : (
         <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
