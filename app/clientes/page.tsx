@@ -5,7 +5,7 @@ import Link from "@/components/ReliableLink";
 import PlantelPanel from "@/components/PlantelPanel";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useDeportes } from "../../components/DeportesProvider";
@@ -208,6 +208,11 @@ type WeekExerciseLite = {
   repeticiones: string;
   descanso: string;
   carga: string;
+  observaciones?: string;
+  metricas?: Array<{
+    nombre?: string;
+    valor?: string;
+  }>;
   superSerie: Array<{
     id: string;
     ejercicioId: string;
@@ -258,6 +263,57 @@ type WeekStoreLite = {
   planes: WeekPersonPlanLite[];
 };
 
+type WorkoutLogRecord = {
+  id: string;
+  alumnoNombre: string;
+  sessionId: string;
+  sessionTitle: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId?: string;
+  blockTitle?: string;
+  exerciseId?: string;
+  exerciseName?: string;
+  exerciseKey?: string;
+  fecha: string;
+  series: number;
+  repeticiones: number;
+  pesoKg: number;
+  molestia: boolean;
+  videoUrl?: string;
+  comentarios?: string;
+  createdAt: string;
+};
+
+type TrainingExercisePanelMode = "configuracion" | "ver-pesos" | "registrar-peso";
+
+type TrainingExercisePanelTarget = {
+  weekId: string;
+  weekName: string;
+  dayId: string;
+  dayName: string;
+  blockId: string;
+  blockTitle: string;
+  exerciseId: string;
+  exerciseName: string;
+  sessionId: string;
+  sessionTitle: string;
+  currentSeries: string;
+  currentRepeticiones: string;
+  currentCarga: string;
+};
+
+type TrainingRecordDraft = {
+  fecha: string;
+  series: string;
+  repeticiones: string;
+  pesoKg: string;
+  molestia: boolean;
+  comentarios: string;
+};
+
 type PresenceSnapshot = {
   userId: string | null;
   email: string | null;
@@ -302,7 +358,30 @@ const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
+const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const PRESENCE_REFRESH_MS = 30_000;
+const TRAINING_WEEK_DAY_NAMES = [
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado",
+  "Domingo",
+];
+const TRAINING_STRUCTURE_ACTION_COOLDOWN_MS = 320;
+
+const createTrainingEntityId = (prefix: string) =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const INITIAL_TRAINING_RECORD_DRAFT: TrainingRecordDraft = {
+  fecha: new Date().toISOString().slice(0, 10),
+  series: "1",
+  repeticiones: "",
+  pesoKg: "",
+  molestia: false,
+  comentarios: "",
+};
 
 const DEFAULT_COLUMN_WIDTHS: Record<ClientTableColumnKey, number> = {
   cliente: 300,
@@ -467,6 +546,7 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                     .map((exercise, exerciseIndex) => {
                       const exerciseRow = exercise as Record<string, unknown>;
                       const superSerieRaw = Array.isArray(exerciseRow.superSerie) ? exerciseRow.superSerie : [];
+                      const metricasRaw = Array.isArray(exerciseRow.metricas) ? exerciseRow.metricas : [];
 
                       return {
                         id: String(exerciseRow.id || `exercise-${exerciseIndex}`),
@@ -475,6 +555,19 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                         repeticiones: String(exerciseRow.repeticiones || ""),
                         descanso: String(exerciseRow.descanso || ""),
                         carga: String(exerciseRow.carga || ""),
+                        observaciones: String(exerciseRow.observaciones || "").trim() || undefined,
+                        metricas:
+                          metricasRaw.length > 0
+                            ? metricasRaw
+                                .filter((metric) => metric && typeof metric === "object")
+                                .map((metric) => {
+                                  const metricRow = metric as Record<string, unknown>;
+                                  return {
+                                    nombre: String(metricRow.nombre || ""),
+                                    valor: String(metricRow.valor || ""),
+                                  };
+                                })
+                            : undefined,
                         superSerie: superSerieRaw
                           .filter((superItem) => superItem && typeof superItem === "object")
                           .map((superItem, superIndex) => {
@@ -651,6 +744,182 @@ function normalizeWhatsAppNumber(meta: ClienteMeta): string {
   }
 
   return phone;
+}
+
+function resolveExercisePreviewImage(value?: string): string | null {
+  const source = String(value || "").trim();
+  if (!source) return null;
+
+  if (/^https?:\/\/.+\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(source)) {
+    return source;
+  }
+
+  const youtubeMatch = source.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/
+  );
+  if (youtubeMatch?.[1]) {
+    return `https://img.youtube.com/vi/${youtubeMatch[1]}/hqdefault.jpg`;
+  }
+
+  return null;
+}
+
+function toSafeNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const cleaned = value.replace(",", ".").trim();
+    if (!cleaned) {
+      return null;
+    }
+
+    const parsed = Number(cleaned);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function normalizeWorkoutLogs(rawValue: unknown): WorkoutLogRecord[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row) => {
+      const item = row as Record<string, unknown>;
+      return {
+        id: String(item.id || createTrainingEntityId("workout")),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        sessionId: String(item.sessionId || "").trim(),
+        sessionTitle: String(item.sessionTitle || item.sesion || "Sesion").trim() || "Sesion",
+        weekId: String(item.weekId || "").trim() || undefined,
+        weekName: String(item.weekName || item.week || "").trim() || undefined,
+        dayId: String(item.dayId || "").trim() || undefined,
+        dayName: String(item.dayName || item.dia || "").trim() || undefined,
+        blockId: String(item.blockId || "").trim() || undefined,
+        blockTitle: String(item.blockTitle || item.block || "").trim() || undefined,
+        exerciseId: String(item.exerciseId || "").trim() || undefined,
+        exerciseName: String(item.exerciseName || item.ejercicio || "").trim() || undefined,
+        exerciseKey: String(item.exerciseKey || "").trim() || undefined,
+        fecha: String(item.fecha || "").slice(0, 10),
+        series: Math.max(1, Math.round(Number(toSafeNumber(item.series) || 1))),
+        repeticiones: Math.max(0, Math.round(Number(toSafeNumber(item.repeticiones) || 0))),
+        pesoKg: Math.max(0, Number(toSafeNumber(item.pesoKg ?? item.peso) || 0)),
+        molestia: Boolean(item.molestia),
+        videoUrl: String(item.videoUrl || "").trim() || undefined,
+        comentarios: String(item.comentarios || item.comentario || "").trim() || undefined,
+        createdAt: String(item.createdAt || new Date().toISOString()),
+      };
+    })
+    .filter((item) => item.alumnoNombre && item.sessionId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+function cloneWeekExerciseForEditing(
+  exercise: Partial<WeekExerciseLite> | null | undefined,
+  exerciseIndex: number,
+  blockFallbackId: string
+): WeekExerciseLite {
+  const source = exercise || {};
+  const metricasRaw = Array.isArray(source.metricas) ? source.metricas : [];
+  const superSerieRaw = Array.isArray(source.superSerie) ? source.superSerie : [];
+
+  return {
+    id: String(source.id || `${blockFallbackId}-exercise-${exerciseIndex + 1}`),
+    ejercicioId: String(source.ejercicioId || ""),
+    series: String(source.series || ""),
+    repeticiones: String(source.repeticiones || ""),
+    descanso: String(source.descanso || ""),
+    carga: String(source.carga || ""),
+    observaciones:
+      typeof source.observaciones === "string"
+        ? source.observaciones
+        : String(source.observaciones || "").trim() || undefined,
+    metricas:
+      metricasRaw.length > 0
+        ? metricasRaw
+            .filter((item) => item && typeof item === "object")
+            .map((item) => ({
+              nombre: String(item?.nombre || "").trim(),
+              valor: String(item?.valor || "").trim(),
+            }))
+        : undefined,
+    superSerie: superSerieRaw
+      .filter((item) => item && typeof item === "object")
+      .map((item, superIndex) => ({
+        id: String(item.id || `${blockFallbackId}-super-${exerciseIndex + 1}-${superIndex + 1}`),
+        ejercicioId: String(item.ejercicioId || ""),
+        series: String(item.series || ""),
+        repeticiones: String(item.repeticiones || ""),
+        descanso: String(item.descanso || ""),
+        carga: String(item.carga || ""),
+      })),
+  };
+}
+
+function normalizeTrainingBlocksForEditing(rawBlocks: unknown): WeekBlockLite[] {
+  const blocks = Array.isArray(rawBlocks) ? rawBlocks : [];
+
+  return blocks
+    .filter((block) => block && typeof block === "object")
+    .map((block, blockIndex) => {
+      const source = block as Record<string, unknown>;
+      const fallbackBlockId = String(source.id || `block-${blockIndex + 1}`);
+      const rawExercises = Array.isArray(source.ejercicios) ? source.ejercicios : [];
+
+      return {
+        id: fallbackBlockId,
+        titulo: String(source.titulo || `Bloque ${blockIndex + 1}`),
+        objetivo: String(source.objetivo || ""),
+        ejercicios: rawExercises.map((exercise, exerciseIndex) =>
+          cloneWeekExerciseForEditing(
+            (exercise && typeof exercise === "object" ? exercise : null) as Partial<WeekExerciseLite> | null,
+            exerciseIndex,
+            fallbackBlockId
+          )
+        ),
+      };
+    });
+}
+
+function createDefaultTrainingDay(index: number): WeekDayPlanLite {
+  return {
+    id: createTrainingEntityId("dia"),
+    dia: TRAINING_WEEK_DAY_NAMES[index] || `Dia ${index + 1}`,
+    planificacion: "",
+    objetivo: "",
+    sesionId: "",
+    entrenamiento: {
+      bloques: [],
+    },
+  };
+}
+
+function createDefaultTrainingWeek(index: number): WeekPlanLite {
+  return {
+    id: createTrainingEntityId("semana"),
+    nombre: `Semana ${index + 1}`,
+    objetivo: "",
+    dias: [createDefaultTrainingDay(0)],
+  };
+}
+
+function createDefaultClientTrainingPlan(cliente: ClienteView): WeekPersonPlanLite {
+  const tipo = toPlanPersonaTipo(cliente.tipo);
+
+  return {
+    ownerKey: buildTrainingOwnerKey(tipo, cliente.nombre),
+    tipo,
+    nombre: cliente.nombre,
+    categoria: cliente.categoria,
+    semanas: [createDefaultTrainingWeek(0)],
+  };
 }
 
 function buildPlanViewHref(clientId: string, tab: PlanViewTab): string {
@@ -830,7 +1099,7 @@ export default function ClientesPage() {
     key: NUTRITION_CUSTOM_FOODS_KEY,
     legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
   });
-  const [weekStoreRaw] = useSharedState<WeekStoreLite>(
+  const [weekStoreRaw, setWeekStoreRaw] = useSharedState<WeekStoreLite>(
     {
       version: 3,
       planes: [],
@@ -840,6 +1109,10 @@ export default function ClientesPage() {
       legacyLocalStorageKey: WEEK_PLAN_KEY,
     }
   );
+  const [workoutLogsRaw, setWorkoutLogsRaw] = useSharedState<unknown[]>([], {
+    key: WORKOUT_LOGS_KEY,
+    legacyLocalStorageKey: WORKOUT_LOGS_KEY,
+  });
 
   const [vista, setVista] = useState<ClienteEstado>("activo");
   const [search, setSearch] = useState("");
@@ -868,6 +1141,24 @@ export default function ClientesPage() {
   } | null>(null);
   const [trainingPreviewWeekId, setTrainingPreviewWeekId] = useState("");
   const [trainingPreviewDayId, setTrainingPreviewDayId] = useState("");
+  const [trainingExercisePanelMode, setTrainingExercisePanelMode] =
+    useState<TrainingExercisePanelMode | null>(null);
+  const [trainingExercisePanelTarget, setTrainingExercisePanelTarget] =
+    useState<TrainingExercisePanelTarget | null>(null);
+  const [trainingRecordDraft, setTrainingRecordDraft] = useState<TrainingRecordDraft>(
+    INITIAL_TRAINING_RECORD_DRAFT
+  );
+  const [trainingRecordStatus, setTrainingRecordStatus] = useState("");
+  const [trainingWeekInlineEdit, setTrainingWeekInlineEdit] = useState<{
+    weekId: string;
+    value: string;
+  } | null>(null);
+  const [trainingDayInlineEdit, setTrainingDayInlineEdit] = useState<{
+    weekId: string;
+    dayId: string;
+    value: string;
+  } | null>(null);
+  const trainingActionCooldownRef = useRef<Record<string, number>>({});
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
   const isAdmin = userRole === 'ADMIN';
@@ -1524,6 +1815,57 @@ export default function ClientesPage() {
     );
   }, [selectedClient, weekStore.planes]);
 
+  const syncTrainingPlanWithAlumnoProfile = () => {
+    if (!selectedClient || !selectedClientTrainingPlan) return;
+
+    const selectedTipo = toPlanPersonaTipo(selectedClient.tipo);
+    const selectedOwnerKey = buildTrainingOwnerKey(selectedTipo, selectedClient.nombre);
+
+    markManualSaveIntent(WEEK_PLAN_KEY);
+
+    setWeekStoreRaw((prev) => {
+      const base = normalizeWeekStore(prev);
+      const planIndex = base.planes.findIndex(
+        (plan) =>
+          plan.ownerKey === selectedClientTrainingPlan.ownerKey ||
+          plan.ownerKey === selectedOwnerKey ||
+          (plan.tipo === selectedTipo && namesLikelyMatch(plan.nombre, selectedClient.nombre))
+      );
+
+      if (planIndex < 0) {
+        return base;
+      }
+
+      const nextPlanes = [...base.planes];
+      const currentPlan = nextPlanes[planIndex];
+
+      nextPlanes[planIndex] = {
+        ...currentPlan,
+        ownerKey: selectedOwnerKey,
+        tipo: selectedTipo,
+        nombre: selectedClient.nombre,
+        categoria: selectedClient.categoria,
+      };
+
+      return {
+        ...base,
+        version: 3,
+        planes: nextPlanes,
+      };
+    });
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("pf-inline-toast", {
+          detail: {
+            type: "success",
+            message: "Plan sincronizado con el perfil del alumno.",
+          },
+        })
+      );
+    }
+  };
+
   const selectedTrainingWeek = useMemo(
     () => selectedClientTrainingPlan?.semanas.find((week) => week.id === trainingPreviewWeekId) || null,
     [selectedClientTrainingPlan?.semanas, trainingPreviewWeekId]
@@ -1534,45 +1876,537 @@ export default function ClientesPage() {
     [selectedTrainingWeek, trainingPreviewDayId]
   );
 
-  const selectedTrainingLinkedSession = useMemo(() => {
-    if (!selectedTrainingDay?.sesionId) return null;
-    return sesiones.find((session) => session.id === selectedTrainingDay.sesionId) || null;
-  }, [selectedTrainingDay?.sesionId, sesiones]);
-
   const selectedTrainingDayBlocks = useMemo(() => {
-    if (selectedTrainingDay?.entrenamiento?.bloques && selectedTrainingDay.entrenamiento.bloques.length > 0) {
-      return selectedTrainingDay.entrenamiento.bloques;
-    }
+    if (!selectedTrainingDay) return [];
 
-    return selectedTrainingLinkedSession?.bloques || [];
-  }, [selectedTrainingDay?.entrenamiento?.bloques, selectedTrainingLinkedSession?.bloques]);
+    return normalizeTrainingBlocksForEditing(selectedTrainingDay.entrenamiento?.bloques || []);
+  }, [selectedTrainingDay]);
 
   const selectedTrainingDayBlockSummary = useMemo(
     () => selectedTrainingDayBlocks.reduce((acc, block) => acc + (block.ejercicios || []).length, 0),
     [selectedTrainingDayBlocks]
   );
 
+  const workoutLogs = useMemo(() => normalizeWorkoutLogs(workoutLogsRaw), [workoutLogsRaw]);
+
+  const selectedClientWorkoutLogs = useMemo(() => {
+    if (!selectedClient) return [];
+    return workoutLogs.filter((item) => namesLikelyMatch(item.alumnoNombre, selectedClient.nombre));
+  }, [selectedClient, workoutLogs]);
+
+  const selectedExerciseWorkoutLogs = useMemo(() => {
+    if (!trainingExercisePanelTarget) return [];
+
+    return selectedClientWorkoutLogs.filter((item) => {
+      const matchesExerciseId =
+        Boolean(trainingExercisePanelTarget.exerciseId) &&
+        Boolean(item.exerciseId) &&
+        item.exerciseId === trainingExercisePanelTarget.exerciseId;
+      const matchesExerciseName = namesLikelyMatch(
+        item.exerciseName || "",
+        trainingExercisePanelTarget.exerciseName
+      );
+      const matchesDay =
+        !trainingExercisePanelTarget.dayId || !item.dayId || item.dayId === trainingExercisePanelTarget.dayId;
+
+      return (matchesExerciseId || matchesExerciseName) && matchesDay;
+    });
+  }, [selectedClientWorkoutLogs, trainingExercisePanelTarget]);
+
+  const selectedExerciseTopWeight = useMemo(
+    () => selectedExerciseWorkoutLogs.reduce((max, item) => Math.max(max, Number(item.pesoKg) || 0), 0),
+    [selectedExerciseWorkoutLogs]
+  );
+
+  useEffect(() => {
+    setTrainingExercisePanelMode(null);
+    setTrainingExercisePanelTarget(null);
+    setTrainingRecordStatus("");
+    setTrainingWeekInlineEdit(null);
+    setTrainingDayInlineEdit(null);
+  }, [selectedClient?.id, trainingPreviewWeekId, trainingPreviewDayId]);
+
+  const canEditTrainingPlan = isAdmin && Boolean(selectedClient);
+
+  const upsertSelectedClientTrainingPlan = (
+    updater: (current: WeekPersonPlanLite) => WeekPersonPlanLite
+  ) => {
+    if (!selectedClient) return;
+
+    const selectedTipo = toPlanPersonaTipo(selectedClient.tipo);
+    const selectedOwnerKey = buildTrainingOwnerKey(selectedTipo, selectedClient.nombre);
+
+    markManualSaveIntent(WEEK_PLAN_KEY);
+    setWeekStoreRaw((prev) => {
+      const base = normalizeWeekStore(prev);
+      const planes = [...base.planes];
+      const planIndex = planes.findIndex(
+        (plan) =>
+          plan.ownerKey === selectedOwnerKey ||
+          plan.ownerKey === selectedClientTrainingPlan?.ownerKey ||
+          (plan.tipo === selectedTipo && namesLikelyMatch(plan.nombre, selectedClient.nombre))
+      );
+
+      const currentPlan =
+        planIndex >= 0 ? planes[planIndex] : createDefaultClientTrainingPlan(selectedClient);
+
+      const nextPlanRaw = updater({
+        ...currentPlan,
+        ownerKey: selectedOwnerKey,
+        tipo: selectedTipo,
+        nombre: selectedClient.nombre,
+        categoria: selectedClient.categoria,
+        semanas:
+          Array.isArray(currentPlan.semanas) && currentPlan.semanas.length > 0
+            ? currentPlan.semanas
+            : [createDefaultTrainingWeek(0)],
+      });
+
+      const nextPlan: WeekPersonPlanLite = {
+        ...nextPlanRaw,
+        ownerKey: selectedOwnerKey,
+        tipo: selectedTipo,
+        nombre: selectedClient.nombre,
+        categoria: selectedClient.categoria,
+        semanas:
+          Array.isArray(nextPlanRaw.semanas) && nextPlanRaw.semanas.length > 0
+            ? nextPlanRaw.semanas
+            : [createDefaultTrainingWeek(0)],
+      };
+
+      if (planIndex >= 0) {
+        planes[planIndex] = nextPlan;
+      } else {
+        planes.push(nextPlan);
+      }
+
+      return {
+        ...base,
+        version: 3,
+        planes,
+      };
+    });
+  };
+
+  const updateTrainingWeekField = (
+    weekId: string,
+    field: "nombre" | "objetivo",
+    value: string
+  ) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) =>
+        week.id === weekId
+          ? {
+              ...week,
+              [field]: value,
+            }
+          : week
+      ),
+    }));
+  };
+
+  const isTrainingStructureActionBlocked = (actionKey: string) => {
+    const now = Date.now();
+    const lastActionAt = trainingActionCooldownRef.current[actionKey] || 0;
+    if (now - lastActionAt < TRAINING_STRUCTURE_ACTION_COOLDOWN_MS) {
+      return true;
+    }
+
+    trainingActionCooldownRef.current[actionKey] = now;
+    return false;
+  };
+
+  const selectTrainingPreviewWeek = (weekId: string) => {
+    const targetWeek = (selectedClientTrainingPlan?.semanas || []).find((week) => week.id === weekId);
+    if (!targetWeek) return;
+
+    const targetDays = targetWeek.dias || [];
+    const fallbackDayId = targetDays[0]?.id || "";
+
+    setTrainingPreviewWeekId(targetWeek.id);
+    setTrainingPreviewDayId((currentDayId) =>
+      targetDays.some((day) => day.id === currentDayId) ? currentDayId : fallbackDayId
+    );
+  };
+
+  const selectTrainingPreviewDay = (dayId: string) => {
+    setTrainingPreviewDayId(dayId);
+  };
+
+  const startTrainingWeekInlineEdit = (weekId: string, currentValue: string) => {
+    setTrainingWeekInlineEdit({
+      weekId,
+      value: currentValue,
+    });
+  };
+
+  const commitTrainingWeekInlineEdit = () => {
+    if (!trainingWeekInlineEdit) return;
+
+    const nextName = trainingWeekInlineEdit.value.trim() || "Semana";
+    updateTrainingWeekField(trainingWeekInlineEdit.weekId, "nombre", nextName);
+    setTrainingWeekInlineEdit(null);
+  };
+
+  const startTrainingDayInlineEdit = (weekId: string, dayId: string, currentValue: string) => {
+    setTrainingDayInlineEdit({
+      weekId,
+      dayId,
+      value: currentValue,
+    });
+  };
+
+  const commitTrainingDayInlineEdit = () => {
+    if (!trainingDayInlineEdit) return;
+
+    const nextName = trainingDayInlineEdit.value.trim() || "Dia";
+    updateTrainingDayField(trainingDayInlineEdit.weekId, trainingDayInlineEdit.dayId, "dia", nextName);
+    setTrainingDayInlineEdit(null);
+  };
+
+  const addTrainingWeek = () => {
+    if (isTrainingStructureActionBlocked("add-week")) {
+      return;
+    }
+
+    const nextWeek = createDefaultTrainingWeek((selectedClientTrainingPlan?.semanas || []).length);
+
+    upsertSelectedClientTrainingPlan((plan) => {
+      return {
+        ...plan,
+        semanas: [...plan.semanas, nextWeek],
+      };
+    });
+
+    setTrainingPreviewWeekId(nextWeek.id);
+    setTrainingPreviewDayId(nextWeek.dias?.[0]?.id || "");
+  };
+
+  const removeTrainingWeek = (weekId: string) => {
+    upsertSelectedClientTrainingPlan((plan) => {
+      const remaining = plan.semanas.filter((week) => week.id !== weekId);
+      return {
+        ...plan,
+        semanas: remaining.length > 0 ? remaining : [createDefaultTrainingWeek(0)],
+      };
+    });
+  };
+
+  const updateTrainingDayField = (
+    weekId: string,
+    dayId: string,
+    field: "dia" | "planificacion" | "objetivo",
+    value: string
+  ) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        return {
+          ...week,
+          dias: week.dias.map((day) =>
+            day.id === dayId
+              ? {
+                  ...day,
+                  [field]: value,
+                }
+              : day
+          ),
+        };
+      }),
+    }));
+  };
+
+  const addTrainingDay = (weekId: string) => {
+    if (isTrainingStructureActionBlocked(`add-day:${weekId}`)) {
+      return;
+    }
+
+    const sourceWeek = (selectedClientTrainingPlan?.semanas || []).find((week) => week.id === weekId);
+    const nextDay = createDefaultTrainingDay((sourceWeek?.dias || []).length);
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+        return {
+          ...week,
+          dias: [...week.dias, nextDay],
+        };
+      }),
+    }));
+
+    setTrainingPreviewWeekId(weekId);
+    setTrainingPreviewDayId(nextDay.id);
+  };
+
+  const removeTrainingDay = (weekId: string, dayId: string) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+        const remainingDays = week.dias.filter((day) => day.id !== dayId);
+        return {
+          ...week,
+          dias: remainingDays.length > 0 ? remainingDays : [createDefaultTrainingDay(0)],
+        };
+      }),
+    }));
+  };
+
+  const updateTrainingBlocks = (
+    weekId: string,
+    dayId: string,
+    updater: (blocks: WeekBlockLite[]) => WeekBlockLite[]
+  ) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        return {
+          ...week,
+          dias: week.dias.map((day) => {
+            if (day.id !== dayId) return day;
+
+            const sourceBlocks = normalizeTrainingBlocksForEditing(day.entrenamiento?.bloques || []);
+            const nextBlocks = updater(sourceBlocks);
+
+            return {
+              ...day,
+              entrenamiento: {
+                bloques: nextBlocks,
+              },
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const addTrainingBlock = (weekId: string, dayId: string) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) => [
+      ...blocks,
+      {
+        id: createTrainingEntityId("bloque"),
+        titulo: `Bloque ${blocks.length + 1}`,
+        objetivo: "",
+        ejercicios: [],
+      },
+    ]);
+  };
+
+  const removeTrainingBlock = (weekId: string, dayId: string, blockId: string) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.filter((block) => block.id !== blockId)
+    );
+  };
+
+  const updateTrainingBlockField = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    field: "titulo" | "objetivo",
+    value: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) =>
+        block.id === blockId
+          ? {
+              ...block,
+              [field]: value,
+            }
+          : block
+      )
+    );
+  };
+
+  const addTrainingExercise = (weekId: string, dayId: string, blockId: string) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: [
+            ...(block.ejercicios || []),
+            {
+              id: createTrainingEntityId("exercise"),
+              ejercicioId: "",
+              series: "",
+              repeticiones: "",
+              descanso: "",
+              carga: "",
+              observaciones: "",
+              superSerie: [],
+            },
+          ],
+        };
+      })
+    );
+  };
+
+  const removeTrainingExercise = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).filter((exercise) => exercise.id !== exerciseId),
+        };
+      })
+    );
+  };
+
+  const updateTrainingExerciseField = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    field:
+      | "ejercicioId"
+      | "series"
+      | "repeticiones"
+      | "descanso"
+      | "carga"
+      | "observaciones",
+    value: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) =>
+            exercise.id === exerciseId
+              ? {
+                  ...exercise,
+                  [field]: value,
+                }
+              : exercise
+          ),
+        };
+      })
+    );
+  };
+
+  const openTrainingExercisePanel = (
+    mode: TrainingExercisePanelMode,
+    target: TrainingExercisePanelTarget
+  ) => {
+    setTrainingExercisePanelMode(mode);
+    setTrainingExercisePanelTarget(target);
+    setTrainingRecordStatus("");
+
+    if (mode === "registrar-peso") {
+      const seriesValue = Math.max(1, Math.round(Number(toSafeNumber(target.currentSeries) || 1)));
+      const repsValue = Math.max(0, Math.round(Number(toSafeNumber(target.currentRepeticiones) || 0)));
+      const cargaValue = Math.max(0, Number(toSafeNumber(target.currentCarga) || 0));
+
+      setTrainingRecordDraft({
+        ...INITIAL_TRAINING_RECORD_DRAFT,
+        fecha: new Date().toISOString().slice(0, 10),
+        series: String(seriesValue),
+        repeticiones: repsValue > 0 ? String(repsValue) : "",
+        pesoKg: cargaValue > 0 ? String(cargaValue) : "",
+      });
+    }
+  };
+
+  const closeTrainingExercisePanel = () => {
+    setTrainingExercisePanelMode(null);
+    setTrainingExercisePanelTarget(null);
+    setTrainingRecordStatus("");
+  };
+
+  const saveTrainingWeightRecord = () => {
+    if (!selectedClient || !trainingExercisePanelTarget) {
+      setTrainingRecordStatus("Selecciona un ejercicio antes de registrar peso.");
+      return;
+    }
+
+    const series = Math.max(1, Math.round(Number(toSafeNumber(trainingRecordDraft.series) || 1)));
+    const repeticiones = Math.max(0, Math.round(Number(toSafeNumber(trainingRecordDraft.repeticiones) || 0)));
+    const pesoKg = Math.max(0, Number(toSafeNumber(trainingRecordDraft.pesoKg) || 0));
+
+    const payload: WorkoutLogRecord = {
+      id: createTrainingEntityId("log"),
+      alumnoNombre: selectedClient.nombre,
+      sessionId: trainingExercisePanelTarget.sessionId || `plan-${selectedClient.id}`,
+      sessionTitle: trainingExercisePanelTarget.sessionTitle || "Plan de entrenamiento",
+      weekId: trainingExercisePanelTarget.weekId,
+      weekName: trainingExercisePanelTarget.weekName,
+      dayId: trainingExercisePanelTarget.dayId,
+      dayName: trainingExercisePanelTarget.dayName,
+      blockId: trainingExercisePanelTarget.blockId,
+      blockTitle: trainingExercisePanelTarget.blockTitle,
+      exerciseId: trainingExercisePanelTarget.exerciseId,
+      exerciseName: trainingExercisePanelTarget.exerciseName,
+      exerciseKey: `${trainingExercisePanelTarget.dayId}:${trainingExercisePanelTarget.exerciseId}`,
+      fecha: trainingRecordDraft.fecha || new Date().toISOString().slice(0, 10),
+      series,
+      repeticiones,
+      pesoKg,
+      molestia: trainingRecordDraft.molestia,
+      comentarios: trainingRecordDraft.comentarios.trim() || undefined,
+      createdAt: new Date().toISOString(),
+    };
+
+    setWorkoutLogsRaw((prev) => [payload, ...normalizeWorkoutLogs(prev)]);
+    setTrainingRecordStatus(`Registro guardado para ${trainingExercisePanelTarget.exerciseName}.`);
+    setTrainingRecordDraft((prev) => ({
+      ...prev,
+      repeticiones: "",
+      pesoKg: "",
+      molestia: false,
+      comentarios: "",
+    }));
+  };
+
+  const createTrainingPlanForSelectedClient = () => {
+    if (!selectedClient || selectedClientTrainingPlan) return;
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+    }));
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("pf-inline-toast", {
+          detail: {
+            type: "success",
+            message: "Se creo un plan editable para este cliente.",
+          },
+        })
+      );
+    }
+  };
+
   const trainingPreviewStats = useMemo(() => {
     const weeks = selectedClientTrainingPlan?.semanas || [];
     const totalDias = weeks.reduce((acc, week) => acc + (week.dias || []).length, 0);
-    const diasConSesion = weeks.reduce(
-      (acc, week) => acc + (week.dias || []).filter((day) => Boolean((day.sesionId || "").trim())).length,
-      0
-    );
-    const totalBloques = weeks.reduce(
-      (acc, week) =>
-        acc +
-        (week.dias || []).reduce(
-          (dayAcc, day) => dayAcc + (day.entrenamiento?.bloques?.length || 0),
-          0
-        ),
-      0
-    );
+    let totalBloques = 0;
+
+    weeks.forEach((week) => {
+      (week.dias || []).forEach((day) => {
+        const dayBlocks = day.entrenamiento?.bloques || [];
+
+        totalBloques += dayBlocks.length;
+      });
+    });
 
     return {
       totalSemanas: weeks.length,
       totalDias,
-      diasConSesion,
       totalBloques,
     };
   }, [selectedClientTrainingPlan]);
@@ -1608,41 +2442,6 @@ export default function ClientesPage() {
       setTrainingPreviewDayId(currentDay.id);
     }
   }, [selectedClientTrainingPlan, trainingPreviewDayId, trainingPreviewWeekId]);
-
-  const sesionesCliente = useMemo(() => {
-    if (!selectedClient) return [];
-
-    return sesiones
-      .filter((sesion) => {
-        if (selectedClient.tipo === "jugadora") {
-          const porCategoria =
-            sesion.asignacionTipo === "jugadoras" &&
-            (sesion.categoriaAsignada || "") === (selectedClient.categoria || "");
-          const porNombre =
-            sesion.asignacionTipo === "jugadoras" &&
-            (sesion.jugadoraAsignada || "") === selectedClient.nombre;
-          return porCategoria || porNombre;
-        }
-
-        return (
-          sesion.asignacionTipo === "alumnos" &&
-          (sesion.alumnoAsignado || "") === selectedClient.nombre
-        );
-      })
-      .slice(0, 8);
-  }, [selectedClient, sesiones]);
-
-  const sesionesClienteResumen = useMemo(() => {
-    const total = sesionesCliente.length;
-    const conObjetivo = sesionesCliente.filter((session) => Boolean((session.objetivo || "").trim())).length;
-    const bloques = sesionesCliente.reduce((acc, session) => acc + (session.bloques || []).length, 0);
-
-    return {
-      total,
-      conObjetivo,
-      bloques,
-    };
-  }, [sesionesCliente]);
 
   const resumen = useMemo(() => {
     const activos = clientes.filter((item) => item.estado === "activo").length;
@@ -2105,10 +2904,6 @@ export default function ClientesPage() {
     router.prefetch("/registros");
   }, [router]);
 
-  function openClientPlanView(clientId: string, tab: PlanViewTab = "plan-entrenamiento") {
-    router.push(buildPlanViewHref(clientId, tab));
-  }
-
   const openClientDetail = (clientId: string, tab: ClienteTab = "datos") => {
     setClientesSection("clientes");
     setIsDetailMode(true);
@@ -2182,7 +2977,7 @@ export default function ClientesPage() {
   };
 
   return (
-    <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
+    <main className="mx-auto max-w-[1920px] space-y-6 p-6 text-slate-100">
       <section className="rounded-2xl border border-cyan-300/20 bg-slate-900/70 p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex rounded-xl border border-white/15 bg-slate-950/55 p-1">
@@ -2767,7 +3562,7 @@ export default function ClientesPage() {
         ) : null}
 
         {isDetailMode ? (
-        <div className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg">
+        <div className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg xl:p-6">
           {!selectedClient || !selectedMeta || !datosDraft ? (
             <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-sm text-slate-300">Selecciona un cliente para abrir su ficha.</div>
           ) : (
@@ -2916,7 +3711,7 @@ export default function ClientesPage() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-5 xl:p-6">
                 {activeTab === "datos" ? (
                   <div className="grid gap-4 xl:grid-cols-2">
                     <div className="space-y-4">
@@ -3073,13 +3868,17 @@ export default function ClientesPage() {
                     </div>
                   </div>
                 ) : activeTab === "plan-entrenamiento" ? (
-                  <div className="rounded-2xl border-2 border-cyan-300/35 bg-cyan-500/[0.08] p-4 sm:p-5">
-                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                  <div className="rounded-[30px] border border-cyan-300/32 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 shadow-[0_28px_70px_-46px_rgba(34,211,238,0.55)] sm:px-5 lg:px-7 lg:py-6">
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Templates</p>
-                        <h3 className="mt-1 text-lg font-black text-white">Plan de entrenamiento</h3>
+                        <p className="text-xs uppercase tracking-[0.14em] text-cyan-100/85">
+                          {canEditTrainingPlan ? "Vista admin" : "Vista cliente"}
+                        </p>
+                        <h3 className="mt-1 text-xl font-black text-white">Plan de entrenamiento</h3>
                         <p className="mt-1 text-sm text-slate-200/90">
-                          Vista completa del entrenamiento en formato tipo template, con semanas, dias, bloques y ejercicios.
+                          {canEditTrainingPlan
+                            ? "Edicion directa estilo templates: semanas, dias, bloques y ejercicios en la misma pantalla."
+                            : "Lectura completa del plan semanal con estructura de template."}
                         </p>
                       </div>
 
@@ -3094,84 +3893,887 @@ export default function ClientesPage() {
                         >
                           Asignar entrenamiento
                         </Link>
-                        <Link
-                          href={
-                            selectedClient
-                              ? buildPlanViewHref(selectedClient.id, "plan-entrenamiento")
-                              : "/clientes"
-                          }
-                          className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                        <ReliableActionButton
+                          type="button"
+                          onClick={syncTrainingPlanWithAlumnoProfile}
+                          disabled={!selectedClientTrainingPlan}
+                          className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10 disabled:opacity-60"
                         >
-                          Editar plan completo
-                        </Link>
+                          Actualizar
+                        </ReliableActionButton>
                       </div>
                     </div>
 
-                    <div className="mt-3 grid gap-2 sm:grid-cols-4">
-                      <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
-                        Semanas: <span className="font-semibold text-white">{trainingPreviewStats.totalSemanas}</span>
-                      </div>
-                      <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
-                        Dias: <span className="font-semibold">{trainingPreviewStats.totalDias}</span>
-                      </div>
-                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
-                        Con sesion: <span className="font-semibold">{trainingPreviewStats.diasConSesion}</span>
-                      </div>
-                      <div className="rounded-xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-3 text-xs text-fuchsia-100">
-                        Bloques: <span className="font-semibold">{trainingPreviewStats.totalBloques}</span>
-                      </div>
+                    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                      <span className="rounded-full border border-white/15 bg-slate-900/50 px-3 py-1 text-slate-100">
+                        Semanas: <span className="font-bold text-white">{trainingPreviewStats.totalSemanas}</span>
+                      </span>
+                      <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-cyan-100">
+                        Dias: <span className="font-bold">{trainingPreviewStats.totalDias}</span>
+                      </span>
+                      <span className="rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-fuchsia-100">
+                        Bloques: <span className="font-bold">{trainingPreviewStats.totalBloques}</span>
+                      </span>
                     </div>
 
                     {!selectedClientTrainingPlan ? (
-                      <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
                         <p>No hay un plan semanal vinculado para este cliente todavia.</p>
-                        {sesionesCliente.length > 0 ? (
-                          <p className="mt-2 text-xs text-cyan-100/90">
-                            Sesiones detectadas: {sesionesClienteResumen.total}. Puedes enlazarlas en el editor completo.
-                          </p>
+                        {canEditTrainingPlan ? (
+                          <ReliableActionButton
+                            type="button"
+                            onClick={createTrainingPlanForSelectedClient}
+                            className="mt-3 rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                          >
+                            Crear plan editable
+                          </ReliableActionButton>
                         ) : null}
                       </div>
-                    ) : (
-                      <div className="mt-4 space-y-4">
-                        <section className="rounded-xl border border-white/15 bg-slate-950/45 p-3">
-                          <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Semanas del template</p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {(selectedClientTrainingPlan.semanas || []).map((week) => (
+                    ) : canEditTrainingPlan ? (
+                      <div className="space-y-4">
+                        <div className="grid gap-5 border-t border-cyan-300/18 pt-4 lg:grid-cols-2">
+                          <section className="space-y-2 border-l-2 border-cyan-300/45 pl-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-100">Semanas</p>
+                            <div className="flex min-w-max items-center gap-2.5 overflow-x-auto whitespace-nowrap pb-1 pr-1">
+                              {(selectedClientTrainingPlan.semanas || []).map((week, weekIndex) => {
+                                const weekLabel = String(week.nombre || `Semana ${weekIndex + 1}`);
+                                const isEditingWeek = trainingWeekInlineEdit?.weekId === week.id;
+
+                                if (isEditingWeek && trainingWeekInlineEdit) {
+                                  return (
+                                    <input
+                                      key={week.id}
+                                      autoFocus
+                                      value={trainingWeekInlineEdit.value}
+                                      onChange={(event) =>
+                                        setTrainingWeekInlineEdit((prev) =>
+                                          prev && prev.weekId === week.id
+                                            ? {
+                                                ...prev,
+                                                value: event.target.value,
+                                              }
+                                            : prev
+                                        )
+                                      }
+                                      onBlur={commitTrainingWeekInlineEdit}
+                                      onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                          event.preventDefault();
+                                          commitTrainingWeekInlineEdit();
+                                        }
+                                        if (event.key === "Escape") {
+                                          event.preventDefault();
+                                          setTrainingWeekInlineEdit(null);
+                                        }
+                                      }}
+                                      className="h-10 min-w-[138px] rounded-2xl border border-cyan-200/70 bg-slate-900/85 px-3.5 py-1.5 text-sm font-bold text-cyan-100 outline-none focus:border-cyan-100"
+                                    />
+                                  );
+                                }
+
+                                return (
+                                  <ReliableActionButton
+                                    key={week.id}
+                                    type="button"
+                                    onClick={() => selectTrainingPreviewWeek(week.id)}
+                                    onDoubleClick={() => startTrainingWeekInlineEdit(week.id, weekLabel)}
+                                    title="Doble click para editar"
+                                    className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
+                                      trainingPreviewWeekId === week.id
+                                        ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(34,211,238,0.95)]"
+                                        : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-cyan-300/55 hover:bg-slate-800/80"
+                                    }`}
+                                  >
+                                    {weekLabel}
+                                  </ReliableActionButton>
+                                );
+                              })}
                               <ReliableActionButton
-                                key={week.id}
                                 type="button"
-                                onClick={() => setTrainingPreviewWeekId(week.id)}
-                                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                                  trainingPreviewWeekId === week.id
-                                    ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                    : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
-                                }`}
+                                onClick={addTrainingWeek}
+                                reliabilityMode="off"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/60 bg-cyan-500/20 text-lg font-black text-cyan-100 hover:bg-cyan-500/32"
+                                aria-label="Agregar semana"
                               >
-                                {week.nombre || "Semana"}
+                                +
                               </ReliableActionButton>
-                            ))}
-                          </div>
-                        </section>
+                            </div>
+                          </section>
+
+                          <section className="space-y-2 border-l-2 border-emerald-300/45 pl-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">Dias</p>
+                            {selectedTrainingWeek ? (
+                              <div className="flex min-w-max items-center gap-2.5 overflow-x-auto whitespace-nowrap pb-1 pr-1">
+                                {(selectedTrainingWeek.dias || []).map((day, dayIndex) => {
+                                  const dayLabel = String(day.dia || `Dia ${dayIndex + 1}`);
+                                  const isEditingDay =
+                                    trainingDayInlineEdit?.weekId === selectedTrainingWeek.id &&
+                                    trainingDayInlineEdit?.dayId === day.id;
+
+                                  if (isEditingDay && trainingDayInlineEdit) {
+                                    return (
+                                      <input
+                                        key={day.id}
+                                        autoFocus
+                                        value={trainingDayInlineEdit.value}
+                                        onChange={(event) =>
+                                          setTrainingDayInlineEdit((prev) =>
+                                            prev &&
+                                            prev.weekId === selectedTrainingWeek.id &&
+                                            prev.dayId === day.id
+                                              ? {
+                                                  ...prev,
+                                                  value: event.target.value,
+                                                }
+                                              : prev
+                                          )
+                                        }
+                                        onBlur={commitTrainingDayInlineEdit}
+                                        onKeyDown={(event) => {
+                                          if (event.key === "Enter") {
+                                            event.preventDefault();
+                                            commitTrainingDayInlineEdit();
+                                          }
+                                          if (event.key === "Escape") {
+                                            event.preventDefault();
+                                            setTrainingDayInlineEdit(null);
+                                          }
+                                        }}
+                                        className="h-10 min-w-[128px] rounded-2xl border border-emerald-200/70 bg-slate-900/85 px-3.5 py-1.5 text-sm font-bold text-emerald-100 outline-none focus:border-emerald-100"
+                                      />
+                                    );
+                                  }
+
+                                  return (
+                                    <ReliableActionButton
+                                      key={day.id}
+                                      type="button"
+                                      onClick={() => selectTrainingPreviewDay(day.id)}
+                                      onDoubleClick={() =>
+                                        startTrainingDayInlineEdit(
+                                          selectedTrainingWeek.id,
+                                          day.id,
+                                          dayLabel
+                                        )
+                                      }
+                                      title="Doble click para editar"
+                                      className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
+                                        trainingPreviewDayId === day.id
+                                          ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(16,185,129,0.95)]"
+                                          : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-emerald-300/55 hover:bg-slate-800/80"
+                                      }`}
+                                    >
+                                      {dayLabel}
+                                    </ReliableActionButton>
+                                  );
+                                })}
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => addTrainingDay(selectedTrainingWeek.id)}
+                                  reliabilityMode="off"
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/20 text-lg font-black text-emerald-100 hover:bg-emerald-500/32"
+                                  aria-label="Agregar dia"
+                                >
+                                  +
+                                </ReliableActionButton>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-slate-300">Selecciona una semana para ver los dias.</p>
+                            )}
+                          </section>
+                        </div>
 
                         {selectedTrainingWeek ? (
-                          <section className="rounded-xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-3">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.12em] text-fuchsia-100/85">Semana activa</p>
-                                <p className="mt-1 text-base font-black text-white">{selectedTrainingWeek.nombre}</p>
-                                <p className="mt-1 text-xs text-slate-300">
-                                  {selectedTrainingWeek.objetivo || "Sin objetivo semanal"}
-                                </p>
+                          <section className="space-y-4 border-t border-cyan-300/18 pt-4">
+                            <label className="block space-y-1 border-b border-cyan-300/15 pb-3">
+                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-200">Objetivo semanal</span>
+                              <textarea
+                                value={selectedTrainingWeek.objetivo || ""}
+                                onChange={(event) =>
+                                  updateTrainingWeekField(
+                                    selectedTrainingWeek.id,
+                                    "objetivo",
+                                    event.target.value
+                                  )
+                                }
+                                className="min-h-[72px] w-full border-b border-white/20 bg-transparent px-0 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/60"
+                                placeholder="Objetivo de la semana"
+                              />
+                            </label>
+
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                              <p className="text-sm font-semibold text-slate-100">
+                                Edicion activa: {selectedTrainingWeek.nombre || "Semana"} · {selectedTrainingDay?.dia || "Sin dia"}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() =>
+                                    selectedTrainingDay
+                                      ? removeTrainingDay(selectedTrainingWeek.id, selectedTrainingDay.id)
+                                      : null
+                                  }
+                                  disabled={!selectedTrainingDay || (selectedTrainingWeek.dias || []).length <= 1}
+                                  className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
+                                >
+                                  Eliminar dia
+                                </ReliableActionButton>
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => removeTrainingWeek(selectedTrainingWeek.id)}
+                                  disabled={(selectedClientTrainingPlan.semanas || []).length <= 1}
+                                  className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
+                                >
+                                  Eliminar semana
+                                </ReliableActionButton>
                               </div>
                             </div>
 
-                            <div className="mt-3 flex flex-wrap gap-2">
+                            {selectedTrainingDay ? (
+                                <div className="space-y-3 pt-2">
+                                  <div className="mt-1 border-t border-cyan-300/18 pt-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-100/95">
+                                          Entrenamiento
+                                        </p>
+                                        <p className="mt-1 text-sm text-slate-100">
+                                          Bloques y ejercicios del plan completo del dia.
+                                        </p>
+                                      </div>
+
+                                      {selectedTrainingDayBlocks.length > 0 ? (
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => addTrainingBlock(selectedTrainingWeek.id, selectedTrainingDay.id)}
+                                          className="rounded-full border border-cyan-300/45 bg-cyan-500/15 px-3.5 py-2 text-sm font-semibold text-cyan-100"
+                                        >
+                                          Nuevo bloque
+                                        </ReliableActionButton>
+                                      ) : null}
+                                    </div>
+
+                                    {selectedTrainingDayBlocks.length === 0 ? (
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() => addTrainingBlock(selectedTrainingWeek.id, selectedTrainingDay.id)}
+                                        className="mt-3 rounded-full border border-cyan-300/45 bg-cyan-500/15 px-3.5 py-2 text-sm font-semibold text-cyan-100"
+                                      >
+                                        Crear estructura de entrenamiento para este dia
+                                      </ReliableActionButton>
+                                    ) : (
+                                      <div className="mt-4 space-y-3">
+                                        {selectedTrainingDayBlocks.map((block, blockIndex) => (
+                                          <article
+                                            key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
+                                            className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/12 pt-5" : "pt-2"}`}
+                                          >
+                                            <div className="flex flex-wrap items-start justify-between gap-2">
+                                              <input
+                                                value={block.titulo || ""}
+                                                onChange={(event) =>
+                                                  updateTrainingBlockField(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    block.id,
+                                                    "titulo",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-white"
+                                                placeholder={`Bloque ${blockIndex + 1}`}
+                                              />
+
+                                              <div className="flex items-center gap-2">
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  onClick={() =>
+                                                    addTrainingExercise(
+                                                      selectedTrainingWeek.id,
+                                                      selectedTrainingDay.id,
+                                                      block.id
+                                                    )
+                                                  }
+                                                  className="rounded-full border border-cyan-300/45 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100"
+                                                >
+                                                  Agregar ejercicio
+                                                </ReliableActionButton>
+                                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-slate-800 text-sm font-semibold text-slate-100">
+                                                  ...
+                                                </span>
+                                              </div>
+                                            </div>
+
+                                            <input
+                                              value={block.objetivo || ""}
+                                              onChange={(event) =>
+                                                updateTrainingBlockField(
+                                                  selectedTrainingWeek.id,
+                                                  selectedTrainingDay.id,
+                                                  block.id,
+                                                  "objetivo",
+                                                  event.target.value
+                                                )
+                                              }
+                                              className="mt-2 w-full rounded-none border border-white/20 bg-slate-700 px-2 py-1.5 text-sm text-white"
+                                              placeholder="Objetivo bloque"
+                                            />
+
+                                            <div className="mt-3 space-y-3">
+                                              {(block.ejercicios || []).map((exercise) => {
+                                                const exerciseMeta =
+                                                  ejercicios.find((item) => item.id === exercise.ejercicioId) || null;
+                                                const previewImage = resolveExercisePreviewImage(exerciseMeta?.videoUrl);
+                                                const actionTarget: TrainingExercisePanelTarget = {
+                                                  weekId: selectedTrainingWeek.id,
+                                                  weekName: selectedTrainingWeek.nombre || "Semana",
+                                                  dayId: selectedTrainingDay.id,
+                                                  dayName: selectedTrainingDay.dia || "Dia",
+                                                  blockId: block.id,
+                                                  blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+                                                  exerciseId: exercise.id,
+                                                  exerciseName: exerciseMeta?.nombre || "Ejercicio",
+                                                  sessionId: `plan-${selectedClient?.id || "cliente"}`,
+                                                  sessionTitle:
+                                                    selectedTrainingDay.planificacion ||
+                                                    selectedTrainingDay.dia ||
+                                                    "Plan de entrenamiento",
+                                                  currentSeries: exercise.series || "",
+                                                  currentRepeticiones: exercise.repeticiones || "",
+                                                  currentCarga: exercise.carga || "",
+                                                };
+                                                const panelOpenForExercise =
+                                                  Boolean(trainingExercisePanelTarget) &&
+                                                  trainingExercisePanelTarget?.weekId === actionTarget.weekId &&
+                                                  trainingExercisePanelTarget?.dayId === actionTarget.dayId &&
+                                                  trainingExercisePanelTarget?.blockId === actionTarget.blockId &&
+                                                  trainingExercisePanelTarget?.exerciseId === actionTarget.exerciseId;
+
+                                                return (
+                                                  <div
+                                                    key={exercise.id}
+                                                    className="border-t border-white/12 pt-3"
+                                                  >
+                                                    <div className="grid gap-2 lg:grid-cols-[76px_minmax(0,1.6fr)_160px_160px_160px_160px]">
+                                                      <div className="overflow-hidden rounded-xl border border-white/20 bg-slate-900/70">
+                                                        {previewImage ? (
+                                                          <img
+                                                            src={previewImage}
+                                                            alt={exerciseMeta?.nombre || "Ejercicio"}
+                                                            className="h-[66px] w-full object-cover"
+                                                            loading="lazy"
+                                                          />
+                                                        ) : (
+                                                          <span className="flex h-[66px] w-full items-center justify-center text-xs font-semibold text-slate-200">
+                                                            Sin preview
+                                                          </span>
+                                                        )}
+                                                      </div>
+
+                                                      <label className="space-y-1">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                          <span className="text-xs font-bold text-slate-100">Ejercicio</span>
+                                                          <ReliableActionButton
+                                                            type="button"
+                                                            onClick={() =>
+                                                              openTrainingExercisePanel("configuracion", actionTarget)
+                                                            }
+                                                            className="rounded-full border border-white/20 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700"
+                                                          >
+                                                            Configuracion
+                                                          </ReliableActionButton>
+                                                        </div>
+                                                        <select
+                                                          value={exercise.ejercicioId || ""}
+                                                          onChange={(event) =>
+                                                            updateTrainingExerciseField(
+                                                              selectedTrainingWeek.id,
+                                                              selectedTrainingDay.id,
+                                                              block.id,
+                                                              exercise.id,
+                                                              "ejercicioId",
+                                                              event.target.value
+                                                            )
+                                                          }
+                                                            className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                        >
+                                                          <option value="">Seleccione ejercicio</option>
+                                                          {ejercicios.map((exerciseOption) => (
+                                                            <option key={exerciseOption.id} value={exerciseOption.id}>
+                                                              {exerciseOption.nombre}
+                                                            </option>
+                                                          ))}
+                                                        </select>
+                                                      </label>
+
+                                                      <label className="space-y-1">
+                                                        <span className="text-xs font-bold text-slate-100">Series</span>
+                                                        <input
+                                                          value={exercise.series || ""}
+                                                          onChange={(event) =>
+                                                            updateTrainingExerciseField(
+                                                              selectedTrainingWeek.id,
+                                                              selectedTrainingDay.id,
+                                                              block.id,
+                                                              exercise.id,
+                                                              "series",
+                                                              event.target.value
+                                                            )
+                                                          }
+                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                        />
+                                                      </label>
+
+                                                      <label className="space-y-1">
+                                                        <span className="text-xs font-bold text-slate-100">Repeticiones</span>
+                                                        <input
+                                                          value={exercise.repeticiones || ""}
+                                                          onChange={(event) =>
+                                                            updateTrainingExerciseField(
+                                                              selectedTrainingWeek.id,
+                                                              selectedTrainingDay.id,
+                                                              block.id,
+                                                              exercise.id,
+                                                              "repeticiones",
+                                                              event.target.value
+                                                            )
+                                                          }
+                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                        />
+                                                      </label>
+
+                                                      <label className="space-y-1">
+                                                        <span className="text-xs font-bold text-slate-100">Descanso</span>
+                                                        <input
+                                                          value={exercise.descanso || ""}
+                                                          onChange={(event) =>
+                                                            updateTrainingExerciseField(
+                                                              selectedTrainingWeek.id,
+                                                              selectedTrainingDay.id,
+                                                              block.id,
+                                                              exercise.id,
+                                                              "descanso",
+                                                              event.target.value
+                                                            )
+                                                          }
+                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                        />
+                                                      </label>
+
+                                                      <label className="space-y-1">
+                                                        <span className="text-xs font-bold text-slate-100">Carga (kg)</span>
+                                                        <input
+                                                          value={exercise.carga || ""}
+                                                          onChange={(event) =>
+                                                            updateTrainingExerciseField(
+                                                              selectedTrainingWeek.id,
+                                                              selectedTrainingDay.id,
+                                                              block.id,
+                                                              exercise.id,
+                                                              "carga",
+                                                              event.target.value
+                                                            )
+                                                          }
+                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                        />
+                                                      </label>
+                                                    </div>
+
+                                                    <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+                                                      <span className="text-cyan-200">Desglosar serie</span>
+                                                      <span className="text-slate-400">Agregar ejercicio super-serie</span>
+                                                      <ReliableActionButton
+                                                        type="button"
+                                                        onClick={() => openTrainingExercisePanel("ver-pesos", actionTarget)}
+                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                      >
+                                                        Ver pesos
+                                                      </ReliableActionButton>
+                                                      <ReliableActionButton
+                                                        type="button"
+                                                        onClick={() => openTrainingExercisePanel("registrar-peso", actionTarget)}
+                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                      >
+                                                        Registrar peso
+                                                      </ReliableActionButton>
+                                                      <ReliableActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                          removeTrainingExercise(
+                                                            selectedTrainingWeek.id,
+                                                            selectedTrainingDay.id,
+                                                            block.id,
+                                                            exercise.id
+                                                          )
+                                                        }
+                                                        className="text-rose-200 hover:text-rose-100"
+                                                      >
+                                                        Eliminar
+                                                      </ReliableActionButton>
+                                                    </div>
+
+                                                    <label className="mt-2 block space-y-1">
+                                                      <span className="text-xs font-semibold text-slate-300">Observaciones</span>
+                                                      <input
+                                                        value={exercise.observaciones || ""}
+                                                        onChange={(event) =>
+                                                          updateTrainingExerciseField(
+                                                            selectedTrainingWeek.id,
+                                                            selectedTrainingDay.id,
+                                                            block.id,
+                                                            exercise.id,
+                                                            "observaciones",
+                                                            event.target.value
+                                                          )
+                                                        }
+                                                        className="w-full rounded-md border border-white/15 bg-slate-900/70 px-2 py-1.5 text-xs text-slate-100"
+                                                        placeholder="Observaciones del ejercicio"
+                                                      />
+                                                    </label>
+
+                                                    {panelOpenForExercise ? (
+                                                      <div className="mt-3 rounded-xl border border-cyan-300/25 bg-slate-900/65 p-3">
+                                                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-100">
+                                                            {trainingExercisePanelMode === "configuracion"
+                                                              ? "Configuracion"
+                                                              : trainingExercisePanelMode === "ver-pesos"
+                                                                ? "Historial de pesos"
+                                                                : "Registrar peso"}
+                                                          </p>
+                                                          <ReliableActionButton
+                                                            type="button"
+                                                            onClick={closeTrainingExercisePanel}
+                                                            className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white hover:bg-white/15"
+                                                          >
+                                                            Cerrar
+                                                          </ReliableActionButton>
+                                                        </div>
+
+                                                        {trainingExercisePanelMode === "configuracion" ? (
+                                                          <div className="space-y-2">
+                                                            <div className="flex flex-wrap gap-2">
+                                                              <ReliableActionButton
+                                                                type="button"
+                                                                onClick={() => {
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "series",
+                                                                    "3"
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "repeticiones",
+                                                                    "10"
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "descanso",
+                                                                    "60"
+                                                                  );
+                                                                  setTrainingRecordStatus("Preset 3x10 aplicado.");
+                                                                }}
+                                                                className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-100"
+                                                              >
+                                                                Aplicar 3x10
+                                                              </ReliableActionButton>
+                                                              <ReliableActionButton
+                                                                type="button"
+                                                                onClick={() => {
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "series",
+                                                                    "5"
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "repeticiones",
+                                                                    "5"
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "descanso",
+                                                                    "120"
+                                                                  );
+                                                                  setTrainingRecordStatus("Preset 5x5 aplicado.");
+                                                                }}
+                                                                className="rounded-lg border border-fuchsia-300/35 bg-fuchsia-500/10 px-2.5 py-1 text-xs font-semibold text-fuchsia-100"
+                                                              >
+                                                                Aplicar 5x5
+                                                              </ReliableActionButton>
+                                                              <ReliableActionButton
+                                                                type="button"
+                                                                onClick={() => {
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "series",
+                                                                    ""
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "repeticiones",
+                                                                    ""
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "descanso",
+                                                                    ""
+                                                                  );
+                                                                  updateTrainingExerciseField(
+                                                                    selectedTrainingWeek.id,
+                                                                    selectedTrainingDay.id,
+                                                                    block.id,
+                                                                    exercise.id,
+                                                                    "carga",
+                                                                    ""
+                                                                  );
+                                                                  setTrainingRecordStatus("Configuracion limpiada.");
+                                                                }}
+                                                                className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-100"
+                                                              >
+                                                                Limpiar valores
+                                                              </ReliableActionButton>
+                                                            </div>
+                                                            <p className="text-xs text-slate-300">
+                                                              Usa presets rapidos para estandarizar la carga sin salir del formato template.
+                                                            </p>
+                                                          </div>
+                                                        ) : null}
+
+                                                        {trainingExercisePanelMode === "ver-pesos" ? (
+                                                          selectedExerciseWorkoutLogs.length === 0 ? (
+                                                            <p className="text-sm text-slate-300">
+                                                              Todavia no hay registros de peso para este ejercicio.
+                                                            </p>
+                                                          ) : (
+                                                            <div className="space-y-2">
+                                                              <p className="text-xs text-cyan-100">
+                                                                Maximo registrado: {selectedExerciseTopWeight.toLocaleString("es-AR")} kg · {selectedExerciseWorkoutLogs.length} registro/s
+                                                              </p>
+                                                              <ul className="space-y-1 text-xs text-slate-200">
+                                                                {selectedExerciseWorkoutLogs.slice(0, 8).map((log) => (
+                                                                  <li
+                                                                    key={log.id}
+                                                                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-white/10 bg-slate-950/55 px-2 py-1"
+                                                                  >
+                                                                    <span>
+                                                                      {log.fecha
+                                                                        ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                                                        : "Sin fecha"}
+                                                                    </span>
+                                                                    <span className="font-semibold text-cyan-100">
+                                                                      {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series} x {log.repeticiones || "-"}
+                                                                    </span>
+                                                                  </li>
+                                                                ))}
+                                                              </ul>
+                                                            </div>
+                                                          )
+                                                        ) : null}
+
+                                                        {trainingExercisePanelMode === "registrar-peso" ? (
+                                                          <div className="space-y-2">
+                                                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                                                              <label className="space-y-1">
+                                                                <span className="text-xs font-semibold text-slate-200">Fecha</span>
+                                                                <input
+                                                                  type="date"
+                                                                  value={trainingRecordDraft.fecha}
+                                                                  onChange={(event) =>
+                                                                    setTrainingRecordDraft((prev) => ({
+                                                                      ...prev,
+                                                                      fecha: event.target.value,
+                                                                    }))
+                                                                  }
+                                                                  className="w-full rounded-md border border-white/15 bg-slate-800 px-2 py-1.5 text-xs text-white"
+                                                                />
+                                                              </label>
+                                                              <label className="space-y-1">
+                                                                <span className="text-xs font-semibold text-slate-200">Series</span>
+                                                                <input
+                                                                  value={trainingRecordDraft.series}
+                                                                  onChange={(event) =>
+                                                                    setTrainingRecordDraft((prev) => ({
+                                                                      ...prev,
+                                                                      series: event.target.value,
+                                                                    }))
+                                                                  }
+                                                                  className="w-full rounded-md border border-white/15 bg-slate-800 px-2 py-1.5 text-xs text-white"
+                                                                />
+                                                              </label>
+                                                              <label className="space-y-1">
+                                                                <span className="text-xs font-semibold text-slate-200">Repeticiones</span>
+                                                                <input
+                                                                  value={trainingRecordDraft.repeticiones}
+                                                                  onChange={(event) =>
+                                                                    setTrainingRecordDraft((prev) => ({
+                                                                      ...prev,
+                                                                      repeticiones: event.target.value,
+                                                                    }))
+                                                                  }
+                                                                  className="w-full rounded-md border border-white/15 bg-slate-800 px-2 py-1.5 text-xs text-white"
+                                                                />
+                                                              </label>
+                                                              <label className="space-y-1">
+                                                                <span className="text-xs font-semibold text-slate-200">Peso (kg)</span>
+                                                                <input
+                                                                  value={trainingRecordDraft.pesoKg}
+                                                                  onChange={(event) =>
+                                                                    setTrainingRecordDraft((prev) => ({
+                                                                      ...prev,
+                                                                      pesoKg: event.target.value,
+                                                                    }))
+                                                                  }
+                                                                  className="w-full rounded-md border border-white/15 bg-slate-800 px-2 py-1.5 text-xs text-white"
+                                                                />
+                                                              </label>
+                                                            </div>
+
+                                                            <label className="block space-y-1">
+                                                              <span className="text-xs font-semibold text-slate-200">Comentario</span>
+                                                              <input
+                                                                value={trainingRecordDraft.comentarios}
+                                                                onChange={(event) =>
+                                                                  setTrainingRecordDraft((prev) => ({
+                                                                    ...prev,
+                                                                    comentarios: event.target.value,
+                                                                  }))
+                                                                }
+                                                                className="w-full rounded-md border border-white/15 bg-slate-800 px-2 py-1.5 text-xs text-white"
+                                                                placeholder="Sensaciones, tecnica, observaciones"
+                                                              />
+                                                            </label>
+
+                                                            <label className="inline-flex items-center gap-2 text-xs text-slate-200">
+                                                              <input
+                                                                type="checkbox"
+                                                                checked={trainingRecordDraft.molestia}
+                                                                onChange={(event) =>
+                                                                  setTrainingRecordDraft((prev) => ({
+                                                                    ...prev,
+                                                                    molestia: event.target.checked,
+                                                                  }))
+                                                                }
+                                                                className="h-3.5 w-3.5 accent-cyan-400"
+                                                              />
+                                                              Registrar con molestia
+                                                            </label>
+
+                                                            <ReliableActionButton
+                                                              type="button"
+                                                              onClick={saveTrainingWeightRecord}
+                                                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                                                            >
+                                                              Guardar registro
+                                                            </ReliableActionButton>
+                                                          </div>
+                                                        ) : null}
+
+                                                        {trainingRecordStatus ? (
+                                                          <p className="mt-2 text-xs text-cyan-100">{trainingRecordStatus}</p>
+                                                        ) : null}
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+
+                                            <div className="mt-2 flex justify-end">
+                                              <ReliableActionButton
+                                                type="button"
+                                                onClick={() =>
+                                                  removeTrainingBlock(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    block.id
+                                                  )
+                                                }
+                                                className="rounded-full border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
+                                              >
+                                                Eliminar bloque
+                                              </ReliableActionButton>
+                                            </div>
+                                          </article>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="rounded-lg border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-300">
+                                  Selecciona un dia para editarlo.
+                                </p>
+                              )}
+                            </section>
+                          ) : (
+                            <p className="rounded-xl border border-white/10 bg-slate-900/55 p-4 text-sm text-slate-300">
+                              Selecciona una semana para comenzar a editar el plan.
+                            </p>
+                          )}
+                        </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          {(selectedClientTrainingPlan.semanas || []).map((week) => (
+                            <ReliableActionButton
+                              key={week.id}
+                              type="button"
+                              onClick={() => selectTrainingPreviewWeek(week.id)}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
+                                trainingPreviewWeekId === week.id
+                                  ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
+                                  : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                              }`}
+                            >
+                              {week.nombre || "Semana"}
+                            </ReliableActionButton>
+                          ))}
+                        </div>
+
+                        {selectedTrainingWeek ? (
+                          <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                            <div>
+                              <p className="text-sm font-black text-white">{selectedTrainingWeek.nombre}</p>
+                              <p className="text-xs text-slate-300">
+                                {selectedTrainingWeek.objetivo || "Sin objetivo semanal"}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
                               {(selectedTrainingWeek.dias || []).map((day) => (
                                 <ReliableActionButton
                                   key={day.id}
                                   type="button"
-                                  onClick={() => setTrainingPreviewDayId(day.id)}
-                                  className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                                  onClick={() => selectTrainingPreviewDay(day.id)}
+                                  className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${
                                     trainingPreviewDayId === day.id
                                       ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
                                       : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
@@ -3181,110 +4783,60 @@ export default function ClientesPage() {
                                 </ReliableActionButton>
                               ))}
                             </div>
-                          </section>
-                        ) : null}
 
-                        {selectedTrainingDay ? (
-                          <section className="rounded-xl border border-cyan-300/20 bg-slate-950/45 p-3">
-                            <div className="flex flex-wrap items-start justify-between gap-2">
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Dia activo</p>
-                                <h4 className="mt-1 text-base font-black text-white">{selectedTrainingDay.dia}</h4>
-                                <p className="mt-1 text-sm text-slate-200">{selectedTrainingDay.planificacion || "Sin planificacion"}</p>
-                                {selectedTrainingDay.objetivo ? (
-                                  <p className="mt-1 text-xs text-fuchsia-100/90">
-                                    Objetivo del dia: {selectedTrainingDay.objetivo}
-                                  </p>
-                                ) : null}
-                              </div>
+                            {selectedTrainingDay ? (
+                              <div className="space-y-2 border-t border-white/10 pt-3">
+                                <div className="flex flex-wrap items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-sm font-bold text-white">{selectedTrainingDay.dia}</p>
+                                    <p className="text-sm text-slate-200">
+                                      {selectedTrainingDay.planificacion || "Sin planificacion"}
+                                    </p>
+                                    {selectedTrainingDay.objetivo ? (
+                                      <p className="text-xs text-fuchsia-100/90">
+                                        Objetivo del dia: {selectedTrainingDay.objetivo}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                                    {selectedTrainingDayBlockSummary} ejercicios
+                                  </span>
+                                </div>
 
-                              <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                                {selectedTrainingDayBlockSummary} ejercicios
-                              </span>
-                            </div>
-
-                            {selectedTrainingLinkedSession ? (
-                              <div className="mt-3 rounded-lg border border-cyan-300/20 bg-cyan-500/[0.06] p-3 text-xs text-cyan-100">
-                                Sesion vinculada: {selectedTrainingLinkedSession.titulo} · {selectedTrainingLinkedSession.duracion || "-"} min
+                                {selectedTrainingDayBlocks.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {selectedTrainingDayBlocks.map((block, blockIndex) => (
+                                      <article
+                                        key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
+                                        className="border-l-2 border-cyan-300/25 pl-3"
+                                      >
+                                        <p className="text-sm font-semibold text-white">
+                                          {block.titulo || `Bloque ${blockIndex + 1}`}
+                                        </p>
+                                        {(block.ejercicios || []).length === 0 ? (
+                                          <p className="text-xs text-slate-400">Sin ejercicios.</p>
+                                        ) : (
+                                          <ul className="mt-1 space-y-1 text-xs text-slate-200">
+                                            {(block.ejercicios || []).map((exercise) => {
+                                              const exerciseMeta =
+                                                ejercicios.find((item) => item.id === exercise.ejercicioId) || null;
+                                              return (
+                                                <li key={exercise.id}>
+                                                  {exerciseMeta?.nombre || "Ejercicio"} · {exercise.series || "-"} x {exercise.repeticiones || "-"} · Desc. {exercise.descanso || "-"} · Carga {exercise.carga || "-"}
+                                                </li>
+                                              );
+                                            })}
+                                          </ul>
+                                        )}
+                                      </article>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-slate-300">Este dia no tiene bloques cargados.</p>
+                                )}
                               </div>
                             ) : null}
-
-                            {selectedTrainingDayBlocks.length === 0 ? (
-                              <p className="mt-3 rounded-lg border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-300">
-                                Este dia no tiene bloques cargados todavia.
-                              </p>
-                            ) : (
-                              <div className="mt-3 space-y-2">
-                                {selectedTrainingDayBlocks.map((block, blockIndex) => (
-                                  <article
-                                    key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
-                                    className="rounded-lg border border-white/12 bg-slate-900/60 p-3"
-                                  >
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                      <p className="text-sm font-bold text-white">
-                                        {block.titulo || `Bloque ${blockIndex + 1}`}
-                                      </p>
-                                      <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                                        {(block.ejercicios || []).length} ejercicios
-                                      </span>
-                                    </div>
-
-                                    {block.objetivo ? (
-                                      <p className="mt-1 text-xs text-slate-300">{block.objetivo}</p>
-                                    ) : null}
-
-                                    {(block.ejercicios || []).length === 0 ? (
-                                      <p className="mt-2 text-xs text-slate-400">Sin ejercicios en este bloque.</p>
-                                    ) : (
-                                      <div className="mt-2 grid gap-2 md:grid-cols-2">
-                                        {(block.ejercicios || []).map((exercise, exerciseIndex) => {
-                                          const baseExerciseName =
-                                            ejercicios.find((item) => item.id === exercise.ejercicioId)?.nombre ||
-                                            "Ejercicio";
-                                          const superSerieRows =
-                                            "superSerie" in exercise &&
-                                            Array.isArray((exercise as { superSerie?: unknown }).superSerie)
-                                              ? (exercise as WeekExerciseLite).superSerie
-                                              : [];
-
-                                          return (
-                                            <div
-                                              key={`${block.id || blockIndex}-exercise-${exerciseIndex}-${exercise.ejercicioId || "base"}`}
-                                              className="rounded-md border border-white/10 bg-slate-950/45 p-2"
-                                            >
-                                              <p className="text-xs font-semibold text-white">{baseExerciseName}</p>
-                                              <p className="mt-1 text-[11px] text-slate-300">
-                                                {exercise.series || "-"} x {exercise.repeticiones || "-"} · Descanso {exercise.descanso || "-"} · Carga {exercise.carga || "-"}
-                                              </p>
-
-                                              {superSerieRows.length > 0 ? (
-                                                <div className="mt-2 space-y-1 border-t border-violet-300/25 pt-2">
-                                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-100">Super serie</p>
-                                                  {superSerieRows.map((superItem, superIndex) => {
-                                                    const superExerciseName =
-                                                      ejercicios.find((item) => item.id === superItem.ejercicioId)
-                                                        ?.nombre || "Ejercicio";
-                                                    return (
-                                                      <p
-                                                        key={superItem.id || `${exerciseIndex}-super-${superIndex}`}
-                                                        className="text-[11px] text-violet-100/90"
-                                                      >
-                                                        {superExerciseName} · {superItem.series || "-"} x {superItem.repeticiones || "-"} · Descanso {superItem.descanso || "-"}
-                                                      </p>
-                                                    );
-                                                  })}
-                                                </div>
-                                              ) : null}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </article>
-                                ))}
-                              </div>
-                            )}
-                          </section>
+                          </div>
                         ) : null}
                       </div>
                     )}

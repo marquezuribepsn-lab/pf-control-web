@@ -2901,7 +2901,7 @@ export default function AlumnoVisionClient({
 
           <article className="rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Frase del dia</p>
-            <p className="mt-2 text-xl font-black leading-tight text-white">"{phraseOfDay}"</p>
+            <p className="mt-2 text-xl font-black leading-tight text-white">&quot;{phraseOfDay}&quot;</p>
           </article>
 
           <article className="rounded-2xl border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-500/20 to-rose-500/20 p-4">
@@ -3096,77 +3096,71 @@ export default function AlumnoVisionClient({
               <p className="mt-2 text-sm text-slate-300">No hay semanas cargadas.</p>
             ) : (
               <>
-                <div className="relative border-y border-white/10 py-2">
+                <div className="relative overflow-hidden border-y border-white/10 py-2">
                   <div
-                    className={`mx-auto w-full max-w-[18rem] text-center transition-all duration-200 ease-out ${
-                      isWeekSliding
-                        ? weekSlideDirection > 0
-                          ? "translate-x-3 opacity-0"
-                          : "-translate-x-3 opacity-0"
-                        : "translate-x-0 opacity-100"
+                    className={`mx-auto w-full max-w-[18rem] text-center transition-opacity duration-200 ease-out ${
+                      isWeekSliding ? "opacity-70" : "opacity-100"
                     }`}
                   >
                     <p className="text-[11px] uppercase tracking-[0.12em] text-slate-300">Semana activa</p>
                     <p className="text-2xl font-black text-white">{selectedWeek?.nombre || "Sin semana"}</p>
                   </div>
 
-                  {canGoPreviousWeek ? (
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => handleShiftWeek(-1)}
-                      className="absolute left-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900"
-                      aria-label="Semana anterior"
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleShiftWeek(-1)}
+                    disabled={!canGoPreviousWeek}
+                    className={`absolute left-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900 disabled:pointer-events-none disabled:opacity-0 ${
+                      canGoPreviousWeek ? "" : "opacity-0"
+                    }`}
+                    aria-label="Semana anterior"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
                     >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="m15 18-6-6 6-6" />
-                      </svg>
-                    </ReliableActionButton>
-                  ) : null}
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  </ReliableActionButton>
 
-                  {canGoNextWeek ? (
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => handleShiftWeek(1)}
-                      className="absolute right-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900"
-                      aria-label="Semana siguiente"
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleShiftWeek(1)}
+                    disabled={!canGoNextWeek}
+                    className={`absolute right-0 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white transition hover:bg-slate-900 disabled:pointer-events-none disabled:opacity-0 ${
+                      canGoNextWeek ? "" : "opacity-0"
+                    }`}
+                    aria-label="Semana siguiente"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
                     >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="m9 18 6-6-6-6" />
-                      </svg>
-                    </ReliableActionButton>
-                  ) : null}
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </ReliableActionButton>
                 </div>
 
                 {selectedWeek ? (
                   selectedWeek.dias.length === 0 ? (
                     <p className="mt-3 text-sm text-slate-300">Semana sin dias cargados.</p>
                   ) : (
-                    <div className="mt-1 overflow-x-auto pb-1">
+                    <div className="mt-1 overflow-hidden pb-1">
                       <div
-                        className={`flex min-w-max gap-2 transition-all duration-200 ease-out ${
-                          isWeekSliding
-                            ? weekSlideDirection > 0
-                              ? "translate-x-3 opacity-0"
-                              : "-translate-x-3 opacity-0"
-                            : "translate-x-0 opacity-100"
+                        className={`flex flex-wrap justify-center gap-2 transition-opacity duration-200 ease-out ${
+                          isWeekSliding ? "opacity-70" : "opacity-100"
                         }`}
                       >
                         {selectedWeek.dias.map((dia) => {

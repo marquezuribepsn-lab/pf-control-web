@@ -1172,6 +1172,121 @@ export default function SemanaPage() {
     };
   };
 
+  const buildTemplateTrainingFromLinkedSession = (
+    linkedSession: ReturnType<typeof getEffectiveLinkedSession>
+  ): TemplateDayTraining | null => {
+    if (!linkedSession) {
+      return null;
+    }
+
+    const linkedSessionId = String(linkedSession.sesion.id || "linked-session");
+    const rawBlocks = Array.isArray(linkedSession.bloques) ? linkedSession.bloques : [];
+
+    const mappedBlocks: TemplateBlockDraft[] = rawBlocks
+      .filter((block) => block && typeof block === "object")
+      .map((block, blockIndex) => {
+        const blockRow = block as Record<string, unknown>;
+        const blockId = String(blockRow.id || `${linkedSessionId}-block-${blockIndex + 1}`);
+        const rawExercises = Array.isArray(blockRow.ejercicios) ? blockRow.ejercicios : [];
+
+        const mappedExercises: TemplateExerciseDraft[] = rawExercises
+          .filter((exercise) => exercise && typeof exercise === "object")
+          .map((exercise, exerciseIndex) => {
+            const exerciseRow = exercise as Record<string, unknown>;
+            const exerciseId = String(exerciseRow.id || `${blockId}-exercise-${exerciseIndex + 1}`);
+            const rawMetricas = Array.isArray(exerciseRow.metricas) ? exerciseRow.metricas : [];
+            const rawSerieDesglose = Array.isArray(exerciseRow.serieDesglose)
+              ? exerciseRow.serieDesglose
+              : [];
+            const rawSuperSerie = Array.isArray(exerciseRow.superSerie)
+              ? exerciseRow.superSerie
+              : [];
+            const baseObservaciones = String(exerciseRow.observaciones || "").trim();
+
+            const especificaciones: TemplateExerciseSpec[] = rawMetricas
+              .filter((item) => item && typeof item === "object")
+              .map((item, metricIndex) => {
+                const metricRow = item as Record<string, unknown>;
+                return {
+                  id: String(metricRow.id || `${exerciseId}-spec-${metricIndex + 1}`),
+                  nombre: String(metricRow.nombre || `Campo ${metricIndex + 1}`),
+                  valor: String(metricRow.valor || ""),
+                };
+              });
+
+            if (
+              baseObservaciones &&
+              !especificaciones.some(
+                (spec) => String(spec.nombre || "").trim().toLowerCase() === "observaciones"
+              )
+            ) {
+              especificaciones.push({
+                id: `${exerciseId}-spec-observaciones`,
+                nombre: "Observaciones",
+                valor: baseObservaciones,
+              });
+            }
+
+            return {
+              id: exerciseId,
+              ejercicioId: String(exerciseRow.ejercicioId || ""),
+              series: String(exerciseRow.series || "0"),
+              repeticiones: String(exerciseRow.repeticiones || "0"),
+              descanso: String(exerciseRow.descanso || "0"),
+              carga: String(exerciseRow.carga || ""),
+              especificaciones,
+              serieDesglose: rawSerieDesglose
+                .filter((item) => item && typeof item === "object")
+                .map((item, setIndex) => {
+                  const setRow = item as Record<string, unknown>;
+                  return {
+                    id: String(setRow.id || `${exerciseId}-set-${setIndex + 1}`),
+                    serie: Number.isFinite(Number(setRow.serie))
+                      ? Number(setRow.serie)
+                      : setIndex + 1,
+                    repeticiones: String(setRow.repeticiones || ""),
+                    cargaKg: String(setRow.cargaKg || setRow.carga || ""),
+                    rir: String(setRow.rir || ""),
+                    descanso: String(setRow.descanso || exerciseRow.descanso || ""),
+                    observaciones: String(setRow.observaciones || ""),
+                  };
+                }),
+              superSerie: rawSuperSerie
+                .filter((item) => item && typeof item === "object")
+                .map((item, superIndex) => {
+                  const superRow = item as Record<string, unknown>;
+                  return {
+                    id: String(superRow.id || `${exerciseId}-super-${superIndex + 1}`),
+                    ejercicioId: String(superRow.ejercicioId || ""),
+                    series: String(superRow.series || ""),
+                    repeticiones: String(superRow.repeticiones || ""),
+                    descanso: String(superRow.descanso || ""),
+                    carga: String(superRow.carga || ""),
+                  };
+                }),
+            };
+          });
+
+        return {
+          id: blockId,
+          titulo: String(blockRow.titulo || `Bloque ${blockIndex + 1}`),
+          objetivo: String(blockRow.objetivo || ""),
+          ejercicios: mappedExercises.length > 0 ? mappedExercises : [createTemplateExercise()],
+        };
+      });
+
+    if (mappedBlocks.length === 0) {
+      return null;
+    }
+
+    return {
+      titulo: String(linkedSession.sesion.titulo || "Sesion"),
+      descripcion: String(linkedSession.sesion.objetivo || ""),
+      duracion: String(linkedSession.sesion.duracion || ""),
+      bloques: mappedBlocks,
+    };
+  };
+
   useEffect(() => {
     if (!loaded || !selectedOwnerKey || !planSeleccionado || !personaSeleccionada) {
       return;
@@ -1285,6 +1400,11 @@ export default function SemanaPage() {
     () => templateDraftWeek?.dias.find((day) => day.id === templateDraftDayId) || null,
     [templateDraftDayId, templateDraftWeek]
   );
+
+  const templateDraftDayLinkedSession = getEffectiveLinkedSession(templateDraftDay?.sesionId);
+  const templateDraftDayEffectiveTraining =
+    templateDraftDay?.entrenamiento ||
+    buildTemplateTrainingFromLinkedSession(templateDraftDayLinkedSession);
 
   const templateScopeWeek = useMemo(
     () => templateDraft.semanas[0] || templateDraftWeek || null,
@@ -2208,7 +2328,11 @@ export default function SemanaPage() {
           ...week,
           dias: week.dias.map((day) => {
             if (day.id !== dayId) return day;
-            const currentTraining = day.entrenamiento || createTemplateDayTraining();
+            const linkedTraining = buildTemplateTrainingFromLinkedSession(
+              getEffectiveLinkedSession(day.sesionId)
+            );
+            const currentTraining =
+              day.entrenamiento || linkedTraining || createTemplateDayTraining();
             return {
               ...day,
               entrenamiento: updater(currentTraining),
@@ -3903,7 +4027,7 @@ export default function SemanaPage() {
                     </p>
                   </div>
 
-                  {templateDraftWeek && templateDraftDay && templateDraftDay.entrenamiento ? (
+                  {templateDraftWeek && templateDraftDay && templateDraftDayEffectiveTraining ? (
                     <ReliableActionButton
                       type="button"
                       onClick={() => agregarBloqueTemplate(templateDraftWeek.id, templateDraftDay.id)}
@@ -3918,7 +4042,7 @@ export default function SemanaPage() {
                   <p className="mt-3 text-xs text-slate-400">
                     Selecciona una semana y un dia para cargar el bloque de entrenamiento.
                   </p>
-                ) : !templateDraftDay.entrenamiento ? (
+                ) : !templateDraftDayEffectiveTraining ? (
                   <ReliableActionButton
                     type="button"
                     onClick={() =>
@@ -3935,7 +4059,7 @@ export default function SemanaPage() {
                 ) : (
                   <div className="mt-4 space-y-3">
                     <div className="space-y-3">
-                      {templateDraftDay.entrenamiento.bloques.map((block, blockIndex) => {
+                      {templateDraftDayEffectiveTraining.bloques.map((block, blockIndex) => {
                         const blockGridColumns = block.ejercicios[0]?.especificaciones || [];
                         const optionalGridColumns = blockGridColumns.filter(
                           (spec) => spec.nombre.trim().length > 0
