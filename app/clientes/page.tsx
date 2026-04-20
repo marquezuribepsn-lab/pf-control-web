@@ -240,6 +240,7 @@ type WeekDayPlanLite = {
   planificacion: string;
   objetivo: string;
   sesionId: string;
+  oculto?: boolean;
   entrenamiento?: WeekDayTrainingLite;
 };
 
@@ -247,6 +248,7 @@ type WeekPlanLite = {
   id: string;
   nombre: string;
   objetivo: string;
+  oculto?: boolean;
   dias: WeekDayPlanLite[];
 };
 
@@ -313,6 +315,18 @@ type TrainingRecordDraft = {
   molestia: boolean;
   comentarios: string;
 };
+
+type TrainingStructureMenuState =
+  | {
+      type: "week";
+      weekId: string;
+    }
+  | {
+      type: "day";
+      weekId: string;
+      dayId: string;
+    }
+  | null;
 
 type PresenceSnapshot = {
   userId: string | null;
@@ -598,6 +612,7 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                 planificacion: String(dayRow.planificacion || ""),
                 objetivo: String(dayRow.objetivo || ""),
                 sesionId: String(dayRow.sesionId || ""),
+                oculto: dayRow.oculto === true ? true : undefined,
                 entrenamiento: entrenamientoRaw
                   ? {
                       bloques,
@@ -610,6 +625,7 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
             id: String(weekRow.id || `week-${weekIndex}`),
             nombre: String(weekRow.nombre || `Semana ${weekIndex + 1}`),
             objetivo: String(weekRow.objetivo || ""),
+            oculto: weekRow.oculto === true ? true : undefined,
             dias,
           };
         });
@@ -888,6 +904,98 @@ function normalizeTrainingBlocksForEditing(rawBlocks: unknown): WeekBlockLite[] 
     });
 }
 
+function HiddenVisibilityIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M2 12C3.8 8.3 7.4 6 12 6C16.6 6 20.2 8.3 22 12C20.2 15.7 16.6 18 12 18C7.4 18 3.8 15.7 2 12Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3.5 3.5L20.5 20.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function orderWeeksByVisibility(weeks: WeekPlanLite[]): WeekPlanLite[] {
+  const visibleWeeks = weeks.filter((week) => !week.oculto);
+  const hiddenWeeks = weeks.filter((week) => Boolean(week.oculto));
+  return [...visibleWeeks, ...hiddenWeeks];
+}
+
+function orderDaysByVisibility(days: WeekDayPlanLite[]): WeekDayPlanLite[] {
+  const visibleDays = days.filter((day) => !day.oculto);
+  const hiddenDays = days.filter((day) => Boolean(day.oculto));
+  return [...visibleDays, ...hiddenDays];
+}
+
+function cloneTrainingExerciseForDuplicate(source: WeekExerciseLite): WeekExerciseLite {
+  return {
+    ...source,
+    id: createTrainingEntityId("exercise"),
+    metricas: Array.isArray(source.metricas)
+      ? source.metricas.map((metric) => ({
+          nombre: String(metric.nombre || ""),
+          valor: String(metric.valor || ""),
+        }))
+      : undefined,
+    superSerie: Array.isArray(source.superSerie)
+      ? source.superSerie.map((superItem) => ({
+          ...superItem,
+          id: createTrainingEntityId("super"),
+        }))
+      : [],
+  };
+}
+
+function cloneTrainingBlockForDuplicate(source: WeekBlockLite, blockIndex: number): WeekBlockLite {
+  return {
+    ...source,
+    id: createTrainingEntityId("bloque"),
+    titulo: String(source.titulo || `Bloque ${blockIndex + 1}`),
+    objetivo: String(source.objetivo || ""),
+    ejercicios: (source.ejercicios || []).map(cloneTrainingExerciseForDuplicate),
+  };
+}
+
+function cloneTrainingDayForDuplicate(source: WeekDayPlanLite, dayIndex: number): WeekDayPlanLite {
+  const baseBlocks = normalizeTrainingBlocksForEditing(source.entrenamiento?.bloques || []);
+
+  return {
+    id: createTrainingEntityId("dia"),
+    dia: String(source.dia || `Dia ${dayIndex + 1}`),
+    planificacion: String(source.planificacion || ""),
+    objetivo: String(source.objetivo || ""),
+    sesionId: String(source.sesionId || ""),
+    oculto: false,
+    entrenamiento: {
+      bloques: baseBlocks.map((block, blockIndex) =>
+        cloneTrainingBlockForDuplicate(block, blockIndex)
+      ),
+    },
+  };
+}
+
+function cloneTrainingWeekForDuplicate(source: WeekPlanLite, weekIndex: number): WeekPlanLite {
+  return {
+    id: createTrainingEntityId("semana"),
+    nombre: String(source.nombre || `Semana ${weekIndex + 1}`),
+    objetivo: String(source.objetivo || ""),
+    oculto: false,
+    dias:
+      Array.isArray(source.dias) && source.dias.length > 0
+        ? source.dias.map((day, dayIndex) => cloneTrainingDayForDuplicate(day, dayIndex))
+        : [createDefaultTrainingDay(0)],
+  };
+}
+
 function createDefaultTrainingDay(index: number): WeekDayPlanLite {
   return {
     id: createTrainingEntityId("dia"),
@@ -1158,7 +1266,10 @@ export default function ClientesPage() {
     dayId: string;
     value: string;
   } | null>(null);
+  const [trainingStructureMenu, setTrainingStructureMenu] =
+    useState<TrainingStructureMenuState>(null);
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
+  const trainingStructureMenuRef = useRef<HTMLDivElement | null>(null);
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
   const isAdmin = userRole === 'ADMIN';
@@ -1866,14 +1977,44 @@ export default function ClientesPage() {
     }
   };
 
+  const allTrainingWeeks = useMemo(
+    () => orderWeeksByVisibility(selectedClientTrainingPlan?.semanas || []),
+    [selectedClientTrainingPlan?.semanas]
+  );
+
+  const visibleTrainingWeeks = useMemo(
+    () => allTrainingWeeks.filter((week) => !week.oculto),
+    [allTrainingWeeks]
+  );
+
+  const hiddenTrainingWeeks = useMemo(
+    () => allTrainingWeeks.filter((week) => Boolean(week.oculto)),
+    [allTrainingWeeks]
+  );
+
   const selectedTrainingWeek = useMemo(
-    () => selectedClientTrainingPlan?.semanas.find((week) => week.id === trainingPreviewWeekId) || null,
-    [selectedClientTrainingPlan?.semanas, trainingPreviewWeekId]
+    () => visibleTrainingWeeks.find((week) => week.id === trainingPreviewWeekId) || null,
+    [trainingPreviewWeekId, visibleTrainingWeeks]
+  );
+
+  const allTrainingDays = useMemo(
+    () => orderDaysByVisibility(selectedTrainingWeek?.dias || []),
+    [selectedTrainingWeek]
+  );
+
+  const visibleTrainingDays = useMemo(
+    () => allTrainingDays.filter((day) => !day.oculto),
+    [allTrainingDays]
+  );
+
+  const hiddenTrainingDays = useMemo(
+    () => allTrainingDays.filter((day) => Boolean(day.oculto)),
+    [allTrainingDays]
   );
 
   const selectedTrainingDay = useMemo(
-    () => selectedTrainingWeek?.dias.find((day) => day.id === trainingPreviewDayId) || null,
-    [selectedTrainingWeek, trainingPreviewDayId]
+    () => visibleTrainingDays.find((day) => day.id === trainingPreviewDayId) || null,
+    [trainingPreviewDayId, visibleTrainingDays]
   );
 
   const selectedTrainingDayBlocks = useMemo(() => {
@@ -1924,7 +2065,26 @@ export default function ClientesPage() {
     setTrainingRecordStatus("");
     setTrainingWeekInlineEdit(null);
     setTrainingDayInlineEdit(null);
+    setTrainingStructureMenu(null);
   }, [selectedClient?.id, trainingPreviewWeekId, trainingPreviewDayId]);
+
+  useEffect(() => {
+    if (!trainingStructureMenu) return;
+
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (trainingStructureMenuRef.current && target && trainingStructureMenuRef.current.contains(target)) {
+        return;
+      }
+
+      setTrainingStructureMenu(null);
+    };
+
+    window.addEventListener("mousedown", onMouseDown);
+    return () => {
+      window.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [trainingStructureMenu]);
 
   const canEditTrainingPlan = isAdmin && Boolean(selectedClient);
 
@@ -1935,8 +2095,6 @@ export default function ClientesPage() {
 
     const selectedTipo = toPlanPersonaTipo(selectedClient.tipo);
     const selectedOwnerKey = buildTrainingOwnerKey(selectedTipo, selectedClient.nombre);
-
-    markManualSaveIntent(WEEK_PLAN_KEY);
     setWeekStoreRaw((prev) => {
       const base = normalizeWeekStore(prev);
       const planes = [...base.planes];
@@ -2021,7 +2179,7 @@ export default function ClientesPage() {
     const targetWeek = (selectedClientTrainingPlan?.semanas || []).find((week) => week.id === weekId);
     if (!targetWeek) return;
 
-    const targetDays = targetWeek.dias || [];
+    const targetDays = (targetWeek.dias || []).filter((day) => !day.oculto);
     const fallbackDayId = targetDays[0]?.id || "";
 
     setTrainingPreviewWeekId(targetWeek.id);
@@ -2065,6 +2223,45 @@ export default function ClientesPage() {
     setTrainingDayInlineEdit(null);
   };
 
+  const emitTrainingStructureToast = (
+    type: "success" | "warning" | "error",
+    message: string
+  ) => {
+    if (typeof window === "undefined") return;
+
+    window.dispatchEvent(
+      new CustomEvent("pf-inline-toast", {
+        detail: {
+          type,
+          message,
+        },
+      })
+    );
+  };
+
+  const toggleTrainingWeekMenu = (weekId: string) => {
+    setTrainingStructureMenu((prev) =>
+      prev?.type === "week" && prev.weekId === weekId
+        ? null
+        : {
+            type: "week",
+            weekId,
+          }
+    );
+  };
+
+  const toggleTrainingDayMenu = (weekId: string, dayId: string) => {
+    setTrainingStructureMenu((prev) =>
+      prev?.type === "day" && prev.weekId === weekId && prev.dayId === dayId
+        ? null
+        : {
+            type: "day",
+            weekId,
+            dayId,
+          }
+    );
+  };
+
   const addTrainingWeek = () => {
     if (isTrainingStructureActionBlocked("add-week")) {
       return;
@@ -2075,7 +2272,7 @@ export default function ClientesPage() {
     upsertSelectedClientTrainingPlan((plan) => {
       return {
         ...plan,
-        semanas: [...plan.semanas, nextWeek],
+        semanas: orderWeeksByVisibility([...plan.semanas, nextWeek]),
       };
     });
 
@@ -2133,7 +2330,7 @@ export default function ClientesPage() {
         if (week.id !== weekId) return week;
         return {
           ...week,
-          dias: [...week.dias, nextDay],
+          dias: orderDaysByVisibility([...week.dias, nextDay]),
         };
       }),
     }));
@@ -2154,6 +2351,279 @@ export default function ClientesPage() {
         };
       }),
     }));
+  };
+
+  const moveTrainingWeek = (weekId: string, direction: -1 | 1) => {
+    upsertSelectedClientTrainingPlan((plan) => {
+      const orderedWeeks = orderWeeksByVisibility(plan.semanas);
+      const targetWeek = orderedWeeks.find((week) => week.id === weekId);
+      if (!targetWeek) {
+        return plan;
+      }
+
+      const isHiddenTarget = Boolean(targetWeek.oculto);
+      const visibleWeeks = orderedWeeks.filter((week) => !week.oculto);
+      const hiddenWeeks = orderedWeeks.filter((week) => Boolean(week.oculto));
+      const segment = isHiddenTarget ? hiddenWeeks : visibleWeeks;
+      const fromIndex = segment.findIndex((week) => week.id === weekId);
+      const toIndex = fromIndex + direction;
+
+      if (fromIndex < 0 || toIndex < 0 || toIndex >= segment.length) {
+        return {
+          ...plan,
+          semanas: orderedWeeks,
+        };
+      }
+
+      const movedSegment = [...segment];
+      const [movedWeek] = movedSegment.splice(fromIndex, 1);
+      movedSegment.splice(toIndex, 0, movedWeek);
+
+      const semanas = isHiddenTarget
+        ? [...visibleWeeks, ...movedSegment]
+        : [...movedSegment, ...hiddenWeeks];
+
+
+      return {
+        ...plan,
+        semanas,
+      };
+    });
+
+    setTrainingStructureMenu(null);
+  };
+
+  const duplicateTrainingWeek = (weekId: string) => {
+    let duplicatedWeekId = "";
+    let duplicatedDayId = "";
+
+    upsertSelectedClientTrainingPlan((plan) => {
+      const orderedWeeks = orderWeeksByVisibility(plan.semanas);
+      const weekIndex = orderedWeeks.findIndex((week) => week.id === weekId);
+      if (weekIndex < 0) return plan;
+
+      const sourceWeek = orderedWeeks[weekIndex];
+      const duplicatedWeek = cloneTrainingWeekForDuplicate(sourceWeek, weekIndex);
+      duplicatedWeek.nombre = `${String(sourceWeek.nombre || `Semana ${weekIndex + 1}`).trim()} copia`;
+      duplicatedWeekId = duplicatedWeek.id;
+      duplicatedDayId = duplicatedWeek.dias[0]?.id || "";
+
+      const semanas = [...orderedWeeks];
+      semanas.splice(weekIndex + 1, 0, duplicatedWeek);
+
+      return {
+        ...plan,
+        semanas: orderWeeksByVisibility(semanas),
+      };
+    });
+
+    if (duplicatedWeekId) {
+      setTrainingPreviewWeekId(duplicatedWeekId);
+      setTrainingPreviewDayId(duplicatedDayId);
+    }
+
+    setTrainingStructureMenu(null);
+  };
+
+  const hideTrainingWeek = (weekId: string) => {
+    const sourceWeeks = selectedClientTrainingPlan?.semanas || [];
+    const visibleCount = sourceWeeks.filter((week) => !week.oculto).length;
+
+    if (visibleCount <= 1) {
+      emitTrainingStructureToast("warning", "Debe quedar al menos una semana visible.");
+      return;
+    }
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: orderWeeksByVisibility(
+        plan.semanas.map((week) =>
+          week.id === weekId
+            ? {
+                ...week,
+                oculto: true,
+              }
+            : week
+        )
+      ),
+    }));
+
+    if (trainingPreviewWeekId === weekId) {
+      setTrainingPreviewWeekId("");
+      setTrainingPreviewDayId("");
+    }
+
+    setTrainingStructureMenu(null);
+  };
+
+  const showTrainingWeek = (weekId: string) => {
+    const sourceWeek = allTrainingWeeks.find((week) => week.id === weekId);
+    const fallbackDayId =
+      (sourceWeek?.dias || []).find((day) => !day.oculto)?.id || sourceWeek?.dias?.[0]?.id || "";
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: orderWeeksByVisibility(
+        plan.semanas.map((week) =>
+          week.id === weekId
+            ? {
+                ...week,
+                oculto: undefined,
+              }
+            : week
+        )
+      ),
+    }));
+
+    setTrainingPreviewWeekId(weekId);
+    setTrainingPreviewDayId(fallbackDayId);
+    setTrainingStructureMenu(null);
+  };
+
+  const moveTrainingDay = (weekId: string, dayId: string, direction: -1 | 1) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        const orderedDays = orderDaysByVisibility(week.dias);
+        const targetDay = orderedDays.find((day) => day.id === dayId);
+        if (!targetDay) {
+          return {
+            ...week,
+            dias: orderedDays,
+          };
+        }
+
+        const isHiddenTarget = Boolean(targetDay.oculto);
+        const visibleDays = orderedDays.filter((day) => !day.oculto);
+        const hiddenDays = orderedDays.filter((day) => Boolean(day.oculto));
+        const segment = isHiddenTarget ? hiddenDays : visibleDays;
+        const fromIndex = segment.findIndex((day) => day.id === dayId);
+        const toIndex = fromIndex + direction;
+
+        if (fromIndex < 0 || toIndex < 0 || toIndex >= segment.length) {
+          return {
+            ...week,
+            dias: orderedDays,
+          };
+        }
+
+        const movedSegment = [...segment];
+        const [movedDay] = movedSegment.splice(fromIndex, 1);
+        movedSegment.splice(toIndex, 0, movedDay);
+
+        const dias = isHiddenTarget
+          ? [...visibleDays, ...movedSegment]
+          : [...movedSegment, ...hiddenDays];
+
+        return {
+          ...week,
+          dias,
+        };
+      }),
+    }));
+
+    setTrainingStructureMenu(null);
+  };
+
+  const duplicateTrainingDay = (weekId: string, dayId: string) => {
+    let duplicatedDayId = "";
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        const orderedDays = orderDaysByVisibility(week.dias);
+        const dayIndex = orderedDays.findIndex((day) => day.id === dayId);
+        if (dayIndex < 0) return week;
+
+        const sourceDay = orderedDays[dayIndex];
+        const duplicatedDay = cloneTrainingDayForDuplicate(sourceDay, dayIndex);
+        duplicatedDay.dia = `${String(sourceDay.dia || `Dia ${dayIndex + 1}`).trim()} copia`;
+        duplicatedDayId = duplicatedDay.id;
+
+        const dias = [...orderedDays];
+        dias.splice(dayIndex + 1, 0, duplicatedDay);
+
+        return {
+          ...week,
+          dias: orderDaysByVisibility(dias),
+        };
+      }),
+    }));
+
+    if (duplicatedDayId) {
+      setTrainingPreviewWeekId(weekId);
+      setTrainingPreviewDayId(duplicatedDayId);
+    }
+
+    setTrainingStructureMenu(null);
+  };
+
+  const hideTrainingDay = (weekId: string, dayId: string) => {
+    const sourceWeek = (selectedClientTrainingPlan?.semanas || []).find((week) => week.id === weekId);
+    const visibleCount = (sourceWeek?.dias || []).filter((day) => !day.oculto).length;
+
+    if (visibleCount <= 1) {
+      emitTrainingStructureToast("warning", "Debe quedar al menos un dia visible.");
+      return;
+    }
+
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        return {
+          ...week,
+          dias: orderDaysByVisibility(
+            week.dias.map((day) =>
+              day.id === dayId
+                ? {
+                    ...day,
+                    oculto: true,
+                  }
+                : day
+            )
+          ),
+        };
+      }),
+    }));
+
+    if (trainingPreviewDayId === dayId) {
+      setTrainingPreviewDayId("");
+    }
+
+    setTrainingStructureMenu(null);
+  };
+
+  const showTrainingDay = (weekId: string, dayId: string) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        return {
+          ...week,
+          dias: orderDaysByVisibility(
+            week.dias.map((day) =>
+              day.id === dayId
+                ? {
+                    ...day,
+                    oculto: undefined,
+                  }
+                : day
+            )
+          ),
+        };
+      }),
+    }));
+
+    setTrainingPreviewWeekId(weekId);
+    setTrainingPreviewDayId(dayId);
+    setTrainingStructureMenu(null);
   };
 
   const updateTrainingBlocks = (
@@ -2392,16 +2862,21 @@ export default function ClientesPage() {
   };
 
   const trainingPreviewStats = useMemo(() => {
-    const weeks = selectedClientTrainingPlan?.semanas || [];
-    const totalDias = weeks.reduce((acc, week) => acc + (week.dias || []).length, 0);
+    const weeks = visibleTrainingWeeks;
+    const totalDias = weeks.reduce(
+      (acc, week) => acc + (week.dias || []).filter((day) => !day.oculto).length,
+      0
+    );
     let totalBloques = 0;
 
     weeks.forEach((week) => {
-      (week.dias || []).forEach((day) => {
-        const dayBlocks = day.entrenamiento?.bloques || [];
+      (week.dias || [])
+        .filter((day) => !day.oculto)
+        .forEach((day) => {
+          const dayBlocks = day.entrenamiento?.bloques || [];
 
-        totalBloques += dayBlocks.length;
-      });
+          totalBloques += dayBlocks.length;
+        });
     });
 
     return {
@@ -2409,10 +2884,10 @@ export default function ClientesPage() {
       totalDias,
       totalBloques,
     };
-  }, [selectedClientTrainingPlan]);
+  }, [visibleTrainingWeeks]);
 
   useEffect(() => {
-    const weeks = selectedClientTrainingPlan?.semanas || [];
+    const weeks = visibleTrainingWeeks;
 
     if (weeks.length === 0) {
       if (trainingPreviewWeekId) {
@@ -2429,7 +2904,7 @@ export default function ClientesPage() {
       setTrainingPreviewWeekId(currentWeek.id);
     }
 
-    const days = currentWeek.dias || [];
+    const days = (currentWeek.dias || []).filter((day) => !day.oculto);
     if (days.length === 0) {
       if (trainingPreviewDayId) {
         setTrainingPreviewDayId("");
@@ -2441,7 +2916,7 @@ export default function ClientesPage() {
     if (currentDay.id !== trainingPreviewDayId) {
       setTrainingPreviewDayId(currentDay.id);
     }
-  }, [selectedClientTrainingPlan, trainingPreviewDayId, trainingPreviewWeekId]);
+  }, [trainingPreviewDayId, trainingPreviewWeekId, visibleTrainingWeeks]);
 
   const resumen = useMemo(() => {
     const activos = clientes.filter((item) => item.estado === "activo").length;
@@ -3899,7 +4374,7 @@ export default function ClientesPage() {
                           disabled={!selectedClientTrainingPlan}
                           className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10 disabled:opacity-60"
                         >
-                          Actualizar
+                          Actualizar planilla
                         </ReliableActionButton>
                       </div>
                     </div>
@@ -3931,13 +4406,23 @@ export default function ClientesPage() {
                       </div>
                     ) : canEditTrainingPlan ? (
                       <div className="space-y-4">
-                        <div className="grid gap-5 border-t border-cyan-300/18 pt-4 lg:grid-cols-2">
+                        <div className="space-y-4 border-t border-cyan-300/18 pt-4">
                           <section className="space-y-2 border-l-2 border-cyan-300/45 pl-3">
                             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-100">Semanas</p>
-                            <div className="flex min-w-max items-center gap-2.5 overflow-x-auto whitespace-nowrap pb-1 pr-1">
-                              {(selectedClientTrainingPlan.semanas || []).map((week, weekIndex) => {
+                            <div className="flex flex-wrap items-center gap-2.5 pb-1 pr-1">
+                              {allTrainingWeeks.map((week, weekIndex) => {
                                 const weekLabel = String(week.nombre || `Semana ${weekIndex + 1}`);
+                                const isWeekHidden = Boolean(week.oculto);
+                                const weekVisibilityIndex = isWeekHidden
+                                  ? weekIndex - visibleTrainingWeeks.length
+                                  : weekIndex;
+                                const weekVisibilitySize = isWeekHidden
+                                  ? hiddenTrainingWeeks.length
+                                  : visibleTrainingWeeks.length;
                                 const isEditingWeek = trainingWeekInlineEdit?.weekId === week.id;
+                                const weekMenuOpen =
+                                  trainingStructureMenu?.type === "week" &&
+                                  trainingStructureMenu.weekId === week.id;
 
                                 if (isEditingWeek && trainingWeekInlineEdit) {
                                   return (
@@ -3972,20 +4457,127 @@ export default function ClientesPage() {
                                 }
 
                                 return (
-                                  <ReliableActionButton
+                                  <div
                                     key={week.id}
-                                    type="button"
-                                    onClick={() => selectTrainingPreviewWeek(week.id)}
-                                    onDoubleClick={() => startTrainingWeekInlineEdit(week.id, weekLabel)}
-                                    title="Doble click para editar"
-                                    className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
-                                      trainingPreviewWeekId === week.id
-                                        ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(34,211,238,0.95)]"
-                                        : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-cyan-300/55 hover:bg-slate-800/80"
-                                    }`}
+                                    ref={weekMenuOpen ? trainingStructureMenuRef : undefined}
+                                    className="relative inline-flex items-stretch"
                                   >
-                                    {weekLabel}
-                                  </ReliableActionButton>
+                                    <ReliableActionButton
+                                      type="button"
+                                      onClick={() => {
+                                        if (!isWeekHidden) {
+                                          selectTrainingPreviewWeek(week.id);
+                                        }
+                                        setTrainingStructureMenu(null);
+                                      }}
+                                      onDoubleClick={() => startTrainingWeekInlineEdit(week.id, weekLabel)}
+                                      title="Doble click para editar"
+                                      className={`rounded-l-2xl border border-r-0 px-4 py-2 text-sm font-bold transition ${
+                                        isWeekHidden
+                                          ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
+                                          : trainingPreviewWeekId === week.id
+                                          ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(34,211,238,0.95)]"
+                                          : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-cyan-300/55 hover:bg-slate-800/80"
+                                      }`}
+                                    >
+                                      <span className="inline-flex items-center gap-1.5">
+                                        {isWeekHidden ? <HiddenVisibilityIcon className="h-3.5 w-3.5" /> : null}
+                                        <span>{weekLabel}</span>
+                                      </span>
+                                    </ReliableActionButton>
+                                    <ReliableActionButton
+                                      type="button"
+                                      onClick={() => toggleTrainingWeekMenu(week.id)}
+                                      className={`rounded-r-2xl border border-l-0 px-2.5 py-2 text-xs font-black transition ${
+                                        isWeekHidden
+                                          ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
+                                          : trainingPreviewWeekId === week.id
+                                          ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950"
+                                          : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-cyan-300/55 hover:bg-slate-800/80"
+                                      }`}
+                                      aria-label={`Opciones de ${weekLabel}`}
+                                    >
+                                      <span
+                                        className={`inline-block transition-transform duration-200 ${
+                                          weekMenuOpen ? "rotate-180" : "rotate-0"
+                                        }`}
+                                      >
+                                        v
+                                      </span>
+                                    </ReliableActionButton>
+
+                                    <div
+                                      aria-hidden={!weekMenuOpen}
+                                      className={`absolute left-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                        weekMenuOpen
+                                          ? "translate-y-0 scale-y-100 opacity-100"
+                                          : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
+                                      }`}
+                                    >
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => {
+                                            startTrainingWeekInlineEdit(week.id, weekLabel);
+                                            setTrainingStructureMenu(null);
+                                          }}
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                        >
+                                          Editar nombre
+                                        </ReliableActionButton>
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => moveTrainingWeek(week.id, -1)}
+                                          disabled={weekVisibilityIndex <= 0}
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                        >
+                                          Mover a la izquierda
+                                        </ReliableActionButton>
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => moveTrainingWeek(week.id, 1)}
+                                          disabled={weekVisibilityIndex >= weekVisibilitySize - 1}
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                        >
+                                          Mover a la derecha
+                                        </ReliableActionButton>
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => duplicateTrainingWeek(week.id)}
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                        >
+                                          Duplicar
+                                        </ReliableActionButton>
+                                        {isWeekHidden ? (
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() => showTrainingWeek(week.id)}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-100 hover:bg-emerald-500/15"
+                                          >
+                                            Mostrar semana
+                                          </ReliableActionButton>
+                                        ) : (
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() => hideTrainingWeek(week.id)}
+                                            disabled={visibleTrainingWeeks.length <= 1}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                          >
+                                            Ocultar semana
+                                          </ReliableActionButton>
+                                        )}
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => {
+                                            setTrainingStructureMenu(null);
+                                            removeTrainingWeek(week.id);
+                                          }}
+                                          disabled={allTrainingWeeks.length <= 1}
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15 disabled:opacity-40"
+                                        >
+                                          Eliminar
+                                        </ReliableActionButton>
+                                      </div>
+                                  </div>
                                 );
                               })}
                               <ReliableActionButton
@@ -4000,15 +4592,26 @@ export default function ClientesPage() {
                             </div>
                           </section>
 
-                          <section className="space-y-2 border-l-2 border-emerald-300/45 pl-3">
+                          <section className="space-y-2 border-l-2 border-emerald-300/45 border-t border-white/10 pl-3 pt-3">
                             <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">Dias</p>
                             {selectedTrainingWeek ? (
-                              <div className="flex min-w-max items-center gap-2.5 overflow-x-auto whitespace-nowrap pb-1 pr-1">
-                                {(selectedTrainingWeek.dias || []).map((day, dayIndex) => {
+                              <div className="flex flex-wrap items-center gap-2.5 pb-1 pr-1">
+                                {allTrainingDays.map((day, dayIndex) => {
                                   const dayLabel = String(day.dia || `Dia ${dayIndex + 1}`);
+                                  const isDayHidden = Boolean(day.oculto);
+                                  const dayVisibilityIndex = isDayHidden
+                                    ? dayIndex - visibleTrainingDays.length
+                                    : dayIndex;
+                                  const dayVisibilitySize = isDayHidden
+                                    ? hiddenTrainingDays.length
+                                    : visibleTrainingDays.length;
                                   const isEditingDay =
                                     trainingDayInlineEdit?.weekId === selectedTrainingWeek.id &&
                                     trainingDayInlineEdit?.dayId === day.id;
+                                  const dayMenuOpen =
+                                    trainingStructureMenu?.type === "day" &&
+                                    trainingStructureMenu.weekId === selectedTrainingWeek.id &&
+                                    trainingStructureMenu.dayId === day.id;
 
                                   if (isEditingDay && trainingDayInlineEdit) {
                                     return (
@@ -4045,26 +4648,143 @@ export default function ClientesPage() {
                                   }
 
                                   return (
-                                    <ReliableActionButton
+                                    <div
                                       key={day.id}
-                                      type="button"
-                                      onClick={() => selectTrainingPreviewDay(day.id)}
-                                      onDoubleClick={() =>
-                                        startTrainingDayInlineEdit(
-                                          selectedTrainingWeek.id,
-                                          day.id,
-                                          dayLabel
-                                        )
-                                      }
-                                      title="Doble click para editar"
-                                      className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
-                                        trainingPreviewDayId === day.id
-                                          ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(16,185,129,0.95)]"
-                                          : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-emerald-300/55 hover:bg-slate-800/80"
-                                      }`}
+                                      ref={dayMenuOpen ? trainingStructureMenuRef : undefined}
+                                      className="relative inline-flex items-stretch"
                                     >
-                                      {dayLabel}
-                                    </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() => {
+                                          if (!isDayHidden) {
+                                            selectTrainingPreviewDay(day.id);
+                                          }
+                                          setTrainingStructureMenu(null);
+                                        }}
+                                        onDoubleClick={() =>
+                                          startTrainingDayInlineEdit(
+                                            selectedTrainingWeek.id,
+                                            day.id,
+                                            dayLabel
+                                          )
+                                        }
+                                        title="Doble click para editar"
+                                        className={`rounded-l-2xl border border-r-0 px-4 py-2 text-sm font-bold transition ${
+                                          isDayHidden
+                                            ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
+                                            : trainingPreviewDayId === day.id
+                                            ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(16,185,129,0.95)]"
+                                            : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-emerald-300/55 hover:bg-slate-800/80"
+                                        }`}
+                                      >
+                                        <span className="inline-flex items-center gap-1.5">
+                                          {isDayHidden ? <HiddenVisibilityIcon className="h-3.5 w-3.5" /> : null}
+                                          <span>{dayLabel}</span>
+                                        </span>
+                                      </ReliableActionButton>
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() => toggleTrainingDayMenu(selectedTrainingWeek.id, day.id)}
+                                        className={`rounded-r-2xl border border-l-0 px-2.5 py-2 text-xs font-black transition ${
+                                          isDayHidden
+                                            ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
+                                            : trainingPreviewDayId === day.id
+                                            ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950"
+                                            : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-emerald-300/55 hover:bg-slate-800/80"
+                                        }`}
+                                        aria-label={`Opciones de ${dayLabel}`}
+                                      >
+                                        <span
+                                          className={`inline-block transition-transform duration-200 ${
+                                            dayMenuOpen ? "rotate-180" : "rotate-0"
+                                          }`}
+                                        >
+                                          v
+                                        </span>
+                                      </ReliableActionButton>
+
+                                      <div
+                                        aria-hidden={!dayMenuOpen}
+                                        className={`absolute left-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                          dayMenuOpen
+                                            ? "translate-y-0 scale-y-100 opacity-100"
+                                            : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
+                                        }`}
+                                      >
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() => {
+                                              startTrainingDayInlineEdit(
+                                                selectedTrainingWeek.id,
+                                                day.id,
+                                                dayLabel
+                                              );
+                                              setTrainingStructureMenu(null);
+                                            }}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                          >
+                                            Editar nombre
+                                          </ReliableActionButton>
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() =>
+                                              moveTrainingDay(selectedTrainingWeek.id, day.id, -1)
+                                            }
+                                            disabled={dayVisibilityIndex <= 0}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                          >
+                                            Mover a la izquierda
+                                          </ReliableActionButton>
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() =>
+                                              moveTrainingDay(selectedTrainingWeek.id, day.id, 1)
+                                            }
+                                            disabled={dayVisibilityIndex >= dayVisibilitySize - 1}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                          >
+                                            Mover a la derecha
+                                          </ReliableActionButton>
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() =>
+                                              duplicateTrainingDay(selectedTrainingWeek.id, day.id)
+                                            }
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                          >
+                                            Duplicar
+                                          </ReliableActionButton>
+                                          {isDayHidden ? (
+                                            <ReliableActionButton
+                                              type="button"
+                                              onClick={() => showTrainingDay(selectedTrainingWeek.id, day.id)}
+                                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-100 hover:bg-emerald-500/15"
+                                            >
+                                              Mostrar dia
+                                            </ReliableActionButton>
+                                          ) : (
+                                            <ReliableActionButton
+                                              type="button"
+                                              onClick={() => hideTrainingDay(selectedTrainingWeek.id, day.id)}
+                                              disabled={visibleTrainingDays.length <= 1}
+                                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                            >
+                                              Ocultar dia
+                                            </ReliableActionButton>
+                                          )}
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() => {
+                                              setTrainingStructureMenu(null);
+                                              removeTrainingDay(selectedTrainingWeek.id, day.id);
+                                            }}
+                                            disabled={allTrainingDays.length <= 1}
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15 disabled:opacity-40"
+                                          >
+                                            Eliminar
+                                          </ReliableActionButton>
+                                        </div>
+                                    </div>
                                   );
                                 })}
                                 <ReliableActionButton
@@ -4085,50 +4805,6 @@ export default function ClientesPage() {
 
                         {selectedTrainingWeek ? (
                           <section className="space-y-4 border-t border-cyan-300/18 pt-4">
-                            <label className="block space-y-1 border-b border-cyan-300/15 pb-3">
-                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-200">Objetivo semanal</span>
-                              <textarea
-                                value={selectedTrainingWeek.objetivo || ""}
-                                onChange={(event) =>
-                                  updateTrainingWeekField(
-                                    selectedTrainingWeek.id,
-                                    "objetivo",
-                                    event.target.value
-                                  )
-                                }
-                                className="min-h-[72px] w-full border-b border-white/20 bg-transparent px-0 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/60"
-                                placeholder="Objetivo de la semana"
-                              />
-                            </label>
-
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-                              <p className="text-sm font-semibold text-slate-100">
-                                Edicion activa: {selectedTrainingWeek.nombre || "Semana"} · {selectedTrainingDay?.dia || "Sin dia"}
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <ReliableActionButton
-                                  type="button"
-                                  onClick={() =>
-                                    selectedTrainingDay
-                                      ? removeTrainingDay(selectedTrainingWeek.id, selectedTrainingDay.id)
-                                      : null
-                                  }
-                                  disabled={!selectedTrainingDay || (selectedTrainingWeek.dias || []).length <= 1}
-                                  className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
-                                >
-                                  Eliminar dia
-                                </ReliableActionButton>
-                                <ReliableActionButton
-                                  type="button"
-                                  onClick={() => removeTrainingWeek(selectedTrainingWeek.id)}
-                                  disabled={(selectedClientTrainingPlan.semanas || []).length <= 1}
-                                  className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
-                                >
-                                  Eliminar semana
-                                </ReliableActionButton>
-                              </div>
-                            </div>
-
                             {selectedTrainingDay ? (
                                 <div className="space-y-3 pt-2">
                                   <div className="mt-1 border-t border-cyan-300/18 pt-4">
@@ -4728,13 +5404,29 @@ export default function ClientesPage() {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="rounded-lg border border-white/10 bg-slate-900/55 p-3 text-sm text-slate-300">
+                                <p className="border-l-2 border-white/20 pl-3 text-sm text-slate-300">
                                   Selecciona un dia para editarlo.
                                 </p>
                               )}
+
+                            <label className="block space-y-1 border-t border-cyan-300/15 pt-3">
+                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-200">Objetivo semanal</span>
+                              <textarea
+                                value={selectedTrainingWeek.objetivo || ""}
+                                onChange={(event) =>
+                                  updateTrainingWeekField(
+                                    selectedTrainingWeek.id,
+                                    "objetivo",
+                                    event.target.value
+                                  )
+                                }
+                                className="min-h-[72px] w-full border-b border-white/20 bg-transparent px-0 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/60"
+                                placeholder="Objetivo de la semana"
+                              />
+                            </label>
                             </section>
                           ) : (
-                            <p className="rounded-xl border border-white/10 bg-slate-900/55 p-4 text-sm text-slate-300">
+                            <p className="border-l-2 border-white/20 pl-3 text-sm text-slate-300">
                               Selecciona una semana para comenzar a editar el plan.
                             </p>
                           )}
@@ -4742,7 +5434,7 @@ export default function ClientesPage() {
                     ) : (
                       <div className="space-y-4">
                         <div className="flex flex-wrap gap-2">
-                          {(selectedClientTrainingPlan.semanas || []).map((week) => (
+                          {visibleTrainingWeeks.map((week) => (
                             <ReliableActionButton
                               key={week.id}
                               type="button"
@@ -4768,7 +5460,7 @@ export default function ClientesPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              {(selectedTrainingWeek.dias || []).map((day) => (
+                              {visibleTrainingDays.map((day) => (
                                 <ReliableActionButton
                                   key={day.id}
                                   type="button"
