@@ -328,6 +328,12 @@ type TrainingStructureMenuState =
     }
   | null;
 
+type TrainingBlockMenuState = {
+  weekId: string;
+  dayId: string;
+  blockId: string;
+} | null;
+
 type PresenceSnapshot = {
   userId: string | null;
   email: string | null;
@@ -1268,8 +1274,10 @@ export default function ClientesPage() {
   } | null>(null);
   const [trainingStructureMenu, setTrainingStructureMenu] =
     useState<TrainingStructureMenuState>(null);
+  const [trainingBlockMenu, setTrainingBlockMenu] = useState<TrainingBlockMenuState>(null);
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
   const trainingStructureMenuRef = useRef<HTMLDivElement | null>(null);
+  const trainingBlockMenuRef = useRef<HTMLDivElement | null>(null);
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
   const isAdmin = userRole === 'ADMIN';
@@ -2066,6 +2074,7 @@ export default function ClientesPage() {
     setTrainingWeekInlineEdit(null);
     setTrainingDayInlineEdit(null);
     setTrainingStructureMenu(null);
+    setTrainingBlockMenu(null);
   }, [selectedClient?.id, trainingPreviewWeekId, trainingPreviewDayId]);
 
   useEffect(() => {
@@ -2085,6 +2094,24 @@ export default function ClientesPage() {
       window.removeEventListener("mousedown", onMouseDown);
     };
   }, [trainingStructureMenu]);
+
+  useEffect(() => {
+    if (!trainingBlockMenu) return;
+
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (trainingBlockMenuRef.current && target && trainingBlockMenuRef.current.contains(target)) {
+        return;
+      }
+
+      setTrainingBlockMenu(null);
+    };
+
+    window.addEventListener("mousedown", onMouseDown);
+    return () => {
+      window.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [trainingBlockMenu]);
 
   const canEditTrainingPlan = isAdmin && Boolean(selectedClient);
 
@@ -2240,6 +2267,7 @@ export default function ClientesPage() {
   };
 
   const toggleTrainingWeekMenu = (weekId: string) => {
+    setTrainingBlockMenu(null);
     setTrainingStructureMenu((prev) =>
       prev?.type === "week" && prev.weekId === weekId
         ? null
@@ -2251,6 +2279,7 @@ export default function ClientesPage() {
   };
 
   const toggleTrainingDayMenu = (weekId: string, dayId: string) => {
+    setTrainingBlockMenu(null);
     setTrainingStructureMenu((prev) =>
       prev?.type === "day" && prev.weekId === weekId && prev.dayId === dayId
         ? null
@@ -2260,6 +2289,35 @@ export default function ClientesPage() {
             dayId,
           }
     );
+  };
+
+  const toggleTrainingBlockMenu = (weekId: string, dayId: string, blockId: string) => {
+    setTrainingStructureMenu(null);
+    setTrainingBlockMenu((prev) =>
+      prev?.weekId === weekId && prev.dayId === dayId && prev.blockId === blockId
+        ? null
+        : {
+            weekId,
+            dayId,
+            blockId,
+          }
+    );
+  };
+
+  const focusTrainingBlockTitleInput = (weekId: string, dayId: string, blockId: string) => {
+    if (typeof document === "undefined") {
+      setTrainingBlockMenu(null);
+      return;
+    }
+
+    const targetId = `training-block-title-${weekId}-${dayId}-${blockId}`;
+    const input = document.getElementById(targetId) as HTMLInputElement | null;
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
+    setTrainingBlockMenu(null);
   };
 
   const addTrainingWeek = () => {
@@ -2672,6 +2730,25 @@ export default function ClientesPage() {
     updateTrainingBlocks(weekId, dayId, (blocks) =>
       blocks.filter((block) => block.id !== blockId)
     );
+  };
+
+  const duplicateTrainingBlock = (weekId: string, dayId: string, blockId: string) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) => {
+      const blockIndex = blocks.findIndex((block) => block.id === blockId);
+      if (blockIndex < 0) {
+        return blocks;
+      }
+
+      const sourceBlock = blocks[blockIndex];
+      const duplicatedBlock = cloneTrainingBlockForDuplicate(sourceBlock, blockIndex);
+      duplicatedBlock.titulo = `${String(sourceBlock.titulo || `Bloque ${blockIndex + 1}`).trim()} copia`;
+
+      const nextBlocks = [...blocks];
+      nextBlocks.splice(blockIndex + 1, 0, duplicatedBlock);
+      return nextBlocks;
+    });
+
+    setTrainingBlockMenu(null);
   };
 
   const updateTrainingBlockField = (
@@ -4460,7 +4537,7 @@ export default function ClientesPage() {
                                   <div
                                     key={week.id}
                                     ref={weekMenuOpen ? trainingStructureMenuRef : undefined}
-                                    className="relative inline-flex items-stretch"
+                                    className="relative inline-flex items-center gap-1.5"
                                   >
                                     <ReliableActionButton
                                       type="button"
@@ -4472,7 +4549,7 @@ export default function ClientesPage() {
                                       }}
                                       onDoubleClick={() => startTrainingWeekInlineEdit(week.id, weekLabel)}
                                       title="Doble click para editar"
-                                      className={`rounded-l-2xl border border-r-0 px-4 py-2 text-sm font-bold transition ${
+                                      className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                         isWeekHidden
                                           ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
                                           : trainingPreviewWeekId === week.id
@@ -4488,27 +4565,19 @@ export default function ClientesPage() {
                                     <ReliableActionButton
                                       type="button"
                                       onClick={() => toggleTrainingWeekMenu(week.id)}
-                                      className={`rounded-r-2xl border border-l-0 px-2.5 py-2 text-xs font-black transition ${
-                                        isWeekHidden
-                                          ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
-                                          : trainingPreviewWeekId === week.id
-                                          ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950"
-                                          : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-cyan-300/55 hover:bg-slate-800/80"
+                                      className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
+                                        weekMenuOpen
+                                          ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
+                                          : "border-white/20 bg-slate-800 text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
                                       }`}
                                       aria-label={`Opciones de ${weekLabel}`}
                                     >
-                                      <span
-                                        className={`inline-block transition-transform duration-200 ${
-                                          weekMenuOpen ? "rotate-180" : "rotate-0"
-                                        }`}
-                                      >
-                                        v
-                                      </span>
+                                      ⋯
                                     </ReliableActionButton>
 
                                     <div
                                       aria-hidden={!weekMenuOpen}
-                                      className={`absolute left-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                      className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
                                         weekMenuOpen
                                           ? "translate-y-0 scale-y-100 opacity-100"
                                           : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -4651,7 +4720,7 @@ export default function ClientesPage() {
                                     <div
                                       key={day.id}
                                       ref={dayMenuOpen ? trainingStructureMenuRef : undefined}
-                                      className="relative inline-flex items-stretch"
+                                      className="relative inline-flex items-center gap-1.5"
                                     >
                                       <ReliableActionButton
                                         type="button"
@@ -4669,7 +4738,7 @@ export default function ClientesPage() {
                                           )
                                         }
                                         title="Doble click para editar"
-                                        className={`rounded-l-2xl border border-r-0 px-4 py-2 text-sm font-bold transition ${
+                                        className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                           isDayHidden
                                             ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
                                             : trainingPreviewDayId === day.id
@@ -4685,27 +4754,19 @@ export default function ClientesPage() {
                                       <ReliableActionButton
                                         type="button"
                                         onClick={() => toggleTrainingDayMenu(selectedTrainingWeek.id, day.id)}
-                                        className={`rounded-r-2xl border border-l-0 px-2.5 py-2 text-xs font-black transition ${
-                                          isDayHidden
-                                            ? "border-slate-600/55 bg-slate-900/90 text-slate-300 hover:border-slate-500/70"
-                                            : trainingPreviewDayId === day.id
-                                            ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950"
-                                            : "border-slate-500/45 bg-slate-900/70 text-slate-100 hover:border-emerald-300/55 hover:bg-slate-800/80"
+                                        className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
+                                          dayMenuOpen
+                                            ? "border-emerald-300/70 bg-slate-700/95 text-emerald-100"
+                                            : "border-white/20 bg-slate-800 text-slate-100 hover:border-emerald-300/55 hover:text-emerald-100"
                                         }`}
                                         aria-label={`Opciones de ${dayLabel}`}
                                       >
-                                        <span
-                                          className={`inline-block transition-transform duration-200 ${
-                                            dayMenuOpen ? "rotate-180" : "rotate-0"
-                                          }`}
-                                        >
-                                          v
-                                        </span>
+                                        ⋯
                                       </ReliableActionButton>
 
                                       <div
                                         aria-hidden={!dayMenuOpen}
-                                        className={`absolute left-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                        className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
                                           dayMenuOpen
                                             ? "translate-y-0 scale-y-100 opacity-100"
                                             : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -4839,13 +4900,20 @@ export default function ClientesPage() {
                                       </ReliableActionButton>
                                     ) : (
                                       <div className="mt-4 space-y-3">
-                                        {selectedTrainingDayBlocks.map((block, blockIndex) => (
-                                          <article
-                                            key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
-                                            className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/12 pt-5" : "pt-2"}`}
-                                          >
+                                        {selectedTrainingDayBlocks.map((block, blockIndex) => {
+                                          const blockMenuOpen =
+                                            trainingBlockMenu?.weekId === selectedTrainingWeek.id &&
+                                            trainingBlockMenu.dayId === selectedTrainingDay.id &&
+                                            trainingBlockMenu.blockId === block.id;
+
+                                          return (
+                                            <article
+                                              key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
+                                              className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/12 pt-5" : "pt-2"}`}
+                                            >
                                             <div className="flex flex-wrap items-start justify-between gap-2">
                                               <input
+                                                id={`training-block-title-${selectedTrainingWeek.id}-${selectedTrainingDay.id}-${block.id}`}
                                                 value={block.titulo || ""}
                                                 onChange={(event) =>
                                                   updateTrainingBlockField(
@@ -4874,9 +4942,79 @@ export default function ClientesPage() {
                                                 >
                                                   Agregar ejercicio
                                                 </ReliableActionButton>
-                                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-slate-800 text-sm font-semibold text-slate-100">
-                                                  ...
-                                                </span>
+                                                <div
+                                                  ref={blockMenuOpen ? trainingBlockMenuRef : undefined}
+                                                  className="relative"
+                                                >
+                                                  <ReliableActionButton
+                                                    type="button"
+                                                    onClick={() =>
+                                                      toggleTrainingBlockMenu(
+                                                        selectedTrainingWeek.id,
+                                                        selectedTrainingDay.id,
+                                                        block.id
+                                                      )
+                                                    }
+                                                    className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
+                                                      blockMenuOpen
+                                                        ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
+                                                        : "border-white/20 bg-slate-800 text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
+                                                    }`}
+                                                    aria-label={`Opciones de ${block.titulo || `Bloque ${blockIndex + 1}`}`}
+                                                  >
+                                                    ⋯
+                                                  </ReliableActionButton>
+
+                                                  <div
+                                                    aria-hidden={!blockMenuOpen}
+                                                    className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                                      blockMenuOpen
+                                                        ? "translate-y-0 scale-y-100 opacity-100"
+                                                        : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
+                                                    }`}
+                                                  >
+                                                    <ReliableActionButton
+                                                      type="button"
+                                                      onClick={() =>
+                                                        focusTrainingBlockTitleInput(
+                                                          selectedTrainingWeek.id,
+                                                          selectedTrainingDay.id,
+                                                          block.id
+                                                        )
+                                                      }
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                    >
+                                                      Editar nombre del bloque
+                                                    </ReliableActionButton>
+                                                    <ReliableActionButton
+                                                      type="button"
+                                                      onClick={() =>
+                                                        duplicateTrainingBlock(
+                                                          selectedTrainingWeek.id,
+                                                          selectedTrainingDay.id,
+                                                          block.id
+                                                        )
+                                                      }
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                    >
+                                                      Duplicar bloque
+                                                    </ReliableActionButton>
+                                                    <ReliableActionButton
+                                                      type="button"
+                                                      onClick={() => {
+                                                        setTrainingBlockMenu(null);
+                                                        removeTrainingBlock(
+                                                          selectedTrainingWeek.id,
+                                                          selectedTrainingDay.id,
+                                                          block.id
+                                                        );
+                                                      }}
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15"
+                                                    >
+                                                      Eliminar bloque
+                                                    </ReliableActionButton>
+                                                  </div>
+                                                </div>
                                               </div>
                                             </div>
 
@@ -5397,8 +5535,9 @@ export default function ClientesPage() {
                                                 Eliminar bloque
                                               </ReliableActionButton>
                                             </div>
-                                          </article>
-                                        ))}
+                                            </article>
+                                          );
+                                        })}
                                       </div>
                                     )}
                                   </div>
