@@ -5326,13 +5326,26 @@ export default function ClientesPage() {
                                                   trainingExercisePanelTarget?.dayId === actionTarget.dayId &&
                                                   trainingExercisePanelTarget?.blockId === actionTarget.blockId &&
                                                   trainingExercisePanelTarget?.exerciseId === actionTarget.exerciseId;
+                                                const exerciseRowGridTemplateColumns = [
+                                                  "76px",
+                                                  "minmax(260px, 1.6fr)",
+                                                  "160px",
+                                                  "160px",
+                                                  "160px",
+                                                  "160px",
+                                                  ...blockGridColumns.map(() => "160px"),
+                                                ].join(" ");
 
                                                 return (
                                                   <div
                                                     key={exercise.id}
                                                     className="border-t border-white/12 pt-3"
                                                   >
-                                                    <div className="grid gap-2 lg:grid-cols-[76px_minmax(0,1.6fr)_160px_160px_160px_160px]">
+                                                    <div className="overflow-x-auto">
+                                                      <div
+                                                        className="grid min-w-[980px] gap-2"
+                                                        style={{ gridTemplateColumns: exerciseRowGridTemplateColumns }}
+                                                      >
                                                       <div className="overflow-hidden rounded-xl border border-white/20 bg-slate-900/70">
                                                         {previewImage ? (
                                                           <img
@@ -5485,6 +5498,7 @@ export default function ClientesPage() {
                                                         </label>
                                                       ))}
                                                     </div>
+                                                    </div>
 
                                                     <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
                                                       <span className="text-cyan-200">Desglosar serie</span>
@@ -5518,25 +5532,6 @@ export default function ClientesPage() {
                                                         Eliminar
                                                       </ReliableActionButton>
                                                     </div>
-
-                                                    <label className="mt-2 block space-y-1">
-                                                      <span className="text-xs font-semibold text-slate-300">Observaciones</span>
-                                                      <input
-                                                        value={exercise.observaciones || ""}
-                                                        onChange={(event) =>
-                                                          updateTrainingExerciseField(
-                                                            selectedTrainingWeek.id,
-                                                            selectedTrainingDay.id,
-                                                            block.id,
-                                                            exercise.id,
-                                                            "observaciones",
-                                                            event.target.value
-                                                          )
-                                                        }
-                                                        className="w-full rounded-md border border-white/15 bg-slate-900/70 px-2 py-1.5 text-xs text-slate-100"
-                                                        placeholder="Observaciones del ejercicio"
-                                                      />
-                                                    </label>
 
                                                     {panelOpenForExercise ? (
                                                       <div className="mt-3 rounded-xl border border-cyan-300/25 bg-slate-900/65 p-3">
