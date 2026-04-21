@@ -2762,6 +2762,32 @@ export default function ClientesPage() {
         if (block.id !== blockId) return block;
 
         const nextIndex = ((block.ejercicios || [])[0]?.metricas?.length || 0) + 1;
+        const nextColumnName = `Campo ${nextIndex}`;
+
+        if ((block.ejercicios || []).length === 0) {
+          return {
+            ...block,
+            ejercicios: [
+              {
+                id: createTrainingEntityId("exercise"),
+                ejercicioId: "",
+                series: "",
+                repeticiones: "",
+                descanso: "",
+                carga: "",
+                observaciones: "",
+                metricas: [
+                  {
+                    nombre: nextColumnName,
+                    valor: "",
+                  },
+                ],
+                superSerie: [],
+              },
+            ],
+          };
+        }
+
         return {
           ...block,
           ejercicios: (block.ejercicios || []).map((exercise) => ({
@@ -2769,7 +2795,7 @@ export default function ClientesPage() {
             metricas: [
               ...(Array.isArray(exercise.metricas) ? exercise.metricas : []),
               {
-                nombre: `Campo ${nextIndex}`,
+                nombre: nextColumnName,
                 valor: "",
               },
             ],
@@ -2931,6 +2957,45 @@ export default function ClientesPage() {
                 }
               : exercise
           ),
+        };
+      })
+    );
+  };
+
+  const updateTrainingExerciseMetricValue = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    metricIndex: number,
+    metricName: string,
+    value: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            const nextMetricas = Array.isArray(exercise.metricas) ? [...exercise.metricas] : [];
+            while (nextMetricas.length <= metricIndex) {
+              nextMetricas.push({ nombre: "", valor: "" });
+            }
+
+            nextMetricas[metricIndex] = {
+              ...nextMetricas[metricIndex],
+              nombre: metricName,
+              valor: value,
+            };
+
+            return {
+              ...exercise,
+              metricas: nextMetricas,
+            };
+          }),
         };
       })
     );
@@ -5390,6 +5455,35 @@ export default function ClientesPage() {
                                                           className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
                                                         />
                                                       </label>
+
+                                                      {blockGridColumns.map((metric, metricIndex) => (
+                                                        <label
+                                                          key={`${exercise.id}-metric-${metricIndex}`}
+                                                          className="space-y-1"
+                                                        >
+                                                          <span className="text-xs font-bold text-slate-100">
+                                                            {metric.nombre || `Campo ${metricIndex + 1}`}
+                                                          </span>
+                                                          <input
+                                                            value={
+                                                              (exercise.metricas || [])[metricIndex]?.valor || ""
+                                                            }
+                                                            onChange={(event) =>
+                                                              updateTrainingExerciseMetricValue(
+                                                                selectedTrainingWeek.id,
+                                                                selectedTrainingDay.id,
+                                                                block.id,
+                                                                exercise.id,
+                                                                metricIndex,
+                                                                metric.nombre || `Campo ${metricIndex + 1}`,
+                                                                event.target.value
+                                                              )
+                                                            }
+                                                            className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                            placeholder={`Campo ${metricIndex + 1}`}
+                                                          />
+                                                        </label>
+                                                      ))}
                                                     </div>
 
                                                     <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">

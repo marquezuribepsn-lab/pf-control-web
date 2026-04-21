@@ -1201,7 +1201,6 @@ export default function SemanaPage() {
             const rawSuperSerie = Array.isArray(exerciseRow.superSerie)
               ? exerciseRow.superSerie
               : [];
-            const baseObservaciones = String(exerciseRow.observaciones || "").trim();
 
             const especificaciones: TemplateExerciseSpec[] = rawMetricas
               .filter((item) => item && typeof item === "object")
@@ -1213,19 +1212,6 @@ export default function SemanaPage() {
                   valor: String(metricRow.valor || ""),
                 };
               });
-
-            if (
-              baseObservaciones &&
-              !especificaciones.some(
-                (spec) => String(spec.nombre || "").trim().toLowerCase() === "observaciones"
-              )
-            ) {
-              especificaciones.push({
-                id: `${exerciseId}-spec-observaciones`,
-                nombre: "Observaciones",
-                valor: baseObservaciones,
-              });
-            }
 
             return {
               id: exerciseId,
@@ -4104,7 +4090,9 @@ export default function SemanaPage() {
                       {templateDraftDayEffectiveTraining.bloques.map((block, blockIndex) => {
                         const blockGridColumns = block.ejercicios[0]?.especificaciones || [];
                         const optionalGridColumns = blockGridColumns.filter(
-                          (spec) => spec.nombre.trim().length > 0
+                          (spec) =>
+                            spec.nombre.trim().length > 0 &&
+                            spec.nombre.trim().toLowerCase() !== "observaciones"
                         );
 
                         return (
