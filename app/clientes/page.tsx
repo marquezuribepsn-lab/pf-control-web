@@ -4418,7 +4418,13 @@ export default function ClientesPage() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-5 xl:p-6">
+              <div
+                className={
+                  activeTab === "plan-entrenamiento"
+                    ? "mt-4"
+                    : "mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-5 xl:p-6"
+                }
+              >
                 {activeTab === "datos" ? (
                   <div className="grid gap-4 xl:grid-cols-2">
                     <div className="space-y-4">
@@ -5252,7 +5258,6 @@ export default function ClientesPage() {
                                                           )
                                                         }
                                                         className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
-                                                        placeholder={`Campo ${metricIndex + 1}`}
                                                       />
                                                       <ReliableActionButton
                                                         type="button"
@@ -5493,7 +5498,6 @@ export default function ClientesPage() {
                                                               )
                                                             }
                                                             className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                            placeholder={`Campo ${metricIndex + 1}`}
                                                           />
                                                         </label>
                                                       ))}
