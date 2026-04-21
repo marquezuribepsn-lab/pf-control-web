@@ -174,7 +174,7 @@ export default function DeportesPage() {
           <div>
             <h2 className="text-lg font-bold text-white">Buscador inteligente</h2>
             <p className="mt-1 text-xs text-slate-400">
-              Busca por nombre de deporte o por cualquier posición (por ejemplo "delantero" o "base").
+              Busca por nombre de deporte o por cualquier posición (por ejemplo &quot;delantero&quot; o &quot;base&quot;).
             </p>
           </div>
           <span className="rounded-full border border-cyan-300/35 bg-cyan-500/12 px-3 py-1 text-[11px] font-semibold text-cyan-100">

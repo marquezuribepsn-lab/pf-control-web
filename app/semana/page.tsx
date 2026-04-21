@@ -2360,6 +2360,48 @@ export default function SemanaPage() {
     });
   };
 
+  const duplicarBloqueTemplate = (weekId: string, dayId: string, blockId: string) => {
+    actualizarEntrenamientoDiaTemplate(weekId, dayId, (training) => {
+      const blockIndex = training.bloques.findIndex((block) => block.id === blockId);
+      if (blockIndex < 0) {
+        return training;
+      }
+
+      const source = training.bloques[blockIndex];
+      const duplicatedBlock: TemplateBlockDraft = {
+        ...source,
+        id: createId(),
+        titulo: `${String(source.titulo || `Bloque ${blockIndex + 1}`).trim()} copia`,
+        objetivo: String(source.objetivo || ""),
+        ejercicios: (source.ejercicios || []).map((exercise) => ({
+          ...exercise,
+          id: createId(),
+          especificaciones: (exercise.especificaciones || []).map((spec) => ({
+            ...spec,
+            id: createId(),
+          })),
+          serieDesglose: (exercise.serieDesglose || []).map((setDraft, setIndex) => ({
+            ...setDraft,
+            id: createId(),
+            serie: Number.isFinite(Number(setDraft.serie)) ? Number(setDraft.serie) : setIndex + 1,
+          })),
+          superSerie: (exercise.superSerie || []).map((superExercise) => ({
+            ...superExercise,
+            id: createId(),
+          })),
+        })),
+      };
+
+      const bloques = [...training.bloques];
+      bloques.splice(blockIndex + 1, 0, duplicatedBlock);
+
+      return {
+        ...training,
+        bloques,
+      };
+    });
+  };
+
   const actualizarBloqueTemplate = (
     weekId: string,
     dayId: string,
@@ -4180,6 +4222,26 @@ export default function SemanaPage() {
                                         setBlockTitleEdit((current) =>
                                           current?.blockId === block.id ? null : current
                                         );
+                                        duplicarBloqueTemplate(
+                                          templateDraftWeek.id,
+                                          templateDraftDay.id,
+                                          block.id
+                                        );
+                                      }}
+                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-100 hover:bg-white/10"
+                                    >
+                                      Duplicar bloque
+                                    </ReliableActionButton>
+                                    <ReliableActionButton
+                                      type="button"
+                                      onClick={() => {
+                                        setBlockMenuOpenId(null);
+                                        setBlockGridConfigOpenId((current) =>
+                                          current === block.id ? null : current
+                                        );
+                                        setBlockTitleEdit((current) =>
+                                          current?.blockId === block.id ? null : current
+                                        );
                                         eliminarBloqueTemplate(
                                           templateDraftWeek.id,
                                           templateDraftDay.id,
@@ -4349,7 +4411,6 @@ export default function SemanaPage() {
                                     >
                                       <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-white/15 bg-slate-950/55">
                                         {thumb ? (
-                                          // eslint-disable-next-line @next/next/no-img-element
                                           <img
                                             src={thumb}
                                             alt={selectedExercise?.nombre || "Ejercicio"}
@@ -4422,7 +4483,6 @@ export default function SemanaPage() {
                                                   >
                                                     <div className="h-9 w-[42px] overflow-hidden rounded border border-white/10 bg-slate-800">
                                                       {optionThumb ? (
-                                                        // eslint-disable-next-line @next/next/no-img-element
                                                         <img
                                                           src={optionThumb}
                                                           alt={item.nombre}
@@ -4740,7 +4800,6 @@ export default function SemanaPage() {
                                               <div className="grid gap-y-2 gap-x-1.5 md:grid-cols-[104px_minmax(0,1fr)] lg:grid-cols-[104px_minmax(0,1.35fr)_repeat(4,minmax(0,0.95fr))]">
                                                 <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-violet-200/20 bg-slate-950/55">
                                                   {superThumb ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
                                                     <img
                                                       src={superThumb}
                                                       alt={superExercise?.nombre || "Ejercicio"}

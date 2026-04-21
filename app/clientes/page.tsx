@@ -1275,6 +1275,8 @@ export default function ClientesPage() {
   const [trainingStructureMenu, setTrainingStructureMenu] =
     useState<TrainingStructureMenuState>(null);
   const [trainingBlockMenu, setTrainingBlockMenu] = useState<TrainingBlockMenuState>(null);
+  const [trainingBlockGridConfigOpenId, setTrainingBlockGridConfigOpenId] =
+    useState<string | null>(null);
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
   const trainingStructureMenuRef = useRef<HTMLDivElement | null>(null);
   const trainingBlockMenuRef = useRef<HTMLDivElement | null>(null);
@@ -2075,6 +2077,7 @@ export default function ClientesPage() {
     setTrainingDayInlineEdit(null);
     setTrainingStructureMenu(null);
     setTrainingBlockMenu(null);
+    setTrainingBlockGridConfigOpenId(null);
   }, [selectedClient?.id, trainingPreviewWeekId, trainingPreviewDayId]);
 
   useEffect(() => {
@@ -2730,6 +2733,8 @@ export default function ClientesPage() {
     updateTrainingBlocks(weekId, dayId, (blocks) =>
       blocks.filter((block) => block.id !== blockId)
     );
+
+    setTrainingBlockGridConfigOpenId((current) => (current === blockId ? null : current));
   };
 
   const duplicateTrainingBlock = (weekId: string, dayId: string, blockId: string) => {
@@ -2749,6 +2754,84 @@ export default function ClientesPage() {
     });
 
     setTrainingBlockMenu(null);
+  };
+
+  const addTrainingBlockGridColumn = (weekId: string, dayId: string, blockId: string) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        const nextIndex = ((block.ejercicios || [])[0]?.metricas?.length || 0) + 1;
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => ({
+            ...exercise,
+            metricas: [
+              ...(Array.isArray(exercise.metricas) ? exercise.metricas : []),
+              {
+                nombre: `Campo ${nextIndex}`,
+                valor: "",
+              },
+            ],
+          })),
+        };
+      })
+    );
+  };
+
+  const updateTrainingBlockGridColumnName = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    metricIndex: number,
+    value: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => {
+            const nextMetricas = Array.isArray(exercise.metricas) ? [...exercise.metricas] : [];
+            while (nextMetricas.length <= metricIndex) {
+              nextMetricas.push({ nombre: "", valor: "" });
+            }
+
+            nextMetricas[metricIndex] = {
+              ...nextMetricas[metricIndex],
+              nombre: value,
+            };
+
+            return {
+              ...exercise,
+              metricas: nextMetricas,
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const removeTrainingBlockGridColumn = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    metricIndex: number
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => ({
+            ...exercise,
+            metricas: (exercise.metricas || []).filter((_, idx) => idx !== metricIndex),
+          })),
+        };
+      })
+    );
   };
 
   const updateTrainingBlockField = (
@@ -2775,6 +2858,12 @@ export default function ClientesPage() {
       blocks.map((block) => {
         if (block.id !== blockId) return block;
 
+        const baseMetricas =
+          (block.ejercicios || [])[0]?.metricas?.map((metric) => ({
+            nombre: String(metric.nombre || ""),
+            valor: "",
+          })) || [];
+
         return {
           ...block,
           ejercicios: [
@@ -2787,6 +2876,7 @@ export default function ClientesPage() {
               descanso: "",
               carga: "",
               observaciones: "",
+              metricas: baseMetricas.length > 0 ? baseMetricas : undefined,
               superSerie: [],
             },
           ],
@@ -4905,6 +4995,7 @@ export default function ClientesPage() {
                                             trainingBlockMenu?.weekId === selectedTrainingWeek.id &&
                                             trainingBlockMenu.dayId === selectedTrainingDay.id &&
                                             trainingBlockMenu.blockId === block.id;
+                                          const blockGridColumns = (block.ejercicios || [])[0]?.metricas || [];
 
                                           return (
                                             <article
@@ -4948,13 +5039,16 @@ export default function ClientesPage() {
                                                 >
                                                   <ReliableActionButton
                                                     type="button"
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                      setTrainingBlockGridConfigOpenId((current) =>
+                                                        current === block.id ? null : current
+                                                      );
                                                       toggleTrainingBlockMenu(
                                                         selectedTrainingWeek.id,
                                                         selectedTrainingDay.id,
                                                         block.id
-                                                      )
-                                                    }
+                                                      );
+                                                    }}
                                                     className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                                       blockMenuOpen
                                                         ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
@@ -4985,6 +5079,18 @@ export default function ClientesPage() {
                                                       className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
                                                     >
                                                       Editar nombre del bloque
+                                                    </ReliableActionButton>
+                                                    <ReliableActionButton
+                                                      type="button"
+                                                      onClick={() => {
+                                                        setTrainingBlockGridConfigOpenId((current) =>
+                                                          current === block.id ? null : block.id
+                                                        );
+                                                        setTrainingBlockMenu(null);
+                                                      }}
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                    >
+                                                      Configurar grilla plan
                                                     </ReliableActionButton>
                                                     <ReliableActionButton
                                                       type="button"
@@ -5032,6 +5138,99 @@ export default function ClientesPage() {
                                               className="mt-2 w-full rounded-none border border-white/20 bg-slate-700 px-2 py-1.5 text-sm text-white"
                                               placeholder="Objetivo bloque"
                                             />
+
+                                            {trainingBlockGridConfigOpenId === block.id ? (
+                                              <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-2 pl-3 pr-1.5">
+                                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+                                                  Configuracion grilla plan:
+                                                </p>
+                                                <p className="mt-1 text-xs text-slate-400">
+                                                  Series, repeticiones, descanso y carga kg son columnas base. El resto es opcional.
+                                                </p>
+
+                                                <div className="mt-3 space-y-2">
+                                                  <input
+                                                    value="Series:"
+                                                    readOnly
+                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                  />
+                                                  <input
+                                                    value="Repeticiones:"
+                                                    readOnly
+                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                  />
+                                                  <input
+                                                    value="Descanso:"
+                                                    readOnly
+                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                  />
+                                                  <input
+                                                    value="Carga kg:"
+                                                    readOnly
+                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                  />
+
+                                                  {blockGridColumns.map((metric, metricIndex) => (
+                                                    <div
+                                                      key={`${block.id}-metric-col-${metricIndex}`}
+                                                      className="flex items-center gap-2"
+                                                    >
+                                                      <input
+                                                        value={metric.nombre || ""}
+                                                        onChange={(event) =>
+                                                          updateTrainingBlockGridColumnName(
+                                                            selectedTrainingWeek.id,
+                                                            selectedTrainingDay.id,
+                                                            block.id,
+                                                            metricIndex,
+                                                            event.target.value
+                                                          )
+                                                        }
+                                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                                                        placeholder={`Campo ${metricIndex + 1}`}
+                                                      />
+                                                      <ReliableActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                          removeTrainingBlockGridColumn(
+                                                            selectedTrainingWeek.id,
+                                                            selectedTrainingDay.id,
+                                                            block.id,
+                                                            metricIndex
+                                                          )
+                                                        }
+                                                        className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                                                      >
+                                                        x
+                                                      </ReliableActionButton>
+                                                    </div>
+                                                  ))}
+                                                </div>
+
+                                                <div className="mt-3 flex flex-wrap justify-end gap-2">
+                                                  <ReliableActionButton
+                                                    type="button"
+                                                    onClick={() =>
+                                                      addTrainingBlockGridColumn(
+                                                        selectedTrainingWeek.id,
+                                                        selectedTrainingDay.id,
+                                                        block.id
+                                                      )
+                                                    }
+                                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                                  >
+                                                    Nuevo
+                                                  </ReliableActionButton>
+                                                  <ReliableActionButton
+                                                    type="button"
+                                                    onClick={() => setTrainingBlockGridConfigOpenId(null)}
+                                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                                  >
+                                                    Aceptar
+                                                  </ReliableActionButton>
+                                                </div>
+                                              </div>
+                                            ) : null}
 
                                             <div className="mt-3 space-y-3">
                                               {(block.ejercicios || []).map((exercise) => {

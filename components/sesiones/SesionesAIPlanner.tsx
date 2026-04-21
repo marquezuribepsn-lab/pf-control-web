@@ -724,7 +724,7 @@ export default function SesionesAIPlanner() {
 
         {storedPlans.length === 0 ? (
           <p className="mt-2 text-xs text-slate-300">
-            Aun no guardaste planes. Genera un plan IA y presiona "Guardar plan en biblioteca".
+            Aun no guardaste planes. Genera un plan IA y presiona &quot;Guardar plan en biblioteca&quot;.
           </p>
         ) : (
           <div className="mt-3 space-y-2">
