@@ -22,6 +22,7 @@ type AlumnoVisionClientProps = {
 };
 
 type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
+type QuickMetricIcon = "agua" | "sueno" | "peso" | "actividad";
 type TrainingView = "descripcion" | "registros";
 type NutritionView = "plan" | "recetas";
 type ProgressView = "semanal-rutina" | "antropometria";
@@ -52,6 +53,7 @@ type AccountSnapshot = {
   altura?: number | string | null;
   telefono?: string | null;
   direccion?: string | null;
+  sidebarImage?: string | null;
 };
 
 type MusicPlatform =
@@ -289,6 +291,16 @@ type EmbeddedPlayer = {
   src: string | null;
 };
 
+const ALUMNO_CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
+
+function normalizeAlumnoCategory(value: string): MainCategory | null {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (ALUMNO_CATEGORIES.includes(normalized as MainCategory)) {
+    return normalized as MainCategory;
+  }
+  return null;
+}
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const MUSIC_PLAYLISTS_KEY = "pf-control-music-playlists-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
@@ -299,6 +311,7 @@ const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const SESSION_FEEDBACK_KEY = "pf-control-alumno-session-feedback-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
 const CLIENT_INTERACTIONS_KEY = "pf-control-alumno-interacciones-v1";
+const ALUMNO_SHARED_POLL_MS = 30000;
 
 const SESSION_MOOD_OPTIONS = [
   "Motivado",
@@ -1340,7 +1353,7 @@ function MusicPlayer({ item }: { item: MusicAssignment }) {
         title={`player-${item.id}`}
         src={player.src}
         className="mt-3 h-44 w-full rounded-xl border border-white/10"
-        loading="lazy"
+        loading="eager"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       />
     );
@@ -1364,6 +1377,16 @@ export default function AlumnoVisionClient({
   const { ejercicios } = useEjercicios();
 
   const [mainCategory, setMainCategory] = useState<MainCategory>(initialCategory);
+  // Precargamos TODAS las categorias desde el primer render para que cambiar de tab o
+  // desplazarse entre pantallas encuentre el contenido ya montado, hidratado y pintado,
+  // sin flashes ni recargas visuales.
+  const [mountedCategories] = useState<Record<MainCategory, boolean>>(() => ({
+    inicio: true,
+    rutina: true,
+    nutricion: true,
+    progreso: true,
+    musica: true,
+  }));
   const [trainingView, setTrainingView] = useState<TrainingView>("descripcion");
   const [nutritionView, setNutritionView] = useState<NutritionView>("plan");
   const [progressView, setProgressView] = useState<ProgressView>("semanal-rutina");
@@ -1426,11 +1449,13 @@ export default function AlumnoVisionClient({
   const [clientesMeta] = useSharedState<Record<string, ClienteMetaLite>>({}, {
     key: CLIENTE_META_KEY,
     legacyLocalStorageKey: CLIENTE_META_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [musicRaw] = useSharedState<unknown[]>([], {
     key: MUSIC_PLAYLISTS_KEY,
     legacyLocalStorageKey: MUSIC_PLAYLISTS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [weekStoreRaw] = useSharedState<WeekStore>(
@@ -1441,47 +1466,74 @@ export default function AlumnoVisionClient({
     {
       key: WEEK_PLAN_KEY,
       legacyLocalStorageKey: WEEK_PLAN_KEY,
+      pollMs: ALUMNO_SHARED_POLL_MS,
     }
   );
 
   const [nutritionPlansRaw] = useSharedState<unknown[]>([], {
     key: NUTRITION_PLANS_KEY,
     legacyLocalStorageKey: NUTRITION_PLANS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [nutritionAssignmentsRaw] = useSharedState<unknown[]>([], {
     key: NUTRITION_ASSIGNMENTS_KEY,
     legacyLocalStorageKey: NUTRITION_ASSIGNMENTS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [nutritionCustomFoodsRaw] = useSharedState<unknown[]>([], {
     key: NUTRITION_CUSTOM_FOODS_KEY,
     legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [workoutLogsRaw, setWorkoutLogsRaw] = useSharedState<unknown[]>([], {
     key: WORKOUT_LOGS_KEY,
     legacyLocalStorageKey: WORKOUT_LOGS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [feedbackRaw, setFeedbackRaw] = useSharedState<unknown[]>([], {
     key: SESSION_FEEDBACK_KEY,
     legacyLocalStorageKey: SESSION_FEEDBACK_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [anthropometryRaw, setAnthropometryRaw] = useSharedState<unknown[]>([], {
     key: ANTHROPOMETRY_KEY,
     legacyLocalStorageKey: ANTHROPOMETRY_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   const [interactionRaw, setInteractionRaw] = useSharedState<unknown[]>([], {
     key: CLIENT_INTERACTIONS_KEY,
     legacyLocalStorageKey: CLIENT_INTERACTIONS_KEY,
+    pollMs: ALUMNO_SHARED_POLL_MS,
   });
 
   useEffect(() => {
     setMainCategory(initialCategory);
   }, [initialCategory]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncFromLocation = () => {
+      const [, alumnosSegment, categorySegment] = window.location.pathname.split("/");
+      if (alumnosSegment !== "alumnos") return;
+
+      const nextCategory = normalizeAlumnoCategory(categorySegment || "");
+      if (!nextCategory || nextCategory === mainCategory) return;
+
+      setMainCategory(nextCategory);
+    };
+
+    window.addEventListener("popstate", syncFromLocation);
+    return () => {
+      window.removeEventListener("popstate", syncFromLocation);
+    };
+  }, [mainCategory]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2552,8 +2604,36 @@ export default function AlumnoVisionClient({
   };
 
   const goToAlumnoCategory = (category: MainCategory) => {
+    if (category === mainCategory) {
+      return;
+    }
+
+    // Prevent cross-screen overlays when switching tabs quickly from the main dock.
+    setQuestionnaireOpen(false);
+    setQuestionError("");
+    setCompletionMessage("");
+    setExerciseDetailScreenOpen(false);
+    setShowInteractionPanel(false);
+    if (category !== "progreso") {
+      setShowAnthroForm(false);
+    }
+
     setMainCategory(category);
-    router.push(`/alumnos/${category}`);
+
+    if (typeof window !== "undefined") {
+      // Reset scroll so the incoming tab starts clean and not on the leftover
+      // position of the previous screen (prevents visual "overlap" glitches).
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      } catch {
+        window.scrollTo(0, 0);
+      }
+
+      const nextPath = `/alumnos/${category}`;
+      if (window.location.pathname !== nextPath) {
+        window.history.replaceState(window.history.state, "", nextPath);
+      }
+    }
   };
 
   const jumpToTodayRoutine = () => {
@@ -2750,12 +2830,69 @@ export default function AlumnoVisionClient({
   ];
 
   const canOpenProfessorWhatsApp = Boolean(profesorContacto?.waPhone);
+  const profileImageSrc = useMemo(() => {
+    const fromAccount =
+      typeof accountData?.sidebarImage === "string" ? accountData.sidebarImage.trim() : "";
+    if (fromAccount) return fromAccount;
+
+    if (typeof window === "undefined") return "";
+    try {
+      const fromLocalStorage = window.localStorage.getItem("pf-control-sidebar-image-v1") || "";
+      return String(fromLocalStorage).trim();
+    } catch {
+      return "";
+    }
+  }, [accountData?.sidebarImage]);
+  const hasProfileImage = Boolean(profileImageSrc);
+
+  const renderQuickMetricIcon = (icon: QuickMetricIcon) => {
+    const baseClassName =
+      "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20";
+
+    if (icon === "agua") {
+      return (
+        <span className={`${baseClassName} bg-gradient-to-b from-sky-400 to-blue-600`}>
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 3C12 3 6 10 6 14a6 6 0 0 0 12 0c0-4-6-11-6-11Z" />
+          </svg>
+        </span>
+      );
+    }
+
+    if (icon === "sueno") {
+      return (
+        <span className={`${baseClassName} bg-gradient-to-b from-indigo-300 to-indigo-600`}>
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 14.2A8 8 0 1 1 9.8 4a6.2 6.2 0 0 0 10.2 10.2Z" />
+          </svg>
+        </span>
+      );
+    }
+
+    if (icon === "peso") {
+      return (
+        <span className={`${baseClassName} bg-gradient-to-b from-cyan-300 to-teal-500`}>
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 10v4M6 8v8M9 10v4M15 10v4M18 8v8M21 10v4" />
+            <path d="M9 12h6" />
+          </svg>
+        </span>
+      );
+    }
+
+    return (
+      <span className={`${baseClassName} bg-gradient-to-b from-rose-400 to-fuchsia-600`}>
+        <svg viewBox="0 0 24 24" className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 12h4l3-5 4 10 3-5h4" />
+        </svg>
+      </span>
+    );
+  };
 
   return (
-    <main className="mx-auto max-w-7xl space-y-5 p-4 pb-28 text-slate-100 sm:p-6 sm:pb-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 shadow-[0_24px_80px_rgba(6,182,212,0.14)] sm:p-6">
-        <div className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-fuchsia-500/16 blur-3xl" />
+    <main className="pf-alumno-main mx-auto max-w-7xl space-y-5 p-4 pb-28 text-slate-100 sm:p-6 sm:pb-8">
+      {mainCategory !== "inicio" ? (
+      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-[#061a2b] p-5 sm:p-6">
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -2813,7 +2950,7 @@ export default function AlumnoVisionClient({
                 onClick={() => goToAlumnoCategory(item.id)}
                 className={`rounded-2xl border px-3 py-3 text-left transition ${
                   isActive
-                    ? "border-cyan-200/60 bg-cyan-400/20 shadow-[0_10px_24px_rgba(34,211,238,0.2)]"
+                    ? "border-cyan-200/60 bg-cyan-400/20"
                     : "border-white/15 bg-slate-900/55 hover:border-cyan-200/35 hover:bg-slate-900/80"
                 }`}
               >
@@ -2832,243 +2969,337 @@ export default function AlumnoVisionClient({
           <StatCard label="Playlists" value={String(musicAssignments.length)} />
         </div>
       </section>
+      ) : null}
 
-      {mainCategory === "inicio" ? (
-        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-3xl font-black tracking-tight text-white">{greetingLabel}</p>
-              <p className="text-3xl font-black text-cyan-200">{alumnoName || "Alumno"}</p>
-              <p className="mt-1 text-sm text-slate-300">Inicio personalizado de PF Control.</p>
-            </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-cyan-500/35 to-fuchsia-500/35 text-lg font-black text-white">
-              {alumnoInitials}
-            </div>
-          </div>
-
-          <article className="rounded-2xl border border-white/15 bg-slate-950/60 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-cyan-200">Pase del alumno</p>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xl font-black text-white">{alumnoName || "Alumno PF Control"}</p>
-                <p className="text-sm text-slate-300">{passPlanLabel}</p>
+      {mountedCategories.inicio ? (
+        <section
+          data-category="inicio"
+          className={`pf-alumno-stage-panel ${
+            mainCategory === "inicio"
+              ? "pf-alumno-stage-active space-y-4 sm:space-y-5"
+              : "pf-alumno-stage-hidden"
+          }`}
+          aria-hidden={mainCategory !== "inicio"}
+        >
+          <section className="relative overflow-hidden rounded-[2rem] border border-slate-700/70 bg-[#071320] p-4 sm:p-5">
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-200/80">
+                  <span>Panel alumno</span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-100">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                    En linea
+                  </span>
+                </p>
+                <h2 className="mt-1 text-3xl font-black leading-[1.05] text-white sm:text-4xl">
+                  {`${greetingLabel}, ${alumnoName || "Alumno"}`}
+                </h2>
+                <p className="mt-1 text-sm text-slate-300">
+                  {isPassCurrentlyActive ? "Plan activo" : "Plan pendiente"} · {passPlanLabel}
+                </p>
               </div>
-              <span
-                className={`rounded-full border px-2.5 py-1 text-xs font-bold ${
-                  isPassCurrentlyActive
-                    ? "border-emerald-300/35 bg-emerald-500/15 text-emerald-100"
-                    : "border-rose-300/35 bg-rose-500/15 text-rose-100"
-                }`}
-              >
-                {isPassCurrentlyActive ? "Activo" : "Inhabilitado"}
+              <div className="relative h-16 w-16 shrink-0">
+                <div className="h-full w-full overflow-hidden rounded-full border border-white/25 bg-slate-700/65">
+                  {hasProfileImage ? (
+                    <img src={profileImageSrc} alt="Perfil" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xl font-black text-white">
+                      {alumnoInitials}
+                    </div>
+                  )}
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-[#071320] bg-emerald-400" />
+              </div>
+            </div>
+
+            <div className="relative mt-3 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
+                Desde {formatDate(alumnoMetaMatch?.meta?.startDate || null)}
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
+                Hasta {formatDate(alumnoMetaMatch?.meta?.endDate || null)}
               </span>
             </div>
 
-            {!isPassCurrentlyActive ? (
-              <div className="mt-3 rounded-xl border border-rose-300/35 bg-rose-500/10 p-3 text-xs text-rose-100">
-                Tu pase esta pendiente o vencido. Regulariza el pago para habilitar nuevamente el acceso completo.
-                <div className="mt-2">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => router.push("/alumnos/pagos")}
-                    className="rounded-lg border border-rose-200/45 bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-50"
-                  >
-                    Ir a pagos
-                  </ReliableActionButton>
+            <article className="relative mt-4 rounded-3xl border border-white/10 bg-[#151b28]/95 p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-bold text-white">Resumen de membresia</p>
+                <span
+                  className={`rounded-full border px-2.5 py-1 text-xs font-bold ${
+                    isPassCurrentlyActive
+                      ? "border-emerald-300/35 bg-emerald-500/15 text-emerald-100"
+                      : "border-rose-300/35 bg-rose-500/15 text-rose-100"
+                  }`}
+                >
+                  {isPassCurrentlyActive ? "Activa" : "Pendiente"}
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-2xl bg-[#27344a] px-2 py-3 text-center">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-300">Plan</p>
+                  <p className="mt-1 text-base font-black text-white">{Math.max(weekPlanForAlumno.totalDias, 1)} dias</p>
+                </div>
+                <div className="rounded-2xl bg-[#27344a] px-2 py-3 text-center">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-300">Semanas</p>
+                  <p className="mt-1 text-base font-black text-white">{weekPlanForAlumno.totalSemanas}</p>
+                </div>
+                <div className="rounded-2xl bg-[#27344a] px-2 py-3 text-center">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-300">Estado</p>
+                  <p className="mt-1 text-base font-black text-white">{isPassCurrentlyActive ? "OK" : "Pago"}</p>
                 </div>
               </div>
-            ) : null}
 
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
-                <p className="text-[11px] uppercase tracking-wide text-slate-400">Desde</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {formatDate(alumnoMetaMatch?.meta?.startDate || null)}
-                </p>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
-                <p className="text-[11px] uppercase tracking-wide text-slate-400">Hasta</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {formatDate(alumnoMetaMatch?.meta?.endDate || null)}
-                </p>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2 sm:col-span-1 col-span-2">
+              <div className="mt-2 rounded-2xl bg-white/[0.05] px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wide text-slate-400">Objetivo</p>
-                <p className="mt-1 line-clamp-2 text-sm font-semibold text-white">{objetivo}</p>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-100">{objetivo}</p>
               </div>
-            </div>
-          </article>
 
-          <article className="rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Frase del dia</p>
-            <p className="mt-2 text-xl font-black leading-tight text-white">&quot;{phraseOfDay}&quot;</p>
-          </article>
+              {!isPassCurrentlyActive ? (
+                <div className="mt-3 rounded-2xl border border-rose-300/35 bg-rose-500/10 p-3 text-xs text-rose-100">
+                  Tu pase esta pendiente o vencido. Regulariza el pago para habilitar nuevamente el acceso completo.
+                  <div className="mt-2">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => router.push("/alumnos/pagos")}
+                      className="rounded-lg border border-rose-200/45 bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-50"
+                    >
+                      Ir a pagos
+                    </ReliableActionButton>
+                  </div>
+                </div>
+              ) : null}
+            </article>
 
-          <article className="rounded-2xl border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-500/20 to-rose-500/20 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-fuchsia-100">Recordatorio de hoy</p>
-                <p className="mt-2 text-2xl font-black text-white">{todayTrainingReminder}</p>
-                <p className="mt-1 text-sm text-fuchsia-100/95">{todayTrainingCaption}</p>
-                <p className="mt-1 text-xs text-fuchsia-100/80">
-                  {todayExerciseCount > 0
-                    ? `${todayExerciseCount} ejercicio(s) cargados para el dia de hoy.`
-                    : "No se detectaron ejercicios para hoy."}
-                </p>
-              </div>
+            <div className="relative mt-4 grid grid-cols-2 gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={openQuestionnaire}
+                className="rounded-2xl border border-white/10 bg-[#2a2d36] px-2 py-2 text-center text-[13px] font-bold leading-tight text-white"
+              >
+                Cuestionarios
+              </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={jumpToTodayRoutine}
-                className="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20"
+                className="rounded-2xl border border-white/10 bg-[#2a2d36] px-2 py-2 text-center text-[13px] font-bold leading-tight text-white"
               >
-                Ver rutina
-              </ReliableActionButton>
-            </div>
-          </article>
-
-          <article className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs uppercase tracking-[0.16em] text-emerald-100">Estado de hoy</p>
-              <p className="text-xs text-emerald-100/85">{todayDateKey}</p>
-            </div>
-            <p className="mt-2 text-sm font-semibold text-white">{todayProgressText}</p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="rounded-xl border border-white/15 bg-slate-950/40 p-2">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Ejercicios hoy</p>
-                <p className="mt-1 text-lg font-black text-white">{todayExercisesDoneCount}</p>
-              </div>
-              <div className="rounded-xl border border-white/15 bg-slate-950/40 p-2">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Series hoy</p>
-                <p className="mt-1 text-lg font-black text-white">{todaySeriesDone}</p>
-              </div>
-            </div>
-          </article>
-
-          <article className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Sugerencias inteligentes</p>
-            <div className="mt-2 space-y-2 text-sm text-slate-100">
-              {comfortSuggestions.map((tip, index) => (
-                <p key={`${tip}-${index}`} className="rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2">
-                  {tip}
-                </p>
-              ))}
-            </div>
-          </article>
-
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-black text-white">Carga rapida</h3>
-              <p className="text-xs text-slate-300">actualiza tus metricas</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <ReliableActionButton
-                type="button"
-                onClick={() => {
-                  goToAlumnoCategory("progreso");
-                  setProgressView("antropometria");
-                  setShowAnthroForm(true);
-                }}
-                className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 p-3 text-left"
-              >
-                <p className="text-lg font-black text-white">Agua</p>
-                <p className="text-xs text-cyan-100">{quickWater === null ? "Sin dato" : `${quickWater} L`}</p>
+                Rutina
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={() => {
                   goToAlumnoCategory("progreso");
                   setProgressView("antropometria");
-                  setShowAnthroForm(true);
                 }}
-                className="rounded-xl border border-indigo-300/35 bg-indigo-500/15 p-3 text-left"
+                className="col-span-2 rounded-2xl border border-white/10 bg-[#2a2d36] px-2 py-2 text-center text-[13px] font-bold leading-tight text-white"
               >
-                <p className="text-lg font-black text-white">Sueno</p>
-                <p className="text-xs text-indigo-100">{quickSleep === null ? "Sin dato" : `${quickSleep} h`}</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => {
-                  goToAlumnoCategory("progreso");
-                  setProgressView("antropometria");
-                  setShowAnthroForm(true);
-                }}
-                className="rounded-xl border border-emerald-300/35 bg-emerald-500/15 p-3 text-left"
-              >
-                <p className="text-lg font-black text-white">Peso</p>
-                <p className="text-xs text-emerald-100">{quickWeight === null ? "Sin dato" : `${quickWeight} kg`}</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => {
-                  goToAlumnoCategory("progreso");
-                  setProgressView("antropometria");
-                  setShowAnthroForm(true);
-                }}
-                className="rounded-xl border border-rose-300/35 bg-rose-500/15 p-3 text-left"
-              >
-                <p className="text-lg font-black text-white">Actividad</p>
-                <p className="text-xs text-rose-100">{quickActivity === null ? "Sin dato" : `${quickActivity}/10`}</p>
+                Controles
               </ReliableActionButton>
             </div>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-2xl font-black text-white">Hub PF Control</h3>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <ReliableActionButton
-                type="button"
-                onClick={() => goToAlumnoCategory("rutina")}
-                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
-              >
-                <p className="text-base font-black text-white">Rutina</p>
-                <p className="text-xs text-slate-300">{weekPlanForAlumno.totalSemanas} semanas activas</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => goToAlumnoCategory("nutricion")}
-                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
-              >
-                <p className="text-base font-black text-white">Plan nutricional</p>
-                <p className="text-xs text-slate-300">{selectedNutritionPlan ? "Plan activo" : "Sin plan cargado"}</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => {
-                  goToAlumnoCategory("progreso");
-                  setProgressView("semanal-rutina");
-                }}
-                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
-              >
-                <p className="text-base font-black text-white">Progreso</p>
-                <p className="text-xs text-slate-300">{weeklyProgressTotals.completionPct}% de cumplimiento</p>
-              </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => goToAlumnoCategory("musica")}
-                className="rounded-xl border border-white/15 bg-slate-950/55 p-3 text-left"
-              >
-                <p className="text-base font-black text-white">Musica</p>
-                <p className="text-xs text-slate-300">{musicAssignments.length} playlist(s) asignada(s)</p>
-              </ReliableActionButton>
-            </div>
-          </section>
-
-          {musicAssignments[0] ? (
-            <article className="rounded-2xl border border-white/15 bg-slate-950/55 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-cyan-100">Musica de hoy</p>
-              <p className="mt-1 text-lg font-black text-white">{musicAssignments[0].playlistName}</p>
-              <p className="text-xs text-slate-300">
-                Objetivo: {musicAssignments[0].objetivo || "General"} · Dia: {musicAssignments[0].diaSemana || "Libre"}
-              </p>
-              <MusicPlayer item={musicAssignments[0]} />
-            </article>
+          {musicAssignments.length > 0 ? (
+            <section className="space-y-2">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-4xl font-black text-white">ZZZ</p>
+                  <p className="text-sm text-slate-300">{musicAssignments[0].objetivo || "Playlist sugerida para hoy"}</p>
+                </div>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => goToAlumnoCategory("musica")}
+                  className="text-sm text-slate-200 underline decoration-white/35 underline-offset-4"
+                >
+                  Ver
+                </ReliableActionButton>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {musicAssignments.slice(0, 3).map((item) => (
+                  <ReliableActionButton
+                    key={item.id}
+                    type="button"
+                    onClick={() => goToAlumnoCategory("musica")}
+                    className="rounded-2xl bg-[#171a22] p-2 text-left"
+                  >
+                    <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-fuchsia-500/40 via-slate-900 to-cyan-500/30" />
+                    <p className="mt-2 line-clamp-1 text-base font-black text-white">{item.playlistName}</p>
+                    <p className="line-clamp-1 text-xs text-slate-300">
+                      {item.recommendedSongArtist || getPlatformLabel(item.platform)}
+                    </p>
+                  </ReliableActionButton>
+                ))}
+              </div>
+            </section>
           ) : null}
+
+          <section className="space-y-3">
+            <div className="flex items-end justify-between gap-2">
+              <h3 className="text-[2.1rem] font-black tracking-tight leading-[0.95] text-white sm:text-5xl">Carga rapida</h3>
+              <p className="text-xs text-slate-400">{todayDateKey}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="overflow-hidden rounded-2xl bg-[#1b1d24] text-left"
+              >
+                <div className="flex min-h-[82px] items-center gap-3 p-3">
+                  {renderQuickMetricIcon("agua")}
+                  <div className="min-w-0">
+                    <p className="truncate text-2xl font-black leading-none text-white sm:text-3xl">Agua</p>
+                    <p className="mt-1 text-sm text-slate-300">{quickWater === null ? "Sin dato" : `${quickWater} L`}</p>
+                  </div>
+                </div>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="overflow-hidden rounded-2xl bg-[#1b1d24] text-left"
+              >
+                <div className="flex min-h-[82px] items-center gap-3 p-3">
+                  {renderQuickMetricIcon("sueno")}
+                  <div className="min-w-0">
+                    <p className="truncate text-2xl font-black leading-none text-white sm:text-3xl">Sueno</p>
+                    <p className="mt-1 text-sm text-slate-300">{quickSleep === null ? "Sin dato" : `${quickSleep} h`}</p>
+                  </div>
+                </div>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="overflow-hidden rounded-2xl bg-[#1b1d24] text-left"
+              >
+                <div className="flex min-h-[82px] items-center gap-3 p-3">
+                  {renderQuickMetricIcon("peso")}
+                  <div className="min-w-0">
+                    <p className="truncate text-2xl font-black leading-none text-white sm:text-3xl">Peso</p>
+                    <p className="mt-1 text-sm text-slate-300">{quickWeight === null ? "Sin dato" : `${quickWeight} kg`}</p>
+                  </div>
+                </div>
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="overflow-hidden rounded-2xl bg-[#1b1d24] text-left"
+              >
+                <div className="flex min-h-[82px] items-center gap-3 p-3">
+                  {renderQuickMetricIcon("actividad")}
+                  <div className="min-w-0">
+                    <p className="truncate text-2xl font-black leading-none text-white sm:text-3xl">Actividad</p>
+                    <p className="mt-1 text-sm text-slate-300">{quickActivity === null ? "Sin dato" : `${quickActivity}/10`}</p>
+                  </div>
+                </div>
+              </ReliableActionButton>
+            </div>
+          </section>
+
+          <section className="space-y-3 rounded-3xl bg-[#161922] p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[2rem] font-black leading-none text-white sm:text-4xl">Peso corporal</h3>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                }}
+                className="text-2xl text-slate-200"
+              >
+                ↻
+              </ReliableActionButton>
+            </div>
+
+            <div className="rounded-3xl bg-[#1b1e27] p-4">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-xl font-black text-white sm:text-2xl">{weight7Days === null ? "-" : weight7Days.toFixed(2)}</p>
+                  <p className="text-xs text-slate-400">kg</p>
+                  <p className="text-base text-slate-200 sm:text-lg">7 dias</p>
+                </div>
+                <div>
+                  <p className="text-xl font-black text-white sm:text-2xl">{weight15Days === null ? "-" : weight15Days.toFixed(2)}</p>
+                  <p className="text-xs text-slate-400">kg</p>
+                  <p className="text-base text-slate-200 sm:text-lg">15 dias</p>
+                </div>
+                <div>
+                  <p className="text-xl font-black text-white sm:text-2xl">{weightHistoric === null ? "-" : weightHistoric.toFixed(2)}</p>
+                  <p className="text-xs text-slate-400">kg</p>
+                  <p className="text-base text-slate-200 sm:text-lg">Historico</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-3 rounded-3xl bg-[#0f1319] p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[2rem] font-black leading-none text-white sm:text-4xl">Medidas corporales</h3>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="text-3xl text-slate-200"
+              >
+                +
+              </ReliableActionButton>
+            </div>
+            <p className="text-lg text-slate-400 sm:text-xl">
+              {latestAnthro && (latestAnthro.cinturaCm !== null || latestAnthro.caderaCm !== null || latestAnthro.grasaPct !== null)
+                ? `Cintura ${latestAnthro.cinturaCm ?? "-"} cm · Cadera ${latestAnthro.caderaCm ?? "-"} cm · Grasa ${latestAnthro.grasaPct ?? "-"}%`
+                : "No se encontraron datos"}
+            </p>
+
+            <div className="flex items-center justify-between pt-2">
+              <h3 className="text-[2rem] font-black leading-none text-white sm:text-4xl">Actividad</h3>
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  goToAlumnoCategory("progreso");
+                  setProgressView("antropometria");
+                  setShowAnthroForm(true);
+                }}
+                className="text-3xl text-slate-200"
+              >
+                +
+              </ReliableActionButton>
+            </div>
+            <p className="text-lg text-slate-400 sm:text-xl">
+              {quickActivity === null
+                ? "No se encontraron datos"
+                : `Ultimo registro de actividad: ${quickActivity}/10`}
+            </p>
+          </section>
         </section>
       ) : null}
 
-      {mainCategory === "rutina" ? (
-        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      {mountedCategories.rutina ? (
+        <section
+          data-category="rutina"
+          className={`pf-alumno-stage-panel ${
+            mainCategory === "rutina"
+              ? "pf-alumno-stage-active space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5"
+              : "pf-alumno-stage-hidden"
+          }`}
+          aria-hidden={mainCategory !== "rutina"}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black">Rutina de entrenamiento</h2>
@@ -3298,7 +3529,7 @@ export default function AlumnoVisionClient({
                               key={exerciseKey}
                               className={`rounded-xl border p-3 transition ${
                                 isSelectedExercise
-                                  ? "border-cyan-300/40 bg-slate-900/80 shadow-[0_10px_24px_rgba(34,211,238,0.16)]"
+                                  ? "border-cyan-300/40 bg-slate-900/80"
                                   : "border-white/10 bg-slate-950/45"
                               }`}
                             >
@@ -3314,7 +3545,8 @@ export default function AlumnoVisionClient({
                                       src={previewImage}
                                       alt={exerciseName}
                                       className="h-full w-full object-cover"
-                                      loading="lazy"
+                                      loading="eager"
+                                      decoding="async"
                                     />
                                   ) : (
                                     <span className="block px-1 text-[10px] font-semibold text-slate-300">Sin preview</span>
@@ -3426,7 +3658,7 @@ export default function AlumnoVisionClient({
 
                     return (
                       <div className="fixed inset-0 z-[120] bg-slate-950/80 p-4 backdrop-blur-sm">
-                        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-cyan-300/30 bg-slate-950 shadow-[0_24px_80px_rgba(14,116,144,0.45)]">
+                        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-cyan-300/30 bg-slate-950">
                           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
                             <div>
                               <p className="text-[11px] uppercase tracking-[0.14em] text-cyan-200">Pantalla del ejercicio</p>
@@ -3486,7 +3718,7 @@ export default function AlumnoVisionClient({
                                       title={`video-${exerciseKey}`}
                                       src={exerciseVideoEmbed}
                                       className="mt-2 aspect-video w-full min-h-[22rem] rounded-xl border border-white/20 md:min-h-[28rem]"
-                                      loading="lazy"
+                                      loading="eager"
                                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                       allowFullScreen
                                     />
@@ -3849,8 +4081,16 @@ export default function AlumnoVisionClient({
         </section>
       ) : null}
 
-      {mainCategory === "nutricion" ? (
-        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      {mountedCategories.nutricion ? (
+        <section
+          data-category="nutricion"
+          className={`pf-alumno-stage-panel ${
+            mainCategory === "nutricion"
+              ? "pf-alumno-stage-active space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5"
+              : "pf-alumno-stage-hidden"
+          }`}
+          aria-hidden={mainCategory !== "nutricion"}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black">Plan nutricional</h2>
@@ -3966,8 +4206,16 @@ export default function AlumnoVisionClient({
         </section>
       ) : null}
 
-      {mainCategory === "progreso" ? (
-        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      {mountedCategories.progreso ? (
+        <section
+          data-category="progreso"
+          className={`pf-alumno-stage-panel ${
+            mainCategory === "progreso"
+              ? "pf-alumno-stage-active space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5"
+              : "pf-alumno-stage-hidden"
+          }`}
+          aria-hidden={mainCategory !== "progreso"}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black">Progreso</h2>
@@ -4282,8 +4530,16 @@ export default function AlumnoVisionClient({
         </section>
       ) : null}
 
-      {mainCategory === "musica" ? (
-        <section className="space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      {mountedCategories.musica ? (
+        <section
+          data-category="musica"
+          className={`pf-alumno-stage-panel ${
+            mainCategory === "musica"
+              ? "pf-alumno-stage-active space-y-4 rounded-3xl border border-white/15 bg-slate-900/75 p-5"
+              : "pf-alumno-stage-hidden"
+          }`}
+          aria-hidden={mainCategory !== "musica"}
+        >
           <div>
             <h2 className="text-2xl font-black">Playlists recomendadas</h2>
             <p className="mt-1 text-sm text-slate-300">Escucha las playlists sugeridas para tu entrenamiento y recuperacion.</p>
@@ -4341,9 +4597,13 @@ export default function AlumnoVisionClient({
         </section>
       ) : null}
 
-      <nav className="fixed inset-x-0 bottom-3 z-[95] px-3 xl:hidden" aria-label="Navegacion principal del alumno">
-        <div className="mx-auto max-w-md rounded-2xl border border-white/15 bg-slate-950/92 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.6)] backdrop-blur-md">
-          <div className="grid grid-cols-4 gap-1.5">
+      <nav
+        className="pf-alumno-dock fixed inset-x-0 bottom-0 z-[95] px-2 xl:hidden"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.35rem)" }}
+        aria-label="Navegacion principal del alumno"
+      >
+        <div className="mx-auto w-[min(95vw,360px)] rounded-2xl border border-slate-700 bg-slate-950/98 px-1.5 py-1.5">
+          <div className="grid grid-cols-4 gap-1">
             {mobileDockItems.map((item) => {
               const isActive = mainCategory === item.id;
 
@@ -4352,22 +4612,22 @@ export default function AlumnoVisionClient({
                   key={item.id}
                   type="button"
                   onClick={() => goToAlumnoCategory(item.id)}
-                  className={`rounded-xl border px-1.5 py-2 text-center transition ${
+                  className={`rounded-xl border px-1 py-1.5 text-center ${
                     isActive
-                      ? "border-cyan-200/70 bg-cyan-400/20"
-                      : "border-white/15 bg-slate-900/55"
+                      ? "border-cyan-200/65 bg-cyan-500/18"
+                      : "border-white/12 bg-slate-900/75"
                   }`}
                 >
                   <span
-                    className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-black ${
+                    className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-black ${
                       isActive
-                        ? "border-cyan-200/70 bg-cyan-500/35 text-cyan-50"
-                        : "border-white/25 bg-white/5 text-slate-200"
+                        ? "border-cyan-200/65 bg-cyan-500/32 text-cyan-50"
+                        : "border-white/20 bg-white/5 text-slate-200"
                     }`}
                   >
                     {item.iconLabel}
                   </span>
-                  <span className={`mt-1 block text-[11px] font-semibold ${isActive ? "text-cyan-100" : "text-slate-300"}`}>
+                  <span className={`mt-0.5 block text-[10px] font-semibold leading-none ${isActive ? "text-cyan-100" : "text-slate-300"}`}>
                     {item.label}
                   </span>
                 </ReliableActionButton>
@@ -4379,7 +4639,7 @@ export default function AlumnoVisionClient({
 
       {questionnaireOpen ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/85 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-2xl rounded-3xl border border-white/15 bg-slate-900 p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-3xl font-black text-white">Evaluacion de la sesion</h3>

@@ -95,6 +95,7 @@ const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
+const ACCOUNT_SNAPSHOT_SYNC_MS = 120000;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
@@ -271,6 +272,12 @@ const clampScreenScale = (value: number): number => {
 
 const applyScreenScale = (value: number) => {
   if (typeof document === "undefined") return;
+
+  if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
+    document.documentElement.style.setProperty("--pf-screen-scale", "1");
+    return;
+  }
+
   document.documentElement.style.setProperty("--pf-screen-scale", String(clampScreenScale(value)));
 };
 
@@ -318,10 +325,12 @@ export default function AppShell({
   const [clientesMeta] = useSharedState<Record<string, ClienteMetaSnapshot>>({}, {
     key: CLIENTE_META_KEY,
     legacyLocalStorageKey: CLIENTE_META_KEY,
+    pollMs: 60000,
   });
   const [asistenciaRegistros] = useSharedState<AsistenciaRegistroSnapshot[]>([], {
     key: ASISTENCIAS_REGISTROS_KEY,
     legacyLocalStorageKey: ASISTENCIAS_REGISTROS_KEY,
+    pollMs: 60000,
   });
   const interactionGuardLastRunRef = useRef(0);
   const optimisticNavResetTimerRef = useRef<number | null>(null);
@@ -329,6 +338,7 @@ export default function AppShell({
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [sidebarImage, setSidebarImage] = useState<string | null>(() => {
     if (typeof window === "undefined") {
       return normalizeSidebarImageValue(initialSidebarImage);
@@ -555,7 +565,20 @@ export default function AppShell({
 
         if (cancelled) return;
 
-        setColaboradorAccessMap(normalizedAccess);
+        setColaboradorAccessMap((previous) => {
+          const prevMap = previous || {};
+          const prevKeys = Object.keys(prevMap);
+          const nextKeys = Object.keys(normalizedAccess);
+
+          if (
+            prevKeys.length === nextKeys.length &&
+            nextKeys.every((entry) => prevMap[entry] === normalizedAccess[entry])
+          ) {
+            return previous;
+          }
+
+          return normalizedAccess;
+        });
 
         if (hasSidebarImageField) {
           const normalizedLocalImage = normalizeSidebarImageValue(localStorage.getItem(SIDEBAR_IMAGE_KEY));
@@ -586,7 +609,7 @@ export default function AppShell({
 
     const intervalId = window.setInterval(() => {
       void syncAccountSnapshot();
-    }, 30000);
+    }, ACCOUNT_SNAPSHOT_SYNC_MS);
 
     const onFocus = () => {
       void syncAccountSnapshot();
@@ -607,12 +630,28 @@ export default function AppShell({
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [mounted, session?.user, pathname]);
+  }, [mounted, session?.user]);
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
     syncSidebarImageFromStorage();
-  }, [mounted, pathname]);
+  }, [mounted]);
+
+  useEffect(() => {
+    if (!mounted || typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(max-width: 1024px)");
+    const syncViewport = () => {
+      setIsMobileViewport(mediaQuery.matches);
+    };
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncViewport);
+    };
+  }, [mounted]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -738,6 +777,20 @@ export default function AppShell({
   useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) return;
 
+    const nextRole =
+      ((session?.user as UserLike | undefined)?.role as string | undefined) ??
+      resolvedRole ??
+      null;
+    const normalizedRole = typeof nextRole === "string" ? nextRole.trim().toUpperCase() : "";
+    const isClienteMobile =
+      normalizedRole === "CLIENTE" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1024px)").matches;
+
+    if (isClienteMobile) {
+      return;
+    }
+
     const scheduledRuns = [0, 120, 420, 900].map((delayMs) =>
       window.setTimeout(() => runInteractionGuard(), delayMs)
     );
@@ -764,6 +817,9 @@ export default function AppShell({
     };
 
     const onResize = () => {
+      if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
+        return;
+      }
       runInteractionGuard();
     };
 
@@ -779,7 +835,7 @@ export default function AppShell({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", onResize);
     };
-  }, [mounted, pathname]);
+  }, [mounted, pathname, resolvedRole, session?.user]);
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
@@ -840,9 +896,23 @@ export default function AppShell({
   useEffect(() => {
     if (!mounted || pathname.startsWith("/auth")) return;
 
+    const nextRole =
+      ((session?.user as UserLike | undefined)?.role as string | undefined) ??
+      resolvedRole ??
+      null;
+    const normalizedRole = typeof nextRole === "string" ? nextRole.trim().toUpperCase() : "";
+    const isClienteMobile =
+      normalizedRole === "CLIENTE" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1024px)").matches;
+
+    if (isClienteMobile) {
+      return;
+    }
+
     const cleanup = installButtonFailsafe();
     return cleanup;
-  }, [mounted, pathname]);
+  }, [mounted, pathname, resolvedRole, session?.user]);
 
   useEffect(() => {
     if (pendingSaveKeys.length === 0) {
@@ -904,10 +974,16 @@ export default function AppShell({
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
   const isClienteRole = normalizedRole === "CLIENTE";
+  const shouldRenderSidebar = !(isClienteRole && isMobileViewport);
   const isClientePendingApproval = isClienteRole && normalizedEstado === "PENDIENTE_ALTA";
   const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
   const hasSidebarImage = Boolean(sidebarImageToRender);
   const avatarImageSrc = sidebarImageToRender || TRANSPARENT_PIXEL_DATA_URL;
+
+  useEffect(() => {
+    if (!isClienteRole || !isMobileViewport) return;
+    setMobileOpen(false);
+  }, [isClienteRole, isMobileViewport]);
 
   useEffect(() => {
     if (!isClientePendingApproval || pathname.startsWith("/auth")) {
@@ -1049,6 +1125,21 @@ export default function AppShell({
   );
 
   const sidebarOperationalStats = useMemo(() => {
+    if (isClienteRole) {
+      return {
+        clientesActivos: 0,
+        totalClientes: 0,
+        pagosConfirmados: 0,
+        pagosPendientes: 0,
+        ingresosConfirmados: 0,
+        saldoPendiente: 0,
+        presentes: 0,
+        totalAsistencia: 0,
+        presentismo: 0,
+        sesionesTotales: 0,
+      };
+    }
+
     const clientesActivos =
       jugadoras.filter((jugadora) => (jugadora.estado || "activo") === "activo").length +
       alumnos.filter((alumno) => (alumno.estado || "activo") === "activo").length;
@@ -1086,7 +1177,7 @@ export default function AppShell({
       presentismo,
       sesionesTotales: sesiones.length,
     };
-  }, [jugadoras, alumnos, sesiones.length, clientesMeta, asistenciaRegistros]);
+  }, [isClienteRole, jugadoras, alumnos, sesiones.length, clientesMeta, asistenciaRegistros]);
 
   const sidebarWidgetItems = useMemo<SidebarWidgetItem[]>(() => {
     if (isClienteRole) {
@@ -1198,7 +1289,7 @@ export default function AppShell({
   }, [sidebarWidgetItems.length]);
 
   useEffect(() => {
-    if (!mounted || sidebarWidgetItems.length <= 1) {
+    if (!mounted || isMobileViewport || sidebarWidgetItems.length <= 1) {
       setSidebarWidgetPhase("enter");
       return;
     }
@@ -1224,7 +1315,7 @@ export default function AppShell({
         widgetTransitionTimeoutRef.current = null;
       }
     };
-  }, [mounted, sidebarWidgetItems.length, sidebarWidgetSettings.transitionMs]);
+  }, [isMobileViewport, mounted, sidebarWidgetItems.length, sidebarWidgetSettings.transitionMs]);
 
   const pendingBadgeSummary = (() => {
     if (pendingSaveKeys.length === 0) return "";
@@ -1239,26 +1330,37 @@ export default function AppShell({
   }
 
   return (
-    <div className="relative min-h-[100svh] bg-transparent text-slate-100">
-      <ReliableActionButton
-        type="button"
-        onClick={() => setMobileOpen((prev) => !prev)}
-        className="fixed left-3 top-3 z-[97] inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/40 bg-slate-900/92 text-base text-cyan-100 shadow-lg md:hidden"
-        aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
-      >
-        {mobileOpen ? "x" : "☰"}
-      </ReliableActionButton>
+    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#081e2d] bg-[radial-gradient(94%_62%_at_12%_-14%,rgba(34,197,94,0.14),transparent_58%),radial-gradient(90%_58%_at_92%_-16%,rgba(34,211,238,0.16),transparent_62%),linear-gradient(158deg,#05101a_0%,#0a2030_52%,#0b2a3b_100%)] text-slate-100">
+      <div
+        className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-[0.46] [background-image:linear-gradient(118deg,transparent_0%,rgba(34,197,94,0.14)_34%,transparent_56%,rgba(34,211,238,0.14)_78%,transparent_100%)] max-md:hidden"
+        aria-hidden="true"
+      />
+      <div
+        className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(116deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1px,transparent_1px,transparent_74px)] max-md:hidden"
+        aria-hidden="true"
+      />
+      {!isClienteRole ? (
+        <ReliableActionButton
+          type="button"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          className="fixed left-3 top-3 z-[97] inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/40 bg-slate-900/92 text-base text-cyan-100 md:hidden"
+          aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
+        >
+          {mobileOpen ? "x" : "☰"}
+        </ReliableActionButton>
+      ) : null}
 
-      {mobileOpen ? (
+      {mobileOpen && !isClienteRole ? (
         <div
-          className="fixed inset-0 z-[88] bg-slate-950/65 backdrop-blur-[2px] md:hidden"
+          className="fixed inset-0 z-[88] bg-slate-950/65 md:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       ) : null}
 
+      {shouldRenderSidebar ? (
       <aside
-        className={`pf-sidebar-static pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] overflow-visible bg-[linear-gradient(180deg,rgba(5,16,34,0.46),rgba(5,16,34,0.22))] backdrop-blur-[2px] translate-x-0 transition-transform duration-200 ${
+        className={`pf-sidebar-static pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] overflow-visible bg-[linear-gradient(180deg,rgba(5,16,34,0.62),rgba(5,16,34,0.4))] translate-x-0 transition-transform duration-200 ${
           mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
         }`}
       >
@@ -1281,7 +1383,7 @@ export default function AppShell({
         <div className="pointer-events-auto relative z-[2] m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
-            reliabilityMode="hard"
+            reliabilityMode="soft"
             className="pf-profile-link mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
             onClick={() => markOptimisticSidebarNav("/cuenta")}
             title="Ir a cuenta"
@@ -1334,7 +1436,7 @@ export default function AppShell({
                   <Link
                     key={link.href}
                     href={link.href}
-                    reliabilityMode="hard"
+                    reliabilityMode="soft"
                     className={`pf-shell-nav-link group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
@@ -1366,7 +1468,7 @@ export default function AppShell({
             <div className="px-2 pb-2">
               <Link
                 href={activeSidebarWidgetItem.href}
-                reliabilityMode="hard"
+                reliabilityMode="soft"
                 onPointerDown={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
                 onClick={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
                 className={`mx-auto block w-full max-w-[130px] min-h-[116px] rounded-2xl border px-2.5 py-2.5 shadow-[0_10px_22px_rgba(8,47,73,0.42)] ${activeSidebarWidgetItem.toneClass}`}
@@ -1424,6 +1526,7 @@ export default function AppShell({
           ) : null}
         </div>
       </aside>
+      ) : null}
 
       {!isClienteRole && pendingSaveKeys.length > 0 && pendingPanelOpen ? (
         <div className="fixed left-[138px] top-4 z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
@@ -1449,43 +1552,45 @@ export default function AppShell({
         </div>
       ) : null}
 
-      <div className="pointer-events-none fixed right-4 top-4 z-[96] flex w-[min(92vw,380px)] flex-col gap-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`rounded-[1.2rem] border px-4 py-3 shadow-2xl backdrop-blur-xl ${
-              toast.phase === "enter" ? "pf-ios-toast-enter" : "pf-ios-toast-exit"
-            } ${
-              toast.type === "success"
-                ? "border-emerald-200/45 bg-gradient-to-r from-emerald-500/35 to-cyan-400/30 text-emerald-50"
-                : toast.type === "warning"
-                ? "border-amber-200/45 bg-gradient-to-r from-amber-500/35 to-orange-400/30 text-amber-50"
-                : "border-rose-200/40 bg-rose-500/25 text-rose-50"
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={`mt-0.5 h-7 w-7 shrink-0 rounded-full border text-center text-sm leading-7 ${
-                  toast.type === "success"
-                    ? "border-emerald-100/70 bg-emerald-100/25"
-                    : toast.type === "warning"
-                    ? "border-amber-100/70 bg-amber-100/25"
-                    : "border-rose-100/70 bg-rose-100/25"
-                }`}
-              >
-                {toast.type === "success" ? "✓" : toast.type === "warning" ? "!" : "x"}
+      {toasts.length > 0 ? (
+        <div className="pointer-events-none fixed right-4 top-4 z-[96] flex w-[min(92vw,380px)] flex-col gap-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`rounded-[1.2rem] border px-4 py-3 shadow-2xl backdrop-blur-xl ${
+                toast.phase === "enter" ? "pf-ios-toast-enter" : "pf-ios-toast-exit"
+              } ${
+                toast.type === "success"
+                  ? "border-emerald-200/45 bg-gradient-to-r from-emerald-500/35 to-cyan-400/30 text-emerald-50"
+                  : toast.type === "warning"
+                  ? "border-amber-200/45 bg-gradient-to-r from-amber-500/35 to-orange-400/30 text-amber-50"
+                  : "border-rose-200/40 bg-rose-500/25 text-rose-50"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`mt-0.5 h-7 w-7 shrink-0 rounded-full border text-center text-sm leading-7 ${
+                    toast.type === "success"
+                      ? "border-emerald-100/70 bg-emerald-100/25"
+                      : toast.type === "warning"
+                      ? "border-amber-100/70 bg-amber-100/25"
+                      : "border-rose-100/70 bg-rose-100/25"
+                  }`}
+                >
+                  {toast.type === "success" ? "✓" : toast.type === "warning" ? "!" : "x"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-90">{toast.title}</p>
+                  <p className="mt-1 text-sm font-semibold leading-5">{toast.message}</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-90">{toast.title}</p>
-                <p className="mt-1 text-sm font-semibold leading-5">{toast.message}</p>
+              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-black/20">
+                <div className="pf-ios-toast-progress h-full rounded-full bg-white/70" />
               </div>
             </div>
-            <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-black/20">
-              <div className="pf-ios-toast-progress h-full rounded-full bg-white/70" />
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
 
       {isClientePendingApproval ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/88 px-4 backdrop-blur-sm">
@@ -1533,7 +1638,7 @@ export default function AppShell({
         </div>
       ) : null}
 
-      <main className="relative min-h-[100svh] pb-8 pt-14 md:pl-[clamp(132px,14vw,170px)] md:pt-4">
+      <main className="relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 pt-14 md:pl-[clamp(132px,14vw,170px)] md:pt-4">
         <div className="px-4">{children}</div>
       </main>
     </div>
