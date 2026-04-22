@@ -88,10 +88,11 @@ function main() {
       pass:
         reliableLinkFallbackMs !== null &&
         reliableLinkLastResortMs !== null &&
-        reliableLinkFallbackMs <= 320 &&
+        reliableLinkFallbackMs >= 500 &&
+        reliableLinkFallbackMs <= 600 &&
         reliableLinkLastResortMs <= 180,
       detail:
-        'ReliableLink debe recuperar navegacion con fallback rapido (<=320ms + <=180ms).',
+        'ReliableLink debe mantener fallback acotado (500-600ms) y ultimo intento rapido (<=180ms).',
     },
     {
       name: 'buttonFailsafeFallbackFastEnough',
