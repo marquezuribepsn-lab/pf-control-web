@@ -493,29 +493,43 @@ export default function Home() {
 
   return (
     <main
-      className="relative -mx-4 min-h-screen overflow-x-clip text-slate-100"
+      className="pf-home-stage relative -mx-4 min-h-screen overflow-x-clip text-[#FAF8FC]"
       style={{ fontFamily: '"Trebuchet MS", "Segoe UI", sans-serif' }}
     >
+      {/* Fondo tactico — paleta: base #314A93, glows #61BDFF (cyan) y #CA91EE (lila). */}
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
-        <div className="absolute inset-0 bg-[#061026]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(56,189,248,0.24),transparent_28%),radial-gradient(circle_at_86%_8%,rgba(16,185,129,0.22),transparent_30%),radial-gradient(circle_at_70%_85%,rgba(249,115,22,0.16),transparent_26%)]" />
-        <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(148,163,184,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:62px_62px]" />
-        <div className="absolute -left-16 top-14 h-72 w-72 rounded-full border border-cyan-300/25 bg-cyan-400/18 blur-3xl" />
-        <div className="absolute right-0 top-0 h-80 w-80 rounded-full border border-indigo-300/20 bg-indigo-500/18 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full border border-emerald-300/20 bg-emerald-500/15 blur-3xl" />
+        {/* Base: navy profundo derivado de #314A93, un poco mas oscuro para contraste */}
+        <div className="absolute inset-0 bg-[#0d1740]" />
+        {/* Capa de paleta: degrade navy real #314A93 en la parte superior */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#314A93_0%,#1a2663_55%,#0d1740_100%)] opacity-80" />
+        {/* Glows: cyan #61BDFF arriba-izquierda, lavanda #CA91EE abajo-derecha */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_45%_at_10%_0%,rgba(97,189,255,0.28),transparent_62%),radial-gradient(ellipse_55%_40%_at_100%_100%,rgba(202,145,238,0.22),transparent_60%)]" />
+        {/* Scanlines horizontales finas (HUD) */}
+        <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(250,248,252,0.9)_1px,transparent_1px)] [background-size:100%_4px]" />
+        {/* Trazas diagonales de velocidad sobre el borde derecho — ahora violeta */}
+        <div className="absolute -right-20 top-0 hidden h-full w-[45%] opacity-[0.10] [background-image:repeating-linear-gradient(115deg,rgba(178,141,231,0.9)_0,rgba(178,141,231,0.9)_2px,transparent_2px,transparent_22px)] md:block" />
+        {/* Linea de carril top y bottom */}
+        <div className="absolute left-0 right-0 top-[3.5rem] h-px bg-gradient-to-r from-transparent via-[#61BDFF]/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-[#CA91EE]/0 via-[#CA91EE]/60 to-[#61BDFF]/0" />
+        {/* Corner brackets — marcadores de pista */}
+        <div className="absolute left-3 top-3 h-5 w-5 border-l-2 border-t-2 border-[#61BDFF]/60" />
+        <div className="absolute right-3 top-3 h-5 w-5 border-r-2 border-t-2 border-[#61BDFF]/60" />
+        <div className="absolute bottom-3 left-3 h-5 w-5 border-b-2 border-l-2 border-[#CA91EE]/70" />
+        <div className="absolute bottom-3 right-3 h-5 w-5 border-b-2 border-r-2 border-[#CA91EE]/70" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-5 py-6 md:px-7 md:py-8 lg:px-8">
         {configMode && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-200">
-              Configuracion de inicio
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-l-2 border-[#61BDFF]/60 bg-[#61BDFF]/[0.06] px-4 py-2.5">
+            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.35em] text-[#61BDFF]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#61BDFF]" />
+              Config mode · inicio
             </p>
             <div className="flex flex-wrap gap-2">
               {!editando ? (
                 <ReliableActionButton
                   onClick={() => setEditando(true)}
-                  className="rounded-lg bg-cyan-400 px-3 py-1.5 text-sm font-bold text-slate-900"
+                  className="border border-[#61BDFF]/60 bg-[#61BDFF]/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#61BDFF] transition hover:bg-[#61BDFF]/20"
                 >
                   Editar inicio
                 </ReliableActionButton>
@@ -523,13 +537,13 @@ export default function Home() {
                 <>
                   <ReliableActionButton
                     onClick={guardarConfig}
-                    className="rounded-lg bg-emerald-400 px-3 py-1.5 text-sm font-bold text-slate-900"
+                    className="border border-[#B28DE7]/60 bg-[#B28DE7]/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#CA91EE] transition hover:bg-[#B28DE7]/25"
                   >
-                    Guardar cambios
+                    Guardar
                   </ReliableActionButton>
                   <ReliableActionButton
                     onClick={() => setEditando(false)}
-                    className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
+                    className="border border-[#FAF8FC]/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#FAF8FC] transition hover:bg-[#FAF8FC]/10"
                   >
                     Cancelar
                   </ReliableActionButton>
@@ -537,130 +551,203 @@ export default function Home() {
               )}
               <ReliableActionButton
                 onClick={resetConfig}
-                className="rounded-lg border border-rose-300/50 px-3 py-1.5 text-sm font-semibold text-rose-100"
+                className="border border-[#CA91EE]/50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#CA91EE] transition hover:bg-[#CA91EE]/15"
               >
                 Reset
               </ReliableActionButton>
               <Link
                 href="/"
                 onClick={closeHomeEditMode}
-                className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
+                className="border border-[#FAF8FC]/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#FAF8FC] transition hover:bg-[#FAF8FC]/10"
               >
-                Cerrar configuracion
+                Cerrar
               </Link>
             </div>
           </div>
         )}
 
-        <header className="relative mb-7 overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-[linear-gradient(120deg,rgba(14,30,56,0.94),rgba(23,45,80,0.9)_52%,rgba(15,23,42,0.7)_100%)] p-6 shadow-[0_35px_95px_rgba(2,8,24,0.5)] md:p-8">
-          <div className="absolute right-[-3rem] top-[-3rem] h-44 w-44 rounded-full bg-cyan-300/25 blur-3xl" />
-          <div className="absolute bottom-[-2.25rem] right-14 h-40 w-40 rounded-full bg-emerald-300/20 blur-3xl" />
-          <div className="absolute inset-y-0 right-0 w-[42%] bg-[linear-gradient(145deg,rgba(6,182,212,0.2),rgba(129,140,248,0.14),rgba(16,185,129,0.2))]" />
-          <div className="relative">
-            {editando ? (
-              <input
-                value={config.badge}
-                onChange={(e) => setConfig({ ...config, badge: e.target.value })}
-                className="w-full max-w-sm rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-xs font-bold tracking-wide text-cyan-100"
-              />
-            ) : (
-              <p className="inline-flex rounded-full border border-cyan-200/45 bg-cyan-300/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-100">
-                {config.badge}
-              </p>
-            )}
+        {/* ============================================================ */}
+        {/* 00 / BRIEFING — hero abierto, sin caja. Marca de pista a la  */}
+        {/* izquierda, headline gigante y metricas pegadas a la derecha.  */}
+        {/* ============================================================ */}
+        <header className="relative mb-10 pt-2">
+          {/* Marca de seccion — lavanda (#CA91EE) */}
+          <div className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#CA91EE]">
+            <span className="h-[2px] w-10 bg-[#CA91EE]" />
+            <span className="font-mono">// 00 · BRIEFING</span>
+          </div>
 
-            {editando ? (
-              <input
-                value={config.titulo}
-                onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
-                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-3xl font-black text-white"
-              />
-            ) : (
-              <h1 className="mt-4 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-[3.4rem]">
-                {config.titulo}
-              </h1>
-            )}
-
-            {editando ? (
-              <textarea
-                value={config.subtitulo}
-                onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
-                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-sm text-slate-200"
-                rows={3}
-              />
-            ) : (
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
-                {config.subtitulo}
-              </p>
-            )}
-
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+            <div className="relative">
               {editando ? (
-                <>
-                  <div className="rounded-xl border border-white/20 bg-slate-900/50 p-3">
-                    <p className="mb-2 text-xs text-slate-300">Boton primario</p>
+                <input
+                  value={config.badge}
+                  onChange={(e) => setConfig({ ...config, badge: e.target.value })}
+                  className="w-full max-w-sm rounded-sm border border-[#61BDFF]/40 bg-[#0d1740]/70 px-3 py-2 text-xs font-bold tracking-wide text-[#61BDFF]"
+                />
+              ) : (
+                <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.3em] text-[#61BDFF]">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[#61BDFF] shadow-[0_0_12px_rgba(97,189,255,0.8)]" />
+                  {config.badge}
+                </p>
+              )}
+
+              {editando ? (
+                <input
+                  value={config.titulo}
+                  onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
+                  className="mt-3 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/70 px-3 py-2 text-3xl font-black text-[#FAF8FC]"
+                />
+              ) : (
+                <h1 className="mt-4 max-w-4xl text-[2.6rem] font-black uppercase leading-[0.92] tracking-[-0.02em] text-[#FAF8FC] md:text-[4.2rem]">
+                  {config.titulo}
+                  <span className="ml-2 inline-block h-3 w-3 translate-y-[-0.5em] bg-[#CA91EE] shadow-[0_0_20px_rgba(202,145,238,0.85)]" />
+                </h1>
+              )}
+
+              {editando ? (
+                <textarea
+                  value={config.subtitulo}
+                  onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
+                  className="mt-3 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/70 px-3 py-2 text-sm text-[#FAF8FC]/90"
+                  rows={3}
+                />
+              ) : (
+                <p className="mt-5 max-w-2xl border-l-2 border-[#61BDFF]/50 pl-4 text-sm leading-7 text-[#FAF8FC]/75 md:text-base">
+                  {config.subtitulo}
+                </p>
+              )}
+
+              {editando ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/60 p-3">
+                    <p className="mb-2 text-xs text-[#FAF8FC]/60">Boton primario</p>
                     <input
                       value={config.botonPrimarioLabel}
                       onChange={(e) =>
                         setConfig({ ...config, botonPrimarioLabel: e.target.value })
                       }
-                      className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
+                      className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
                     />
                     <input
                       value={config.botonPrimarioHref}
                       onChange={(e) =>
                         setConfig({ ...config, botonPrimarioHref: e.target.value })
                       }
-                      className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
+                      className="w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
                     />
                   </div>
-                  <div className="rounded-xl border border-white/20 bg-slate-900/50 p-3">
-                    <p className="mb-2 text-xs text-slate-300">Boton secundario</p>
+                  <div className="rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/60 p-3">
+                    <p className="mb-2 text-xs text-[#FAF8FC]/60">Boton secundario</p>
                     <input
                       value={config.botonSecundarioLabel}
                       onChange={(e) =>
                         setConfig({ ...config, botonSecundarioLabel: e.target.value })
                       }
-                      className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
+                      className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
                     />
                     <input
                       value={config.botonSecundarioHref}
                       onChange={(e) =>
                         setConfig({ ...config, botonSecundarioHref: e.target.value })
                       }
-                      className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
+                      className="w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
                     />
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="flex flex-wrap gap-3 md:col-span-2">
+                <div className="mt-7 flex flex-wrap items-stretch gap-3">
                   <Link
                     href={primaryActionHref}
-                    className="rounded-xl border border-cyan-200/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_14px_30px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px] hover:from-cyan-200 hover:to-sky-300"
+                    className="group inline-flex items-center gap-3 bg-[#CA91EE] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#1a1236] shadow-[0_14px_32px_rgba(202,145,238,0.35)] transition hover:bg-[#B28DE7] [clip-path:polygon(0_0,100%_0,100%_100%,10px_100%,0_calc(100%-10px))]"
                   >
-                    {config.botonPrimarioLabel}
+                    <span>{config.botonPrimarioLabel}</span>
+                    <span className="font-mono text-base transition-transform group-hover:translate-x-1">&gt;&gt;</span>
                   </Link>
                   <Link
                     href={secondaryActionHref}
-                    className="rounded-xl border border-cyan-100/30 bg-slate-900/35 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-200/55 hover:bg-slate-800/55"
+                    className="group inline-flex items-center gap-3 border border-[#61BDFF]/50 bg-transparent px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#61BDFF] transition hover:border-[#61BDFF] hover:bg-[#61BDFF]/10"
                   >
-                    {config.botonSecundarioLabel}
+                    <span>{config.botonSecundarioLabel}</span>
+                    <span className="font-mono text-base opacity-70 transition-transform group-hover:translate-x-1">&gt;</span>
                   </Link>
                 </div>
               )}
             </div>
+
+            {/* Columna lateral — tablero de mision */}
+            <aside className="relative border-t border-[#FAF8FC]/10 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.35em] text-[#FAF8FC]/45">Mission Board</p>
+              <div className="divide-y divide-[#FAF8FC]/[0.08]">
+                <div className="flex items-baseline justify-between py-2.5">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF8FC]/55">Day</span>
+                  {editando ? (
+                    <input
+                      value={config.diaLabel}
+                      onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
+                      className="w-32 rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-right text-xs font-bold"
+                    />
+                  ) : (
+                    <span className="font-mono text-sm font-black text-[#FAF8FC]">{config.diaLabel}</span>
+                  )}
+                </div>
+                <div className="flex items-baseline justify-between py-2.5">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF8FC]/55">Equipo</span>
+                  {editando ? (
+                    <input
+                      value={config.equipo}
+                      onChange={(e) => setConfig({ ...config, equipo: e.target.value })}
+                      className="w-32 rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-right text-xs font-bold"
+                    />
+                  ) : (
+                    <span className="font-mono text-sm font-black text-[#FAF8FC]">{config.equipo}</span>
+                  )}
+                </div>
+                <div className="flex items-baseline justify-between py-2.5">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF8FC]/55">Duracion</span>
+                  {editando ? (
+                    <input
+                      value={config.duracion}
+                      onChange={(e) => setConfig({ ...config, duracion: e.target.value })}
+                      className="w-32 rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-right text-xs font-bold"
+                    />
+                  ) : (
+                    <span className="font-mono text-sm font-black text-[#61BDFF]">{config.duracion}</span>
+                  )}
+                </div>
+                <div className="flex items-baseline justify-between py-2.5">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF8FC]/55">Bloques</span>
+                  {editando ? (
+                    <input
+                      value={config.bloques}
+                      onChange={(e) => setConfig({ ...config, bloques: e.target.value })}
+                      className="w-32 rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-right text-xs font-bold"
+                    />
+                  ) : (
+                    <span className="font-mono text-sm font-black text-[#CA91EE]">{config.bloques}</span>
+                  )}
+                </div>
+              </div>
+            </aside>
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {/* ============================================================ */}
+        {/* 01 / METRICS */}
+        {/* ============================================================ */}
+        <div className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#61BDFF]">
+          <span className="h-[2px] w-10 bg-[#61BDFF]" />
+          <span className="font-mono">// 01 · METRICS</span>
+        </div>
+        <section className="relative mb-12 grid divide-y divide-[#FAF8FC]/[0.08] border-y border-[#FAF8FC]/10 bg-[linear-gradient(180deg,rgba(250,248,252,0.03),transparent)] md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-4">
           {dashboardStats.map((stat, index) => {
-            const tones = [
-              "from-cyan-500 to-blue-600",
-              "from-emerald-500 to-green-600",
-              "from-fuchsia-500 to-pink-600",
-              "from-orange-500 to-red-600",
+            const accents = [
+              { bar: "bg-[#61BDFF]", text: "text-[#61BDFF]" },
+              { bar: "bg-[#5FB7FA]", text: "text-[#5FB7FA]" },
+              { bar: "bg-[#CA91EE]", text: "text-[#CA91EE]" },
+              { bar: "bg-[#B28DE7]", text: "text-[#B28DE7]" },
             ];
-            const tone = tones[index % tones.length];
+            const accent = accents[index % accents.length];
             const statHref = resolveDashboardStatHref(stat.title, index);
             const statHint = resolveDashboardStatHint(stat.title, index);
 
@@ -668,138 +755,158 @@ export default function Home() {
               <Link
                 key={stat.title}
                 href={statHref}
-                className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
+                className="group relative flex items-start gap-4 px-5 py-5 transition hover:bg-[#FAF8FC]/[0.03]"
               >
-                <div className={`mb-3 mr-12 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
-                <p className="text-xs font-bold uppercase tracking-[0.17em] text-slate-300">{stat.title}</p>
-                <p className="mt-2 text-4xl font-black tracking-tight text-white">{stat.value}</p>
-                <p className="mt-2 text-xs text-slate-300">{statHint}</p>
-                <span className="absolute right-4 top-3 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
-                  ir &gt;
-                </span>
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
+                <span className={`mt-1 block h-10 w-[3px] ${accent.bar}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#FAF8FC]/55">
+                    <span className="mr-2 font-mono text-[#FAF8FC]/40">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {stat.title}
+                  </p>
+                  <p className="mt-1 font-mono text-5xl font-black tracking-tight text-[#FAF8FC]">
+                    {stat.value}
+                  </p>
+                  <p className={`mt-1 text-[11px] uppercase tracking-[0.14em] ${accent.text}`}>
+                    {statHint}
+                  </p>
                 </div>
+                <span className="self-center font-mono text-xs font-bold text-[#FAF8FC]/40 transition group-hover:translate-x-1 group-hover:text-[#61BDFF]">
+                  &gt;
+                </span>
               </Link>
             );
           })}
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-cyan-300/25 bg-[linear-gradient(145deg,rgba(4,16,36,0.95),rgba(6,26,58,0.92),rgba(5,18,40,0.96))] p-6 shadow-[0_32px_80px_rgba(2,8,24,0.5)]">
-          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        {/* ============================================================ */}
+        {/* 02 / ROSTER */}
+        {/* ============================================================ */}
+        <section className="mb-12">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-200/90">
-                Mesa operativa
-              </p>
-              <h3 className="mt-1 text-3xl font-black leading-none text-white">Alumnos y planes activos</h3>
-              <p className="mt-2 text-sm text-slate-300">
-                Vista rapida con foco de trabajo diario, al estilo CRM operativo.
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#61BDFF]">
+                <span className="h-[2px] w-10 bg-[#61BDFF]" />
+                <span className="font-mono">// 02 · ROSTER</span>
+              </div>
+              <h3 className="mt-3 text-4xl font-black uppercase leading-none tracking-tight text-[#FAF8FC] md:text-5xl">
+                Alumnos &amp; planes activos
+              </h3>
+              <p className="mt-2 max-w-xl text-sm text-[#FAF8FC]/60">
+                Vista rapida con foco de trabajo diario, estilo CRM operativo.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/clientes"
-                className="rounded-xl border border-cyan-100/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_12px_24px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px]"
+                className="inline-flex items-center gap-2 bg-[#61BDFF] px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#0d1740] transition hover:bg-[#5FB7FA] [clip-path:polygon(0_0,100%_0,100%_100%,8px_100%,0_calc(100%-8px))]"
               >
-                Crear cliente
+                <span>Crear cliente</span>
+                <span className="font-mono">+</span>
               </Link>
               <Link
                 href="/clientes"
-                className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
+                className="inline-flex items-center gap-2 border border-[#FAF8FC]/30 bg-transparent px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#FAF8FC] transition hover:border-[#CA91EE]/70 hover:bg-[#FAF8FC]/5"
               >
                 Asignar entrenamiento
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
-            <div className="rounded-2xl border border-emerald-300/35 bg-gradient-to-br from-emerald-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-emerald-100">Clientes activos</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalAlumnos}</p>
-            </div>
-            <div className="rounded-2xl border border-blue-300/35 bg-gradient-to-br from-blue-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-blue-100">Con plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.conPlan}</p>
-            </div>
-            <div className="rounded-2xl border border-rose-300/35 bg-gradient-to-br from-rose-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-rose-100">Sin plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.sinPlan}</p>
-            </div>
-            <div className="rounded-2xl border border-violet-300/35 bg-gradient-to-br from-violet-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-violet-100">Prescripciones</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalPrescripciones}</p>
-            </div>
+          {/* KPIs */}
+          <div className="mb-6 grid grid-cols-2 gap-0 border-y border-[#FAF8FC]/10 md:grid-cols-4 md:divide-x md:divide-[#FAF8FC]/[0.08]">
+            {[
+              { label: "Activos", value: operativoKpis.totalAlumnos, bar: "bg-[#61BDFF]", text: "text-[#61BDFF]" },
+              { label: "Con plan", value: operativoKpis.conPlan, bar: "bg-[#5FB7FA]", text: "text-[#5FB7FA]" },
+              { label: "Sin plan", value: operativoKpis.sinPlan, bar: "bg-[#CA91EE]", text: "text-[#CA91EE]" },
+              { label: "Prescripciones", value: operativoKpis.totalPrescripciones, bar: "bg-[#B28DE7]", text: "text-[#B28DE7]" },
+            ].map((kpi) => (
+              <div key={kpi.label} className="flex items-center gap-3 px-4 py-4">
+                <span className={`block h-10 w-[3px] ${kpi.bar}`} />
+                <div>
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.3em] ${kpi.text}`}>{kpi.label}</p>
+                  <p className="mt-0.5 font-mono text-3xl font-black text-[#FAF8FC]">{kpi.value}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-white/15 bg-slate-950/55 p-4">
+          {/* Tabla */}
+          <div className="border-t-2 border-[#61BDFF]/40 bg-[#0d1740]/50 p-4 backdrop-blur-sm">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <input
                 value={operativoFiltro}
                 onChange={(e) => setOperativoFiltro(e.target.value)}
-                placeholder="Buscar alumno por nombre"
-                className="w-full max-w-sm rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white"
+                placeholder="Buscar alumno por nombre..."
+                className="w-full max-w-sm rounded-sm border border-[#FAF8FC]/15 bg-[#0d1740]/90 px-3 py-2 text-sm text-[#FAF8FC] placeholder:text-[#FAF8FC]/40 focus:border-[#61BDFF]/70 focus:outline-none"
               />
               <Link
                 href="/clientes"
-                className="rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/10"
+                className="inline-flex items-center gap-2 border border-[#61BDFF]/40 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#61BDFF] transition hover:bg-[#61BDFF]/10"
               >
-                Ver modulo clientes
+                Modulo clientes <span className="font-mono">&gt;</span>
               </Link>
             </div>
 
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/15 text-xs uppercase tracking-wide text-slate-300">
-                    <th className="px-3 py-2">Alumno</th>
-                    <th className="px-3 py-2">Estado</th>
-                    <th className="px-3 py-2">Objetivo</th>
-                    <th className="px-3 py-2">Sesiones</th>
-                    <th className="px-3 py-2">Ult. actualizacion</th>
-                    <th className="px-3 py-2 text-right">Acciones</th>
+                  <tr className="border-b border-[#61BDFF]/25 text-[10px] uppercase tracking-[0.22em] text-[#FAF8FC]/55">
+                    <th className="px-3 py-2 font-bold">Alumno</th>
+                    <th className="px-3 py-2 font-bold">Estado</th>
+                    <th className="px-3 py-2 font-bold">Objetivo</th>
+                    <th className="px-3 py-2 font-bold">Sesiones</th>
+                    <th className="px-3 py-2 font-bold">Ult. actualizacion</th>
+                    <th className="px-3 py-2 text-right font-bold">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {alumnosOperativos.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-300">
+                      <td colSpan={6} className="px-3 py-6 text-center text-sm text-[#FAF8FC]/55">
                         No hay alumnos para mostrar con el filtro actual.
                       </td>
                     </tr>
                   ) : (
                     alumnosOperativos.slice(0, 8).map((alumno) => (
-                      <tr key={alumno.nombre} className="border-b border-white/10 text-slate-100">
-                        <td className="px-3 py-3 font-semibold">{alumno.nombre}</td>
+                      <tr key={alumno.nombre} className="border-b border-[#FAF8FC]/[0.06] text-[#FAF8FC] transition hover:bg-[#61BDFF]/[0.05]">
+                        <td className="px-3 py-3 font-bold">{alumno.nombre}</td>
                         <td className="px-3 py-3">
                           <span
-                            className={`rounded-full px-2 py-1 text-xs font-bold ${
+                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
                               alumno.estado === "Con plan"
-                                ? "bg-emerald-500/20 text-emerald-100"
-                                : "bg-rose-500/20 text-rose-100"
+                                ? "text-[#61BDFF]"
+                                : "text-[#CA91EE]"
                             }`}
                           >
+                            <span
+                              className={`inline-block h-1.5 w-1.5 rounded-full ${
+                                alumno.estado === "Con plan" ? "bg-[#61BDFF]" : "bg-[#CA91EE]"
+                              }`}
+                            />
                             {alumno.estado}
                           </span>
                         </td>
-                        <td className="px-3 py-3 text-slate-200">{alumno.objetivo}</td>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-3 text-[#FAF8FC]/80">{alumno.objetivo}</td>
+                        <td className="px-3 py-3 font-mono">
                           {alumno.sesiones}
-                          <span className="ml-1 text-xs text-violet-200">
+                          <span className="ml-1 text-xs text-[#B28DE7]">
                             ({alumno.prescripciones} presc.)
                           </span>
                         </td>
-                        <td className="px-3 py-3 text-slate-300">
+                        <td className="px-3 py-3 font-mono text-xs text-[#FAF8FC]/55">
                           {alumno.ultimaActualizacion
                             ? new Date(alumno.ultimaActualizacion).toLocaleDateString("es-AR")
-                            : "Sin movimientos"}
+                            : "—"}
                         </td>
                         <td className="px-3 py-3 text-right">
                           <Link
                             href="/semana"
-                            className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
+                            className="inline-flex items-center gap-1 border border-[#FAF8FC]/25 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#FAF8FC] transition hover:border-[#61BDFF]/70 hover:bg-[#FAF8FC]/5"
                           >
-                            Abrir templates
+                            Templates <span className="font-mono">&gt;</span>
                           </Link>
                         </td>
                       </tr>
@@ -811,23 +918,34 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(33,48,74,0.92),rgba(41,56,82,0.88))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-2xl font-black text-white">Acceso rapido por categorias</h3>
+        {/* ============================================================ */}
+        {/* 03 / STAGES */}
+        {/* ============================================================ */}
+        <section className="mb-12">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#CA91EE]">
+                <span className="h-[2px] w-10 bg-[#CA91EE]" />
+                <span className="font-mono">// 03 · STAGES</span>
+              </div>
+              <h3 className="mt-3 text-4xl font-black uppercase leading-none tracking-tight text-[#FAF8FC] md:text-5xl">
+                Acceso rapido por categorias
+              </h3>
+            </div>
             <Link
               href="/categorias"
-              className="rounded-lg border border-white/25 bg-slate-900/35 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/10"
+              className="inline-flex items-center gap-2 border border-[#FAF8FC]/25 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#FAF8FC] transition hover:border-[#CA91EE]/70 hover:bg-[#FAF8FC]/5"
             >
-              Ver todas
+              Ver todas <span className="font-mono">&gt;</span>
             </Link>
           </div>
 
           {categoriasActivas.length === 0 ? (
-            <p className="text-sm text-slate-300">
+            <p className="border-l-2 border-[#FAF8FC]/30 pl-4 text-sm text-[#FAF8FC]/55">
               No hay categorias habilitadas. Activa o crea categorias para ver accesos directos.
             </p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-0 border-y border-[#FAF8FC]/10 sm:grid-cols-2 sm:divide-x sm:divide-[#FAF8FC]/[0.08] lg:grid-cols-4">
               {categoriasActivas.map((categoria, index) => {
                 const tone = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
                 const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
@@ -836,14 +954,26 @@ export default function Home() {
                   <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
+                    className="group relative flex flex-col gap-3 px-5 py-6 transition hover:bg-[#FAF8FC]/[0.03]"
                   >
-                    <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
-                    <p className="text-2xl font-black text-white">
-                      <span className="mr-2">{icon}</span>
-                      {categoria.nombre}
+                    <div className={`absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r ${tone} opacity-60 transition group-hover:opacity-100`} />
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#FAF8FC]/45">
+                        STAGE/{String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-[#FAF8FC]/45 transition group-hover:translate-x-1 group-hover:text-[#CA91EE]">
+                        &gt;&gt;
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{icon}</span>
+                      <p className="text-xl font-black uppercase leading-tight tracking-tight text-[#FAF8FC] transition group-hover:text-[#61BDFF]">
+                        {categoria.nombre}
+                      </p>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#FAF8FC]/55">
+                      Abrir categoria
                     </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-200">Abrir categoria</p>
                   </Link>
                 );
               })}
@@ -851,184 +981,191 @@ export default function Home() {
           )}
         </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <div className="rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(34,50,79,0.95),rgba(44,61,89,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                {editando ? (
-                  <input
-                    value={config.radarTitulo}
-                    onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
-                    className="w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-xl font-black text-white"
-                  />
-                ) : (
-                  <h3 className="text-xl font-black">{config.radarTitulo}</h3>
-                )}
+        {/* ============================================================ */}
+        {/* 04 / TODAY'S SESSION */}
+        {/* ============================================================ */}
+        <section className="mb-12 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div>
+            <div className="mb-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#61BDFF]">
+              <span className="h-[2px] w-10 bg-[#61BDFF]" />
+              <span className="font-mono">// 04 · TODAY&apos;S SESSION</span>
+            </div>
 
-                {editando ? (
-                  <input
-                    value={config.diaLabel}
-                    onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
-                    className="rounded-lg border border-white/30 bg-slate-900/60 px-3 py-1 text-xs font-bold text-white"
-                  />
-                ) : (
-                  <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white">
-                    {config.diaLabel}
-                  </span>
-                )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {editando ? (
+                <input
+                  value={config.radarTitulo}
+                  onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
+                  className="w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/70 px-3 py-2 text-2xl font-black text-[#FAF8FC]"
+                />
+              ) : (
+                <h3 className="text-3xl font-black uppercase tracking-tight text-[#FAF8FC] md:text-4xl">
+                  {config.radarTitulo}
+                </h3>
+              )}
+
+              <span className="inline-flex items-center gap-2 border border-[#61BDFF]/50 px-3 py-1 font-mono text-xs font-black uppercase tracking-[0.2em] text-[#61BDFF]">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#61BDFF]" />
+                {config.diaLabel}
+              </span>
+            </div>
+
+            {editando ? (
+              <textarea
+                value={config.radarDetalle}
+                onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
+                className="mt-3 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/70 px-3 py-2 text-sm"
+                rows={2}
+              />
+            ) : (
+              <p className="mt-4 max-w-2xl border-l-2 border-[#61BDFF]/50 pl-4 text-sm leading-7 text-[#FAF8FC]/75">
+                {config.radarDetalle}
+              </p>
+            )}
+
+            {/* Stats inline separados por pipes */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#FAF8FC]/45">Equipo</span>
+                <span className="font-black text-[#FAF8FC]">{config.equipo}</span>
               </div>
+              <span className="text-[#FAF8FC]/20">|</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#FAF8FC]/45">Duracion</span>
+                <span className="font-black text-[#61BDFF]">{config.duracion}</span>
+              </div>
+              <span className="text-[#FAF8FC]/20">|</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#FAF8FC]/45">Bloques</span>
+                <span className="font-black text-[#CA91EE]">{config.bloques}</span>
+              </div>
+            </div>
 
+            {/* Objetivo — quote */}
+            <div className="mt-6 border-l-[3px] border-[#CA91EE] bg-gradient-to-r from-[#CA91EE]/12 via-transparent to-transparent py-3 pl-5 pr-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#CA91EE]">Objetivo</p>
               {editando ? (
                 <textarea
-                  value={config.radarDetalle}
-                  onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
-                  className="mt-2 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-sm"
+                  value={config.objetivo}
+                  onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
+                  className="mt-1 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
                   rows={2}
                 />
               ) : (
-                <p className="mt-2 text-sm text-slate-200">{config.radarDetalle}</p>
+                <p className="mt-1 text-base font-bold text-[#FAF8FC]">{config.objetivo}</p>
               )}
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {[
-                  {
-                    label: "Equipo",
-                    value: config.equipo,
-                    onChange: (value: string) => setConfig({ ...config, equipo: value }),
-                  },
-                  {
-                    label: "Duracion",
-                    value: config.duracion,
-                    onChange: (value: string) => setConfig({ ...config, duracion: value }),
-                  },
-                  {
-                    label: "Bloques",
-                    value: config.bloques,
-                    onChange: (value: string) => setConfig({ ...config, bloques: value }),
-                  },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-xl bg-slate-900/40 p-3">
-                    <p className="text-xs text-slate-300">{item.label}</p>
-                    {editando ? (
-                      <input
-                        value={item.value}
-                        onChange={(e) => item.onChange(e.target.value)}
-                        className="mt-1 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                    ) : (
-                      <p className="font-semibold text-white">{item.value}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-xl bg-slate-900/40 p-3">
-                <p className="text-xs text-slate-300">Objetivo</p>
-                {editando ? (
-                  <textarea
-                    value={config.objetivo}
-                    onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
-                    className="mt-1 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    rows={2}
-                  />
-                ) : (
-                  <p className="font-medium text-white">{config.objetivo}</p>
-                )}
-              </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-amber-300/35 bg-[linear-gradient(170deg,rgba(89,52,13,0.58),rgba(42,18,12,0.6))] p-6 shadow-[0_24px_70px_rgba(45,23,7,0.42)]">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="text-lg font-black text-amber-100">Alertas</h3>
+          {/* Alertas */}
+          <aside>
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#CA91EE]">
+                <span className="h-[2px] w-10 bg-[#CA91EE]" />
+                <span className="font-mono">// ALERTAS</span>
+              </div>
               {editando && (
                 <ReliableActionButton
                   onClick={addAlerta}
-                  className="rounded-md bg-amber-300 px-2 py-1 text-xs font-bold text-slate-900"
+                  className="rounded-sm border border-[#CA91EE]/50 bg-[#CA91EE]/15 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#CA91EE]"
                 >
                   + Alerta
                 </ReliableActionButton>
               )}
             </div>
-            <div className="space-y-3">
+            <ul className="divide-y divide-[#FAF8FC]/[0.08] border-y border-[#FAF8FC]/10">
               {config.alertas.map((alerta, index) => (
-                <div key={index} className="rounded-xl border border-amber-200/30 bg-slate-900/30 p-3">
-                  {editando ? (
-                    <>
-                      <input
-                        value={alerta.nombre}
-                        onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
-                        className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                      <input
-                        value={alerta.detalle}
-                        onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
-                        className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                      <ReliableActionButton
-                        onClick={() => removeAlerta(index)}
-                        className="mt-2 text-xs font-semibold text-rose-300"
-                      >
-                        Eliminar alerta
-                      </ReliableActionButton>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-semibold text-white">{alerta.nombre}</p>
-                      <p className="text-sm text-slate-200">{alerta.detalle}</p>
-                    </>
-                  )}
-                </div>
+                <li key={index} className="flex gap-3 py-3">
+                  <span className="mt-1.5 inline-block h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-[#CA91EE] shadow-[0_0_10px_rgba(202,145,238,0.8)]" />
+                  <div className="min-w-0 flex-1">
+                    {editando ? (
+                      <>
+                        <input
+                          value={alerta.nombre}
+                          onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
+                          className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
+                        />
+                        <input
+                          value={alerta.detalle}
+                          onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
+                          className="w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm"
+                        />
+                        <ReliableActionButton
+                          onClick={() => removeAlerta(index)}
+                          className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#CA91EE]"
+                        >
+                          Eliminar alerta
+                        </ReliableActionButton>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-black uppercase tracking-wide text-[#FAF8FC]">{alerta.nombre}</p>
+                        <p className="mt-0.5 text-xs text-[#FAF8FC]/55">{alerta.detalle}</p>
+                      </>
+                    )}
+                  </div>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+          </aside>
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(35,50,75,0.95),rgba(49,63,90,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-2xl font-black">Modulos y accesos</h3>
+        {/* ============================================================ */}
+        {/* 05 / MODULES */}
+        {/* ============================================================ */}
+        <section className="mb-16">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.4em] text-[#CA91EE]">
+                <span className="h-[2px] w-10 bg-[#CA91EE]" />
+                <span className="font-mono">// 05 · MODULES</span>
+              </div>
+              <h3 className="mt-3 text-4xl font-black uppercase leading-none tracking-tight text-[#FAF8FC] md:text-5xl">
+                Modulos &amp; accesos
+              </h3>
+            </div>
             {editando && (
               <ReliableActionButton
                 onClick={addModulo}
-                className="rounded-md bg-cyan-300 px-2 py-1 text-xs font-bold text-slate-900"
+                className="inline-flex items-center gap-2 border border-[#61BDFF]/60 bg-[#61BDFF]/15 px-3 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#61BDFF] transition hover:bg-[#61BDFF]/25"
               >
                 + Modulo
               </ReliableActionButton>
             )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-0 border-y border-[#FAF8FC]/10 sm:grid-cols-2 sm:divide-x sm:divide-[#FAF8FC]/[0.08] lg:grid-cols-4">
             {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) =>
               editando ? (
                 <div
                   key={`${item.label}-${index}`}
-                  className="rounded-2xl border border-white/20 bg-slate-900/40 p-4"
+                  className="border-b border-[#FAF8FC]/[0.08] bg-[#0d1740]/40 p-4"
                 >
                   <input
                     value={item.label}
                     onChange={(e) => updateModulo(index, { label: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm font-bold"
+                    className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-sm font-bold"
                   />
                   <input
                     value={item.href}
                     onChange={(e) => updateModulo(index, { href: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
+                    className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-xs"
                   />
                   <textarea
                     value={item.desc}
                     onChange={(e) => updateModulo(index, { desc: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
+                    className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-xs"
                     rows={2}
                   />
                   <input
                     value={item.tone}
                     onChange={(e) => updateModulo(index, { tone: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
-                    placeholder="from-cyan-500 to-sky-600"
+                    className="mb-2 w-full rounded-sm border border-[#FAF8FC]/20 bg-[#0d1740]/90 px-2 py-1 text-xs"
+                    placeholder="from-[#61BDFF] to-[#5FB7FA]"
                   />
                   <ReliableActionButton
                     onClick={() => removeModulo(index)}
-                    className="text-xs font-semibold text-rose-300"
+                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#CA91EE]"
                   >
                     Eliminar modulo
                   </ReliableActionButton>
@@ -1037,11 +1174,21 @@ export default function Home() {
                 <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
+                  className="group relative flex flex-col gap-3 px-5 py-6 transition hover:bg-[#FAF8FC]/[0.03]"
                 >
-                  <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
-                  <p className="text-lg font-black text-white">{item.label}</p>
-                  <p className="mt-1 text-sm text-slate-200">{item.desc}</p>
+                  <div className={`absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r ${item.tone} opacity-50 transition group-hover:opacity-100`} />
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#FAF8FC]/45">
+                      MOD/{String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-[#FAF8FC]/45 transition group-hover:translate-x-1 group-hover:text-[#CA91EE]">
+                      &gt;&gt;
+                    </span>
+                  </div>
+                  <p className="text-lg font-black uppercase leading-tight tracking-tight text-[#FAF8FC] transition group-hover:text-[#61BDFF]">
+                    {item.label}
+                  </p>
+                  <p className="text-xs leading-5 text-[#FAF8FC]/60">{item.desc}</p>
                 </Link>
               )
             )}
