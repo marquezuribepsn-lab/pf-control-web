@@ -93,7 +93,7 @@ const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
-const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
+const SIDEBAR_NAV_OPTIMISTIC_MS = 650;
 const SIDEBAR_WIDGET_FADE_MS = 260;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
@@ -409,7 +409,7 @@ export default function AppShell({
     if (typeof window === "undefined") return;
 
     const now = Date.now();
-    if (now - interactionGuardLastRunRef.current < 150) return;
+    if (now - interactionGuardLastRunRef.current < 280) return;
     interactionGuardLastRunRef.current = now;
 
     const result = neutralizeViewportBlockers();

@@ -1,7 +1,7 @@
 type CleanupFn = () => void;
 
-const LINK_FAILSAFE_DELAY_MS = 260;
-const LINK_FAILSAFE_HARD_DELAY_MS = 200;
+const LINK_FAILSAFE_DELAY_MS = 140;
+const LINK_FAILSAFE_HARD_DELAY_MS = 120;
 
 type ReliabilityMode = "off" | "soft" | "hard";
 
