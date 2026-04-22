@@ -44,7 +44,6 @@
     "smoke:sesiones:ai": "node scripts/smoke-sesiones-ai.js",
     "guard:interaction-lock": "node scripts/guard-interaction-lock.js",
     "guard:shell-profile-lock": "node scripts/guard-shell-profile-lock.js",
-    "guard:mobile-scroll-lock": "node scripts/guard-mobile-scroll-lock.js",
     "report:whatsapp:phones": "node scripts/report-whatsapp-missing-phones.js",
     "whatsapp:automation:run": "node scripts/run-whatsapp-automation.js",
     "whatsapp:automation:dry": "node scripts/run-whatsapp-automation.js --dry-run",

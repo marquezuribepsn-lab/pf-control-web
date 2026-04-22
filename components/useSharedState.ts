@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 type SharedStateOptions = {
   key: string;
@@ -32,43 +32,6 @@ const STRICT_MANUAL_INTENT_PREFIXES = ["pf-control-clientes-table-ui-v1-"];
 type ToastType = "success" | "error" | "warning";
 
 const OFFLINE_WRITE_TOAST_TTL_MS = 2200;
-const MOBILE_INTERACTION_HOLD_MS = 480;
-const BOOTSTRAP_RETRY_DELAYS_MS = [1200, 2600, 4800];
-
-let mobileInteractionListenersInstalled = false;
-let mobileInteractionLastAt = 0;
-
-function markMobileInteraction() {
-  mobileInteractionLastAt = Date.now();
-}
-
-function isMobileInteractionActive() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  if (!window.matchMedia("(max-width: 1024px)").matches) {
-    return false;
-  }
-
-  return Date.now() - mobileInteractionLastAt < MOBILE_INTERACTION_HOLD_MS;
-}
-
-function ensureMobileInteractionTracking() {
-  if (typeof window === "undefined" || mobileInteractionListenersInstalled) {
-    return;
-  }
-
-  const listenerOptions: AddEventListenerOptions = { passive: true };
-
-  window.addEventListener("touchstart", markMobileInteraction, listenerOptions);
-  window.addEventListener("touchmove", markMobileInteraction, listenerOptions);
-  window.addEventListener("scroll", markMobileInteraction, listenerOptions);
-  window.addEventListener("wheel", markMobileInteraction, listenerOptions);
-  window.addEventListener("pointerdown", markMobileInteraction, listenerOptions);
-
-  mobileInteractionListenersInstalled = true;
-}
 
 const ANY_SAVE_KEY = "__any__";
 type ManualIntent = {
@@ -245,7 +208,7 @@ export function useSharedState<T>(
   initialValue: T,
   options: SharedStateOptions
 ): [T, Dispatch<SetStateAction<T>>, boolean] {
-  const { key, legacyLocalStorageKey, pollMs = 12000 } = options;
+  const { key, legacyLocalStorageKey, pollMs = 4000 } = options;
   const [state, setState] = useState<T>(initialValue);
   const [loaded, setLoaded] = useState(false);
   const initialValueRef = useRef<T>(initialValue);
@@ -253,20 +216,6 @@ export function useSharedState<T>(
   const pendingSerializedRef = useRef<string | null>(null);
   const writeInFlightRef = useRef(false);
   const lastOfflineWriteToastAtRef = useRef(0);
-
-  useEffect(() => {
-    ensureMobileInteractionTracking();
-  }, []);
-
-  const pollIntervalMs = useMemo(() => {
-    const normalizedPollMs = Number.isFinite(pollMs) ? Math.max(8000, Math.floor(pollMs)) : 12000;
-    let hash = 0;
-    for (let index = 0; index < key.length; index += 1) {
-      hash = (hash * 31 + key.charCodeAt(index)) | 0;
-    }
-    const staggerMs = Math.abs(hash) % 1200;
-    return normalizedPollMs + staggerMs;
-  }, [key, pollMs]);
 
   const readLocalSnapshot = (): T | null => {
     if (typeof window === "undefined") {
@@ -342,43 +291,6 @@ export function useSharedState<T>(
 
   useEffect(() => {
     let active = true;
-    const bootstrapRetryTimers: number[] = [];
-
-    const applyRemoteSnapshot = (remoteValue: T) => {
-      setState(remoteValue);
-      lastSyncedRef.current = JSON.stringify(remoteValue);
-      writeLocalSnapshot(remoteValue);
-      setPendingForKey(key, false);
-    };
-
-    const scheduleBootstrapRetry = (attempt = 0) => {
-      if (!active || typeof window === "undefined") {
-        return;
-      }
-
-      const delay = BOOTSTRAP_RETRY_DELAYS_MS[attempt];
-      if (!Number.isFinite(delay)) {
-        return;
-      }
-
-      const timer = window.setTimeout(() => {
-        void (async () => {
-          try {
-            const remoteValue = await getRemoteValue<T>(key);
-            if (!active || remoteValue === null) {
-              scheduleBootstrapRetry(attempt + 1);
-              return;
-            }
-
-            applyRemoteSnapshot(remoteValue);
-          } catch {
-            scheduleBootstrapRetry(attempt + 1);
-          }
-        })();
-      }, delay);
-
-      bootstrapRetryTimers.push(timer);
-    };
 
     const load = async () => {
       const localSnapshot = readLocalSnapshot();
@@ -393,7 +305,10 @@ export function useSharedState<T>(
         if (!active) return;
 
         if (remoteValue !== null) {
-          applyRemoteSnapshot(remoteValue);
+          setState(remoteValue);
+          lastSyncedRef.current = JSON.stringify(remoteValue);
+          writeLocalSnapshot(remoteValue);
+          setPendingForKey(key, false);
           setLoaded(true);
           return;
         }
@@ -423,8 +338,6 @@ export function useSharedState<T>(
       } catch {
         if (localSnapshot !== null) {
           setPendingForKey(key, false);
-        } else {
-          scheduleBootstrapRetry(0);
         }
       } finally {
         if (active) {
@@ -437,7 +350,6 @@ export function useSharedState<T>(
 
     return () => {
       active = false;
-      bootstrapRetryTimers.forEach((timer) => window.clearTimeout(timer));
       setPendingForKey(key, false);
     };
   }, [key, legacyLocalStorageKey]);
@@ -492,18 +404,6 @@ export function useSharedState<T>(
 
     const interval = setInterval(async () => {
       try {
-        if (typeof document !== "undefined" && document.visibilityState !== "visible") {
-          return;
-        }
-
-        if (typeof window !== "undefined" && !window.navigator.onLine) {
-          return;
-        }
-
-        if (isMobileInteractionActive()) {
-          return;
-        }
-
         if (pendingSerializedRef.current || writeInFlightRef.current) {
           return;
         }
@@ -514,20 +414,16 @@ export function useSharedState<T>(
         const remoteSerialized = JSON.stringify(remoteValue);
         if (remoteSerialized === lastSyncedRef.current) return;
 
-        if (isMobileInteractionActive()) {
-          return;
-        }
-
         lastSyncedRef.current = remoteSerialized;
         writeLocalSnapshot(remoteValue);
         setState(remoteValue);
       } catch {
         // ignore polling errors
       }
-    }, pollIntervalMs);
+    }, pollMs);
 
     return () => clearInterval(interval);
-  }, [key, loaded, pollIntervalMs]);
+  }, [key, loaded, pollMs]);
 
   const guardedSetState: Dispatch<SetStateAction<T>> = (nextState) => {
     if (typeof window !== "undefined" && !window.navigator.onLine) {

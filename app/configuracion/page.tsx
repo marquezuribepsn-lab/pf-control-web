@@ -47,11 +47,6 @@ function applyScreenScalePreview(value: number) {
     return;
   }
 
-  if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
-    document.documentElement.style.setProperty("--pf-screen-scale", "1");
-    return;
-  }
-
   document.documentElement.style.setProperty("--pf-screen-scale", String(clampScale(value)));
 }
 

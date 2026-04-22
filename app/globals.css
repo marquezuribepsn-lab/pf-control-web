@@ -2,17 +2,17 @@
 
 :root {
   --pf-screen-scale: 1;
-  --pf-bg-0: #040b14;
-  --pf-bg-1: #081926;
-  --pf-bg-2: #0d2636;
-  --pf-surface: rgba(8, 21, 34, 0.8);
-  --pf-surface-strong: rgba(6, 16, 28, 0.9);
-  --pf-border: rgba(125, 211, 252, 0.24);
+  --pf-bg-0: #050711;
+  --pf-bg-1: #0a1429;
+  --pf-bg-2: #111f38;
+  --pf-surface: rgba(11, 21, 41, 0.78);
+  --pf-surface-strong: rgba(8, 16, 31, 0.88);
+  --pf-border: rgba(148, 197, 255, 0.2);
   --pf-text: #f8fbff;
-  --pf-text-muted: #d0e4f8;
-  --pf-accent: #22d3ee;
-  --pf-accent-warm: #4ade80;
-  --pf-shadow: 0 10px 24px rgba(2, 8, 23, 0.34);
+  --pf-text-muted: #cdddf7;
+  --pf-accent: #39d2ff;
+  --pf-accent-warm: #ffb44d;
+  --pf-shadow: 0 14px 34px rgba(2, 8, 23, 0.5);
 }
 
 html,
@@ -20,12 +20,10 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background-color: #081e2d;
   background:
-    radial-gradient(1150px 760px at -10% -22%, rgba(34, 197, 94, 0.22), transparent 56%),
-    radial-gradient(940px 620px at 108% -15%, rgba(34, 211, 238, 0.2), transparent 52%),
-    linear-gradient(118deg, transparent 0%, rgba(34, 197, 94, 0.12) 34%, transparent 56%, rgba(34, 211, 238, 0.11) 80%, transparent 100%),
-    linear-gradient(156deg, var(--pf-bg-0) 0%, var(--pf-bg-1) 48%, var(--pf-bg-2) 100%);
+    radial-gradient(1300px 900px at -10% -20%, rgba(57, 210, 255, 0.22), transparent 52%),
+    radial-gradient(900px 600px at 108% -12%, rgba(255, 180, 77, 0.2), transparent 48%),
+    linear-gradient(148deg, var(--pf-bg-0) 0%, var(--pf-bg-1) 46%, var(--pf-bg-2) 100%);
 }
 
 html {
@@ -38,43 +36,35 @@ body {
   color: var(--pf-text);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   letter-spacing: 0.01em;
-  text-rendering: optimizeSpeed;
+  text-rendering: optimizeLegibility;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
-  /* NOTE: we intentionally do NOT set `-webkit-overflow-scrolling: touch`.
-     Applying it to the root scroller (body) on iOS forces the tile-based
-     compositor path: tiles outside the viewport are NOT rasterized until
-     they scroll into view, producing the "loads the part I'm about to
-     see" flicker during fast scroll. Modern iOS Safari already does
-     momentum scrolling by default for the root document. */
   zoom: var(--pf-screen-scale);
 }
 
 body::before,
 body::after {
   content: "";
-  position: absolute;
+  position: fixed;
   pointer-events: none;
   z-index: -1;
-  display: none;
 }
 
 body::before {
-  inset: auto -8vw -24vh auto;
-  height: 40vh;
-  width: 40vw;
+  inset: auto -12vw -26vh auto;
+  height: 44vh;
+  width: 46vw;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, rgba(34, 211, 238, 0) 74%);
-  filter: none;
+  background: radial-gradient(circle, rgba(57, 210, 255, 0.24) 0%, rgba(57, 210, 255, 0) 72%);
+  filter: blur(18px);
 }
 
 body::after {
-  inset: -14vh auto auto -12vw;
-  height: 44vh;
-  width: 38vw;
+  inset: -18vh auto auto -16vw;
+  height: 48vh;
+  width: 44vw;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.18) 0%, rgba(74, 222, 128, 0) 70%);
-  filter: none;
+  background: radial-gradient(circle, rgba(255, 180, 77, 0.2) 0%, rgba(255, 180, 77, 0) 70%);
+  filter: blur(20px);
 }
 
 h1,
@@ -118,40 +108,6 @@ h6 {
 
 .pf-neo-shell :where(main h2) {
   letter-spacing: -0.012em;
-}
-
-.pf-training-shell {
-  --pf-panel-bg: #0b1a2a;
-  --pf-panel-border: rgba(125, 211, 252, 0.26);
-}
-
-.pf-training-shell main :where(section, article):where([class*="rounded-2xl"], [class*="rounded-3xl"]) {
-  border-color: var(--pf-panel-border) !important;
-  background-image: none !important;
-  background-color: var(--pf-panel-bg) !important;
-  box-shadow: none !important;
-}
-
-.pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-  border-color: rgba(148, 197, 255, 0.2) !important;
-  box-shadow: none !important;
-}
-
-.pf-training-shell :where([class*="shadow"], [style*="box-shadow"]) {
-  box-shadow: none !important;
-}
-
-.pf-training-shell :where(h1, h2, h3, h4, h5, h6, p, span) {
-  text-shadow: none !important;
-}
-
-.pf-training-shell main :where([class*="backdrop-blur"]) {
-  backdrop-filter: none !important;
-}
-
-.pf-training-shell main :where(h1, h2, h3) {
-  letter-spacing: -0.014em;
-  text-shadow: none;
 }
 
 /* Regla global solicitada: fondos blancos a gris y texto blanco en negrita */
@@ -213,11 +169,7 @@ button,
     border-color 190ms ease,
     background-color 190ms ease,
     color 190ms ease;
-  /* NOTE: do NOT apply `will-change: transform` here. Putting it on every
-     button forces the browser to promote each button to its own GPU layer.
-     On mobile (iOS in particular) this exhausts texture memory and causes
-     layers to be evicted/re-rasterized during fast scroll, which shows as
-     a "reload flicker" on every screen. */
+  will-change: transform;
 }
 
 .pf-action-btn {
@@ -226,14 +178,21 @@ button,
 }
 
 .pf-action-btn::after {
-  display: none;
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%, rgba(57, 210, 255, 0.12));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 170ms ease;
 }
 
 .pf-action-btn:hover,
 button:hover,
 [role="button"]:hover {
-  transform: none;
-  box-shadow: none;
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(2, 8, 23, 0.38);
 }
 
 .pf-action-btn:hover::after {
@@ -268,7 +227,7 @@ button[disabled] {
 }
 
 .pf-reliable-link:hover {
-  transform: none;
+  transform: translateY(-1px);
 }
 
 @keyframes pf-ios-toast-in {
@@ -462,9 +421,9 @@ button[disabled] {
 }
 
 .pf-route-enter {
-  animation: none;
-  will-change: auto;
-  backface-visibility: visible;
+  animation: pf-route-enter 260ms cubic-bezier(0.2, 0.9, 0.24, 1) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
 }
 
 @keyframes pf-sidebar-category-hover {
@@ -495,10 +454,10 @@ button[disabled] {
 }
 
 .pf-sidebar-static {
-  contain: paint;
+  contain: layout paint;
   isolation: isolate;
-  transform: none;
-  backface-visibility: visible;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .pf-sidebar-avatar-shell {
@@ -566,9 +525,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-sidebar-led-strip {
-  animation: none;
+  animation: pf-sidebar-led-breathe 2.2s cubic-bezier(0.42, 0, 0.25, 1) infinite;
   transition: background 320ms ease, box-shadow 320ms ease, opacity 320ms ease;
-  will-change: auto;
+  will-change: opacity, filter, box-shadow;
 }
 
 .pf-dock-scroll {
@@ -595,121 +554,4 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     animation: none;
     opacity: 0.92;
   }
-}
-
-@media (max-width: 1024px) {
-  html {
-    overscroll-behavior-y: contain;
-    background-color: #081e2d !important;
-    background-image: none !important;
-  }
-
-  body {
-    zoom: normal !important;
-    overscroll-behavior-y: contain;
-    background-color: #081e2d !important;
-    background-image: none !important;
-  }
-
-  body::before,
-  body::after {
-    display: none;
-  }
-
-  .pf-root-atmosphere {
-    transform: none !important;
-    width: auto !important;
-    min-height: 100svh !important;
-  }
-
-  .pf-sidebar-static,
-  .pf-sidebar-category-static,
-  .pf-sidebar-avatar-shell {
-    contain: none !important;
-    transform: none !important;
-    backface-visibility: visible !important;
-  }
-
-  .pf-training-shell {
-    background-color: #081e2d !important;
-    background-image: none !important;
-  }
-
-  .pf-training-shell main,
-  .pf-alumno-main {
-    background-color: #081e2d !important;
-    isolation: isolate;
-  }
-
-  .pf-alumno-dock {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
-  }
-
-  .pf-alumno-dock > div {
-    background-color: #020617 !important;
-  }
-
-  .pf-training-shell main :where(section, article):where([class*="rounded-2xl"], [class*="rounded-3xl"]) {
-    background-color: #0b1a2a !important;
-    border-color: rgba(148, 163, 184, 0.28) !important;
-    contain: none !important;
-    transform: none !important;
-    backface-visibility: visible !important;
-  }
-
-  .pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-    background-color: #0f2234 !important;
-    border-color: rgba(148, 163, 184, 0.24) !important;
-    contain: none !important;
-    transform: none !important;
-    backface-visibility: visible !important;
-  }
-
-  .pf-shell-bg-layer {
-    display: none !important;
-  }
-
-  .pf-training-shell button,
-  .pf-training-shell [role="button"],
-  .pf-training-shell .pf-action-btn,
-  .pf-training-shell .pf-reliable-link {
-    will-change: auto !important;
-    transform: none !important;
-    filter: none !important;
-  }
-}
-
-/*
- * Alumno stage preload system
- *
- * All category panels are mounted from the first render so data, images and
- * iframes hydrate in background. Inactive panels are kept in the DOM with
- * `.pf-alumno-stage-hidden` so switching tabs does not trigger remounts or
- * network hits. We intentionally avoid `content-visibility: auto` and
- * `contain: paint/layout` here because they make the browser skip painting
- * off-screen panels and re-render them on scroll entry, producing a visible
- * flash/"reload" flicker during fast vertical scroll.
- */
-.pf-alumno-stage {
-  position: relative;
-  min-height: 1px;
-  isolation: isolate;
-}
-
-.pf-alumno-stage-panel {
-  /* Keep panel fully rendered at all times to avoid scroll-entry flicker. */
-  contain: none;
-  content-visibility: visible;
-}
-
-.pf-alumno-stage-hidden {
-  display: none !important;
-}
-
-.pf-alumno-stage-active {
-  /* No enter animation: any opacity/transform transition on a large panel
-     shows as a brief flash during fast scroll on mobile. */
-  animation: none;
 }
