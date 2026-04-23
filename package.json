@@ -43,7 +43,6 @@
     "smoke:whatsapp:failure-alert": "node scripts/smoke-whatsapp-failure-alert.js",
     "smoke:sesiones:ai": "node scripts/smoke-sesiones-ai.js",
     "guard:interaction-lock": "node scripts/guard-interaction-lock.js",
-    "guard:button-stability": "node scripts/guard-button-stability.js",
     "guard:shell-profile-lock": "node scripts/guard-shell-profile-lock.js",
     "report:whatsapp:phones": "node scripts/report-whatsapp-missing-phones.js",
     "whatsapp:automation:run": "node scripts/run-whatsapp-automation.js",

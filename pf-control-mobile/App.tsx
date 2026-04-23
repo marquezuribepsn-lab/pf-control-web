@@ -126,7 +126,10 @@ export default function App() {
           setSupportMultipleWindows={false}
           javaScriptEnabled
           domStorageEnabled
-          pullToRefreshEnabled
+          pullToRefreshEnabled={false}
+          overScrollMode="never"
+          androidLayerType="software"
+          androidHardwareAccelerationDisabled
         />
       )}
     </SafeAreaView>
