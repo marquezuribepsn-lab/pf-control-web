@@ -11,6 +11,8 @@ type MusicPlatform =
   | "AUDIO_FILE"
   | "OTHER";
 
+type MusicContentType = "SONG" | "PLAYLIST" | "OTHER";
+
 const REQUEST_TIMEOUT_MS = 5000;
 
 function normalizeUrl(rawUrl: string): string {
@@ -47,6 +49,100 @@ function inferPlatformFromUrl(rawUrl: string): MusicPlatform {
   if (looksLikeAudioFile(normalized)) return "AUDIO_FILE";
 
   return "OTHER";
+}
+
+function inferContentTypeFromUrl(platform: MusicPlatform, rawUrl: string): MusicContentType {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) return "OTHER";
+
+  if (platform === "AUDIO_FILE") return "SONG";
+
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    return "OTHER";
+  }
+
+  const pathname = parsed.pathname.toLowerCase();
+
+  if (platform === "SPOTIFY") {
+    if (/\/(track|episode)\//i.test(pathname)) return "SONG";
+    if (/\/(playlist|album|artist|show)\//i.test(pathname)) return "PLAYLIST";
+    return "OTHER";
+  }
+
+  if (platform === "YOUTUBE" || platform === "YOUTUBE_MUSIC") {
+    if (parsed.searchParams.get("list")) return "PLAYLIST";
+    if (parsed.searchParams.get("v")) return "SONG";
+    if (/\/(embed|shorts)\//i.test(pathname)) return "SONG";
+    if (parsed.hostname.toLowerCase().includes("youtu.be")) return "SONG";
+    return "OTHER";
+  }
+
+  if (platform === "SOUNDCLOUD") {
+    if (pathname.includes("/sets/")) return "PLAYLIST";
+    return "SONG";
+  }
+
+  if (platform === "APPLE_MUSIC") {
+    if (parsed.searchParams.get("i")) return "SONG";
+    if (/\/(song)\//i.test(pathname)) return "SONG";
+    if (/\/(playlist|album)\//i.test(pathname)) return "PLAYLIST";
+    return "OTHER";
+  }
+
+  if (platform === "DEEZER") {
+    if (/\/(track)\//i.test(pathname)) return "SONG";
+    if (/\/(playlist|album)\//i.test(pathname)) return "PLAYLIST";
+    return "OTHER";
+  }
+
+  return "OTHER";
+}
+
+function resolveLookupUrl(platform: MusicPlatform, rawUrl: string): string {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) return "";
+
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    return normalized;
+  }
+
+  if (platform === "SPOTIFY") {
+    const match = parsed.pathname.match(/\/(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]+)/i);
+    if (match?.[1] && match?.[2]) {
+      const kind = String(match[1]).toLowerCase();
+      const id = String(match[2]).trim();
+      if (kind && id) {
+        return `https://open.spotify.com/${kind}/${id}`;
+      }
+    }
+  }
+
+  if (platform === "YOUTUBE" || platform === "YOUTUBE_MUSIC") {
+    const embedMatch = parsed.pathname.match(/\/embed\/([^/?#]+)/i);
+    if (embedMatch?.[1]) {
+      return `https://www.youtube.com/watch?v=${embedMatch[1]}`;
+    }
+
+    const shortsMatch = parsed.pathname.match(/\/shorts\/([^/?#]+)/i);
+    if (shortsMatch?.[1]) {
+      return `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
+    }
+
+    if (parsed.hostname.toLowerCase().includes("youtu.be")) {
+      const shortId = parsed.pathname.replace(/^\//, "").split("/")[0];
+      if (shortId) {
+        return `https://www.youtube.com/watch?v=${shortId}`;
+      }
+    }
+  }
+
+  return normalized;
 }
 
 function asNonEmptyString(value: unknown): string | null {
@@ -116,15 +212,18 @@ export async function GET(req: NextRequest) {
   }
 
   const platform = inferPlatformFromUrl(normalizedUrl);
+  const lookupUrl = resolveLookupUrl(platform, normalizedUrl) || normalizedUrl;
+  const contentType = inferContentTypeFromUrl(platform, lookupUrl);
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const metadata = await resolveMetadata(normalizedUrl, platform, abortController.signal);
+    const metadata = await resolveMetadata(lookupUrl, platform, abortController.signal);
 
     return NextResponse.json({
       ok: true,
       platform,
+      contentType,
       playlistName: metadata.playlistName,
       thumbnailUrl: metadata.thumbnailUrl,
     });
@@ -132,6 +231,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       platform,
+      contentType,
       playlistName: null,
       thumbnailUrl: null,
     });

@@ -140,6 +140,8 @@ type MusicPlatform =
   | "AUDIO_FILE"
   | "OTHER";
 
+type MusicContentType = "SONG" | "PLAYLIST" | "OTHER";
+
 type MusicPlayerSource = {
   kind: "iframe" | "audio" | "none";
   src: string | null;
@@ -166,6 +168,7 @@ type HomeMusicCard = {
   accentClass: string;
   playlistUrl: string | null;
   platform: MusicPlatform;
+  contentType: MusicContentType;
 };
 
 type RoutineExercise = BloqueEntrenamiento["ejercicios"][number];
@@ -261,6 +264,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     accentClass: "pf-a3-music-card-fallback-a",
     playlistUrl: null,
     platform: "OTHER",
+    contentType: "SONG",
   },
   {
     id: "fallback-2",
@@ -270,6 +274,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     accentClass: "pf-a3-music-card-fallback-b",
     playlistUrl: null,
     platform: "OTHER",
+    contentType: "SONG",
   },
   {
     id: "fallback-3",
@@ -279,6 +284,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     accentClass: "pf-a3-music-card-fallback-c",
     playlistUrl: null,
     platform: "OTHER",
+    contentType: "SONG",
   },
 ];
 
@@ -424,6 +430,145 @@ function resolveMusicPlatform(rawPlatform: string | null | undefined, rawUrl: st
   }
 
   return inferMusicPlatformFromUrl(rawUrl || "");
+}
+
+function resolveMusicMetadataLookupUrl(platform: MusicPlatform, rawUrl: string): string {
+  const normalized = normalizeMusicUrl(rawUrl);
+  if (!normalized) return "";
+
+  try {
+    const parsed = new URL(normalized);
+
+    if (platform === "SPOTIFY") {
+      const match = parsed.pathname.match(/\/(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]+)/i);
+      if (match?.[1] && match?.[2]) {
+        const kind = String(match[1]).toLowerCase();
+        const id = String(match[2]).trim();
+        if (kind && id) {
+          return `https://open.spotify.com/${kind}/${id}`;
+        }
+      }
+    }
+
+    if (platform === "YOUTUBE" || platform === "YOUTUBE_MUSIC") {
+      const embedMatch = parsed.pathname.match(/\/embed\/([^/?#]+)/i);
+      if (embedMatch?.[1]) {
+        return `https://www.youtube.com/watch?v=${embedMatch[1]}`;
+      }
+
+      const shortsMatch = parsed.pathname.match(/\/shorts\/([^/?#]+)/i);
+      if (shortsMatch?.[1]) {
+        return `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
+      }
+
+      if (parsed.hostname.toLowerCase().includes("youtu.be")) {
+        const shortId = parsed.pathname.replace(/^\//, "").split("/")[0];
+        if (shortId) {
+          return `https://www.youtube.com/watch?v=${shortId}`;
+        }
+      }
+    }
+
+    return normalized;
+  } catch {
+    return normalized;
+  }
+}
+
+function inferMusicContentTypeFromUrl(platform: MusicPlatform, rawUrl: string): MusicContentType {
+  const normalized = normalizeMusicUrl(rawUrl);
+  if (!normalized) return "OTHER";
+
+  if (platform === "AUDIO_FILE") return "SONG";
+
+  try {
+    const parsed = new URL(normalized);
+    const pathname = parsed.pathname.toLowerCase();
+
+    if (platform === "SPOTIFY") {
+      if (/\/(track|episode)\//i.test(pathname)) return "SONG";
+      if (/\/(playlist|album|artist|show)\//i.test(pathname)) return "PLAYLIST";
+      return "OTHER";
+    }
+
+    if (platform === "YOUTUBE" || platform === "YOUTUBE_MUSIC") {
+      if (parsed.searchParams.get("list")) return "PLAYLIST";
+      if (parsed.searchParams.get("v")) return "SONG";
+      if (/\/(embed|shorts)\//i.test(pathname)) return "SONG";
+      if (parsed.hostname.toLowerCase().includes("youtu.be")) return "SONG";
+      return "OTHER";
+    }
+
+    if (platform === "SOUNDCLOUD") {
+      if (pathname.includes("/sets/")) return "PLAYLIST";
+      return "SONG";
+    }
+
+    if (platform === "APPLE_MUSIC") {
+      if (parsed.searchParams.get("i")) return "SONG";
+      if (/\/(song)\//i.test(pathname)) return "SONG";
+      if (/\/(playlist|album)\//i.test(pathname)) return "PLAYLIST";
+      return "OTHER";
+    }
+
+    if (platform === "DEEZER") {
+      if (/\/(track)\//i.test(pathname)) return "SONG";
+      if (/\/(playlist|album)\//i.test(pathname)) return "PLAYLIST";
+      return "OTHER";
+    }
+
+    return "OTHER";
+  } catch {
+    return "OTHER";
+  }
+}
+
+function resolveMusicContentType(
+  platform: MusicPlatform,
+  rawUrl: string,
+  suggestedSongTitle?: string | null,
+  metadataContentType?: string | null
+): MusicContentType {
+  const metadataType = String(metadataContentType || "").trim().toUpperCase();
+  if (metadataType === "SONG" || metadataType === "PLAYLIST" || metadataType === "OTHER") {
+    return metadataType as MusicContentType;
+  }
+
+  if (String(suggestedSongTitle || "").trim()) {
+    return "SONG";
+  }
+
+  return inferMusicContentTypeFromUrl(platform, rawUrl);
+}
+
+function resolveMusicContentTypeLabel(contentType: MusicContentType): string {
+  if (contentType === "SONG") return "Cancion";
+  if (contentType === "PLAYLIST") return "Playlist";
+  return "Audio";
+}
+
+function looksLikeGenericMusicName(value: string): boolean {
+  const clean = String(value || "").trim().toLowerCase();
+  if (!clean) return true;
+
+  if (/^https?:\/\//.test(clean)) return true;
+
+  return [
+    "open.spotify.com",
+    "youtube.com",
+    "youtu.be",
+    "soundcloud.com",
+    "music.apple.com",
+    "deezer.com",
+    "music.amazon.",
+  ].some((needle) => clean.includes(needle));
+}
+
+function resolveMusicFallbackTitle(platform: MusicPlatform, contentType: MusicContentType): string {
+  const platformName = resolveMusicPlatformLabel(platform);
+  if (contentType === "SONG") return `Cancion en ${platformName}`;
+  if (contentType === "PLAYLIST") return `Playlist en ${platformName}`;
+  return platformName;
 }
 
 function resolveSpotifyEmbed(rawUrl: string): string | null {
@@ -601,12 +746,17 @@ function resolveRandomMusicCoachLine(displayName: string): string {
   return templates[randomIndex] || templates[0];
 }
 
-async function fetchMusicMetadata(rawUrl: string): Promise<{ thumbnailUrl?: string; playlistName?: string } | null> {
+async function fetchMusicMetadata(
+  platform: MusicPlatform,
+  rawUrl: string
+): Promise<{ thumbnailUrl?: string; playlistName?: string; contentType?: MusicContentType } | null> {
   const normalized = normalizeMusicUrl(rawUrl);
   if (!normalized) return null;
 
+  const lookupUrl = resolveMusicMetadataLookupUrl(platform, normalized) || normalized;
+
   try {
-    const response = await fetch(`/api/musica/metadata?url=${encodeURIComponent(normalized)}`, {
+    const response = await fetch(`/api/musica/metadata?url=${encodeURIComponent(lookupUrl)}`, {
       cache: "no-store",
     });
 
@@ -616,15 +766,21 @@ async function fetchMusicMetadata(rawUrl: string): Promise<{ thumbnailUrl?: stri
       ok?: boolean;
       thumbnailUrl?: string | null;
       playlistName?: string | null;
+      contentType?: string | null;
     };
 
     if (!payload?.ok) return null;
 
     const thumbnailUrl = String(payload.thumbnailUrl || "").trim() || undefined;
     const playlistName = String(payload.playlistName || "").trim() || undefined;
+    const contentTypeRaw = String(payload.contentType || "").trim().toUpperCase();
+    const contentType =
+      contentTypeRaw === "SONG" || contentTypeRaw === "PLAYLIST" || contentTypeRaw === "OTHER"
+        ? (contentTypeRaw as MusicContentType)
+        : undefined;
 
-    if (!thumbnailUrl && !playlistName) return null;
-    return { thumbnailUrl, playlistName };
+    if (!thumbnailUrl && !playlistName && !contentType) return null;
+    return { thumbnailUrl, playlistName, contentType };
   } catch {
     return null;
   }
@@ -863,6 +1019,8 @@ export default function AlumnoVisionClient({
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
   const [selectedMusicAssignmentId, setSelectedMusicAssignmentId] = useState<string | null>(null);
   const [musicArtworkByUrl, setMusicArtworkByUrl] = useState<Record<string, string>>({});
+  const [musicNameByUrl, setMusicNameByUrl] = useState<Record<string, string>>({});
+  const [musicContentTypeByUrl, setMusicContentTypeByUrl] = useState<Record<string, MusicContentType>>({});
   const [musicCoachLine, setMusicCoachLine] = useState<string>(resolveRandomMusicCoachLine(currentName || ""));
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogLite[]>([]);
   const [anthropometryEntries, setAnthropometryEntries] = useState<AnthropometryEntryLite[]>([]);
@@ -1093,6 +1251,8 @@ export default function AlumnoVisionClient({
         const playlistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
         if (!playlistUrl) return null;
 
+        const platform = resolveMusicPlatform(assignment.platform, assignment.playlistUrl);
+
         const hasArtwork = Boolean(
           uniqueStrings([
             assignment.coverUrl,
@@ -1103,34 +1263,62 @@ export default function AlumnoVisionClient({
           ])[0]
         );
 
-        if (hasArtwork) return null;
+        const hasResolvedMetadata = Boolean(
+          musicArtworkByUrl[playlistUrl] || musicNameByUrl[playlistUrl] || musicContentTypeByUrl[playlistUrl]
+        );
+
+        if (hasArtwork && hasResolvedMetadata) return null;
+
         if (requestedMusicArtworkRef.current.has(playlistUrl)) return null;
 
-        return playlistUrl;
+        return { playlistUrl, platform };
       })
-      .filter((value): value is string => Boolean(value));
+      .filter((value): value is { playlistUrl: string; platform: MusicPlatform } => Boolean(value));
 
     if (pendingUrls.length === 0) return;
 
     let cancelled = false;
 
     const resolveArtwork = async () => {
-      for (const playlistUrl of pendingUrls.slice(0, 8)) {
+      for (const { playlistUrl, platform } of pendingUrls.slice(0, 8)) {
         requestedMusicArtworkRef.current.add(playlistUrl);
 
-        const metadata = await fetchMusicMetadata(playlistUrl);
+        const metadata = await fetchMusicMetadata(platform, playlistUrl);
         if (cancelled) return;
 
         const thumbnailUrl = String(metadata?.thumbnailUrl || "").trim();
-        if (!thumbnailUrl) continue;
+        const playlistName = String(metadata?.playlistName || "").trim();
+        const contentType = resolveMusicContentType(platform, playlistUrl, "", metadata?.contentType);
 
-        setMusicArtworkByUrl((previous) => {
-          if (previous[playlistUrl]) return previous;
-          return {
-            ...previous,
-            [playlistUrl]: thumbnailUrl,
-          };
-        });
+        if (thumbnailUrl) {
+          setMusicArtworkByUrl((previous) => {
+            if (previous[playlistUrl]) return previous;
+            return {
+              ...previous,
+              [playlistUrl]: thumbnailUrl,
+            };
+          });
+        }
+
+        if (playlistName) {
+          setMusicNameByUrl((previous) => {
+            if (previous[playlistUrl]) return previous;
+            return {
+              ...previous,
+              [playlistUrl]: playlistName,
+            };
+          });
+        }
+
+        if (contentType !== "OTHER") {
+          setMusicContentTypeByUrl((previous) => {
+            if (previous[playlistUrl]) return previous;
+            return {
+              ...previous,
+              [playlistUrl]: contentType,
+            };
+          });
+        }
       }
     };
 
@@ -1139,7 +1327,7 @@ export default function AlumnoVisionClient({
     return () => {
       cancelled = true;
     };
-  }, [musicAssignments, musicArtworkByUrl, shouldLoadMusicData]);
+  }, [musicAssignments, musicArtworkByUrl, musicContentTypeByUrl, musicNameByUrl, shouldLoadMusicData]);
 
   const selectedMusicAssignment = useMemo<MusicAssignmentLite | null>(() => {
     if (musicAssignments.length === 0) return null;
@@ -1161,6 +1349,20 @@ export default function AlumnoVisionClient({
     if (!selectedMusicAssignment) return "OTHER";
     return resolveMusicPlatform(selectedMusicAssignment.platform, selectedMusicAssignment.playlistUrl);
   }, [selectedMusicAssignment]);
+
+  const selectedMusicContentType = useMemo<MusicContentType>(() => {
+    if (!selectedMusicAssignment) return "OTHER";
+
+    const playlistUrl = normalizeMusicUrl(String(selectedMusicAssignment.playlistUrl || ""));
+    const metadataType = playlistUrl ? musicContentTypeByUrl[playlistUrl] : undefined;
+
+    return resolveMusicContentType(
+      selectedMusicPlatform,
+      playlistUrl,
+      selectedMusicAssignment.recommendedSongTitle,
+      metadataType
+    );
+  }, [musicContentTypeByUrl, selectedMusicAssignment, selectedMusicPlatform]);
 
   const selectedMusicPlayer = useMemo<MusicPlayerSource>(() => {
     if (!selectedMusicAssignment) {
@@ -1184,6 +1386,21 @@ export default function AlumnoVisionClient({
       ])[0] || null
     );
   }, [musicArtworkByUrl, selectedMusicAssignment]);
+
+  const selectedMusicDisplayName = useMemo<string>(() => {
+    if (!selectedMusicAssignment) return "Playlist seleccionada";
+
+    const playlistUrl = normalizeMusicUrl(String(selectedMusicAssignment.playlistUrl || ""));
+    const metadataName = playlistUrl ? String(musicNameByUrl[playlistUrl] || "").trim() : "";
+    const assignmentName = String(selectedMusicAssignment.playlistName || "").trim();
+    const songTitle = String(selectedMusicAssignment.recommendedSongTitle || "").trim();
+
+    if (songTitle) return songTitle;
+    if (assignmentName && !looksLikeGenericMusicName(assignmentName)) return assignmentName;
+    if (metadataName) return metadataName;
+
+    return resolveMusicFallbackTitle(selectedMusicPlatform, selectedMusicContentType);
+  }, [musicNameByUrl, selectedMusicAssignment, selectedMusicContentType, selectedMusicPlatform]);
 
   const ejerciciosById = useMemo(() => {
     return new Map(ejercicios.map((item) => [item.id, item]));
@@ -1690,16 +1907,27 @@ export default function AlumnoVisionClient({
 
     const prepared = musicAssignments.slice(0, maxCards).map((assignment, index) => {
       const normalizedPlaylistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
+      const platform = resolveMusicPlatform(assignment.platform, assignment.playlistUrl);
+      const metadataName = normalizedPlaylistUrl ? String(musicNameByUrl[normalizedPlaylistUrl] || "").trim() : "";
+      const assignmentName = String(assignment.playlistName || "").trim();
+      const songTitle = String(assignment.recommendedSongTitle || "").trim();
+      const contentType = resolveMusicContentType(
+        platform,
+        normalizedPlaylistUrl,
+        assignment.recommendedSongTitle,
+        normalizedPlaylistUrl ? musicContentTypeByUrl[normalizedPlaylistUrl] : undefined
+      );
+
       const title =
-        String(assignment.recommendedSongTitle || "").trim() ||
-        String(assignment.playlistName || "").trim() ||
-        `Track ${index + 1}`;
+        songTitle ||
+        (assignmentName && !looksLikeGenericMusicName(assignmentName)
+          ? assignmentName
+          : metadataName || resolveMusicFallbackTitle(platform, contentType));
 
       const artist =
         String(assignment.recommendedSongArtist || "").trim() ||
         String(assignment.objetivo || "").trim() ||
-        String(assignment.platform || "").trim() ||
-        "Playlist";
+        `${resolveMusicPlatformLabel(platform)} · ${resolveMusicContentTypeLabel(contentType)}`;
 
       const coverUrl = uniqueStrings([
         assignment.coverUrl,
@@ -1716,12 +1944,13 @@ export default function AlumnoVisionClient({
         coverUrl,
         accentClass: accents[index % accents.length],
         playlistUrl: normalizedPlaylistUrl || null,
-        platform: resolveMusicPlatform(assignment.platform, assignment.playlistUrl),
+        platform,
+        contentType,
       } satisfies HomeMusicCard;
     });
 
     return prepared.length > 0 ? prepared : HOME_MUSIC_FALLBACK;
-  }, [isUltraMobile, musicArtworkByUrl, musicAssignments]);
+  }, [isUltraMobile, musicArtworkByUrl, musicAssignments, musicContentTypeByUrl, musicNameByUrl]);
 
   const weightSeries = useMemo(() => {
     const rows = anthropometryEntries
@@ -2195,12 +2424,19 @@ export default function AlumnoVisionClient({
                           {track.coverUrl ? (
                             <img src={track.coverUrl} alt={track.title} className="pf-a3-music-image" loading="lazy" />
                           ) : (
-                            <span className="pf-a3-music-fallback">{coverInitials}</span>
+                            <div className="pf-a3-music-fallback-shell">
+                              <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
+                              <span className="pf-a3-music-fallback">{coverInitials}</span>
+                              <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
+                            </div>
                           )}
                         </div>
                         <p className="pf-a3-music-title">{track.title}</p>
                         <p className="pf-a3-music-artist">{track.artist}</p>
                         <p className="pf-a3-music-hint">
+                          {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
+                        </p>
+                        <p className="pf-a3-music-hint-secondary">
                           {track.playlistUrl ? "Tocar para escuchar" : "Tocar para abrir musica"}
                         </p>
                       </ReliableActionButton>
@@ -2824,14 +3060,17 @@ export default function AlumnoVisionClient({
                     <div className="min-w-0">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Vista previa</p>
                       <h3 className="mt-1 break-words text-lg font-black text-white">
-                        {selectedMusicAssignment.playlistName || "Playlist seleccionada"}
+                        {selectedMusicDisplayName}
                       </h3>
                       <p className="mt-1 text-xs text-slate-300">
                         Objetivo: {selectedMusicAssignment.objetivo || "General"}
                         {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
                       </p>
                     </div>
-                    <span className="pf-a2-pill">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="pf-a2-pill">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
+                      <span className="pf-a2-pill">{resolveMusicContentTypeLabel(selectedMusicContentType)}</span>
+                    </div>
                   </div>
 
                   <div className="mt-3 grid gap-3 lg:grid-cols-[190px,minmax(0,1fr)]">
@@ -2839,14 +3078,22 @@ export default function AlumnoVisionClient({
                       {selectedMusicCoverUrl ? (
                         <img
                           src={selectedMusicCoverUrl}
-                          alt={selectedMusicAssignment.playlistName || "Portada de playlist"}
+                          alt={selectedMusicDisplayName || "Portada de playlist"}
                           className="h-full w-full object-cover"
                           loading="lazy"
                           referrerPolicy="no-referrer"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700/45 to-slate-900/75 px-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-300">
-                          Portada no disponible
+                        <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-3 text-left">
+                          <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/90">
+                            {resolveMusicPlatformLabel(selectedMusicPlatform)}
+                          </span>
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
+                              {resolveMusicContentTypeLabel(selectedMusicContentType)}
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-xs font-semibold text-white/90">{selectedMusicDisplayName}</p>
+                          </div>
                         </div>
                       )}
                     </div>
