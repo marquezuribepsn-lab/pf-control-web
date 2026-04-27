@@ -4,20 +4,25 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
+    "android": "expo start --android --no-dev --minify",
+    "android:dev": "expo start --android",
+    "android:boost": "powershell -ExecutionPolicy Bypass -File scripts/emulator-boost.ps1",
+    "android:reset": "powershell -ExecutionPolicy Bypass -File scripts/emulator-reset.ps1",
+    "android:run:boosted": "npm run android:boost && npm run android",
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~55.0.9",
+    "@expo/metro-runtime": "~55.0.10",
     "@react-native-picker/picker": "^2.11.4",
-    "expo": "~55.0.6",
-    "expo-status-bar": "~55.0.4",
+    "expo": "~55.0.17",
+    "expo-status-bar": "~55.0.5",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-native": "0.83.2",
+    "react-native": "0.83.6",
+    "react-native-safe-area-context": "~5.6.2",
     "react-native-web": "^0.21.0",
-    "react-native-webview": "^13.16.1"
+    "react-native-webview": "13.16.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",

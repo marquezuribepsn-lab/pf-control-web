@@ -13,7 +13,7 @@ import {
   type SidebarWidgetSettings,
 } from "@/lib/sidebarWidget";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAlumnos } from "./AlumnosProvider";
 import { usePlayers } from "./PlayersProvider";
@@ -85,12 +85,16 @@ type SidebarWidgetItem = {
   toneClass: string;
 };
 
+type ThemeMode = "dark" | "light";
+
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
 const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
+const THEME_MODE_KEY = "pf-control-theme-mode-v1";
+const THEME_MODE_EVENT = "pf-theme-mode-updated";
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
@@ -152,6 +156,32 @@ const CLIENTE_ACCESS_HREFS = [
   "/alumnos/progreso",
   "/alumnos/musica",
 ];
+
+const ADMIN_SIDEBAR_LOCK_ORDER = [
+  "/",
+  "/semana",
+  "/asistencias",
+  "/admin/pagos",
+  "/categorias",
+  "/categorias/Nutricion",
+  "/deportes",
+  "/equipos",
+  "/clientes",
+  "/clientes/musica",
+  "/admin/usuarios",
+  "/admin/whatsapp",
+  "/configuracion",
+];
+
+const ADMIN_SIDEBAR_LOCK_INDEX = ADMIN_SIDEBAR_LOCK_ORDER.reduce<Record<string, number>>(
+  (acc, href, index) => {
+    const path = href.split("?")[0] || "/";
+    const normalizedHref = path !== "/" && path.endsWith("/") ? path.slice(0, -1) : path;
+    acc[normalizedHref] = index;
+    return acc;
+  },
+  {}
+);
 
 const normalizePath = (value: string) => {
   const path = value.split("?")[0] || "/";
@@ -245,6 +275,37 @@ const formatPendingKeyLabel = (key: string) => {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
+const lockAdminSidebarLinks = (links: NavLink[]): NavLink[] => {
+  const seen = new Set<string>();
+  const deduped = links.filter((link) => {
+    const normalizedHref = normalizePath(link.href);
+    if (seen.has(normalizedHref)) {
+      return false;
+    }
+
+    seen.add(normalizedHref);
+    return true;
+  });
+
+  return deduped
+    .map((link, fallbackIndex) => ({
+      link,
+      fallbackIndex,
+      normalizedHref: normalizePath(link.href),
+    }))
+    .sort((a, b) => {
+      const orderA = ADMIN_SIDEBAR_LOCK_INDEX[a.normalizedHref] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = ADMIN_SIDEBAR_LOCK_INDEX[b.normalizedHref] ?? Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      return a.fallbackIndex - b.fallbackIndex;
+    })
+    .map((item) => item.link);
+};
+
 const parseMoneyValue = (value: unknown): number => {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -268,6 +329,19 @@ const clampScreenScale = (value: number): number => {
   if (value < 0.8) return 0.8;
   if (value > 1.35) return 1.35;
   return Number(value.toFixed(2));
+};
+
+const normalizeThemeMode = (value: unknown): ThemeMode => {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "light" ? "light" : "dark";
+};
+
+const applyThemeMode = (mode: ThemeMode) => {
+  if (typeof document === "undefined") return;
+
+  const resolved = normalizeThemeMode(mode);
+  document.documentElement.setAttribute("data-pf-theme", resolved);
+  document.documentElement.style.colorScheme = resolved;
 };
 
 const applyScreenScale = (value: number) => {
@@ -319,6 +393,7 @@ export default function AppShell({
 }: AppShellProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const { jugadoras } = usePlayers();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
@@ -335,6 +410,7 @@ export default function AppShell({
   const interactionGuardLastRunRef = useRef(0);
   const optimisticNavResetTimerRef = useRef<number | null>(null);
   const widgetTransitionTimeoutRef = useRef<number | null>(null);
+  const sidebarNavFallbackTimerRef = useRef<number | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -443,6 +519,51 @@ export default function AppShell({
     }, SIDEBAR_NAV_OPTIMISTIC_MS);
   };
 
+  const scheduleSidebarNavigationFallback = (targetHref: string) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    let resolvedTarget: URL;
+    try {
+      resolvedTarget = new URL(targetHref, window.location.origin);
+    } catch {
+      return;
+    }
+
+    const fromHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const nextHref = `${resolvedTarget.pathname}${resolvedTarget.search}${resolvedTarget.hash}`;
+
+    if (!nextHref || nextHref === fromHref) {
+      return;
+    }
+
+    if (sidebarNavFallbackTimerRef.current !== null) {
+      window.clearTimeout(sidebarNavFallbackTimerRef.current);
+      sidebarNavFallbackTimerRef.current = null;
+    }
+
+    sidebarNavFallbackTimerRef.current = window.setTimeout(() => {
+      sidebarNavFallbackTimerRef.current = null;
+
+      const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (currentHref !== fromHref || document.visibilityState !== "visible") {
+        return;
+      }
+
+      try {
+        router.push(nextHref);
+      } catch {
+        // Keep SPA-only navigation in AppShell to comply with interaction guard policy.
+      }
+    }, 220);
+  };
+
+  const handleSidebarLinkClick = (targetHref: string) => {
+    markOptimisticSidebarNav(targetHref);
+    scheduleSidebarNavigationFallback(targetHref);
+  };
+
   useEffect(
     () => () => {
       if (optimisticNavResetTimerRef.current !== null) {
@@ -453,6 +574,11 @@ export default function AppShell({
       if (widgetTransitionTimeoutRef.current !== null) {
         window.clearTimeout(widgetTransitionTimeoutRef.current);
         widgetTransitionTimeoutRef.current = null;
+      }
+
+      if (sidebarNavFallbackTimerRef.current !== null) {
+        window.clearTimeout(sidebarNavFallbackTimerRef.current);
+        sidebarNavFallbackTimerRef.current = null;
       }
     },
     []
@@ -670,6 +796,22 @@ export default function AppShell({
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncThemeFromStorage = () => {
+      const stored = window.localStorage.getItem(THEME_MODE_KEY);
+      applyThemeMode(normalizeThemeMode(stored));
+    };
+
+    syncThemeFromStorage();
+    window.addEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
+
+    return () => {
+      window.removeEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
+    };
+  }, []);
+
+  useEffect(() => {
     const initialPending = getPendingSaveStatus();
     setPendingSaveKeys(initialPending.keys);
 
@@ -731,6 +873,10 @@ export default function AppShell({
       if (event.key === SIDEBAR_PROFILE_ROLE_KEY) {
         const nextProfileRole = String(event.newValue || "").trim().toUpperCase();
         setCachedProfileRole(nextProfileRole || null);
+      }
+
+      if (event.key === THEME_MODE_KEY) {
+        applyThemeMode(normalizeThemeMode(event.newValue));
       }
 
       if (event.key === SIDEBAR_WIDGET_SETTINGS_KEY) {
@@ -928,6 +1074,11 @@ export default function AppShell({
       window.clearTimeout(optimisticNavResetTimerRef.current);
       optimisticNavResetTimerRef.current = null;
     }
+
+    if (sidebarNavFallbackTimerRef.current !== null) {
+      window.clearTimeout(sidebarNavFallbackTimerRef.current);
+      sidebarNavFallbackTimerRef.current = null;
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -1046,9 +1197,8 @@ export default function AppShell({
     return `https://wa.me/${encodeURIComponent(waPhone)}?text=${encodeURIComponent(message)}`;
   }, [profesorContacto, session?.user, displayName]);
 
-  const visibleLinks = useMemo(
-    () =>
-      links.filter((link) => {
+  const visibleLinks = useMemo(() => {
+    const filtered = links.filter((link) => {
         if (link.clientOnly && normalizedRole !== "CLIENTE") {
           return false;
         }
@@ -1090,11 +1240,19 @@ export default function AppShell({
         }
 
         return true;
-      }),
-    [links, normalizedRole, colaboradorAccessMap]
-  );
+      });
+
+    // Admin lock: keep a deterministic sidebar order and avoid duplicate hrefs.
+    if (normalizedRole === "ADMIN") {
+      return lockAdminSidebarLinks(filtered);
+    }
+
+    return filtered;
+  }, [links, normalizedRole, colaboradorAccessMap]);
 
   const normalizedPathname = normalizePath(pathname);
+  const isAlumnosRoute =
+    normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
   const sidebarItemHeight = 38;
   const sidebarIconSize = "1rem";
@@ -1383,9 +1541,14 @@ export default function AppShell({
         <div className="pointer-events-auto relative z-[2] m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
           <Link
             href="/cuenta"
-            reliabilityMode="soft"
+            reliabilityMode="hard"
             className="pf-profile-link mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
-            onClick={() => markOptimisticSidebarNav("/cuenta")}
+            onClick={(event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                return;
+              }
+              handleSidebarLinkClick("/cuenta");
+            }}
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
           >
@@ -1436,14 +1599,19 @@ export default function AppShell({
                   <Link
                     key={link.href}
                     href={link.href}
-                    reliabilityMode="soft"
+                    reliabilityMode="hard"
                     className={`pf-shell-nav-link group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
                       isCurrent
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
                     }`}
                     onPointerDown={() => markOptimisticSidebarNav(link.href)}
-                    onClick={() => markOptimisticSidebarNav(link.href)}
+                    onClick={(event) => {
+                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                        return;
+                      }
+                      handleSidebarLinkClick(link.href);
+                    }}
                     style={{
                       height: `${sidebarItemHeight}px`,
                       minHeight: `${sidebarItemHeight}px`,
@@ -1468,9 +1636,14 @@ export default function AppShell({
             <div className="px-2 pb-2">
               <Link
                 href={activeSidebarWidgetItem.href}
-                reliabilityMode="soft"
+                reliabilityMode="hard"
                 onPointerDown={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
-                onClick={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
+                onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                    return;
+                  }
+                  handleSidebarLinkClick(activeSidebarWidgetItem.href);
+                }}
                 className={`mx-auto block w-full max-w-[130px] min-h-[116px] rounded-2xl border px-2.5 py-2.5 shadow-[0_10px_22px_rgba(8,47,73,0.42)] ${activeSidebarWidgetItem.toneClass}`}
                 title={`Widget: ${activeSidebarWidgetItem.label}`}
                 aria-label={`Widget: ${activeSidebarWidgetItem.label}`}
@@ -1638,8 +1811,12 @@ export default function AppShell({
         </div>
       ) : null}
 
-      <main className="relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 pt-14 md:pl-[clamp(132px,14vw,170px)] md:pt-4">
-        <div className="px-4">{children}</div>
+      <main
+        className={`relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 md:pl-[clamp(132px,14vw,170px)] md:pt-4 ${
+          isAlumnosRoute ? "pt-0" : "pt-14"
+        }`}
+      >
+        <div className={isAlumnosRoute ? "px-0 md:px-4" : "px-4"}>{children}</div>
       </main>
     </div>
   );

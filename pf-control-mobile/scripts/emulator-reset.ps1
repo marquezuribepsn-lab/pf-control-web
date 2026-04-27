@@ -1,0 +1,59 @@
+$ErrorActionPreference = "Stop"
+
+function Invoke-AdbSettingPut {
+  param(
+    [Parameter(Mandatory = $true)][string]$Device,
+    [Parameter(Mandatory = $true)][string]$Namespace,
+    [Parameter(Mandatory = $true)][string]$Key,
+    [Parameter(Mandatory = $true)][string]$Value
+  )
+
+  & adb -s $Device shell settings put $Namespace $Key $Value | Out-Null
+}
+
+$adbCmd = Get-Command adb -ErrorAction SilentlyContinue
+if (-not $adbCmd) {
+  Write-Host "adb no esta disponible en PATH." -ForegroundColor Red
+  exit 1
+}
+
+& adb start-server | Out-Null
+
+$deviceLines = & adb devices
+$devices = @()
+foreach ($line in $deviceLines) {
+  if ($line -match "^\s*(\S+)\s+device\s*$") {
+    $deviceId = $matches[1]
+    if ($deviceId -ne "List") {
+      $devices += $deviceId
+    }
+  }
+}
+
+if ($devices.Count -eq 0) {
+  Write-Host "No hay dispositivos Android conectados." -ForegroundColor Yellow
+  exit 0
+}
+
+$settingsToRestore = @(
+  @{ Namespace = "global"; Key = "window_animation_scale"; Value = "1" },
+  @{ Namespace = "global"; Key = "transition_animation_scale"; Value = "1" },
+  @{ Namespace = "global"; Key = "animator_duration_scale"; Value = "1" },
+  @{ Namespace = "global"; Key = "always_finish_activities"; Value = "0" },
+  @{ Namespace = "system"; Key = "pointer_location"; Value = "0" },
+  @{ Namespace = "system"; Key = "show_touches"; Value = "0" }
+)
+
+foreach ($device in $devices) {
+  Write-Host "Restaurando perfil default en $device..." -ForegroundColor Cyan
+
+  foreach ($setting in $settingsToRestore) {
+    try {
+      Invoke-AdbSettingPut -Device $device -Namespace $setting.Namespace -Key $setting.Key -Value $setting.Value
+    } catch {
+      Write-Warning "No se pudo restaurar $($setting.Namespace).$($setting.Key) en $device"
+    }
+  }
+
+  Write-Host "Perfil default restaurado en $device" -ForegroundColor Green
+}

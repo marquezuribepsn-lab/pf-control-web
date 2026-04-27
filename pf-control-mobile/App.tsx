@@ -5,231 +5,247 @@ import {
   Linking,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 const PRODUCTION_URL = "https://pf-control.com";
-const DEFAULT_LOCAL_URL = "http://192.168.0.25:3000";
+const WEBVIEW_CACHE_TAG = "alumno-v2-20260425-ultra-max";
+const MAX_PERFORMANCE_MODE = true;
+const MAX_PERFORMANCE_QUERY_FLAGS: Record<string, string> = {
+  pfperf: "1",
+  pfmax: "1",
+  pffluid: "1",
+};
 
-type EnvironmentMode = "production" | "local";
+const MOBILE_SCROLL_HINT_SCRIPT = `
+(() => {
+  try {
+    if (window.__PF_SCROLL_HINT_INSTALLED__) {
+      true;
+      return;
+    }
 
-function normalizeHttpUrl(input: string): string {
-  const trimmed = input.trim();
-  if (!trimmed) return "";
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
+    window.__PF_SCROLL_HINT_INSTALLED__ = true;
+    const root = document.documentElement;
+    if (!root) {
+      true;
+      return;
+    }
+
+    root.classList.add("pf-mobile-webview");
+    root.classList.add("pf-mobile-fluid");
+    root.classList.add("pf-mobile-maxperf");
+
+    const styleId = "pf-mobile-maxperf-style";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = [
+        "html.pf-mobile-maxperf, html.pf-mobile-maxperf body { scroll-behavior: auto !important; }",
+        "html.pf-mobile-maxperf *, html.pf-mobile-maxperf *::before, html.pf-mobile-maxperf *::after { transition: none !important; animation: none !important; }",
+        "html.pf-mobile-maxperf :where([class*=\\\"shadow\\\"], [style*=\\\"box-shadow\\\"], [class*=\\\"backdrop-blur\\\"]) { box-shadow: none !important; backdrop-filter: none !important; }",
+        "html.pf-mobile-maxperf.pf-mobile-webview, html.pf-mobile-maxperf.pf-mobile-webview body, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-stage, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-dock { background-color: #081a2d !important; background-image: none !important; }",
+        "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }",
+      ].join("\\n");
+      (document.head || document.documentElement).appendChild(style);
+
+      const ensureStyleLast = () => {
+        if (style.parentNode) {
+          style.parentNode.appendChild(style);
+        }
+      };
+
+      requestAnimationFrame(ensureStyleLast);
+      setTimeout(ensureStyleLast, 400);
+      setTimeout(ensureStyleLast, 1200);
+    }
+
+    true;
+  } catch (_error) {
+    true;
+  }
+})();
+`;
+
+function withCacheBust(url: string, refreshSeed: number): string {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("pfv", WEBVIEW_CACHE_TAG);
+    parsed.searchParams.set("pfrefresh", String(refreshSeed));
+
+    if (MAX_PERFORMANCE_MODE) {
+      Object.entries(MAX_PERFORMANCE_QUERY_FLAGS).forEach(([key, value]) => {
+        parsed.searchParams.set(key, value);
+      });
+    }
+
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 export default function App() {
-  const [environment, setEnvironment] = useState<EnvironmentMode>("production");
-  const [localUrlInput, setLocalUrlInput] = useState(DEFAULT_LOCAL_URL);
   const [webViewKey, setWebViewKey] = useState(0);
+  const [refreshSeed, setRefreshSeed] = useState(() => Date.now());
   const [webError, setWebError] = useState("");
   const isWeb = Platform.OS === "web";
 
+  const forceRefresh = () => {
+    setRefreshSeed(Date.now());
+    setWebViewKey((prev) => prev + 1);
+  };
+
   const activeUrl = useMemo(() => {
-    if (environment === "production") return PRODUCTION_URL;
-    return normalizeHttpUrl(localUrlInput) || PRODUCTION_URL;
-  }, [environment, localUrlInput]);
+    return withCacheBust(PRODUCTION_URL, refreshSeed);
+  }, [refreshSeed]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>PF Control</Text>
-        <Text style={styles.headerSubtitle}>Vista app</Text>
-
-        <View style={styles.modeRow}>
-          <Pressable
-            onPress={() => setEnvironment("production")}
-            style={[styles.modeButton, environment === "production" && styles.modeButtonActive]}
-          >
-            <Text style={[styles.modeButtonText, environment === "production" && styles.modeButtonTextActive]}>
-              Produccion
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setEnvironment("local")}
-            style={[styles.modeButton, environment === "local" && styles.modeButtonActive]}
-          >
-            <Text style={[styles.modeButtonText, environment === "local" && styles.modeButtonTextActive]}>
-              Local
-            </Text>
-          </Pressable>
-        </View>
-
-        {environment === "local" ? (
-          <View style={styles.localRow}>
-            <TextInput
-              value={localUrlInput}
-              onChangeText={setLocalUrlInput}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              placeholder="http://192.168.0.25:3000"
-              placeholderTextColor="#64748b"
-              style={styles.localInput}
-            />
-            <Pressable style={styles.reloadButton} onPress={() => setWebViewKey((prev) => prev + 1)}>
-              <Text style={styles.reloadButtonText}>Abrir</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
-        <Text style={styles.urlText} numberOfLines={1}>
-          URL: {activeUrl}
-        </Text>
-        {webError ? <Text style={styles.errorText}>{webError}</Text> : null}
-      </View>
-
-      {isWeb ? (
-        <View style={styles.webview}>
-          {createElement("iframe" as any, {
-            key: `${environment}-${webViewKey}`,
-            src: activeUrl,
-            style: {
-              width: "100%",
-              height: "100%",
-              border: "0",
-              backgroundColor: "#020617",
-            },
-            onLoad: () => setWebError(""),
-            onError: () => setWebError("No se pudo cargar la URL dentro del panel."),
-          })}
-
-          <View style={styles.webHintBar}>
-            <Text style={styles.webHintText}>Si no carga en panel, abri en pestaña nueva.</Text>
-            <Pressable style={styles.webHintButton} onPress={() => Linking.openURL(activeUrl)}>
-              <Text style={styles.webHintButtonText}>Abrir</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        <WebView
-          key={`${environment}-${webViewKey}`}
-          source={{ uri: activeUrl }}
-          style={styles.webview}
-          startInLoadingState
-          onLoadStart={() => setWebError("")}
-          onError={() => setWebError("No se pudo cargar la URL. Revisa la direccion local y la red.")}
-          renderLoading={() => (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#22d3ee" />
-              <Text style={styles.loadingText}>Cargando plataforma...</Text>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="light" />
+        <View style={styles.header}>
+          <View style={styles.headerTopRow}>
+            <View style={styles.headerTopText}>
+              <Text style={styles.headerTitle}>PF Control</Text>
+              <Text style={styles.headerSubtitle}>Vista app</Text>
             </View>
-          )}
-          setSupportMultipleWindows={false}
-          javaScriptEnabled
-          domStorageEnabled
-          pullToRefreshEnabled={false}
-          overScrollMode="never"
-          androidLayerType="software"
-          androidHardwareAccelerationDisabled
-        />
-      )}
-    </SafeAreaView>
+            <View style={styles.headerTopActions}>
+              <Pressable style={styles.refreshGhostButton} onPress={forceRefresh}>
+                <Text style={styles.refreshGhostButtonText}>Refrescar</Text>
+              </Pressable>
+            </View>
+          </View>
+          {webError ? <Text style={styles.errorText}>{webError}</Text> : null}
+        </View>
+
+        {isWeb ? (
+          <View style={styles.webview}>
+            {createElement("iframe" as any, {
+              key: `${webViewKey}`,
+              src: activeUrl,
+              style: {
+                width: "100%",
+                height: "100%",
+                border: "0",
+                backgroundColor: "#020617",
+              },
+              onLoad: () => setWebError(""),
+              onError: () => setWebError("No se pudo cargar la URL dentro del panel."),
+            })}
+
+            <View style={styles.webHintBar}>
+              <Text style={styles.webHintText}>Si no carga en panel, abri en pestaña nueva.</Text>
+              <Pressable style={styles.webHintButton} onPress={() => Linking.openURL(activeUrl)}>
+                <Text style={styles.webHintButtonText}>Abrir</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <WebView
+            key={`${webViewKey}`}
+            source={{ uri: activeUrl }}
+            style={styles.webview}
+            startInLoadingState
+            cacheEnabled={false}
+            incognito={false}
+            onLoadStart={() => setWebError("")}
+            onError={() => setWebError("No se pudo cargar la URL. Revisa la direccion local y la red.")}
+            renderLoading={() => (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#73e2bf" />
+                <Text style={styles.loadingText}>Cargando plataforma...</Text>
+              </View>
+            )}
+            setSupportMultipleWindows={false}
+            javaScriptEnabled
+            domStorageEnabled
+            nestedScrollEnabled
+            cacheMode="LOAD_NO_CACHE"
+            setBuiltInZoomControls={false}
+            setDisplayZoomControls={false}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            allowsBackForwardNavigationGestures={false}
+            allowsInlineMediaPlayback={false}
+            mediaPlaybackRequiresUserAction
+            injectedJavaScriptBeforeContentLoaded={MOBILE_SCROLL_HINT_SCRIPT}
+            pullToRefreshEnabled={false}
+            overScrollMode="never"
+            androidLayerType="software"
+            androidHardwareAccelerationDisabled
+          />
+        )}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#05070a",
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(148,163,184,0.25)",
-    backgroundColor: "#0f172a",
+    paddingHorizontal: 10,
+    paddingTop: 1,
+    paddingBottom: 1,
+    borderBottomWidth: 0,
+    backgroundColor: "#05070a",
+  },
+  headerTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  headerTopText: {
+    minWidth: 0,
+    paddingVertical: 1,
+  },
+  headerTopActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   headerTitle: {
-    color: "#f8fafc",
-    fontSize: 18,
+    color: "#f4f8fc",
+    fontSize: 13,
     fontWeight: "800",
   },
   headerSubtitle: {
-    marginTop: 2,
-    color: "#94a3b8",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  modeRow: {
-    marginTop: 10,
-    flexDirection: "row",
-    gap: 8,
-  },
-  modeButton: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.35)",
-    backgroundColor: "rgba(15,23,42,0.85)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  modeButtonActive: {
-    borderColor: "rgba(34,211,238,0.7)",
-    backgroundColor: "rgba(6,182,212,0.2)",
-  },
-  modeButtonText: {
-    color: "#94a3b8",
-    fontSize: 12,
+    marginTop: 0,
+    color: "#8fa8c1",
+    fontSize: 8,
     fontWeight: "700",
   },
-  modeButtonTextActive: {
-    color: "#e0f2fe",
-  },
-  localRow: {
-    marginTop: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  localInput: {
-    flex: 1,
-    borderRadius: 10,
+  refreshGhostButton: {
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.35)",
-    backgroundColor: "#020617",
-    color: "#e2e8f0",
-    fontSize: 13,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderColor: "rgba(146,190,255,0.38)",
+    backgroundColor: "rgba(11,17,27,0.82)",
+    paddingHorizontal: 9,
+    paddingVertical: 4,
   },
-  reloadButton: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(34,211,238,0.65)",
-    backgroundColor: "rgba(6,182,212,0.2)",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  reloadButtonText: {
-    color: "#cffafe",
-    fontSize: 12,
+  refreshGhostButtonText: {
+    color: "#d8e5f4",
+    fontSize: 8,
     fontWeight: "800",
   },
-  urlText: {
-    marginTop: 8,
-    color: "#93c5fd",
-    fontSize: 11,
-    fontWeight: "600",
-  },
   errorText: {
-    marginTop: 6,
+    marginTop: 4,
     color: "#fca5a5",
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "600",
   },
   webview: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#05070a",
   },
   webHintBar: {
     position: "absolute",
@@ -240,8 +256,8 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.35)",
-    backgroundColor: "rgba(2,6,23,0.85)",
+    borderColor: "rgba(146,190,255,0.3)",
+    backgroundColor: "rgba(7,12,19,0.9)",
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -253,13 +269,13 @@ const styles = StyleSheet.create({
   webHintButton: {
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(34,211,238,0.65)",
-    backgroundColor: "rgba(6,182,212,0.2)",
+    borderColor: "rgba(166,237,218,0.7)",
+    backgroundColor: "rgba(115,226,191,0.22)",
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   webHintButtonText: {
-    color: "#cffafe",
+    color: "#ecfff7",
     fontSize: 11,
     fontWeight: "800",
   },
@@ -267,12 +283,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#020617",
+    backgroundColor: "#05070a",
     gap: 10,
   },
   loadingText: {
-    color: "#e2e8f0",
+    color: "#d9e8f8",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

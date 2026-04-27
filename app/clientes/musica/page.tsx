@@ -3,7 +3,7 @@
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 import { useAlumnos } from "../../../components/AlumnosProvider";
-import { useSharedState } from "../../../components/useSharedState";
+import { markManualSaveIntent, useSharedState } from "../../../components/useSharedState";
 
 type MusicPlatform =
   | "SPOTIFY"
@@ -24,6 +24,10 @@ type MusicaAlumno = {
   alumnoNombre: string;
   playlistName: string;
   playlistUrl: string;
+  coverUrl?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  artworkUrl?: string;
   objetivo?: string;
   diaSemana?: string;
   recommendedSongTitle?: string;
@@ -245,6 +249,38 @@ function resolveEmbeddedPlayerSource(platform: MusicPlatform, rawUrl: string): {
   }
 }
 
+async function fetchPlaylistMetadata(rawUrl: string): Promise<{ playlistName?: string; thumbnailUrl?: string } | null> {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) return null;
+
+  try {
+    const response = await fetch(`/api/musica/metadata?url=${encodeURIComponent(normalized)}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as {
+      ok?: boolean;
+      playlistName?: string | null;
+      thumbnailUrl?: string | null;
+    };
+
+    if (!payload?.ok) return null;
+
+    const playlistName = String(payload.playlistName || "").trim() || undefined;
+    const thumbnailUrl = String(payload.thumbnailUrl || "").trim() || undefined;
+
+    if (!playlistName && !thumbnailUrl) {
+      return null;
+    }
+
+    return { playlistName, thumbnailUrl };
+  } catch {
+    return null;
+  }
+}
+
 function normalizeAssignments(rawValue: unknown): MusicaAlumno[] {
   if (!Array.isArray(rawValue)) {
     return [];
@@ -281,6 +317,8 @@ function normalizeAssignments(rawValue: unknown): MusicaAlumno[] {
 
     const playlistNameRaw = String(row.playlistName || row.nombre || row.title || "").trim();
     const playlistName = playlistNameRaw || buildDefaultPlaylistName(playlistUrl, platform);
+    const syncedCoverUrl =
+      String(row.coverUrl || row.imageUrl || row.thumbnailUrl || row.artworkUrl || "").trim() || undefined;
 
     normalizedRows.push({
       id: String(row.id || mkId()),
@@ -288,6 +326,10 @@ function normalizeAssignments(rawValue: unknown): MusicaAlumno[] {
       alumnoNombre: String(row.alumnoNombre || row.alumno || "").trim(),
       playlistName,
       playlistUrl,
+      coverUrl: syncedCoverUrl,
+      imageUrl: syncedCoverUrl,
+      thumbnailUrl: syncedCoverUrl,
+      artworkUrl: syncedCoverUrl,
       objetivo: String(row.objetivo || "").trim() || undefined,
       diaSemana: String(row.diaSemana || "").trim() || undefined,
       recommendedSongTitle: String(row.recommendedSongTitle || "").trim() || undefined,
@@ -308,6 +350,7 @@ function signature(rows: MusicaAlumno[]): string {
         item.alumnoNombre,
         item.playlistName,
         item.playlistUrl,
+        item.coverUrl || "",
         item.objetivo || "",
         item.diaSemana || "",
         item.recommendedSongTitle || "",
@@ -363,6 +406,7 @@ export default function ClientesMusicaPage() {
   const [previewAlumno, setPreviewAlumno] = useState("TODOS");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setAssignments((prev) => {
@@ -429,7 +473,9 @@ export default function ClientesMusicaPage() {
         }
       : null;
 
-  const addAssignment = () => {
+  const addAssignment = async () => {
+    if (isSaving) return;
+
     setStatus("");
     setError("");
 
@@ -442,32 +488,47 @@ export default function ClientesMusicaPage() {
     }
 
     const resolvedPlatform = platform === "AUTO" ? inferPlatformFromUrl(url) : platform;
-    const resolvedName = playlistName.trim() || buildDefaultPlaylistName(url, resolvedPlatform);
+    setIsSaving(true);
 
-    const next: MusicaAlumno = {
-      id: mkId(),
-      platform: resolvedPlatform,
-      alumnoNombre: target,
-      playlistName: resolvedName,
-      playlistUrl: url,
-      objetivo: objetivo.trim() || undefined,
-      diaSemana: diaSemana.trim() || undefined,
-      recommendedSongTitle: recommendedSongTitle.trim() || undefined,
-      recommendedSongArtist: recommendedSongArtist.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const metadata = await fetchPlaylistMetadata(url);
+      const metadataCover = String(metadata?.thumbnailUrl || "").trim() || undefined;
+      const metadataPlaylistName = String(metadata?.playlistName || "").trim() || undefined;
+      const resolvedName =
+        playlistName.trim() || metadataPlaylistName || buildDefaultPlaylistName(url, resolvedPlatform);
 
-    setAssignments((prev) => [next, ...(Array.isArray(prev) ? prev : [])]);
-    setStatus(target ? "Asignacion guardada para el alumno." : "Playlist guardada en musica general.");
-    setSelectedCatalogUrl("");
-    setPlatform("AUTO");
+      const next: MusicaAlumno = {
+        id: mkId(),
+        platform: resolvedPlatform,
+        alumnoNombre: target,
+        playlistName: resolvedName,
+        playlistUrl: url,
+        coverUrl: metadataCover,
+        imageUrl: metadataCover,
+        thumbnailUrl: metadataCover,
+        artworkUrl: metadataCover,
+        objetivo: objetivo.trim() || undefined,
+        diaSemana: diaSemana.trim() || undefined,
+        recommendedSongTitle: recommendedSongTitle.trim() || undefined,
+        recommendedSongArtist: recommendedSongArtist.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      };
 
-    setPlaylistName("");
-    setPlaylistUrl("");
-    setObjetivo("");
-    setDiaSemana("");
-    setRecommendedSongTitle("");
-    setRecommendedSongArtist("");
+      markManualSaveIntent(STORAGE_KEY);
+      setAssignments((prev) => [next, ...(Array.isArray(prev) ? prev : [])]);
+      setStatus(target ? "Asignacion guardada para el alumno." : "Playlist guardada en musica general.");
+      setSelectedCatalogUrl("");
+      setPlatform("AUTO");
+
+      setPlaylistName("");
+      setPlaylistUrl("");
+      setObjetivo("");
+      setDiaSemana("");
+      setRecommendedSongTitle("");
+      setRecommendedSongArtist("");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const loadFromCatalog = (url: string) => {
@@ -492,6 +553,7 @@ export default function ClientesMusicaPage() {
   const removeAssignment = (id: string) => {
     setStatus("");
     setError("");
+    markManualSaveIntent(STORAGE_KEY);
     setAssignments((prev) => (Array.isArray(prev) ? prev.filter((item) => item.id !== id) : []));
     setStatus("Asignacion eliminada.");
   };
@@ -630,22 +692,16 @@ export default function ClientesMusicaPage() {
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Preview del reproductor</p>
             <p className="mt-1 text-sm font-semibold text-slate-100">{previewItem.playlistName}</p>
             <MusicPlayer item={previewItem} />
-            <ReliableActionButton
-              type="button"
-              onClick={addAssignment}
-              className="mt-3 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
-            >
-              Guardar asignacion musical
-            </ReliableActionButton>
           </div>
         ) : null}
 
         <ReliableActionButton
           type="button"
           onClick={addAssignment}
+          disabled={isSaving}
           className="mt-4 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
         >
-          Guardar asignacion musical
+          {isSaving ? "Guardando..." : "Guardar asignacion musical (sync automatico)"}
         </ReliableActionButton>
 
         {status ? <p className="mt-3 text-sm text-emerald-300">{status}</p> : null}
