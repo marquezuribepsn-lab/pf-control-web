@@ -2146,12 +2146,26 @@ export default function AlumnoVisionClient({
   );
 
   const openPayments = useCallback(() => {
-    if (typeof window !== "undefined" && isUltraMobile) {
-      window.location.assign("/alumnos/pagos");
+    const targetHref = "/alumnos/pagos";
+
+    if (typeof window === "undefined") {
+      router.push(targetHref);
       return;
     }
 
-    router.push("/alumnos/pagos");
+    if (isUltraMobile) {
+      window.location.assign(targetHref);
+      return;
+    }
+
+    router.push(targetHref);
+
+    // WebView fallback: if router navigation is swallowed, force a hard navigation.
+    window.setTimeout(() => {
+      if (window.location.pathname !== targetHref) {
+        window.location.assign(targetHref);
+      }
+    }, 180);
   }, [isUltraMobile, router]);
 
   const openMusicPlaylistExternal = useCallback((assignment: MusicAssignmentLite) => {
@@ -2302,6 +2316,8 @@ export default function AlumnoVisionClient({
                   <ReliableActionButton
                     type="button"
                     onClick={openPayments}
+                    onPointerUp={() => openPayments()}
+                    data-nav-href="/alumnos/pagos"
                     className="pf-a2-ghost-btn rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-[0.12em]"
                   >
                     Pagos
@@ -2389,6 +2405,8 @@ export default function AlumnoVisionClient({
                 <ReliableActionButton
                   type="button"
                   onClick={openPayments}
+                  onPointerUp={() => openPayments()}
+                  data-nav-href="/alumnos/pagos"
                   className="pf-a3-main-action-btn"
                 >
                   Controles
@@ -2571,6 +2589,8 @@ export default function AlumnoVisionClient({
                   <ReliableActionButton
                     type="button"
                     onClick={openPayments}
+                    onPointerUp={() => openPayments()}
+                    data-nav-href="/alumnos/pagos"
                     className="pf-a3-quick-item"
                   >
                     <span className="pf-a3-quick-icon pf-a3-quick-icon-pagos" aria-hidden="true">
@@ -2677,6 +2697,8 @@ export default function AlumnoVisionClient({
                   <ReliableActionButton
                     type="button"
                     onClick={openPayments}
+                    onPointerUp={() => openPayments()}
+                    data-nav-href="/alumnos/pagos"
                     className="pf-a3-link-btn"
                     aria-label="Ir a pagos"
                     title="Pagos"
@@ -2969,6 +2991,8 @@ export default function AlumnoVisionClient({
                 <ReliableActionButton
                   type="button"
                   onClick={openPayments}
+                  onPointerUp={() => openPayments()}
+                  data-nav-href="/alumnos/pagos"
                   className="pf-a2-ghost-btn mt-4 rounded-xl border px-4 py-2 text-sm font-semibold"
                 >
                   Revisar estado de pagos
