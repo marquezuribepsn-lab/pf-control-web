@@ -81,10 +81,6 @@ export default auth((req) => {
       return NextResponse.next();
     }
 
-    if (pathname === '/alumnos/pagos') {
-      return NextResponse.redirect(new URL('/alumnos/inicio', req.url));
-    }
-
     if (!canClienteAccess(pathname)) {
       return NextResponse.redirect(new URL('/alumnos', req.url));
     }

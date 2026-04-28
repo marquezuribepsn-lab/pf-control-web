@@ -226,15 +226,8 @@ export default function AlumnoPagosClient() {
   useEffect(() => {
     if (!status?.active) return;
 
-    setMessage("Pago confirmado. Redirigiendo al inicio...");
-    const timeoutId = window.setTimeout(() => {
-      router.replace("/alumnos/inicio");
-    }, 1300);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [router, status?.active]);
+    setMessage((previous) => previous || "Tu pase esta activo. Puedes revisar tu estado cuando quieras.");
+  }, [status?.active]);
 
   const startCheckout = async () => {
     if (!status) return;
