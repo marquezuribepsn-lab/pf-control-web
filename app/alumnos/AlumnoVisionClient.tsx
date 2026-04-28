@@ -2468,42 +2468,44 @@ export default function AlumnoVisionClient({
                   </div>
                 ) : null}
 
-                <div className="pf-a3-music-scroll" role="list" aria-label="Playlists recomendadas">
-                  {homeMusicCards.map((track) => {
-                    const coverInitials = getInitials(track.title);
+                {!selectedMusicAssignment ? (
+                  <div className="pf-a3-music-scroll" role="list" aria-label="Playlists recomendadas">
+                    {homeMusicCards.map((track) => {
+                      const coverInitials = getInitials(track.title);
 
-                    return (
-                      <ReliableActionButton
-                        key={track.id}
-                        type="button"
-                        onClick={() => handleHomeMusicCardPress(track)}
-                        className="pf-a3-music-card pf-a3-music-card-action"
-                        role="listitem"
-                        aria-label={`Abrir musica: ${track.title}`}
-                      >
-                        <div className={`pf-a3-music-cover ${track.accentClass}`}>
-                          {track.coverUrl ? (
-                            <img src={track.coverUrl} alt={track.title} className="pf-a3-music-image" loading="lazy" />
-                          ) : (
-                            <div className="pf-a3-music-fallback-shell">
-                              <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
-                              <span className="pf-a3-music-fallback">{coverInitials}</span>
-                              <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
-                            </div>
-                          )}
-                        </div>
-                        <p className="pf-a3-music-title">{track.title}</p>
-                        <p className="pf-a3-music-artist">{track.artist}</p>
-                        <p className="pf-a3-music-hint">
-                          {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
-                        </p>
-                        <p className="pf-a3-music-hint-secondary">
-                          {track.playlistUrl ? "Tocar para escuchar" : "Tocar para abrir musica"}
-                        </p>
-                      </ReliableActionButton>
-                    );
-                  })}
-                </div>
+                      return (
+                        <ReliableActionButton
+                          key={track.id}
+                          type="button"
+                          onClick={() => handleHomeMusicCardPress(track)}
+                          className="pf-a3-music-card pf-a3-music-card-action"
+                          role="listitem"
+                          aria-label={`Abrir musica: ${track.title}`}
+                        >
+                          <div className={`pf-a3-music-cover ${track.accentClass}`}>
+                            {track.coverUrl ? (
+                              <img src={track.coverUrl} alt={track.title} className="pf-a3-music-image" loading="lazy" />
+                            ) : (
+                              <div className="pf-a3-music-fallback-shell">
+                                <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
+                                <span className="pf-a3-music-fallback">{coverInitials}</span>
+                                <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="pf-a3-music-title">{track.title}</p>
+                          <p className="pf-a3-music-artist">{track.artist}</p>
+                          <p className="pf-a3-music-hint">
+                            {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
+                          </p>
+                          <p className="pf-a3-music-hint-secondary">
+                            {track.playlistUrl ? "Tocar para escuchar" : "Tocar para abrir musica"}
+                          </p>
+                        </ReliableActionButton>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </section>
 
               <section className="pf-a3-panel-block">
