@@ -59,6 +59,8 @@ export type PaymentOrderRecord = {
   status: PaymentOrderStatus;
   providerStatus: string | null;
   providerPaymentId: string | null;
+  receiptNumber: string | null;
+  receiptIssuedAt: string | null;
   approvedAt: string | null;
   adminNote: string | null;
   reviewedByUserId: string | null;
@@ -233,6 +235,15 @@ function normalizePaymentStatus(value: unknown): PaymentOrderStatus {
 
 function createOrderId() {
   return `pay-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildManualReceiptNumber() {
+  const now = new Date();
+  const yyyy = String(now.getFullYear());
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const suffix = Math.random().toString(36).slice(2, 7).toUpperCase();
+  return `CMP-${yyyy}${mm}${dd}-${suffix}`;
 }
 
 export async function getClientMetaMap(): Promise<ClientMetaMap> {
@@ -447,6 +458,8 @@ export async function getPaymentOrders(): Promise<PaymentOrderRecord[]> {
         status: normalizePaymentStatus(value.status),
         providerStatus: value.providerStatus ? String(value.providerStatus) : null,
         providerPaymentId: value.providerPaymentId ? String(value.providerPaymentId) : null,
+        receiptNumber: normalizeOptionalText(value.receiptNumber),
+        receiptIssuedAt: normalizeOptionalText(value.receiptIssuedAt),
         approvedAt: value.approvedAt ? String(value.approvedAt) : null,
         adminNote: normalizeOptionalText(value.adminNote),
         reviewedByUserId: normalizeOptionalText(value.reviewedByUserId),
@@ -477,6 +490,8 @@ export async function createPaymentOrder(input: {
   providerStatus?: string | null;
   preferenceId?: string | null;
   checkoutUrl?: string | null;
+  receiptNumber?: string | null;
+  receiptIssuedAt?: string | null;
   adminNote?: string | null;
   reviewedByUserId?: string | null;
   reviewedByUserEmail?: string | null;
@@ -501,6 +516,8 @@ export async function createPaymentOrder(input: {
     status: normalizePaymentStatus(input.status || "pending"),
     providerStatus: normalizeOptionalText(input.providerStatus),
     providerPaymentId: null,
+    receiptNumber: normalizeOptionalText(input.receiptNumber),
+    receiptIssuedAt: normalizeOptionalText(input.receiptIssuedAt),
     approvedAt: null,
     adminNote: normalizeOptionalText(input.adminNote),
     reviewedByUserId: normalizeOptionalText(input.reviewedByUserId),
@@ -541,6 +558,8 @@ export async function createManualPaymentRequest(input: {
     periodDays: input.periodDays,
     status: "pending",
     providerStatus: "pending_admin_confirmation",
+    receiptNumber: buildManualReceiptNumber(),
+    receiptIssuedAt: nowIso(),
     adminNote: input.note || null,
   });
 }
@@ -550,6 +569,8 @@ type PaymentOrderPatch = Partial<Pick<
   | "status"
   | "providerStatus"
   | "providerPaymentId"
+  | "receiptNumber"
+  | "receiptIssuedAt"
   | "approvedAt"
   | "checkoutUrl"
   | "preferenceId"
@@ -570,6 +591,12 @@ function applyOrderPatch(current: PaymentOrderRecord, patch: PaymentOrderPatch):
     providerPaymentId: patch.providerPaymentId !== undefined
       ? normalizeOptionalText(patch.providerPaymentId)
       : current.providerPaymentId,
+    receiptNumber: patch.receiptNumber !== undefined
+      ? normalizeOptionalText(patch.receiptNumber)
+      : current.receiptNumber,
+    receiptIssuedAt: patch.receiptIssuedAt !== undefined
+      ? normalizeOptionalText(patch.receiptIssuedAt)
+      : current.receiptIssuedAt,
     approvedAt: patch.approvedAt !== undefined ? normalizeOptionalText(patch.approvedAt) : current.approvedAt,
     checkoutUrl: patch.checkoutUrl !== undefined ? normalizeOptionalText(patch.checkoutUrl) : current.checkoutUrl,
     preferenceId: patch.preferenceId !== undefined ? normalizeOptionalText(patch.preferenceId) : current.preferenceId,
@@ -653,6 +680,16 @@ export async function getLatestPaymentOrderForEmail(email: string): Promise<Paym
 
   const orders = await getPaymentOrders();
   return orders.find((item) => item.email === normalizedEmail) || null;
+}
+
+export async function getLatestApprovedPaymentOrderForEmail(email: string): Promise<PaymentOrderRecord | null> {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return null;
+
+  const orders = await getPaymentOrders();
+  return (
+    orders.find((item) => item.email === normalizedEmail && item.status === "approved") || null
+  );
 }
 
 export function getBillingDefaults(meta: ClienteMetaBilling | null | undefined) {

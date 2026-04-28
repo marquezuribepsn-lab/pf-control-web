@@ -6,6 +6,7 @@ import {
   type ManualPaymentMethod,
   resolveBillingAccessByEmail,
 } from "@/lib/billing";
+import { sendWhatsAppInternalAlert } from "@/lib/whatsappAlerts";
 
 function toPositiveAmount(value: unknown, fallback: number): number {
   const parsed = Number(value);
@@ -30,6 +31,18 @@ function resolveManualMethod(value: unknown): ManualPaymentMethod | null {
     return normalized;
   }
   return null;
+}
+
+function formatMoney(amount: number, currency: string): string {
+  const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  return `${currency.toUpperCase()} ${safeAmount.toLocaleString("es-AR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function resolveMethodLabel(method: ManualPaymentMethod): string {
+  return method === "transferencia" ? "Transferencia" : "Efectivo";
 }
 
 export async function POST(req: NextRequest) {
@@ -90,15 +103,52 @@ export async function POST(req: NextRequest) {
     note,
   });
 
+  const alertMessageLines = [
+    "PF Control · Pago manual reportado",
+    `Alumno: ${email}`,
+    `Metodo: ${resolveMethodLabel(method)}`,
+    `Importe: ${formatMoney(amount, currency)}`,
+    `Periodo: ${periodDays} dias`,
+    `Comprobante: ${order.receiptNumber || order.id}`,
+    `Fecha: ${new Date(order.createdAt).toLocaleString("es-AR")}`,
+  ];
+
+  if (note) {
+    alertMessageLines.push(`Nota: ${note}`);
+  }
+
+  let whatsAppAlertSent = false;
+  try {
+    const alertResult = await sendWhatsAppInternalAlert(alertMessageLines.join("\n"));
+    whatsAppAlertSent = Boolean(alertResult?.ok);
+  } catch {
+    whatsAppAlertSent = false;
+  }
+
   return NextResponse.json({
     ok: true,
     message: "Solicitud enviada. El admin debe confirmar el pago para renovar tu pase.",
+    whatsAppAlertSent,
     order: {
       id: order.id,
       status: order.status,
       paymentMethod: order.paymentMethod,
       providerStatus: order.providerStatus,
       createdAt: order.createdAt,
+      receiptNumber: order.receiptNumber,
+      receiptIssuedAt: order.receiptIssuedAt,
+      amount: order.amount,
+      currency: order.currency,
+      periodDays: order.periodDays,
+    },
+    receipt: {
+      number: order.receiptNumber,
+      issuedAt: order.receiptIssuedAt,
+      amount: order.amount,
+      currency: order.currency,
+      periodDays: order.periodDays,
+      paymentMethod: order.paymentMethod,
+      status: order.status,
     },
   });
 }

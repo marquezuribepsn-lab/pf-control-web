@@ -32,6 +32,8 @@ function mapOrderForResponse(order: Awaited<ReturnType<typeof getManualPaymentOr
     amount: order.amount,
     currency: order.currency,
     periodDays: order.periodDays,
+    receiptNumber: order.receiptNumber,
+    receiptIssuedAt: order.receiptIssuedAt,
     createdAt: order.createdAt,
     approvedAt: order.approvedAt,
     reviewedAt: order.reviewedAt,

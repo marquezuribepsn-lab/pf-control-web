@@ -16,6 +16,8 @@ type ManualOrder = {
   amount: number;
   currency: string;
   periodDays: number;
+  receiptNumber: string | null;
+  receiptIssuedAt: string | null;
   createdAt: string;
   approvedAt: string | null;
   reviewedAt: string | null;
@@ -53,8 +55,59 @@ type ResumenMensualIngreso = {
   moneda: string;
 };
 
+type TransferAccount = {
+  id: string;
+  label: string;
+  bankName: string;
+  accountType: string;
+  holderName: string;
+  holderDocument: string;
+  accountNumber: string;
+  cbu: string;
+  alias: string;
+  notes: string;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type TransferAccountsResponse = {
+  ok?: boolean;
+  total?: number;
+  accounts?: TransferAccount[];
+  message?: string;
+};
+
+type TransferAccountFormState = {
+  id: string;
+  label: string;
+  bankName: string;
+  accountType: string;
+  holderName: string;
+  holderDocument: string;
+  accountNumber: string;
+  cbu: string;
+  alias: string;
+  notes: string;
+  isVisible: boolean;
+};
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const PAGOS_KEY = "pf-control-pagos-v1";
+
+const EMPTY_TRANSFER_ACCOUNT_FORM: TransferAccountFormState = {
+  id: "",
+  label: "",
+  bankName: "",
+  accountType: "",
+  holderName: "",
+  holderDocument: "",
+  accountNumber: "",
+  cbu: "",
+  alias: "",
+  notes: "",
+  isVisible: true,
+};
 
 function parseMoneyAmount(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -137,6 +190,12 @@ export default function AdminPagosManualPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [notesByOrderId, setNotesByOrderId] = useState<Record<string, string>>({});
+  const [transferAccounts, setTransferAccounts] = useState<TransferAccount[]>([]);
+  const [accountForm, setAccountForm] = useState<TransferAccountFormState>(EMPTY_TRANSFER_ACCOUNT_FORM);
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
+  const [accountMessage, setAccountMessage] = useState("");
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -166,6 +225,34 @@ export default function AdminPagosManualPage() {
     }
     void loadOrders();
   }, [loadOrders, role, sessionStatus]);
+
+  const loadTransferAccounts = useCallback(async () => {
+    setAccountLoading(true);
+    setAccountError("");
+
+    try {
+      const response = await fetch("/api/admin/payments/accounts", { cache: "no-store" });
+      const data = (await response.json().catch(() => ({}))) as TransferAccountsResponse;
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo cargar cuentas de transferencia."));
+      }
+
+      setTransferAccounts(Array.isArray(data.accounts) ? data.accounts : []);
+    } catch (err) {
+      setTransferAccounts([]);
+      setAccountError(err instanceof Error ? err.message : "No se pudo cargar cuentas de transferencia.");
+    } finally {
+      setAccountLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated" || role !== "ADMIN") {
+      return;
+    }
+    void loadTransferAccounts();
+  }, [loadTransferAccounts, role, sessionStatus]);
 
   const pendingCount = useMemo(
     () => orders.filter((order) => String(order.status || "").toLowerCase() === "pending").length,
@@ -272,6 +359,134 @@ export default function AdminPagosManualPage() {
     }
   };
 
+  const startEditTransferAccount = (account: TransferAccount) => {
+    setAccountMessage("");
+    setAccountError("");
+    setAccountForm({
+      id: account.id,
+      label: account.label,
+      bankName: account.bankName,
+      accountType: account.accountType,
+      holderName: account.holderName,
+      holderDocument: account.holderDocument,
+      accountNumber: account.accountNumber,
+      cbu: account.cbu,
+      alias: account.alias,
+      notes: account.notes,
+      isVisible: account.isVisible,
+    });
+  };
+
+  const resetTransferAccountForm = () => {
+    setAccountForm(EMPTY_TRANSFER_ACCOUNT_FORM);
+  };
+
+  const saveTransferAccount = async () => {
+    setAccountSaving(true);
+    setAccountError("");
+    setAccountMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/accounts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(accountForm),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo guardar la cuenta."));
+      }
+
+      setAccountMessage(String(data.message || "Cuenta guardada."));
+      resetTransferAccountForm();
+      await loadTransferAccounts();
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : "No se pudo guardar la cuenta.");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  const removeTransferAccount = async (id: string) => {
+    const normalizedId = String(id || "").trim();
+    if (!normalizedId) return;
+
+    setAccountSaving(true);
+    setAccountError("");
+    setAccountMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/accounts", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: normalizedId }),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo eliminar la cuenta."));
+      }
+
+      setAccountMessage(String(data.message || "Cuenta eliminada."));
+      if (accountForm.id === normalizedId) {
+        resetTransferAccountForm();
+      }
+      await loadTransferAccounts();
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : "No se pudo eliminar la cuenta.");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  const toggleTransferAccountVisibility = async (account: TransferAccount) => {
+    setAccountSaving(true);
+    setAccountError("");
+    setAccountMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/accounts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: account.id,
+          isVisible: !account.isVisible,
+        }),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo actualizar visibilidad."));
+      }
+
+      setAccountMessage(String(data.message || "Visibilidad actualizada."));
+      await loadTransferAccounts();
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : "No se pudo actualizar visibilidad.");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
   if (sessionStatus === "loading") {
     return (
       <main className="mx-auto max-w-5xl p-6 text-slate-100">
@@ -331,6 +546,18 @@ export default function AdminPagosManualPage() {
       {error ? (
         <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
           {error}
+        </section>
+      ) : null}
+
+      {accountMessage ? (
+        <section className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+          {accountMessage}
+        </section>
+      ) : null}
+
+      {accountError ? (
+        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {accountError}
         </section>
       ) : null}
 
@@ -395,6 +622,269 @@ export default function AdminPagosManualPage() {
         )}
       </section>
 
+      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
+        <h2 className="text-xl font-black text-white">Cuentas destino para transferencia</h2>
+        <p className="mt-1 text-sm text-slate-300">
+          Carga aca las cuentas bancarias/corrientes que se mostraran a los alumnos al informar pagos por transferencia.
+        </p>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+              {accountForm.id ? "Editar cuenta" : "Nueva cuenta"}
+            </h3>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="text-xs text-slate-300">
+                Etiqueta visible
+                <input
+                  value={accountForm.label}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      label: event.target.value,
+                    }))
+                  }
+                  placeholder="Cuenta principal"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Banco / billetera
+                <input
+                  value={accountForm.bankName}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      bankName: event.target.value,
+                    }))
+                  }
+                  placeholder="Banco Galicia"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Tipo de cuenta
+                <input
+                  value={accountForm.accountType}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      accountType: event.target.value,
+                    }))
+                  }
+                  placeholder="Caja de ahorro"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Titular
+                <input
+                  value={accountForm.holderName}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      holderName: event.target.value,
+                    }))
+                  }
+                  placeholder="Nombre del titular"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                CUIT / Documento
+                <input
+                  value={accountForm.holderDocument}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      holderDocument: event.target.value,
+                    }))
+                  }
+                  placeholder="20-12345678-9"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Numero de cuenta
+                <input
+                  value={accountForm.accountNumber}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      accountNumber: event.target.value,
+                    }))
+                  }
+                  placeholder="000123456789"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                CBU/CVU
+                <input
+                  value={accountForm.cbu}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      cbu: event.target.value,
+                    }))
+                  }
+                  placeholder="0000003100000000000000"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300 sm:col-span-2">
+                Alias
+                <input
+                  value={accountForm.alias}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      alias: event.target.value,
+                    }))
+                  }
+                  placeholder="mi.alias.pagos"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300 sm:col-span-2">
+                Nota opcional
+                <textarea
+                  value={accountForm.notes}
+                  onChange={(event) =>
+                    setAccountForm((prev) => ({
+                      ...prev,
+                      notes: event.target.value,
+                    }))
+                  }
+                  rows={2}
+                  placeholder="Ejemplo: enviar comprobante por WhatsApp al finalizar la transferencia"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+            </div>
+
+            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={accountForm.isVisible}
+                onChange={(event) =>
+                  setAccountForm((prev) => ({
+                    ...prev,
+                    isVisible: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4 rounded border-white/20 bg-slate-900"
+              />
+              Visible para alumnos
+            </label>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => void saveTransferAccount()}
+                disabled={accountSaving}
+                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {accountSaving ? "Guardando..." : accountForm.id ? "Actualizar cuenta" : "Guardar cuenta"}
+              </ReliableActionButton>
+
+              <ReliableActionButton
+                type="button"
+                onClick={resetTransferAccountForm}
+                disabled={accountSaving}
+                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                Limpiar
+              </ReliableActionButton>
+            </div>
+          </article>
+
+          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+              Cuentas cargadas
+            </h3>
+
+            {accountLoading ? (
+              <p className="mt-3 text-sm text-slate-300">Cargando cuentas...</p>
+            ) : transferAccounts.length === 0 ? (
+              <p className="mt-3 text-sm text-slate-400">Todavia no hay cuentas de transferencia cargadas.</p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {transferAccounts.map((account) => (
+                  <div key={account.id} className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold text-white">{account.label}</p>
+                        <p className="text-xs text-slate-400">
+                          {account.bankName || "Banco no definido"}
+                          {account.accountType ? ` · ${account.accountType}` : ""}
+                        </p>
+                      </div>
+                      <span
+                        className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
+                          account.isVisible
+                            ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
+                            : "border-slate-400/40 bg-slate-700/30 text-slate-200"
+                        }`}
+                      >
+                        {account.isVisible ? "Visible" : "Oculta"}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 space-y-1 text-xs text-slate-300">
+                      {account.holderName ? <p>Titular: {account.holderName}</p> : null}
+                      {account.holderDocument ? <p>CUIT/DNI: {account.holderDocument}</p> : null}
+                      {account.accountNumber ? <p>Nro cuenta: {account.accountNumber}</p> : null}
+                      {account.cbu ? <p>CBU/CVU: {account.cbu}</p> : null}
+                      {account.alias ? <p>Alias: {account.alias}</p> : null}
+                      {account.notes ? <p>Nota: {account.notes}</p> : null}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => startEditTransferAccount(account)}
+                        disabled={accountSaving}
+                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/12 px-3 py-1.5 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        Editar
+                      </ReliableActionButton>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void toggleTransferAccountVisibility(account)}
+                        disabled={accountSaving}
+                        className="rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        {account.isVisible ? "Ocultar" : "Mostrar"}
+                      </ReliableActionButton>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void removeTransferAccount(account.id)}
+                        disabled={accountSaving}
+                        className="rounded-lg border border-rose-300/40 bg-rose-500/12 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        Eliminar
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+        </div>
+      </section>
+
       <section className="space-y-3">
         <div>
           <h2 className="text-xl font-black text-white">Confirmaciones manuales</h2>
@@ -452,6 +942,13 @@ export default function AdminPagosManualPage() {
 
                 {order.adminNote ? (
                   <p className="mt-3 text-sm text-slate-300">Nota alumno/admin previa: {order.adminNote}</p>
+                ) : null}
+
+                {order.receiptNumber || order.receiptIssuedAt ? (
+                  <p className="mt-2 text-xs text-cyan-200">
+                    Comprobante: {order.receiptNumber || "-"}
+                    {order.receiptIssuedAt ? ` · Emitido: ${formatDate(order.receiptIssuedAt)}` : ""}
+                  </p>
                 ) : null}
 
                 {!pending ? (

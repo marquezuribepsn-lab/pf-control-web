@@ -16,6 +16,15 @@ type PaymentStatusResponse = {
     currency: string;
     periodDays: number;
   };
+  paymentSummary: {
+    isPaid: boolean;
+    planValidUntil: string | null;
+    latestPaymentAt: string | null;
+    latestPaymentAmount: number | null;
+    latestPaymentCurrency: string | null;
+    latestPaymentMethod: "mercadopago" | "transferencia" | "efectivo" | null;
+    latestPaymentOrderId: string | null;
+  };
   latestOrder: {
     id: string;
     provider: "mercadopago" | "manual";
@@ -29,6 +38,20 @@ type PaymentStatusResponse = {
     approvedAt: string | null;
     adminNote: string | null;
     reviewedAt: string | null;
+    receiptNumber: string | null;
+    receiptIssuedAt: string | null;
+  } | null;
+  latestApprovedOrder: {
+    id: string;
+    provider: "mercadopago" | "manual";
+    paymentMethod: "mercadopago" | "transferencia" | "efectivo";
+    status: string;
+    amount: number;
+    currency: string;
+    createdAt: string;
+    approvedAt: string | null;
+    receiptNumber: string | null;
+    receiptIssuedAt: string | null;
   } | null;
   providerConfigured: boolean;
   manualMethodsEnabled: boolean;
@@ -37,6 +60,28 @@ type PaymentStatusResponse = {
     accountLabel: string | null;
     collectorGuardEnabled: boolean;
   };
+  transferAccounts: Array<{
+    id: string;
+    label: string;
+    bankName: string;
+    accountType: string;
+    holderName: string;
+    holderDocument: string;
+    accountNumber: string;
+    cbu: string;
+    alias: string;
+    notes: string;
+  }>;
+};
+
+type ManualPaymentReceipt = {
+  number: string | null;
+  issuedAt: string | null;
+  amount: number;
+  currency: string;
+  periodDays: number;
+  paymentMethod: "transferencia" | "efectivo" | "mercadopago";
+  status: string;
 };
 
 function formatDate(value: string | null | undefined): string {
@@ -147,6 +192,7 @@ export default function AlumnoPagosClient() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [manualLoadingMethod, setManualLoadingMethod] = useState<"transferencia" | "efectivo" | null>(null);
   const [manualNote, setManualNote] = useState("");
+  const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -291,6 +337,7 @@ export default function AlumnoPagosClient() {
       const data = (await response.json().catch(() => ({}))) as {
         ok?: boolean;
         message?: string;
+        receipt?: ManualPaymentReceipt;
       };
 
       if (!response.ok) {
@@ -301,6 +348,7 @@ export default function AlumnoPagosClient() {
         data.message ||
           "Solicitud enviada. Queda pendiente de confirmacion del admin para renovar tu pase."
       );
+      setManualReceipt(data.receipt || null);
       setManualNote("");
       await loadStatus();
     } catch (manualError) {
@@ -402,20 +450,41 @@ export default function AlumnoPagosClient() {
                 : resolveReasonDetail(status?.reason || "no-meta")}
             </p>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="pf-a2-kpi rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Inicio</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Pago al dia</p>
                 <p className="mt-1 text-sm font-semibold text-slate-100">
-                  {formatDate(status?.billing.startDate)}
+                  {status?.paymentSummary?.isPaid ? "Si" : "No"}
                 </p>
               </div>
               <div className="pf-a2-kpi rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Vencimiento</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Vigencia del plan</p>
                 <p className="mt-1 text-sm font-semibold text-slate-100">
-                  {formatDate(status?.billing.endDate)}
+                  {formatDate(status?.paymentSummary?.planValidUntil || status?.billing.endDate)}
+                </p>
+              </div>
+              <div className="pf-a2-kpi rounded-xl border p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Ultimo pago</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">
+                  {formatDate(status?.paymentSummary?.latestPaymentAt)}
                 </p>
               </div>
             </div>
+
+            {status?.paymentSummary?.latestPaymentAt ? (
+              <p className="mt-3 text-xs text-slate-300">
+                Ultimo pago confirmado: {formatDate(status.paymentSummary.latestPaymentAt)}
+                {typeof status.paymentSummary.latestPaymentAmount === "number"
+                  ? ` · ${formatMoney(
+                      status.paymentSummary.latestPaymentAmount,
+                      status.paymentSummary.latestPaymentCurrency || status.billing.currency
+                    )}`
+                  : ""}
+                {status.paymentSummary.latestPaymentMethod
+                  ? ` · ${resolvePaymentMethodLabel(status.paymentSummary.latestPaymentMethod)}`
+                  : ""}
+              </p>
+            ) : null}
 
             <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Monto de renovacion</p>
@@ -459,6 +528,35 @@ export default function AlumnoPagosClient() {
               Si ya pagaste por fuera de Mercado Pago, envia el aviso para revision del admin.
             </p>
 
+            <div className="mt-3 rounded-xl border border-white/15 bg-slate-950/45 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                Cuentas destino (transferencia)
+              </p>
+              {Array.isArray(status?.transferAccounts) && status.transferAccounts.length > 0 ? (
+                <div className="mt-2 space-y-2">
+                  {status.transferAccounts.map((account) => (
+                    <article key={account.id} className="rounded-lg border border-white/10 bg-slate-900/70 p-2.5 text-xs text-slate-200">
+                      <p className="font-semibold text-slate-100">{account.label}</p>
+                      <p className="text-slate-300">
+                        {account.bankName || "Banco no definido"}
+                        {account.accountType ? ` · ${account.accountType}` : ""}
+                      </p>
+                      {account.holderName ? <p>Titular: {account.holderName}</p> : null}
+                      {account.holderDocument ? <p>CUIT/DNI: {account.holderDocument}</p> : null}
+                      {account.accountNumber ? <p>Nro cuenta: {account.accountNumber}</p> : null}
+                      {account.cbu ? <p>CBU/CVU: {account.cbu}</p> : null}
+                      {account.alias ? <p>Alias: {account.alias}</p> : null}
+                      {account.notes ? <p>Nota: {account.notes}</p> : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-slate-400">
+                  El admin aun no cargo cuentas de transferencia visibles.
+                </p>
+              )}
+            </div>
+
             <label className="mt-3 block text-[11px] uppercase tracking-[0.14em] text-slate-400" htmlFor="manual-note">
               Nota opcional
             </label>
@@ -491,6 +589,22 @@ export default function AlumnoPagosClient() {
               </ReliableActionButton>
             </div>
 
+            {manualReceipt ? (
+              <section className="pf-a2-kpi mt-4 rounded-xl border p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comprobante generado</p>
+                <p className="mt-1 text-sm font-semibold text-slate-100">
+                  {manualReceipt.number || "Sin numero"}
+                </p>
+                <p className="mt-1 text-xs text-slate-300">
+                  Emitido: {formatDate(manualReceipt.issuedAt)} · Metodo: {resolvePaymentMethodLabel(manualReceipt.paymentMethod)}
+                </p>
+                <p className="mt-1 text-xs text-slate-300">
+                  {formatMoney(manualReceipt.amount, manualReceipt.currency)} · Periodo: {manualReceipt.periodDays} dias
+                </p>
+                <p className="mt-1 text-xs text-slate-400">Estado: {resolveOrderStatusLabel(manualReceipt.status)}</p>
+              </section>
+            ) : null}
+
             {status?.latestOrder ? (
               <section className="pf-a2-kpi mt-4 rounded-xl border p-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Ultimo intento</p>
@@ -511,6 +625,14 @@ export default function AlumnoPagosClient() {
                     ? ` · Revisado: ${formatDate(status.latestOrder.reviewedAt)}`
                     : ""}
                 </p>
+                {status.latestOrder.receiptNumber || status.latestOrder.receiptIssuedAt ? (
+                  <p className="mt-1 text-xs text-cyan-200">
+                    Comprobante: {status.latestOrder.receiptNumber || "-"}
+                    {status.latestOrder.receiptIssuedAt
+                      ? ` · Emitido: ${formatDate(status.latestOrder.receiptIssuedAt)}`
+                      : ""}
+                  </p>
+                ) : null}
                 {status.latestOrder.adminNote ? (
                   <p className="mt-1 text-xs text-slate-300">Nota admin: {status.latestOrder.adminNote}</p>
                 ) : null}
