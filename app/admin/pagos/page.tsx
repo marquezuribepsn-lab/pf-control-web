@@ -186,6 +186,14 @@ const EMPTY_MERCADO_PAGO_CONNECT_STATUS: MercadoPagoConnectStatusResponse = {
   linkedAccount: null,
 };
 
+const INCOME_MIN_LOADING_MS = 2000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function parseMoneyAmount(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -456,6 +464,7 @@ export default function AdminPagosManualPage() {
   const loadIncomeSummary = useCallback(async () => {
     const requestId = incomeRequestIdRef.current + 1;
     incomeRequestIdRef.current = requestId;
+    const requestStartedAt = Date.now();
 
     const shouldUseBlockingLoader = !incomeHasSnapshotRef.current;
     if (shouldUseBlockingLoader) {
@@ -505,6 +514,12 @@ export default function AdminPagosManualPage() {
 
       setIncomeError(err instanceof Error ? err.message : "No se pudo cargar el resumen de ingresos.");
     } finally {
+      const elapsedMs = Date.now() - requestStartedAt;
+      const remainingMs = INCOME_MIN_LOADING_MS - elapsedMs;
+      if (remainingMs > 0) {
+        await sleep(remainingMs);
+      }
+
       if (requestId !== incomeRequestIdRef.current) {
         return;
       }
