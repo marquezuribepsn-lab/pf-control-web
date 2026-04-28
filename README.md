@@ -155,6 +155,7 @@ El flujo de pagos del alumno combina checkout de Mercado Pago y metodos manuales
 - Panel admin de confirmaciones: `/admin/pagos`
 - API admin de confirmaciones: `/api/admin/payments/manual`
 - API admin QR tienda Mercado Pago: `/api/admin/payments/mercadopago-qr`
+- API admin resumen/reinicio de ingresos: `/api/admin/payments/income`
 - API admin estado/conexion MP: `/api/admin/payments/mercadopago/connect`
 - API admin inicio OAuth MP: `/api/admin/payments/mercadopago/connect/start`
 - API admin callback OAuth MP: `/api/admin/payments/mercadopago/connect/callback`
@@ -212,6 +213,8 @@ Comportamiento esperado:
 - El admin puede cargar un QR de tienda de Mercado Pago en `/admin/pagos` para mostrarlo al alumno con escaneo directo.
 - Si el alumno paga por QR de tienda, puede informar el pago manual como `mercadopago` para revision administrativa.
 - Al aprobar una orden manual, el sistema renueva el pase automaticamente igual que en Mercado Pago.
+- En `/admin/pagos`, el bloque de ingresos permite filtrar mensual/anual y reiniciar acumulados con `Limpiar ingresos` (sin borrar historiales de ordenes).
+- El resumen mensual de ingresos muestra meses sin cobros con total `0` para mantener continuidad de control.
 
 ## Getting Started
 

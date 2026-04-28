@@ -38,22 +38,35 @@ type ClienteMetaSnapshot = {
   importe?: string | number | null;
 };
 
-type PagoRegistro = {
-  id: string;
-  clientId: string;
-  clientName: string;
-  fecha: string;
-  importe: number;
-  moneda: string;
-  createdAt: string;
+type IncomeScope = "monthly" | "annual";
+
+type IncomeSelectedSummary = {
+  total: number;
+  paymentCount: number;
+  uniqueClients: number;
+  currency: string;
+  periodLabel: string;
 };
 
-type ResumenMensualIngreso = {
-  mes: string;
-  cantidadPagos: number;
-  clientesUnicos: number;
+type IncomeMonthlyRow = {
+  month: string;
   total: number;
-  moneda: string;
+  paymentCount: number;
+  uniqueClients: number;
+  currency: string;
+};
+
+type IncomeSummaryResponse = {
+  ok?: boolean;
+  scope?: IncomeScope;
+  resetAt?: string | null;
+  selectedMonth?: string;
+  selectedYear?: number;
+  selected?: IncomeSelectedSummary;
+  annual?: IncomeSelectedSummary;
+  overall?: Omit<IncomeSelectedSummary, "periodLabel">;
+  monthlyRows?: IncomeMonthlyRow[];
+  message?: string;
 };
 
 type TransferAccount = {
@@ -140,7 +153,6 @@ type MercadoPagoConnectStatusResponse = {
 };
 
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
-const PAGOS_KEY = "pf-control-pagos-v1";
 
 const EMPTY_TRANSFER_ACCOUNT_FORM: TransferAccountFormState = {
   id: "",
@@ -220,6 +232,33 @@ function formatPeso(amount: number): string {
   return `$${Math.round(safeAmount).toLocaleString("es-AR")}`;
 }
 
+function getCurrentMonthValue(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function getCurrentYearValue(): string {
+  return String(new Date().getFullYear());
+}
+
+function formatMonthLabel(month: string): string {
+  const normalized = String(month || "").trim();
+  if (!/^\d{4}-\d{2}$/.test(normalized)) {
+    return normalized || "-";
+  }
+
+  const year = Number(normalized.slice(0, 4));
+  const monthIndex = Number(normalized.slice(5, 7)) - 1;
+  const parsed = new Date(year, monthIndex, 1);
+  if (Number.isNaN(parsed.getTime())) {
+    return normalized;
+  }
+
+  return parsed.toLocaleDateString("es-AR", {
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function resolveMethodLabel(method: string): string {
   const normalized = String(method || "").trim().toLowerCase();
   if (normalized === "efectivo") return "Efectivo";
@@ -274,10 +313,6 @@ export default function AdminPagosManualPage() {
     key: CLIENTE_META_KEY,
     legacyLocalStorageKey: CLIENTE_META_KEY,
   });
-  const [pagosMensuales] = useSharedState<PagoRegistro[]>([], {
-    key: PAGOS_KEY,
-    legacyLocalStorageKey: PAGOS_KEY,
-  });
 
   const [orders, setOrders] = useState<ManualOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -306,6 +341,14 @@ export default function AdminPagosManualPage() {
   const [mpConnectActionLoading, setMpConnectActionLoading] = useState(false);
   const [mpConnectError, setMpConnectError] = useState("");
   const [mpConnectMessage, setMpConnectMessage] = useState("");
+  const [incomeScope, setIncomeScope] = useState<IncomeScope>("monthly");
+  const [incomeMonth, setIncomeMonth] = useState<string>(getCurrentMonthValue());
+  const [incomeYear, setIncomeYear] = useState<string>(getCurrentYearValue());
+  const [incomeSummary, setIncomeSummary] = useState<IncomeSummaryResponse | null>(null);
+  const [incomeLoading, setIncomeLoading] = useState(true);
+  const [incomeResetting, setIncomeResetting] = useState(false);
+  const [incomeError, setIncomeError] = useState("");
+  const [incomeMessage, setIncomeMessage] = useState("");
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -363,6 +406,63 @@ export default function AdminPagosManualPage() {
     }
     void loadTransferAccounts();
   }, [loadTransferAccounts, role, sessionStatus]);
+
+  const loadIncomeSummary = useCallback(async () => {
+    setIncomeLoading(true);
+    setIncomeError("");
+
+    try {
+      const params = new URLSearchParams();
+      params.set("scope", incomeScope);
+
+      if (incomeScope === "monthly") {
+        params.set("month", incomeMonth || getCurrentMonthValue());
+      } else {
+        const normalizedYear = String(incomeYear || "").replace(/[^0-9]/g, "").slice(0, 4);
+        params.set("year", normalizedYear || getCurrentYearValue());
+      }
+
+      const response = await fetch(`/api/admin/payments/income?${params.toString()}`, {
+        cache: "no-store",
+      });
+
+      const data = (await response.json().catch(() => ({}))) as IncomeSummaryResponse;
+
+      if (!response.ok || !data.ok) {
+        throw new Error(String(data.message || "No se pudo cargar el resumen de ingresos."));
+      }
+
+      setIncomeSummary(data);
+    } catch (err) {
+      setIncomeSummary(null);
+      setIncomeError(err instanceof Error ? err.message : "No se pudo cargar el resumen de ingresos.");
+    } finally {
+      setIncomeLoading(false);
+    }
+  }, [incomeMonth, incomeScope, incomeYear]);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated" || role !== "ADMIN") {
+      return;
+    }
+    void loadIncomeSummary();
+  }, [loadIncomeSummary, role, sessionStatus]);
+
+  useEffect(() => {
+    if (incomeScope !== "monthly") {
+      return;
+    }
+
+    const normalizedMonth = String(incomeMonth || "").trim();
+    if (!/^\d{4}-\d{2}$/.test(normalizedMonth)) {
+      return;
+    }
+
+    const yearFromMonth = normalizedMonth.slice(0, 4);
+    if (yearFromMonth && yearFromMonth !== incomeYear) {
+      setIncomeYear(yearFromMonth);
+    }
+  }, [incomeMonth, incomeScope, incomeYear]);
 
   const loadMercadoPagoConnectStatus = useCallback(async () => {
     setMpConnectLoading(true);
@@ -473,7 +573,16 @@ export default function AdminPagosManualPage() {
   }, [loadQrStoreConfig, role, sessionStatus]);
 
   const pendingCount = useMemo(
-    () => orders.filter((order) => String(order.status || "").toLowerCase() === "pending").length,
+    () =>
+      orders.filter((order) => {
+        const status = String(order.status || "").trim().toLowerCase();
+        const providerStatus = String(order.providerStatus || "").trim().toLowerCase();
+        return (
+          status === "pending" ||
+          providerStatus === "pending_admin_confirmation" ||
+          (status === "in_process" && !order.reviewedAt)
+        );
+      }).length,
     [orders]
   );
 
@@ -505,40 +614,10 @@ export default function AdminPagosManualPage() {
     };
   }, [clientesMeta]);
 
-  const resumenMensualIngresos = useMemo<ResumenMensualIngreso[]>(() => {
-    const agrupado: Record<string, { cantidadPagos: number; total: number; clientes: Set<string>; moneda: string }> = {};
-
-    for (const pago of pagosMensuales) {
-      const mes = String(pago.fecha || "").slice(0, 7);
-      if (!mes) continue;
-
-      if (!agrupado[mes]) {
-        agrupado[mes] = {
-          cantidadPagos: 0,
-          total: 0,
-          clientes: new Set<string>(),
-          moneda: String(pago.moneda || "ARS").toUpperCase() || "ARS",
-        };
-      }
-
-      agrupado[mes].cantidadPagos += 1;
-      agrupado[mes].total += parseMoneyAmount(pago.importe);
-      agrupado[mes].clientes.add(String(pago.clientId || pago.clientName || pago.id || ""));
-      if (!agrupado[mes].moneda && pago.moneda) {
-        agrupado[mes].moneda = String(pago.moneda).toUpperCase();
-      }
-    }
-
-    return Object.entries(agrupado)
-      .map(([mes, item]) => ({
-        mes,
-        cantidadPagos: item.cantidadPagos,
-        clientesUnicos: item.clientes.size,
-        total: item.total,
-        moneda: item.moneda || "ARS",
-      }))
-      .sort((a, b) => b.mes.localeCompare(a.mes));
-  }, [pagosMensuales]);
+  const resumenMensualIngresos = useMemo<IncomeMonthlyRow[]>(
+    () => (Array.isArray(incomeSummary?.monthlyRows) ? incomeSummary.monthlyRows : []),
+    [incomeSummary?.monthlyRows]
+  );
 
   const handleDecision = async (orderId: string, action: "approve" | "reject") => {
     setActionLoadingId(orderId);
@@ -569,7 +648,7 @@ export default function AdminPagosManualPage() {
 
       setMessage(String(data.message || "Accion completada."));
       setNotesByOrderId((prev) => ({ ...prev, [orderId]: "" }));
-      await loadOrders();
+      await Promise.all([loadOrders(), loadIncomeSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo procesar la orden.");
     } finally {
@@ -769,6 +848,30 @@ export default function AdminPagosManualPage() {
     }
   };
 
+  const resetIncomeSummary = async () => {
+    setIncomeResetting(true);
+    setIncomeError("");
+    setIncomeMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/income", {
+        method: "DELETE",
+      });
+
+      const data = (await response.json().catch(() => ({}))) as IncomeSummaryResponse;
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo reiniciar ingresos."));
+      }
+
+      setIncomeMessage(String(data.message || "Ingresos reiniciados."));
+      await loadIncomeSummary();
+    } catch (err) {
+      setIncomeError(err instanceof Error ? err.message : "No se pudo reiniciar ingresos.");
+    } finally {
+      setIncomeResetting(false);
+    }
+  };
+
   const startMercadoPagoConnect = () => {
     setMpConnectMessage("");
     setMpConnectError("");
@@ -900,6 +1003,18 @@ export default function AdminPagosManualPage() {
         </section>
       ) : null}
 
+      {incomeMessage ? (
+        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {incomeMessage}
+        </section>
+      ) : null}
+
+      {incomeError ? (
+        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {incomeError}
+        </section>
+      ) : null}
+
       <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
         <h2 className="text-xl font-black text-white">Estado general de pagos</h2>
         <p className="mt-1 text-sm text-slate-300">Resumen en vivo desde la ficha de clientes.</p>
@@ -928,36 +1043,154 @@ export default function AdminPagosManualPage() {
       </section>
 
       <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
-        <h2 className="text-xl font-black text-white">Resumen mensual de ingresos</h2>
-        <p className="mt-1 text-sm text-slate-300">Consolidado por mes en base a pagos registrados.</p>
-
-        {resumenMensualIngresos.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-400">Todavia no hay pagos suficientes para armar el resumen mensual.</p>
-        ) : (
-          <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-800 text-slate-200">
-                <tr>
-                  <th className="px-3 py-2">Mes</th>
-                  <th className="px-3 py-2">Pagos</th>
-                  <th className="px-3 py-2">Clientes unicos</th>
-                  <th className="px-3 py-2">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resumenMensualIngresos.map((row) => (
-                  <tr key={row.mes} className="border-t border-white/10">
-                    <td className="px-3 py-2 font-semibold text-slate-100">{row.mes}</td>
-                    <td className="px-3 py-2 text-slate-300">{row.cantidadPagos}</td>
-                    <td className="px-3 py-2 text-slate-300">{row.clientesUnicos}</td>
-                    <td className="px-3 py-2 font-semibold text-emerald-200">
-                      {row.moneda} {row.total.toLocaleString("es-AR")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-black text-white">Resumen de ingresos</h2>
+            <p className="mt-1 text-sm text-slate-300">
+              Filtra ingresos por periodo mensual o anual. Puedes reiniciar acumulados sin borrar historiales.
+            </p>
+            {incomeSummary?.resetAt ? (
+              <p className="mt-1 text-xs text-slate-400">Base de acumulado actual: {formatDate(incomeSummary.resetAt)}</p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-400">Base de acumulado: historico completo.</p>
+            )}
           </div>
+
+          <div className="flex flex-wrap gap-2">
+            <ReliableActionButton
+              type="button"
+              onClick={() => setIncomeScope("monthly")}
+              className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                incomeScope === "monthly"
+                  ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
+                  : "border-white/20 bg-slate-800 text-slate-200"
+              }`}
+            >
+              Mensual
+            </ReliableActionButton>
+
+            <ReliableActionButton
+              type="button"
+              onClick={() => setIncomeScope("annual")}
+              className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                incomeScope === "annual"
+                  ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
+                  : "border-white/20 bg-slate-800 text-slate-200"
+              }`}
+            >
+              Anual
+            </ReliableActionButton>
+
+            <ReliableActionButton
+              type="button"
+              onClick={() => void loadIncomeSummary()}
+              disabled={incomeLoading || incomeResetting}
+              className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {incomeLoading ? "Cargando..." : "Recargar"}
+            </ReliableActionButton>
+
+            <ReliableActionButton
+              type="button"
+              onClick={() => void resetIncomeSummary()}
+              disabled={incomeLoading || incomeResetting}
+              className="rounded-xl border border-rose-300/45 bg-rose-500/15 px-3 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {incomeResetting ? "Reiniciando..." : "Limpiar ingresos"}
+            </ReliableActionButton>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          {incomeScope === "monthly" ? (
+            <label className="text-xs text-slate-300">
+              Mes a consultar
+              <input
+                type="month"
+                value={incomeMonth}
+                onChange={(event) => setIncomeMonth(event.target.value)}
+                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+              />
+            </label>
+          ) : (
+            <label className="text-xs text-slate-300">
+              Ano a consultar
+              <input
+                type="number"
+                value={incomeYear}
+                onChange={(event) =>
+                  setIncomeYear(event.target.value.replace(/[^0-9]/g, "").slice(0, 4) || getCurrentYearValue())
+                }
+                min={2000}
+                max={3000}
+                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+              />
+            </label>
+          )}
+        </div>
+
+        {incomeLoading ? (
+          <p className="mt-4 text-sm text-slate-300">Cargando resumen de ingresos...</p>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">
+                  Total {incomeScope === "monthly" ? "mensual" : "anual"}
+                </p>
+                <p className="mt-2 text-2xl font-black text-emerald-100">
+                  {formatMoney(incomeSummary?.selected?.total || 0, incomeSummary?.selected?.currency || "ARS")}
+                </p>
+                <p className="mt-1 text-xs text-emerald-100/80">
+                  Periodo: {incomeScope === "monthly"
+                    ? formatMonthLabel(incomeSummary?.selected?.periodLabel || incomeMonth)
+                    : incomeSummary?.selected?.periodLabel || incomeYear}
+                </p>
+              </article>
+
+              <article className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-cyan-100/90">Pagos del periodo</p>
+                <p className="mt-2 text-2xl font-black text-cyan-100">{incomeSummary?.selected?.paymentCount || 0}</p>
+              </article>
+
+              <article className="rounded-xl border border-indigo-300/35 bg-indigo-500/10 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-indigo-100/90">Clientes unicos</p>
+                <p className="mt-2 text-2xl font-black text-indigo-100">{incomeSummary?.selected?.uniqueClients || 0}</p>
+              </article>
+
+              <article className="rounded-xl border border-amber-300/35 bg-amber-500/10 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-amber-100/90">Acumulado general</p>
+                <p className="mt-2 text-2xl font-black text-amber-100">
+                  {formatMoney(incomeSummary?.overall?.total || 0, incomeSummary?.overall?.currency || "ARS")}
+                </p>
+              </article>
+            </div>
+
+            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-800 text-slate-200">
+                  <tr>
+                    <th className="px-3 py-2">Mes</th>
+                    <th className="px-3 py-2">Pagos</th>
+                    <th className="px-3 py-2">Clientes unicos</th>
+                    <th className="px-3 py-2">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resumenMensualIngresos.map((row) => (
+                    <tr key={row.month} className="border-t border-white/10">
+                      <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
+                      <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
+                      <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
+                      <td className="px-3 py-2 font-semibold text-emerald-200">
+                        {formatMoney(row.total, row.currency || "ARS")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
 
@@ -1482,7 +1715,12 @@ export default function AdminPagosManualPage() {
         ) : (
           orders.map((order) => {
             const orderNote = notesByOrderId[order.id] ?? "";
-            const pending = String(order.status || "").toLowerCase() === "pending";
+            const status = String(order.status || "").trim().toLowerCase();
+            const providerStatus = String(order.providerStatus || "").trim().toLowerCase();
+            const pending =
+              status === "pending" ||
+              providerStatus === "pending_admin_confirmation" ||
+              (status === "in_process" && !order.reviewedAt);
 
             return (
               <article key={order.id} className="rounded-2xl border border-white/15 bg-slate-900/75 p-4">

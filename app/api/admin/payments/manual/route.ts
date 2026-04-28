@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
-  applyApprovedPaymentByEmail,
+  applyApprovedPayment,
   getManualPaymentOrders,
   updatePaymentOrderById,
 } from "@/lib/billing";
@@ -95,7 +95,8 @@ export async function POST(req: NextRequest) {
   const reviewDate = new Date().toISOString();
 
   if (action === "approve") {
-    const applyResult = await applyApprovedPaymentByEmail({
+    const applyResult = await applyApprovedPayment({
+      clientKey: targetOrder.clientKey,
       email: targetOrder.email,
       amount: targetOrder.amount,
       currency: targetOrder.currency,

@@ -2,6 +2,7 @@ import { getSyncValue, setSyncValue } from "@/lib/syncStore";
 
 export const CLIENTES_META_KEY = "pf-control-clientes-meta-v1";
 export const PAYMENT_ORDERS_KEY = "pf-control-payment-orders-v1";
+export const PAYMENT_INCOME_RESET_KEY = "pf-control-payment-income-reset-v1";
 
 const DEFAULT_RENEWAL_DAYS = 30;
 const DEFAULT_AMOUNT_ARS = Number(process.env.PF_PAYMENT_DEFAULT_AMOUNT_ARS || 0) || 15000;
@@ -217,9 +218,10 @@ function normalizePaymentStatus(value: unknown): PaymentOrderStatus {
   switch (status) {
     case "approved":
       return "approved";
+    case "pending":
+      return "pending";
     case "in_process":
     case "authorized":
-    case "pending":
       return "in_process";
     case "rejected":
       return "rejected";
@@ -384,14 +386,50 @@ export async function applyApprovedPaymentByEmail(params: {
   clientKey: string;
   meta: ClienteMetaBilling;
 } | null> {
+  return applyApprovedPayment({
+    email: params.email,
+    amount: params.amount,
+    currency: params.currency,
+    periodDays: params.periodDays,
+    approvedAt: params.approvedAt,
+  });
+}
+
+export async function applyApprovedPayment(params: {
+  clientKey?: string | null;
+  email?: string;
+  amount: number;
+  currency: string;
+  periodDays?: number;
+  approvedAt?: string;
+}): Promise<{
+  clientKey: string;
+  meta: ClienteMetaBilling;
+} | null> {
+  const normalizedClientKey = String(params.clientKey || "").trim();
   const normalizedEmail = normalizeEmail(params.email);
-  if (!normalizedEmail) return null;
 
   const metaMap = await getClientMetaMap();
-  const foundEntry = Object.entries(metaMap).find(
-    ([clientKey, value]) =>
-      String(clientKey || "").startsWith("alumno:") && normalizeEmail(value?.email) === normalizedEmail
-  );
+
+  let foundEntry: [string, ClienteMetaBilling] | null = null;
+
+  if (normalizedClientKey && normalizedClientKey.startsWith("alumno:")) {
+    const metaByKey = metaMap[normalizedClientKey];
+    if (metaByKey && typeof metaByKey === "object") {
+      foundEntry = [normalizedClientKey, metaByKey];
+    }
+  }
+
+  if (!foundEntry && normalizedEmail) {
+    const byEmail = Object.entries(metaMap).find(
+      ([clientKey, value]) =>
+        String(clientKey || "").startsWith("alumno:") && normalizeEmail(value?.email) === normalizedEmail
+    );
+
+    if (byEmail) {
+      foundEntry = [byEmail[0], byEmail[1] || {}];
+    }
+  }
 
   if (!foundEntry) {
     return null;
@@ -407,6 +445,7 @@ export async function applyApprovedPaymentByEmail(params: {
 
   const approvedDate = parseDateOnly(params.approvedAt) || parseDateOnly(todayDateOnly()) || new Date();
   const approvedDateOnly = formatDateOnlyLocal(approvedDate);
+  const payerEmail = normalizedEmail || normalizeEmail(currentMeta.email);
 
   // Renewals are recalculated from the payment approval date, not from a previous end date.
   const nextStartDate = approvedDateOnly;
@@ -414,12 +453,12 @@ export async function applyApprovedPaymentByEmail(params: {
 
   const nextMeta: ClienteMetaBilling = {
     ...currentMeta,
-    email: normalizeEmail(currentMeta.email || normalizedEmail),
+    email: normalizeEmail(currentMeta.email || payerEmail),
     pagoEstado: "confirmado",
     moneda: normalizeCurrency(params.currency || currentMeta.moneda),
     importe: String(toPositiveAmount(params.amount, DEFAULT_AMOUNT_ARS)),
     saldo: "0",
-    emailPagador: normalizedEmail,
+    emailPagador: payerEmail,
     startDate: nextStartDate,
     endDate: nextEndDate,
     renewalDays: periodDays,
@@ -445,6 +484,18 @@ export async function getPaymentOrders(): Promise<PaymentOrderRecord[]> {
     .map((row) => {
       const value = row as Record<string, unknown>;
       const provider = normalizeOrderProvider(value.provider);
+      const providerStatus = value.providerStatus ? String(value.providerStatus) : null;
+      let status = normalizePaymentStatus(value.status);
+
+      // Heal legacy manual requests saved as in_process when they are still awaiting admin confirmation.
+      if (
+        provider === "manual" &&
+        status === "in_process" &&
+        providerStatus === "pending_admin_confirmation"
+      ) {
+        status = "pending";
+      }
+
       return {
         id: String(value.id || createOrderId()),
         userId: String(value.userId || ""),
@@ -458,8 +509,8 @@ export async function getPaymentOrders(): Promise<PaymentOrderRecord[]> {
         amount: toPositiveAmount(value.amount, DEFAULT_AMOUNT_ARS),
         currency: normalizeCurrency(value.currency),
         periodDays: toPositiveInt(value.periodDays, DEFAULT_RENEWAL_DAYS),
-        status: normalizePaymentStatus(value.status),
-        providerStatus: value.providerStatus ? String(value.providerStatus) : null,
+        status,
+        providerStatus: providerStatus ? String(providerStatus) : null,
         providerPaymentId: value.providerPaymentId ? String(value.providerPaymentId) : null,
         receiptNumber: normalizeOptionalText(value.receiptNumber),
         receiptIssuedAt: normalizeOptionalText(value.receiptIssuedAt),
@@ -709,4 +760,23 @@ export function getBillingDefaults(meta: ClienteMetaBilling | null | undefined) 
 
 export function mapMercadoPagoStatus(status: unknown): PaymentOrderStatus {
   return normalizePaymentStatus(status);
+}
+
+export async function getIncomeResetAt(): Promise<string | null> {
+  const raw = await getSyncValue(PAYMENT_INCOME_RESET_KEY);
+  const normalized = normalizeOptionalText(raw);
+  if (!normalized) return null;
+
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+export async function resetIncomeBaselineNow(): Promise<string> {
+  const value = nowIso();
+  await setSyncValue(PAYMENT_INCOME_RESET_KEY, value);
+  return value;
 }
