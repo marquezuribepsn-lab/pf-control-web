@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useSharedState } from "@/components/useSharedState";
 import { useSession } from "next-auth/react";
@@ -92,6 +93,52 @@ type TransferAccountFormState = {
   isVisible: boolean;
 };
 
+type MercadoPagoQrStoreConfig = {
+  enabled: boolean;
+  label: string;
+  paymentLink: string;
+  qrPayload: string;
+  qrImageDataUrl: string | null;
+  notes: string;
+  updatedAt: string | null;
+};
+
+type MercadoPagoQrStoreFormState = {
+  enabled: boolean;
+  label: string;
+  paymentLink: string;
+  qrPayload: string;
+  notes: string;
+};
+
+type MercadoPagoQrStoreResponse = {
+  ok?: boolean;
+  config?: MercadoPagoQrStoreConfig;
+  message?: string;
+};
+
+type MercadoPagoConnectAccount = {
+  userId: string | null;
+  nickname: string | null;
+  email: string | null;
+  scope: string | null;
+  publicKey: string | null;
+  expiresAt: string | null;
+  connectedAt: string;
+  updatedAt: string;
+};
+
+type MercadoPagoConnectStatusResponse = {
+  ok?: boolean;
+  oauthEnabled?: boolean;
+  configured?: boolean;
+  source?: "linked-account" | "env" | "none" | string;
+  accountLabel?: string | null;
+  connected?: boolean;
+  linkedAccount?: MercadoPagoConnectAccount | null;
+  message?: string;
+};
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const PAGOS_KEY = "pf-control-pagos-v1";
 
@@ -107,6 +154,24 @@ const EMPTY_TRANSFER_ACCOUNT_FORM: TransferAccountFormState = {
   alias: "",
   notes: "",
   isVisible: true,
+};
+
+const EMPTY_MERCADO_PAGO_QR_FORM: MercadoPagoQrStoreFormState = {
+  enabled: false,
+  label: "",
+  paymentLink: "",
+  qrPayload: "",
+  notes: "",
+};
+
+const EMPTY_MERCADO_PAGO_CONNECT_STATUS: MercadoPagoConnectStatusResponse = {
+  ok: true,
+  oauthEnabled: false,
+  configured: false,
+  source: "none",
+  accountLabel: null,
+  connected: false,
+  linkedAccount: null,
 };
 
 function parseMoneyAmount(value: unknown): number {
@@ -159,6 +224,7 @@ function resolveMethodLabel(method: string): string {
   const normalized = String(method || "").trim().toLowerCase();
   if (normalized === "efectivo") return "Efectivo";
   if (normalized === "transferencia") return "Transferencia";
+  if (normalized === "mercadopago") return "Mercado Pago QR";
   return "Manual";
 }
 
@@ -167,6 +233,36 @@ function resolveStatusTone(status: string): string {
   if (normalized === "approved") return "border-emerald-300/45 bg-emerald-500/15 text-emerald-100";
   if (normalized === "rejected") return "border-rose-300/45 bg-rose-500/15 text-rose-100";
   return "border-amber-300/45 bg-amber-500/15 text-amber-100";
+}
+
+function resolveMercadoPagoOauthErrorMessage(code: string): string {
+  const normalized = String(code || "").trim().toLowerCase();
+
+  if (normalized === "no_autorizado") {
+    return "No autorizado para conectar la cuenta de Mercado Pago.";
+  }
+
+  if (normalized === "oauth_no_configurado") {
+    return "OAuth de Mercado Pago no configurado. Define MERCADOPAGO_APP_CLIENT_ID y MERCADOPAGO_APP_CLIENT_SECRET.";
+  }
+
+  if (normalized === "faltan_datos_oauth") {
+    return "Mercado Pago no devolvio los datos esperados para completar la conexion.";
+  }
+
+  if (normalized === "state_invalido") {
+    return "La sesion de conexion expiro o no es valida. Intenta conectar nuevamente.";
+  }
+
+  if (normalized === "fallo_conexion") {
+    return "No se pudo terminar la conexion con Mercado Pago. Intenta nuevamente.";
+  }
+
+  if (normalized.startsWith("oauth_")) {
+    return `Mercado Pago devolvio un error OAuth (${normalized.replace("oauth_", "")}).`;
+  }
+
+  return "No se pudo conectar la cuenta de Mercado Pago.";
 }
 
 export default function AdminPagosManualPage() {
@@ -196,6 +292,20 @@ export default function AdminPagosManualPage() {
   const [accountSaving, setAccountSaving] = useState(false);
   const [accountError, setAccountError] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
+  const [qrStoreForm, setQrStoreForm] = useState<MercadoPagoQrStoreFormState>(EMPTY_MERCADO_PAGO_QR_FORM);
+  const [qrStorePreview, setQrStorePreview] = useState<string | null>(null);
+  const [qrStoreUpdatedAt, setQrStoreUpdatedAt] = useState<string | null>(null);
+  const [qrStoreLoading, setQrStoreLoading] = useState(true);
+  const [qrStoreSaving, setQrStoreSaving] = useState(false);
+  const [qrStoreError, setQrStoreError] = useState("");
+  const [qrStoreMessage, setQrStoreMessage] = useState("");
+  const [mpConnectStatus, setMpConnectStatus] = useState<MercadoPagoConnectStatusResponse>(
+    EMPTY_MERCADO_PAGO_CONNECT_STATUS
+  );
+  const [mpConnectLoading, setMpConnectLoading] = useState(true);
+  const [mpConnectActionLoading, setMpConnectActionLoading] = useState(false);
+  const [mpConnectError, setMpConnectError] = useState("");
+  const [mpConnectMessage, setMpConnectMessage] = useState("");
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -253,6 +363,114 @@ export default function AdminPagosManualPage() {
     }
     void loadTransferAccounts();
   }, [loadTransferAccounts, role, sessionStatus]);
+
+  const loadMercadoPagoConnectStatus = useCallback(async () => {
+    setMpConnectLoading(true);
+    setMpConnectError("");
+
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago/connect", { cache: "no-store" });
+      const data = (await response.json().catch(() => ({}))) as MercadoPagoConnectStatusResponse;
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo cargar estado de conexion con Mercado Pago."));
+      }
+
+      setMpConnectStatus({
+        ok: true,
+        oauthEnabled: Boolean(data.oauthEnabled),
+        configured: Boolean(data.configured),
+        source: String(data.source || "none"),
+        accountLabel: data.accountLabel || null,
+        connected: Boolean(data.connected),
+        linkedAccount: data.linkedAccount || null,
+      });
+    } catch (err) {
+      setMpConnectStatus(EMPTY_MERCADO_PAGO_CONNECT_STATUS);
+      setMpConnectError(
+        err instanceof Error ? err.message : "No se pudo cargar estado de conexion con Mercado Pago."
+      );
+    } finally {
+      setMpConnectLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated" || role !== "ADMIN") {
+      return;
+    }
+    void loadMercadoPagoConnectStatus();
+  }, [loadMercadoPagoConnectStatus, role, sessionStatus]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const connected = String(url.searchParams.get("mp_connected") || "").trim();
+    const errorCode = String(url.searchParams.get("mp_error") || "").trim();
+
+    if (!connected && !errorCode) {
+      return;
+    }
+
+    if (connected === "1") {
+      setMpConnectMessage("Cuenta de Mercado Pago conectada correctamente.");
+      setMpConnectError("");
+    }
+
+    if (errorCode) {
+      setMpConnectError(resolveMercadoPagoOauthErrorMessage(errorCode));
+      setMpConnectMessage("");
+    }
+
+    url.searchParams.delete("mp_connected");
+    url.searchParams.delete("mp_error");
+    window.history.replaceState({}, "", url.toString());
+
+    void loadMercadoPagoConnectStatus();
+  }, [loadMercadoPagoConnectStatus]);
+
+  const loadQrStoreConfig = useCallback(async () => {
+    setQrStoreLoading(true);
+    setQrStoreError("");
+
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago-qr", { cache: "no-store" });
+      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+
+      if (!response.ok || !data.config) {
+        throw new Error(String(data.message || "No se pudo cargar configuracion QR de Mercado Pago."));
+      }
+
+      setQrStoreForm({
+        enabled: Boolean(data.config.enabled),
+        label: String(data.config.label || ""),
+        paymentLink: String(data.config.paymentLink || ""),
+        qrPayload: String(data.config.qrPayload || ""),
+        notes: String(data.config.notes || ""),
+      });
+      setQrStorePreview(data.config.qrImageDataUrl || null);
+      setQrStoreUpdatedAt(data.config.updatedAt || null);
+    } catch (err) {
+      setQrStoreError(
+        err instanceof Error ? err.message : "No se pudo cargar configuracion QR de Mercado Pago."
+      );
+      setQrStoreForm(EMPTY_MERCADO_PAGO_QR_FORM);
+      setQrStorePreview(null);
+      setQrStoreUpdatedAt(null);
+    } finally {
+      setQrStoreLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated" || role !== "ADMIN") {
+      return;
+    }
+    void loadQrStoreConfig();
+  }, [loadQrStoreConfig, role, sessionStatus]);
 
   const pendingCount = useMemo(
     () => orders.filter((order) => String(order.status || "").toLowerCase() === "pending").length,
@@ -487,6 +705,103 @@ export default function AdminPagosManualPage() {
     }
   };
 
+  const saveQrStoreConfig = async () => {
+    setQrStoreSaving(true);
+    setQrStoreError("");
+    setQrStoreMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago-qr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(qrStoreForm),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+
+      if (!response.ok || !data.config) {
+        throw new Error(String(data.message || "No se pudo guardar QR de Mercado Pago."));
+      }
+
+      setQrStoreMessage(String(data.message || "QR guardado."));
+      setQrStoreForm({
+        enabled: Boolean(data.config.enabled),
+        label: String(data.config.label || ""),
+        paymentLink: String(data.config.paymentLink || ""),
+        qrPayload: String(data.config.qrPayload || ""),
+        notes: String(data.config.notes || ""),
+      });
+      setQrStorePreview(data.config.qrImageDataUrl || null);
+      setQrStoreUpdatedAt(data.config.updatedAt || null);
+    } catch (err) {
+      setQrStoreError(err instanceof Error ? err.message : "No se pudo guardar QR de Mercado Pago.");
+    } finally {
+      setQrStoreSaving(false);
+    }
+  };
+
+  const resetQrStoreConfig = async () => {
+    setQrStoreSaving(true);
+    setQrStoreError("");
+    setQrStoreMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago-qr", {
+        method: "DELETE",
+      });
+
+      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+
+      if (!response.ok || !data.config) {
+        throw new Error(String(data.message || "No se pudo reiniciar QR de Mercado Pago."));
+      }
+
+      setQrStoreMessage(String(data.message || "Configuracion QR reiniciada."));
+      setQrStoreForm(EMPTY_MERCADO_PAGO_QR_FORM);
+      setQrStorePreview(null);
+      setQrStoreUpdatedAt(data.config.updatedAt || null);
+    } catch (err) {
+      setQrStoreError(err instanceof Error ? err.message : "No se pudo reiniciar QR de Mercado Pago.");
+    } finally {
+      setQrStoreSaving(false);
+    }
+  };
+
+  const startMercadoPagoConnect = () => {
+    setMpConnectMessage("");
+    setMpConnectError("");
+    window.location.assign("/api/admin/payments/mercadopago/connect/start");
+  };
+
+  const disconnectMercadoPagoAccount = async () => {
+    setMpConnectActionLoading(true);
+    setMpConnectMessage("");
+    setMpConnectError("");
+
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago/connect", {
+        method: "DELETE",
+      });
+
+      const data = (await response.json().catch(() => ({}))) as MercadoPagoConnectStatusResponse;
+
+      if (!response.ok) {
+        throw new Error(String(data.message || "No se pudo desconectar la cuenta de Mercado Pago."));
+      }
+
+      setMpConnectMessage(String(data.message || "Cuenta desconectada."));
+      await loadMercadoPagoConnectStatus();
+    } catch (err) {
+      setMpConnectError(
+        err instanceof Error ? err.message : "No se pudo desconectar la cuenta de Mercado Pago."
+      );
+    } finally {
+      setMpConnectActionLoading(false);
+    }
+  };
+
   if (sessionStatus === "loading") {
     return (
       <main className="mx-auto max-w-5xl p-6 text-slate-100">
@@ -561,6 +876,30 @@ export default function AdminPagosManualPage() {
         </section>
       ) : null}
 
+      {qrStoreMessage ? (
+        <section className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+          {qrStoreMessage}
+        </section>
+      ) : null}
+
+      {qrStoreError ? (
+        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {qrStoreError}
+        </section>
+      ) : null}
+
+      {mpConnectMessage ? (
+        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {mpConnectMessage}
+        </section>
+      ) : null}
+
+      {mpConnectError ? (
+        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {mpConnectError}
+        </section>
+      ) : null}
+
       <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
         <h2 className="text-xl font-black text-white">Estado general de pagos</h2>
         <p className="mt-1 text-sm text-slate-300">Resumen en vivo desde la ficha de clientes.</p>
@@ -620,6 +959,247 @@ export default function AdminPagosManualPage() {
             </table>
           </div>
         )}
+      </section>
+
+      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
+        <h2 className="text-xl font-black text-white">Cuenta Mercado Pago conectada</h2>
+        <p className="mt-1 text-sm text-slate-300">
+          Vincula una cuenta real por OAuth. El sistema usara esa cuenta para checkout y webhooks sin
+          copiar access tokens por usuario.
+        </p>
+
+        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/45 p-4 text-sm text-slate-200">
+          {mpConnectLoading ? (
+            <p className="text-slate-300">Cargando estado de conexion...</p>
+          ) : (
+            <div className="space-y-2">
+              <p>
+                Estado: {mpConnectStatus.configured ? "Configurado" : "Sin configurar"}
+              </p>
+              <p>
+                Fuente de cobro: {mpConnectStatus.source === "linked-account"
+                  ? "Cuenta conectada (OAuth)"
+                  : mpConnectStatus.source === "env"
+                    ? "Token de entorno"
+                    : "Sin fuente de cobro"}
+              </p>
+              {mpConnectStatus.accountLabel ? <p>Cuenta: {mpConnectStatus.accountLabel}</p> : null}
+              {mpConnectStatus.linkedAccount?.nickname ? (
+                <p>Alias MP: {mpConnectStatus.linkedAccount.nickname}</p>
+              ) : null}
+              {mpConnectStatus.linkedAccount?.email ? (
+                <p>Email MP: {mpConnectStatus.linkedAccount.email}</p>
+              ) : null}
+              {mpConnectStatus.linkedAccount?.updatedAt ? (
+                <p>Actualizado: {formatDate(mpConnectStatus.linkedAccount.updatedAt)}</p>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <ReliableActionButton
+            type="button"
+            onClick={startMercadoPagoConnect}
+            disabled={mpConnectActionLoading || mpConnectLoading || !mpConnectStatus.oauthEnabled}
+            className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {mpConnectStatus.connected ? "Reconectar cuenta MP" : "Conectar cuenta MP"}
+          </ReliableActionButton>
+
+          <ReliableActionButton
+            type="button"
+            onClick={() => void disconnectMercadoPagoAccount()}
+            disabled={mpConnectActionLoading || mpConnectLoading || !mpConnectStatus.connected}
+            className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {mpConnectActionLoading ? "Procesando..." : "Desconectar"}
+          </ReliableActionButton>
+
+          <ReliableActionButton
+            type="button"
+            onClick={() => void loadMercadoPagoConnectStatus()}
+            disabled={mpConnectActionLoading || mpConnectLoading}
+            className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {mpConnectLoading ? "Cargando..." : "Recargar estado"}
+          </ReliableActionButton>
+        </div>
+
+        {!mpConnectStatus.oauthEnabled ? (
+          <p className="mt-3 text-xs text-amber-200/90">
+            Para habilitar la conexion OAuth, configura MERCADOPAGO_APP_CLIENT_ID y
+            MERCADOPAGO_APP_CLIENT_SECRET en el entorno.
+          </p>
+        ) : null}
+      </section>
+
+      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
+        <h2 className="text-xl font-black text-white">Mercado Pago QR de tienda</h2>
+        <p className="mt-1 text-sm text-slate-300">
+          Configura un QR de cobro tipo tienda para que el alumno pueda pagar escaneando, sin cargar credenciales
+          developer por cada cuenta.
+        </p>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Configuracion QR</h3>
+
+            <div className="mt-3 grid gap-3">
+              <label className="text-xs text-slate-300">
+                Nombre visible para alumnos
+                <input
+                  value={qrStoreForm.label}
+                  onChange={(event) =>
+                    setQrStoreForm((prev) => ({
+                      ...prev,
+                      label: event.target.value,
+                    }))
+                  }
+                  placeholder="Tienda PF Control"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Link de pago Mercado Pago (opcional)
+                <input
+                  value={qrStoreForm.paymentLink}
+                  onChange={(event) =>
+                    setQrStoreForm((prev) => ({
+                      ...prev,
+                      paymentLink: event.target.value,
+                    }))
+                  }
+                  placeholder="https://mpago.la/..."
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Texto o payload del QR
+                <textarea
+                  value={qrStoreForm.qrPayload}
+                  onChange={(event) =>
+                    setQrStoreForm((prev) => ({
+                      ...prev,
+                      qrPayload: event.target.value,
+                    }))
+                  }
+                  rows={3}
+                  placeholder="Si lo dejas vacio, se usa automaticamente el link de pago"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Nota para el alumno (opcional)
+                <textarea
+                  value={qrStoreForm.notes}
+                  onChange={(event) =>
+                    setQrStoreForm((prev) => ({
+                      ...prev,
+                      notes: event.target.value,
+                    }))
+                  }
+                  rows={2}
+                  placeholder="Ejemplo: luego envia el comprobante desde Informar pago QR"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                />
+              </label>
+            </div>
+
+            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={qrStoreForm.enabled}
+                onChange={(event) =>
+                  setQrStoreForm((prev) => ({
+                    ...prev,
+                    enabled: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4 rounded border-white/20 bg-slate-900"
+              />
+              Habilitar QR para alumnos
+            </label>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => void saveQrStoreConfig()}
+                disabled={qrStoreSaving || qrStoreLoading}
+                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {qrStoreSaving ? "Guardando..." : "Guardar QR"}
+              </ReliableActionButton>
+
+              <ReliableActionButton
+                type="button"
+                onClick={() => void resetQrStoreConfig()}
+                disabled={qrStoreSaving || qrStoreLoading}
+                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                Reiniciar
+              </ReliableActionButton>
+
+              <ReliableActionButton
+                type="button"
+                onClick={() => void loadQrStoreConfig()}
+                disabled={qrStoreSaving || qrStoreLoading}
+                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {qrStoreLoading ? "Cargando..." : "Recargar"}
+              </ReliableActionButton>
+            </div>
+          </article>
+
+          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Vista previa del QR</h3>
+
+            {qrStoreLoading ? (
+              <p className="mt-3 text-sm text-slate-300">Cargando configuracion QR...</p>
+            ) : qrStorePreview ? (
+              <div className="mt-3 space-y-3">
+                <div className="inline-flex rounded-xl border border-white/15 bg-white/95 p-2">
+                  <Image
+                    src={qrStorePreview}
+                    alt="QR Mercado Pago"
+                    width={220}
+                    height={220}
+                    unoptimized
+                    className="h-[220px] w-[220px] rounded-lg"
+                  />
+                </div>
+
+                <div className="space-y-1 text-xs text-slate-300">
+                  <p>
+                    Estado: {qrStoreForm.enabled ? "Visible para alumnos" : "Oculto"}
+                  </p>
+                  <p>
+                    Etiqueta: {qrStoreForm.label || "Mercado Pago QR"}
+                  </p>
+                  {qrStoreUpdatedAt ? <p>Actualizado: {formatDate(qrStoreUpdatedAt)}</p> : null}
+                </div>
+
+                {qrStoreForm.paymentLink ? (
+                  <a
+                    href={qrStoreForm.paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex rounded-lg border border-cyan-300/45 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                  >
+                    Abrir link de pago
+                  </a>
+                ) : null}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-slate-400">
+                Aun no hay QR generado. Guarda un link o payload para crear la vista previa.
+              </p>
+            )}
+          </article>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
@@ -889,7 +1469,7 @@ export default function AdminPagosManualPage() {
         <div>
           <h2 className="text-xl font-black text-white">Confirmaciones manuales</h2>
           <p className="mt-1 text-sm text-slate-300">
-            Aprobacion o rechazo de pagos informados por transferencia o efectivo.
+            Aprobacion o rechazo de pagos informados por transferencia, efectivo o QR de Mercado Pago.
           </p>
         </div>
 

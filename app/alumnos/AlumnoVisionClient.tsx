@@ -1,6 +1,7 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import ReliableLink from "@/components/ReliableLink";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -2279,9 +2280,8 @@ export default function AlumnoVisionClient({
           <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => goToCategory("inicio")}
+                <ReliableLink
+                  href="/alumnos/inicio"
                   className="pf-a2-back-btn mt-0.5"
                   aria-label="Volver al inicio"
                   title="Volver al inicio"
@@ -2297,7 +2297,7 @@ export default function AlumnoVisionClient({
                     <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span className="sr-only">Volver al inicio</span>
-                </ReliableActionButton>
+                </ReliableLink>
 
                 <div className="min-w-0">
                   <p className="pf-a2-eyebrow break-words">{categoryMeta.badge}</p>
@@ -2467,7 +2467,7 @@ export default function AlumnoVisionClient({
                         />
                       ) : (
                         <div className="flex h-28 items-center justify-center rounded-lg border border-slate-500/35 bg-slate-900/55 px-4 text-center text-xs text-slate-300">
-                          Esta plataforma no permite vista previa embebida. Usa "Abrir playlist" para escucharla.
+                          Esta plataforma no permite vista previa embebida. Usa &quot;Abrir playlist&quot; para escucharla.
                         </div>
                       )}
                     </div>
@@ -3210,7 +3210,7 @@ export default function AlumnoVisionClient({
                         />
                       ) : (
                         <div className="flex h-28 items-center justify-center rounded-lg border border-slate-500/35 bg-slate-900/55 px-4 text-center text-xs text-slate-300">
-                          Esta plataforma no permite vista previa embebida. Usa "Abrir playlist" para escucharla.
+                          Esta plataforma no permite vista previa embebida. Usa &quot;Abrir playlist&quot; para escucharla.
                         </div>
                       )}
                     </div>

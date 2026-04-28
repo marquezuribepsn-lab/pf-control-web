@@ -5,6 +5,7 @@ import {
   getBillingDefaults,
   resolveBillingAccessByEmail,
 } from "@/lib/billing";
+import { resolveMercadoPagoAccess } from "@/lib/paymentMercadoPagoAccount";
 
 function getAppBaseUrl(req: NextRequest): string {
   const envBase = String(process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "").trim();
@@ -68,7 +69,7 @@ async function validateMercadoPagoCollector(accessToken: string, expectedCollect
     return {
       ok: false,
       message:
-        "La cuenta de Mercado Pago configurada no coincide con el vendedor esperado. Revisa MERCADOPAGO_ACCESS_TOKEN / MERCADOPAGO_COLLECTOR_ID.",
+        "La cuenta de Mercado Pago conectada no coincide con el vendedor esperado. Revisa la configuracion de cobros en Admin > Pagos.",
     };
   }
 
@@ -95,15 +96,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "No se pudo resolver el email de la cuenta" }, { status: 400 });
   }
 
-  const accessToken = String(process.env.MERCADOPAGO_ACCESS_TOKEN || "").trim();
-  if (!accessToken) {
+  const mercadoPagoAccess = await resolveMercadoPagoAccess();
+  const accessToken = String(mercadoPagoAccess.accessToken || "").trim();
+
+  if (!mercadoPagoAccess.configured || !accessToken) {
     return NextResponse.json(
-      { message: "Mercado Pago no esta configurado. Falta MERCADOPAGO_ACCESS_TOKEN." },
+      {
+        message:
+          "Mercado Pago no esta configurado. Conecta una cuenta en Admin > Pagos o define MERCADOPAGO_ACCESS_TOKEN.",
+      },
       { status: 500 }
     );
   }
 
-  const expectedCollectorId = String(process.env.MERCADOPAGO_COLLECTOR_ID || "").trim();
+  const expectedCollectorId = String(mercadoPagoAccess.expectedCollectorId || "").trim();
   if (expectedCollectorId) {
     const collectorValidation = await validateMercadoPagoCollector(accessToken, expectedCollectorId);
     if (!collectorValidation.ok) {

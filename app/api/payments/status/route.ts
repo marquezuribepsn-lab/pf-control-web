@@ -6,6 +6,8 @@ import {
   getLatestPaymentOrderForEmail,
   resolveBillingAccessByEmail,
 } from "@/lib/billing";
+import { resolveMercadoPagoAccess } from "@/lib/paymentMercadoPagoAccount";
+import { getMercadoPagoQrStoreConfig } from "@/lib/paymentMercadoPagoQrStore";
 import { getVisibleTransferAccounts } from "@/lib/paymentTransferAccounts";
 
 function normalizePaymentState(value: unknown): string {
@@ -37,9 +39,12 @@ export async function GET() {
   const latestApprovedOrder = await getLatestApprovedPaymentOrderForEmail(email);
   const transferAccounts = await getVisibleTransferAccounts();
   const defaults = getBillingDefaults(access.meta);
-  const mercadoPagoAccessToken = String(process.env.MERCADOPAGO_ACCESS_TOKEN || "").trim();
-  const mercadoPagoAccountLabel = String(process.env.PF_MERCADOPAGO_ACCOUNT_LABEL || "").trim();
-  const collectorGuardEnabled = Boolean(String(process.env.MERCADOPAGO_COLLECTOR_ID || "").trim());
+  const mercadoPagoAccess = await resolveMercadoPagoAccess();
+  const mercadoPagoAccountLabel =
+    String(mercadoPagoAccess.accountLabel || "").trim() ||
+    String(process.env.PF_MERCADOPAGO_ACCOUNT_LABEL || "").trim();
+  const collectorGuardEnabled = Boolean(String(mercadoPagoAccess.expectedCollectorId || "").trim());
+  const mercadoPagoQrStore = await getMercadoPagoQrStoreConfig();
   const isPaid =
     access.active || normalizePaymentState(access.meta?.pagoEstado) === "confirmado";
 
@@ -99,12 +104,21 @@ export async function GET() {
           receiptIssuedAt: latestApprovedOrder.receiptIssuedAt,
         }
       : null,
-    providerConfigured: Boolean(mercadoPagoAccessToken),
+    providerConfigured: mercadoPagoAccess.configured,
     manualMethodsEnabled: true,
     mercadoPago: {
-      configured: Boolean(mercadoPagoAccessToken),
+      configured: mercadoPagoAccess.configured,
+      source: mercadoPagoAccess.source,
       accountLabel: mercadoPagoAccountLabel || null,
       collectorGuardEnabled,
+      qrStore: {
+        enabled: mercadoPagoQrStore.enabled,
+        label: mercadoPagoQrStore.label || null,
+        paymentLink: mercadoPagoQrStore.paymentLink || null,
+        qrImageDataUrl: mercadoPagoQrStore.qrImageDataUrl,
+        notes: mercadoPagoQrStore.notes || null,
+        updatedAt: mercadoPagoQrStore.updatedAt,
+      },
     },
     transferAccounts: transferAccounts.map((item) => ({
       id: item.id,

@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import ReliableActionButton from "@/components/ReliableActionButton";
+import ReliableLink from "@/components/ReliableLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -59,6 +61,14 @@ type PaymentStatusResponse = {
     configured: boolean;
     accountLabel: string | null;
     collectorGuardEnabled: boolean;
+    qrStore: {
+      enabled: boolean;
+      label: string | null;
+      paymentLink: string | null;
+      qrImageDataUrl: string | null;
+      notes: string | null;
+      updatedAt: string | null;
+    };
   };
   transferAccounts: Array<{
     id: string;
@@ -190,7 +200,9 @@ export default function AlumnoPagosClient() {
   const [status, setStatus] = useState<PaymentStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [manualLoadingMethod, setManualLoadingMethod] = useState<"transferencia" | "efectivo" | null>(null);
+  const [manualLoadingMethod, setManualLoadingMethod] = useState<
+    "transferencia" | "efectivo" | "mercadopago" | null
+  >(null);
   const [manualNote, setManualNote] = useState("");
   const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
   const [error, setError] = useState("");
@@ -313,7 +325,7 @@ export default function AlumnoPagosClient() {
     }
   };
 
-  const requestManualReview = async (method: "transferencia" | "efectivo") => {
+  const requestManualReview = async (method: "transferencia" | "efectivo" | "mercadopago") => {
     if (!status) return;
 
     setManualLoadingMethod(method);
@@ -365,6 +377,7 @@ export default function AlumnoPagosClient() {
   const isActive = Boolean(status?.active);
   const canPay = Boolean(status?.mercadoPago?.configured && status?.reason !== "no-meta");
   const canRequestManual = Boolean(status?.manualMethodsEnabled && status?.reason !== "no-meta");
+  const canUseQrStore = Boolean(status?.mercadoPago?.qrStore?.enabled);
 
   const statusTone = useMemo(
     () => resolveStatusTone(isActive, status?.reason || "no-meta"),
@@ -377,9 +390,8 @@ export default function AlumnoPagosClient() {
         <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
-              <ReliableActionButton
-                type="button"
-                onClick={() => router.push("/alumnos/inicio")}
+              <ReliableLink
+                href="/alumnos/inicio"
                 className="pf-a2-back-btn mt-0.5"
                 aria-label="Volver al inicio"
                 title="Volver al inicio"
@@ -395,7 +407,7 @@ export default function AlumnoPagosClient() {
                   <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span className="sr-only">Volver al inicio</span>
-              </ReliableActionButton>
+              </ReliableLink>
 
               <div className="min-w-0">
                 <p className="pf-a2-eyebrow">BILLING</p>
@@ -502,6 +514,51 @@ export default function AlumnoPagosClient() {
               ) : null}
             </div>
 
+            {canUseQrStore ? (
+              <section className="mt-4 rounded-xl border border-cyan-300/30 bg-cyan-500/10 p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-cyan-100/90">QR tienda</p>
+                <h3 className="mt-1 text-sm font-black text-cyan-100">
+                  {status?.mercadoPago?.qrStore?.label || "Mercado Pago QR"}
+                </h3>
+
+                <div className="mt-3 flex flex-wrap items-start gap-3">
+                  {status?.mercadoPago?.qrStore?.qrImageDataUrl ? (
+                    <div className="rounded-lg border border-white/20 bg-white/95 p-1.5">
+                      <Image
+                        src={status.mercadoPago.qrStore.qrImageDataUrl}
+                        alt="QR para pagar con Mercado Pago"
+                        width={140}
+                        height={140}
+                        unoptimized
+                        className="h-[140px] w-[140px] rounded"
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="min-w-[180px] flex-1 space-y-2">
+                    <p className="text-xs text-cyan-50/90">
+                      Escanea este QR desde la app de Mercado Pago para pagar como en tienda.
+                    </p>
+
+                    {status?.mercadoPago?.qrStore?.notes ? (
+                      <p className="text-xs text-cyan-100/90">{status.mercadoPago.qrStore.notes}</p>
+                    ) : null}
+
+                    {status?.mercadoPago?.qrStore?.paymentLink ? (
+                      <a
+                        href={status.mercadoPago.qrStore.paymentLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex rounded-lg border border-cyan-200/45 bg-cyan-500/20 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                      >
+                        Abrir link de pago
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             <div className="mt-4 flex flex-wrap gap-2">
               <ReliableActionButton
                 type="button"
@@ -511,21 +568,20 @@ export default function AlumnoPagosClient() {
               >
                 {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
               </ReliableActionButton>
-              <ReliableActionButton
-                type="button"
-                onClick={() => router.push("/alumnos/inicio")}
-                className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold"
+              <ReliableLink
+                href="/alumnos/inicio"
+                className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
               >
                 Ir a inicio
-              </ReliableActionButton>
+              </ReliableLink>
             </div>
           </article>
 
           <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <p className="pf-a2-eyebrow">Pago manual</p>
-            <h2 className="mt-1 text-xl font-black text-white">Transferencia o efectivo</h2>
+            <h2 className="mt-1 text-xl font-black text-white">Transferencia, efectivo o QR Mercado Pago</h2>
             <p className="mt-2 text-sm text-slate-300">
-              Si ya pagaste por fuera de Mercado Pago, envia el aviso para revision del admin.
+              Si ya pagaste por fuera del checkout, envia el aviso para revision del admin.
             </p>
 
             <div className="mt-3 rounded-xl border border-white/15 bg-slate-950/45 p-3">
@@ -586,6 +642,15 @@ export default function AlumnoPagosClient() {
                 className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {manualLoadingMethod === "efectivo" ? "Enviando..." : "Informar efectivo"}
+              </ReliableActionButton>
+
+              <ReliableActionButton
+                type="button"
+                onClick={() => void requestManualReview("mercadopago")}
+                disabled={Boolean(manualLoadingMethod) || loading || !canRequestManual}
+                className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {manualLoadingMethod === "mercadopago" ? "Enviando..." : "Informar pago QR MP"}
               </ReliableActionButton>
             </div>
 

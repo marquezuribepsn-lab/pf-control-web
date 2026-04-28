@@ -30,7 +30,7 @@ export type BillingAccess = {
 };
 
 export type PaymentOrderProvider = "mercadopago" | "manual";
-export type ManualPaymentMethod = "transferencia" | "efectivo";
+export type ManualPaymentMethod = "transferencia" | "efectivo" | "mercadopago";
 export type PaymentMethod = "mercadopago" | ManualPaymentMethod;
 
 export type PaymentOrderStatus =
@@ -101,6 +101,9 @@ function normalizeManualMethod(value: unknown): ManualPaymentMethod {
   const method = String(value || "").trim().toLowerCase();
   if (method === "efectivo") {
     return "efectivo";
+  }
+  if (method === "mercadopago") {
+    return "mercadopago";
   }
   return "transferencia";
 }
@@ -659,7 +662,11 @@ export async function getManualPaymentOrders(options?: {
   const normalizedEmail = options?.email ? normalizeEmail(options.email) : "";
 
   return orders.filter((item) => {
-    const isManual = item.provider === "manual" || item.paymentMethod === "transferencia" || item.paymentMethod === "efectivo";
+    const isManual =
+      item.provider === "manual" ||
+      item.paymentMethod === "transferencia" ||
+      item.paymentMethod === "efectivo" ||
+      item.paymentMethod === "mercadopago";
     if (!isManual) return false;
 
     if (normalizedEmail && item.email !== normalizedEmail) {

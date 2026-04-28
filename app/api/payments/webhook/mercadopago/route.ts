@@ -4,6 +4,7 @@ import {
   mapMercadoPagoStatus,
   updatePaymentOrderByExternalReference,
 } from "@/lib/billing";
+import { resolveMercadoPagoAccess } from "@/lib/paymentMercadoPagoAccount";
 
 type MercadoPagoPayment = {
   id?: number | string;
@@ -73,10 +74,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const accessToken = String(process.env.MERCADOPAGO_ACCESS_TOKEN || "").trim();
-  if (!accessToken) {
+  const mercadoPagoAccess = await resolveMercadoPagoAccess();
+  const accessToken = String(mercadoPagoAccess.accessToken || "").trim();
+
+  if (!mercadoPagoAccess.configured || !accessToken) {
     return NextResponse.json(
-      { ok: false, message: "MERCADOPAGO_ACCESS_TOKEN no configurado" },
+      {
+        ok: false,
+        message:
+          "Mercado Pago no esta configurado. Conecta una cuenta en Admin > Pagos o define MERCADOPAGO_ACCESS_TOKEN.",
+      },
       { status: 500 }
     );
   }

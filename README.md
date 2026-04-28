@@ -154,16 +154,36 @@ El flujo de pagos del alumno combina checkout de Mercado Pago y metodos manuales
 - Webhook: `/api/payments/webhook/mercadopago`
 - Panel admin de confirmaciones: `/admin/pagos`
 - API admin de confirmaciones: `/api/admin/payments/manual`
+- API admin QR tienda Mercado Pago: `/api/admin/payments/mercadopago-qr`
+- API admin estado/conexion MP: `/api/admin/payments/mercadopago/connect`
+- API admin inicio OAuth MP: `/api/admin/payments/mercadopago/connect/start`
+- API admin callback OAuth MP: `/api/admin/payments/mercadopago/connect/callback`
 
 Variables necesarias:
 
 ```bash
-MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
 MERCADOPAGO_WEBHOOK_TOKEN=token-seguro-webhook
 PF_PAYMENT_DEFAULT_AMOUNT_ARS=15000
 ```
 
-Variables opcionales recomendadas:
+Fuente de cobro de Mercado Pago (usa al menos una):
+
+1) Recomendado: cuenta conectada por OAuth desde `/admin/pagos`
+
+```bash
+MERCADOPAGO_APP_CLIENT_ID=1234567890123456
+MERCADOPAGO_APP_CLIENT_SECRET=APP_SECRET
+# opcional: si no lo defines, se arma con NEXTAUTH_URL
+MERCADOPAGO_APP_REDIRECT_URI=https://TU_DOMINIO/api/admin/payments/mercadopago/connect/callback
+```
+
+2) Fallback clasico por token de entorno
+
+```bash
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
+```
+
+Variables opcionales recomendadas (aplican a OAuth y token):
 
 ```bash
 MERCADOPAGO_COLLECTOR_ID=123456789
@@ -172,8 +192,10 @@ PF_MERCADOPAGO_ACCOUNT_LABEL=Mi cuenta Mercado Pago
 
 Notas de configuracion:
 
+- Si hay cuenta vinculada por OAuth, checkout/webhook usan esa cuenta automaticamente.
+- Si no hay cuenta vinculada, checkout/webhook usan `MERCADOPAGO_ACCESS_TOKEN` como fallback.
 - `MERCADOPAGO_ACCESS_TOKEN` debe ser de tu cuenta vendedora de Mercado Pago (la que recibe el dinero).
-- Si defines `MERCADOPAGO_COLLECTOR_ID`, el checkout valida que el token realmente pertenezca a esa cuenta y bloquea cobros con una cuenta equivocada.
+- Si defines `MERCADOPAGO_COLLECTOR_ID`, el checkout valida que la cuenta activa (OAuth o token) pertenezca a ese vendedor y bloquea cobros con una cuenta equivocada.
 - `PF_MERCADOPAGO_ACCOUNT_LABEL` se muestra en la vista del alumno para identificar la cuenta receptora.
 
 Configura en Mercado Pago la URL de notificacion apuntando a:
@@ -187,6 +209,8 @@ Comportamiento esperado:
 - Si el pase esta vencido o pendiente, el alumno queda inhabilitado para el resto del modulo y es redirigido a pagos.
 - Cuando Mercado Pago confirma `approved`, el sistema renueva automaticamente la vigencia y rehabilita el acceso.
 - Si el alumno informa transferencia o efectivo, queda una orden manual pendiente hasta que un admin la apruebe o rechace en `/admin/pagos`.
+- El admin puede cargar un QR de tienda de Mercado Pago en `/admin/pagos` para mostrarlo al alumno con escaneo directo.
+- Si el alumno paga por QR de tienda, puede informar el pago manual como `mercadopago` para revision administrativa.
 - Al aprobar una orden manual, el sistema renueva el pase automaticamente igual que en Mercado Pago.
 
 ## Getting Started

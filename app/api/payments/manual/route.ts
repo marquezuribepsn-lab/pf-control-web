@@ -27,7 +27,7 @@ function normalizeCurrency(value: unknown, fallback: string): string {
 
 function resolveManualMethod(value: unknown): ManualPaymentMethod | null {
   const normalized = String(value || "").trim().toLowerCase();
-  if (normalized === "transferencia" || normalized === "efectivo") {
+  if (normalized === "transferencia" || normalized === "efectivo" || normalized === "mercadopago") {
     return normalized;
   }
   return null;
@@ -42,7 +42,9 @@ function formatMoney(amount: number, currency: string): string {
 }
 
 function resolveMethodLabel(method: ManualPaymentMethod): string {
-  return method === "transferencia" ? "Transferencia" : "Efectivo";
+  if (method === "transferencia") return "Transferencia";
+  if (method === "efectivo") return "Efectivo";
+  return "Mercado Pago QR";
 }
 
 export async function POST(req: NextRequest) {
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
 
   if (!method) {
     return NextResponse.json(
-      { message: "Metodo invalido. Usa transferencia o efectivo." },
+      { message: "Metodo invalido. Usa transferencia, efectivo o mercadopago." },
       { status: 400 }
     );
   }
