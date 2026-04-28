@@ -2407,6 +2407,67 @@ export default function AlumnoVisionClient({
                   </ReliableActionButton>
                 </div>
 
+                {selectedMusicAssignment ? (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-slate-500/35 bg-slate-950/55 p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Vista previa</p>
+                        <h3 className="mt-1 break-words text-base font-black text-white">{selectedMusicDisplayName}</h3>
+                        <p className="mt-1 text-[11px] text-slate-300">
+                          Objetivo: {selectedMusicAssignment.objetivo || "General"}
+                          {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="pf-a2-pill">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
+                        <span className="pf-a2-pill">{resolveMusicContentTypeLabel(selectedMusicContentType)}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/35 p-2">
+                      {selectedMusicPlayer.kind === "audio" ? (
+                        <audio
+                          controls
+                          preload="none"
+                          className="h-12 w-full"
+                          src={selectedMusicPlayer.src || undefined}
+                        />
+                      ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
+                        <iframe
+                          title={`music-player-home-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
+                          src={selectedMusicPlayer.src}
+                          className={`w-full rounded-lg border border-white/10 ${
+                            selectedMusicPlatform === "SPOTIFY" ? "h-[360px] sm:h-[400px]" : "h-64 sm:h-72"
+                          }`}
+                          loading="lazy"
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        />
+                      ) : (
+                        <div className="flex h-28 items-center justify-center rounded-lg border border-slate-500/35 bg-slate-900/55 px-4 text-center text-xs text-slate-300">
+                          Esta plataforma no permite vista previa embebida. Usa "Abrir playlist" para escucharla.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => goToCategory("musica")}
+                        className="pf-a2-solid-btn inline-flex rounded-lg px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Ver en musica
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => openMusicPlaylistExternal(selectedMusicAssignment)}
+                        className="pf-a2-ghost-btn inline-flex rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      >
+                        {resolveMusicOpenActionLabel(selectedMusicPlatform)}
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="pf-a3-music-scroll" role="list" aria-label="Playlists recomendadas">
                   {homeMusicCards.map((track) => {
                     const coverInitials = getInitials(track.title);
