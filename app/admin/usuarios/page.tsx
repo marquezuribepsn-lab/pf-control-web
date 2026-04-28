@@ -1,5 +1,9 @@
 "use client";
 
+import AdminRunningLoaderOverlay, {
+  AdminRunningLoaderCard,
+} from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useEffect, useMemo, useState } from "react";
 
@@ -171,6 +175,8 @@ const INITIAL_CREATE_FORM: ColaboradorCreateForm = {
   puedeVerTodosAlumnos: false,
   asignaciones: "",
 };
+
+const ADMIN_MIN_LOADING_MS = 2000;
 
 function normalizeAccessMap(raw: unknown): Record<string, boolean> {
   const result = { ...ALL_ACCESS_TRUE };
@@ -435,6 +441,20 @@ export default function AdminUsuariosPermisosPage() {
   const [detailAsignacionesById, setDetailAsignacionesById] = useState<Record<string, AsignacionSeleccionada[]>>({});
   const [detailHistorialById, setDetailHistorialById] = useState<Record<string, Array<{ value?: { accion?: string; fecha?: string } }>>>({});
   const [detailClientSearchById, setDetailClientSearchById] = useState<Record<string, string>>({});
+
+  const adminBusyRaw =
+    loading ||
+    createLoading ||
+    Boolean(
+      savingId ||
+        detailLoadingId ||
+        detailSavingId ||
+        assignSavingId ||
+        detailActionLoadingId ||
+        clientActionLoadingId ||
+        clientPasswordActionLoadingId
+    );
+  const adminBusy = useMinimumLoading(adminBusyRaw, ADMIN_MIN_LOADING_MS);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1008,8 +1028,12 @@ export default function AdminUsuariosPermisosPage() {
     return (
       <main className="mx-auto max-w-7xl p-6 text-slate-100">
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/40 border-t-cyan-300" />
-          <p className="mt-4 text-sm text-slate-300">Cargando permisos de colaboradores...</p>
+          <div className="flex justify-center">
+            <AdminRunningLoaderCard
+              message="Cargando..."
+              detail="Sincronizando permisos de colaboradores..."
+            />
+          </div>
         </div>
       </main>
     );
@@ -1017,6 +1041,12 @@ export default function AdminUsuariosPermisosPage() {
 
   return (
     <main className="mx-auto max-w-7xl p-6 text-slate-100">
+      <AdminRunningLoaderOverlay
+        active={adminBusy && !loading}
+        message="Cargando..."
+        detail="Procesando cambios en usuarios..."
+      />
+
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-black tracking-tight">Usuarios y permisos</h1>

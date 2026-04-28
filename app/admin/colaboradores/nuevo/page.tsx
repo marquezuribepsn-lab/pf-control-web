@@ -1,4 +1,6 @@
 "use client";
+import AdminRunningLoaderOverlay from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useState } from 'react';
 
@@ -19,6 +21,7 @@ export default function NuevoColaboradorPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const adminBusy = useMinimumLoading(loading, 2000);
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -58,6 +61,12 @@ export default function NuevoColaboradorPage() {
 
   return (
     <main className="mx-auto max-w-4xl p-6 text-slate-100">
+      <AdminRunningLoaderOverlay
+        active={adminBusy}
+        message="Cargando..."
+        detail="Guardando colaborador..."
+      />
+
       <div className="mb-6">
         <h1 className="text-3xl font-black tracking-tight">Nuevo colaborador</h1>
         <p className="text-sm text-slate-300">Crea la cuenta, define permisos y envía credenciales automáticamente.</p>

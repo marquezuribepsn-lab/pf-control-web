@@ -1,6 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import AdminRunningLoaderOverlay, {
+  AdminRunningLoaderCard,
+} from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useSharedState } from "@/components/useSharedState";
 import { useSession } from "next-auth/react";
@@ -316,42 +320,7 @@ function IncomeLoadingIndicator({ message = "Cargando...", detail = "Buscando da
   message?: string;
   detail?: string;
 }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-cyan-300/35 bg-slate-950/80 px-4 py-3 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]">
-      <div className="relative h-12 w-12 shrink-0">
-        <span className="absolute inset-0 rounded-full border-2 border-cyan-200/25" />
-        <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-200 border-r-cyan-300/70 animate-spin" />
-        <span
-          className="absolute inset-[4px] rounded-full border border-cyan-200/30 border-l-transparent animate-spin"
-          style={{ animationDirection: "reverse", animationDuration: "1.7s" }}
-        />
-
-        <span className="absolute inset-0 flex items-center justify-center text-cyan-100">
-          <svg
-            viewBox="0 0 24 24"
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="15.5" cy="4.5" r="2.2" />
-            <path d="M13.5 8.5l-2.9 2.4l-3.2-.4" />
-            <path d="M10.8 11.2l2.3 2.4l3 .5" />
-            <path d="M13.1 13.6l-2 3.8" />
-            <path d="M10.7 10.7L8 14.1l-3 .8" />
-          </svg>
-        </span>
-      </div>
-
-      <div className="min-w-[160px]">
-        <p className="text-sm font-semibold text-cyan-100">{message}</p>
-        <p className="text-xs text-cyan-100/75">{detail}</p>
-      </div>
-    </div>
-  );
+  return <AdminRunningLoaderCard message={message} detail={detail} />;
 }
 
 export default function AdminPagosManualPage() {
@@ -403,6 +372,17 @@ export default function AdminPagosManualPage() {
   const incomeRequestIdRef = useRef(0);
   const incomeHasSnapshotRef = useRef(false);
   const incomeBusy = incomeLoading || incomeRefreshing || incomeResetting;
+  const adminBusyRaw =
+    loading ||
+    accountLoading ||
+    accountSaving ||
+    Boolean(actionLoadingId) ||
+    qrStoreLoading ||
+    qrStoreSaving ||
+    mpConnectLoading ||
+    mpConnectActionLoading ||
+    incomeBusy;
+  const adminBusy = useMinimumLoading(adminBusyRaw, INCOME_MIN_LOADING_MS);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -1029,6 +1009,12 @@ export default function AdminPagosManualPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-5 p-5 text-slate-100 sm:p-8">
+      <AdminRunningLoaderOverlay
+        active={adminBusy}
+        message="Cargando..."
+        detail="Sincronizando panel de pagos..."
+      />
+
       <section className="rounded-3xl border border-amber-300/30 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_20px_80px_rgba(245,158,11,0.16)]">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/90">Admin pagos</p>
         <h1 className="mt-2 text-3xl font-black text-white">Pagos mensuales</h1>

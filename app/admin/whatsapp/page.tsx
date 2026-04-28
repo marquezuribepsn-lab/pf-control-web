@@ -1,5 +1,7 @@
 "use client";
 
+import AdminRunningLoaderOverlay from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -179,6 +181,8 @@ const TAB_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "configuracion", label: "Configuracion" },
 ];
 
+const ADMIN_MIN_LOADING_MS = 2000;
+
 function cloneConfig(config: WhatsAppConfig) {
   return JSON.parse(JSON.stringify(config)) as WhatsAppConfig;
 }
@@ -293,6 +297,8 @@ export default function AdminWhatsAppPage() {
   const [manualRecipientTypeFilter, setManualRecipientTypeFilter] = useState<"all" | "alumno" | "colaborador">("all");
 
   const role = (session?.user as any)?.role;
+  const adminBusyRaw = loading || saving || actionLoading || webSessionBusy;
+  const adminBusy = useMinimumLoading(adminBusyRaw, ADMIN_MIN_LOADING_MS);
 
   const recipientById = useMemo(
     () => new Map(recipients.map((recipient) => [recipient.id, recipient])),
@@ -1124,6 +1130,12 @@ export default function AdminWhatsAppPage() {
 
   return (
     <main className="mx-auto max-w-[1240px] space-y-6 p-6 text-slate-100">
+      <AdminRunningLoaderOverlay
+        active={adminBusy}
+        message="Cargando..."
+        detail="Sincronizando panel de WhatsApp..."
+      />
+
       <header className="relative overflow-hidden rounded-[30px] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_24px_70px_-34px_rgba(6,182,212,0.7)]">
         <div className="pointer-events-none absolute -left-8 top-1 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-6 top-8 h-40 w-40 rounded-full bg-emerald-400/15 blur-3xl" />

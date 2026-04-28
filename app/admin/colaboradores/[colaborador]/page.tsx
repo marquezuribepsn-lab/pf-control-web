@@ -1,4 +1,8 @@
 "use client";
+import AdminRunningLoaderOverlay, {
+  AdminRunningLoaderCard,
+} from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { use, useEffect, useMemo, useState } from 'react';
 
@@ -27,6 +31,8 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
   const [asignaciones, setAsignaciones] = useState<AsignacionSeleccionada[]>([]);
   const [asignacionesLoading, setAsignacionesLoading] = useState(false);
   const [historial, setHistorial] = useState<any[]>([]);
+  const adminBusyRaw = loading || saving || asignacionesLoading;
+  const adminBusy = useMinimumLoading(adminBusyRaw, 2000);
 
   useEffect(() => {
     async function fetchColaborador() {
@@ -171,7 +177,20 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
     return clientes.filter((c) => c.email.toLowerCase().includes(q));
   }, [clientes, searchCliente]);
 
-  if (loading) return <main className="mx-auto max-w-6xl p-6 text-slate-100">Cargando...</main>;
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-6xl p-6 text-slate-100">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+          <div className="flex justify-center">
+            <AdminRunningLoaderCard
+              message="Cargando..."
+              detail="Buscando datos del colaborador..."
+            />
+          </div>
+        </div>
+      </main>
+    );
+  }
   if (!colaborador) {
     return (
       <main className="mx-auto max-w-6xl p-6 text-slate-100">
@@ -199,6 +218,12 @@ export default function ColaboradorDetallePage({ params }: { params: Promise<{ c
 
   return (
     <main className="mx-auto max-w-6xl p-6 text-slate-100">
+      <AdminRunningLoaderOverlay
+        active={adminBusy && !loading}
+        message="Cargando..."
+        detail="Procesando cambios del colaborador..."
+      />
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-black tracking-tight">{colaborador.nombreCompleto}</h1>

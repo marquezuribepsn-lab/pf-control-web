@@ -1,6 +1,8 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import AdminRunningLoaderOverlay from "@/components/admin/AdminRunningLoader";
+import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import Link from "@/components/ReliableLink";
 import { installButtonFailsafe } from "@/lib/buttonFailsafe";
 import { neutralizeViewportBlockers } from "@/lib/interactionGuard";
@@ -100,6 +102,7 @@ const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
 const ACCOUNT_SNAPSHOT_SYNC_MS = 120000;
+const ADMIN_TRANSITION_MIN_MS = 2000;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
@@ -1251,6 +1254,18 @@ export default function AppShell({
   }, [links, normalizedRole, colaboradorAccessMap]);
 
   const normalizedPathname = normalizePath(pathname);
+  const isAdminRoute = normalizedPathname === "/admin" || normalizedPathname.startsWith("/admin/");
+  const pendingAdminNav =
+    optimisticNavHref !== null &&
+    (optimisticNavHref === "/admin" || optimisticNavHref.startsWith("/admin/"));
+  const adminRouteTransitionRaw =
+    optimisticNavHref !== null &&
+    optimisticNavHref !== normalizedPathname &&
+    (isAdminRoute || pendingAdminNav);
+  const adminRouteTransitionLoading = useMinimumLoading(
+    adminRouteTransitionRaw,
+    ADMIN_TRANSITION_MIN_MS
+  );
   const isAlumnosRoute =
     normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
@@ -1496,6 +1511,11 @@ export default function AppShell({
       <div
         className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(116deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1px,transparent_1px,transparent_74px)] max-md:hidden"
         aria-hidden="true"
+      />
+      <AdminRunningLoaderOverlay
+        active={adminRouteTransitionLoading}
+        message="Cargando..."
+        detail="Abriendo modulo admin..."
       />
       {!isClienteRole ? (
         <ReliableActionButton
