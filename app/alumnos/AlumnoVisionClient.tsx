@@ -2146,8 +2146,13 @@ export default function AlumnoVisionClient({
   );
 
   const openPayments = useCallback(() => {
+    if (typeof window !== "undefined" && isUltraMobile) {
+      window.location.assign("/alumnos/pagos");
+      return;
+    }
+
     router.push("/alumnos/pagos");
-  }, [router]);
+  }, [isUltraMobile, router]);
 
   const openMusicPlaylistExternal = useCallback((assignment: MusicAssignmentLite) => {
     const playlistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
