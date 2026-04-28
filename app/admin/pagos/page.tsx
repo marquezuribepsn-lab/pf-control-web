@@ -619,6 +619,19 @@ export default function AdminPagosManualPage() {
     [incomeSummary?.monthlyRows]
   );
 
+  const displayedIncomeRows = useMemo<IncomeMonthlyRow[]>(() => {
+    if (incomeScope === "annual") {
+      return resumenMensualIngresos;
+    }
+
+    const selectedMonthKey = String(incomeSummary?.selectedMonth || incomeMonth || "").trim();
+    if (!selectedMonthKey) {
+      return [];
+    }
+
+    return resumenMensualIngresos.filter((row) => row.month === selectedMonthKey);
+  }, [incomeScope, incomeMonth, incomeSummary?.selectedMonth, resumenMensualIngresos]);
+
   const handleDecision = async (orderId: string, action: "approve" | "reject") => {
     setActionLoadingId(orderId);
     setError("");
@@ -1177,16 +1190,26 @@ export default function AdminPagosManualPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {resumenMensualIngresos.map((row) => (
-                    <tr key={row.month} className="border-t border-white/10">
-                      <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
-                      <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
-                      <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
-                      <td className="px-3 py-2 font-semibold text-emerald-200">
-                        {formatMoney(row.total, row.currency || "ARS")}
+                  {displayedIncomeRows.length === 0 ? (
+                    <tr className="border-t border-white/10">
+                      <td colSpan={4} className="px-3 py-4 text-center text-slate-400">
+                        {incomeScope === "monthly"
+                          ? "No hay ingresos para el mes seleccionado."
+                          : "No hay ingresos para el ano seleccionado."}
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    displayedIncomeRows.map((row) => (
+                      <tr key={row.month} className="border-t border-white/10">
+                        <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
+                        <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
+                        <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
+                        <td className="px-3 py-2 font-semibold text-emerald-200">
+                          {formatMoney(row.total, row.currency || "ARS")}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
