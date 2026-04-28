@@ -4,7 +4,7 @@ import Image from "next/image";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useSharedState } from "@/components/useSharedState";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type ManualOrder = {
   id: string;
@@ -346,9 +346,13 @@ export default function AdminPagosManualPage() {
   const [incomeYear, setIncomeYear] = useState<string>(getCurrentYearValue());
   const [incomeSummary, setIncomeSummary] = useState<IncomeSummaryResponse | null>(null);
   const [incomeLoading, setIncomeLoading] = useState(true);
+  const [incomeRefreshing, setIncomeRefreshing] = useState(false);
   const [incomeResetting, setIncomeResetting] = useState(false);
   const [incomeError, setIncomeError] = useState("");
   const [incomeMessage, setIncomeMessage] = useState("");
+  const incomeRequestIdRef = useRef(0);
+  const incomeHasSnapshotRef = useRef(false);
+  const incomeBusy = incomeLoading || incomeRefreshing || incomeResetting;
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -408,7 +412,16 @@ export default function AdminPagosManualPage() {
   }, [loadTransferAccounts, role, sessionStatus]);
 
   const loadIncomeSummary = useCallback(async () => {
-    setIncomeLoading(true);
+    const requestId = incomeRequestIdRef.current + 1;
+    incomeRequestIdRef.current = requestId;
+
+    const shouldUseBlockingLoader = !incomeHasSnapshotRef.current;
+    if (shouldUseBlockingLoader) {
+      setIncomeLoading(true);
+    } else {
+      setIncomeRefreshing(true);
+    }
+
     setIncomeError("");
 
     try {
@@ -432,12 +445,33 @@ export default function AdminPagosManualPage() {
         throw new Error(String(data.message || "No se pudo cargar el resumen de ingresos."));
       }
 
+      if (requestId !== incomeRequestIdRef.current) {
+        return;
+      }
+
       setIncomeSummary(data);
+      incomeHasSnapshotRef.current = true;
     } catch (err) {
-      setIncomeSummary(null);
+      if (requestId !== incomeRequestIdRef.current) {
+        return;
+      }
+
+      if (shouldUseBlockingLoader) {
+        setIncomeSummary(null);
+        incomeHasSnapshotRef.current = false;
+      }
+
       setIncomeError(err instanceof Error ? err.message : "No se pudo cargar el resumen de ingresos.");
     } finally {
-      setIncomeLoading(false);
+      if (requestId !== incomeRequestIdRef.current) {
+        return;
+      }
+
+      if (shouldUseBlockingLoader) {
+        setIncomeLoading(false);
+      } else {
+        setIncomeRefreshing(false);
+      }
     }
   }, [incomeMonth, incomeScope, incomeYear]);
 
@@ -1073,11 +1107,12 @@ export default function AdminPagosManualPage() {
             <ReliableActionButton
               type="button"
               onClick={() => setIncomeScope("monthly")}
+              disabled={incomeBusy}
               className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
                 incomeScope === "monthly"
                   ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
                   : "border-white/20 bg-slate-800 text-slate-200"
-              }`}
+              } disabled:cursor-not-allowed disabled:opacity-45`}
             >
               Mensual
             </ReliableActionButton>
@@ -1085,11 +1120,12 @@ export default function AdminPagosManualPage() {
             <ReliableActionButton
               type="button"
               onClick={() => setIncomeScope("annual")}
+              disabled={incomeBusy}
               className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
                 incomeScope === "annual"
                   ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
                   : "border-white/20 bg-slate-800 text-slate-200"
-              }`}
+              } disabled:cursor-not-allowed disabled:opacity-45`}
             >
               Anual
             </ReliableActionButton>
@@ -1097,16 +1133,16 @@ export default function AdminPagosManualPage() {
             <ReliableActionButton
               type="button"
               onClick={() => void loadIncomeSummary()}
-              disabled={incomeLoading || incomeResetting}
+              disabled={incomeBusy}
               className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {incomeLoading ? "Cargando..." : "Recargar"}
+              {incomeLoading || incomeRefreshing ? "Cargando..." : "Recargar"}
             </ReliableActionButton>
 
             <ReliableActionButton
               type="button"
               onClick={() => void resetIncomeSummary()}
-              disabled={incomeLoading || incomeResetting}
+              disabled={incomeBusy}
               className="rounded-xl border border-rose-300/45 bg-rose-500/15 px-3 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
             >
               {incomeResetting ? "Reiniciando..." : "Limpiar ingresos"}
@@ -1122,6 +1158,7 @@ export default function AdminPagosManualPage() {
                 type="month"
                 value={incomeMonth}
                 onChange={(event) => setIncomeMonth(event.target.value)}
+                disabled={incomeBusy}
                 className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
               />
             </label>
@@ -1134,6 +1171,7 @@ export default function AdminPagosManualPage() {
                 onChange={(event) =>
                   setIncomeYear(event.target.value.replace(/[^0-9]/g, "").slice(0, 4) || getCurrentYearValue())
                 }
+                disabled={incomeBusy}
                 min={2000}
                 max={3000}
                 className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
@@ -1142,10 +1180,16 @@ export default function AdminPagosManualPage() {
           )}
         </div>
 
-        {incomeLoading ? (
+        {incomeLoading && !incomeSummary ? (
           <p className="mt-4 text-sm text-slate-300">Cargando resumen de ingresos...</p>
-        ) : (
+        ) : incomeSummary ? (
           <>
+            {incomeRefreshing ? (
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-cyan-200/85">
+                Actualizando resumen...
+              </p>
+            ) : null}
+
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
                 <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">
@@ -1214,6 +1258,8 @@ export default function AdminPagosManualPage() {
               </table>
             </div>
           </>
+        ) : (
+          <p className="mt-4 text-sm text-slate-300">No hay datos de ingresos para mostrar.</p>
         )}
       </section>
 
