@@ -304,6 +304,48 @@ function resolveMercadoPagoOauthErrorMessage(code: string): string {
   return "No se pudo conectar la cuenta de Mercado Pago.";
 }
 
+function IncomeLoadingIndicator({ message = "Cargando...", detail = "Buscando datos..." }: {
+  message?: string;
+  detail?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-cyan-300/35 bg-slate-950/80 px-4 py-3 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]">
+      <div className="relative h-12 w-12 shrink-0">
+        <span className="absolute inset-0 rounded-full border-2 border-cyan-200/25" />
+        <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-200 border-r-cyan-300/70 animate-spin" />
+        <span
+          className="absolute inset-[4px] rounded-full border border-cyan-200/30 border-l-transparent animate-spin"
+          style={{ animationDirection: "reverse", animationDuration: "1.7s" }}
+        />
+
+        <span className="absolute inset-0 flex items-center justify-center text-cyan-100">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="15.5" cy="4.5" r="2.2" />
+            <path d="M13.5 8.5l-2.9 2.4l-3.2-.4" />
+            <path d="M10.8 11.2l2.3 2.4l3 .5" />
+            <path d="M13.1 13.6l-2 3.8" />
+            <path d="M10.7 10.7L8 14.1l-3 .8" />
+          </svg>
+        </span>
+      </div>
+
+      <div className="min-w-[160px]">
+        <p className="text-sm font-semibold text-cyan-100">{message}</p>
+        <p className="text-xs text-cyan-100/75">{detail}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPagosManualPage() {
   const { data: session, status: sessionStatus } = useSession();
   const role = String((session?.user as { role?: string } | undefined)?.role || "")
@@ -1181,83 +1223,94 @@ export default function AdminPagosManualPage() {
         </div>
 
         {incomeLoading && !incomeSummary ? (
-          <p className="mt-4 text-sm text-slate-300">Cargando resumen de ingresos...</p>
+          <div className="mt-5 flex justify-center" aria-live="polite">
+            <IncomeLoadingIndicator />
+          </div>
         ) : incomeSummary ? (
-          <>
+          <div className="relative mt-4">
             {incomeRefreshing ? (
-              <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-cyan-200/85">
-                Actualizando resumen...
-              </p>
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-950/60 backdrop-blur-sm"
+                aria-live="polite"
+              >
+                <IncomeLoadingIndicator />
+              </div>
             ) : null}
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
-                <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">
-                  Total {incomeScope === "monthly" ? "mensual" : "anual"}
-                </p>
-                <p className="mt-2 text-2xl font-black text-emerald-100">
-                  {formatMoney(incomeSummary?.selected?.total || 0, incomeSummary?.selected?.currency || "ARS")}
-                </p>
-                <p className="mt-1 text-xs text-emerald-100/80">
-                  Periodo: {incomeScope === "monthly"
-                    ? formatMonthLabel(incomeSummary?.selected?.periodLabel || incomeMonth)
-                    : incomeSummary?.selected?.periodLabel || incomeYear}
-                </p>
-              </article>
+            <div
+              className={`transition-opacity duration-200 ${
+                incomeRefreshing ? "pointer-events-none opacity-55" : "opacity-100"
+              }`}
+            >
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">
+                    Total {incomeScope === "monthly" ? "mensual" : "anual"}
+                  </p>
+                  <p className="mt-2 text-2xl font-black text-emerald-100">
+                    {formatMoney(incomeSummary?.selected?.total || 0, incomeSummary?.selected?.currency || "ARS")}
+                  </p>
+                  <p className="mt-1 text-xs text-emerald-100/80">
+                    Periodo: {incomeScope === "monthly"
+                      ? formatMonthLabel(incomeSummary?.selected?.periodLabel || incomeMonth)
+                      : incomeSummary?.selected?.periodLabel || incomeYear}
+                  </p>
+                </article>
 
-              <article className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-4">
-                <p className="text-[11px] uppercase tracking-wide text-cyan-100/90">Pagos del periodo</p>
-                <p className="mt-2 text-2xl font-black text-cyan-100">{incomeSummary?.selected?.paymentCount || 0}</p>
-              </article>
+                <article className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-cyan-100/90">Pagos del periodo</p>
+                  <p className="mt-2 text-2xl font-black text-cyan-100">{incomeSummary?.selected?.paymentCount || 0}</p>
+                </article>
 
-              <article className="rounded-xl border border-indigo-300/35 bg-indigo-500/10 p-4">
-                <p className="text-[11px] uppercase tracking-wide text-indigo-100/90">Clientes unicos</p>
-                <p className="mt-2 text-2xl font-black text-indigo-100">{incomeSummary?.selected?.uniqueClients || 0}</p>
-              </article>
+                <article className="rounded-xl border border-indigo-300/35 bg-indigo-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-indigo-100/90">Clientes unicos</p>
+                  <p className="mt-2 text-2xl font-black text-indigo-100">{incomeSummary?.selected?.uniqueClients || 0}</p>
+                </article>
 
-              <article className="rounded-xl border border-amber-300/35 bg-amber-500/10 p-4">
-                <p className="text-[11px] uppercase tracking-wide text-amber-100/90">Acumulado general</p>
-                <p className="mt-2 text-2xl font-black text-amber-100">
-                  {formatMoney(incomeSummary?.overall?.total || 0, incomeSummary?.overall?.currency || "ARS")}
-                </p>
-              </article>
-            </div>
+                <article className="rounded-xl border border-amber-300/35 bg-amber-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-amber-100/90">Acumulado general</p>
+                  <p className="mt-2 text-2xl font-black text-amber-100">
+                    {formatMoney(incomeSummary?.overall?.total || 0, incomeSummary?.overall?.currency || "ARS")}
+                  </p>
+                </article>
+              </div>
 
-            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-800 text-slate-200">
-                  <tr>
-                    <th className="px-3 py-2">Mes</th>
-                    <th className="px-3 py-2">Pagos</th>
-                    <th className="px-3 py-2">Clientes unicos</th>
-                    <th className="px-3 py-2">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayedIncomeRows.length === 0 ? (
-                    <tr className="border-t border-white/10">
-                      <td colSpan={4} className="px-3 py-4 text-center text-slate-400">
-                        {incomeScope === "monthly"
-                          ? "No hay ingresos para el mes seleccionado."
-                          : "No hay ingresos para el ano seleccionado."}
-                      </td>
+              <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="bg-slate-800 text-slate-200">
+                    <tr>
+                      <th className="px-3 py-2">Mes</th>
+                      <th className="px-3 py-2">Pagos</th>
+                      <th className="px-3 py-2">Clientes unicos</th>
+                      <th className="px-3 py-2">Total</th>
                     </tr>
-                  ) : (
-                    displayedIncomeRows.map((row) => (
-                      <tr key={row.month} className="border-t border-white/10">
-                        <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
-                        <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
-                        <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
-                        <td className="px-3 py-2 font-semibold text-emerald-200">
-                          {formatMoney(row.total, row.currency || "ARS")}
+                  </thead>
+                  <tbody>
+                    {displayedIncomeRows.length === 0 ? (
+                      <tr className="border-t border-white/10">
+                        <td colSpan={4} className="px-3 py-4 text-center text-slate-400">
+                          {incomeScope === "monthly"
+                            ? "No hay ingresos para el mes seleccionado."
+                            : "No hay ingresos para el ano seleccionado."}
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      displayedIncomeRows.map((row) => (
+                        <tr key={row.month} className="border-t border-white/10">
+                          <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
+                          <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
+                          <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
+                          <td className="px-3 py-2 font-semibold text-emerald-200">
+                            {formatMoney(row.total, row.currency || "ARS")}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </>
+          </div>
         ) : (
           <p className="mt-4 text-sm text-slate-300">No hay datos de ingresos para mostrar.</p>
         )}
