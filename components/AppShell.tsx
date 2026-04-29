@@ -16,7 +16,7 @@ import {
 } from "@/lib/sidebarWidget";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAlumnos } from "./AlumnosProvider";
 import { usePlayers } from "./PlayersProvider";
 import { useSessions } from "./SessionsProvider";
@@ -102,7 +102,7 @@ const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
 const ACCOUNT_SNAPSHOT_SYNC_MS = 120000;
-const ADMIN_TRANSITION_MIN_MS = 2000;
+const APP_TRANSITION_MIN_MS = 2000;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
@@ -508,7 +508,7 @@ export default function AppShell({
     }
   };
 
-  const markOptimisticSidebarNav = (targetHref: string) => {
+  const markOptimisticSidebarNav = useCallback((targetHref: string) => {
     const normalizedTarget = normalizePath(targetHref);
     setOptimisticNavHref(normalizedTarget);
 
@@ -521,7 +521,7 @@ export default function AppShell({
       optimisticNavResetTimerRef.current = null;
       setOptimisticNavHref((current) => (current === normalizedTarget ? null : current));
     }, SIDEBAR_NAV_OPTIMISTIC_MS);
-  };
+  }, []);
 
   const scheduleSidebarNavigationFallback = (targetHref: string) => {
     if (typeof window === "undefined") {
@@ -988,6 +988,74 @@ export default function AppShell({
   }, [mounted, pathname, resolvedRole, session?.user]);
 
   useEffect(() => {
+    if (!mounted || typeof window === "undefined" || pathname.startsWith("/auth")) {
+      return;
+    }
+
+    const onDocumentClickCapture = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) {
+        return;
+      }
+
+      const targetAttr = String(anchor.getAttribute("target") || "").trim().toLowerCase();
+      if ((targetAttr && targetAttr !== "_self") || anchor.hasAttribute("download")) {
+        return;
+      }
+
+      const rawHref = String(anchor.getAttribute("href") || "").trim();
+      if (
+        !rawHref ||
+        rawHref.startsWith("#") ||
+        rawHref.startsWith("mailto:") ||
+        rawHref.startsWith("tel:") ||
+        rawHref.startsWith("javascript:")
+      ) {
+        return;
+      }
+
+      let resolvedTarget: URL;
+      try {
+        resolvedTarget = new URL(anchor.href, window.location.origin);
+      } catch {
+        return;
+      }
+
+      if (resolvedTarget.origin !== window.location.origin) {
+        return;
+      }
+
+      const nextPath = normalizePath(resolvedTarget.pathname);
+      if (!nextPath || nextPath === normalizePath(window.location.pathname)) {
+        return;
+      }
+
+      markOptimisticSidebarNav(nextPath);
+    };
+
+    document.addEventListener("click", onDocumentClickCapture, true);
+    return () => {
+      document.removeEventListener("click", onDocumentClickCapture, true);
+    };
+  }, [markOptimisticSidebarNav, mounted, pathname]);
+
+  useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
 
     const refreshServiceWorkers = async () => {
@@ -1255,24 +1323,18 @@ export default function AppShell({
   }, [links, normalizedRole, colaboradorAccessMap]);
 
   const normalizedPathname = normalizePath(pathname);
-  const isAdminRoute = normalizedPathname === "/admin" || normalizedPathname.startsWith("/admin/");
-  const pendingAdminNav =
-    optimisticNavHref !== null &&
-    (optimisticNavHref === "/admin" || optimisticNavHref.startsWith("/admin/"));
-  const adminRouteTransitionRaw =
-    optimisticNavHref !== null &&
-    optimisticNavHref !== normalizedPathname &&
-    (isAdminRoute || pendingAdminNav);
-  const adminRouteTransitionLoading = useMinimumLoading(
-    adminRouteTransitionRaw,
-    ADMIN_TRANSITION_MIN_MS
+  const appRouteTransitionRaw =
+    optimisticNavHref !== null && optimisticNavHref !== normalizedPathname;
+  const appRouteTransitionLoading = useMinimumLoading(
+    appRouteTransitionRaw,
+    APP_TRANSITION_MIN_MS
   );
   const isAlumnosRoute =
     normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
 
   useEffect(() => {
-    if (!mounted || normalizedRole !== "ADMIN" || typeof window === "undefined") {
+    if (!mounted || typeof window === "undefined") {
       return;
     }
 
@@ -1320,7 +1382,7 @@ export default function AppShell({
         win.cancelIdleCallback(idleId);
       }
     };
-  }, [mounted, normalizedRole, router, visibleLinks]);
+  }, [mounted, router, visibleLinks]);
 
   const sidebarItemHeight = 38;
   const sidebarIconSize = "1rem";
@@ -1566,9 +1628,9 @@ export default function AppShell({
         aria-hidden="true"
       />
       <AdminRunningLoaderOverlay
-        active={adminRouteTransitionLoading}
+        active={appRouteTransitionLoading}
         message="Cargando..."
-        detail="Abriendo modulo admin..."
+        detail="Abriendo pantalla..."
         className="pointer-events-none md:left-[clamp(132px,14vw,170px)]"
       />
       {!isClienteRole ? (
@@ -1888,7 +1950,13 @@ export default function AppShell({
           isAlumnosRoute ? "pt-0" : "pt-14"
         }`}
       >
-        <div className={isAlumnosRoute ? "px-0 md:px-4" : "px-4"}>{children}</div>
+        <div
+          className={`${isAlumnosRoute ? "px-0 md:px-4" : "px-4"} transition-opacity duration-150 ${
+            appRouteTransitionLoading ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+        >
+          {children}
+        </div>
       </main>
     </div>
   );
