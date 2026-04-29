@@ -4,6 +4,7 @@ const chokidar = require("chokidar");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 const path = require("path");
+const fs = require("fs");
 
 const execFileAsync = promisify(execFile);
 
@@ -24,6 +25,26 @@ const IGNORED_GLOBS = [
   "**/storage/**",
   "**/prisma/dev.db*",
   "**/*.log",
+];
+
+const WATCH_TARGETS = [
+  "app",
+  "components",
+  "lib",
+  "prisma",
+  "scripts",
+  "data",
+  "public",
+  "package.json",
+  "package-lock.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+  "tsconfig.json",
+  "next.config.ts",
+  "next.config.js",
+  ".vscode/settings.json",
+  ".vscode/tasks.json",
+  "README.md",
 ];
 
 const IGNORED_PREFIXES = [
@@ -265,7 +286,12 @@ async function main() {
   await ensureGitReady();
   log("git ready");
 
-  watcher = chokidar.watch(process.cwd(), {
+  const watchPaths = WATCH_TARGETS.map((target) => path.join(process.cwd(), target)).filter((targetPath) =>
+    fs.existsSync(targetPath)
+  );
+  const targets = watchPaths.length > 0 ? watchPaths : [process.cwd()];
+
+  watcher = chokidar.watch(targets, {
     ignored: IGNORED_GLOBS,
     ignoreInitial: true,
     depth: 12,
@@ -306,4 +332,5 @@ main().catch((error) => {
   log(`fatal: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 });
+
 
