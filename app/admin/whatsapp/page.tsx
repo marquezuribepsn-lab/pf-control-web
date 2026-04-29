@@ -1114,7 +1114,7 @@ export default function AdminWhatsAppPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="mx-auto max-w-7xl p-6 text-slate-100">
+      <main className="mx-auto w-full max-w-[1760px] p-6 text-slate-100 xl:px-8 2xl:px-10">
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
           <div className="flex justify-center">
             <AdminRunningLoaderCard
@@ -1129,7 +1129,7 @@ export default function AdminWhatsAppPage() {
 
   if (role !== "ADMIN") {
     return (
-      <main className="mx-auto max-w-4xl p-6 text-slate-100">
+      <main className="mx-auto w-full max-w-[1760px] p-6 text-slate-100 xl:px-8 2xl:px-10">
         <div className="rounded-2xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm text-rose-200">
           Esta seccion es solo para administradores.
         </div>
@@ -1138,7 +1138,7 @@ export default function AdminWhatsAppPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1240px] space-y-6 p-6 text-slate-100">
+    <main className="mx-auto w-full max-w-[1760px] space-y-6 p-6 text-slate-100 xl:px-8 2xl:px-10">
       <AdminRunningLoaderOverlay
         active={adminBusy}
         message="Cargando..."
