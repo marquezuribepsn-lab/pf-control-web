@@ -1516,6 +1516,7 @@ export default function AppShell({
         active={adminRouteTransitionLoading}
         message="Cargando..."
         detail="Abriendo modulo admin..."
+        className="pointer-events-none"
       />
       {!isClienteRole ? (
         <ReliableActionButton
@@ -1625,7 +1626,6 @@ export default function AppShell({
                         ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
                         : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
                     }`}
-                    onPointerDown={() => markOptimisticSidebarNav(link.href)}
                     onClick={(event) => {
                       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
                         return;
@@ -1657,7 +1657,6 @@ export default function AppShell({
               <Link
                 href={activeSidebarWidgetItem.href}
                 reliabilityMode="hard"
-                onPointerDown={() => markOptimisticSidebarNav(activeSidebarWidgetItem.href)}
                 onClick={(event) => {
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
                     return;
