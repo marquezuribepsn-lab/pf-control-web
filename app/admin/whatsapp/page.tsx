@@ -1,6 +1,8 @@
 "use client";
 
-import AdminRunningLoaderOverlay from "@/components/admin/AdminRunningLoader";
+import AdminRunningLoaderOverlay, {
+  AdminRunningLoaderCard,
+} from "@/components/admin/AdminRunningLoader";
 import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -1113,7 +1115,14 @@ export default function AdminWhatsAppPage() {
   if (sessionStatus === "loading") {
     return (
       <main className="mx-auto max-w-7xl p-6 text-slate-100">
-        <p className="text-sm text-slate-300">Cargando panel de WhatsApp...</p>
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+          <div className="flex justify-center">
+            <AdminRunningLoaderCard
+              message="Cargando..."
+              detail="Abriendo modulo admin..."
+            />
+          </div>
+        </div>
       </main>
     );
   }

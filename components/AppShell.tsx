@@ -414,6 +414,7 @@ export default function AppShell({
   const optimisticNavResetTimerRef = useRef<number | null>(null);
   const widgetTransitionTimeoutRef = useRef<number | null>(null);
   const sidebarNavFallbackTimerRef = useRef<number | null>(null);
+  const prefetchedSidebarHrefRef = useRef<Set<string>>(new Set());
 
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -1269,6 +1270,58 @@ export default function AppShell({
   const isAlumnosRoute =
     normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
+
+  useEffect(() => {
+    if (!mounted || normalizedRole !== "ADMIN" || typeof window === "undefined") {
+      return;
+    }
+
+    const hrefsToPrefetch = visibleLinks.map((link) => normalizePath(link.href));
+    if (hrefsToPrefetch.length === 0) {
+      return;
+    }
+
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+
+    const runPrefetch = () => {
+      for (const href of hrefsToPrefetch) {
+        if (!href || prefetchedSidebarHrefRef.current.has(href)) {
+          continue;
+        }
+
+        prefetchedSidebarHrefRef.current.add(href);
+        try {
+          router.prefetch(href);
+        } catch {
+          // Prefetch must never break navigation flow.
+        }
+      }
+    };
+
+    const win = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (typeof win.requestIdleCallback === "function") {
+      idleId = win.requestIdleCallback(() => {
+        runPrefetch();
+      }, { timeout: 1200 });
+    } else {
+      timeoutId = window.setTimeout(runPrefetch, 120);
+    }
+
+    return () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+      if (idleId !== null && typeof win.cancelIdleCallback === "function") {
+        win.cancelIdleCallback(idleId);
+      }
+    };
+  }, [mounted, normalizedRole, router, visibleLinks]);
+
   const sidebarItemHeight = 38;
   const sidebarIconSize = "1rem";
   const sidebarLabelSize = "11px";
@@ -1516,7 +1569,7 @@ export default function AppShell({
         active={adminRouteTransitionLoading}
         message="Cargando..."
         detail="Abriendo modulo admin..."
-        className="pointer-events-none"
+        className="pointer-events-none md:left-[clamp(132px,14vw,170px)]"
       />
       {!isClienteRole ? (
         <ReliableActionButton

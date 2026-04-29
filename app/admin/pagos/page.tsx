@@ -992,7 +992,14 @@ export default function AdminPagosManualPage() {
   if (sessionStatus === "loading") {
     return (
       <main className="mx-auto max-w-5xl p-6 text-slate-100">
-        <p className="text-sm text-slate-300">Cargando panel de pagos...</p>
+        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+          <div className="flex justify-center">
+            <AdminRunningLoaderCard
+              message="Cargando..."
+              detail="Abriendo modulo admin..."
+            />
+          </div>
+        </div>
       </main>
     );
   }
