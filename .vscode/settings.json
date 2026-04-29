@@ -1,4 +1,7 @@
 {
   "emulator.emulatorPathWindows": "C:\\Users\\Marqu\\AppData\\Local\\Android\\Sdk\\emulator",
-  "emulator.androidColdBoot": true
+  "emulator.androidColdBoot": true,
+  "task.allowAutomaticTasks": "on",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
 }
