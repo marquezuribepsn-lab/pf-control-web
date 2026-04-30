@@ -2378,10 +2378,6 @@ export default function AlumnoVisionClient({
       trackedKeys.add(NUTRITION_ASSIGNMENTS_KEY);
     }
 
-    if (shouldLoadWorkoutData) {
-      trackedKeys.add(WORKOUT_LOGS_KEY);
-    }
-
     if (shouldLoadAnthropometryData) {
       trackedKeys.add(ANTHROPOMETRY_KEY);
     }
@@ -2425,7 +2421,6 @@ export default function AlumnoVisionClient({
     scheduleStorageRefresh,
     shouldLoadAnthropometryData,
     shouldLoadNutritionData,
-    shouldLoadWorkoutData,
   ]);
 
 
