@@ -13,7 +13,16 @@ import type {
   Sesion,
 } from "@/data/mockData";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+  type TouchEvent,
+} from "react";
 
 type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
 
@@ -3123,7 +3132,7 @@ export default function AlumnoVisionClient({
   }, [triggerRoutineRefresh]);
 
   const handleRoutineTouchStart = useCallback(
-    (event: React.TouchEvent<HTMLDivElement>) => {
+    (event: TouchEvent<HTMLDivElement>) => {
       if (activeCategory !== "rutina") return;
       if (typeof window === "undefined") return;
       if (window.scrollY > 2) {
@@ -3141,7 +3150,7 @@ export default function AlumnoVisionClient({
     [activeCategory]
   );
 
-  const handleRoutineTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+  const handleRoutineTouchMove = useCallback((event: TouchEvent<HTMLDivElement>) => {
     if (!routinePullActiveRef.current || routinePullRefreshing) return;
 
     const firstTouch = event.touches?.[0];
@@ -3182,7 +3191,7 @@ export default function AlumnoVisionClient({
   }, [triggerRoutineRefresh]);
 
   const handleRoutineVideoUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
+    async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) {
         return;
