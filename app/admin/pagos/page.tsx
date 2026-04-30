@@ -4,6 +4,11 @@ import Image from "next/image";
 import AdminRunningLoaderOverlay, {
   AdminRunningLoaderCard,
 } from "@/components/admin/AdminRunningLoader";
+import {
+  ADMIN_CARD_SURFACE,
+  ADMIN_PAGE_CONTAINER,
+  ADMIN_PAGE_CONTAINER_STACK,
+} from "@/components/admin/layoutTokens";
 import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useSharedState } from "@/components/useSharedState";
@@ -196,6 +201,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+async function parseResponsePayload<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+function resolvePayloadMessage(payload: unknown, fallback: string): string {
+  if (payload && typeof payload === "object") {
+    const message = (payload as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) {
+      return message.trim();
+    }
+  }
+
+  return fallback;
 }
 
 function parseMoneyAmount(value: unknown): number {
@@ -391,13 +415,13 @@ export default function AdminPagosManualPage() {
     try {
       const query = showAll ? "?all=1" : "";
       const response = await fetch(`/api/admin/payments/manual${query}`, { cache: "no-store" });
-      const data = (await response.json().catch(() => ({}))) as ManualOrdersResponse;
+      const data = await parseResponsePayload<ManualOrdersResponse>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo cargar el panel de pagos manuales"));
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar el panel de pagos manuales"));
       }
 
-      setOrders(Array.isArray(data.orders) ? data.orders : []);
+      setOrders(Array.isArray(data?.orders) ? data.orders : []);
     } catch (err) {
       setOrders([]);
       setError(err instanceof Error ? err.message : "No se pudo cargar el panel de pagos manuales.");
@@ -419,13 +443,13 @@ export default function AdminPagosManualPage() {
 
     try {
       const response = await fetch("/api/admin/payments/accounts", { cache: "no-store" });
-      const data = (await response.json().catch(() => ({}))) as TransferAccountsResponse;
+      const data = await parseResponsePayload<TransferAccountsResponse>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo cargar cuentas de transferencia."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar cuentas de transferencia."));
       }
 
-      setTransferAccounts(Array.isArray(data.accounts) ? data.accounts : []);
+      setTransferAccounts(Array.isArray(data?.accounts) ? data.accounts : []);
     } catch (err) {
       setTransferAccounts([]);
       setAccountError(err instanceof Error ? err.message : "No se pudo cargar cuentas de transferencia.");
@@ -470,10 +494,10 @@ export default function AdminPagosManualPage() {
         cache: "no-store",
       });
 
-      const data = (await response.json().catch(() => ({}))) as IncomeSummaryResponse;
+      const data = await parseResponsePayload<IncomeSummaryResponse>(response);
 
-      if (!response.ok || !data.ok) {
-        throw new Error(String(data.message || "No se pudo cargar el resumen de ingresos."));
+      if (!response.ok || !data?.ok) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar el resumen de ingresos."));
       }
 
       if (requestId !== incomeRequestIdRef.current) {
@@ -541,20 +565,20 @@ export default function AdminPagosManualPage() {
 
     try {
       const response = await fetch("/api/admin/payments/mercadopago/connect", { cache: "no-store" });
-      const data = (await response.json().catch(() => ({}))) as MercadoPagoConnectStatusResponse;
+      const data = await parseResponsePayload<MercadoPagoConnectStatusResponse>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo cargar estado de conexion con Mercado Pago."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar estado de conexion con Mercado Pago."));
       }
 
       setMpConnectStatus({
         ok: true,
-        oauthEnabled: Boolean(data.oauthEnabled),
-        configured: Boolean(data.configured),
-        source: String(data.source || "none"),
-        accountLabel: data.accountLabel || null,
-        connected: Boolean(data.connected),
-        linkedAccount: data.linkedAccount || null,
+        oauthEnabled: Boolean(data?.oauthEnabled),
+        configured: Boolean(data?.configured),
+        source: String(data?.source || "none"),
+        accountLabel: data?.accountLabel || null,
+        connected: Boolean(data?.connected),
+        linkedAccount: data?.linkedAccount || null,
       });
     } catch (err) {
       setMpConnectStatus(EMPTY_MERCADO_PAGO_CONNECT_STATUS);
@@ -609,10 +633,10 @@ export default function AdminPagosManualPage() {
 
     try {
       const response = await fetch("/api/admin/payments/mercadopago-qr", { cache: "no-store" });
-      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
 
-      if (!response.ok || !data.config) {
-        throw new Error(String(data.message || "No se pudo cargar configuracion QR de Mercado Pago."));
+      if (!response.ok || !data?.config) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar configuracion QR de Mercado Pago."));
       }
 
       setQrStoreForm({
@@ -721,16 +745,16 @@ export default function AdminPagosManualPage() {
         }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const data = await parseResponsePayload<{
         ok?: boolean;
         message?: string;
-      };
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo procesar la orden"));
+        throw new Error(resolvePayloadMessage(data, "No se pudo procesar la orden"));
       }
 
-      setMessage(String(data.message || "Accion completada."));
+      setMessage(resolvePayloadMessage(data, "Accion completada."));
       setNotesByOrderId((prev) => ({ ...prev, [orderId]: "" }));
       await Promise.all([loadOrders(), loadIncomeSummary()]);
     } catch (err) {
@@ -776,16 +800,16 @@ export default function AdminPagosManualPage() {
         body: JSON.stringify(accountForm),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const data = await parseResponsePayload<{
         ok?: boolean;
         message?: string;
-      };
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo guardar la cuenta."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo guardar la cuenta."));
       }
 
-      setAccountMessage(String(data.message || "Cuenta guardada."));
+      setAccountMessage(resolvePayloadMessage(data, "Cuenta guardada."));
       resetTransferAccountForm();
       await loadTransferAccounts();
     } catch (err) {
@@ -812,16 +836,16 @@ export default function AdminPagosManualPage() {
         body: JSON.stringify({ id: normalizedId }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const data = await parseResponsePayload<{
         ok?: boolean;
         message?: string;
-      };
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo eliminar la cuenta."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo eliminar la cuenta."));
       }
 
-      setAccountMessage(String(data.message || "Cuenta eliminada."));
+      setAccountMessage(resolvePayloadMessage(data, "Cuenta eliminada."));
       if (accountForm.id === normalizedId) {
         resetTransferAccountForm();
       }
@@ -850,16 +874,16 @@ export default function AdminPagosManualPage() {
         }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const data = await parseResponsePayload<{
         ok?: boolean;
         message?: string;
-      };
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo actualizar visibilidad."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo actualizar visibilidad."));
       }
 
-      setAccountMessage(String(data.message || "Visibilidad actualizada."));
+      setAccountMessage(resolvePayloadMessage(data, "Visibilidad actualizada."));
       await loadTransferAccounts();
     } catch (err) {
       setAccountError(err instanceof Error ? err.message : "No se pudo actualizar visibilidad.");
@@ -882,13 +906,13 @@ export default function AdminPagosManualPage() {
         body: JSON.stringify(qrStoreForm),
       });
 
-      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
 
-      if (!response.ok || !data.config) {
-        throw new Error(String(data.message || "No se pudo guardar QR de Mercado Pago."));
+      if (!response.ok || !data?.config) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo guardar QR de Mercado Pago."));
       }
 
-      setQrStoreMessage(String(data.message || "QR guardado."));
+      setQrStoreMessage(resolvePayloadMessage(data, "QR guardado."));
       setQrStoreForm({
         enabled: Boolean(data.config.enabled),
         label: String(data.config.label || ""),
@@ -915,13 +939,13 @@ export default function AdminPagosManualPage() {
         method: "DELETE",
       });
 
-      const data = (await response.json().catch(() => ({}))) as MercadoPagoQrStoreResponse;
+      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
 
-      if (!response.ok || !data.config) {
-        throw new Error(String(data.message || "No se pudo reiniciar QR de Mercado Pago."));
+      if (!response.ok || !data?.config) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo reiniciar QR de Mercado Pago."));
       }
 
-      setQrStoreMessage(String(data.message || "Configuracion QR reiniciada."));
+      setQrStoreMessage(resolvePayloadMessage(data, "Configuracion QR reiniciada."));
       setQrStoreForm(EMPTY_MERCADO_PAGO_QR_FORM);
       setQrStorePreview(null);
       setQrStoreUpdatedAt(data.config.updatedAt || null);
@@ -942,12 +966,12 @@ export default function AdminPagosManualPage() {
         method: "DELETE",
       });
 
-      const data = (await response.json().catch(() => ({}))) as IncomeSummaryResponse;
+      const data = await parseResponsePayload<IncomeSummaryResponse>(response);
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo reiniciar ingresos."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo reiniciar ingresos."));
       }
 
-      setIncomeMessage(String(data.message || "Ingresos reiniciados."));
+      setIncomeMessage(resolvePayloadMessage(data, "Ingresos reiniciados."));
       await loadIncomeSummary();
     } catch (err) {
       setIncomeError(err instanceof Error ? err.message : "No se pudo reiniciar ingresos.");
@@ -972,13 +996,13 @@ export default function AdminPagosManualPage() {
         method: "DELETE",
       });
 
-      const data = (await response.json().catch(() => ({}))) as MercadoPagoConnectStatusResponse;
+      const data = await parseResponsePayload<MercadoPagoConnectStatusResponse>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo desconectar la cuenta de Mercado Pago."));
+        throw new Error(resolvePayloadMessage(data, "No se pudo desconectar la cuenta de Mercado Pago."));
       }
 
-      setMpConnectMessage(String(data.message || "Cuenta desconectada."));
+      setMpConnectMessage(resolvePayloadMessage(data, "Cuenta desconectada."));
       await loadMercadoPagoConnectStatus();
     } catch (err) {
       setMpConnectError(
@@ -991,8 +1015,8 @@ export default function AdminPagosManualPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="mx-auto max-w-5xl p-6 text-slate-100">
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+      <main className={ADMIN_PAGE_CONTAINER}>
+        <div className={`${ADMIN_CARD_SURFACE} p-6 text-center`}>
           <div className="flex justify-center">
             <AdminRunningLoaderCard
               message="Cargando..."
@@ -1006,7 +1030,7 @@ export default function AdminPagosManualPage() {
 
   if (role !== "ADMIN") {
     return (
-      <main className="mx-auto max-w-4xl p-6 text-slate-100">
+      <main className={ADMIN_PAGE_CONTAINER}>
         <div className="rounded-2xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm text-rose-200">
           Esta seccion es solo para administradores.
         </div>
@@ -1015,7 +1039,7 @@ export default function AdminPagosManualPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl space-y-5 p-5 text-slate-100 sm:p-8">
+    <main className={ADMIN_PAGE_CONTAINER_STACK}>
       <AdminRunningLoaderOverlay
         active={adminBusy}
         message="Cargando..."

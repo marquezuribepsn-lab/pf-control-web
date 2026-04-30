@@ -503,7 +503,7 @@ export default function AppShell({
     interactionGuardLastRunRef.current = now;
 
     const result = neutralizeViewportBlockers();
-    if (result.neutralized > 0) {
+    if (result.neutralized > 0 && process.env.NODE_ENV !== "production") {
       console.warn("[interaction-guard] bloqueo neutralizado", result);
     }
   };

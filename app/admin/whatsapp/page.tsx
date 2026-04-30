@@ -3,9 +3,13 @@
 import AdminRunningLoaderOverlay, {
   AdminRunningLoaderCard,
 } from "@/components/admin/AdminRunningLoader";
+import {
+  ADMIN_PAGE_CONTAINER,
+  ADMIN_PAGE_CONTAINER_STACK,
+} from "@/components/admin/layoutTokens";
 import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import WhatsAppMessageEditor from "@/components/whatsapp/WhatsAppMessageEditor";
 import {
@@ -185,8 +189,65 @@ const TAB_ITEMS: Array<{ id: TabId; label: string }> = [
 
 const ADMIN_MIN_LOADING_MS = 2000;
 
+type LoadIssue = {
+  block: string;
+  message: string;
+};
+
+type FetchBlockResult<T> = {
+  ok: boolean;
+  status: number | null;
+  data: T | null;
+  message: string;
+};
+
 function cloneConfig(config: WhatsAppConfig) {
   return JSON.parse(JSON.stringify(config)) as WhatsAppConfig;
+}
+
+function resolvePayloadMessage(payload: unknown, fallback: string): string {
+  if (payload && typeof payload === "object") {
+    const typed = payload as { message?: unknown; error?: unknown };
+    const candidate = typeof typed.error === "string" ? typed.error : typed.message;
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return fallback;
+}
+
+async function parseResponsePayload<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchJsonBlock<T>(url: string): Promise<FetchBlockResult<T>> {
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    const data = await parseResponsePayload<T>(response);
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        data,
+        message: resolvePayloadMessage(data, `Error HTTP ${response.status} en ${url}`),
+      };
+    }
+
+    return { ok: true, status: response.status, data, message: "" };
+  } catch (error) {
+    return {
+      ok: false,
+      status: null,
+      data: null,
+      message: error instanceof Error ? error.message : `No se pudo consultar ${url}`,
+    };
+  }
 }
 
 function formatDateTime(value: string | undefined) {
@@ -266,6 +327,7 @@ export default function AdminWhatsAppPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [loadIssues, setLoadIssues] = useState<LoadIssue[]>([]);
 
   const [config, setConfig] = useState<WhatsAppConfig>(getDefaultWhatsAppConfig());
   const [recipients, setRecipients] = useState<Recipient[]>([]);
@@ -298,9 +360,12 @@ export default function AdminWhatsAppPage() {
   const [manualRecipientSearch, setManualRecipientSearch] = useState("");
   const [manualRecipientTypeFilter, setManualRecipientTypeFilter] = useState<"all" | "alumno" | "colaborador">("all");
 
-  const role = (session?.user as any)?.role;
+  const role = String((session?.user as { role?: string } | undefined)?.role || "")
+    .trim()
+    .toUpperCase();
   const adminBusyRaw = loading || saving || actionLoading || webSessionBusy;
   const adminBusy = useMinimumLoading(adminBusyRaw, ADMIN_MIN_LOADING_MS);
+  const webSessionPollDelayMsRef = useRef(4000);
 
   const recipientById = useMemo(
     () => new Map(recipients.map((recipient) => [recipient.id, recipient])),
@@ -488,78 +553,153 @@ export default function AdminWhatsAppPage() {
     }
   }, [config, manualCategoryKey, manualSubcategoryKey]);
 
-  const resetFeedback = () => {
+  const resetFeedback = (clearIssues = false) => {
     setStatus("");
     setError("");
+    if (clearIssues) {
+      setLoadIssues([]);
+    }
   };
 
-  const loadWhatsAppWebSession = async (includeQr = true) => {
+  const loadWhatsAppWebSession = async (
+    includeQr = true,
+    options?: { silent?: boolean }
+  ): Promise<boolean> => {
+    const silent = options?.silent === true;
+
     try {
-      setWebSessionLoading(true);
+      if (!silent) {
+        setWebSessionLoading(true);
+      }
+
       const response = await fetch(
         `/api/admin/whatsapp-web/session?includeQr=${includeQr ? "1" : "0"}`,
         { cache: "no-store" }
       );
-      const data = await response.json();
+      const data = await parseResponsePayload<{
+        session?: WhatsAppWebSession | null;
+        message?: string;
+        error?: string;
+      }>(response);
+
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo cargar sesion de WhatsApp Web");
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar sesion de WhatsApp Web"));
       }
+
       setWebSession((data?.session || null) as WhatsAppWebSession | null);
+      return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cargar sesion de WhatsApp Web");
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "No se pudo cargar sesion de WhatsApp Web");
+      }
+      return false;
     } finally {
-      setWebSessionLoading(false);
+      if (!silent) {
+        setWebSessionLoading(false);
+      }
     }
   };
 
   const loadAll = async () => {
     setLoading(true);
-    resetFeedback();
+    resetFeedback(true);
 
     try {
-      const [configRes, recipientsRes, historyRes, runsRes] = await Promise.all([
-        fetch("/api/whatsapp/config", { cache: "no-store" }),
-        fetch("/api/whatsapp/recipients", { cache: "no-store" }),
-        fetch("/api/admin/whatsapp-history", { cache: "no-store" }),
-        fetch("/api/admin/whatsapp-automation-runs", { cache: "no-store" }),
+      const [configBlock, recipientsBlock, historyBlock, runsBlock] = await Promise.all([
+        fetchJsonBlock<{ config?: WhatsAppConfig; message?: string; error?: string }>(
+          "/api/whatsapp/config"
+        ),
+        fetchJsonBlock<{
+          recipients?: Recipient[];
+          missingPhones?: MissingPhoneRow[];
+          message?: string;
+          error?: string;
+        }>("/api/whatsapp/recipients"),
+        fetchJsonBlock<{ history?: HistoryRow[]; message?: string; error?: string }>(
+          "/api/admin/whatsapp-history"
+        ),
+        fetchJsonBlock<{
+          runs?: RunRow[];
+          runnerState?: RunnerState;
+          alerts?: RunnerAlertRow[];
+          message?: string;
+          error?: string;
+        }>("/api/admin/whatsapp-automation-runs"),
       ]);
 
-      const [configJson, recipientsJson, historyJson, runsJson] = await Promise.all([
-        configRes.json(),
-        recipientsRes.json(),
-        historyRes.json(),
-        runsRes.json(),
-      ]);
+      const nextIssues: LoadIssue[] = [];
 
-      if (!configRes.ok) {
-        throw new Error(configJson?.error || "No se pudo cargar configuracion");
+      let nextConfig = config;
+      if (configBlock.ok && configBlock.data?.config) {
+        nextConfig = configBlock.data.config;
+        setConfig(nextConfig);
+      } else {
+        nextIssues.push({
+          block: "Configuracion",
+          message: configBlock.message || "No se pudo cargar configuracion",
+        });
       }
 
-      const nextConfig = configJson?.config || getDefaultWhatsAppConfig();
-      setConfig(nextConfig);
+      let nextRecipients: Recipient[] = [];
+      if (recipientsBlock.ok) {
+        nextRecipients = Array.isArray(recipientsBlock.data?.recipients)
+          ? recipientsBlock.data.recipients
+          : [];
+        setRecipients(nextRecipients);
+        setMissingPhoneRows(
+          Array.isArray(recipientsBlock.data?.missingPhones)
+            ? recipientsBlock.data.missingPhones
+            : []
+        );
+      } else {
+        nextIssues.push({
+          block: "Destinatarios",
+          message: recipientsBlock.message || "No se pudo cargar destinatarios",
+        });
+      }
 
-      const nextRecipients = Array.isArray(recipientsJson?.recipients) ? recipientsJson.recipients : [];
-      setRecipients(nextRecipients);
-      setMissingPhoneRows(Array.isArray(recipientsJson?.missingPhones) ? recipientsJson.missingPhones : []);
+      if (historyBlock.ok) {
+        const nextHistory = Array.isArray(historyBlock.data?.history) ? historyBlock.data.history : [];
+        setHistory(nextHistory);
+      } else {
+        nextIssues.push({
+          block: "Historial",
+          message: historyBlock.message || "No se pudo cargar historial",
+        });
+      }
 
-      const nextHistory = Array.isArray(historyJson?.history) ? historyJson.history : [];
-      setHistory(nextHistory);
-
-      const nextRuns = Array.isArray(runsJson?.runs) ? runsJson.runs : [];
-      setRuns(nextRuns);
-      setRunnerState(
-        runsJson?.runnerState && typeof runsJson.runnerState === "object"
-          ? runsJson.runnerState
-          : {}
-      );
-      setRunnerAlerts(Array.isArray(runsJson?.alerts) ? runsJson.alerts : []);
+      if (runsBlock.ok) {
+        const nextRuns = Array.isArray(runsBlock.data?.runs) ? runsBlock.data.runs : [];
+        setRuns(nextRuns);
+        setRunnerState(
+          runsBlock.data?.runnerState && typeof runsBlock.data.runnerState === "object"
+            ? runsBlock.data.runnerState
+            : {}
+        );
+        setRunnerAlerts(Array.isArray(runsBlock.data?.alerts) ? runsBlock.data.alerts : []);
+      } else {
+        nextIssues.push({
+          block: "Runner",
+          message: runsBlock.message || "No se pudo cargar el estado del runner",
+        });
+      }
 
       if (!testRecipientId && nextRecipients.length > 0) {
         setTestRecipientId(nextRecipients[0].id);
       }
 
+      if (nextIssues.length > 0) {
+        setLoadIssues(nextIssues);
+
+        if (nextIssues.length === 4) {
+          setError("No se pudo cargar ningun bloque del panel de WhatsApp.");
+        } else {
+          setStatus(`Panel cargado con advertencias (${nextIssues.length} bloque/s con error).`);
+        }
+      }
+
       if (nextConfig?.connection?.provider === "whatsapp_web") {
-        await loadWhatsAppWebSession(true);
+        await loadWhatsAppWebSession(true, { silent: nextIssues.length > 0 });
       } else {
         setWebSession(null);
       }
@@ -580,12 +720,59 @@ export default function AdminWhatsAppPage() {
     if (sessionStatus !== "authenticated") return;
     if (config.connection.provider !== "whatsapp_web") return;
 
-    const timer = window.setInterval(() => {
-      void loadWhatsAppWebSession(true);
-    }, 4000);
+    let cancelled = false;
+    let timeoutId = 0;
+
+    const scheduleNextPoll = (delayMs: number) => {
+      if (cancelled) return;
+
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+
+      timeoutId = window.setTimeout(() => {
+        void runPoll();
+      }, delayMs);
+    };
+
+    const runPoll = async () => {
+      if (cancelled) return;
+
+      const isVisible = document.visibilityState === "visible";
+      const ok = await loadWhatsAppWebSession(isVisible, { silent: true });
+      if (cancelled) return;
+
+      if (ok) {
+        webSessionPollDelayMsRef.current = 4000;
+      } else {
+        webSessionPollDelayMsRef.current = Math.min(
+          30000,
+          Math.max(6000, webSessionPollDelayMsRef.current * 2)
+        );
+      }
+
+      const nextDelay = isVisible
+        ? webSessionPollDelayMsRef.current
+        : Math.max(15000, webSessionPollDelayMsRef.current);
+      scheduleNextPoll(nextDelay);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        webSessionPollDelayMsRef.current = 4000;
+        scheduleNextPoll(250);
+      }
+    };
+
+    scheduleNextPoll(0);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      window.clearInterval(timer);
+      cancelled = true;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [sessionStatus, config.connection.provider]);
 
@@ -605,9 +792,14 @@ export default function AdminWhatsAppPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
       });
-      const data = await response.json();
+      const data = await parseResponsePayload<{
+        config?: WhatsAppConfig;
+        validationWarnings?: string[];
+        message?: string;
+        error?: string;
+      }>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo guardar configuracion");
+        throw new Error(resolvePayloadMessage(data, "No se pudo guardar configuracion"));
       }
 
       setConfig(data?.config || config);
@@ -708,9 +900,13 @@ export default function AdminWhatsAppPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<{
+        matches?: Array<{ id?: string }>;
+        message?: string;
+        error?: string;
+      }>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo auto-seleccionar destinatarios");
+        throw new Error(resolvePayloadMessage(data, "No se pudo auto-seleccionar destinatarios"));
       }
 
       const matches = Array.isArray(data?.matches) ? data.matches : [];
@@ -818,9 +1014,9 @@ export default function AdminWhatsAppPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<any>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo enviar mensaje manual");
+        throw new Error(resolvePayloadMessage(data, "No se pudo enviar mensaje manual"));
       }
 
       if (typeof data?.normalizedMessage === "string" && data.normalizedMessage.trim()) {
@@ -898,9 +1094,9 @@ export default function AdminWhatsAppPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<any>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo probar mensaje");
+        throw new Error(resolvePayloadMessage(data, "No se pudo probar mensaje"));
       }
 
       const summary = summarizeDispatch(data);
@@ -939,9 +1135,9 @@ export default function AdminWhatsAppPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<any>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo simular subcategoria");
+        throw new Error(resolvePayloadMessage(data, "No se pudo simular subcategoria"));
       }
 
       const matches = Array.isArray(data?.matches) ? data.matches : [];
@@ -990,9 +1186,9 @@ export default function AdminWhatsAppPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<any>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo ejecutar automatizacion");
+        throw new Error(resolvePayloadMessage(data, "No se pudo ejecutar automatizacion"));
       }
 
       const runSummary = summarizeRun(data);
@@ -1041,16 +1237,22 @@ export default function AdminWhatsAppPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ force, mode: "prod" }),
       });
-      const data = await response.json();
+      const data = await parseResponsePayload<{
+        skipped?: boolean;
+        reason?: string;
+        runId?: string;
+        message?: string;
+        error?: string;
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo ejecutar runner");
+        throw new Error(resolvePayloadMessage(data, "No se pudo ejecutar runner"));
       }
 
       if (data?.skipped) {
-        setStatus(`Runner omitido: ${String(data.reason || "not_due")}.`);
+        setStatus(`Runner omitido: ${String(data?.reason || "not_due")}.`);
       } else {
-        setStatus(`Runner ejecutado. Run ID: ${String(data.runId || "-")}`);
+        setStatus(`Runner ejecutado. Run ID: ${String(data?.runId || "-")}`);
       }
 
       await loadAll();
@@ -1074,21 +1276,25 @@ export default function AdminWhatsAppPage() {
         body: JSON.stringify({ action }),
       });
 
-      const data = await response.json();
+      const data = await parseResponsePayload<{
+        session?: WhatsAppWebSession | null;
+        message?: string;
+        error?: string;
+      }>(response);
       if (!response.ok) {
-        throw new Error(data?.error || "No se pudo actualizar sesion de WhatsApp Web");
+        throw new Error(resolvePayloadMessage(data, "No se pudo actualizar sesion de WhatsApp Web"));
       }
 
       setWebSession((data?.session || null) as WhatsAppWebSession | null);
 
       if (action === "connect") {
-        setStatus("Sesión WhatsApp Web iniciada. Escanea el QR para vincular.");
+        setStatus("Sesion WhatsApp Web iniciada. Escanea el QR para vincular.");
       } else if (action === "disconnect") {
-        setStatus("Sesión WhatsApp Web desconectada.");
+        setStatus("Sesion WhatsApp Web desconectada.");
       } else if (action === "logout") {
-        setStatus("Sesión WhatsApp Web cerrada y desvinculada.");
+        setStatus("Sesion WhatsApp Web cerrada y desvinculada.");
       } else {
-        setStatus("Sesión WhatsApp Web reiniciada.");
+        setStatus("Sesion WhatsApp Web reiniciada.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al gestionar sesion de WhatsApp Web");
@@ -1114,7 +1320,7 @@ export default function AdminWhatsAppPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="mx-auto w-full max-w-[1760px] p-6 text-slate-100 xl:px-8 2xl:px-10">
+      <main className={ADMIN_PAGE_CONTAINER}>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
           <div className="flex justify-center">
             <AdminRunningLoaderCard
@@ -1129,7 +1335,7 @@ export default function AdminWhatsAppPage() {
 
   if (role !== "ADMIN") {
     return (
-      <main className="mx-auto w-full max-w-[1760px] p-6 text-slate-100 xl:px-8 2xl:px-10">
+      <main className={ADMIN_PAGE_CONTAINER}>
         <div className="rounded-2xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm text-rose-200">
           Esta seccion es solo para administradores.
         </div>
@@ -1138,7 +1344,7 @@ export default function AdminWhatsAppPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1760px] space-y-6 p-6 text-slate-100 xl:px-8 2xl:px-10">
+    <main className={ADMIN_PAGE_CONTAINER_STACK}>
       <AdminRunningLoaderOverlay
         active={adminBusy}
         message="Cargando..."
@@ -1244,6 +1450,18 @@ export default function AdminWhatsAppPage() {
       {error ? (
         <div className="rounded-2xl border border-rose-300/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
           {error}
+        </div>
+      ) : null}
+      {loadIssues.length > 0 ? (
+        <div className="rounded-2xl border border-amber-300/35 bg-amber-500/12 px-4 py-3 text-sm text-amber-100">
+          <p className="font-semibold">Cargado con advertencias:</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-amber-100/90">
+            {loadIssues.map((issue, index) => (
+              <li key={`${issue.block}-${index}`}>
+                {issue.block}: {issue.message}
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
       {loading ? (
@@ -1746,10 +1964,10 @@ export default function AdminWhatsAppPage() {
                   <p className="font-semibold text-slate-100">{run.runId}</p>
                   <p>{formatDateTime(String(run.updatedAt || ""))}</p>
                   <p>
-                    {run.categoryKey || "general"} · {run.ruleKey || "all"} · {run.dryRun ? "dry" : "real"}
+                    {run.categoryKey || "general"} - {run.ruleKey || "all"} - {run.dryRun ? "dry" : "real"}
                   </p>
                   <p>
-                    reglas={run.rulesExecuted ?? "-"} · sent={run.sent ?? "-"} · failed={run.failed ?? "-"} · retries={run.retryCount ?? 0} · ok={String(run.ok)}
+                    reglas={run.rulesExecuted ?? "-"} - sent={run.sent ?? "-"} - failed={run.failed ?? "-"} - retries={run.retryCount ?? 0} - ok={String(run.ok)}
                   </p>
                 </article>
               ))}
@@ -1777,7 +1995,7 @@ export default function AdminWhatsAppPage() {
                     {alert.type === "missing_phone_push" ? (
                       <>
                         <p>
-                          run={alert.runId || "-"} · {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
+                          run={alert.runId || "-"} - {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
                         </p>
                         <p>alumnos_sin_numero={alert.totalMissing ?? 0}</p>
                         {alert.previewNames ? <p>ejemplos={alert.previewNames}</p> : null}
@@ -1786,13 +2004,13 @@ export default function AdminWhatsAppPage() {
                     ) : (
                       <>
                         <p>
-                          run={alert.runId || "-"} · {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
+                          run={alert.runId || "-"} - {alert.categoryKey || "all"} / {alert.ruleKey || "all"}
                         </p>
                         <p>
-                          sent={alert.sent ?? 0} · failed={alert.failed ?? 0} · retries={alert.retryCount ?? 0}
+                          sent={alert.sent ?? 0} - failed={alert.failed ?? 0} - retries={alert.retryCount ?? 0}
                         </p>
                         <p>
-                          email={String(alert.emailAlertSent)} · whatsapp={String(alert.whatsappAlertSent)}
+                          email={String(alert.emailAlertSent)} - whatsapp={String(alert.whatsappAlertSent)}
                         </p>
                         {alert.alertError ? <p>error={alert.alertError}</p> : null}
                       </>
@@ -2351,7 +2569,7 @@ export default function AdminWhatsAppPage() {
 
                       {sim ? (
                         <div className="mt-3 rounded-lg border border-indigo-300/30 bg-indigo-500/10 p-3 text-xs text-indigo-100">
-                          Coincidencias: {sim.totalMatched} · Reglas evaluadas: {sim.rulesEvaluated}
+                          Coincidencias: {sim.totalMatched} - Reglas evaluadas: {sim.rulesEvaluated}
                           {sim.matches.length > 0 ? (
                             <div className="mt-2 max-h-48 overflow-auto rounded-md border border-indigo-200/30">
                               <table className="min-w-full text-left text-[11px] text-indigo-100">

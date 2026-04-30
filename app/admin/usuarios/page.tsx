@@ -3,9 +3,16 @@
 import AdminRunningLoaderOverlay, {
   AdminRunningLoaderCard,
 } from "@/components/admin/AdminRunningLoader";
+import {
+  ADMIN_CARD_SURFACE,
+  ADMIN_PAGE_CONTAINER,
+  ADMIN_PAGE_CONTAINER_STACK,
+} from "@/components/admin/layoutTokens";
 import { useMinimumLoading } from "@/components/admin/useMinimumLoading";
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useEffect, useMemo, useState } from "react";
+import ReliableLink from "@/components/ReliableLink";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type AccessOption = {
   href: string;
@@ -177,6 +184,26 @@ const INITIAL_CREATE_FORM: ColaboradorCreateForm = {
 };
 
 const ADMIN_MIN_LOADING_MS = 2000;
+
+async function parseResponsePayload<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+function resolvePayloadMessage(payload: unknown, fallback: string): string {
+  if (payload && typeof payload === "object") {
+    const typed = payload as { message?: unknown; error?: unknown };
+    const candidate = typeof typed.error === "string" ? typed.error : typed.message;
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return fallback;
+}
 
 function normalizeAccessMap(raw: unknown): Record<string, boolean> {
   const result = { ...ALL_ACCESS_TRUE };
@@ -411,6 +438,8 @@ function buildAnamnesisRows(anamnesis: SignupAnamnesis | null | undefined) {
 }
 
 export default function AdminUsuariosPermisosPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<ColaboradorDraft[]>([]);
   const [clientes, setClientes] = useState<ClienteUsuario[]>([]);
 
@@ -436,6 +465,7 @@ export default function AdminUsuariosPermisosPage() {
   const [clientCustomPasswordById, setClientCustomPasswordById] = useState<Record<string, string>>({});
   const [ingresanteModalId, setIngresanteModalId] = useState<string | null>(null);
   const [confirmAltaId, setConfirmAltaId] = useState<string | null>(null);
+  const [requestedColaboradorId, setRequestedColaboradorId] = useState<string | null>(null);
 
   const [detailDraftById, setDetailDraftById] = useState<Record<string, ColaboradorDetailDraft>>({});
   const [detailAsignacionesById, setDetailAsignacionesById] = useState<Record<string, AsignacionSeleccionada[]>>({});
@@ -457,15 +487,20 @@ export default function AdminUsuariosPermisosPage() {
   const adminBusy = useMinimumLoading(adminBusyRaw, ADMIN_MIN_LOADING_MS);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    const panel = String(searchParams.get("panel") || "").trim();
+    const createFlag = String(searchParams.get("create") || "").trim();
+    const requestedId = String(searchParams.get("colaborador") || "").trim();
 
-    const panel = new URLSearchParams(window.location.search).get("panel");
-    if (panel === "colaboradores") {
+    if (panel === "colaboradores" || requestedId) {
       setShowColaboradoresPanel(true);
     }
-  }, []);
+
+    if (createFlag === "1") {
+      setShowCreateForm(true);
+    }
+
+    setRequestedColaboradorId(requestedId || null);
+  }, [searchParams]);
 
   const loadColaboradores = async () => {
     try {
@@ -773,18 +808,19 @@ export default function AdminUsuariosPermisosPage() {
         }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as {
+      const data = await parseResponsePayload<{
         message?: string;
         visiblePassword?: string;
-      };
+        error?: string;
+      }>(response);
 
       if (!response.ok) {
-        throw new Error(String(data.message || 'No se pudo blanquear la contrasena del cliente'));
+        throw new Error(resolvePayloadMessage(data, 'No se pudo blanquear la contrasena del cliente'));
       }
 
       setMessage({
         type: 'success',
-        text: `Contrasena blanqueada para ${cliente.email}: ${String(data.visiblePassword || '')}`,
+        text: `Contrasena blanqueada para ${cliente.email}: ${String(data?.visiblePassword || '')}`,
       });
 
       setClientCustomPasswordById((prev) => ({ ...prev, [cliente.id]: '' }));
@@ -799,7 +835,7 @@ export default function AdminUsuariosPermisosPage() {
     }
   };
 
-  const loadColaboradorDetail = async (id: string) => {
+  const loadColaboradorDetail = useCallback(async (id: string) => {
     try {
       setDetailLoadingId(id);
 
@@ -842,13 +878,43 @@ export default function AdminUsuariosPermisosPage() {
     } finally {
       setDetailLoadingId(null);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!requestedColaboradorId || loading) {
+      return;
+    }
+
+    const requested = requestedColaboradorId.trim();
+    const target = items.find((item) => item.id === requested);
+    if (!target) {
+      setMessage({ type: "error", text: "No se encontro el colaborador solicitado." });
+      setRequestedColaboradorId(null);
+      return;
+    }
+
+    setShowColaboradoresPanel(true);
+    setExpandedColaboradorId(requested);
+    setRequestedColaboradorId(null);
+    void loadColaboradorDetail(requested);
+  }, [items, loadColaboradorDetail, loading, requestedColaboradorId]);
 
   const openDetailPanel = async (id: string) => {
     if (expandedColaboradorId === id) {
       setExpandedColaboradorId(null);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("colaborador");
+      const nextQuery = params.toString();
+      router.replace(nextQuery ? `/admin/usuarios?${nextQuery}` : "/admin/usuarios", {
+        scroll: false,
+      });
       return;
     }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("panel", "colaboradores");
+    params.set("colaborador", id);
+    router.replace(`/admin/usuarios?${params.toString()}`, { scroll: false });
 
     setExpandedColaboradorId(id);
     await loadColaboradorDetail(id);
@@ -1026,8 +1092,8 @@ export default function AdminUsuariosPermisosPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-7xl p-6 text-slate-100">
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+      <main className={ADMIN_PAGE_CONTAINER}>
+        <div className={`${ADMIN_CARD_SURFACE} p-6 text-center`}>
           <div className="flex justify-center">
             <AdminRunningLoaderCard
               message="Cargando..."
@@ -1040,7 +1106,7 @@ export default function AdminUsuariosPermisosPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+    <main className={ADMIN_PAGE_CONTAINER_STACK}>
       <AdminRunningLoaderOverlay
         active={adminBusy && !loading}
         message="Cargando..."
@@ -1257,12 +1323,12 @@ export default function AdminUsuariosPermisosPage() {
                         {clientActionLoadingId === cliente.id ? 'Dando alta...' : 'Dar de Alta'}
                       </ReliableActionButton>
 
-                      <a
+                      <ReliableLink
                         href={buildClienteFichaHref(cliente)}
                         className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
                       >
                         Ver ficha en Clientes
-                      </a>
+                      </ReliableLink>
                     </div>
                   </article>
                 );
@@ -1778,7 +1844,12 @@ export default function AdminUsuariosPermisosPage() {
       ) : null}
 
       {ingresanteModal ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Detalle de nuevo ingresante"
+        >
           <div className="w-full max-w-4xl rounded-2xl border border-cyan-200/30 bg-slate-950/95 p-5 shadow-[0_35px_90px_rgba(2,8,24,0.65)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1838,12 +1909,12 @@ export default function AdminUsuariosPermisosPage() {
             </details>
 
             <div className="mt-4 flex flex-wrap justify-end gap-2">
-              <a
+              <ReliableLink
                 href={buildClienteFichaHref(ingresanteModal)}
                 className="rounded-xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-2 text-xs font-bold uppercase tracking-wide text-cyan-100 transition hover:bg-cyan-500/25"
               >
                 Ver ficha en Clientes
-              </a>
+              </ReliableLink>
               <ReliableActionButton
                 type="button"
                 onClick={() => setConfirmAltaId(ingresanteModal.id)}
@@ -1858,7 +1929,12 @@ export default function AdminUsuariosPermisosPage() {
       ) : null}
 
       {confirmAltaCliente ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirmacion de alta"
+        >
           <div className="w-full max-w-lg rounded-2xl border border-amber-200/35 bg-[#0b1220] p-6 text-center shadow-[0_28px_80px_rgba(2,6,20,0.7)]">
             <p className="text-5xl font-black text-amber-200">!</p>
             <h3 className="mt-2 text-4xl font-black text-white">Atencion</h3>
