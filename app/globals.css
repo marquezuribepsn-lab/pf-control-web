@@ -3469,7 +3469,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
   .pf-a3-routine-nav-btn {
     font-size: 0.7rem;
-    padding: 0.14rem 0.32rem 0.38rem;
+    max-width: 102px;
+    padding: 0.14rem 0.3rem 0.38rem;
   }
 
   .pf-a3-routine-overview-head {
@@ -3478,6 +3479,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
   .pf-a3-routine-overview-actions {
     gap: 0.28rem;
+  }
+
+  .pf-a3-routine-coach-row {
+    margin-top: 0.22rem;
+    gap: 0.3rem;
+  }
+
+  .pf-a3-routine-coach-avatar {
+    width: 18px;
+    height: 18px;
+    font-size: 0.48rem;
   }
 
   .pf-a3-routine-icon-btn {
@@ -3525,6 +3537,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     padding: 0.56rem;
   }
 
+  .pf-a3-routine-session-context {
+    margin-bottom: 0.38rem;
+  }
+
+  .pf-a3-routine-session-context p {
+    font-size: 0.58rem;
+  }
+
   .pf-a3-routine-session-title {
     font-size: 0.92rem;
   }
@@ -3541,6 +3561,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   .pf-a3-routine-exercise-row {
     border-radius: 0.62rem;
     padding: 0.4rem 0.42rem;
+  }
+
+  .pf-a3-routine-exercise-list {
+    border-radius: 0.62rem;
   }
 
   .pf-a3-routine-exercise-thumb {
