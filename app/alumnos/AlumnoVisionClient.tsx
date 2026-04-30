@@ -1463,12 +1463,21 @@ export default function AlumnoVisionClient({
   const [musicNameByUrl, setMusicNameByUrl] = useState<Record<string, string>>({});
   const [musicContentTypeByUrl, setMusicContentTypeByUrl] = useState<Record<string, MusicContentType>>({});
   const [musicCoachLine, setMusicCoachLine] = useState<string>(resolveRandomMusicCoachLine(currentName || ""));
-  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogLite[]>([]);
   const [anthropometryEntries, setAnthropometryEntries] = useState<AnthropometryEntryLite[]>([]);
   const [nowTs, setNowTs] = useState<number>(() => Date.now());
   const [selectedRoutineSessionId, setSelectedRoutineSessionId] = useState<string | null>(null);
+  const [selectedRoutineWeekId, setSelectedRoutineWeekId] = useState<string | null>(null);
+  const [selectedRoutineDayId, setSelectedRoutineDayId] = useState<string | null>(null);
   const [expandedRoutineBlocks, setExpandedRoutineBlocks] = useState<Record<string, boolean>>({});
   const [visibleRoutineBlockCount, setVisibleRoutineBlockCount] = useState<number>(ULTRA_MOBILE_INITIAL_BLOCKS);
+  const [routinePullDistance, setRoutinePullDistance] = useState(0);
+  const [routinePullRefreshing, setRoutinePullRefreshing] = useState(false);
+  const [routineExerciseLogTarget, setRoutineExerciseLogTarget] = useState<RoutineExerciseLogTarget | null>(null);
+  const [routineExerciseLogDraft, setRoutineExerciseLogDraft] = useState<RoutineExerciseLogDraft>(
+    createRoutineExerciseLogDraft()
+  );
+  const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
+  const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
   const storageRefreshRafRef = useRef<number | null>(null);
@@ -1476,6 +1485,8 @@ export default function AlumnoVisionClient({
   const lastStorageRefreshTsRef = useRef<number>(0);
   const requestedMusicArtworkRef = useRef<Set<string>>(new Set());
   const homeNavGuardRef = useRef<number>(0);
+  const routinePullStartYRef = useRef<number | null>(null);
+  const routinePullActiveRef = useRef(false);
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1493,8 +1504,21 @@ export default function AlumnoVisionClient({
     pollMs: isUltraMobile ? 9000 : 12000,
   });
 
+  const [workoutLogsShared, setWorkoutLogsShared, workoutLogsSyncLoaded] = useSharedState<unknown[]>([], {
+    key: WORKOUT_LOGS_KEY,
+    legacyLocalStorageKey: WORKOUT_LOGS_KEY,
+    pollMs: isUltraMobile ? 9000 : 12000,
+  });
+
+  const [weekPlanStoreRaw, , weekPlanSyncLoaded] = useSharedState<unknown>(null, {
+    key: WEEK_PLAN_KEY,
+    legacyLocalStorageKey: WEEK_PLAN_KEY,
+    pollMs: isUltraMobile ? 9000 : 12000,
+  });
+
   const shouldLoadNutritionData = !isUltraMobile || activeCategory === "nutricion";
-  const shouldLoadWorkoutData = !isUltraMobile || activeCategory === "progreso";
+  const shouldLoadWorkoutData =
+    !isUltraMobile || activeCategory === "progreso" || activeCategory === "rutina" || activeCategory === "inicio";
   const shouldLoadAnthropometryData = !isUltraMobile || activeCategory === "progreso" || activeCategory === "inicio";
   const shouldLoadMusicData = !isUltraMobile || activeCategory === "musica" || activeCategory === "inicio";
 
