@@ -2197,7 +2197,7 @@ export default function AlumnoVisionClient({
         equipo: String(linkedSession?.equipo || "Entrenamiento").trim() || "Entrenamiento",
         asignacionTipo: "alumnos",
         alumnoAsignado: profileName,
-        bloques,
+        bloques: blocks,
         prescripciones: linkedSession?.prescripciones,
       };
 
