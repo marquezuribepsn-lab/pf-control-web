@@ -5691,16 +5691,59 @@ export default function ClientesPage() {
                                                                 {selectedExerciseWorkoutLogs.slice(0, 8).map((log) => (
                                                                   <li
                                                                     key={log.id}
-                                                                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-white/10 bg-slate-950/55 px-2 py-1"
+                                                                    className="rounded-md border border-white/10 bg-slate-950/55 px-2 py-1"
                                                                   >
-                                                                    <span>
-                                                                      {log.fecha
-                                                                        ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
-                                                                        : "Sin fecha"}
-                                                                    </span>
-                                                                    <span className="font-semibold text-cyan-100">
-                                                                      {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series} x {log.repeticiones || "-"}
-                                                                    </span>
+                                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                                      <span>
+                                                                        {log.fecha
+                                                                          ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                                                          : "Sin fecha"}
+                                                                      </span>
+                                                                      <span className="font-semibold text-cyan-100">
+                                                                        {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series} x {log.repeticiones || "-"}
+                                                                      </span>
+                                                                    </div>
+
+                                                                    {log.molestia ? (
+                                                                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-200">
+                                                                        Molestia reportada
+                                                                      </p>
+                                                                    ) : null}
+
+                                                                    {log.comentarios ? (
+                                                                      <p className="mt-1 text-[11px] text-slate-300">{log.comentarios}</p>
+                                                                    ) : null}
+
+                                                                    {log.videoDataUrl || log.videoUrl ? (
+                                                                      <div className="mt-2 space-y-1">
+                                                                        {log.videoDataUrl ? (
+                                                                          <video
+                                                                            controls
+                                                                            src={log.videoDataUrl}
+                                                                            className="h-24 w-full rounded border border-white/10 bg-black/45"
+                                                                          />
+                                                                        ) : null}
+
+                                                                        <div className="flex flex-wrap items-center gap-2">
+                                                                          <ReliableActionButton
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                              window.open(
+                                                                                String(log.videoUrl || log.videoDataUrl || ""),
+                                                                                "_blank",
+                                                                                "noopener,noreferrer"
+                                                                              )
+                                                                            }
+                                                                            className="rounded border border-cyan-300/45 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-100"
+                                                                          >
+                                                                            Abrir video
+                                                                          </ReliableActionButton>
+                                                                          {log.videoFileName ? (
+                                                                            <span className="text-[10px] text-slate-400">{log.videoFileName}</span>
+                                                                          ) : null}
+                                                                        </div>
+                                                                      </div>
+                                                                    ) : null}
                                                                   </li>
                                                                 ))}
                                                               </ul>
