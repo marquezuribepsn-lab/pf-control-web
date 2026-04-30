@@ -13,6 +13,7 @@ const fromPath = process.env.SMOKE_ALUMNO_FROM_PATH || "/alumnos/rutina";
 const expectedTargetPath = process.env.SMOKE_ALUMNO_BACK_TARGET_PATH || "/alumnos/inicio";
 const waitAfterLoadMs = Number.parseInt(String(process.env.SMOKE_ALUMNO_WAIT_AFTER_LOAD_MS || "1200"), 10);
 const waitAfterClickMs = Number.parseInt(String(process.env.SMOKE_ALUMNO_WAIT_AFTER_CLICK_MS || "1800"), 10);
+const allowCreateFallbackUser = String(process.env.SMOKE_ALUMNO_CREATE_FALLBACK_USER || "").trim() === "1";
 const screenshotPath =
   process.env.SMOKE_ALUMNO_SCREENSHOT_PATH ||
   path.join(os.tmpdir(), `pf-control-alumno-rutina-back-${Date.now()}.png`);
@@ -42,6 +43,12 @@ async function resolveClienteEmail() {
   const email = String(user?.email || "").trim().toLowerCase();
   if (email) {
     return email;
+  }
+
+  if (!allowCreateFallbackUser) {
+    throw new Error(
+      "No hay usuario CLIENTE verificado para smoke. Activa SMOKE_ALUMNO_CREATE_FALLBACK_USER=1 para crear uno tecnico."
+    );
   }
 
   const smokeEmail = "smoke.alumno@pf-control.local";
