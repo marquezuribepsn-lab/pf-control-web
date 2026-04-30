@@ -2480,6 +2480,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-nav-btn {
   flex: 0 0 auto;
+  max-width: 112px;
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -2490,6 +2491,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 600;
   letter-spacing: 0.01em;
   padding: 0.16rem 0.42rem 0.44rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pf-a3-routine-nav-btn-active {
@@ -2508,11 +2512,34 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-overview-kicker {
-  margin: 0.22rem 0 0;
+  margin: 0;
   color: #a5afc6;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
+}
+
+.pf-a3-routine-coach-row {
+  margin-top: 0.26rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+}
+
+.pf-a3-routine-coach-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 143, 177, 0.52);
+  background: linear-gradient(160deg, rgba(33, 42, 60, 0.98), rgba(19, 26, 39, 0.96));
+  color: #dbe4f5;
+  font-size: 0.5rem;
+  line-height: 1;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
 }
 
 .pf-a3-routine-overview-actions {
@@ -2709,6 +2736,20 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   padding: 0.64rem;
 }
 
+.pf-a3-routine-session-context {
+  margin-bottom: 0.44rem;
+}
+
+.pf-a3-routine-session-context p {
+  margin: 0;
+  color: #9eaac3;
+  font-size: 0.63rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
 .pf-a3-routine-session-head {
   display: flex;
   flex-wrap: wrap;
@@ -2839,14 +2880,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-}
-
-.pf-a3-routine-exercise-row {
+  gap: 0;
   border-radius: 0.72rem;
   border: 1px solid rgba(81, 98, 129, 0.44);
   background: rgba(26, 30, 42, 0.95);
+  overflow: hidden;
+}
+
+.pf-a3-routine-exercise-row {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   padding: 0.5rem;
+}
+
+.pf-a3-routine-exercise-row + .pf-a3-routine-exercise-row {
+  border-top: 1px solid rgba(78, 95, 125, 0.48);
 }
 
 .pf-a3-routine-exercise-main {
@@ -2886,6 +2935,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   text-transform: uppercase;
   flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(144, 160, 189, 0.06);
 }
 
 .pf-a3-routine-exercise-name {
@@ -2908,7 +2958,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   margin-top: 0.44rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.3rem 0.42rem;
+  gap: 0.32rem 0.44rem;
 }
 
 .pf-a3-routine-exercise-stats p {
