@@ -1646,12 +1646,25 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 2;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-a2-back-btn svg {
+  pointer-events: none;
 }
 
 .pf-a2-back-btn:hover {
   transform: translateY(-1px);
   border-color: rgba(34, 197, 94, 0.65);
   color: #ffffff;
+}
+
+.pf-a2-back-btn:active {
+  transform: translateY(0);
+  border-color: rgba(108, 222, 187, 0.72);
 }
 
 .pf-a2-drawer {
@@ -3406,6 +3419,15 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   html.pf-mobile-fluid .pf-a2-ghost-btn {
     border-color: rgba(146, 190, 255, 0.44) !important;
     background: linear-gradient(170deg, rgba(17, 24, 34, 0.92), rgba(13, 19, 28, 0.9)) !important;
+  }
+
+  html.pf-mobile-fluid .pf-a2-back-btn {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 0.86rem;
+    border-color: rgba(162, 202, 234, 0.56) !important;
+    background: linear-gradient(170deg, rgba(19, 28, 39, 0.96), rgba(12, 20, 30, 0.95)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
