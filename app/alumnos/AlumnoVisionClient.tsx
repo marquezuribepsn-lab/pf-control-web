@@ -2139,10 +2139,7 @@ export default function AlumnoVisionClient({
         const currentUrl = new URL(window.location.href);
         const nextUrl = `${targetHref}${currentUrl.search}`;
         window.history.replaceState(window.history.state ?? null, "", nextUrl);
-
-        if (isUltraMobile) {
-          return;
-        }
+        return;
       }
 
       router.replace(targetHref, { scroll: false });
