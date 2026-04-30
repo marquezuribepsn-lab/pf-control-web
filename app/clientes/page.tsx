@@ -837,6 +837,8 @@ function normalizeWorkoutLogs(rawValue: unknown): WorkoutLogRecord[] {
         pesoKg: Math.max(0, Number(toSafeNumber(item.pesoKg ?? item.peso) || 0)),
         molestia: Boolean(item.molestia),
         videoUrl: String(item.videoUrl || "").trim() || undefined,
+        videoDataUrl: String(item.videoDataUrl || "").trim() || undefined,
+        videoFileName: String(item.videoFileName || "").trim() || undefined,
         comentarios: String(item.comentarios || item.comentario || "").trim() || undefined,
         createdAt: String(item.createdAt || new Date().toISOString()),
       };
