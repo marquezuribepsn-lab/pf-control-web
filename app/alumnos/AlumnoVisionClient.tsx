@@ -1537,8 +1537,14 @@ export default function AlumnoVisionClient({
   useEffect(() => {
     if (activeCategory !== "rutina") {
       setSelectedRoutineSessionId(null);
+      setSelectedRoutineWeekId(null);
+      setSelectedRoutineDayId(null);
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+      setRoutinePullDistance(0);
+      setRoutineExerciseLogTarget(null);
+      setRoutineExerciseLogStatus("");
+      setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
     }
   }, [activeCategory]);
 
