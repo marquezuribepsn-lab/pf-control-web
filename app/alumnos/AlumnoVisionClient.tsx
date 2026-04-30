@@ -2898,7 +2898,12 @@ export default function AlumnoVisionClient({
                       {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento").toUpperCase()}
                     </h2>
                     <p className="pf-a3-routine-overview-subtitle">Actualizado el {routineUpdatedAtLabel}</p>
-                    <p className="pf-a3-routine-overview-kicker">{routineCoachLabel}</p>
+                    <div className="pf-a3-routine-coach-row">
+                      <span className="pf-a3-routine-coach-avatar" aria-hidden="true">
+                        {getInitials(routineCoachLabel)}
+                      </span>
+                      <p className="pf-a3-routine-overview-kicker">{routineCoachLabel}</p>
+                    </div>
                   </div>
 
                   <div className="pf-a3-routine-overview-actions">
@@ -2995,21 +3000,11 @@ export default function AlumnoVisionClient({
                 </section>
               ) : (
                 <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
-                  <div className="pf-a3-routine-session-head">
-                    <div>
-                      <p className="pf-a3-routine-session-kicker">
-                        {selectedRoutineEntry.prescripcion ? "Plan personalizado" : "Plan base"}
-                      </p>
-                      <h2 className="pf-a3-routine-session-title">
-                        {selectedRoutineEntry.sesion.objetivo || "Tecnica y progresion de fuerza"}
-                      </h2>
-                    </div>
-
-                    <div className="pf-a3-routine-session-pills">
-                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.blocks.length} bloques</span>
-                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.totalExercises} ejercicios</span>
-                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.sesion.duracion || "-"} min</span>
-                    </div>
+                  <div className="pf-a3-routine-session-context">
+                    <p>
+                      Dia activo: {selectedRoutineEntry.sesion.titulo || "Sesion"} · {selectedRoutineEntry.blocks.length} bloques ·{" "}
+                      {selectedRoutineEntry.totalExercises} ejercicios
+                    </p>
                   </div>
 
                   <div className="pf-a3-routine-block-stack">
