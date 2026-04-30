@@ -3885,6 +3885,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     padding: 0.14rem 0.3rem 0.38rem;
   }
 
+  .pf-a3-routine-pull-indicator {
+    font-size: 0.56rem;
+    letter-spacing: 0.06em;
+    padding: 0.3rem 0.5rem;
+  }
+
   .pf-a3-routine-overview-head {
     gap: 0.42rem;
   }
@@ -3924,6 +3930,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     font-size: 0.72rem;
   }
 
+  .pf-a3-routine-sync-label {
+    font-size: 0.54rem;
+  }
+
   .pf-a3-routine-overview-chip {
     font-size: 0.56rem;
     padding: 0.3rem 0.5rem;
@@ -3951,6 +3961,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
   .pf-a3-routine-session-title {
     font-size: 0.92rem;
+  }
+
+  .pf-a3-routine-week-nav {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    gap: 0.34rem;
+  }
+
+  .pf-a3-routine-week-arrow {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    border-radius: 0.62rem;
+  }
+
+  .pf-a3-routine-week-label {
+    font-size: 0.74rem;
   }
 
   .pf-a3-routine-block {
@@ -3999,6 +4025,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     font-size: 0.72rem;
   }
 
+  .pf-a3-routine-exercise-action-btn {
+    font-size: 0.55rem;
+    padding: 0.28rem 0.44rem;
+  }
+
   .pf-a3-routine-exercise-tag {
     font-size: 0.53rem;
   }
@@ -4007,6 +4038,33 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   .pf-a3-routine-more,
   .pf-a3-routine-session-chip {
     transition: none !important;
+  }
+
+  .pf-a3-routine-log-overlay {
+    padding: 0.52rem;
+    align-items: flex-end;
+  }
+
+  .pf-a3-routine-log-panel {
+    border-radius: 0.84rem;
+    padding: 0.52rem;
+    max-height: 92vh;
+  }
+
+  .pf-a3-routine-log-title {
+    font-size: 0.9rem;
+  }
+
+  .pf-a3-routine-log-video-frame {
+    min-height: 146px;
+  }
+
+  .pf-a3-routine-log-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a3-routine-log-actions {
+    flex-direction: column;
   }
 
   .pf-a3-bmi-value {
