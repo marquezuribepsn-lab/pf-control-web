@@ -2146,6 +2146,10 @@ export default function AlumnoVisionClient({
     [activeCategory, isUltraMobile, router]
   );
 
+  const goToHomeCategory = useCallback(() => {
+    goToCategory("inicio");
+  }, [goToCategory]);
+
   const openPayments = useCallback(() => {
     const targetHref = "/alumnos/pagos";
 
@@ -2280,8 +2284,11 @@ export default function AlumnoVisionClient({
           <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
-                <ReliableLink
-                  href="/alumnos/inicio"
+                <ReliableActionButton
+                  type="button"
+                  onClick={goToHomeCategory}
+                  onPointerUp={() => goToHomeCategory()}
+                  data-nav-href="/alumnos/inicio"
                   className="pf-a2-back-btn mt-0.5"
                   aria-label="Volver al inicio"
                   title="Volver al inicio"
@@ -2297,7 +2304,7 @@ export default function AlumnoVisionClient({
                     <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span className="sr-only">Volver al inicio</span>
-                </ReliableLink>
+                </ReliableActionButton>
 
                 <div className="min-w-0">
                   <p className="pf-a2-eyebrow break-words">{categoryMeta.badge}</p>
@@ -2737,28 +2744,39 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "rutina" ? (
-            <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <article className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sesiones asignadas</p>
-                  <p className="mt-1 text-xl font-black text-white">{routineSummary.sessions}</p>
-                </article>
-                <article className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Total bloques</p>
-                  <p className="mt-1 text-xl font-black text-white">{routineSummary.blocks}</p>
-                </article>
-                <article className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Total ejercicios</p>
-                  <p className="mt-1 text-xl font-black text-white">{routineSummary.exercises}</p>
-                </article>
-              </div>
+            <div className="pf-a3-routine-shell">
+              <section className="pf-a3-routine-overview">
+                <div className="pf-a3-routine-overview-head">
+                  <div>
+                    <p className="pf-a3-routine-overview-kicker">Training Template</p>
+                    <h2 className="pf-a3-routine-overview-title">Rutina semanal estilo Mynter</h2>
+                    <p className="pf-a3-routine-overview-subtitle">
+                      Vista organizada por sesiones y bloques para seguir cada ejercicio sin perder foco.
+                    </p>
+                  </div>
+                  <span className="pf-a3-routine-overview-chip">{routineSummary.sessions} sesiones activas</span>
+                </div>
+
+                <div className="pf-a3-routine-kpi-grid">
+                  <article className="pf-a3-routine-kpi">
+                    <p className="pf-a3-routine-kpi-label">Sesiones</p>
+                    <p className="pf-a3-routine-kpi-value">{routineSummary.sessions}</p>
+                  </article>
+                  <article className="pf-a3-routine-kpi">
+                    <p className="pf-a3-routine-kpi-label">Bloques</p>
+                    <p className="pf-a3-routine-kpi-value">{routineSummary.blocks}</p>
+                  </article>
+                  <article className="pf-a3-routine-kpi">
+                    <p className="pf-a3-routine-kpi-label">Ejercicios</p>
+                    <p className="pf-a3-routine-kpi-value">{routineSummary.exercises}</p>
+                  </article>
+                </div>
+              </section>
 
               {isUltraMobile && effectiveRoutineSessions.length > 1 ? (
-                <article className="pf-a2-card rounded-[1.2rem] border p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Sesion activa
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
+                <section className="pf-a3-routine-session-strip">
+                  <p className="pf-a3-routine-session-strip-title">Sesion activa</p>
+                  <div className="pf-a3-routine-session-scroll">
                     {effectiveRoutineSessions.map((session, index) => {
                       const isSelected = session.id === selectedRoutineSessionId;
 
@@ -2771,25 +2789,24 @@ export default function AlumnoVisionClient({
                             setExpandedRoutineBlocks({});
                             setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
                           }}
-                          className={`pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold ${
-                            isSelected ? "pf-a2-tab-active" : ""
+                          className={`pf-a3-routine-session-chip ${
+                            isSelected ? "pf-a3-routine-session-chip-active" : ""
                           }`}
                         >
-                          {index + 1}. {session.titulo || "Sesion"}
+                          <span>{index + 1}.</span>
+                          <span>{session.titulo || "Sesion"}</span>
                         </ReliableActionButton>
                       );
                     })}
                   </div>
-                </article>
+                </section>
               ) : null}
 
               {routineEntries.length === 0 ? (
-                <article className="pf-a2-card rounded-[1.2rem] border p-5">
-                  <h2 className="text-lg font-black text-white">No hay sesiones cargadas</h2>
-                  <p className="mt-2 text-sm text-slate-300">
-                    Cuando tu profe asigne una sesion, aparecera aca automaticamente.
-                  </p>
-                </article>
+                <section className="pf-a3-routine-empty">
+                  <h2>No hay sesiones cargadas</h2>
+                  <p>Cuando tu profe asigne una sesion, la rutina aparecera aca automaticamente.</p>
+                </section>
               ) : (
                 <>
                   {routineEntries.map((entry) => {
@@ -2799,62 +2816,98 @@ export default function AlumnoVisionClient({
                     const remainingBlocks = Math.max(0, entry.blocks.length - visibleBlocks.length);
 
                     return (
-                      <article key={entry.sesion.id} className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
+                      <article key={entry.sesion.id} className="pf-a3-routine-session-card">
+                        <div className="pf-a3-routine-session-head">
                           <div>
-                            <p className="pf-a2-eyebrow">{entry.prescripcion ? "Personalizado" : "Base"}</p>
-                            <h2 className="mt-1 text-lg font-black text-white">{entry.sesion.titulo || "Sesion"}</h2>
-                            <p className="mt-1 text-sm text-slate-300">
+                            <p className="pf-a3-routine-session-kicker">
+                              {entry.prescripcion ? "Ajustada por tu profe" : "Base del plan"}
+                            </p>
+                            <h2 className="pf-a3-routine-session-title">{entry.sesion.titulo || "Sesion"}</h2>
+                            <p className="pf-a3-routine-session-goal">
                               {entry.sesion.objetivo || "Sin objetivo cargado"}
                             </p>
                           </div>
-                          <div className="flex flex-wrap gap-2">
-                            <span className="pf-a2-pill">{entry.blocks.length} bloques</span>
-                            <span className="pf-a2-pill">{entry.totalExercises} ejercicios</span>
-                            <span className="pf-a2-pill">{entry.sesion.duracion || "-"} min</span>
+
+                          <div className="pf-a3-routine-session-pills">
+                            <span className="pf-a3-routine-meta-pill">{entry.blocks.length} bloques</span>
+                            <span className="pf-a3-routine-meta-pill">{entry.totalExercises} ejercicios</span>
+                            <span className="pf-a3-routine-meta-pill">{entry.sesion.duracion || "-"} min</span>
                           </div>
                         </div>
 
-                        <div className="mt-4 space-y-3">
-                          {visibleBlocks.map((block) => {
+                        <div className="pf-a3-routine-block-stack">
+                          {visibleBlocks.map((block, blockIndex) => {
                             const blockKey = `${entry.sesion.id}-${block.id}`;
                             const isExpanded = !isUltraMobile || Boolean(expandedRoutineBlocks[blockKey]);
                             const visibleExercises = isExpanded ? block.ejercicios : [];
 
                             return (
-                              <section key={blockKey} className="pf-a2-kpi rounded-xl border p-3">
-                                <div className="flex flex-wrap items-start justify-between gap-2">
-                                  <h3 className="text-sm font-black text-slate-100">{block.titulo}</h3>
-                                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-                                    {block.ejercicios.length} ejercicios
-                                  </span>
+                              <section key={blockKey} className="pf-a3-routine-block">
+                                <div className="pf-a3-routine-block-head">
+                                  <div>
+                                    <p className="pf-a3-routine-block-kicker">Bloque {blockIndex + 1}</p>
+                                    <h3 className="pf-a3-routine-block-title">{block.titulo}</h3>
+                                  </div>
+                                  <span className="pf-a3-routine-block-count">{block.ejercicios.length} ejercicios</span>
                                 </div>
-                                <p className="mt-1 text-xs text-slate-400">{block.objetivo || "Sin objetivo"}</p>
+
+                                <p className="pf-a3-routine-block-goal">{block.objetivo || "Sin objetivo"}</p>
 
                                 {visibleExercises.length > 0 ? (
-                                  <div className="mt-3 space-y-2">
+                                  <div className="pf-a3-routine-exercise-list">
                                     {visibleExercises.map((exercise, index) => {
                                       const exerciseDetail = exercise.ejercicioId
                                         ? ejerciciosById.get(exercise.ejercicioId) || null
                                         : null;
+                                      const metricsLabel =
+                                        Array.isArray(exercise.metricas) && exercise.metricas.length > 0
+                                          ? exercise.metricas
+                                              .map((metric) => `${metric.nombre}: ${metric.valor}`)
+                                              .join(" · ")
+                                          : "";
 
                                       return (
-                                        <div
+                                        <article
                                           key={`${block.id}-${exercise.ejercicioId || index}`}
-                                          className="pf-a2-drawer rounded-lg border border-slate-600/45 bg-slate-900/45 px-3 py-2"
+                                          className="pf-a3-routine-exercise-row"
                                         >
-                                          <p className="text-sm font-semibold text-slate-100">
-                                            {exerciseDetail?.nombre || `Ejercicio ${index + 1}`}
-                                          </p>
-                                          <p className="mt-1 text-xs text-slate-300">
-                                            {exercise.series} series · {exercise.repeticiones || "-"} reps
-                                            {exercise.descanso ? ` · Descanso ${exercise.descanso}` : ""}
-                                            {exercise.carga ? ` · Carga ${exercise.carga}` : ""}
-                                          </p>
-                                          {exercise.observaciones ? (
-                                            <p className="mt-1 text-xs text-slate-400">{exercise.observaciones}</p>
+                                          <div className="pf-a3-routine-exercise-main">
+                                            <span className="pf-a3-routine-exercise-index">{index + 1}</span>
+                                            <div className="min-w-0">
+                                              <p className="pf-a3-routine-exercise-name">
+                                                {exerciseDetail?.nombre || `Ejercicio ${index + 1}`}
+                                              </p>
+                                              <p className="pf-a3-routine-exercise-desc">
+                                                {exerciseDetail?.objetivo ||
+                                                  exerciseDetail?.categoria ||
+                                                  "Ejecuta con tecnica y control."}
+                                              </p>
+                                            </div>
+                                          </div>
+
+                                          <div className="pf-a3-routine-exercise-tags">
+                                            <span className="pf-a3-routine-exercise-tag">{exercise.series} series</span>
+                                            <span className="pf-a3-routine-exercise-tag">
+                                              {exercise.repeticiones || "-"} reps
+                                            </span>
+                                            {exercise.descanso ? (
+                                              <span className="pf-a3-routine-exercise-tag">
+                                                Descanso {exercise.descanso}
+                                              </span>
+                                            ) : null}
+                                            {exercise.carga ? (
+                                              <span className="pf-a3-routine-exercise-tag">Carga {exercise.carga}</span>
+                                            ) : null}
+                                          </div>
+
+                                          {metricsLabel ? (
+                                            <p className="pf-a3-routine-exercise-metrics">{metricsLabel}</p>
                                           ) : null}
-                                        </div>
+
+                                          {exercise.observaciones ? (
+                                            <p className="pf-a3-routine-exercise-note">{exercise.observaciones}</p>
+                                          ) : null}
+                                        </article>
                                       );
                                     })}
                                   </div>
@@ -2864,7 +2917,7 @@ export default function AlumnoVisionClient({
                                   <ReliableActionButton
                                     type="button"
                                     onClick={() => toggleRoutineBlock(blockKey)}
-                                    className="pf-a2-ghost-btn mt-3 rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                                    className="pf-a3-routine-toggle"
                                   >
                                     {isExpanded
                                       ? "Ocultar ejercicios"
@@ -2884,7 +2937,7 @@ export default function AlumnoVisionClient({
                                 Math.min(previous + 2, entry.blocks.length)
                               )
                             }
-                            className="pf-a2-ghost-btn mt-3 rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                            className="pf-a3-routine-more"
                           >
                             Cargar 2 bloques mas ({remainingBlocks} restantes)
                           </ReliableActionButton>
