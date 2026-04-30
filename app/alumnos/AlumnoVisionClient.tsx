@@ -1034,6 +1034,7 @@ export default function AlumnoVisionClient({
   const storageRefreshIdleRef = useRef<number | null>(null);
   const lastStorageRefreshTsRef = useRef<number>(0);
   const requestedMusicArtworkRef = useRef<Set<string>>(new Set());
+  const homeNavGuardRef = useRef<number>(0);
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2182,8 +2183,28 @@ export default function AlumnoVisionClient({
   );
 
   const goToHomeCategory = useCallback(() => {
+    const targetHref = "/alumnos/inicio";
+
+    if (typeof window === "undefined") {
+      router.replace(targetHref, { scroll: false });
+      return;
+    }
+
+    const now = Date.now();
+    if (now - homeNavGuardRef.current < 260) {
+      return;
+    }
+    homeNavGuardRef.current = now;
+
     goToCategory("inicio");
-  }, [goToCategory]);
+
+    const fallbackDelay = isUltraMobile ? 60 : 180;
+    window.setTimeout(() => {
+      if (window.location.pathname !== targetHref) {
+        window.location.assign(targetHref);
+      }
+    }, fallbackDelay);
+  }, [goToCategory, isUltraMobile, router]);
 
   const openPayments = useCallback(() => {
     const targetHref = "/alumnos/pagos";
@@ -2323,6 +2344,7 @@ export default function AlumnoVisionClient({
                   type="button"
                   onClick={goToHomeCategory}
                   onPointerUp={() => goToHomeCategory()}
+                  onTouchEnd={() => goToHomeCategory()}
                   data-nav-href="/alumnos/inicio"
                   className="pf-a2-back-btn mt-0.5"
                   aria-label="Volver al inicio"
