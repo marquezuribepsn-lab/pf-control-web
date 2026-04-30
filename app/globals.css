@@ -2441,6 +2441,37 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: flex;
   flex-direction: column;
   gap: 0.58rem;
+  position: relative;
+}
+
+.pf-a3-routine-pull-indicator {
+  position: sticky;
+  top: 0.24rem;
+  z-index: 6;
+  margin: 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(122, 145, 186, 0.48);
+  background: rgba(10, 16, 29, 0.94);
+  color: #c4d3ee;
+  font-size: 0.64rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.34rem 0.62rem;
+  pointer-events: none;
+  transform: translateY(0);
+  transition: opacity 160ms ease, transform 140ms ease, border-color 160ms ease;
+}
+
+.pf-a3-routine-pull-indicator-ready {
+  border-color: rgba(99, 232, 185, 0.74);
+  color: #b8f5dd;
+}
+
+.pf-a3-routine-pull-indicator-refreshing {
+  border-color: rgba(179, 150, 255, 0.82);
+  color: #efe5ff;
 }
 
 .pf-a3-routine-overview {
@@ -2587,6 +2618,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 600;
 }
 
+.pf-a3-routine-sync-label {
+  margin: 0.24rem 0 0;
+  color: #84f5cc;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
 .pf-a3-routine-overview-chip {
   display: none;
 }
@@ -2661,6 +2702,48 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: none;
+}
+
+.pf-a3-routine-week-nav {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pf-a3-routine-week-arrow {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  border-radius: 0.74rem;
+  border: 1px solid rgba(108, 125, 160, 0.62);
+  background: rgba(14, 20, 33, 0.95);
+  color: #dbe5f8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+.pf-a3-routine-week-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pf-a3-routine-week-arrow:disabled {
+  opacity: 0.45;
+}
+
+.pf-a3-routine-week-label {
+  margin: 0;
+  text-align: center;
+  color: #f1f6ff;
+  font-size: 0.84rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .pf-a3-routine-session-scroll {
@@ -2933,6 +3016,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 800;
 }
 
+.pf-a3-routine-exercise-name-btn {
+  width: 100%;
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+}
+
 .pf-a3-routine-exercise-desc {
   margin: 0.16rem 0 0;
   color: #b2c2dd;
@@ -2988,6 +3081,26 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.24rem;
 }
 
+.pf-a3-routine-exercise-actions {
+  margin-top: 0.42rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pf-a3-routine-exercise-action-btn {
+  border-radius: 0.52rem;
+  border: 1px solid rgba(170, 127, 255, 0.66);
+  background: rgba(88, 51, 166, 0.34);
+  color: #efe8ff;
+  font-size: 0.6rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.5rem;
+}
+
 .pf-a3-routine-exercise-tag {
   border-radius: 0.44rem;
   border: 1px solid rgba(168, 120, 255, 0.68);
@@ -3033,6 +3146,310 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-more {
   width: 100%;
   justify-content: center;
+}
+
+.pf-a3-routine-log-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  padding: 0.92rem 0.62rem;
+  background: rgba(4, 8, 15, 0.82);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.pf-a3-routine-log-panel {
+  width: min(620px, 100%);
+  max-height: min(88vh, 860px);
+  overflow-y: auto;
+  border-radius: 1rem;
+  border: 1px solid rgba(112, 131, 168, 0.55);
+  background: linear-gradient(165deg, rgba(9, 15, 27, 0.98), rgba(12, 18, 30, 0.96));
+  padding: 0.68rem;
+}
+
+.pf-a3-routine-log-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pf-a3-routine-log-kicker {
+  margin: 0;
+  color: #99a9c5;
+  font-size: 0.62rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-title {
+  margin: 0.22rem 0 0;
+  color: #f3f7ff;
+  font-size: 1rem;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.pf-a3-routine-log-meta {
+  margin: 0.22rem 0 0;
+  color: #b7c4dc;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.pf-a3-routine-log-close {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 0.72rem;
+  border: 1px solid rgba(117, 136, 171, 0.68);
+  background: rgba(18, 25, 39, 0.95);
+  color: #dae2f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pf-a3-routine-log-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.pf-a3-routine-log-video-wrap {
+  margin-top: 0.56rem;
+  border-radius: 0.84rem;
+  border: 1px solid rgba(95, 114, 148, 0.52);
+  background: rgba(11, 17, 29, 0.92);
+  padding: 0.44rem;
+}
+
+.pf-a3-routine-log-video-frame {
+  width: 100%;
+  border: 0;
+  border-radius: 0.72rem;
+  background: #000;
+  min-height: 176px;
+}
+
+.pf-a3-routine-log-video-empty {
+  border-radius: 0.72rem;
+  border: 1px dashed rgba(116, 136, 172, 0.58);
+  color: #b3c3de;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.6rem;
+  text-align: center;
+}
+
+.pf-a3-routine-log-link-btn {
+  margin-top: 0.38rem;
+  border-radius: 0.58rem;
+  border: 1px solid rgba(133, 230, 198, 0.64);
+  background: rgba(20, 72, 61, 0.38);
+  color: #d3fff0;
+  font-size: 0.62rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.36rem 0.54rem;
+}
+
+.pf-a3-routine-log-grid {
+  margin-top: 0.56rem;
+  display: grid;
+  gap: 0.36rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pf-a3-routine-log-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pf-a3-routine-log-field span {
+  color: #c8d6ef;
+  font-size: 0.6rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-field input,
+.pf-a3-routine-log-field textarea {
+  border-radius: 0.58rem;
+  border: 1px solid rgba(106, 125, 159, 0.62);
+  background: rgba(18, 25, 39, 0.92);
+  color: #f2f6ff;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  font-weight: 600;
+  padding: 0.42rem 0.52rem;
+}
+
+.pf-a3-routine-log-field textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.pf-a3-routine-log-field-full {
+  margin-top: 0.42rem;
+}
+
+.pf-a3-routine-log-row {
+  margin-top: 0.46rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.pf-a3-routine-log-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  color: #e8f0ff;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pf-a3-routine-log-check input {
+  accent-color: #8dd2ff;
+  width: 14px;
+  height: 14px;
+}
+
+.pf-a3-routine-log-upload {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.58rem;
+  border: 1px solid rgba(137, 220, 195, 0.66);
+  background: rgba(18, 67, 57, 0.32);
+  color: #d4fff0;
+  font-size: 0.62rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.56rem;
+}
+
+.pf-a3-routine-log-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pf-a3-routine-log-upload-note {
+  margin: 0.32rem 0 0;
+  color: #b7cae7;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.pf-a3-routine-log-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.36rem;
+}
+
+.pf-a3-routine-log-secondary-btn,
+.pf-a3-routine-log-primary-btn {
+  flex: 1 1 0;
+  justify-content: center;
+  border-radius: 0.66rem;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.46rem 0.54rem;
+}
+
+.pf-a3-routine-log-secondary-btn {
+  border: 1px solid rgba(106, 127, 162, 0.66);
+  background: rgba(19, 26, 41, 0.94);
+  color: #d7e1f4;
+}
+
+.pf-a3-routine-log-primary-btn {
+  border: 1px solid rgba(179, 145, 255, 0.78);
+  background: linear-gradient(160deg, rgba(146, 86, 255, 0.98), rgba(117, 59, 241, 0.95));
+  color: #fff;
+}
+
+.pf-a3-routine-log-primary-btn:disabled {
+  opacity: 0.6;
+}
+
+.pf-a3-routine-log-status {
+  margin: 0.42rem 0 0;
+  color: #95f0ce;
+  font-size: 0.64rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.pf-a3-routine-log-history {
+  margin-top: 0.5rem;
+  border-radius: 0.74rem;
+  border: 1px solid rgba(90, 108, 142, 0.56);
+  background: rgba(11, 17, 29, 0.84);
+  padding: 0.42rem;
+}
+
+.pf-a3-routine-log-history-title {
+  margin: 0;
+  color: #d4e0f6;
+  font-size: 0.62rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-history ul {
+  margin: 0.34rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.26rem;
+}
+
+.pf-a3-routine-log-history li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.32rem;
+  border-radius: 0.52rem;
+  border: 1px solid rgba(89, 108, 141, 0.45);
+  background: rgba(16, 24, 37, 0.86);
+  color: #c7d4ec;
+  font-size: 0.62rem;
+  line-height: 1.15;
+  font-weight: 600;
+  padding: 0.3rem 0.38rem;
+}
+
+.pf-a3-routine-log-history strong {
+  color: #e3eeff;
+  font-size: 0.64rem;
+  font-weight: 700;
 }
 
 .pf-a3-routine-toggle:hover,
