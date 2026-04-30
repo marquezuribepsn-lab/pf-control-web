@@ -1680,6 +1680,99 @@ export default function AlumnoVisionClient({
     [preparedIdentity]
   );
 
+  const workoutLogs = useMemo<WorkoutLogLite[]>(() => {
+    if (!shouldLoadWorkoutData) {
+      return [];
+    }
+
+    return normalizeWorkoutLogsLiteRows(workoutLogsShared).filter((item) => {
+      return matchIdentityName(item.alumnoNombre);
+    });
+  }, [matchIdentityName, shouldLoadWorkoutData, workoutLogsShared]);
+
+  const weekStoreLite = useMemo<WeekStoreLite>(() => {
+    const planes = normalizeWeekStorePlans(weekPlanStoreRaw);
+    return {
+      version: 3,
+      planes,
+    };
+  }, [weekPlanStoreRaw]);
+
+  const alumnoWeekPlan = useMemo<WeekPersonPlanLite | null>(() => {
+    const candidates = weekStoreLite.planes.filter((plan) => plan.tipo === "alumnos");
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    const directOwnerKey = `alumnos:${String(profileName || "").trim().toLowerCase()}`;
+    const exactOwnerMatch = candidates.find(
+      (plan) => String(plan.ownerKey || "").trim().toLowerCase() === directOwnerKey
+    );
+    if (exactOwnerMatch) {
+      return exactOwnerMatch;
+    }
+
+    const byNameMatch = candidates.find((plan) => {
+      const planName = String(plan.nombre || "").trim();
+      return matchIdentityName(planName) || namesLikelyMatch(planName, profileName);
+    });
+
+    if (byNameMatch) {
+      return byNameMatch;
+    }
+
+    return (
+      candidates.find((plan) => {
+        const ownerName = String(plan.ownerKey || "").replace(/^alumnos:/i, "").trim();
+        return matchIdentityName(ownerName);
+      }) || null
+    );
+  }, [matchIdentityName, profileName, weekStoreLite.planes]);
+
+  const routineWeeks = useMemo<WeekPlanLite[]>(() => {
+    if (!alumnoWeekPlan) {
+      return [];
+    }
+
+    return (Array.isArray(alumnoWeekPlan.semanas) ? alumnoWeekPlan.semanas : []).filter((week) => !week.oculto);
+  }, [alumnoWeekPlan]);
+
+  const selectedRoutineWeek = useMemo<WeekPlanLite | null>(() => {
+    if (routineWeeks.length === 0) {
+      return null;
+    }
+
+    if (selectedRoutineWeekId) {
+      const exact = routineWeeks.find((week) => week.id === selectedRoutineWeekId);
+      if (exact) return exact;
+    }
+
+    return routineWeeks[0] || null;
+  }, [routineWeeks, selectedRoutineWeekId]);
+
+  const routineDaysForSelectedWeek = useMemo<WeekDayPlanLite[]>(() => {
+    if (!selectedRoutineWeek) {
+      return [];
+    }
+
+    return (Array.isArray(selectedRoutineWeek.dias) ? selectedRoutineWeek.dias : []).filter((day) => !day.oculto);
+  }, [selectedRoutineWeek]);
+
+  const selectedRoutineDay = useMemo<WeekDayPlanLite | null>(() => {
+    if (routineDaysForSelectedWeek.length === 0) {
+      return null;
+    }
+
+    if (selectedRoutineDayId) {
+      const exact = routineDaysForSelectedWeek.find((day) => day.id === selectedRoutineDayId);
+      if (exact) return exact;
+    }
+
+    return routineDaysForSelectedWeek[0] || null;
+  }, [routineDaysForSelectedWeek, selectedRoutineDayId]);
+
+  const hasWeekPlanRoutine = routineWeeks.length > 0;
+
   const musicAssignments = useMemo<MusicAssignmentLite[]>(() => {
     if (!shouldLoadMusicData) {
       return [];
