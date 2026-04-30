@@ -3532,14 +3532,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     padding: 0.56rem;
   }
 
-  .pf-a3-routine-session-context {
-    margin-bottom: 0.38rem;
-  }
-
-  .pf-a3-routine-session-context p {
-    font-size: 0.58rem;
-  }
-
   .pf-a3-routine-session-title {
     font-size: 0.92rem;
   }
@@ -3574,12 +3566,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     gap: 0.24rem 0.34rem;
   }
 
-  .pf-a3-routine-exercise-stats span {
-    font-size: 0.53rem;
+  .pf-a3-routine-exercise-stat {
+    padding: 0.2rem 0.24rem;
   }
 
-  .pf-a3-routine-exercise-stats strong {
-    font-size: 0.58rem;
+  .pf-a3-routine-exercise-stat span {
+    font-size: 0.5rem;
+  }
+
+  .pf-a3-routine-exercise-stat strong {
+    font-size: 0.56rem;
   }
 
   .pf-a3-routine-exercise-name {
