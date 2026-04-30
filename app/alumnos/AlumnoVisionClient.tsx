@@ -1986,6 +1986,10 @@ export default function AlumnoVisionClient({
 
   const shouldResolveRoutine = activeCategory === "inicio" || activeCategory === "rutina";
 
+  const sessionsById = useMemo(() => {
+    return new Map(sesiones.map((session) => [session.id, session]));
+  }, [sesiones]);
+
   const effectiveRoutineSessions = useMemo<Sesion[]>(() => {
     if (!shouldResolveRoutine) return [];
 
@@ -2017,42 +2021,57 @@ export default function AlumnoVisionClient({
   const routineSummary = useMemo(() => {
     if (isUltraMobile && activeCategory === "inicio") {
       return {
-        sessions: effectiveRoutineSessions.length,
+        sessions: hasWeekPlanRoutine
+          ? routineWeeks.reduce((total, week) => total + (Array.isArray(week.dias) ? week.dias.filter((day) => !day.oculto).length : 0), 0)
+          : effectiveRoutineSessions.length,
         blocks: 0,
         exercises: 0,
       };
     }
 
+    if (hasWeekPlanRoutine) {
+      const visibleDays = routineWeeks.flatMap((week) =>
+        (Array.isArray(week.dias) ? week.dias : []).filter((day) => !day.oculto)
+      );
+
+      const totals = visibleDays.reduce(
+        (acc, day) => {
+          const directBlocks = buildRoutineBlocksFromDayTraining(day.entrenamiento);
+          if (directBlocks.length > 0) {
+            acc.blocks += directBlocks.length;
+            acc.exercises += directBlocks.reduce((count, block) => count + block.ejercicios.length, 0);
+            return acc;
+          }
+
+          if (day.sesionId) {
+            const linkedSession = sessionsById.get(day.sesionId);
+            if (linkedSession) {
+              const linked = resolveRoutineBlocksForSession(linkedSession, matchIdentityName);
+              acc.blocks += linked.blocks.length;
+              acc.exercises += linked.blocks.reduce((count, block) => count + block.ejercicios.length, 0);
+            }
+          }
+
+          return acc;
+        },
+        {
+          sessions: visibleDays.length,
+          blocks: 0,
+          exercises: 0,
+        }
+      );
+
+      return totals;
+    }
+
     const totalBlocks = effectiveRoutineSessions.reduce((count, sesion) => {
-      const prescripciones = Array.isArray(sesion.prescripciones) ? sesion.prescripciones : [];
-      const matchedPrescripcion =
-        prescripciones.find((item) => item.personaTipo === "alumnos" && matchIdentityName(item.personaNombre)) ||
-        null;
-
-      const sourceBlocks =
-        matchedPrescripcion && Array.isArray(matchedPrescripcion.bloques) && matchedPrescripcion.bloques.length > 0
-          ? matchedPrescripcion.bloques
-          : Array.isArray(sesion.bloques)
-          ? sesion.bloques
-          : [];
-
-      return count + sourceBlocks.length;
+      const { blocks } = resolveRoutineBlocksForSession(sesion, matchIdentityName);
+      return count + blocks.length;
     }, 0);
 
     const totalExercises = effectiveRoutineSessions.reduce((count, sesion) => {
-      const prescripciones = Array.isArray(sesion.prescripciones) ? sesion.prescripciones : [];
-      const matchedPrescripcion =
-        prescripciones.find((item) => item.personaTipo === "alumnos" && matchIdentityName(item.personaNombre)) ||
-        null;
-
-      const sourceBlocks =
-        matchedPrescripcion && Array.isArray(matchedPrescripcion.bloques) && matchedPrescripcion.bloques.length > 0
-          ? matchedPrescripcion.bloques
-          : Array.isArray(sesion.bloques)
-          ? sesion.bloques
-          : [];
-
-      return count + sourceBlocks.reduce((blockCount, block) => blockCount + (block.ejercicios?.length || 0), 0);
+      const { blocks } = resolveRoutineBlocksForSession(sesion, matchIdentityName);
+      return count + blocks.reduce((blockCount, block) => blockCount + (block.ejercicios?.length || 0), 0);
     }, 0);
 
     return {
@@ -2060,10 +2079,50 @@ export default function AlumnoVisionClient({
       blocks: totalBlocks,
       exercises: totalExercises,
     };
-  }, [activeCategory, effectiveRoutineSessions, isUltraMobile, matchIdentityName]);
+  }, [
+    activeCategory,
+    effectiveRoutineSessions,
+    hasWeekPlanRoutine,
+    isUltraMobile,
+    matchIdentityName,
+    routineWeeks,
+    sessionsById,
+  ]);
 
   useEffect(() => {
-    if (activeCategory !== "rutina") return;
+    if (activeCategory !== "rutina" || !hasWeekPlanRoutine) return;
+
+    setSelectedRoutineSessionId(null);
+    setSelectedRoutineWeekId((previous) => {
+      if (previous && routineWeeks.some((week) => week.id === previous)) {
+        return previous;
+      }
+      return routineWeeks[0]?.id || null;
+    });
+  }, [activeCategory, hasWeekPlanRoutine, routineWeeks]);
+
+  useEffect(() => {
+    if (activeCategory !== "rutina" || !hasWeekPlanRoutine) return;
+
+    if (!selectedRoutineWeek) {
+      setSelectedRoutineDayId(null);
+      return;
+    }
+
+    const visibleDays = (Array.isArray(selectedRoutineWeek.dias) ? selectedRoutineWeek.dias : []).filter(
+      (day) => !day.oculto
+    );
+
+    setSelectedRoutineDayId((previous) => {
+      if (previous && visibleDays.some((day) => day.id === previous)) {
+        return previous;
+      }
+      return visibleDays[0]?.id || null;
+    });
+  }, [activeCategory, hasWeekPlanRoutine, selectedRoutineWeek]);
+
+  useEffect(() => {
+    if (activeCategory !== "rutina" || hasWeekPlanRoutine) return;
 
     if (effectiveRoutineSessions.length === 0) {
       setSelectedRoutineSessionId(null);
@@ -2077,13 +2136,13 @@ export default function AlumnoVisionClient({
 
       return effectiveRoutineSessions[0]?.id || null;
     });
-  }, [activeCategory, effectiveRoutineSessions]);
+  }, [activeCategory, effectiveRoutineSessions, hasWeekPlanRoutine]);
 
   useEffect(() => {
     if (activeCategory !== "rutina") return;
     setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     setExpandedRoutineBlocks({});
-  }, [activeCategory, selectedRoutineSessionId]);
+  }, [activeCategory, selectedRoutineDayId, selectedRoutineSessionId, selectedRoutineWeekId]);
 
   const routineSessionsForDetails = useMemo(() => {
     if (activeCategory !== "rutina") return [];
@@ -2099,34 +2158,80 @@ export default function AlumnoVisionClient({
   const routineEntries = useMemo<RoutineEntry[]>(() => {
     if (activeCategory !== "rutina") return [];
 
+    if (hasWeekPlanRoutine && selectedRoutineWeek && selectedRoutineDay) {
+      const linkedSession = selectedRoutineDay.sesionId ? sessionsById.get(selectedRoutineDay.sesionId) || null : null;
+      const linked = linkedSession
+        ? resolveRoutineBlocksForSession(linkedSession, matchIdentityName)
+        : { prescripcion: null, blocks: [] as RoutineBlock[] };
+      const dayBlocks = buildRoutineBlocksFromDayTraining(selectedRoutineDay.entrenamiento);
+      const blocks = dayBlocks.length > 0 ? dayBlocks : linked.blocks;
+
+      const sessionId =
+        String(linkedSession?.id || selectedRoutineDay.sesionId || "").trim() ||
+        `${selectedRoutineWeek.id}-${selectedRoutineDay.id}`;
+      const sessionTitle =
+        String(
+          linkedSession?.titulo ||
+            selectedRoutineDay.planificacion ||
+            selectedRoutineDay.dia ||
+            selectedRoutineWeek.nombre ||
+            "Sesion"
+        ).trim() || "Sesion";
+
+      const syntheticSession: Sesion = {
+        id: sessionId,
+        titulo: sessionTitle,
+        objetivo:
+          String(selectedRoutineDay.objetivo || linkedSession?.objetivo || selectedRoutineWeek.objetivo || "").trim() ||
+          "Entrenamiento asignado",
+        duracion: String(selectedRoutineDay.entrenamiento?.duracion || linkedSession?.duracion || "45 min").trim(),
+        equipo: String(linkedSession?.equipo || "Entrenamiento").trim() || "Entrenamiento",
+        asignacionTipo: "alumnos",
+        alumnoAsignado: profileName,
+        bloques,
+        prescripciones: linkedSession?.prescripciones,
+      };
+
+      const totalExercises = blocks.reduce((count, block) => count + block.ejercicios.length, 0);
+
+      return [
+        {
+          sesion: syntheticSession,
+          prescripcion: linked.prescripcion,
+          blocks,
+          totalExercises,
+          weekId: selectedRoutineWeek.id,
+          weekName: selectedRoutineWeek.nombre,
+          dayId: selectedRoutineDay.id,
+          dayName: selectedRoutineDay.dia,
+          source: "week-plan",
+        },
+      ];
+    }
+
     return routineSessionsForDetails.map((sesion) => {
-      const prescripciones = Array.isArray(sesion.prescripciones) ? sesion.prescripciones : [];
-      const matchedPrescripcion =
-        prescripciones.find((item) => item.personaTipo === "alumnos" && matchIdentityName(item.personaNombre)) ||
-        null;
-
-      const sourceBlocks =
-        matchedPrescripcion && Array.isArray(matchedPrescripcion.bloques) && matchedPrescripcion.bloques.length > 0
-          ? matchedPrescripcion.bloques
-          : Array.isArray(sesion.bloques)
-          ? sesion.bloques
-          : [];
-
-      const blocks: RoutineBlock[] = sourceBlocks.map((block) => ({
-        ...block,
-        ejercicios: Array.isArray(block.ejercicios) ? block.ejercicios : [],
-      }));
+      const { prescripcion, blocks } = resolveRoutineBlocksForSession(sesion, matchIdentityName);
 
       const totalExercises = blocks.reduce((count, block) => count + block.ejercicios.length, 0);
 
       return {
         sesion,
-        prescripcion: matchedPrescripcion,
+        prescripcion,
         blocks,
         totalExercises,
+        source: "session" as const,
       };
     });
-  }, [activeCategory, matchIdentityName, routineSessionsForDetails]);
+  }, [
+    activeCategory,
+    hasWeekPlanRoutine,
+    matchIdentityName,
+    profileName,
+    routineSessionsForDetails,
+    selectedRoutineDay,
+    selectedRoutineWeek,
+    sessionsById,
+  ]);
 
   useEffect(() => {
     if (activeCategory !== "rutina" || !isUltraMobile) return;
