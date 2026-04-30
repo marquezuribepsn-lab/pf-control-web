@@ -39,20 +39,31 @@ function getPasswordCandidates(rawPassword: string): string[] {
 }
 
 async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
-  const exactMatch = await db.user.findUnique({
-    where: { email },
-    select: {
-      id: true,
-      email: true,
-      password: true,
-      role: true,
-      estado: true,
-      emailVerified: true,
-    },
-  });
+  try {
+    const exactMatch = await db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        role: true,
+        estado: true,
+        emailVerified: true,
+      },
+    });
 
-  if (exactMatch) {
-    return exactMatch as AuthUserRecord;
+    if (exactMatch) {
+      return exactMatch as AuthUserRecord;
+    }
+  } catch (error) {
+    const errorCode =
+      error && typeof error === 'object' && 'code' in error
+        ? String((error as { code?: unknown }).code || '')
+        : '';
+
+    if (errorCode !== 'P2023') {
+      throw error;
+    }
   }
 
   // Legacy compatibility for accounts stored with mixed-case emails.

@@ -2,16 +2,18 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const { loginForSmoke, resolveSmokeConfig } = require('./utils/smoke-auth');
 
 const { chromium } = require('playwright');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
 
 const prisma = new PrismaClient();
+const smokeConfig = resolveSmokeConfig();
 
-const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
-const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
-const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
+const baseUrl = smokeConfig.baseUrl;
+const adminEmail = smokeConfig.adminEmail;
+const adminPassword = smokeConfig.adminPassword;
 const allowMagicLogin = process.env.SMOKE_ALLOW_MAGIC_LOGIN === '1';
 const screenshotPath = process.env.SMOKE_SCREENSHOT_PATH || path.join(os.tmpdir(), `pf-control-clientes-visual-${Date.now()}.png`);
 const expectedPath = process.env.SMOKE_CLIENTES_EXPECT_PATH || '/clientes';
@@ -263,8 +265,8 @@ function collectFailureReasons(summary, currentUrl) {
 }
 
 async function main() {
-  if (!adminEmail || !adminPassword) {
-    throw new Error('SMOKE_MAIN_EMAIL y SMOKE_MAIN_PASSWORD son requeridos para la verificacion visual.');
+  if (!adminEmail) {
+    throw new Error('SMOKE_MAIN_EMAIL es requerido para la verificacion visual.');
   }
 
   const browser = await chromium.launch({ headless: true });
@@ -275,6 +277,10 @@ async function main() {
     let login = await loginByCredentials(adminEmail, adminPassword);
     if (!login.ok && allowMagicLogin) {
       login = await loginByMagicLink(adminEmail);
+    }
+
+    if (!login.ok) {
+      login = await loginForSmoke({ prisma });
     }
 
     if (!login.ok) {

@@ -2,7 +2,7 @@ const path = require('path');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
 
-const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
+const baseUrl = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:3000';
 const smokeMailboxBase = process.env.SMOKE_MAILBOX_BASE || 'marquezuribepsn@gmail.com';
 
 function makeAlias(prefix) {
@@ -127,9 +127,24 @@ async function main() {
     email: createdEmail,
     password,
     anamnesis: {
-      antecedentesMedicos: 'Sin patologias reportadas',
-      lesionesPrevias: 'Sin lesiones recientes',
-      objetivoPrincipal: 'Recuperar estado fisico',
+      tratamientoMedico: 'no',
+      lesionesLimitaciones: 'no',
+      medicacionRegular: 'no',
+      cirugiasRecientes: 'no',
+      antecedentesClinicos: 'sin antecedentes relevantes',
+      autorizacionMedica: 'si',
+      experienciaEntrenamiento: 'intermedio',
+      alimentacionActual: ['equilibrada'],
+      alimentacionDetalle: '',
+      desordenAlimentario: 'no',
+      consumoSustancias: 'no',
+      suplementos: 'no',
+      interesEntrenamiento: ['mixto / personalizado'],
+      interesDetalle: '',
+      compromisoObjetivo: 8,
+      origenContacto: ['instagram'],
+      origenDetalle: '',
+      consentimientoSalud: 'si',
     },
   });
 

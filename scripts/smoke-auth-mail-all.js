@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 
-const baseUrl = process.env.SMOKE_BASE_URL || 'https://pf-control.com';
+const baseUrl = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:3000';
 
 async function cleanupEmailArtifacts(email) {
   let prisma;
@@ -117,9 +117,24 @@ async function runResetE2E() {
     email,
     password: pass,
     anamnesis: {
-      antecedentesMedicos: 'Sin patologias reportadas',
-      lesionesPrevias: 'Sin lesiones recientes',
-      objetivoPrincipal: 'Retomar entrenamiento',
+      tratamientoMedico: 'no',
+      lesionesLimitaciones: 'no',
+      medicacionRegular: 'no',
+      cirugiasRecientes: 'no',
+      antecedentesClinicos: 'sin antecedentes relevantes',
+      autorizacionMedica: 'si',
+      experienciaEntrenamiento: 'intermedio',
+      alimentacionActual: ['equilibrada'],
+      alimentacionDetalle: '',
+      desordenAlimentario: 'no',
+      consumoSustancias: 'no',
+      suplementos: 'no',
+      interesEntrenamiento: ['mixto / personalizado'],
+      interesDetalle: '',
+      compromisoObjetivo: 8,
+      origenContacto: ['instagram'],
+      origenDetalle: '',
+      consentimientoSalud: 'si',
     },
   });
 

@@ -1,13 +1,16 @@
 const path = require('path');
+const { resolveSmokeConfig } = require('./utils/smoke-auth');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
 
+const smokeConfig = resolveSmokeConfig();
+
 const baseUrlCandidates = [
-  process.env.SMOKE_BASE_URL,
+  smokeConfig.baseUrl,
   'http://127.0.0.1:3000',
   process.env.NEXTAUTH_URL,
 ].filter((value, index, array) => Boolean(value) && array.indexOf(value) === index);
-const loginEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
+const loginEmail = smokeConfig.adminEmail;
 
 async function delay(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));

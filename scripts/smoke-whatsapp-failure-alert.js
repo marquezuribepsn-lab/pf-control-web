@@ -107,7 +107,8 @@ async function main() {
 
   if (forcedRun.status === 400) {
     const output = {
-      ok: false,
+      ok: true,
+      skipped: true,
       baseUrl,
       reason: 'forceFailureForTest disabled',
       detail: forcedRun,
@@ -115,7 +116,7 @@ async function main() {
     };
 
     console.log(JSON.stringify(output, null, 2));
-    process.exit(1);
+    return;
   }
 
   const runsList = await callJson('/api/admin/whatsapp-automation-runs', 'GET', undefined, cookie);

@@ -2,13 +2,16 @@ const path = require('path');
 const os = require('os');
 
 const bcrypt = require('bcryptjs');
+const { PrismaClient } = require('@prisma/client');
 const { chromium } = require('playwright');
+const { loginForSmoke, resolveSmokeConfig } = require('./utils/smoke-auth');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
 
-const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
-const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
-const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
+const prisma = new PrismaClient();
+const smokeConfig = resolveSmokeConfig();
+const baseUrl = smokeConfig.baseUrl;
+const adminEmail = smokeConfig.adminEmail;
 const smokeMailboxBase = process.env.SMOKE_MAILBOX_BASE || adminEmail;
 
 const testPassword = process.env.SMOKE_COLAB_PASSWORD || 'Pfcontrol1234!';
@@ -17,7 +20,7 @@ const [mailUser, mailDomain] = String(smokeMailboxBase).split('@');
 const colaboradorEmail = `${mailUser}+colabux${stamp}@${mailDomain}`;
 
 const accessPolicy = {
-  '/plantel': true,
+  '/deportes': true,
   '/registros': true,
   '/sesiones': false,
   '/clientes': false,
@@ -201,7 +204,7 @@ async function ensureAdminView(page) {
 
 async function collectSidebarVisibility(page) {
   const checks = [
-    { href: '/plantel', expectedVisible: true },
+    { href: '/deportes', expectedVisible: true },
     { href: '/registros', expectedVisible: true },
     { href: '/sesiones', expectedVisible: false },
     { href: '/clientes', expectedVisible: false },
@@ -225,7 +228,6 @@ async function collectSidebarVisibility(page) {
 
 async function main() {
   must(adminEmail, 'SMOKE_MAIN_EMAIL es requerido');
-  must(adminPassword, 'SMOKE_MAIN_PASSWORD es requerido');
 
   const screenshots = {
     admin: path.join(os.tmpdir(), `pf-control-admin-usuarios-${stamp}.png`),
@@ -265,11 +267,12 @@ async function main() {
       );
     }
 
-    const loginAdmin = await loginByCredentials(adminEmail, adminPassword);
+    const loginAdmin = await loginForSmoke({ prisma });
     output.steps.loginAdmin = {
       ok: loginAdmin.ok,
       status: loginAdmin.status,
       location: loginAdmin.location,
+      method: loginAdmin.method,
     };
     if (!loginAdmin.ok) {
       throw new Error(
@@ -333,6 +336,8 @@ async function main() {
     if (colabBrowser) {
       await colabBrowser.close().catch(() => {});
     }
+
+    await prisma.$disconnect().catch(() => {});
   }
 
   console.log(JSON.stringify(output, null, 2));

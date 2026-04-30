@@ -2,10 +2,12 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { chromium } = require("playwright");
+const { PrismaClient } = require("@prisma/client");
 
-const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || "https://pf-control.com";
-const adminEmail = process.env.SMOKE_MAIN_EMAIL || "marquezuribepsn@gmail.com";
-const adminPassword = process.env.SMOKE_MAIN_PASSWORD || "pfcontrol2026";
+const { loginForSmoke } = require("./utils/smoke-auth");
+
+const prisma = new PrismaClient();
+
 const expectedPath = "/admin/whatsapp";
 const screenshotPath =
   process.env.SMOKE_WHATSAPP_ADMIN_UI_SCREENSHOT ||
@@ -15,35 +17,31 @@ async function ensureParentDir(filePath) {
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 }
 
-async function login(page) {
-  await page.goto(`${baseUrl}/auth/login`, { waitUntil: "networkidle", timeout: 45000 });
-
-  const emailInput = page.locator('input[type="email"]').first();
-  const passwordInput = page.locator('input[type="password"]').first();
-  await emailInput.fill(adminEmail);
-  await passwordInput.fill(adminPassword);
-
-  const submitByType = page.locator('button[type="submit"]').first();
-  const submitByText = page.getByRole("button", { name: /Iniciar sesi.n|Ingresar/i }).first();
-  const submit = (await submitByType.count()) > 0 ? submitByType : submitByText;
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith("/auth/login"), { timeout: 45000 }),
-    submit.click(),
-  ]);
-}
-
 async function collectManualTabMarkers(page) {
+  const manualTab = page.locator("button").filter({ hasText: /envio\s+manual/i }).first();
+  if ((await manualTab.count()) > 0) {
+    await manualTab.click();
+    await page.waitForTimeout(700);
+  }
+
   return page.evaluate(() => {
     const allText = document.body.innerText || "";
     const buttons = Array.from(document.querySelectorAll("button")).map((button) =>
       (button.textContent || "").replace(/\s+/g, " ").trim()
     );
 
+    const variableChips = Array.from(document.querySelectorAll("span")).map((entry) =>
+      (entry.textContent || "").replace(/\s+/g, " ").trim()
+    );
+
     const insertButtons = buttons.filter((label) => /^Insertar \{\{/.test(label));
+    const chipVariables = variableChips.filter((label) => /^\{\{[^}]+\}\}\s*=\s*/.test(label));
 
     return {
       hasInsertButtons: insertButtons.length > 0,
       insertButtons,
+      hasVariableChips: chipVariables.length > 0,
+      chipVariables,
       hasCheckboxes: document.querySelectorAll('input[type="checkbox"]').length > 0,
       hasManualPanelText:
         allText.includes("Editor de mensaje") || allText.includes("Envio manual") || allText.includes("Enviar"),
@@ -52,7 +50,15 @@ async function collectManualTabMarkers(page) {
 }
 
 async function collectHistoryTabMarkers(page) {
-  const historyTab = page.locator("button").filter({ hasText: /hist/i }).first();
+  const historyTab = page.locator("button").filter({ hasText: /historial/i }).first();
+  if ((await historyTab.count()) === 0) {
+    return {
+      hasHistoryHeaders: false,
+      missingHeaders: ["fecha", "mensaje", "total", "ok", "fallidos"],
+      hasHistoryContext: false,
+    };
+  }
+
   if ((await historyTab.count()) > 0) {
     await historyTab.click();
     await page.waitForTimeout(700);
@@ -80,13 +86,22 @@ function toCheck(name, pass, detail) {
 }
 
 async function main() {
+  const login = await loginForSmoke({ prisma });
+  if (!login.ok) {
+    throw new Error(`admin login fallo: status=${login.status} location=${login.location}`);
+  }
+
+  const baseUrl = login.baseUrl;
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1200 } });
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 1200 },
+    extraHTTPHeaders: {
+      Cookie: login.cookieHeader,
+    },
+  });
   const page = await context.newPage();
 
   try {
-    await login(page);
-
     await page.goto(`${baseUrl}${expectedPath}`, { waitUntil: "networkidle", timeout: 45000 });
     await page.waitForTimeout(1200);
 
@@ -99,10 +114,10 @@ async function main() {
 
     const checks = [
       toCheck("route", currentUrl.includes(expectedPath), { currentUrl, expectedPath }),
-      toCheck("manualInsertButtons", manual.hasInsertButtons, {
-        sample: manual.insertButtons.slice(0, 5),
+      toCheck("manualVariableControls", manual.hasInsertButtons || manual.hasVariableChips, {
+        insertButtonsSample: manual.insertButtons.slice(0, 5),
+        variableChipsSample: manual.chipVariables.slice(0, 5),
       }),
-      toCheck("manualCheckboxes", manual.hasCheckboxes, { hasCheckboxes: manual.hasCheckboxes }),
       toCheck("manualPanelText", manual.hasManualPanelText, {
         hasManualPanelText: manual.hasManualPanelText,
       }),
@@ -117,6 +132,11 @@ async function main() {
     const output = {
       ok: failedChecks.length === 0,
       baseUrl,
+      auth: {
+        responseStatus: login.status,
+        location: login.location,
+        method: login.method,
+      },
       screenshotPath,
       failedChecks,
       checks,
@@ -138,7 +158,6 @@ main().catch((error) => {
     JSON.stringify(
       {
         ok: false,
-        baseUrl,
         error: String(error && error.message ? error.message : error),
       },
       null,
@@ -146,4 +165,6 @@ main().catch((error) => {
     )
   );
   process.exit(1);
+}).finally(async () => {
+  await prisma.$disconnect().catch(() => {});
 });

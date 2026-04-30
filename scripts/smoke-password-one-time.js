@@ -49,6 +49,10 @@ async function postJson(url, body, headers = {}) {
 }
 
 async function adminLogin() {
+  return loginByCredentials(adminEmail, adminPassword);
+}
+
+async function loginByCredentials(email, password) {
   const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
   if (!csrfResponse.ok) {
     throw new Error(`No se pudo obtener csrf token (${csrfResponse.status})`);
@@ -62,8 +66,8 @@ async function adminLogin() {
   }
 
   const form = new URLSearchParams({
-    email: adminEmail,
-    password: adminPassword,
+    email,
+    password,
     csrfToken: csrfData.csrfToken,
     callbackUrl: `${baseUrl}/`,
     json: 'true',
@@ -105,9 +109,24 @@ async function registerAlumno(email, password) {
     email,
     password,
     anamnesis: {
-      antecedentesMedicos: 'Sin patologias reportadas',
-      lesionesPrevias: 'Sin lesiones recientes',
-      objetivoPrincipal: 'Validar flujo de password one-time token',
+      tratamientoMedico: 'no',
+      lesionesLimitaciones: 'no',
+      medicacionRegular: 'no',
+      cirugiasRecientes: 'no',
+      antecedentesClinicos: 'sin antecedentes relevantes',
+      autorizacionMedica: 'si',
+      experienciaEntrenamiento: 'intermedio',
+      alimentacionActual: ['equilibrada'],
+      alimentacionDetalle: '',
+      desordenAlimentario: 'no',
+      consumoSustancias: 'no',
+      suplementos: 'no',
+      interesEntrenamiento: ['mixto / personalizado'],
+      interesDetalle: '',
+      compromisoObjetivo: 8,
+      origenContacto: ['instagram'],
+      origenDetalle: '',
+      consentimientoSalud: 'si',
     },
   });
 }
@@ -153,14 +172,6 @@ async function adminPasswordAction(body, cookieHeader) {
   return postJson(`${baseUrl}/api/admin/users/password`, body, {
     Cookie: cookieHeader,
   });
-}
-
-async function probeAdminPasswordEndpoint(cookieHeader) {
-  return postJson(
-    `${baseUrl}/api/admin/users/password`,
-    { action: 'probe' },
-    { Cookie: cookieHeader }
-  );
 }
 
 async function main() {
@@ -211,54 +222,35 @@ async function main() {
     }
 
     userId = String(target.id);
-
-    const probe = await probeAdminPasswordEndpoint(cookieHeader);
-    report.steps.passwordEndpointProbe = { status: probe.status };
-
-    if (probe.status === 404) {
-      report.ok = true;
-      report.skipped = true;
-      report.skipReason = 'Endpoint /api/admin/users/password no disponible en este deployment';
-      return;
-    }
-
-    const reset = await adminPasswordAction({ action: 'reset', userId }, cookieHeader);
-    const resetToken = String(reset.data?.viewToken || '');
-    report.steps.resetPassword = {
-      status: reset.status,
-      hasToken: Boolean(resetToken),
+    const isEmailVerified = Boolean(target.emailVerified);
+    report.steps.targetUser = {
+      id: userId,
+      role: String(target.role || ''),
+      emailVerified: isEmailVerified,
     };
 
-    if (reset.status !== 200 || !resetToken) {
+    const reset = await adminPasswordAction({ userId }, cookieHeader);
+    const visiblePassword = String(reset.data?.visiblePassword || '');
+    report.steps.resetPassword = {
+      status: reset.status,
+      hasPassword: Boolean(visiblePassword),
+    };
+
+    if (reset.status !== 200 || !visiblePassword) {
       throw new Error(`Reset password invalido (${reset.status})`);
     }
 
-    const showFirst = await adminPasswordAction(
-      { action: 'show', userId, viewToken: resetToken },
-      cookieHeader
-    );
-    const firstPassword = String(showFirst.data?.password || '');
-    report.steps.showFirst = {
-      status: showFirst.status,
-      hasPassword: Boolean(firstPassword),
+    const loginAfterReset = await loginByCredentials(testEmail, visiblePassword);
+    report.steps.loginWithResetPassword = {
+      status: loginAfterReset.status,
+      location: loginAfterReset.location,
+      ok: loginAfterReset.ok,
+      expectedBlockedUntilVerification: !isEmailVerified,
     };
 
-    if (showFirst.status !== 200 || !firstPassword) {
-      throw new Error(`Primera visualizacion invalida (${showFirst.status})`);
-    }
-
-    const showReuse = await adminPasswordAction(
-      { action: 'show', userId, viewToken: resetToken },
-      cookieHeader
-    );
-    report.steps.showReuse = {
-      status: showReuse.status,
-      code: String(showReuse.data?.code || ''),
-    };
-
-    if (showReuse.status !== 404 || showReuse.data?.code !== 'PASSWORD_NOT_AVAILABLE') {
+    if (!loginAfterReset.ok && isEmailVerified) {
       throw new Error(
-        `Reuso de token no se bloqueo como esperado (${showReuse.status} ${String(showReuse.data?.code || '')})`
+        `No se pudo iniciar sesion con contrasena blanqueada (${loginAfterReset.status})`
       );
     }
 
