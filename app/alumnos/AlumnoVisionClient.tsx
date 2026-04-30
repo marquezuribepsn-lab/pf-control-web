@@ -8,7 +8,6 @@ import { markManualSaveIntent, useSharedState } from "@/components/useSharedStat
 import type {
   Alumno,
   BloqueEntrenamiento,
-  Ejercicio,
   PrescripcionSesionPersona,
   Sesion,
 } from "@/data/mockData";
