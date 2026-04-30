@@ -2144,7 +2144,7 @@ export default function AlumnoVisionClient({
 
       router.replace(targetHref, { scroll: false });
     },
-    [activeCategory, isUltraMobile, router]
+    [activeCategory, router]
   );
 
   const goToHomeCategory = useCallback(() => {
