@@ -2865,36 +2865,106 @@ export default function AlumnoVisionClient({
           {activeCategory === "rutina" ? (
             <div className="pf-a3-routine-shell">
               <section className="pf-a3-routine-overview">
+                <div className="pf-a3-routine-nav" aria-label="Navegacion de entrenamiento">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("rutina")}
+                    className="pf-a3-routine-nav-btn pf-a3-routine-nav-btn-active"
+                  >
+                    Entrenamiento
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("nutricion")}
+                    data-nav-href="/alumnos/nutricion"
+                    className="pf-a3-routine-nav-btn"
+                  >
+                    Nutricion
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("progreso")}
+                    onPointerUp={() => goToCategory("progreso")}
+                    data-nav-href="/alumnos/progreso"
+                    className="pf-a3-routine-nav-btn"
+                  >
+                    Recuperacion
+                  </ReliableActionButton>
+                </div>
+
                 <div className="pf-a3-routine-overview-head">
-                  <div>
-                    <p className="pf-a3-routine-overview-kicker">Training Template</p>
-                    <h2 className="pf-a3-routine-overview-title">Rutina semanal estilo Mynter</h2>
-                    <p className="pf-a3-routine-overview-subtitle">
-                      Vista organizada por sesiones y bloques para seguir cada ejercicio sin perder foco.
-                    </p>
+                  <div className="min-w-0">
+                    <h2 className="pf-a3-routine-overview-title">
+                      {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento").toUpperCase()}
+                    </h2>
+                    <p className="pf-a3-routine-overview-subtitle">Actualizado el {routineUpdatedAtLabel}</p>
+                    <p className="pf-a3-routine-overview-kicker">{routineCoachLabel}</p>
                   </div>
-                  <span className="pf-a3-routine-overview-chip">{routineSummary.sessions} sesiones activas</span>
+
+                  <div className="pf-a3-routine-overview-actions">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={handleRoutineRefresh}
+                      onPointerUp={() => handleRoutineRefresh()}
+                      className="pf-a3-routine-icon-btn"
+                      aria-label="Recargar plan"
+                      title="Recargar plan"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M20 12a8 8 0 1 1-2.34-5.66" strokeLinecap="round" />
+                        <path d="M20 4v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={handleRoutineToggleAll}
+                      className="pf-a3-routine-icon-btn"
+                      aria-label={isRoutineFullyExpanded ? "Contraer bloques" : "Expandir bloques"}
+                      title={isRoutineFullyExpanded ? "Contraer bloques" : "Expandir bloques"}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M8 7h8M8 12h8M8 17h8" strokeLinecap="round" />
+                        <path d="m5 7 1 1 2-2M5 12l1 1 2-2M5 17l1 1 2-2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => goToCategory("progreso")}
+                      onPointerUp={() => goToCategory("progreso")}
+                      data-nav-href="/alumnos/progreso"
+                      className="pf-a3-routine-icon-btn"
+                      aria-label="Ir a progreso"
+                      title="Ir a progreso"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8" />
+                        <path d="M12 8v4l2.6 1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+                  </div>
                 </div>
 
                 <div className="pf-a3-routine-kpi-grid">
                   <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Sesiones</p>
+                    <p className="pf-a3-routine-kpi-label">Sesiones asignadas</p>
                     <p className="pf-a3-routine-kpi-value">{routineSummary.sessions}</p>
                   </article>
                   <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Bloques</p>
+                    <p className="pf-a3-routine-kpi-label">Total bloques</p>
                     <p className="pf-a3-routine-kpi-value">{routineSummary.blocks}</p>
                   </article>
                   <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Ejercicios</p>
+                    <p className="pf-a3-routine-kpi-label">Total ejercicios</p>
                     <p className="pf-a3-routine-kpi-value">{routineSummary.exercises}</p>
                   </article>
                 </div>
               </section>
 
-              {isUltraMobile && effectiveRoutineSessions.length > 1 ? (
+              {effectiveRoutineSessions.length > 0 ? (
                 <section className="pf-a3-routine-session-strip">
-                  <p className="pf-a3-routine-session-strip-title">Sesion activa</p>
+                  <p className="pf-a3-routine-session-strip-title">Semana 1</p>
                   <div className="pf-a3-routine-session-scroll">
                     {effectiveRoutineSessions.map((session, index) => {
                       const isSelected = session.id === selectedRoutineSessionId;
@@ -2903,17 +2973,14 @@ export default function AlumnoVisionClient({
                         <ReliableActionButton
                           key={`session-chip-${session.id}`}
                           type="button"
-                          onClick={() => {
-                            setSelectedRoutineSessionId(session.id);
-                            setExpandedRoutineBlocks({});
-                            setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
-                          }}
+                          onClick={() => handleRoutineSessionSelect(session.id)}
                           className={`pf-a3-routine-session-chip ${
                             isSelected ? "pf-a3-routine-session-chip-active" : ""
                           }`}
+                          aria-label={`Abrir ${session.titulo || `Sesion ${index + 1}`}`}
+                          title={session.titulo || `Sesion ${index + 1}`}
                         >
-                          <span>{index + 1}.</span>
-                          <span>{session.titulo || "Sesion"}</span>
+                          Dia {index + 1}
                         </ReliableActionButton>
                       );
                     })}
@@ -2921,150 +2988,165 @@ export default function AlumnoVisionClient({
                 </section>
               ) : null}
 
-              {routineEntries.length === 0 ? (
+              {!selectedRoutineEntry ? (
                 <section className="pf-a3-routine-empty">
                   <h2>No hay sesiones cargadas</h2>
                   <p>Cuando tu profe asigne una sesion, la rutina aparecera aca automaticamente.</p>
                 </section>
               ) : (
-                <>
-                  {routineEntries.map((entry) => {
-                    const visibleBlocks = isUltraMobile
-                      ? entry.blocks.slice(0, Math.max(1, visibleRoutineBlockCount))
-                      : entry.blocks;
-                    const remainingBlocks = Math.max(0, entry.blocks.length - visibleBlocks.length);
+                <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
+                  <div className="pf-a3-routine-session-head">
+                    <div>
+                      <p className="pf-a3-routine-session-kicker">
+                        {selectedRoutineEntry.prescripcion ? "Plan personalizado" : "Plan base"}
+                      </p>
+                      <h2 className="pf-a3-routine-session-title">
+                        {selectedRoutineEntry.sesion.objetivo || "Tecnica y progresion de fuerza"}
+                      </h2>
+                    </div>
 
-                    return (
-                      <article key={entry.sesion.id} className="pf-a3-routine-session-card">
-                        <div className="pf-a3-routine-session-head">
-                          <div>
-                            <p className="pf-a3-routine-session-kicker">
-                              {entry.prescripcion ? "Ajustada por tu profe" : "Base del plan"}
-                            </p>
-                            <h2 className="pf-a3-routine-session-title">{entry.sesion.titulo || "Sesion"}</h2>
-                            <p className="pf-a3-routine-session-goal">
-                              {entry.sesion.objetivo || "Sin objetivo cargado"}
-                            </p>
+                    <div className="pf-a3-routine-session-pills">
+                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.blocks.length} bloques</span>
+                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.totalExercises} ejercicios</span>
+                      <span className="pf-a3-routine-meta-pill">{selectedRoutineEntry.sesion.duracion || "-"} min</span>
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-routine-block-stack">
+                    {routineVisibleBlocks.map((block, blockIndex) => {
+                      const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
+                      const isExpanded = !isUltraMobile || Boolean(expandedRoutineBlocks[blockKey]);
+                      const visibleExercises = isExpanded ? block.ejercicios : [];
+                      const hasSupersetFlag = normalizePersonKey(`${block.titulo || ""} ${block.objetivo || ""}`).includes(
+                        "superserie"
+                      );
+
+                      return (
+                        <section key={blockKey} className="pf-a3-routine-block">
+                          <div className="pf-a3-routine-block-head">
+                            <div className="min-w-0">
+                              <p className="pf-a3-routine-block-kicker">Bloque {blockIndex + 1}</p>
+                              <h3 className="pf-a3-routine-block-title">{block.titulo || `Bloque ${blockIndex + 1}`}</h3>
+                              <p className="pf-a3-routine-block-goal">{block.objetivo || "Sin objetivo"}</p>
+                              {hasSupersetFlag ? <p className="pf-a3-routine-block-alert">Superserie</p> : null}
+                            </div>
+                            <span className="pf-a3-routine-block-count">{block.ejercicios.length} ejercicios</span>
                           </div>
 
-                          <div className="pf-a3-routine-session-pills">
-                            <span className="pf-a3-routine-meta-pill">{entry.blocks.length} bloques</span>
-                            <span className="pf-a3-routine-meta-pill">{entry.totalExercises} ejercicios</span>
-                            <span className="pf-a3-routine-meta-pill">{entry.sesion.duracion || "-"} min</span>
-                          </div>
-                        </div>
+                          {visibleExercises.length > 0 ? (
+                            <div className="pf-a3-routine-exercise-list">
+                              {visibleExercises.map((exercise, index) => {
+                                const exerciseDetail = exercise.ejercicioId
+                                  ? ejerciciosById.get(exercise.ejercicioId) || null
+                                  : null;
+                                const exerciseName = exerciseDetail?.nombre || `Ejercicio ${index + 1}`;
+                                const rirMetric = Array.isArray(exercise.metricas)
+                                  ? exercise.metricas.find((metric) =>
+                                      normalizePersonKey(metric.nombre).includes("rir")
+                                    )
+                                  : null;
+                                const exerciseTags = Array.from(
+                                  new Set(
+                                    [
+                                      ...(Array.isArray(exerciseDetail?.gruposMusculares)
+                                        ? exerciseDetail.gruposMusculares
+                                        : []),
+                                      String(exerciseDetail?.categoria || "").trim(),
+                                    ].filter(Boolean)
+                                  )
+                                ).slice(0, 6);
 
-                        <div className="pf-a3-routine-block-stack">
-                          {visibleBlocks.map((block, blockIndex) => {
-                            const blockKey = `${entry.sesion.id}-${block.id}`;
-                            const isExpanded = !isUltraMobile || Boolean(expandedRoutineBlocks[blockKey]);
-                            const visibleExercises = isExpanded ? block.ejercicios : [];
-
-                            return (
-                              <section key={blockKey} className="pf-a3-routine-block">
-                                <div className="pf-a3-routine-block-head">
-                                  <div>
-                                    <p className="pf-a3-routine-block-kicker">Bloque {blockIndex + 1}</p>
-                                    <h3 className="pf-a3-routine-block-title">{block.titulo}</h3>
-                                  </div>
-                                  <span className="pf-a3-routine-block-count">{block.ejercicios.length} ejercicios</span>
-                                </div>
-
-                                <p className="pf-a3-routine-block-goal">{block.objetivo || "Sin objetivo"}</p>
-
-                                {visibleExercises.length > 0 ? (
-                                  <div className="pf-a3-routine-exercise-list">
-                                    {visibleExercises.map((exercise, index) => {
-                                      const exerciseDetail = exercise.ejercicioId
-                                        ? ejerciciosById.get(exercise.ejercicioId) || null
-                                        : null;
-                                      const metricsLabel =
-                                        Array.isArray(exercise.metricas) && exercise.metricas.length > 0
-                                          ? exercise.metricas
-                                              .map((metric) => `${metric.nombre}: ${metric.valor}`)
-                                              .join(" · ")
-                                          : "";
-
-                                      return (
-                                        <article
-                                          key={`${block.id}-${exercise.ejercicioId || index}`}
-                                          className="pf-a3-routine-exercise-row"
-                                        >
-                                          <div className="pf-a3-routine-exercise-main">
-                                            <span className="pf-a3-routine-exercise-index">{index + 1}</span>
-                                            <div className="min-w-0">
-                                              <p className="pf-a3-routine-exercise-name">
-                                                {exerciseDetail?.nombre || `Ejercicio ${index + 1}`}
-                                              </p>
-                                              <p className="pf-a3-routine-exercise-desc">
-                                                {exerciseDetail?.objetivo ||
-                                                  exerciseDetail?.categoria ||
-                                                  "Ejecuta con tecnica y control."}
-                                              </p>
-                                            </div>
-                                          </div>
-
-                                          <div className="pf-a3-routine-exercise-tags">
-                                            <span className="pf-a3-routine-exercise-tag">{exercise.series} series</span>
-                                            <span className="pf-a3-routine-exercise-tag">
-                                              {exercise.repeticiones || "-"} reps
-                                            </span>
-                                            {exercise.descanso ? (
-                                              <span className="pf-a3-routine-exercise-tag">
-                                                Descanso {exercise.descanso}
-                                              </span>
-                                            ) : null}
-                                            {exercise.carga ? (
-                                              <span className="pf-a3-routine-exercise-tag">Carga {exercise.carga}</span>
-                                            ) : null}
-                                          </div>
-
-                                          {metricsLabel ? (
-                                            <p className="pf-a3-routine-exercise-metrics">{metricsLabel}</p>
-                                          ) : null}
-
-                                          {exercise.observaciones ? (
-                                            <p className="pf-a3-routine-exercise-note">{exercise.observaciones}</p>
-                                          ) : null}
-                                        </article>
-                                      );
-                                    })}
-                                  </div>
-                                ) : null}
-
-                                {isUltraMobile && block.ejercicios.length > 0 ? (
-                                  <ReliableActionButton
-                                    type="button"
-                                    onClick={() => toggleRoutineBlock(blockKey)}
-                                    className="pf-a3-routine-toggle"
+                                return (
+                                  <article
+                                    key={`${block.id}-${exercise.ejercicioId || index}`}
+                                    className="pf-a3-routine-exercise-row"
                                   >
-                                    {isExpanded
-                                      ? "Ocultar ejercicios"
-                                      : `Ver ejercicios (${block.ejercicios.length})`}
-                                  </ReliableActionButton>
-                                ) : null}
-                              </section>
-                            );
-                          })}
-                        </div>
+                                    <div className="pf-a3-routine-exercise-main">
+                                      <span className="pf-a3-routine-exercise-index">{index + 1}</span>
+                                      <span className="pf-a3-routine-exercise-thumb" aria-hidden="true">
+                                        {getInitials(exerciseName)}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <p className="pf-a3-routine-exercise-name">{exerciseName}</p>
+                                        <p className="pf-a3-routine-exercise-desc">
+                                          {exerciseDetail?.objetivo || "Ejecuta con tecnica y control"}
+                                        </p>
+                                      </div>
+                                    </div>
 
-                        {isUltraMobile && remainingBlocks > 0 ? (
-                          <ReliableActionButton
-                            type="button"
-                            onClick={() =>
-                              setVisibleRoutineBlockCount((previous) =>
-                                Math.min(previous + 2, entry.blocks.length)
-                              )
-                            }
-                            className="pf-a3-routine-more"
-                          >
-                            Cargar 2 bloques mas ({remainingBlocks} restantes)
-                          </ReliableActionButton>
-                        ) : null}
-                      </article>
-                    );
-                  })}
-                </>
+                                    <div className="pf-a3-routine-exercise-stats">
+                                      <p>
+                                        <span>Series:</span>
+                                        <strong>{exercise.series || "S/D"}</strong>
+                                      </p>
+                                      <p>
+                                        <span>Rep.:</span>
+                                        <strong>{exercise.repeticiones || "S/D"}</strong>
+                                      </p>
+                                      <p>
+                                        <span>Desc.:</span>
+                                        <strong>{exercise.descanso || "S/D"}</strong>
+                                      </p>
+                                      <p>
+                                        <span>Rir:</span>
+                                        <strong>{rirMetric?.valor || "S/D"}</strong>
+                                      </p>
+                                      <p>
+                                        <span>Carga (Kg):</span>
+                                        <strong>{exercise.carga || "S/D"}</strong>
+                                      </p>
+                                      <p>
+                                        <span>Obs.:</span>
+                                        <strong>{exercise.observaciones || "S/D"}</strong>
+                                      </p>
+                                    </div>
+
+                                    {exerciseTags.length > 0 ? (
+                                      <div className="pf-a3-routine-exercise-tags">
+                                        {exerciseTags.map((tag, tagIndex) => (
+                                          <span
+                                            key={`${block.id}-${exercise.ejercicioId || index}-${tagIndex}`}
+                                            className="pf-a3-routine-exercise-tag"
+                                          >
+                                            {tag}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ) : null}
+                                  </article>
+                                );
+                              })}
+                            </div>
+                          ) : null}
+
+                          {isUltraMobile && block.ejercicios.length > 0 ? (
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => toggleRoutineBlock(blockKey)}
+                              className="pf-a3-routine-toggle"
+                            >
+                              {isExpanded ? "Ocultar ejercicios" : `Ver ejercicios (${block.ejercicios.length})`}
+                            </ReliableActionButton>
+                          ) : null}
+                        </section>
+                      );
+                    })}
+                  </div>
+
+                  {isUltraMobile && routineRemainingBlocks > 0 ? (
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() =>
+                        setVisibleRoutineBlockCount((previous) =>
+                          Math.min(previous + 2, selectedRoutineEntry.blocks.length)
+                        )
+                      }
+                      className="pf-a3-routine-more"
+                    >
+                      Cargar 2 bloques mas ({routineRemainingBlocks} restantes)
+                    </ReliableActionButton>
+                  ) : null}
+                </article>
               )}
             </div>
           ) : null}
