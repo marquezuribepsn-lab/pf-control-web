@@ -268,6 +268,7 @@ type WeekStoreLite = {
 type WorkoutLogRecord = {
   id: string;
   alumnoNombre: string;
+  alumnoEmail?: string;
   sessionId: string;
   sessionTitle: string;
   weekId?: string;
@@ -820,6 +821,9 @@ function normalizeWorkoutLogs(rawValue: unknown): WorkoutLogRecord[] {
       return {
         id: String(item.id || createTrainingEntityId("workout")),
         alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        alumnoEmail: String(item.alumnoEmail || item.email || "")
+          .trim()
+          .toLowerCase() || undefined,
         sessionId: String(item.sessionId || "").trim(),
         sessionTitle: String(item.sessionTitle || item.sesion || "Sesion").trim() || "Sesion",
         weekId: String(item.weekId || "").trim() || undefined,
@@ -843,7 +847,7 @@ function normalizeWorkoutLogs(rawValue: unknown): WorkoutLogRecord[] {
         createdAt: String(item.createdAt || new Date().toISOString()),
       };
     })
-    .filter((item) => item.alumnoNombre && item.sessionId)
+    .filter((item) => (item.alumnoNombre || item.alumnoEmail) && item.sessionId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
@@ -2046,8 +2050,21 @@ export default function ClientesPage() {
 
   const selectedClientWorkoutLogs = useMemo(() => {
     if (!selectedClient) return [];
-    return workoutLogs.filter((item) => namesLikelyMatch(item.alumnoNombre, selectedClient.nombre));
-  }, [selectedClient, workoutLogs]);
+
+    const selectedClientEmail = String(clientesMeta[selectedClient.id]?.email || "")
+      .trim()
+      .toLowerCase();
+
+    return workoutLogs.filter((item) => {
+      const byName = namesLikelyMatch(item.alumnoNombre, selectedClient.nombre);
+      const byEmail =
+        Boolean(selectedClientEmail) &&
+        Boolean(item.alumnoEmail) &&
+        String(item.alumnoEmail).trim().toLowerCase() === selectedClientEmail;
+
+      return byName || byEmail;
+    });
+  }, [clientesMeta, selectedClient, workoutLogs]);
 
   const selectedExerciseWorkoutLogs = useMemo(() => {
     if (!trainingExercisePanelTarget) return [];
@@ -3040,6 +3057,10 @@ export default function ClientesPage() {
       return;
     }
 
+    const selectedClientEmail = String(clientesMeta[selectedClient.id]?.email || "")
+      .trim()
+      .toLowerCase();
+
     const series = Math.max(1, Math.round(Number(toSafeNumber(trainingRecordDraft.series) || 1)));
     const repeticiones = Math.max(0, Math.round(Number(toSafeNumber(trainingRecordDraft.repeticiones) || 0)));
     const pesoKg = Math.max(0, Number(toSafeNumber(trainingRecordDraft.pesoKg) || 0));
@@ -3047,6 +3068,7 @@ export default function ClientesPage() {
     const payload: WorkoutLogRecord = {
       id: createTrainingEntityId("log"),
       alumnoNombre: selectedClient.nombre,
+      alumnoEmail: selectedClientEmail || undefined,
       sessionId: trainingExercisePanelTarget.sessionId || `plan-${selectedClient.id}`,
       sessionTitle: trainingExercisePanelTarget.sessionTitle || "Plan de entrenamiento",
       weekId: trainingExercisePanelTarget.weekId,
@@ -3067,6 +3089,7 @@ export default function ClientesPage() {
       createdAt: new Date().toISOString(),
     };
 
+    markManualSaveIntent(WORKOUT_LOGS_KEY);
     setWorkoutLogsRaw((prev) => [payload, ...normalizeWorkoutLogs(prev)]);
     setTrainingRecordStatus(`Registro guardado para ${trainingExercisePanelTarget.exerciseName}.`);
     setTrainingRecordDraft((prev) => ({
