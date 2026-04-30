@@ -4023,9 +4023,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     font-size: 0.72rem;
   }
 
-  .pf-a3-routine-exercise-action-btn {
-    font-size: 0.55rem;
-    padding: 0.28rem 0.44rem;
+  .pf-a3-routine-exercise-cta {
+    font-size: 0.54rem;
   }
 
   .pf-a3-routine-exercise-tag {
