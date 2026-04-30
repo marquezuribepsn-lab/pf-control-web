@@ -1487,6 +1487,7 @@ export default function AlumnoVisionClient({
   const homeNavGuardRef = useRef<number>(0);
   const routinePullStartYRef = useRef<number | null>(null);
   const routinePullActiveRef = useRef(false);
+  const routinePullDistanceRef = useRef(0);
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
