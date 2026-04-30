@@ -291,7 +291,11 @@ type RoutineExerciseLogTarget = {
   prescribedDescanso?: string;
   prescribedRir?: string;
   suggestedVideoUrl?: string;
+  exerciseDescription?: string;
+  exerciseTags?: string[];
 };
+
+type RoutineExerciseLogView = "descripcion" | "registro" | "registros";
 
 type RoutineExerciseLogDraft = {
   fecha: string;
@@ -1485,6 +1489,7 @@ export default function AlumnoVisionClient({
     createRoutineExerciseLogDraft()
   );
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
+  const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
@@ -3053,6 +3058,7 @@ export default function AlumnoVisionClient({
 
   const openRoutineExerciseLogPanel = useCallback((target: RoutineExerciseLogTarget) => {
     setRoutineExerciseLogStatus("");
+    setRoutineExerciseLogView("registro");
     setRoutineExerciseLogTarget(target);
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
@@ -3067,6 +3073,7 @@ export default function AlumnoVisionClient({
   const closeRoutineExerciseLogPanel = useCallback(() => {
     setRoutineExerciseLogTarget(null);
     setRoutineExerciseLogStatus("");
+    setRoutineExerciseLogView("registro");
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
   }, []);
 
@@ -4092,16 +4099,11 @@ export default function AlumnoVisionClient({
 
                       return (
                         <section key={blockKey} className="pf-a3-routine-block">
-                          <div className="pf-a3-routine-block-head">
-                            <h3 className="pf-a3-routine-block-title">{block.titulo || `Bloque ${blockIndex + 1}`}</h3>
-                            <span className="pf-a3-routine-block-count">{block.ejercicios.length} ejercicios</span>
-                          </div>
-
-                          {block.objetivo ? <p className="pf-a3-routine-block-goal">{block.objetivo}</p> : null}
+                          {block.objetivo ? <p className="pf-a3-routine-block-note">{block.objetivo}</p> : null}
                           {hasSupersetFlag ? <p className="pf-a3-routine-block-alert">Superserie</p> : null}
 
                           {visibleExercises.length > 0 ? (
-                            <div className="pf-a3-routine-exercise-list">
+                            <div className="pf-a3-routine-exercise-stack">
                               {visibleExercises.map((exercise, index) => {
                                 const exerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
                                 const exerciseDetail = exercise.ejercicioId
@@ -4109,6 +4111,7 @@ export default function AlumnoVisionClient({
                                   : null;
                                 const exerciseName = exerciseDetail?.nombre || `Ejercicio ${index + 1}`;
                                 const exerciseVideoUrl = String(exerciseDetail?.videoUrl || "").trim();
+                                const exerciseDescription = String(exerciseDetail?.objetivo || "").trim();
                                 const rirMetric = Array.isArray(exercise.metricas)
                                   ? exercise.metricas.find((metric) =>
                                       normalizePersonKey(metric.nombre).includes("rir")
@@ -4151,6 +4154,8 @@ export default function AlumnoVisionClient({
                                   prescribedDescanso: String(exercise.descanso || "").trim(),
                                   prescribedRir: String(rirMetric?.valor || "").trim(),
                                   suggestedVideoUrl: exerciseVideoUrl,
+                                  exerciseDescription,
+                                  exerciseTags,
                                 };
 
                                 return (
@@ -4173,10 +4178,7 @@ export default function AlumnoVisionClient({
                                           <p className="pf-a3-routine-exercise-name">{exerciseName}</p>
                                         </ReliableActionButton>
                                         <p className="pf-a3-routine-exercise-desc">
-                                          {exerciseDetail?.objetivo || "Ejecuta con tecnica y control"}
-                                        </p>
-                                        <p className="pf-a3-routine-exercise-cta">
-                                          Toca el nombre para ver video y registrar carga.
+                                          {exerciseDescription || "Ejecuta con tecnica y control"}
                                         </p>
                                       </div>
                                     </div>
@@ -4266,9 +4268,6 @@ export default function AlumnoVisionClient({
                         <p className="pf-a3-routine-log-meta">
                           {routineExerciseLogTarget.weekName || routineWeekLabel}
                           {routineExerciseLogTarget.dayName ? ` · ${routineExerciseLogTarget.dayName}` : ""}
-                          {routineExerciseLogTarget.blockTitle
-                            ? ` · ${routineExerciseLogTarget.blockTitle}`
-                            : ""}
                         </p>
                       </div>
 
@@ -4281,6 +4280,65 @@ export default function AlumnoVisionClient({
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                           <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
                         </svg>
+                      </ReliableActionButton>
+                    </div>
+
+                    <div className="pf-a3-routine-log-presets">
+                      <div className="pf-a3-routine-log-preset">
+                        <span>Series</span>
+                        <strong>{routineExerciseLogTarget.prescribedSeries || "S/D"}</strong>
+                      </div>
+                      <div className="pf-a3-routine-log-preset">
+                        <span>Rep.</span>
+                        <strong>{routineExerciseLogTarget.prescribedRepeticiones || "S/D"}</strong>
+                      </div>
+                      <div className="pf-a3-routine-log-preset">
+                        <span>Desc.</span>
+                        <strong>{routineExerciseLogTarget.prescribedDescanso || "S/D"}</strong>
+                      </div>
+                      <div className="pf-a3-routine-log-preset">
+                        <span>RIR</span>
+                        <strong>{routineExerciseLogTarget.prescribedRir || "S/D"}</strong>
+                      </div>
+                      <div className="pf-a3-routine-log-preset">
+                        <span>Carga (kg)</span>
+                        <strong>{routineExerciseLogTarget.prescribedCarga || "S/D"}</strong>
+                      </div>
+                    </div>
+
+                    <div className="pf-a3-routine-log-tabs" role="tablist" aria-label="Secciones del ejercicio">
+                      <ReliableActionButton
+                        type="button"
+                        role="tab"
+                        aria-selected={routineExerciseLogView === "descripcion"}
+                        onClick={() => setRoutineExerciseLogView("descripcion")}
+                        className={`pf-a3-routine-log-tab ${
+                          routineExerciseLogView === "descripcion" ? "pf-a3-routine-log-tab-active" : ""
+                        }`}
+                      >
+                        Descripcion
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        role="tab"
+                        aria-selected={routineExerciseLogView === "registro"}
+                        onClick={() => setRoutineExerciseLogView("registro")}
+                        className={`pf-a3-routine-log-tab ${
+                          routineExerciseLogView === "registro" ? "pf-a3-routine-log-tab-active" : ""
+                        }`}
+                      >
+                        Nuevo registro
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        role="tab"
+                        aria-selected={routineExerciseLogView === "registros"}
+                        onClick={() => setRoutineExerciseLogView("registros")}
+                        className={`pf-a3-routine-log-tab ${
+                          routineExerciseLogView === "registros" ? "pf-a3-routine-log-tab-active" : ""
+                        }`}
+                      >
+                        Registros
                       </ReliableActionButton>
                     </div>
 
@@ -4316,147 +4374,179 @@ export default function AlumnoVisionClient({
                       </div>
                     ) : null}
 
-                    <div className="pf-a3-routine-log-grid">
-                      <label className="pf-a3-routine-log-field">
-                        <span>Fecha</span>
-                        <input
-                          type="date"
-                          value={routineExerciseLogDraft.fecha}
-                          onChange={(event) =>
-                            setRoutineExerciseLogDraft((previous) => ({
-                              ...previous,
-                              fecha: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
-                      <label className="pf-a3-routine-log-field">
-                        <span>Series</span>
-                        <input
-                          value={routineExerciseLogDraft.series}
-                          onChange={(event) =>
-                            setRoutineExerciseLogDraft((previous) => ({
-                              ...previous,
-                              series: event.target.value,
-                            }))
-                          }
-                          placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
-                        />
-                      </label>
-                      <label className="pf-a3-routine-log-field">
-                        <span>Repeticiones</span>
-                        <input
-                          value={routineExerciseLogDraft.repeticiones}
-                          onChange={(event) =>
-                            setRoutineExerciseLogDraft((previous) => ({
-                              ...previous,
-                              repeticiones: event.target.value,
-                            }))
-                          }
-                          placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
-                        />
-                      </label>
-                      <label className="pf-a3-routine-log-field">
-                        <span>Carga (kg)</span>
-                        <input
-                          value={routineExerciseLogDraft.pesoKg}
-                          onChange={(event) =>
-                            setRoutineExerciseLogDraft((previous) => ({
-                              ...previous,
-                              pesoKg: event.target.value,
-                            }))
-                          }
-                          placeholder={routineExerciseLogTarget.prescribedCarga || "0"}
-                        />
-                      </label>
-                    </div>
+                    {routineExerciseLogView === "descripcion" ? (
+                      <section className="pf-a3-routine-log-pane">
+                        <p className="pf-a3-routine-log-description">
+                          {routineExerciseLogTarget.exerciseDescription || "Sin descripcion para este ejercicio."}
+                        </p>
 
-                    <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
-                      <span>Comentarios</span>
-                      <textarea
-                        rows={2}
-                        value={routineExerciseLogDraft.comentarios}
-                        onChange={(event) =>
-                          setRoutineExerciseLogDraft((previous) => ({
-                            ...previous,
-                            comentarios: event.target.value,
-                          }))
-                        }
-                        placeholder="Como te sentiste, tecnica, molestias o feedback para el profe"
-                      />
-                    </label>
-
-                    <div className="pf-a3-routine-log-row">
-                      <label className="pf-a3-routine-log-check">
-                        <input
-                          type="checkbox"
-                          checked={routineExerciseLogDraft.molestia}
-                          onChange={(event) =>
-                            setRoutineExerciseLogDraft((previous) => ({
-                              ...previous,
-                              molestia: event.target.checked,
-                            }))
-                          }
-                        />
-                        Reportar molestia
-                      </label>
-
-                      <label className="pf-a3-routine-log-upload">
-                        <input
-                          type="file"
-                          accept="video/mp4,video/webm,video/ogg,video/*"
-                          onChange={handleRoutineVideoUpload}
-                        />
-                        Subir video
-                      </label>
-                    </div>
-
-                    {routineExerciseLogDraft.videoFileName ? (
-                      <p className="pf-a3-routine-log-upload-note">
-                        Archivo adjunto: {routineExerciseLogDraft.videoFileName}
-                      </p>
-                    ) : null}
-
-                    <div className="pf-a3-routine-log-actions">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={closeRoutineExerciseLogPanel}
-                        className="pf-a3-routine-log-secondary-btn"
-                      >
-                        Cerrar
-                      </ReliableActionButton>
-                      <ReliableActionButton
-                        type="button"
-                        onClick={saveRoutineExerciseLog}
-                        className="pf-a3-routine-log-primary-btn"
-                        disabled={routineExerciseLogSaving}
-                      >
-                        {routineExerciseLogSaving ? "Guardando..." : "Guardar registro"}
-                      </ReliableActionButton>
-                    </div>
-
-                    {routineExerciseLogStatus ? (
-                      <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
-                    ) : null}
-
-                    {routineExerciseRecentLogs.length > 0 ? (
-                      <div className="pf-a3-routine-log-history">
-                        <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
-                        <ul>
-                          {routineExerciseRecentLogs.map((log) => (
-                            <li key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}>
-                              <span>
-                                {log.fecha
-                                  ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
-                                  : "Sin fecha"}
+                        {Array.isArray(routineExerciseLogTarget.exerciseTags) &&
+                        routineExerciseLogTarget.exerciseTags.length > 0 ? (
+                          <div className="pf-a3-routine-log-tag-row">
+                            {routineExerciseLogTarget.exerciseTags.map((tag, index) => (
+                              <span
+                                key={`${routineExerciseLogTarget.exerciseKey}-tag-${index}`}
+                                className="pf-a3-routine-exercise-tag"
+                              >
+                                {tag}
                               </span>
-                              <strong>
-                                {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
-                              </strong>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </section>
+                    ) : null}
+
+                    {routineExerciseLogView === "registro" ? (
+                      <section className="pf-a3-routine-log-pane">
+                        <div className="pf-a3-routine-log-grid">
+                          <label className="pf-a3-routine-log-field">
+                            <span>Fecha</span>
+                            <input
+                              type="date"
+                              value={routineExerciseLogDraft.fecha}
+                              onChange={(event) =>
+                                setRoutineExerciseLogDraft((previous) => ({
+                                  ...previous,
+                                  fecha: event.target.value,
+                                }))
+                              }
+                            />
+                          </label>
+                          <label className="pf-a3-routine-log-field">
+                            <span>Series</span>
+                            <input
+                              value={routineExerciseLogDraft.series}
+                              onChange={(event) =>
+                                setRoutineExerciseLogDraft((previous) => ({
+                                  ...previous,
+                                  series: event.target.value,
+                                }))
+                              }
+                              placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
+                            />
+                          </label>
+                          <label className="pf-a3-routine-log-field">
+                            <span>Repeticiones</span>
+                            <input
+                              value={routineExerciseLogDraft.repeticiones}
+                              onChange={(event) =>
+                                setRoutineExerciseLogDraft((previous) => ({
+                                  ...previous,
+                                  repeticiones: event.target.value,
+                                }))
+                              }
+                              placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
+                            />
+                          </label>
+                          <label className="pf-a3-routine-log-field">
+                            <span>Carga (kg)</span>
+                            <input
+                              value={routineExerciseLogDraft.pesoKg}
+                              onChange={(event) =>
+                                setRoutineExerciseLogDraft((previous) => ({
+                                  ...previous,
+                                  pesoKg: event.target.value,
+                                }))
+                              }
+                              placeholder={routineExerciseLogTarget.prescribedCarga || "0"}
+                            />
+                          </label>
+                        </div>
+
+                        <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                          <span>Comentarios</span>
+                          <textarea
+                            rows={2}
+                            value={routineExerciseLogDraft.comentarios}
+                            onChange={(event) =>
+                              setRoutineExerciseLogDraft((previous) => ({
+                                ...previous,
+                                comentarios: event.target.value,
+                              }))
+                            }
+                            placeholder="Como te sentiste, tecnica, molestias o feedback para el profe"
+                          />
+                        </label>
+
+                        <div className="pf-a3-routine-log-row">
+                          <label className="pf-a3-routine-log-check">
+                            <input
+                              type="checkbox"
+                              checked={routineExerciseLogDraft.molestia}
+                              onChange={(event) =>
+                                setRoutineExerciseLogDraft((previous) => ({
+                                  ...previous,
+                                  molestia: event.target.checked,
+                                }))
+                              }
+                            />
+                            Reportar molestia
+                          </label>
+
+                          <label className="pf-a3-routine-log-upload">
+                            <input
+                              type="file"
+                              accept="video/mp4,video/webm,video/ogg,video/*"
+                              onChange={handleRoutineVideoUpload}
+                            />
+                            Subir video
+                          </label>
+                        </div>
+
+                        {routineExerciseLogDraft.videoFileName ? (
+                          <p className="pf-a3-routine-log-upload-note">
+                            Archivo adjunto: {routineExerciseLogDraft.videoFileName}
+                          </p>
+                        ) : null}
+
+                        <div className="pf-a3-routine-log-actions">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineExerciseLogPanel}
+                            className="pf-a3-routine-log-secondary-btn"
+                          >
+                            Cerrar
+                          </ReliableActionButton>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={saveRoutineExerciseLog}
+                            className="pf-a3-routine-log-primary-btn"
+                            disabled={routineExerciseLogSaving}
+                          >
+                            {routineExerciseLogSaving ? "Guardando..." : "Guardar registro"}
+                          </ReliableActionButton>
+                        </div>
+
+                        {routineExerciseLogStatus ? (
+                          <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
+                        ) : null}
+                      </section>
+                    ) : null}
+
+                    {routineExerciseLogView === "registros" ? (
+                      routineExerciseRecentLogs.length > 0 ? (
+                        <div className="pf-a3-routine-log-history">
+                          <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
+                          <ul>
+                            {routineExerciseRecentLogs.map((log) => (
+                              <li key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}>
+                                <span>
+                                  {log.fecha
+                                    ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                    : "Sin fecha"}
+                                </span>
+                                <strong>
+                                  {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
+                                </strong>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <div className="pf-a3-routine-log-history pf-a3-routine-log-history-empty">
+                          Todavia no hay registros cargados para este ejercicio.
+                        </div>
+                      )
                     ) : null}
                   </article>
                 </div>
