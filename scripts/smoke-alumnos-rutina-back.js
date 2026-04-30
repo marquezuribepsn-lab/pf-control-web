@@ -3,6 +3,7 @@ const os = require("os");
 const path = require("path");
 const { chromium } = require("playwright");
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 const { loginForSmoke } = require("./utils/smoke-auth");
 
@@ -24,6 +25,11 @@ async function resolveClienteEmail() {
   const user = await prisma.user.findFirst({
     where: {
       role: "CLIENTE",
+      emailVerified: true,
+      NOT: [
+        { estado: "suspendido" },
+        { estado: "baja" },
+      ],
     },
     select: {
       email: true,
@@ -34,7 +40,43 @@ async function resolveClienteEmail() {
   });
 
   const email = String(user?.email || "").trim().toLowerCase();
-  return email || null;
+  if (email) {
+    return email;
+  }
+
+  const smokeEmail = "smoke.alumno@pf-control.local";
+  const existingSmokeUser = await prisma.user.findUnique({
+    where: { email: smokeEmail },
+    select: { id: true },
+  });
+
+  if (existingSmokeUser?.id) {
+    await prisma.user.update({
+      where: { id: existingSmokeUser.id },
+      data: {
+        role: "CLIENTE",
+        estado: "activo",
+        emailVerified: true,
+        nombreCompleto: "Smoke Alumno",
+      },
+    });
+    return smokeEmail;
+  }
+
+  const hashedPassword = await bcrypt.hash("SmokeAlumno123!", 10);
+
+  await prisma.user.create({
+    data: {
+      email: smokeEmail,
+      password: hashedPassword,
+      role: "CLIENTE",
+      estado: "activo",
+      emailVerified: true,
+      nombreCompleto: "Smoke Alumno",
+    },
+  });
+
+  return smokeEmail;
 }
 
 async function main() {
