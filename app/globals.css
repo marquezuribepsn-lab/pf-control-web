@@ -3026,12 +3026,29 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   text-align: left;
 }
 
+.pf-a3-routine-exercise-name-btn:hover .pf-a3-routine-exercise-name {
+  color: #efe2ff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
 .pf-a3-routine-exercise-desc {
   margin: 0.16rem 0 0;
   color: #b2c2dd;
   font-size: 0.66rem;
   line-height: 1.26;
   font-weight: 600;
+}
+
+.pf-a3-routine-exercise-cta {
+  margin: 0.18rem 0 0;
+  color: #8cefd0;
+  font-size: 0.58rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .pf-a3-routine-exercise-stats {
@@ -3079,26 +3096,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: flex;
   flex-wrap: wrap;
   gap: 0.24rem;
-}
-
-.pf-a3-routine-exercise-actions {
-  margin-top: 0.42rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.pf-a3-routine-exercise-action-btn {
-  border-radius: 0.52rem;
-  border: 1px solid rgba(170, 127, 255, 0.66);
-  background: rgba(88, 51, 166, 0.34);
-  color: #efe8ff;
-  font-size: 0.6rem;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.32rem 0.5rem;
 }
 
 .pf-a3-routine-exercise-tag {
@@ -3456,8 +3453,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-more:hover,
 .pf-a3-routine-session-chip:hover,
 .pf-a3-routine-icon-btn:hover,
-.pf-a3-routine-week-arrow:hover,
-.pf-a3-routine-exercise-action-btn:hover {
+.pf-a3-routine-week-arrow:hover {
   border-color: rgba(230, 214, 255, 0.88);
 }
 
