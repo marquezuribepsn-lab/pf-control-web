@@ -285,6 +285,8 @@ type WorkoutLogRecord = {
   pesoKg: number;
   molestia: boolean;
   videoUrl?: string;
+  videoDataUrl?: string;
+  videoFileName?: string;
   comentarios?: string;
   createdAt: string;
 };
