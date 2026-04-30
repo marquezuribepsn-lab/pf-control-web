@@ -2133,14 +2133,19 @@ export default function AlumnoVisionClient({
       if (nextCategory === activeCategory) return;
       setActiveCategory(nextCategory);
 
-      if (isUltraMobile && typeof window !== "undefined") {
+      const targetHref = `/alumnos/${nextCategory}`;
+
+      if (typeof window !== "undefined") {
         const currentUrl = new URL(window.location.href);
-        const nextUrl = `/alumnos/${nextCategory}${currentUrl.search}`;
+        const nextUrl = `${targetHref}${currentUrl.search}`;
         window.history.replaceState(window.history.state ?? null, "", nextUrl);
-        return;
+
+        if (isUltraMobile) {
+          return;
+        }
       }
 
-      router.replace(`/alumnos/${nextCategory}`, { scroll: false });
+      router.replace(targetHref, { scroll: false });
     },
     [activeCategory, isUltraMobile, router]
   );
