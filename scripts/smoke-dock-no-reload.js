@@ -1,24 +1,20 @@
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { randomBytes } = require('crypto');
-const { chromium } = require('playwright');
-const { PrismaClient } = require('@prisma/client');
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { chromium } = require("playwright");
+const { PrismaClient } = require("@prisma/client");
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+const { loginForSmoke } = require("./utils/smoke-auth");
 
 const prisma = new PrismaClient();
 
-const baseUrl = process.env.SMOKE_BASE_URL || process.env.NEXTAUTH_URL || 'https://pf-control.com';
-const adminEmail = process.env.SMOKE_MAIN_EMAIL || 'marquezuribepsn@gmail.com';
-const adminPassword = process.env.SMOKE_MAIN_PASSWORD || 'pfcontrol2026';
-const dockFromPath = process.env.SMOKE_DOCK_FROM_PATH || '/categorias';
-const dockTargetHref = process.env.SMOKE_DOCK_TARGET_HREF || '/deportes';
+const dockFromPath = process.env.SMOKE_DOCK_FROM_PATH || "/categorias";
+const dockTargetHref = process.env.SMOKE_DOCK_TARGET_HREF || "/deportes";
 const dockTargetHrefs = (() => {
-  const rawMulti = String(process.env.SMOKE_DOCK_TARGET_HREFS || '').trim();
+  const rawMulti = String(process.env.SMOKE_DOCK_TARGET_HREFS || "").trim();
   if (rawMulti) {
     return rawMulti
-      .split(',')
+      .split(",")
       .map((value) => value.trim())
       .filter(Boolean);
   }
@@ -27,215 +23,53 @@ const dockTargetHrefs = (() => {
     return [dockTargetHref];
   }
 
-  return ['/deportes', '/equipos'];
+  return ["/deportes", "/equipos"];
 })();
-const requireRouteChange = String(process.env.SMOKE_DOCK_REQUIRE_ROUTE_CHANGE || '').trim() === '1';
-const waitAfterClickMs = Number.parseInt(String(process.env.SMOKE_DOCK_WAIT_AFTER_CLICK_MS || '1800'), 10);
-const screenshotPath = process.env.SMOKE_DOCK_SCREENSHOT_PATH || path.join(os.tmpdir(), `pf-control-dock-smoke-${Date.now()}.png`);
 
-function splitSetCookie(raw) {
-  if (!raw) return [];
-  return String(raw).split(/,(?=\s*[^;,\s]+=)/g);
-}
-
-function getSetCookieValues(headers) {
-  if (headers && typeof headers.getSetCookie === 'function') {
-    const values = headers.getSetCookie();
-    if (Array.isArray(values) && values.length > 0) {
-      return values;
-    }
-  }
-
-  const single = headers?.get?.('set-cookie');
-  return single ? splitSetCookie(single) : [];
-}
-
-function toCookieHeader(setCookieValues) {
-  return (Array.isArray(setCookieValues) ? setCookieValues : [])
-    .map((entry) => String(entry || '').split(';')[0]?.trim())
-    .filter(Boolean)
-    .join('; ');
-}
-
-function normalizeEmail(rawEmail) {
-  return String(rawEmail || '').trim().toLowerCase();
-}
-
-async function loginByCredentials() {
-  if (!adminPassword) {
-    return {
-      ok: false,
-      status: 400,
-      location: 'missing-password',
-      cookieHeader: '',
-    };
-  }
-
-  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
-  if (!csrfResponse.ok) {
-    throw new Error(`csrf fallo (${csrfResponse.status})`);
-  }
-
-  const csrfData = await csrfResponse.json();
-  if (!csrfData?.csrfToken) {
-    throw new Error('csrf token ausente');
-  }
-
-  const csrfCookies = getSetCookieValues(csrfResponse.headers);
-  const body = new URLSearchParams({
-    email: adminEmail,
-    password: adminPassword,
-    csrfToken: csrfData.csrfToken,
-    callbackUrl: `${baseUrl}/`,
-    json: 'true',
-  }).toString();
-
-  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Cookie: toCookieHeader(csrfCookies),
-    },
-    body,
-    redirect: 'manual',
-  });
-
-  const location = loginResponse.headers.get('location') || '';
-  const loginCookies = getSetCookieValues(loginResponse.headers);
-
-  return {
-    ok: loginResponse.status === 302 && !/error=/i.test(location),
-    status: loginResponse.status,
-    location,
-    cookieHeader: toCookieHeader([...csrfCookies, ...loginCookies]),
-  };
-}
-
-async function createOneTimeLoginToken(email) {
-  const normalizedEmail = normalizeEmail(email);
-  if (!normalizedEmail) {
-    return null;
-  }
-
-  const exactUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
-    select: { id: true, email: true },
-  });
-
-  let user = exactUser;
-  if (!user) {
-    const fallbackRows = await prisma.$queryRaw`
-      SELECT id, email
-      FROM users
-      WHERE lower(email) = lower(${normalizedEmail})
-      LIMIT 1
-    `;
-
-    if (Array.isArray(fallbackRows) && fallbackRows.length > 0) {
-      user = fallbackRows[0];
-    }
-  }
-
-  if (!user?.id || !user?.email) {
-    return null;
-  }
-
-  const token = `login-link-smoke-${randomBytes(24).toString('hex')}`;
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-  await prisma.verificationToken.create({
-    data: {
-      email: user.email,
-      token,
-      expiresAt,
-      userId: user.id,
-    },
-  });
-
-  return {
-    token,
-    email: user.email,
-  };
-}
-
-async function loginByOneTimeToken(loginEmail, loginToken) {
-  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
-  if (!csrfResponse.ok) {
-    throw new Error(`csrf fallo (${csrfResponse.status})`);
-  }
-
-  const csrfData = await csrfResponse.json();
-  if (!csrfData?.csrfToken) {
-    throw new Error('csrf token ausente');
-  }
-
-  const csrfCookies = getSetCookieValues(csrfResponse.headers);
-  const body = new URLSearchParams({
-    email: normalizeEmail(loginEmail),
-    loginToken,
-    csrfToken: csrfData.csrfToken,
-    callbackUrl: `${baseUrl}/`,
-    json: 'true',
-  }).toString();
-
-  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Cookie: toCookieHeader(csrfCookies),
-    },
-    body,
-    redirect: 'manual',
-  });
-
-  const location = loginResponse.headers.get('location') || '';
-  const loginCookies = getSetCookieValues(loginResponse.headers);
-
-  return {
-    ok: loginResponse.status === 302 && !/error=/i.test(location),
-    status: loginResponse.status,
-    location,
-    cookieHeader: toCookieHeader([...csrfCookies, ...loginCookies]),
-  };
-}
-
-async function loginForSmoke() {
-  const credentialsLogin = await loginByCredentials();
-  if (credentialsLogin.ok) {
-    return { ...credentialsLogin, method: 'credentials' };
-  }
-
-  const tokenData = await createOneTimeLoginToken(adminEmail);
-  if (!tokenData?.token) {
-    return { ...credentialsLogin, method: 'credentials' };
-  }
-
-  const tokenLogin = await loginByOneTimeToken(tokenData.email, tokenData.token);
-  if (tokenLogin.ok) {
-    return { ...tokenLogin, method: 'login-token' };
-  }
-
-  return { ...credentialsLogin, method: 'credentials' };
-}
+const requireRouteChange = String(process.env.SMOKE_DOCK_REQUIRE_ROUTE_CHANGE || "").trim() === "1";
+const waitAfterClickMs = Number.parseInt(String(process.env.SMOKE_DOCK_WAIT_AFTER_CLICK_MS || "1800"), 10);
+const screenshotPath =
+  process.env.SMOKE_DOCK_SCREENSHOT_PATH ||
+  path.join(os.tmpdir(), `pf-control-dock-smoke-${Date.now()}.png`);
 
 async function ensureParentDir(filePath) {
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 }
 
+async function readDockToken(page) {
+  const maxAttempts = 4;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await page.evaluate(() => window.__pfDockSmokeToken || null);
+    } catch (error) {
+      const message = String(error || "");
+      const isContextDestroyed = message.includes("Execution context was destroyed");
+      const hasMoreAttempts = attempt < maxAttempts;
+
+      if (!isContextDestroyed || !hasMoreAttempts) {
+        throw error;
+      }
+
+      await page.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(150);
+    }
+  }
+
+  return null;
+}
+
 async function main() {
-  if (!adminEmail) {
-    throw new Error('SMOKE_MAIN_EMAIL es requerido.');
-  }
-
   if (dockTargetHrefs.length === 0) {
-    throw new Error('SMOKE_DOCK_TARGET_HREFS no tiene destinos validos.');
+    throw new Error("SMOKE_DOCK_TARGET_HREFS no tiene destinos validos.");
   }
 
-  const login = await loginForSmoke();
+  const login = await loginForSmoke({ prisma });
   if (!login.ok) {
     throw new Error(`admin login fallo: status=${login.status} location=${login.location}`);
   }
 
+  const baseUrl = login.baseUrl;
   const browser = await chromium.launch({ headless: true });
   let context;
 
@@ -248,7 +82,7 @@ async function main() {
     });
 
     const page = await context.newPage();
-    await page.goto(`${baseUrl}${dockFromPath}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.goto(`${baseUrl}${dockFromPath}`, { waitUntil: "domcontentloaded", timeout: 45000 });
     await page.waitForTimeout(1200);
 
     const failureReasons = [];
@@ -256,6 +90,7 @@ async function main() {
       window.__pfDockSmokeToken = Math.random().toString(36).slice(2);
       return window.__pfDockSmokeToken;
     });
+
     const steps = [];
 
     for (const targetHref of dockTargetHrefs) {
@@ -265,7 +100,7 @@ async function main() {
       const dockLinkCount = await dockLink.count();
 
       if (dockLinkCount === 0) {
-        failureReasons.push(`dock link no encontrado: nav a[href="${targetHref}"]`);
+        failureReasons.push(`dock link no encontrado: nav a[href=\"${targetHref}\"]`);
         steps.push({
           targetHref,
           found: 0,
@@ -279,10 +114,11 @@ async function main() {
 
       await dockLink.click({ force: true });
       await page.waitForTimeout(Number.isFinite(waitAfterClickMs) ? waitAfterClickMs : 1800);
+      await page.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => {});
 
       const stepAfterUrl = page.url();
       const stepAfterPath = new URL(stepAfterUrl).pathname;
-      const tokenAfter = await page.evaluate(() => window.__pfDockSmokeToken || null);
+      const tokenAfter = await readDockToken(page);
       const tokenPreserved = tokenAfter === tokenBefore;
       const routeChanged = stepAfterPath !== stepBeforePath;
 
@@ -308,7 +144,7 @@ async function main() {
     await page.screenshot({ path: screenshotPath, fullPage: true });
 
     const finalUrl = page.url();
-    const tokenAfterAll = await page.evaluate(() => window.__pfDockSmokeToken || null);
+    const tokenAfterAll = await readDockToken(page);
     const tokenPreserved = tokenAfterAll === tokenBefore;
 
     const output = {
@@ -344,9 +180,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
-  process.exit(1);
-}).finally(async () => {
-  await prisma.$disconnect().catch(() => {});
-});
+main()
+  .catch((error) => {
+    console.error(JSON.stringify({ ok: false, error: String(error) }, null, 2));
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect().catch(() => {});
+  });
