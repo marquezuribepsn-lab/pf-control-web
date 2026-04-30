@@ -1076,6 +1076,19 @@ export default function AlumnoVisionClient({
     }
   }, [activeCategory]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const expectedPath = `/alumnos/${activeCategory}`;
+    if (window.location.pathname === expectedPath) {
+      return;
+    }
+
+    const currentUrl = new URL(window.location.href);
+    const nextUrl = `${expectedPath}${currentUrl.search}`;
+    window.history.replaceState(window.history.state ?? null, "", nextUrl);
+  }, [activeCategory]);
+
   const alumnoProfile = useMemo(() => {
     const records = (alumnos as AlumnoRecord[]) || [];
 
