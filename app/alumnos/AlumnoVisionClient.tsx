@@ -3854,7 +3854,34 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "rutina" ? (
-            <div className="pf-a3-routine-shell">
+            <div
+              className="pf-a3-routine-shell"
+              onTouchStart={handleRoutineTouchStart}
+              onTouchMove={handleRoutineTouchMove}
+              onTouchEnd={handleRoutineTouchEnd}
+              onTouchCancel={handleRoutineTouchEnd}
+            >
+              <div
+                className={`pf-a3-routine-pull-indicator ${
+                  routinePullRefreshing
+                    ? "pf-a3-routine-pull-indicator-refreshing"
+                    : routinePullDistance >= ROUTINE_PULL_THRESHOLD
+                    ? "pf-a3-routine-pull-indicator-ready"
+                    : ""
+                }`}
+                style={{
+                  transform: `translateY(${Math.min(routinePullDistance, ROUTINE_PULL_MAX_DISTANCE)}px)`,
+                  opacity: routinePullRefreshing || routinePullDistance > 0 ? 1 : 0,
+                }}
+                aria-live="polite"
+              >
+                {routinePullRefreshing
+                  ? "Actualizando..."
+                  : routinePullDistance >= ROUTINE_PULL_THRESHOLD
+                  ? "Solta para actualizar"
+                  : "Desliza para refrescar"}
+              </div>
+
               <section className="pf-a3-routine-overview">
                 <div className="pf-a3-routine-nav" aria-label="Navegacion de entrenamiento">
                   <ReliableActionButton
@@ -3895,6 +3922,7 @@ export default function AlumnoVisionClient({
                       </span>
                       <p className="pf-a3-routine-overview-kicker">{routineCoachLabel}</p>
                     </div>
+                    <p className="pf-a3-routine-sync-label">{routineSyncStatusLabel}</p>
                   </div>
 
                   <div className="pf-a3-routine-overview-actions">
@@ -3958,7 +3986,57 @@ export default function AlumnoVisionClient({
                 </div>
               </section>
 
-              {effectiveRoutineSessions.length > 0 ? (
+              {hasWeekPlanRoutine ? (
+                <section className="pf-a3-routine-session-strip">
+                  <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => handleRoutineWeekStep(-1)}
+                      disabled={selectedRoutineWeekIndex <= 0}
+                      className="pf-a3-routine-week-arrow"
+                      aria-label="Semana anterior"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+                    <p className="pf-a3-routine-week-label">{routineWeekLabel}</p>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => handleRoutineWeekStep(1)}
+                      disabled={selectedRoutineWeekIndex < 0 || selectedRoutineWeekIndex >= routineWeeks.length - 1}
+                      className="pf-a3-routine-week-arrow"
+                      aria-label="Semana siguiente"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+                  </div>
+
+                  <div className="pf-a3-routine-session-scroll" aria-label="Dias de la semana">
+                    {routineDaysForSelectedWeek.map((day, dayIndex) => {
+                      const isSelected = day.id === selectedRoutineDay?.id;
+                      const dayLabel = String(day.dia || "").trim() || `Dia ${dayIndex + 1}`;
+
+                      return (
+                        <ReliableActionButton
+                          key={`week-day-${day.id}`}
+                          type="button"
+                          onClick={() => handleRoutineDaySelect(day.id)}
+                          className={`pf-a3-routine-session-chip ${
+                            isSelected ? "pf-a3-routine-session-chip-active" : ""
+                          }`}
+                          aria-label={`Abrir ${dayLabel}`}
+                          title={dayLabel}
+                        >
+                          {dayLabel}
+                        </ReliableActionButton>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : effectiveRoutineSessions.length > 0 ? (
                 <section className="pf-a3-routine-session-strip">
                   <p className="pf-a3-routine-session-strip-title">Semana 1</p>
                   <div className="pf-a3-routine-session-scroll">
@@ -3986,8 +4064,12 @@ export default function AlumnoVisionClient({
 
               {!selectedRoutineEntry ? (
                 <section className="pf-a3-routine-empty">
-                  <h2>No hay sesiones cargadas</h2>
-                  <p>Cuando tu profe asigne una sesion, la rutina aparecera aca automaticamente.</p>
+                  <h2>{hasWeekPlanRoutine ? "Sin bloques para este dia" : "No hay sesiones cargadas"}</h2>
+                  <p>
+                    {hasWeekPlanRoutine
+                      ? "Tu profe aun no cargo ejercicios en este dia. Cambia de dia o actualiza para sincronizar."
+                      : "Cuando tu profe asigne una sesion, la rutina aparecera aca automaticamente."}
+                  </p>
                 </section>
               ) : (
                 <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
@@ -4013,10 +4095,12 @@ export default function AlumnoVisionClient({
                           {visibleExercises.length > 0 ? (
                             <div className="pf-a3-routine-exercise-list">
                               {visibleExercises.map((exercise, index) => {
+                                const exerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
                                 const exerciseDetail = exercise.ejercicioId
                                   ? ejerciciosById.get(exercise.ejercicioId) || null
                                   : null;
                                 const exerciseName = exerciseDetail?.nombre || `Ejercicio ${index + 1}`;
+                                const exerciseVideoUrl = String(exerciseDetail?.videoUrl || "").trim();
                                 const rirMetric = Array.isArray(exercise.metricas)
                                   ? exercise.metricas.find((metric) =>
                                       normalizePersonKey(metric.nombre).includes("rir")
@@ -4032,6 +4116,34 @@ export default function AlumnoVisionClient({
                                     ].filter(Boolean)
                                   )
                                 ).slice(0, 6);
+                                const exerciseKey = buildRoutineExerciseKey(
+                                  selectedRoutineEntry.sesion.id,
+                                  selectedRoutineEntry.weekId,
+                                  selectedRoutineEntry.dayId,
+                                  block.id,
+                                  exerciseId,
+                                  index
+                                );
+
+                                const exerciseLogTarget: RoutineExerciseLogTarget = {
+                                  sessionId: selectedRoutineEntry.sesion.id,
+                                  sessionTitle: selectedRoutineEntry.sesion.titulo,
+                                  weekId: selectedRoutineEntry.weekId,
+                                  weekName: selectedRoutineEntry.weekName,
+                                  dayId: selectedRoutineEntry.dayId,
+                                  dayName: selectedRoutineEntry.dayName,
+                                  blockId: block.id,
+                                  blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+                                  exerciseId,
+                                  exerciseName,
+                                  exerciseKey,
+                                  prescribedSeries: String(exercise.series || "").trim(),
+                                  prescribedRepeticiones: String(exercise.repeticiones || "").trim(),
+                                  prescribedCarga: String(exercise.carga || "").trim(),
+                                  prescribedDescanso: String(exercise.descanso || "").trim(),
+                                  prescribedRir: String(rirMetric?.valor || "").trim(),
+                                  suggestedVideoUrl: exerciseVideoUrl,
+                                };
 
                                 return (
                                   <article
@@ -4044,7 +4156,14 @@ export default function AlumnoVisionClient({
                                         {getInitials(exerciseName)}
                                       </span>
                                       <div className="min-w-0">
-                                        <p className="pf-a3-routine-exercise-name">{exerciseName}</p>
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
+                                          className="pf-a3-routine-exercise-name-btn"
+                                          aria-label={`Registrar cargas de ${exerciseName}`}
+                                        >
+                                          <p className="pf-a3-routine-exercise-name">{exerciseName}</p>
+                                        </ReliableActionButton>
                                         <p className="pf-a3-routine-exercise-desc">
                                           {exerciseDetail?.objetivo || "Ejecuta con tecnica y control"}
                                         </p>
@@ -4076,6 +4195,25 @@ export default function AlumnoVisionClient({
                                         <span>Obs.:</span>
                                         <strong>{exercise.observaciones || "S/D"}</strong>
                                       </div>
+                                    </div>
+
+                                    <div className="pf-a3-routine-exercise-actions">
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
+                                        className="pf-a3-routine-exercise-action-btn"
+                                      >
+                                        Cargar registro
+                                      </ReliableActionButton>
+                                      {exerciseVideoUrl ? (
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => openRoutineVideoExternal(exerciseVideoUrl)}
+                                          className="pf-a3-routine-exercise-action-btn"
+                                        >
+                                          Abrir video
+                                        </ReliableActionButton>
+                                      ) : null}
                                     </div>
 
                                     {exerciseTags.length > 0 ? (
@@ -4125,6 +4263,212 @@ export default function AlumnoVisionClient({
                   ) : null}
                 </article>
               )}
+
+              {routineExerciseLogTarget ? (
+                <div className="pf-a3-routine-log-overlay" role="dialog" aria-modal="true">
+                  <article className="pf-a3-routine-log-panel">
+                    <div className="pf-a3-routine-log-head">
+                      <div className="min-w-0">
+                        <p className="pf-a3-routine-log-kicker">Registrar carga</p>
+                        <h3 className="pf-a3-routine-log-title">{routineExerciseLogTarget.exerciseName}</h3>
+                        <p className="pf-a3-routine-log-meta">
+                          {routineExerciseLogTarget.weekName || routineWeekLabel}
+                          {routineExerciseLogTarget.dayName ? ` · ${routineExerciseLogTarget.dayName}` : ""}
+                          {routineExerciseLogTarget.blockTitle
+                            ? ` · ${routineExerciseLogTarget.blockTitle}`
+                            : ""}
+                        </p>
+                      </div>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={closeRoutineExerciseLogPanel}
+                        className="pf-a3-routine-log-close"
+                        aria-label="Cerrar registro"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                        </svg>
+                      </ReliableActionButton>
+                    </div>
+
+                    {routineExerciseVideoSource.kind !== "none" ? (
+                      <div className="pf-a3-routine-log-video-wrap">
+                        {routineExerciseVideoSource.kind === "iframe" ? (
+                          <iframe
+                            src={routineExerciseVideoSource.src}
+                            title={`video-${routineExerciseLogTarget.exerciseKey}`}
+                            className="pf-a3-routine-log-video-frame"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          />
+                        ) : routineExerciseVideoSource.kind === "video" ? (
+                          <video
+                            controls
+                            className="pf-a3-routine-log-video-frame"
+                            src={routineExerciseVideoSource.src}
+                          />
+                        ) : (
+                          <div className="pf-a3-routine-log-video-empty">
+                            Vista previa no disponible para este link.
+                          </div>
+                        )}
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => openRoutineVideoExternal(routineExerciseVideoCandidate)}
+                          className="pf-a3-routine-log-link-btn"
+                        >
+                          {routineExerciseVideoCandidate.toLowerCase().includes("youtu")
+                            ? "Abrir en YouTube"
+                            : "Abrir video"}
+                        </ReliableActionButton>
+                      </div>
+                    ) : null}
+
+                    <div className="pf-a3-routine-log-grid">
+                      <label className="pf-a3-routine-log-field">
+                        <span>Fecha</span>
+                        <input
+                          type="date"
+                          value={routineExerciseLogDraft.fecha}
+                          onChange={(event) =>
+                            setRoutineExerciseLogDraft((previous) => ({
+                              ...previous,
+                              fecha: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <label className="pf-a3-routine-log-field">
+                        <span>Series</span>
+                        <input
+                          value={routineExerciseLogDraft.series}
+                          onChange={(event) =>
+                            setRoutineExerciseLogDraft((previous) => ({
+                              ...previous,
+                              series: event.target.value,
+                            }))
+                          }
+                          placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
+                        />
+                      </label>
+                      <label className="pf-a3-routine-log-field">
+                        <span>Repeticiones</span>
+                        <input
+                          value={routineExerciseLogDraft.repeticiones}
+                          onChange={(event) =>
+                            setRoutineExerciseLogDraft((previous) => ({
+                              ...previous,
+                              repeticiones: event.target.value,
+                            }))
+                          }
+                          placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
+                        />
+                      </label>
+                      <label className="pf-a3-routine-log-field">
+                        <span>Carga (kg)</span>
+                        <input
+                          value={routineExerciseLogDraft.pesoKg}
+                          onChange={(event) =>
+                            setRoutineExerciseLogDraft((previous) => ({
+                              ...previous,
+                              pesoKg: event.target.value,
+                            }))
+                          }
+                          placeholder={routineExerciseLogTarget.prescribedCarga || "0"}
+                        />
+                      </label>
+                    </div>
+
+                    <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                      <span>Comentarios</span>
+                      <textarea
+                        rows={2}
+                        value={routineExerciseLogDraft.comentarios}
+                        onChange={(event) =>
+                          setRoutineExerciseLogDraft((previous) => ({
+                            ...previous,
+                            comentarios: event.target.value,
+                          }))
+                        }
+                        placeholder="Como te sentiste, tecnica, molestias o feedback para el profe"
+                      />
+                    </label>
+
+                    <div className="pf-a3-routine-log-row">
+                      <label className="pf-a3-routine-log-check">
+                        <input
+                          type="checkbox"
+                          checked={routineExerciseLogDraft.molestia}
+                          onChange={(event) =>
+                            setRoutineExerciseLogDraft((previous) => ({
+                              ...previous,
+                              molestia: event.target.checked,
+                            }))
+                          }
+                        />
+                        Reportar molestia
+                      </label>
+
+                      <label className="pf-a3-routine-log-upload">
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/ogg,video/*"
+                          onChange={handleRoutineVideoUpload}
+                        />
+                        Subir video
+                      </label>
+                    </div>
+
+                    {routineExerciseLogDraft.videoFileName ? (
+                      <p className="pf-a3-routine-log-upload-note">
+                        Archivo adjunto: {routineExerciseLogDraft.videoFileName}
+                      </p>
+                    ) : null}
+
+                    <div className="pf-a3-routine-log-actions">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={closeRoutineExerciseLogPanel}
+                        className="pf-a3-routine-log-secondary-btn"
+                      >
+                        Cerrar
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={saveRoutineExerciseLog}
+                        className="pf-a3-routine-log-primary-btn"
+                        disabled={routineExerciseLogSaving}
+                      >
+                        {routineExerciseLogSaving ? "Guardando..." : "Guardar registro"}
+                      </ReliableActionButton>
+                    </div>
+
+                    {routineExerciseLogStatus ? (
+                      <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
+                    ) : null}
+
+                    {routineExerciseRecentLogs.length > 0 ? (
+                      <div className="pf-a3-routine-log-history">
+                        <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
+                        <ul>
+                          {routineExerciseRecentLogs.map((log) => (
+                            <li key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}>
+                              <span>
+                                {log.fecha
+                                  ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                  : "Sin fecha"}
+                              </span>
+                              <strong>
+                                {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
+                              </strong>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </article>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
