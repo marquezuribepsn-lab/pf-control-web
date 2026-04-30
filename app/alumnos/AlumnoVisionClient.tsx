@@ -1567,6 +1567,27 @@ export default function AlumnoVisionClient({
     });
   }, [activeCategory, matchIdentityName, routineSessionsForDetails]);
 
+  useEffect(() => {
+    if (activeCategory !== "rutina" || !isUltraMobile) return;
+
+    const firstEntry = routineEntries[0];
+    const firstBlock = firstEntry?.blocks?.[0];
+
+    if (!firstEntry || !firstBlock) return;
+
+    const firstBlockKey = `${firstEntry.sesion.id}-${firstBlock.id}`;
+
+    setExpandedRoutineBlocks((previous) => {
+      if (Object.keys(previous).length > 0) {
+        return previous;
+      }
+
+      return {
+        [firstBlockKey]: true,
+      };
+    });
+  }, [activeCategory, isUltraMobile, routineEntries]);
+
   const loadStorageState = useCallback(() => {
     const clienteMetaRows = readArrayFromStorage<ClienteMetaLite>(CLIENTE_META_KEY);
     const matchedMeta =
