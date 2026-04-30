@@ -30,6 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local emulator artifacts and workspace bundles
+emulator-*.png
+emulator-*.xml
+pf-control-web-workspace-completo-*.zip
+
 # env files (can opt-in for committing if needed)
 .env*
 
