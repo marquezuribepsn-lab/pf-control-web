@@ -4,7 +4,7 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
-import { useSharedState } from "@/components/useSharedState";
+import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
 import type {
   Alumno,
   BloqueEntrenamiento,
@@ -87,14 +87,29 @@ type NutritionAssignmentLite = {
 type WorkoutLogLite = {
   id?: string;
   alumnoNombre?: string;
+  sessionId?: string;
   sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId?: string;
   blockTitle?: string;
+  exerciseId?: string;
+  exerciseKey?: string;
   exerciseName?: string;
   fecha?: string;
   createdAt?: string;
   series?: number;
   repeticiones?: number;
   pesoKg?: number;
+  molestia?: boolean;
+  comentarios?: string;
+  comentario?: string;
+  videoUrl?: string;
+  videoDataUrl?: string;
+  videoFileName?: string;
+  videoMimeType?: string;
 };
 
 type AnthropometryEntryLite = {
@@ -182,6 +197,105 @@ type RoutineEntry = {
   prescripcion: PrescripcionSesionPersona | null;
   blocks: RoutineBlock[];
   totalExercises: number;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  source: "session" | "week-plan";
+};
+
+type WeekPlanPersonType = "jugadoras" | "alumnos";
+
+type WeekExerciseLite = {
+  id?: string;
+  ejercicioId?: string;
+  series?: string | number;
+  repeticiones?: string | number;
+  descanso?: string;
+  carga?: string;
+  observaciones?: string;
+  metricas?: Array<{
+    nombre?: string;
+    valor?: string;
+  }>;
+};
+
+type WeekBlockLite = {
+  id: string;
+  titulo: string;
+  objetivo: string;
+  ejercicios: WeekExerciseLite[];
+};
+
+type WeekDayTrainingLite = {
+  titulo?: string;
+  descripcion?: string;
+  duracion?: string;
+  bloques: WeekBlockLite[];
+};
+
+type WeekDayPlanLite = {
+  id: string;
+  dia: string;
+  planificacion: string;
+  objetivo: string;
+  sesionId: string;
+  oculto?: boolean;
+  entrenamiento?: WeekDayTrainingLite;
+};
+
+type WeekPlanLite = {
+  id: string;
+  nombre: string;
+  objetivo: string;
+  oculto?: boolean;
+  dias: WeekDayPlanLite[];
+};
+
+type WeekPersonPlanLite = {
+  ownerKey: string;
+  tipo: WeekPlanPersonType;
+  nombre: string;
+  categoria?: string;
+  semanas: WeekPlanLite[];
+};
+
+type WeekStoreLite = {
+  version: number;
+  planes: WeekPersonPlanLite[];
+};
+
+type RoutineExerciseLogTarget = {
+  sessionId: string;
+  sessionTitle: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId: string;
+  blockTitle: string;
+  exerciseId: string;
+  exerciseName: string;
+  exerciseKey: string;
+  prescribedSeries?: string;
+  prescribedRepeticiones?: string;
+  prescribedCarga?: string;
+  prescribedDescanso?: string;
+  prescribedRir?: string;
+  suggestedVideoUrl?: string;
+};
+
+type RoutineExerciseLogDraft = {
+  fecha: string;
+  series: string;
+  repeticiones: string;
+  pesoKg: string;
+  comentarios: string;
+  molestia: boolean;
+  videoUrl: string;
+  videoDataUrl: string;
+  videoFileName: string;
+  videoMimeType: string;
 };
 
 type IdentityRef = {
@@ -248,11 +362,15 @@ const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const MUSIC_PLAYLISTS_KEY = "pf-control-music-playlists-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
+const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
 const ULTRA_MOBILE_INITIAL_BLOCKS = 1;
 const ULTRA_MOBILE_ROUTINE_FALLBACK_SESSIONS = 2;
 const ULTRA_MOBILE_STORAGE_REFRESH_MS = 6000;
+const ROUTINE_PULL_THRESHOLD = 74;
+const ROUTINE_PULL_MAX_DISTANCE = 120;
+const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
 const DIRECT_AUDIO_EXTENSIONS = [".mp3", ".m4a", ".aac", ".wav", ".ogg", ".flac"];
 
 const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
