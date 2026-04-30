@@ -115,7 +115,7 @@ async function main() {
     });
     await page.waitForTimeout(Number.isFinite(waitAfterLoadMs) ? waitAfterLoadMs : 1200);
 
-    const loadedPath = new URL(page.url()).pathname;
+    const loadedPath = await page.evaluate(() => window.location.pathname);
     const failureReasons = [];
 
     if (!loadedPath.startsWith("/alumnos")) {
@@ -141,11 +141,14 @@ async function main() {
 
     const finalUrl = page.url();
     const finalPath = new URL(finalUrl).pathname;
+    const finalPathFromWindow = await page.evaluate(() => window.location.pathname);
     const tokenAfter = await page.evaluate(() => window.__pfAlumnoBackSmokeToken || null);
     const tokenPreserved = tokenAfter === tokenBefore;
 
-    if (backButtonFound > 0 && finalPath !== expectedTargetPath) {
-      failureReasons.push(`el boton no navego a ${expectedTargetPath}; ruta final ${finalPath}`);
+    if (backButtonFound > 0 && finalPathFromWindow !== expectedTargetPath) {
+      failureReasons.push(
+        `el boton no navego a ${expectedTargetPath}; ruta final ${finalPathFromWindow}`
+      );
     }
 
     if (!tokenPreserved) {
@@ -170,6 +173,7 @@ async function main() {
       loadedPath,
       finalUrl,
       finalPath,
+      finalPathFromWindow,
       backButtonFound,
       tokenPreserved,
       screenshotPath,
