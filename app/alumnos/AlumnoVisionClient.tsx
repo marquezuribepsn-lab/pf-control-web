@@ -2274,6 +2274,17 @@ export default function AlumnoVisionClient({
 
   const selectedRoutineEntry = routineEntries[0] || null;
 
+  const routineVisibleBlocks = useMemo(() => {
+    if (!selectedRoutineEntry) return [];
+    if (!isUltraMobile) return selectedRoutineEntry.blocks;
+    return selectedRoutineEntry.blocks.slice(0, Math.max(1, visibleRoutineBlockCount));
+  }, [isUltraMobile, selectedRoutineEntry, visibleRoutineBlockCount]);
+
+  const routineRemainingBlocks = useMemo(() => {
+    if (!selectedRoutineEntry) return 0;
+    return Math.max(0, selectedRoutineEntry.blocks.length - routineVisibleBlocks.length);
+  }, [routineVisibleBlocks.length, selectedRoutineEntry]);
+
   const routineUpdatedAtLabel = useMemo(() => {
     const updatedAt = selectedRoutineEntry?.prescripcion?.createdAt;
     if (updatedAt) {
