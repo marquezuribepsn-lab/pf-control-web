@@ -3407,6 +3407,8 @@ export default function AlumnoVisionClient({
     },
   ];
 
+  const isRoutineLogPanelOpen = Boolean(routineExerciseLogTarget);
+
   return (
     <main className="pf-alumno-main pf-alumno-v2">
       <div className="pf-a2-shell">
@@ -3444,7 +3446,7 @@ export default function AlumnoVisionClient({
                   onPointerUp={() => goToHomeCategory()}
                   onTouchEnd={() => goToHomeCategory()}
                   data-nav-href="/alumnos/inicio"
-                  className="pf-a2-back-btn mt-0.5"
+                  className={`pf-a2-back-btn mt-0.5 ${isRoutineLogPanelOpen ? "pf-a2-back-btn-suspended" : ""}`}
                   aria-label="Volver al inicio"
                   title="Volver al inicio"
                 >
@@ -4289,8 +4291,18 @@ export default function AlumnoVisionClient({
               )}
 
               {routineExerciseLogTarget ? (
-                <div className="pf-a3-routine-log-overlay" role="dialog" aria-modal="true">
-                  <article className="pf-a3-routine-log-panel">
+                <div
+                  className={`pf-a3-routine-log-overlay ${
+                    isUltraMobile ? "pf-a3-routine-log-overlay-mobile" : ""
+                  }`}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <article
+                    className={`pf-a3-routine-log-panel ${
+                      isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
+                    }`}
+                  >
                     <div className="pf-a3-routine-log-head">
                       <div className="min-w-0">
                         <p className="pf-a3-routine-log-kicker">Registrar carga</p>
