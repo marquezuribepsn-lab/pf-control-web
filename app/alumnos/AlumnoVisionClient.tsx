@@ -2946,6 +2946,45 @@ export default function AlumnoVisionClient({
     return `${formatDateTime(new Date(nowTs))} hs`;
   }, [nowTs, selectedRoutineEntry]);
 
+  const selectedRoutineWeekIndex = useMemo(() => {
+    if (!selectedRoutineWeek || routineWeeks.length === 0) {
+      return -1;
+    }
+
+    return routineWeeks.findIndex((week) => week.id === selectedRoutineWeek.id);
+  }, [routineWeeks, selectedRoutineWeek]);
+
+  const routineWeekLabel = useMemo(() => {
+    if (!selectedRoutineWeek) {
+      return "Semana 1";
+    }
+
+    const rawName = String(selectedRoutineWeek.nombre || "").trim();
+    if (rawName) return rawName;
+
+    if (selectedRoutineWeekIndex >= 0) {
+      return `Semana ${selectedRoutineWeekIndex + 1}`;
+    }
+
+    return "Semana 1";
+  }, [selectedRoutineWeek, selectedRoutineWeekIndex]);
+
+  const routineSyncStatusLabel = useMemo(() => {
+    if (!weekPlanSyncLoaded) {
+      return "Sincronizando plan semanal...";
+    }
+
+    if (!workoutLogsSyncLoaded) {
+      return "Sincronizando registros...";
+    }
+
+    if (hasWeekPlanRoutine) {
+      return "Plan sincronizado con admin";
+    }
+
+    return "Esperando plan semanal del profe";
+  }, [hasWeekPlanRoutine, weekPlanSyncLoaded, workoutLogsSyncLoaded]);
+
   const routineCoachLabel = useMemo(() => {
     const fallbackCoach = String(coachContact?.nombre || "PF Control").trim();
     if (fallbackCoach) return fallbackCoach;
@@ -2963,17 +3002,316 @@ export default function AlumnoVisionClient({
     });
   }, [expandedRoutineBlocks, selectedRoutineEntry]);
 
+  const routineExerciseVideoCandidate = useMemo(() => {
+    if (!routineExerciseLogTarget) {
+      return "";
+    }
+
+    return (
+      String(routineExerciseLogDraft.videoDataUrl || "").trim() ||
+      String(routineExerciseLogDraft.videoUrl || "").trim() ||
+      String(routineExerciseLogTarget.suggestedVideoUrl || "").trim()
+    );
+  }, [routineExerciseLogDraft.videoDataUrl, routineExerciseLogDraft.videoUrl, routineExerciseLogTarget]);
+
+  const routineExerciseVideoSource = useMemo(() => {
+    return resolveRoutineExerciseVideoSource(routineExerciseVideoCandidate);
+  }, [routineExerciseVideoCandidate]);
+
+  const routineExerciseRecentLogs = useMemo(() => {
+    if (!routineExerciseLogTarget) {
+      return [];
+    }
+
+    return workoutLogs
+      .filter((log) => {
+        if (log.exerciseKey && routineExerciseLogTarget.exerciseKey) {
+          return log.exerciseKey === routineExerciseLogTarget.exerciseKey;
+        }
+
+        const byExerciseId =
+          String(log.exerciseId || "").trim() &&
+          String(log.exerciseId || "").trim() === routineExerciseLogTarget.exerciseId;
+        const byExerciseName = namesLikelyMatch(log.exerciseName || "", routineExerciseLogTarget.exerciseName);
+
+        if (byExerciseId || byExerciseName) {
+          return true;
+        }
+
+        return false;
+      })
+      .slice(0, 6);
+  }, [routineExerciseLogTarget, workoutLogs]);
+
+  const openRoutineExerciseLogPanel = useCallback((target: RoutineExerciseLogTarget) => {
+    setRoutineExerciseLogStatus("");
+    setRoutineExerciseLogTarget(target);
+    setRoutineExerciseLogDraft(
+      createRoutineExerciseLogDraft({
+        series: String(target.prescribedSeries || "").trim(),
+        repeticiones: String(target.prescribedRepeticiones || "").trim(),
+        pesoKg: String(target.prescribedCarga || "").trim(),
+        videoUrl: String(target.suggestedVideoUrl || "").trim(),
+      })
+    );
+  }, []);
+
+  const closeRoutineExerciseLogPanel = useCallback(() => {
+    setRoutineExerciseLogTarget(null);
+    setRoutineExerciseLogStatus("");
+    setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
+  }, []);
+
   const handleRoutineSessionSelect = useCallback((sessionId: string) => {
     setSelectedRoutineSessionId(sessionId);
+    setRoutineExerciseLogTarget(null);
+    setRoutineExerciseLogStatus("");
     setExpandedRoutineBlocks({});
     setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
   }, []);
 
-  const handleRoutineRefresh = useCallback(() => {
+  const handleRoutineWeekStep = useCallback(
+    (step: -1 | 1) => {
+      if (!selectedRoutineWeek || routineWeeks.length === 0) return;
+
+      const currentIndex = routineWeeks.findIndex((week) => week.id === selectedRoutineWeek.id);
+      if (currentIndex < 0) return;
+
+      const nextIndex = Math.max(0, Math.min(routineWeeks.length - 1, currentIndex + step));
+      const nextWeek = routineWeeks[nextIndex];
+      if (!nextWeek) return;
+
+      const visibleDays = (Array.isArray(nextWeek.dias) ? nextWeek.dias : []).filter((day) => !day.oculto);
+
+      setSelectedRoutineWeekId(nextWeek.id);
+      setSelectedRoutineDayId(visibleDays[0]?.id || null);
+      setRoutineExerciseLogTarget(null);
+      setRoutineExerciseLogStatus("");
+      setExpandedRoutineBlocks({});
+      setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+    },
+    [routineWeeks, selectedRoutineWeek]
+  );
+
+  const handleRoutineDaySelect = useCallback((dayId: string) => {
+    setSelectedRoutineDayId(dayId);
+    setRoutineExerciseLogTarget(null);
+    setRoutineExerciseLogStatus("");
     setExpandedRoutineBlocks({});
     setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+  }, []);
+
+  const triggerRoutineRefresh = useCallback(() => {
+    setRoutinePullRefreshing(true);
+    setRoutineExerciseLogStatus("");
+    setExpandedRoutineBlocks({});
+    setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+    setNowTs(Date.now());
     scheduleStorageRefresh();
+
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        setRoutinePullRefreshing(false);
+      }, 720);
+    } else {
+      setRoutinePullRefreshing(false);
+    }
   }, [scheduleStorageRefresh]);
+
+  const handleRoutineRefresh = useCallback(() => {
+    triggerRoutineRefresh();
+  }, [triggerRoutineRefresh]);
+
+  const handleRoutineTouchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (activeCategory !== "rutina") return;
+      if (typeof window === "undefined") return;
+      if (window.scrollY > 2) {
+        routinePullActiveRef.current = false;
+        routinePullStartYRef.current = null;
+        return;
+      }
+
+      const firstTouch = event.touches?.[0];
+      if (!firstTouch) return;
+
+      routinePullStartYRef.current = firstTouch.clientY;
+      routinePullActiveRef.current = true;
+    },
+    [activeCategory]
+  );
+
+  const handleRoutineTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (!routinePullActiveRef.current || routinePullRefreshing) return;
+
+    const firstTouch = event.touches?.[0];
+    if (!firstTouch) return;
+
+    const startY = routinePullStartYRef.current;
+    if (startY === null) return;
+
+    const delta = firstTouch.clientY - startY;
+    if (delta <= 0) {
+      routinePullDistanceRef.current = 0;
+      setRoutinePullDistance(0);
+      return;
+    }
+
+    const nextDistance = Math.min(ROUTINE_PULL_MAX_DISTANCE, delta * 0.55);
+    routinePullDistanceRef.current = nextDistance;
+    setRoutinePullDistance(nextDistance);
+
+    if (nextDistance > 0) {
+      event.preventDefault();
+    }
+  }, [routinePullRefreshing]);
+
+  const handleRoutineTouchEnd = useCallback(() => {
+    if (!routinePullActiveRef.current) return;
+
+    routinePullActiveRef.current = false;
+    routinePullStartYRef.current = null;
+
+    const shouldRefresh = routinePullDistanceRef.current >= ROUTINE_PULL_THRESHOLD;
+    routinePullDistanceRef.current = 0;
+    setRoutinePullDistance(0);
+
+    if (shouldRefresh) {
+      triggerRoutineRefresh();
+    }
+  }, [triggerRoutineRefresh]);
+
+  const handleRoutineVideoUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      if (file.size > MAX_WORKOUT_VIDEO_UPLOAD_BYTES) {
+        setRoutineExerciseLogStatus("El video supera 2 MB. Usa un clip mas corto o pega URL de YouTube.");
+        setRoutineExerciseLogDraft((previous) => ({
+          ...previous,
+          videoDataUrl: "",
+          videoFileName: "",
+          videoMimeType: "",
+        }));
+        event.target.value = "";
+        return;
+      }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        setRoutineExerciseLogDraft((previous) => ({
+          ...previous,
+          videoDataUrl: dataUrl,
+          videoFileName: file.name,
+          videoMimeType: file.type || "video/mp4",
+        }));
+        setRoutineExerciseLogStatus("Video adjuntado al registro.");
+      } catch {
+        setRoutineExerciseLogStatus("No se pudo leer el archivo de video.");
+      }
+    },
+    []
+  );
+
+  const openRoutineVideoExternal = useCallback((rawUrl: string) => {
+    const normalized = normalizeMusicUrl(String(rawUrl || ""));
+    if (!normalized || typeof window === "undefined") return;
+    window.open(normalized, "_blank", "noopener,noreferrer");
+  }, []);
+
+  const saveRoutineExerciseLog = useCallback(() => {
+    if (!routineExerciseLogTarget || routineExerciseLogSaving) {
+      return;
+    }
+
+    const parsedSeries =
+      Math.max(
+        1,
+        Math.round(
+          Number(
+            toSafeNumeric(routineExerciseLogDraft.series) ??
+              toSafeNumeric(routineExerciseLogTarget.prescribedSeries) ??
+              1
+          )
+        )
+      ) || 1;
+    const parsedRepeticiones =
+      Math.max(
+        0,
+        Math.round(
+          Number(
+            toSafeNumeric(routineExerciseLogDraft.repeticiones) ??
+              toSafeNumeric(routineExerciseLogTarget.prescribedRepeticiones) ??
+              0
+          )
+        )
+      ) || 0;
+    const parsedPeso = Math.max(
+      0,
+      Number(toSafeNumeric(routineExerciseLogDraft.pesoKg) ?? toSafeNumeric(routineExerciseLogTarget.prescribedCarga) ?? 0)
+    );
+    const cleanComentario = String(routineExerciseLogDraft.comentarios || "").trim();
+
+    const payload: WorkoutLogLite = {
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      alumnoNombre: profileName,
+      sessionId: routineExerciseLogTarget.sessionId,
+      sessionTitle: routineExerciseLogTarget.sessionTitle,
+      weekId: routineExerciseLogTarget.weekId,
+      weekName: routineExerciseLogTarget.weekName,
+      dayId: routineExerciseLogTarget.dayId,
+      dayName: routineExerciseLogTarget.dayName,
+      blockId: routineExerciseLogTarget.blockId,
+      blockTitle: routineExerciseLogTarget.blockTitle,
+      exerciseId: routineExerciseLogTarget.exerciseId,
+      exerciseName: routineExerciseLogTarget.exerciseName,
+      exerciseKey: routineExerciseLogTarget.exerciseKey,
+      fecha: String(routineExerciseLogDraft.fecha || "").trim() || getTodayDateInputValue(),
+      series: parsedSeries,
+      repeticiones: parsedRepeticiones,
+      pesoKg: parsedPeso,
+      molestia: Boolean(routineExerciseLogDraft.molestia),
+      comentarios: cleanComentario || undefined,
+      videoUrl: String(routineExerciseLogDraft.videoUrl || "").trim() || undefined,
+      videoDataUrl: String(routineExerciseLogDraft.videoDataUrl || "").trim() || undefined,
+      videoFileName: String(routineExerciseLogDraft.videoFileName || "").trim() || undefined,
+      videoMimeType: String(routineExerciseLogDraft.videoMimeType || "").trim() || undefined,
+      createdAt: new Date().toISOString(),
+    };
+
+    setRoutineExerciseLogSaving(true);
+    markManualSaveIntent(WORKOUT_LOGS_KEY);
+    setWorkoutLogsShared((previous) => [payload, ...normalizeWorkoutLogsLiteRows(previous)]);
+    setRoutineExerciseLogStatus(`Registro guardado para ${routineExerciseLogTarget.exerciseName}.`);
+    setRoutineExerciseLogDraft((previous) =>
+      createRoutineExerciseLogDraft({
+        fecha: previous.fecha,
+        series: previous.series,
+        repeticiones: previous.repeticiones,
+        pesoKg: "",
+        comentarios: "",
+        molestia: false,
+        videoUrl: previous.videoUrl,
+      })
+    );
+
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        setRoutineExerciseLogSaving(false);
+      }, 220);
+    } else {
+      setRoutineExerciseLogSaving(false);
+    }
+  }, [
+    profileName,
+    routineExerciseLogDraft,
+    routineExerciseLogSaving,
+    routineExerciseLogTarget,
+    setWorkoutLogsShared,
+  ]);
 
   const handleRoutineToggleAll = useCallback(() => {
     if (!selectedRoutineEntry) return;
