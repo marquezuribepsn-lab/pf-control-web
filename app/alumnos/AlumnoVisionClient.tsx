@@ -2272,6 +2272,61 @@ export default function AlumnoVisionClient({
     }));
   }, []);
 
+  const selectedRoutineEntry = routineEntries[0] || null;
+
+  const routineUpdatedAtLabel = useMemo(() => {
+    const updatedAt = selectedRoutineEntry?.prescripcion?.createdAt;
+    if (updatedAt) {
+      return `${formatDateTime(updatedAt)} hs`;
+    }
+    return `${formatDateTime(new Date(nowTs))} hs`;
+  }, [nowTs, selectedRoutineEntry]);
+
+  const routineCoachLabel = useMemo(() => {
+    const fallbackCoach = String(coachContact?.nombre || "PF Control").trim();
+    if (fallbackCoach) return fallbackCoach;
+    return "PF Control";
+  }, [coachContact?.nombre]);
+
+  const isRoutineFullyExpanded = useMemo(() => {
+    if (!selectedRoutineEntry || selectedRoutineEntry.blocks.length === 0) {
+      return false;
+    }
+
+    return selectedRoutineEntry.blocks.every((block) => {
+      const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
+      return Boolean(expandedRoutineBlocks[blockKey]);
+    });
+  }, [expandedRoutineBlocks, selectedRoutineEntry]);
+
+  const handleRoutineSessionSelect = useCallback((sessionId: string) => {
+    setSelectedRoutineSessionId(sessionId);
+    setExpandedRoutineBlocks({});
+    setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+  }, []);
+
+  const handleRoutineRefresh = useCallback(() => {
+    setExpandedRoutineBlocks({});
+    setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+    scheduleStorageRefresh();
+  }, [scheduleStorageRefresh]);
+
+  const handleRoutineToggleAll = useCallback(() => {
+    if (!selectedRoutineEntry) return;
+
+    const shouldExpand = !isRoutineFullyExpanded;
+    const nextState: Record<string, boolean> = {};
+
+    selectedRoutineEntry.blocks.forEach((block) => {
+      nextState[`${selectedRoutineEntry.sesion.id}-${block.id}`] = shouldExpand;
+    });
+
+    setExpandedRoutineBlocks((previous) => ({
+      ...previous,
+      ...nextState,
+    }));
+  }, [isRoutineFullyExpanded, selectedRoutineEntry]);
+
   const homeDockItems: Array<{ key: MainCategory; label: string; icon: ReactNode }> = [
     {
       key: "rutina",
