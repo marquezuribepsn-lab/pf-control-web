@@ -1,7 +1,6 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import ReliableLink from "@/components/ReliableLink";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
