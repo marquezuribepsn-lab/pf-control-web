@@ -3000,13 +3000,6 @@ export default function AlumnoVisionClient({
                 </section>
               ) : (
                 <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
-                  <div className="pf-a3-routine-session-context">
-                    <p>
-                      Dia activo: {selectedRoutineEntry.sesion.titulo || "Sesion"} · {selectedRoutineEntry.blocks.length} bloques ·{" "}
-                      {selectedRoutineEntry.totalExercises} ejercicios
-                    </p>
-                  </div>
-
                   <div className="pf-a3-routine-block-stack">
                     {routineVisibleBlocks.map((block, blockIndex) => {
                       const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
@@ -3019,14 +3012,12 @@ export default function AlumnoVisionClient({
                       return (
                         <section key={blockKey} className="pf-a3-routine-block">
                           <div className="pf-a3-routine-block-head">
-                            <div className="min-w-0">
-                              <p className="pf-a3-routine-block-kicker">Bloque {blockIndex + 1}</p>
-                              <h3 className="pf-a3-routine-block-title">{block.titulo || `Bloque ${blockIndex + 1}`}</h3>
-                              <p className="pf-a3-routine-block-goal">{block.objetivo || "Sin objetivo"}</p>
-                              {hasSupersetFlag ? <p className="pf-a3-routine-block-alert">Superserie</p> : null}
-                            </div>
+                            <h3 className="pf-a3-routine-block-title">{block.titulo || `Bloque ${blockIndex + 1}`}</h3>
                             <span className="pf-a3-routine-block-count">{block.ejercicios.length} ejercicios</span>
                           </div>
+
+                          {block.objetivo ? <p className="pf-a3-routine-block-goal">{block.objetivo}</p> : null}
+                          {hasSupersetFlag ? <p className="pf-a3-routine-block-alert">Superserie</p> : null}
 
                           {visibleExercises.length > 0 ? (
                             <div className="pf-a3-routine-exercise-list">
@@ -3070,30 +3061,30 @@ export default function AlumnoVisionClient({
                                     </div>
 
                                     <div className="pf-a3-routine-exercise-stats">
-                                      <p>
+                                      <div className="pf-a3-routine-exercise-stat">
                                         <span>Series:</span>
                                         <strong>{exercise.series || "S/D"}</strong>
-                                      </p>
-                                      <p>
+                                      </div>
+                                      <div className="pf-a3-routine-exercise-stat">
                                         <span>Rep.:</span>
                                         <strong>{exercise.repeticiones || "S/D"}</strong>
-                                      </p>
-                                      <p>
+                                      </div>
+                                      <div className="pf-a3-routine-exercise-stat">
                                         <span>Desc.:</span>
                                         <strong>{exercise.descanso || "S/D"}</strong>
-                                      </p>
-                                      <p>
-                                        <span>Rir:</span>
+                                      </div>
+                                      <div className="pf-a3-routine-exercise-stat">
+                                        <span>RIR:</span>
                                         <strong>{rirMetric?.valor || "S/D"}</strong>
-                                      </p>
-                                      <p>
+                                      </div>
+                                      <div className="pf-a3-routine-exercise-stat">
                                         <span>Carga (Kg):</span>
                                         <strong>{exercise.carga || "S/D"}</strong>
-                                      </p>
-                                      <p>
+                                      </div>
+                                      <div className="pf-a3-routine-exercise-stat">
                                         <span>Obs.:</span>
                                         <strong>{exercise.observaciones || "S/D"}</strong>
-                                      </p>
+                                      </div>
                                     </div>
 
                                     {exerciseTags.length > 0 ? (
