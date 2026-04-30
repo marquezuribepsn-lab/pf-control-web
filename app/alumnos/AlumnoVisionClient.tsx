@@ -4175,6 +4175,9 @@ export default function AlumnoVisionClient({
                                         <p className="pf-a3-routine-exercise-desc">
                                           {exerciseDetail?.objetivo || "Ejecuta con tecnica y control"}
                                         </p>
+                                        <p className="pf-a3-routine-exercise-cta">
+                                          Toca el nombre para ver video y registrar carga.
+                                        </p>
                                       </div>
                                     </div>
 
@@ -4203,25 +4206,6 @@ export default function AlumnoVisionClient({
                                         <span>Obs.:</span>
                                         <strong>{exercise.observaciones || "S/D"}</strong>
                                       </div>
-                                    </div>
-
-                                    <div className="pf-a3-routine-exercise-actions">
-                                      <ReliableActionButton
-                                        type="button"
-                                        onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
-                                        className="pf-a3-routine-exercise-action-btn"
-                                      >
-                                        Cargar registro
-                                      </ReliableActionButton>
-                                      {exerciseVideoUrl ? (
-                                        <ReliableActionButton
-                                          type="button"
-                                          onClick={() => openRoutineVideoExternal(exerciseVideoUrl)}
-                                          className="pf-a3-routine-exercise-action-btn"
-                                        >
-                                          Abrir video
-                                        </ReliableActionButton>
-                                      ) : null}
                                     </div>
 
                                     {exerciseTags.length > 0 ? (
