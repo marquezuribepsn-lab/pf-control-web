@@ -3455,7 +3455,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-toggle:hover,
 .pf-a3-routine-more:hover,
 .pf-a3-routine-session-chip:hover,
-.pf-a3-routine-icon-btn:hover {
+.pf-a3-routine-icon-btn:hover,
+.pf-a3-routine-week-arrow:hover,
+.pf-a3-routine-exercise-action-btn:hover {
   border-color: rgba(230, 214, 255, 0.88);
 }
 
