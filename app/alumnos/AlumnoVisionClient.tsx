@@ -2294,17 +2294,6 @@ export default function AlumnoVisionClient({
       setNutritionAssignedAt(assignedAt);
     }
 
-    if (shouldLoadWorkoutData) {
-      const logRows = readArrayFromStorage<WorkoutLogLite>(WORKOUT_LOGS_KEY)
-        .filter((item) => matchIdentityName(item.alumnoNombre))
-        .sort((a, b) => {
-          const left = getTimestamp(a.createdAt || a.fecha);
-          const right = getTimestamp(b.createdAt || b.fecha);
-          return right - left;
-        });
-      setWorkoutLogs(logRows);
-    }
-
     if (shouldLoadAnthropometryData) {
       const anthropometryRows = readArrayFromStorage<AnthropometryEntryLite>(ANTHROPOMETRY_KEY)
         .filter((item) => matchIdentityName(item.alumnoNombre))
@@ -2316,7 +2305,6 @@ export default function AlumnoVisionClient({
     matchIdentityName,
     shouldLoadAnthropometryData,
     shouldLoadNutritionData,
-    shouldLoadWorkoutData,
   ]);
 
   const scheduleStorageRefresh = useCallback(() => {
