@@ -1499,7 +1499,7 @@ export default function AlumnoVisionClient({
   }, [activeCategory, effectiveRoutineSessions, isUltraMobile, matchIdentityName]);
 
   useEffect(() => {
-    if (activeCategory !== "rutina" || !isUltraMobile) return;
+    if (activeCategory !== "rutina") return;
 
     if (effectiveRoutineSessions.length === 0) {
       setSelectedRoutineSessionId(null);
@@ -1513,20 +1513,16 @@ export default function AlumnoVisionClient({
 
       return effectiveRoutineSessions[0]?.id || null;
     });
-  }, [activeCategory, effectiveRoutineSessions, isUltraMobile]);
+  }, [activeCategory, effectiveRoutineSessions]);
 
   useEffect(() => {
-    if (activeCategory !== "rutina" || !isUltraMobile) return;
+    if (activeCategory !== "rutina") return;
     setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     setExpandedRoutineBlocks({});
-  }, [activeCategory, isUltraMobile, selectedRoutineSessionId]);
+  }, [activeCategory, selectedRoutineSessionId]);
 
   const routineSessionsForDetails = useMemo(() => {
     if (activeCategory !== "rutina") return [];
-
-    if (!isUltraMobile) {
-      return effectiveRoutineSessions;
-    }
 
     if (!selectedRoutineSessionId) {
       return effectiveRoutineSessions.slice(0, 1);
@@ -1534,7 +1530,7 @@ export default function AlumnoVisionClient({
 
     const selectedSession = effectiveRoutineSessions.find((session) => session.id === selectedRoutineSessionId);
     return selectedSession ? [selectedSession] : effectiveRoutineSessions.slice(0, 1);
-  }, [activeCategory, effectiveRoutineSessions, isUltraMobile, selectedRoutineSessionId]);
+  }, [activeCategory, effectiveRoutineSessions, selectedRoutineSessionId]);
 
   const routineEntries = useMemo<RoutineEntry[]>(() => {
     if (activeCategory !== "rutina") return [];
