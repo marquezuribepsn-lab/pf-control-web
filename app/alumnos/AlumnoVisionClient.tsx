@@ -95,6 +95,7 @@ type NutritionAssignmentLite = {
 type WorkoutLogLite = {
   id?: string;
   alumnoNombre?: string;
+  alumnoEmail?: string;
   sessionId?: string;
   sessionTitle?: string;
   weekId?: string;
@@ -1069,6 +1070,9 @@ function normalizeWorkoutLogsLiteRows(rawValue: unknown): WorkoutLogLite[] {
       return {
         id: String(item.id || `workout-${index + 1}`),
         alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        alumnoEmail: String(item.alumnoEmail || item.email || "")
+          .trim()
+          .toLowerCase() || undefined,
         sessionId: String(item.sessionId || "").trim(),
         sessionTitle: String(item.sessionTitle || item.sesion || "Sesion").trim() || "Sesion",
         weekId: String(item.weekId || "").trim() || undefined,
@@ -1093,7 +1097,7 @@ function normalizeWorkoutLogsLiteRows(rawValue: unknown): WorkoutLogLite[] {
         videoMimeType: String(item.videoMimeType || "").trim() || undefined,
       };
     })
-    .filter((item) => Boolean(item.alumnoNombre))
+    .filter((item) => Boolean(item.alumnoNombre || item.alumnoEmail))
     .sort((left, right) => {
       const leftTs = getTimestamp(left.createdAt || left.fecha);
       const rightTs = getTimestamp(right.createdAt || right.fecha);
@@ -1607,6 +1611,14 @@ export default function AlumnoVisionClient({
     return fromMail || "Alumno";
   }, [alumnoProfile?.nombre, currentEmail, currentName]);
 
+  const profileEmail = useMemo(() => {
+    const fromAlumno = String(alumnoProfile?.email || "").trim().toLowerCase();
+    if (fromAlumno) return fromAlumno;
+
+    const fromCurrent = String(currentEmail || "").trim().toLowerCase();
+    return fromCurrent || "";
+  }, [alumnoProfile?.email, currentEmail]);
+
   const profileDisplayName = useMemo(() => {
     const candidate = uniqueStrings([
       accountProfile?.nombreCompleto,
@@ -1706,9 +1718,9 @@ export default function AlumnoVisionClient({
     }
 
     return normalizeWorkoutLogsLiteRows(workoutLogsShared).filter((item) => {
-      return matchIdentityName(item.alumnoNombre);
+      return matchIdentityName(item.alumnoNombre) || matchIdentityEmail(item.alumnoEmail);
     });
-  }, [matchIdentityName, shouldLoadWorkoutData, workoutLogsShared]);
+  }, [matchIdentityEmail, matchIdentityName, shouldLoadWorkoutData, workoutLogsShared]);
 
   const weekStoreLite = useMemo<WeekStoreLite>(() => {
     const planes = normalizeWeekStorePlans(weekPlanStoreRaw);
@@ -3039,7 +3051,23 @@ export default function AlumnoVisionClient({
     return workoutLogs
       .filter((log) => {
         if (log.exerciseKey && routineExerciseLogTarget.exerciseKey) {
-          return log.exerciseKey === routineExerciseLogTarget.exerciseKey;
+          if (log.exerciseKey === routineExerciseLogTarget.exerciseKey) {
+            return true;
+          }
+        }
+
+        const bySession =
+          !routineExerciseLogTarget.sessionId ||
+          !log.sessionId ||
+          String(log.sessionId).trim() === String(routineExerciseLogTarget.sessionId).trim();
+        if (!bySession) {
+          return false;
+        }
+
+        const byDay =
+          !routineExerciseLogTarget.dayId || !log.dayId || String(log.dayId).trim() === String(routineExerciseLogTarget.dayId).trim();
+        if (!byDay) {
+          return false;
         }
 
         const byExerciseId =
@@ -3273,6 +3301,7 @@ export default function AlumnoVisionClient({
     const payload: WorkoutLogLite = {
       id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       alumnoNombre: profileName,
+      alumnoEmail: profileEmail || undefined,
       sessionId: routineExerciseLogTarget.sessionId,
       sessionTitle: routineExerciseLogTarget.sessionTitle,
       weekId: routineExerciseLogTarget.weekId,
@@ -3321,6 +3350,7 @@ export default function AlumnoVisionClient({
       setRoutineExerciseLogSaving(false);
     }
   }, [
+    profileEmail,
     profileName,
     routineExerciseLogDraft,
     routineExerciseLogSaving,
@@ -4500,13 +4530,6 @@ export default function AlumnoVisionClient({
                         ) : null}
 
                         <div className="pf-a3-routine-log-actions">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={closeRoutineExerciseLogPanel}
-                            className="pf-a3-routine-log-secondary-btn"
-                          >
-                            Cerrar
-                          </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={saveRoutineExerciseLog}
