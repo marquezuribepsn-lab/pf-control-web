@@ -2880,92 +2880,47 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   margin-top: 0.54rem;
   display: flex;
   flex-direction: column;
-  gap: 0.44rem;
+  gap: 0.52rem;
 }
 
 .pf-a3-routine-block {
-  border-radius: 0.78rem;
-  border: 1px solid rgba(77, 95, 127, 0.4);
-  background: rgba(17, 23, 36, 0.95);
-  padding: 0.52rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
 }
 
-.pf-a3-routine-block-head {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.4rem;
-}
-
-.pf-a3-routine-block-kicker {
-  margin: 0;
-  color: #9aa8c3;
-  font-size: 0.55rem;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.pf-a3-routine-block-title {
-  margin: 0;
-  color: #f5f8ff;
-  font-size: 1.03rem;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.pf-a3-routine-block-count {
-  align-self: flex-start;
-  border-radius: 999px;
-  border: 1px solid rgba(87, 105, 137, 0.52);
-  background: rgba(17, 24, 36, 0.9);
-  color: #d4ddec;
-  font-size: 0.55rem;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.32rem 0.5rem;
-}
-
-.pf-a3-routine-block-goal {
-  margin: 0.22rem 0 0;
+.pf-a3-routine-block-note {
+  margin: 0 0 0.32rem;
   color: #b5c3dc;
-  font-size: 0.75rem;
-  line-height: 1.26;
+  font-size: 0.67rem;
+  line-height: 1.24;
   font-weight: 600;
 }
 
 .pf-a3-routine-block-alert {
-  margin: 0.26rem 0 0;
+  margin: 0 0 0.34rem;
   color: #ff6f6f;
-  font-size: 0.86rem;
+  font-size: 0.7rem;
   line-height: 1.1;
   font-weight: 800;
 }
 
-.pf-a3-routine-exercise-list {
-  margin-top: 0.5rem;
+.pf-a3-routine-exercise-stack {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  border-radius: 0.72rem;
-  border: 1px solid rgba(81, 98, 129, 0.44);
-  background: rgba(26, 30, 42, 0.95);
-  overflow: hidden;
+  gap: 0.44rem;
 }
 
 .pf-a3-routine-exercise-row {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0.5rem;
+  border-radius: 0.88rem;
+  border: 1px solid rgba(85, 104, 137, 0.58);
+  background: linear-gradient(158deg, rgba(20, 27, 41, 0.95), rgba(13, 19, 31, 0.96));
+  padding: 0.56rem;
+  box-shadow: inset 0 1px 0 rgba(179, 201, 233, 0.08), 0 8px 18px rgba(4, 8, 15, 0.24);
 }
 
 .pf-a3-routine-exercise-row + .pf-a3-routine-exercise-row {
-  border-top: 1px solid rgba(78, 95, 125, 0.48);
+  margin-top: 0.44rem;
 }
 
 .pf-a3-routine-exercise-main {
@@ -3024,6 +2979,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   padding: 0;
   color: inherit;
   text-align: left;
+  cursor: pointer;
 }
 
 .pf-a3-routine-exercise-name-btn:hover .pf-a3-routine-exercise-name {
@@ -3039,16 +2995,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: 0.66rem;
   line-height: 1.26;
   font-weight: 600;
-}
-
-.pf-a3-routine-exercise-cta {
-  margin: 0.18rem 0 0;
-  color: #8cefd0;
-  font-size: 0.58rem;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 .pf-a3-routine-exercise-stats {
@@ -3149,21 +3095,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: fixed;
   inset: 0;
   z-index: 70;
-  padding: 0.92rem 0.62rem;
-  background: rgba(4, 8, 15, 0.82);
+  padding: 0.84rem 0.64rem;
+  background: radial-gradient(circle at top, rgba(38, 56, 90, 0.34), transparent 52%), rgba(4, 8, 15, 0.84);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
 }
 
 .pf-a3-routine-log-panel {
-  width: min(620px, 100%);
-  max-height: min(88vh, 860px);
+  width: min(760px, 100%);
+  max-height: min(92vh, 900px);
   overflow-y: auto;
-  border-radius: 1rem;
-  border: 1px solid rgba(112, 131, 168, 0.55);
-  background: linear-gradient(165deg, rgba(9, 15, 27, 0.98), rgba(12, 18, 30, 0.96));
-  padding: 0.68rem;
+  border-radius: 1.04rem;
+  border: 1px solid rgba(114, 136, 175, 0.58);
+  background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
+  padding: 0.78rem;
 }
 
 .pf-a3-routine-log-head {
@@ -3199,6 +3145,68 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 600;
 }
 
+.pf-a3-routine-log-presets {
+  margin-top: 0.54rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.28rem;
+}
+
+.pf-a3-routine-log-preset {
+  min-width: 0;
+  border-radius: 0.64rem;
+  border: 1px solid rgba(95, 115, 149, 0.56);
+  background: rgba(17, 24, 38, 0.9);
+  padding: 0.3rem 0.34rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+}
+
+.pf-a3-routine-log-preset span {
+  color: #9eb0cd;
+  font-size: 0.52rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-preset strong {
+  color: #eff5ff;
+  font-size: 0.66rem;
+  line-height: 1.1;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-a3-routine-log-tabs {
+  margin-top: 0.56rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.34rem;
+}
+
+.pf-a3-routine-log-tab {
+  justify-content: center;
+  border-radius: 0.72rem;
+  border: 1px solid rgba(93, 113, 147, 0.62);
+  background: rgba(23, 31, 47, 0.88);
+  color: #cfdbf2;
+  font-size: 0.62rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.5rem 0.42rem;
+}
+
+.pf-a3-routine-log-tab-active {
+  border-color: rgba(171, 132, 255, 0.82);
+  background: linear-gradient(160deg, rgba(145, 86, 255, 0.96), rgba(116, 60, 238, 0.93));
+  color: #fff;
+}
+
 .pf-a3-routine-log-close {
   width: 40px;
   min-width: 40px;
@@ -3220,9 +3228,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-video-wrap {
   margin-top: 0.56rem;
-  border-radius: 0.84rem;
-  border: 1px solid rgba(95, 114, 148, 0.52);
-  background: rgba(11, 17, 29, 0.92);
+  border-radius: 0.9rem;
+  border: 1px solid rgba(96, 116, 151, 0.6);
+  background: rgba(13, 20, 33, 0.94);
   padding: 0.44rem;
 }
 
@@ -3259,8 +3267,31 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   padding: 0.36rem 0.54rem;
 }
 
+.pf-a3-routine-log-pane {
+  margin-top: 0.58rem;
+  border-radius: 0.84rem;
+  border: 1px solid rgba(94, 114, 148, 0.56);
+  background: rgba(12, 19, 31, 0.9);
+  padding: 0.52rem;
+}
+
+.pf-a3-routine-log-description {
+  margin: 0;
+  color: #dce7fa;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.pf-a3-routine-log-tag-row {
+  margin-top: 0.42rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.26rem;
+}
+
 .pf-a3-routine-log-grid {
-  margin-top: 0.56rem;
+  margin-top: 0;
   display: grid;
   gap: 0.36rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3401,11 +3432,19 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-history {
-  margin-top: 0.5rem;
+  margin-top: 0.58rem;
   border-radius: 0.74rem;
   border: 1px solid rgba(90, 108, 142, 0.56);
   background: rgba(11, 17, 29, 0.84);
   padding: 0.42rem;
+}
+
+.pf-a3-routine-log-history-empty {
+  color: #bccbe4;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .pf-a3-routine-log-history-title {
@@ -3978,21 +4017,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   }
 
   .pf-a3-routine-block {
-    border-radius: 0.7rem;
-    padding: 0.48rem;
-  }
-
-  .pf-a3-routine-block-title {
-    font-size: 0.82rem;
+    padding: 0;
   }
 
   .pf-a3-routine-exercise-row {
-    border-radius: 0.62rem;
-    padding: 0.4rem 0.42rem;
+    border-radius: 0.68rem;
+    padding: 0.44rem;
   }
 
-  .pf-a3-routine-exercise-list {
-    border-radius: 0.62rem;
+  .pf-a3-routine-exercise-stack {
+    gap: 0.34rem;
   }
 
   .pf-a3-routine-exercise-thumb {
@@ -4023,10 +4057,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     font-size: 0.72rem;
   }
 
-  .pf-a3-routine-exercise-cta {
-    font-size: 0.54rem;
-  }
-
   .pf-a3-routine-exercise-tag {
     font-size: 0.53rem;
   }
@@ -4039,13 +4069,23 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
   .pf-a3-routine-log-overlay {
     padding: 0.52rem;
-    align-items: flex-end;
+    align-items: center;
   }
 
   .pf-a3-routine-log-panel {
     border-radius: 0.84rem;
     padding: 0.52rem;
     max-height: 92vh;
+  }
+
+  .pf-a3-routine-log-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pf-a3-routine-log-tab {
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+    padding: 0.46rem 0.26rem;
   }
 
   .pf-a3-routine-log-title {
