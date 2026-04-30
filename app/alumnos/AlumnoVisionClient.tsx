@@ -983,6 +983,329 @@ function uniqueStrings(values: Array<string | null | undefined>): string[] {
   return result;
 }
 
+function toSafeNumeric(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const cleaned = value.replace(",", ".").trim();
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function getTodayDateInputValue() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function createRoutineExerciseLogDraft(seed?: Partial<RoutineExerciseLogDraft>): RoutineExerciseLogDraft {
+  return {
+    fecha: seed?.fecha || getTodayDateInputValue(),
+    series: seed?.series || "",
+    repeticiones: seed?.repeticiones || "",
+    pesoKg: seed?.pesoKg || "",
+    comentarios: seed?.comentarios || "",
+    molestia: Boolean(seed?.molestia),
+    videoUrl: seed?.videoUrl || "",
+    videoDataUrl: seed?.videoDataUrl || "",
+    videoFileName: seed?.videoFileName || "",
+    videoMimeType: seed?.videoMimeType || "",
+  };
+}
+
+function buildRoutineExerciseKey(
+  sessionId: string,
+  weekId: string | undefined,
+  dayId: string | undefined,
+  blockId: string,
+  exerciseId: string,
+  exerciseIndex: number
+) {
+  return [
+    sessionId || "no-session",
+    weekId || "no-week",
+    dayId || "no-day",
+    blockId || "no-block",
+    exerciseId || "no-exercise",
+    String(exerciseIndex),
+  ].join("::");
+}
+
+function normalizeWorkoutLogsLiteRows(rawValue: unknown): WorkoutLogLite[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const item = row as Record<string, unknown>;
+      const safeSeries = Math.max(1, Math.round(Number(toSafeNumeric(item.series) || 1)));
+      const safeRepeticiones = Math.max(0, Math.round(Number(toSafeNumeric(item.repeticiones) || 0)));
+      const safePeso = Math.max(0, Number(toSafeNumeric(item.pesoKg ?? item.peso) || 0));
+
+      return {
+        id: String(item.id || `workout-${index + 1}`),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim(),
+        sessionId: String(item.sessionId || "").trim(),
+        sessionTitle: String(item.sessionTitle || item.sesion || "Sesion").trim() || "Sesion",
+        weekId: String(item.weekId || "").trim() || undefined,
+        weekName: String(item.weekName || item.week || "").trim() || undefined,
+        dayId: String(item.dayId || "").trim() || undefined,
+        dayName: String(item.dayName || item.dia || "").trim() || undefined,
+        blockId: String(item.blockId || "").trim() || undefined,
+        blockTitle: String(item.blockTitle || item.block || "").trim() || undefined,
+        exerciseId: String(item.exerciseId || "").trim() || undefined,
+        exerciseName: String(item.exerciseName || item.ejercicio || "").trim() || undefined,
+        exerciseKey: String(item.exerciseKey || "").trim() || undefined,
+        fecha: String(item.fecha || "").slice(0, 10),
+        createdAt: String(item.createdAt || new Date().toISOString()),
+        series: safeSeries,
+        repeticiones: safeRepeticiones,
+        pesoKg: safePeso,
+        molestia: Boolean(item.molestia),
+        comentarios: String(item.comentarios || item.comentario || "").trim() || undefined,
+        videoUrl: String(item.videoUrl || "").trim() || undefined,
+        videoDataUrl: String(item.videoDataUrl || "").trim() || undefined,
+        videoFileName: String(item.videoFileName || "").trim() || undefined,
+        videoMimeType: String(item.videoMimeType || "").trim() || undefined,
+      };
+    })
+    .filter((item) => Boolean(item.alumnoNombre))
+    .sort((left, right) => {
+      const leftTs = getTimestamp(left.createdAt || left.fecha);
+      const rightTs = getTimestamp(right.createdAt || right.fecha);
+      return rightTs - leftTs;
+    });
+}
+
+function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
+  if (!rawValue || typeof rawValue !== "object") {
+    return [];
+  }
+
+  const root = rawValue as { planes?: unknown };
+  if (!Array.isArray(root.planes)) {
+    return [];
+  }
+
+  return root.planes
+    .filter((entry) => entry && typeof entry === "object")
+    .map((entry, planIndex) => {
+      const plan = entry as Record<string, unknown>;
+      const tipoRaw = String(plan.tipo || "").trim().toLowerCase();
+      const tipo: WeekPlanPersonType = tipoRaw === "jugadoras" ? "jugadoras" : "alumnos";
+      const rawWeeks = Array.isArray(plan.semanas) ? plan.semanas : [];
+
+      const semanas: WeekPlanLite[] = rawWeeks
+        .filter((week) => week && typeof week === "object")
+        .map((week, weekIndex) => {
+          const weekItem = week as Record<string, unknown>;
+          const rawDays = Array.isArray(weekItem.dias) ? weekItem.dias : [];
+
+          const dias: WeekDayPlanLite[] = rawDays
+            .filter((day) => day && typeof day === "object")
+            .map((day, dayIndex) => {
+              const dayItem = day as Record<string, unknown>;
+              const rawTraining =
+                dayItem.entrenamiento && typeof dayItem.entrenamiento === "object"
+                  ? (dayItem.entrenamiento as Record<string, unknown>)
+                  : null;
+              const rawBlocks = rawTraining && Array.isArray(rawTraining.bloques) ? rawTraining.bloques : [];
+
+              const bloques: WeekBlockLite[] = rawBlocks
+                .filter((block) => block && typeof block === "object")
+                .map((block, blockIndex) => {
+                  const blockItem = block as Record<string, unknown>;
+                  const rawExercises = Array.isArray(blockItem.ejercicios)
+                    ? blockItem.ejercicios
+                    : [];
+
+                  const ejercicios: WeekExerciseLite[] = rawExercises
+                    .filter((exercise) => exercise && typeof exercise === "object")
+                    .map((exercise) => {
+                      const exerciseItem = exercise as Record<string, unknown>;
+                      const rawMetrics = Array.isArray(exerciseItem.metricas)
+                        ? exerciseItem.metricas
+                        : [];
+
+                      return {
+                        id: String(exerciseItem.id || "").trim() || undefined,
+                        ejercicioId: String(exerciseItem.ejercicioId || "").trim() || undefined,
+                        series: exerciseItem.series as string | number | undefined,
+                        repeticiones: exerciseItem.repeticiones as string | number | undefined,
+                        descanso: String(exerciseItem.descanso || "").trim() || undefined,
+                        carga: String(exerciseItem.carga || "").trim() || undefined,
+                        observaciones: String(exerciseItem.observaciones || "").trim() || undefined,
+                        metricas: rawMetrics
+                          .filter((metric) => metric && typeof metric === "object")
+                          .map((metric) => {
+                            const metricItem = metric as Record<string, unknown>;
+                            return {
+                              nombre: String(metricItem.nombre || "").trim() || undefined,
+                              valor: String(metricItem.valor || "").trim() || undefined,
+                            };
+                          }),
+                      };
+                    });
+
+                  return {
+                    id: String(blockItem.id || `week-${weekIndex + 1}-block-${blockIndex + 1}`).trim(),
+                    titulo: String(blockItem.titulo || `Bloque ${blockIndex + 1}`).trim(),
+                    objetivo: String(blockItem.objetivo || "").trim(),
+                    ejercicios,
+                  };
+                });
+
+              const entrenamiento = rawTraining
+                ? {
+                    titulo: String(rawTraining.titulo || "").trim() || undefined,
+                    descripcion: String(rawTraining.descripcion || "").trim() || undefined,
+                    duracion: String(rawTraining.duracion || "").trim() || undefined,
+                    bloques,
+                  }
+                : undefined;
+
+              return {
+                id: String(dayItem.id || `week-${weekIndex + 1}-day-${dayIndex + 1}`).trim(),
+                dia: String(dayItem.dia || `Dia ${dayIndex + 1}`).trim() || `Dia ${dayIndex + 1}`,
+                planificacion: String(dayItem.planificacion || "").trim(),
+                objetivo: String(dayItem.objetivo || "").trim(),
+                sesionId: String(dayItem.sesionId || "").trim(),
+                oculto: Boolean(dayItem.oculto),
+                entrenamiento,
+              };
+            });
+
+          return {
+            id: String(weekItem.id || `week-${weekIndex + 1}`).trim(),
+            nombre: String(weekItem.nombre || `Semana ${weekIndex + 1}`).trim() || `Semana ${weekIndex + 1}`,
+            objetivo: String(weekItem.objetivo || "").trim(),
+            oculto: Boolean(weekItem.oculto),
+            dias,
+          };
+        });
+
+      return {
+        ownerKey: String(plan.ownerKey || `${tipo}:plan-${planIndex + 1}`).trim(),
+        tipo,
+        nombre: String(plan.nombre || "").trim(),
+        categoria: String(plan.categoria || "").trim() || undefined,
+        semanas,
+      };
+    })
+    .filter((plan) => plan.ownerKey && plan.semanas.length > 0);
+}
+
+function resolveRoutineBlocksForSession(
+  session: Sesion,
+  matchIdentityName: (value: string | null | undefined) => boolean
+): {
+  prescripcion: PrescripcionSesionPersona | null;
+  blocks: RoutineBlock[];
+} {
+  const prescripciones = Array.isArray(session.prescripciones) ? session.prescripciones : [];
+  const matchedPrescripcion =
+    prescripciones.find((item) => item.personaTipo === "alumnos" && matchIdentityName(item.personaNombre)) ||
+    null;
+
+  const sourceBlocks =
+    matchedPrescripcion && Array.isArray(matchedPrescripcion.bloques) && matchedPrescripcion.bloques.length > 0
+      ? matchedPrescripcion.bloques
+      : Array.isArray(session.bloques)
+      ? session.bloques
+      : [];
+
+  const blocks: RoutineBlock[] = sourceBlocks.map((block) => ({
+    ...block,
+    ejercicios: Array.isArray(block.ejercicios) ? block.ejercicios : [],
+  }));
+
+  return {
+    prescripcion: matchedPrescripcion,
+    blocks,
+  };
+}
+
+function buildRoutineBlocksFromDayTraining(training?: WeekDayTrainingLite): RoutineBlock[] {
+  const blocks = training && Array.isArray(training.bloques) ? training.bloques : [];
+
+  return blocks.map((block, blockIndex) => ({
+    id: String(block.id || `block-${blockIndex + 1}`),
+    titulo: String(block.titulo || `Bloque ${blockIndex + 1}`),
+    objetivo: String(block.objetivo || ""),
+    ejercicios: (Array.isArray(block.ejercicios) ? block.ejercicios : []).map((exercise, exerciseIndex) => {
+      const rawSeries = Math.round(Number(toSafeNumeric(exercise.series) || 0));
+
+      return {
+        ejercicioId: String(exercise.ejercicioId || exercise.id || `exercise-${exerciseIndex + 1}`),
+        series: Math.max(0, rawSeries),
+        repeticiones: String(exercise.repeticiones || "").trim(),
+        descanso: String(exercise.descanso || "").trim() || undefined,
+        carga: String(exercise.carga || "").trim() || undefined,
+        observaciones: String(exercise.observaciones || "").trim() || undefined,
+        metricas: Array.isArray(exercise.metricas)
+          ? exercise.metricas
+              .map((metric) => ({
+                nombre: String(metric?.nombre || "").trim(),
+                valor: String(metric?.valor || "").trim(),
+              }))
+              .filter((metric) => metric.nombre || metric.valor)
+          : undefined,
+      };
+    }),
+  }));
+}
+
+function looksLikeDirectVideoUrl(rawUrl: string): boolean {
+  const normalized = String(rawUrl || "").trim().toLowerCase();
+  if (!normalized) return false;
+  return /\.(mp4|webm|ogg|m4v|mov)(\?.*)?$/i.test(normalized) || normalized.startsWith("data:video/");
+}
+
+type RoutineExerciseVideoSource =
+  | { kind: "iframe"; src: string }
+  | { kind: "video"; src: string }
+  | { kind: "external"; src: string }
+  | { kind: "none"; src: null };
+
+function resolveRoutineExerciseVideoSource(rawUrl: string): RoutineExerciseVideoSource {
+  const normalized = normalizeMusicUrl(rawUrl);
+  if (!normalized) {
+    return { kind: "none", src: null };
+  }
+
+  const youtubeEmbed = resolveYouTubeEmbed(normalized);
+  if (youtubeEmbed) {
+    return { kind: "iframe", src: youtubeEmbed };
+  }
+
+  if (looksLikeDirectVideoUrl(normalized)) {
+    return { kind: "video", src: normalized };
+  }
+
+  return { kind: "external", src: normalized };
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("file-read-error"));
+    reader.readAsDataURL(file);
+  });
+}
+
 function readArrayFromStorage<T>(key: string): T[] {
   if (typeof window === "undefined") return [];
 
