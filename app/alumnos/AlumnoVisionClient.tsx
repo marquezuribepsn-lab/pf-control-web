@@ -1502,6 +1502,8 @@ export default function AlumnoVisionClient({
   const lastStorageRefreshTsRef = useRef<number>(0);
   const requestedMusicArtworkRef = useRef<Set<string>>(new Set());
   const homeNavGuardRef = useRef<number>(0);
+  const activeCategoryRef = useRef<MainCategory>(initialCategory);
+  const categoryHistoryRef = useRef<MainCategory[]>(initialCategory === "inicio" ? [] : ["inicio"]);
   const routinePullStartYRef = useRef<number | null>(null);
   const routinePullActiveRef = useRef(false);
   const routinePullDistanceRef = useRef(0);
@@ -1541,8 +1543,14 @@ export default function AlumnoVisionClient({
   const shouldLoadMusicData = !isUltraMobile || activeCategory === "musica" || activeCategory === "inicio";
 
   useEffect(() => {
+    activeCategoryRef.current = initialCategory;
+    categoryHistoryRef.current = initialCategory === "inicio" ? [] : ["inicio"];
     setActiveCategory(initialCategory);
   }, [initialCategory]);
+
+  useEffect(() => {
+    activeCategoryRef.current = activeCategory;
+  }, [activeCategory]);
 
   useEffect(() => {
     if (!isUltraMobile || typeof document === "undefined") return;
@@ -2835,11 +2843,41 @@ export default function AlumnoVisionClient({
   const categoryMeta = CATEGORY_COPY[activeCategory];
   const isRootCategory = activeCategory === "inicio";
   const heroTitle = categoryMeta.title;
-  const heroSubtitle = `Vista ${categoryMeta.short.toLowerCase()}. Usa la flecha para volver al inicio.`;
+  const heroSubtitle = `Vista ${categoryMeta.short.toLowerCase()}. Usa la flecha para volver a la pantalla anterior.`;
+
+  const backTargetCategory = useMemo<MainCategory>(() => {
+    const history = categoryHistoryRef.current;
+    for (let index = history.length - 1; index >= 0; index -= 1) {
+      const candidate = history[index];
+      if (candidate !== activeCategory) {
+        return candidate;
+      }
+    }
+    return "inicio";
+  }, [activeCategory]);
+
+  const backTargetHref = `/alumnos/${backTargetCategory}`;
+  const backLabel =
+    backTargetCategory === "inicio"
+      ? "Volver al inicio"
+      : `Volver a ${CATEGORY_COPY[backTargetCategory].short.toLowerCase()}`;
 
   const goToCategory = useCallback(
-    (nextCategory: MainCategory) => {
-      if (nextCategory === activeCategory) return;
+    (nextCategory: MainCategory, options?: { trackHistory?: boolean }) => {
+      const currentCategory = activeCategoryRef.current;
+      if (nextCategory === currentCategory) return;
+
+      if (options?.trackHistory !== false) {
+        const history = categoryHistoryRef.current;
+        if (history[history.length - 1] !== currentCategory) {
+          history.push(currentCategory);
+          if (history.length > 24) {
+            history.splice(0, history.length - 24);
+          }
+        }
+      }
+
+      activeCategoryRef.current = nextCategory;
       setActiveCategory(nextCategory);
 
       const targetHref = `/alumnos/${nextCategory}`;
@@ -2853,11 +2891,23 @@ export default function AlumnoVisionClient({
 
       router.replace(targetHref, { scroll: false });
     },
-    [activeCategory, router]
+    [router]
   );
 
-  const goToHomeCategory = useCallback(() => {
-    const targetHref = "/alumnos/inicio";
+  const goToPreviousCategory = useCallback(() => {
+    const currentCategory = activeCategoryRef.current;
+    const history = categoryHistoryRef.current;
+
+    let targetCategory: MainCategory = "inicio";
+    while (history.length > 0) {
+      const candidate = history.pop();
+      if (candidate && candidate !== currentCategory) {
+        targetCategory = candidate;
+        break;
+      }
+    }
+
+    const targetHref = `/alumnos/${targetCategory}`;
 
     if (typeof window === "undefined") {
       router.replace(targetHref, { scroll: false });
@@ -2870,7 +2920,7 @@ export default function AlumnoVisionClient({
     }
     homeNavGuardRef.current = now;
 
-    goToCategory("inicio");
+    goToCategory(targetCategory, { trackHistory: false });
 
     const fallbackDelay = isUltraMobile ? 60 : 180;
     window.setTimeout(() => {
@@ -3446,13 +3496,13 @@ export default function AlumnoVisionClient({
               <div className="flex min-w-0 items-start gap-3">
                 <ReliableActionButton
                   type="button"
-                  onClick={goToHomeCategory}
-                  onPointerUp={() => goToHomeCategory()}
-                  onTouchEnd={() => goToHomeCategory()}
-                  data-nav-href="/alumnos/inicio"
+                  onClick={goToPreviousCategory}
+                  onPointerUp={() => goToPreviousCategory()}
+                  onTouchEnd={() => goToPreviousCategory()}
+                  data-nav-href={backTargetHref}
                   className={`pf-a2-back-btn mt-0.5 ${isRoutineLogPanelOpen ? "pf-a2-back-btn-suspended" : ""}`}
-                  aria-label="Volver al inicio"
-                  title="Volver al inicio"
+                  aria-label={backLabel}
+                  title={backLabel}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -3464,7 +3514,7 @@ export default function AlumnoVisionClient({
                   >
                     <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="sr-only">Volver al inicio</span>
+                  <span className="sr-only">{backLabel}</span>
                 </ReliableActionButton>
 
                 <div className="min-w-0">
