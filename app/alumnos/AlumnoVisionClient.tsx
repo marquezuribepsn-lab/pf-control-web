@@ -2979,6 +2979,10 @@ export default function AlumnoVisionClient({
     return routineWeeks.findIndex((week) => week.id === selectedRoutineWeek.id);
   }, [routineWeeks, selectedRoutineWeek]);
 
+  const canGoPrevRoutineWeek = selectedRoutineWeekIndex > 0;
+  const canGoNextRoutineWeek =
+    selectedRoutineWeekIndex >= 0 && selectedRoutineWeekIndex < routineWeeks.length - 1;
+
   const routineWeekLabel = useMemo(() => {
     if (!selectedRoutineWeek) {
       return "Semana 1";
@@ -4034,14 +4038,15 @@ export default function AlumnoVisionClient({
               </section>
 
               {hasWeekPlanRoutine ? (
-                <section className="pf-a3-routine-session-strip">
+                <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
                   <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(-1)}
-                      disabled={selectedRoutineWeekIndex <= 0}
+                      disabled={!canGoPrevRoutineWeek}
                       className="pf-a3-routine-week-arrow"
                       aria-label="Semana anterior"
+                      title={canGoPrevRoutineWeek ? "Semana anterior" : "No hay semana anterior"}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                         <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -4051,9 +4056,10 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(1)}
-                      disabled={selectedRoutineWeekIndex < 0 || selectedRoutineWeekIndex >= routineWeeks.length - 1}
+                      disabled={!canGoNextRoutineWeek}
                       className="pf-a3-routine-week-arrow"
                       aria-label="Semana siguiente"
+                      title={canGoNextRoutineWeek ? "Semana siguiente" : "No hay semana siguiente"}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                         <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
