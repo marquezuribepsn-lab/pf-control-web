@@ -4090,9 +4090,34 @@ export default function AlumnoVisionClient({
                   </div>
                 </section>
               ) : effectiveRoutineSessions.length > 0 ? (
-                <section className="pf-a3-routine-session-strip">
-                  <p className="pf-a3-routine-session-strip-title">Semana 1</p>
-                  <div className="pf-a3-routine-session-scroll">
+                <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
+                  <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
+                    <ReliableActionButton
+                      type="button"
+                      disabled
+                      className="pf-a3-routine-week-arrow"
+                      aria-label="Semana anterior no disponible"
+                      title="No hay semana anterior"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+                    <p className="pf-a3-routine-week-label">Semana 1</p>
+                    <ReliableActionButton
+                      type="button"
+                      disabled
+                      className="pf-a3-routine-week-arrow"
+                      aria-label="Semana siguiente no disponible"
+                      title="No hay semana siguiente"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </ReliableActionButton>
+                  </div>
+
+                  <div className="pf-a3-routine-session-scroll" aria-label="Dias de la semana">
                     {effectiveRoutineSessions.map((session, index) => {
                       const isSelected = session.id === selectedRoutineSessionId;
 
