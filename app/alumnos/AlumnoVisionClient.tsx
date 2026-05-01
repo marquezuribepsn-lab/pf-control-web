@@ -269,11 +269,6 @@ type WeekPersonPlanLite = {
   semanas: WeekPlanLite[];
 };
 
-type WeekStoreLite = {
-  version: number;
-  planes: WeekPersonPlanLite[];
-};
-
 type RoutineExerciseLogTarget = {
   sessionId: string;
   sessionTitle: string;
@@ -1223,6 +1218,64 @@ function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
     .filter((plan) => plan.ownerKey && plan.semanas.length > 0);
 }
 
+function selectAlumnoWeekPlanFromStore(
+  rawValue: unknown,
+  profileName: string,
+  matchIdentityName: (value: string | null | undefined) => boolean
+): WeekPersonPlanLite | null {
+  if (!rawValue || typeof rawValue !== "object") {
+    return null;
+  }
+
+  const root = rawValue as { planes?: unknown };
+  if (!Array.isArray(root.planes) || root.planes.length === 0) {
+    return null;
+  }
+
+  const isAlumnoEntry = (entry: unknown) => {
+    if (!entry || typeof entry !== "object") return false;
+    const plan = entry as Record<string, unknown>;
+    const tipoRaw = String(plan.tipo || "").trim().toLowerCase();
+    return !tipoRaw || tipoRaw === "alumnos";
+  };
+
+  const directOwnerKey = `alumnos:${String(profileName || "").trim().toLowerCase()}`;
+
+  const exactOwnerEntry = root.planes.find((entry) => {
+    if (!isAlumnoEntry(entry)) return false;
+    const plan = entry as Record<string, unknown>;
+    return String(plan.ownerKey || "").trim().toLowerCase() === directOwnerKey;
+  });
+
+  if (exactOwnerEntry) {
+    return normalizeWeekStorePlans({ planes: [exactOwnerEntry] })[0] || null;
+  }
+
+  const byNameEntry = root.planes.find((entry) => {
+    if (!isAlumnoEntry(entry)) return false;
+    const plan = entry as Record<string, unknown>;
+    const planName = String(plan.nombre || "").trim();
+    return matchIdentityName(planName) || namesLikelyMatch(planName, profileName);
+  });
+
+  if (byNameEntry) {
+    return normalizeWeekStorePlans({ planes: [byNameEntry] })[0] || null;
+  }
+
+  const byOwnerNameEntry = root.planes.find((entry) => {
+    if (!isAlumnoEntry(entry)) return false;
+    const plan = entry as Record<string, unknown>;
+    const ownerName = String(plan.ownerKey || "").replace(/^alumnos:/i, "").trim();
+    return matchIdentityName(ownerName);
+  });
+
+  if (byOwnerNameEntry) {
+    return normalizeWeekStorePlans({ planes: [byOwnerNameEntry] })[0] || null;
+  }
+
+  return null;
+}
+
 function resolveRoutineBlocksForSession(
   session: Sesion,
   matchIdentityName: (value: string | null | undefined) => boolean
@@ -1497,6 +1550,7 @@ export default function AlumnoVisionClient({
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
+  const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
   const storageRefreshRafRef = useRef<number | null>(null);
   const storageRefreshIdleRef = useRef<number | null>(null);
   const lastStorageRefreshTsRef = useRef<number>(0);
@@ -1527,13 +1581,13 @@ export default function AlumnoVisionClient({
   const [workoutLogsShared, setWorkoutLogsShared, workoutLogsSyncLoaded] = useSharedState<unknown[]>([], {
     key: WORKOUT_LOGS_KEY,
     legacyLocalStorageKey: WORKOUT_LOGS_KEY,
-    pollMs: isUltraMobile ? 9000 : 12000,
+    pollMs: isUltraMobile ? 15000 : 12000,
   });
 
   const [weekPlanStoreRaw, , weekPlanSyncLoaded] = useSharedState<unknown>(null, {
     key: WEEK_PLAN_KEY,
     legacyLocalStorageKey: WEEK_PLAN_KEY,
-    pollMs: isUltraMobile ? 9000 : 12000,
+    pollMs: isUltraMobile ? 15000 : 12000,
   });
 
   const shouldLoadNutritionData = !isUltraMobile || activeCategory === "nutricion";
@@ -1541,6 +1595,14 @@ export default function AlumnoVisionClient({
     !isUltraMobile || activeCategory === "progreso" || activeCategory === "rutina" || activeCategory === "inicio";
   const shouldLoadAnthropometryData = !isUltraMobile || activeCategory === "progreso" || activeCategory === "inicio";
   const shouldLoadMusicData = !isUltraMobile || activeCategory === "musica" || activeCategory === "inicio";
+
+  useEffect(() => {
+    if (!weekPlanSyncLoaded && !workoutLogsSyncLoaded) {
+      return;
+    }
+
+    setRoutineLastSyncAt(Date.now());
+  }, [weekPlanStoreRaw, weekPlanSyncLoaded, workoutLogsShared, workoutLogsSyncLoaded]);
 
   useEffect(() => {
     activeCategoryRef.current = initialCategory;
@@ -1730,44 +1792,9 @@ export default function AlumnoVisionClient({
     });
   }, [matchIdentityEmail, matchIdentityName, shouldLoadWorkoutData, workoutLogsShared]);
 
-  const weekStoreLite = useMemo<WeekStoreLite>(() => {
-    const planes = normalizeWeekStorePlans(weekPlanStoreRaw);
-    return {
-      version: 3,
-      planes,
-    };
-  }, [weekPlanStoreRaw]);
-
   const alumnoWeekPlan = useMemo<WeekPersonPlanLite | null>(() => {
-    const candidates = weekStoreLite.planes.filter((plan) => plan.tipo === "alumnos");
-    if (candidates.length === 0) {
-      return null;
-    }
-
-    const directOwnerKey = `alumnos:${String(profileName || "").trim().toLowerCase()}`;
-    const exactOwnerMatch = candidates.find(
-      (plan) => String(plan.ownerKey || "").trim().toLowerCase() === directOwnerKey
-    );
-    if (exactOwnerMatch) {
-      return exactOwnerMatch;
-    }
-
-    const byNameMatch = candidates.find((plan) => {
-      const planName = String(plan.nombre || "").trim();
-      return matchIdentityName(planName) || namesLikelyMatch(planName, profileName);
-    });
-
-    if (byNameMatch) {
-      return byNameMatch;
-    }
-
-    return (
-      candidates.find((plan) => {
-        const ownerName = String(plan.ownerKey || "").replace(/^alumnos:/i, "").trim();
-        return matchIdentityName(ownerName);
-      }) || null
-    );
-  }, [matchIdentityName, profileName, weekStoreLite.planes]);
+    return selectAlumnoWeekPlanFromStore(weekPlanStoreRaw, profileName, matchIdentityName);
+  }, [matchIdentityName, profileName, weekPlanStoreRaw]);
 
   const routineWeeks = useMemo<WeekPlanLite[]>(() => {
     if (!alumnoWeekPlan) {
@@ -3021,6 +3048,14 @@ export default function AlumnoVisionClient({
     return `${formatDateTime(new Date(nowTs))} hs`;
   }, [nowTs, selectedRoutineEntry]);
 
+  const routineLastSyncLabel = useMemo(() => {
+    if (!routineLastSyncAt) {
+      return "Ultima sincronizacion: pendiente";
+    }
+
+    return `Ultima sincronizacion: ${formatDateTime(new Date(routineLastSyncAt))} hs`;
+  }, [routineLastSyncAt]);
+
   const selectedRoutineWeekIndex = useMemo(() => {
     if (!selectedRoutineWeek || routineWeeks.length === 0) {
       return -1;
@@ -3058,11 +3093,11 @@ export default function AlumnoVisionClient({
     }
 
     if (hasWeekPlanRoutine) {
-      return "Plan sincronizado con admin";
+      return routineLastSyncLabel;
     }
 
     return "Esperando plan semanal del profe";
-  }, [hasWeekPlanRoutine, weekPlanSyncLoaded, workoutLogsSyncLoaded]);
+  }, [hasWeekPlanRoutine, routineLastSyncLabel, weekPlanSyncLoaded, workoutLogsSyncLoaded]);
 
   const routineCoachLabel = useMemo(() => {
     const fallbackCoach = String(coachContact?.nombre || "PF Control").trim();
