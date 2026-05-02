@@ -4433,176 +4433,178 @@ export default function AlumnoVisionClient({
 
                           {visibleExercises.length > 0 ? (
                             <div className="pf-a3-routine-exercise-stack">
-                              {visibleExercises.map((exercise, index) => {
-                                const exerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
-                                const exerciseDetail = exercise.ejercicioId
+                              {visibleExercises.flatMap((exercise, index) => {
+                                const baseExerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
+                                const baseExerciseDetail = exercise.ejercicioId
                                   ? ejerciciosById.get(exercise.ejercicioId) || null
                                   : null;
-                                const exerciseName = exerciseDetail?.nombre || `Ejercicio ${index + 1}`;
-                                const exerciseVideoUrl = String(exerciseDetail?.videoUrl || "").trim();
-                                const exerciseDescription = String(exerciseDetail?.objetivo || "").trim();
-                                const rirMetric = Array.isArray(exercise.metricas)
-                                  ? exercise.metricas.find((metric) =>
-                                      normalizePersonKey(metric.nombre).includes("rir")
-                                    )
-                                  : null;
+                                const baseExerciseName = baseExerciseDetail?.nombre || `Ejercicio ${index + 1}`;
                                 const superSerieRows = Array.isArray(exercise.superSerie)
                                   ? exercise.superSerie
                                   : [];
-                                const exerciseTags = Array.from(
-                                  new Set(
-                                    [
-                                      ...(Array.isArray(exerciseDetail?.gruposMusculares)
-                                        ? exerciseDetail.gruposMusculares
-                                        : []),
-                                      String(exerciseDetail?.categoria || "").trim(),
-                                    ].filter(Boolean)
-                                  )
-                                ).slice(0, 6);
-                                const exerciseKey = buildRoutineExerciseKey(
-                                  selectedRoutineEntry.sesion.id,
-                                  selectedRoutineEntry.weekId,
-                                  selectedRoutineEntry.dayId,
-                                  block.id,
-                                  exerciseId,
-                                  index
-                                );
 
-                                const exerciseLogTarget: RoutineExerciseLogTarget = {
-                                  sessionId: selectedRoutineEntry.sesion.id,
-                                  sessionTitle: selectedRoutineEntry.sesion.titulo,
-                                  weekId: selectedRoutineEntry.weekId,
-                                  weekName: selectedRoutineEntry.weekName,
-                                  dayId: selectedRoutineEntry.dayId,
-                                  dayName: selectedRoutineEntry.dayName,
-                                  blockId: block.id,
-                                  blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
-                                  exerciseId,
-                                  exerciseName,
-                                  exerciseKey,
-                                  prescribedSeries: String(exercise.series || "").trim(),
-                                  prescribedRepeticiones: String(exercise.repeticiones || "").trim(),
-                                  prescribedCarga: String(exercise.carga || "").trim(),
-                                  prescribedDescanso: String(exercise.descanso || "").trim(),
-                                  prescribedRir: String(rirMetric?.valor || "").trim(),
-                                  suggestedVideoUrl: exerciseVideoUrl,
-                                  exerciseDescription,
-                                  exerciseTags,
-                                };
+                                const rows = [
+                                  {
+                                    rowId: baseExerciseId,
+                                    rowName: baseExerciseName,
+                                    detail: baseExerciseDetail,
+                                    series: exercise.series,
+                                    repeticiones: exercise.repeticiones,
+                                    descanso: exercise.descanso,
+                                    carga: exercise.carga,
+                                    observaciones: exercise.observaciones,
+                                    metricas: Array.isArray(exercise.metricas) ? exercise.metricas : [],
+                                    isSuperSerie: false,
+                                    rowKeySuffix: `base-${index}`,
+                                    rowOrderIndex: index,
+                                  },
+                                  ...superSerieRows.map((superItem, superIndex) => {
+                                    const superDetail = superItem.ejercicioId
+                                      ? ejerciciosById.get(superItem.ejercicioId) || null
+                                      : null;
+                                    const superName =
+                                      superDetail?.nombre || `Ejercicio combinado ${superIndex + 1}`;
 
-                                return (
-                                  <article
-                                    key={`${block.id}-${exercise.ejercicioId || index}`}
-                                    className="pf-a3-routine-exercise-row"
-                                  >
-                                    <div className="pf-a3-routine-exercise-main">
-                                      <span className="pf-a3-routine-exercise-index">{index + 1}</span>
-                                      <span className="pf-a3-routine-exercise-thumb" aria-hidden="true">
-                                        {getInitials(exerciseName)}
-                                      </span>
-                                      <div className="min-w-0">
-                                        <ReliableActionButton
-                                          type="button"
-                                          onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
-                                          className="pf-a3-routine-exercise-name-btn"
-                                          aria-label={`Registrar cargas de ${exerciseName}`}
-                                        >
-                                          <p className="pf-a3-routine-exercise-name">{exerciseName}</p>
-                                        </ReliableActionButton>
-                                        <p className="pf-a3-routine-exercise-desc">
-                                          {exerciseDescription || "Ejecuta con tecnica y control"}
-                                        </p>
-                                      </div>
-                                    </div>
+                                    return {
+                                      rowId: String(
+                                        superItem.ejercicioId ||
+                                          superItem.id ||
+                                          `${baseExerciseId}-super-${superIndex + 1}`
+                                      ),
+                                      rowName: `[${baseExerciseName}] ${superName}`,
+                                      detail: superDetail,
+                                      series: superItem.series,
+                                      repeticiones: superItem.repeticiones,
+                                      descanso: superItem.descanso,
+                                      carga: superItem.carga,
+                                      observaciones: `Superserie vinculada a ${baseExerciseName}`,
+                                      metricas: [],
+                                      isSuperSerie: true,
+                                      rowKeySuffix: `super-${index}-${superIndex}`,
+                                      rowOrderIndex: index * 100 + superIndex + 1,
+                                    };
+                                  }),
+                                ];
 
-                                    <div className="pf-a3-routine-exercise-stats">
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>Series:</span>
-                                        <strong>{exercise.series || "S/D"}</strong>
-                                      </div>
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>Rep.:</span>
-                                        <strong>{exercise.repeticiones || "S/D"}</strong>
-                                      </div>
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>Desc.:</span>
-                                        <strong>{exercise.descanso || "S/D"}</strong>
-                                      </div>
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>RIR:</span>
-                                        <strong>{rirMetric?.valor || "S/D"}</strong>
-                                      </div>
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>Carga (Kg):</span>
-                                        <strong>{exercise.carga || "S/D"}</strong>
-                                      </div>
-                                      <div className="pf-a3-routine-exercise-stat">
-                                        <span>Obs.:</span>
-                                        <strong>{exercise.observaciones || "S/D"}</strong>
-                                      </div>
-                                    </div>
+                                return rows.map((row, rowIndex) => {
+                                  const rirMetric = row.metricas.find((metric) =>
+                                    normalizePersonKey(metric.nombre).includes("rir")
+                                  );
+                                  const rowVideoUrl = String(row.detail?.videoUrl || "").trim();
+                                  const rowDescription =
+                                    String(row.detail?.objetivo || "").trim() ||
+                                    (row.isSuperSerie
+                                      ? `Superserie asignada con ${baseExerciseName}`
+                                      : "Ejecuta con tecnica y control");
+                                  const rowTags = Array.from(
+                                    new Set(
+                                      [
+                                        ...(Array.isArray(row.detail?.gruposMusculares)
+                                          ? row.detail.gruposMusculares
+                                          : []),
+                                        String(row.detail?.categoria || "").trim(),
+                                        row.isSuperSerie ? "Superserie" : "",
+                                      ].filter(Boolean)
+                                    )
+                                  ).slice(0, 6);
+                                  const exerciseKey = buildRoutineExerciseKey(
+                                    selectedRoutineEntry.sesion.id,
+                                    selectedRoutineEntry.weekId,
+                                    selectedRoutineEntry.dayId,
+                                    block.id,
+                                    row.rowId,
+                                    row.rowOrderIndex
+                                  );
 
-                                    {exerciseTags.length > 0 ? (
-                                      <div className="pf-a3-routine-exercise-tags">
-                                        {exerciseTags.map((tag, tagIndex) => (
-                                          <span
-                                            key={`${block.id}-${exercise.ejercicioId || index}-${tagIndex}`}
-                                            className="pf-a3-routine-exercise-tag"
+                                  const exerciseLogTarget: RoutineExerciseLogTarget = {
+                                    sessionId: selectedRoutineEntry.sesion.id,
+                                    sessionTitle: selectedRoutineEntry.sesion.titulo,
+                                    weekId: selectedRoutineEntry.weekId,
+                                    weekName: selectedRoutineEntry.weekName,
+                                    dayId: selectedRoutineEntry.dayId,
+                                    dayName: selectedRoutineEntry.dayName,
+                                    blockId: block.id,
+                                    blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+                                    exerciseId: row.rowId,
+                                    exerciseName: row.rowName,
+                                    exerciseKey,
+                                    prescribedSeries: String(row.series || "").trim(),
+                                    prescribedRepeticiones: String(row.repeticiones || "").trim(),
+                                    prescribedCarga: String(row.carga || "").trim(),
+                                    prescribedDescanso: String(row.descanso || "").trim(),
+                                    prescribedRir: String(rirMetric?.valor || "").trim(),
+                                    suggestedVideoUrl: rowVideoUrl,
+                                    exerciseDescription: rowDescription,
+                                    exerciseTags: rowTags,
+                                  };
+
+                                  return (
+                                    <article
+                                      key={`${block.id}-${row.rowKeySuffix}`}
+                                      className="pf-a3-routine-exercise-row"
+                                    >
+                                      <div className="pf-a3-routine-exercise-main">
+                                        <span className="pf-a3-routine-exercise-index">
+                                          {row.isSuperSerie ? "SS" : index + 1}
+                                        </span>
+                                        <span className="pf-a3-routine-exercise-thumb" aria-hidden="true">
+                                          {getInitials(row.rowName)}
+                                        </span>
+                                        <div className="min-w-0">
+                                          <ReliableActionButton
+                                            type="button"
+                                            onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
+                                            className="pf-a3-routine-exercise-name-btn"
+                                            aria-label={`Registrar cargas de ${row.rowName}`}
                                           >
-                                            {tag}
-                                          </span>
-                                        ))}
+                                            <p className="pf-a3-routine-exercise-name">{row.rowName}</p>
+                                          </ReliableActionButton>
+                                          <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
+                                        </div>
                                       </div>
-                                    ) : null}
 
-                                    {superSerieRows.length > 0 ? (
-                                      <div className="pf-a3-routine-superset-stack">
-                                        <p className="pf-a3-routine-superset-title">Super serie</p>
-                                        {superSerieRows.map((superItem, superIndex) => {
-                                          const superExerciseDetail = superItem.ejercicioId
-                                            ? ejerciciosById.get(superItem.ejercicioId) || null
-                                            : null;
-                                          const superExerciseName =
-                                            superExerciseDetail?.nombre ||
-                                            `Ejercicio combinado ${superIndex + 1}`;
+                                      <div className="pf-a3-routine-exercise-stats">
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>Series:</span>
+                                          <strong>{row.series || "S/D"}</strong>
+                                        </div>
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>Rep.:</span>
+                                          <strong>{row.repeticiones || "S/D"}</strong>
+                                        </div>
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>Desc.:</span>
+                                          <strong>{row.descanso || "S/D"}</strong>
+                                        </div>
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>RIR:</span>
+                                          <strong>{rirMetric?.valor || "S/D"}</strong>
+                                        </div>
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>Carga (Kg):</span>
+                                          <strong>{row.carga || "S/D"}</strong>
+                                        </div>
+                                        <div className="pf-a3-routine-exercise-stat">
+                                          <span>Obs.:</span>
+                                          <strong>{row.observaciones || "S/D"}</strong>
+                                        </div>
+                                      </div>
 
-                                          return (
-                                            <article
-                                              key={`${block.id}-${exerciseId}-super-${superItem.id || superIndex}`}
-                                              className="pf-a3-routine-superset-row"
+                                      {rowTags.length > 0 ? (
+                                        <div className="pf-a3-routine-exercise-tags">
+                                          {rowTags.map((tag, tagIndex) => (
+                                            <span
+                                              key={`${block.id}-${row.rowKeySuffix}-${tagIndex}`}
+                                              className="pf-a3-routine-exercise-tag"
                                             >
-                                              <div className="pf-a3-routine-superset-main">
-                                                <span className="pf-a3-routine-superset-index">
-                                                  SS{superIndex + 1}
-                                                </span>
-                                                <p className="pf-a3-routine-superset-name">{superExerciseName}</p>
-                                              </div>
-
-                                              <div className="pf-a3-routine-superset-stats">
-                                                <div className="pf-a3-routine-superset-stat">
-                                                  <span>Series:</span>
-                                                  <strong>{superItem.series || "S/D"}</strong>
-                                                </div>
-                                                <div className="pf-a3-routine-superset-stat">
-                                                  <span>Rep.:</span>
-                                                  <strong>{superItem.repeticiones || "S/D"}</strong>
-                                                </div>
-                                                <div className="pf-a3-routine-superset-stat">
-                                                  <span>Desc.:</span>
-                                                  <strong>{superItem.descanso || "S/D"}</strong>
-                                                </div>
-                                                <div className="pf-a3-routine-superset-stat">
-                                                  <span>Carga:</span>
-                                                  <strong>{superItem.carga || "S/D"}</strong>
-                                                </div>
-                                              </div>
-                                            </article>
-                                          );
-                                        })}
-                                      </div>
-                                    ) : null}
-                                  </article>
-                                );
+                                              {tag}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : null}
+                                    </article>
+                                  );
+                                });
                               })}
                             </div>
                           ) : null}
