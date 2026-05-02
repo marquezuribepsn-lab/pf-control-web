@@ -11,7 +11,7 @@ import type {
   PrescripcionSesionPersona,
   Sesion,
 } from "@/data/mockData";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -1548,7 +1548,9 @@ export default function AlumnoVisionClient({
   initialCategory = "inicio",
 }: AlumnoVisionClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const resolvedInitialCategory = resolveInitialMainCategory(initialCategory);
+  const routeCategory = useMemo(() => resolveMainCategoryFromPath(pathname), [pathname]);
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
   const { ejercicios } = useEjercicios();
@@ -1637,7 +1639,7 @@ export default function AlumnoVisionClient({
   }, [weekPlanStoreRaw, weekPlanSyncLoaded, workoutLogsShared, workoutLogsSyncLoaded]);
 
   useLayoutEffect(() => {
-    const nextCategory = resolveInitialMainCategory(initialCategory);
+    const nextCategory = routeCategory || resolveInitialMainCategory(initialCategory);
     categoryHistoryRef.current = nextCategory === "inicio" ? [] : ["inicio"];
 
     if (activeCategoryRef.current === nextCategory) {
@@ -1646,7 +1648,7 @@ export default function AlumnoVisionClient({
 
     activeCategoryRef.current = nextCategory;
     setActiveCategory(nextCategory);
-  }, [initialCategory]);
+  }, [initialCategory, routeCategory]);
 
   useEffect(() => {
     activeCategoryRef.current = activeCategory;
@@ -4545,6 +4547,8 @@ export default function AlumnoVisionClient({
                   <article
                     className={`pf-a3-routine-log-panel ${
                       isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
+                    } ${
+                      routineExerciseVideoSource.kind !== "none" ? "pf-a3-routine-log-panel-has-video" : ""
                     }`}
                   >
                     <div className="pf-a3-routine-log-head">
