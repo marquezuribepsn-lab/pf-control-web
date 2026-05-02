@@ -4442,7 +4442,7 @@ export default function AlumnoVisionClient({
 
                           {visibleExercises.length > 0 ? (
                             <div className="pf-a3-routine-exercise-stack">
-                              {visibleExercises.flatMap((exercise, index) => {
+                              {visibleExercises.map((exercise, index) => {
                                 const baseExerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
                                 const baseExerciseDetail = exercise.ejercicioId
                                   ? ejerciciosById.get(exercise.ejercicioId) || null
@@ -4451,6 +4451,7 @@ export default function AlumnoVisionClient({
                                 const superSerieRows = Array.isArray(exercise.superSerie)
                                   ? exercise.superSerie
                                   : [];
+                                const hasSuperSerieGroup = superSerieRows.length > 0;
 
                                 const rows = [
                                   {
@@ -4495,129 +4496,176 @@ export default function AlumnoVisionClient({
                                   }),
                                 ];
 
-                                return rows.map((row, rowIndex) => {
-                                  const rirMetric = row.metricas.find((metric) =>
-                                    normalizePersonKey(metric.nombre).includes("rir")
-                                  );
-                                  const rowVideoUrl = String(row.detail?.videoUrl || "").trim();
-                                  const rowDescription =
-                                    String(row.detail?.objetivo || "").trim() ||
-                                    (row.isSuperSerie
-                                      ? `Superserie asignada con ${baseExerciseName}`
-                                      : "Ejecuta con tecnica y control");
-                                  const rowTags = Array.from(
-                                    new Set(
-                                      [
-                                        ...(Array.isArray(row.detail?.gruposMusculares)
-                                          ? row.detail.gruposMusculares
-                                          : []),
-                                        String(row.detail?.categoria || "").trim(),
-                                        row.isSuperSerie ? "Superserie" : "",
-                                      ].filter(Boolean)
-                                    )
-                                  ).slice(0, 6);
-                                  const exerciseKey = buildRoutineExerciseKey(
-                                    selectedRoutineEntry.sesion.id,
-                                    selectedRoutineEntry.weekId,
-                                    selectedRoutineEntry.dayId,
-                                    block.id,
-                                    row.rowId,
-                                    row.rowOrderIndex
-                                  );
+                                return (
+                                  <div
+                                    key={`${block.id}-group-${exercise.ejercicioId || index}`}
+                                    className={`pf-a3-routine-exercise-group ${
+                                      hasSuperSerieGroup ? "pf-a3-routine-exercise-group-linked" : ""
+                                    }`}
+                                  >
+                                    {hasSuperSerieGroup ? (
+                                      <span className="pf-a3-routine-exercise-bracket" aria-hidden="true" />
+                                    ) : null}
 
-                                  const exerciseLogTarget: RoutineExerciseLogTarget = {
-                                    sessionId: selectedRoutineEntry.sesion.id,
-                                    sessionTitle: selectedRoutineEntry.sesion.titulo,
-                                    weekId: selectedRoutineEntry.weekId,
-                                    weekName: selectedRoutineEntry.weekName,
-                                    dayId: selectedRoutineEntry.dayId,
-                                    dayName: selectedRoutineEntry.dayName,
-                                    blockId: block.id,
-                                    blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
-                                    exerciseId: row.rowId,
-                                    exerciseName: row.rowName,
-                                    exerciseKey,
-                                    prescribedSeries: String(row.series || "").trim(),
-                                    prescribedRepeticiones: String(row.repeticiones || "").trim(),
-                                    prescribedCarga: String(row.carga || "").trim(),
-                                    prescribedDescanso: String(row.descanso || "").trim(),
-                                    prescribedRir: String(rirMetric?.valor || "").trim(),
-                                    suggestedVideoUrl: rowVideoUrl,
-                                    exerciseDescription: rowDescription,
-                                    exerciseTags: rowTags,
-                                  };
+                                    <div className="pf-a3-routine-exercise-group-stack">
+                                      {rows.map((row) => {
+                                        const rirMetric = row.metricas.find((metric) =>
+                                          normalizePersonKey(metric.nombre).includes("rir")
+                                        );
+                                        const rowVideoUrl = String(row.detail?.videoUrl || "").trim();
+                                        const rowVideoSource = resolveRoutineExerciseVideoSource(rowVideoUrl);
+                                        const rowYouTubeThumbnail =
+                                          rowVideoSource.kind === "iframe"
+                                            ? resolveYouTubeThumbnailFromEmbed(rowVideoSource.src)
+                                            : null;
+                                        const hasVideoPreview =
+                                          rowVideoSource.kind === "video" || Boolean(rowYouTubeThumbnail);
+                                        const rowDescription =
+                                          String(row.detail?.objetivo || "").trim() ||
+                                          (row.isSuperSerie
+                                            ? `Superserie asignada con ${baseExerciseName}`
+                                            : "Ejecuta con tecnica y control");
+                                        const rowTags = Array.from(
+                                          new Set(
+                                            [
+                                              ...(Array.isArray(row.detail?.gruposMusculares)
+                                                ? row.detail.gruposMusculares
+                                                : []),
+                                              String(row.detail?.categoria || "").trim(),
+                                              row.isSuperSerie ? "Superserie" : "",
+                                            ].filter(Boolean)
+                                          )
+                                        ).slice(0, 6);
+                                        const exerciseKey = buildRoutineExerciseKey(
+                                          selectedRoutineEntry.sesion.id,
+                                          selectedRoutineEntry.weekId,
+                                          selectedRoutineEntry.dayId,
+                                          block.id,
+                                          row.rowId,
+                                          row.rowOrderIndex
+                                        );
 
-                                  return (
-                                    <article
-                                      key={`${block.id}-${row.rowKeySuffix}`}
-                                      className="pf-a3-routine-exercise-row"
-                                    >
-                                      <div className="pf-a3-routine-exercise-main">
-                                        <span
-                                          className={`pf-a3-routine-exercise-index ${
-                                            row.isSuperSerie ? "pf-a3-routine-exercise-index-superset" : ""
-                                          }`}
-                                        >
-                                          {row.isSuperSerie ? "SS" : index + 1}
-                                        </span>
-                                        <span className="pf-a3-routine-exercise-thumb" aria-hidden="true">
-                                          {getInitials(row.rowName)}
-                                        </span>
-                                        <div className="min-w-0">
-                                          <ReliableActionButton
-                                            type="button"
-                                            onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
-                                            className="pf-a3-routine-exercise-name-btn"
-                                            aria-label={`Registrar cargas de ${row.rowName}`}
+                                        const exerciseLogTarget: RoutineExerciseLogTarget = {
+                                          sessionId: selectedRoutineEntry.sesion.id,
+                                          sessionTitle: selectedRoutineEntry.sesion.titulo,
+                                          weekId: selectedRoutineEntry.weekId,
+                                          weekName: selectedRoutineEntry.weekName,
+                                          dayId: selectedRoutineEntry.dayId,
+                                          dayName: selectedRoutineEntry.dayName,
+                                          blockId: block.id,
+                                          blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+                                          exerciseId: row.rowId,
+                                          exerciseName: row.rowName,
+                                          exerciseKey,
+                                          prescribedSeries: String(row.series || "").trim(),
+                                          prescribedRepeticiones: String(row.repeticiones || "").trim(),
+                                          prescribedCarga: String(row.carga || "").trim(),
+                                          prescribedDescanso: String(row.descanso || "").trim(),
+                                          prescribedRir: String(rirMetric?.valor || "").trim(),
+                                          suggestedVideoUrl: rowVideoUrl,
+                                          exerciseDescription: rowDescription,
+                                          exerciseTags: rowTags,
+                                        };
+
+                                        return (
+                                          <article
+                                            key={`${block.id}-${row.rowKeySuffix}`}
+                                            className="pf-a3-routine-exercise-row"
                                           >
-                                            <p className="pf-a3-routine-exercise-name">{row.rowName}</p>
-                                          </ReliableActionButton>
-                                          <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
-                                        </div>
-                                      </div>
+                                            <div className="pf-a3-routine-exercise-main">
+                                              <span
+                                                className={`pf-a3-routine-exercise-index ${
+                                                  row.isSuperSerie ? "pf-a3-routine-exercise-index-superset" : ""
+                                                }`}
+                                              >
+                                                {row.isSuperSerie ? "SS" : index + 1}
+                                              </span>
+                                              <span
+                                                className={`pf-a3-routine-exercise-thumb ${
+                                                  hasVideoPreview
+                                                    ? "pf-a3-routine-exercise-thumb-has-media"
+                                                    : ""
+                                                }`}
+                                                aria-hidden="true"
+                                              >
+                                                {rowVideoSource.kind === "video" ? (
+                                                  <video
+                                                    className="pf-a3-routine-exercise-thumb-media"
+                                                    src={rowVideoSource.src}
+                                                    muted
+                                                    playsInline
+                                                    preload="metadata"
+                                                  />
+                                                ) : rowYouTubeThumbnail ? (
+                                                  <img
+                                                    src={rowYouTubeThumbnail}
+                                                    alt=""
+                                                    className="pf-a3-routine-exercise-thumb-media"
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                  />
+                                                ) : (
+                                                  getInitials(row.rowName)
+                                                )}
+                                              </span>
+                                              <div className="min-w-0">
+                                                <ReliableActionButton
+                                                  type="button"
+                                                  onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
+                                                  className="pf-a3-routine-exercise-name-btn"
+                                                  aria-label={`Registrar cargas de ${row.rowName}`}
+                                                >
+                                                  <p className="pf-a3-routine-exercise-name">{row.rowName}</p>
+                                                </ReliableActionButton>
+                                                <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
+                                              </div>
+                                            </div>
 
-                                      <div className="pf-a3-routine-exercise-stats">
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>Series:</span>
-                                          <strong>{row.series || "S/D"}</strong>
-                                        </div>
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>Rep.:</span>
-                                          <strong>{row.repeticiones || "S/D"}</strong>
-                                        </div>
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>Desc.:</span>
-                                          <strong>{row.descanso || "S/D"}</strong>
-                                        </div>
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>RIR:</span>
-                                          <strong>{rirMetric?.valor || "S/D"}</strong>
-                                        </div>
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>Carga (Kg):</span>
-                                          <strong>{row.carga || "S/D"}</strong>
-                                        </div>
-                                        <div className="pf-a3-routine-exercise-stat">
-                                          <span>Obs.:</span>
-                                          <strong>{row.observaciones || "S/D"}</strong>
-                                        </div>
-                                      </div>
+                                            <div className="pf-a3-routine-exercise-stats">
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>Series:</span>
+                                                <strong>{row.series || "S/D"}</strong>
+                                              </div>
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>Rep.:</span>
+                                                <strong>{row.repeticiones || "S/D"}</strong>
+                                              </div>
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>Desc.:</span>
+                                                <strong>{row.descanso || "S/D"}</strong>
+                                              </div>
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>RIR:</span>
+                                                <strong>{rirMetric?.valor || "S/D"}</strong>
+                                              </div>
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>Carga (Kg):</span>
+                                                <strong>{row.carga || "S/D"}</strong>
+                                              </div>
+                                              <div className="pf-a3-routine-exercise-stat">
+                                                <span>Obs.:</span>
+                                                <strong>{row.observaciones || "S/D"}</strong>
+                                              </div>
+                                            </div>
 
-                                      {rowTags.length > 0 ? (
-                                        <div className="pf-a3-routine-exercise-tags">
-                                          {rowTags.map((tag, tagIndex) => (
-                                            <span
-                                              key={`${block.id}-${row.rowKeySuffix}-${tagIndex}`}
-                                              className="pf-a3-routine-exercise-tag"
-                                            >
-                                              {tag}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      ) : null}
-                                    </article>
-                                  );
-                                });
+                                            {rowTags.length > 0 ? (
+                                              <div className="pf-a3-routine-exercise-tags">
+                                                {rowTags.map((tag, tagIndex) => (
+                                                  <span
+                                                    key={`${block.id}-${row.rowKeySuffix}-${tagIndex}`}
+                                                    className="pf-a3-routine-exercise-tag"
+                                                  >
+                                                    {tag}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            ) : null}
+                                          </article>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
                               })}
                             </div>
                           ) : null}
