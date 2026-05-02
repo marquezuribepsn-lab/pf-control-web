@@ -3617,7 +3617,7 @@ export default function AlumnoVisionClient({
   const isRoutineLogPanelOpen = Boolean(routineExerciseLogTarget);
 
   return (
-    <main className="pf-alumno-main pf-alumno-v2">
+    <main className="pf-alumno-main pf-alumno-v2" data-pf-alumno-category={activeCategory}>
       <div className="pf-a2-shell">
         {isRootCategory ? (
           <header className="pf-a3-home-head">
