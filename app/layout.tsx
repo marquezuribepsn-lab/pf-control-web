@@ -39,7 +39,8 @@ export const viewport: Viewport = {
 
 const db = prisma as any;
 const SIDEBAR_IMAGE_SYNC_KEY_PREFIX = "pf-control-user-sidebar-image:";
-const HARD_RELOAD_SPLASH_MIN_MS = 2000;
+const HARD_RELOAD_SPLASH_VISIBLE_MS = 2000;
+const HARD_RELOAD_SPLASH_FADE_MS = 240;
 
 function resolveInitialProfileName(user?: { name?: string | null; email?: string | null } | null): string | null {
   const fromName = typeof user?.name === "string" ? user.name.trim() : "";
@@ -181,6 +182,25 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
+        <style>{`
+          @keyframes pfHardReloadSplashFade {
+            from {
+              opacity: 1;
+              visibility: visible;
+            }
+
+            to {
+              opacity: 0;
+              visibility: hidden;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            #pf-hard-reload-splash {
+              animation-duration: 1ms !important;
+            }
+          }
+        `}</style>
         <div
           id="pf-hard-reload-splash"
           style={{
@@ -192,6 +212,11 @@ export default async function RootLayout({
             alignItems: "center",
             justifyContent: "center",
             padding: "16px",
+            pointerEvents: "none",
+            opacity: 1,
+            visibility: "visible",
+            animation: `pfHardReloadSplashFade ${HARD_RELOAD_SPLASH_FADE_MS}ms ease ${HARD_RELOAD_SPLASH_VISIBLE_MS}ms forwards`,
+            WebkitAnimation: `pfHardReloadSplashFade ${HARD_RELOAD_SPLASH_FADE_MS}ms ease ${HARD_RELOAD_SPLASH_VISIBLE_MS}ms forwards`,
           }}
           aria-live="polite"
         >
@@ -255,179 +280,6 @@ export default async function RootLayout({
             </p>
           </div>
         </div>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function () {
-  var overlay = document.getElementById("pf-hard-reload-splash");
-  if (!overlay) {
-    return;
-  }
-
-  var ALLOWED_ALUMNO_CATEGORIES = {
-    inicio: 1,
-    rutina: 1,
-    nutricion: 1,
-    progreso: 1,
-    musica: 1,
-  };
-  var LAST_CATEGORY_KEY = "pf-alumno-last-category-v1";
-  var LAST_CATEGORY_TS_KEY = "pf-alumno-last-category-ts-v1";
-
-  var isReloadNavigation = false;
-  try {
-    if (performance && typeof performance.getEntriesByType === "function") {
-      var navigationEntries = performance.getEntriesByType("navigation");
-      if (navigationEntries && navigationEntries.length > 0) {
-        isReloadNavigation = navigationEntries[0].type === "reload";
-      }
-    }
-
-    if (!isReloadNavigation && performance && performance.navigation) {
-      isReloadNavigation = performance.navigation.type === 1;
-    }
-  } catch (_error) {
-    isReloadNavigation = false;
-  }
-
-  var startedAt = Date.now();
-  var hidden = false;
-  var finishScheduled = false;
-  var hardReleaseTimer = null;
-
-  var hideOverlay = function () {
-    if (hidden || !overlay) {
-      return;
-    }
-
-    hidden = true;
-    if (hardReleaseTimer !== null) {
-      window.clearTimeout(hardReleaseTimer);
-      hardReleaseTimer = null;
-    }
-    overlay.style.opacity = "0";
-    overlay.style.pointerEvents = "none";
-    overlay.style.transition = "opacity 220ms ease";
-
-    window.setTimeout(function () {
-      if (overlay && overlay.parentNode) {
-        overlay.parentNode.removeChild(overlay);
-      }
-    }, 260);
-  };
-
-  var waitForAlumnoRouteReady = function (done) {
-    try {
-      var path = String(window.location.pathname || "").toLowerCase();
-      var match = path.match(/^\/alumnos\/([^/?#]+)/);
-
-      if (!match) {
-        done();
-        return;
-      }
-
-      var expectedCategory = String(match[1] || "").trim();
-      if (!ALLOWED_ALUMNO_CATEGORIES[expectedCategory]) {
-        done();
-        return;
-      }
-
-      var startedWaitAt = Date.now();
-      var maxWaitMs = 1200;
-
-      var checkReady = function () {
-        var selector = '[data-pf-alumno-category="' + expectedCategory + '"]';
-        if (document.querySelector(selector)) {
-          done();
-          return;
-        }
-
-        if (Date.now() - startedWaitAt >= maxWaitMs) {
-          done();
-          return;
-        }
-
-        window.requestAnimationFrame(checkReady);
-      };
-
-      checkReady();
-    } catch (_error) {
-      done();
-    }
-  };
-
-  var maybeRestoreAlumnoReloadRoute = function () {
-    try {
-      if (!isReloadNavigation) {
-        return false;
-      }
-
-      var currentPath = String(window.location.pathname || "").toLowerCase();
-      var match = currentPath.match(/^\/alumnos\/([^/?#]+)/);
-      if (!match) {
-        return false;
-      }
-
-      var currentCategory = String(match[1] || "").trim();
-      if (!ALLOWED_ALUMNO_CATEGORIES[currentCategory]) {
-        return false;
-      }
-
-      if (currentCategory !== "inicio") {
-        return false;
-      }
-
-      var storedCategoryRaw = window.sessionStorage.getItem(LAST_CATEGORY_KEY);
-      var storedCategory = String(storedCategoryRaw || "").trim().toLowerCase();
-      if (!ALLOWED_ALUMNO_CATEGORIES[storedCategory]) {
-        return false;
-      }
-
-      var storedTsRaw = window.sessionStorage.getItem(LAST_CATEGORY_TS_KEY);
-      var storedTs = Number(storedTsRaw || "0");
-      var isFresh = Number.isFinite(storedTs) && Date.now() - storedTs <= 10 * 60 * 1000;
-
-      if (!isFresh || storedCategory === currentCategory) {
-        return false;
-      }
-
-      var nextUrl = "/alumnos/" + storedCategory + String(window.location.search || "") + String(window.location.hash || "");
-      window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 1200});
-      window.location.replace(nextUrl);
-      return true;
-    } catch (_error) {
-      return false;
-    }
-  };
-
-  if (maybeRestoreAlumnoReloadRoute()) {
-    return;
-  }
-
-  var scheduleFinishWithMinimum = function () {
-    if (finishScheduled) {
-      return;
-    }
-
-    finishScheduled = true;
-    var elapsed = Date.now() - startedAt;
-    var remaining = Math.max(0, ${HARD_RELOAD_SPLASH_MIN_MS} - elapsed);
-    window.setTimeout(function () {
-      waitForAlumnoRouteReady(hideOverlay);
-    }, remaining);
-  };
-
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    scheduleFinishWithMinimum();
-  } else {
-    document.addEventListener("DOMContentLoaded", scheduleFinishWithMinimum, { once: true });
-  }
-
-  window.addEventListener("load", scheduleFinishWithMinimum, { once: true });
-
-  hardReleaseTimer = window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 2200});
-})();`,
-          }}
-        />
         <AuthSessionProvider>
           <PresenceBeacon />
           <div className="pf-root-atmosphere">
