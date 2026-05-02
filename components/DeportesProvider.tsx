@@ -39,12 +39,13 @@ export default function DeportesProvider({
         const savedDeporte = prev.find((s) => s.nombre === initial.nombre);
         if (!savedDeporte) return initial;
 
+        if (savedDeporte.posiciones && savedDeporte.posiciones.length > 0) {
+          return savedDeporte;
+        }
+
         return {
           ...savedDeporte,
-          posiciones:
-            savedDeporte.posiciones && savedDeporte.posiciones.length > 0
-              ? savedDeporte.posiciones
-              : initial.posiciones,
+          posiciones: initial.posiciones,
         };
       });
 
@@ -52,7 +53,15 @@ export default function DeportesProvider({
         (s) => !deportesIniciales.some((init) => init.nombre === s.nombre)
       );
 
-      return [...merged, ...newSports];
+      const normalized = [...merged, ...newSports];
+      if (
+        normalized.length === prev.length &&
+        normalized.every((sport, index) => sport === prev[index])
+      ) {
+        return prev;
+      }
+
+      return normalized;
     });
   }, [setDeportes]);
 
