@@ -270,6 +270,24 @@ export default async function RootLayout({
     progreso: 1,
     musica: 1,
   };
+  var LAST_CATEGORY_KEY = "pf-alumno-last-category-v1";
+  var LAST_CATEGORY_TS_KEY = "pf-alumno-last-category-ts-v1";
+
+  var isReloadNavigation = false;
+  try {
+    if (performance && typeof performance.getEntriesByType === "function") {
+      var navigationEntries = performance.getEntriesByType("navigation");
+      if (navigationEntries && navigationEntries.length > 0) {
+        isReloadNavigation = navigationEntries[0].type === "reload";
+      }
+    }
+
+    if (!isReloadNavigation && performance && performance.navigation) {
+      isReloadNavigation = performance.navigation.type === 1;
+    }
+  } catch (_error) {
+    isReloadNavigation = false;
+  }
 
   var startedAt = Date.now();
   var hidden = false;
@@ -330,6 +348,49 @@ export default async function RootLayout({
       done();
     }
   };
+
+  var maybeRestoreAlumnoReloadRoute = function () {
+    try {
+      if (!isReloadNavigation) {
+        return false;
+      }
+
+      var currentPath = String(window.location.pathname || "").toLowerCase();
+      var match = currentPath.match(/^\/alumnos\/([^/?#]+)/);
+      if (!match) {
+        return false;
+      }
+
+      var currentCategory = String(match[1] || "").trim();
+      if (!ALLOWED_ALUMNO_CATEGORIES[currentCategory]) {
+        return false;
+      }
+
+      var storedCategoryRaw = window.sessionStorage.getItem(LAST_CATEGORY_KEY);
+      var storedCategory = String(storedCategoryRaw || "").trim().toLowerCase();
+      if (!ALLOWED_ALUMNO_CATEGORIES[storedCategory]) {
+        return false;
+      }
+
+      var storedTsRaw = window.sessionStorage.getItem(LAST_CATEGORY_TS_KEY);
+      var storedTs = Number(storedTsRaw || "0");
+      var isFresh = Number.isFinite(storedTs) && Date.now() - storedTs <= 10 * 60 * 1000;
+
+      if (!isFresh || storedCategory === currentCategory) {
+        return false;
+      }
+
+      var nextUrl = "/alumnos/" + storedCategory + String(window.location.search || "") + String(window.location.hash || "");
+      window.location.replace(nextUrl);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  };
+
+  if (maybeRestoreAlumnoReloadRoute()) {
+    return;
+  }
 
   var finishWithMinimum = function () {
     var elapsed = Date.now() - startedAt;
