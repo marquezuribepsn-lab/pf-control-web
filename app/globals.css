@@ -3032,6 +3032,33 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.44rem;
 }
 
+.pf-a3-routine-exercise-group {
+  position: relative;
+}
+
+.pf-a3-routine-exercise-group-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-a3-routine-exercise-group-linked {
+  padding-left: 0.78rem;
+}
+
+.pf-a3-routine-exercise-bracket {
+  position: absolute;
+  left: 0.14rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 0.5rem;
+  border-left: 2px solid rgba(100, 206, 255, 0.9);
+  border-top: 2px solid rgba(100, 206, 255, 0.9);
+  border-bottom: 2px solid rgba(100, 206, 255, 0.9);
+  border-radius: 0.52rem 0 0 0.52rem;
+  filter: drop-shadow(0 0 7px rgba(40, 185, 255, 0.28));
+  pointer-events: none;
+}
+
 .pf-a3-routine-exercise-row {
   border-radius: 0.88rem;
   border: 1px solid rgba(85, 104, 137, 0.58);
@@ -3092,6 +3119,20 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   text-transform: uppercase;
   flex: 0 0 auto;
   box-shadow: inset 0 0 0 1px rgba(144, 160, 189, 0.06);
+}
+
+.pf-a3-routine-exercise-thumb-has-media {
+  overflow: hidden;
+  padding: 0;
+  border-color: rgba(128, 166, 211, 0.64);
+  background: rgba(8, 14, 26, 0.92);
+}
+
+.pf-a3-routine-exercise-thumb-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .pf-a3-routine-exercise-name {
@@ -4302,6 +4343,17 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a3-routine-exercise-stack {
     gap: 0.34rem;
+  }
+
+  .pf-a3-routine-exercise-group-linked {
+    padding-left: 0.64rem;
+  }
+
+  .pf-a3-routine-exercise-bracket {
+    left: 0.1rem;
+    width: 0.4rem;
+    top: 0.42rem;
+    bottom: 0.42rem;
   }
 
   .pf-a3-routine-exercise-thumb {
