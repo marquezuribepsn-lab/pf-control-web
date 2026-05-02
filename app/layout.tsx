@@ -2,7 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import { Sora, Space_Grotesk } from "next/font/google";
 import { Prisma } from "@prisma/client";
-import Script from "next/script";
 import PlayersProvider from "../components/PlayersProvider";
 import SessionsProvider from "../components/SessionsProvider";
 import WellnessProvider from "../components/WellnessProvider";
@@ -256,8 +255,9 @@ export default async function RootLayout({
             </p>
           </div>
         </div>
-        <Script id="pf-hard-reload-splash-script" strategy="beforeInteractive">
-          {`(function () {
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function () {
   var overlay = document.getElementById("pf-hard-reload-splash");
   if (!overlay) {
     return;
@@ -346,8 +346,9 @@ export default async function RootLayout({
   }
 
   window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 6000});
-})();`}
-        </Script>
+})();`,
+          }}
+        />
         <AuthSessionProvider>
           <PresenceBeacon />
           <div className="pf-root-atmosphere">
