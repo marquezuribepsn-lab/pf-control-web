@@ -263,6 +263,14 @@ export default async function RootLayout({
     return;
   }
 
+  var ALLOWED_ALUMNO_CATEGORIES = {
+    inicio: 1,
+    rutina: 1,
+    nutricion: 1,
+    progreso: 1,
+    musica: 1,
+  };
+
   var startedAt = Date.now();
   var hidden = false;
 
@@ -283,10 +291,52 @@ export default async function RootLayout({
     }, 260);
   };
 
+  var waitForAlumnoRouteReady = function (done) {
+    try {
+      var path = String(window.location.pathname || "").toLowerCase();
+      var match = path.match(/^\/alumnos\/([^/?#]+)/);
+
+      if (!match) {
+        done();
+        return;
+      }
+
+      var expectedCategory = String(match[1] || "").trim();
+      if (!ALLOWED_ALUMNO_CATEGORIES[expectedCategory]) {
+        done();
+        return;
+      }
+
+      var startedWaitAt = Date.now();
+      var maxWaitMs = 4500;
+
+      var checkReady = function () {
+        var selector = '[data-pf-alumno-category="' + expectedCategory + '"]';
+        if (document.querySelector(selector)) {
+          done();
+          return;
+        }
+
+        if (Date.now() - startedWaitAt >= maxWaitMs) {
+          done();
+          return;
+        }
+
+        window.requestAnimationFrame(checkReady);
+      };
+
+      checkReady();
+    } catch (_error) {
+      done();
+    }
+  };
+
   var finishWithMinimum = function () {
     var elapsed = Date.now() - startedAt;
     var remaining = Math.max(0, ${HARD_RELOAD_SPLASH_MIN_MS} - elapsed);
-    window.setTimeout(hideOverlay, remaining);
+    window.setTimeout(function () {
+      waitForAlumnoRouteReady(hideOverlay);
+    }, remaining);
   };
 
   if (document.readyState === "complete") {
