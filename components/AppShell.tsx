@@ -339,6 +339,27 @@ const normalizeThemeMode = (value: unknown): ThemeMode => {
   return normalized === "light" ? "light" : "dark";
 };
 
+const isMobileLikeViewport = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const narrowViewport = window.matchMedia("(max-width: 1024px)").matches;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const tabletViewport = coarsePointer && window.innerWidth <= 1400;
+
+  const userAgent =
+    typeof navigator !== "undefined" ? String(navigator.userAgent || "") : "";
+  const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(userAgent);
+
+  const mobileWebViewClass =
+    typeof document !== "undefined" &&
+    (document.documentElement.classList.contains("pf-mobile-webview") ||
+      document.documentElement.classList.contains("pf-mobile-fluid"));
+
+  return narrowViewport || tabletViewport || mobileUserAgent || mobileWebViewClass;
+};
+
 const applyThemeMode = (mode: ThemeMode) => {
   if (typeof document === "undefined") return;
 
@@ -350,7 +371,7 @@ const applyThemeMode = (mode: ThemeMode) => {
 const applyScreenScale = (value: number) => {
   if (typeof document === "undefined") return;
 
-  if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
+  if (isMobileLikeViewport()) {
     document.documentElement.style.setProperty("--pf-screen-scale", "1");
     return;
   }
@@ -770,16 +791,21 @@ export default function AppShell({
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
 
-    const mediaQuery = window.matchMedia("(max-width: 1024px)");
+    const narrowViewportQuery = window.matchMedia("(max-width: 1024px)");
+    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
     const syncViewport = () => {
-      setIsMobileViewport(mediaQuery.matches);
+      setIsMobileViewport(isMobileLikeViewport());
     };
 
     syncViewport();
-    mediaQuery.addEventListener("change", syncViewport);
+    narrowViewportQuery.addEventListener("change", syncViewport);
+    coarsePointerQuery.addEventListener("change", syncViewport);
+    window.addEventListener("resize", syncViewport);
 
     return () => {
-      mediaQuery.removeEventListener("change", syncViewport);
+      narrowViewportQuery.removeEventListener("change", syncViewport);
+      coarsePointerQuery.removeEventListener("change", syncViewport);
+      window.removeEventListener("resize", syncViewport);
     };
   }, [mounted]);
 
@@ -932,10 +958,7 @@ export default function AppShell({
       resolvedRole ??
       null;
     const normalizedRole = typeof nextRole === "string" ? nextRole.trim().toUpperCase() : "";
-    const isClienteMobile =
-      normalizedRole === "CLIENTE" &&
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 1024px)").matches;
+    const isClienteMobile = normalizedRole === "CLIENTE" && isMobileLikeViewport();
 
     if (isClienteMobile) {
       return;
@@ -967,7 +990,7 @@ export default function AppShell({
     };
 
     const onResize = () => {
-      if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
+      if (isMobileLikeViewport()) {
         return;
       }
       runInteractionGuard();
@@ -1119,10 +1142,7 @@ export default function AppShell({
       resolvedRole ??
       null;
     const normalizedRole = typeof nextRole === "string" ? nextRole.trim().toUpperCase() : "";
-    const isClienteMobile =
-      normalizedRole === "CLIENTE" &&
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 1024px)").matches;
+    const isClienteMobile = normalizedRole === "CLIENTE" && isMobileLikeViewport();
 
     if (isClienteMobile) {
       return;
@@ -1946,7 +1966,9 @@ export default function AppShell({
       ) : null}
 
       <main
-        className={`relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 md:pl-[clamp(132px,14vw,170px)] md:pt-4 ${
+        className={`relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 ${
+          shouldRenderSidebar ? "md:pl-[clamp(132px,14vw,170px)]" : "md:pl-0"
+        } md:pt-4 ${
           isAlumnosRoute ? "pt-0" : "pt-14"
         }`}
       >
