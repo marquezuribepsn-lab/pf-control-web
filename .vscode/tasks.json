@@ -7,9 +7,6 @@
       "command": "npm run git:autosync",
       "isBackground": true,
       "problemMatcher": [],
-      "runOptions": {
-        "runOn": "folderOpen"
-      },
       "presentation": {
         "reveal": "never",
         "panel": "dedicated",

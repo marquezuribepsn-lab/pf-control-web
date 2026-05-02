@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { createElement, useMemo, useState } from "react";
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -21,6 +21,17 @@ const MAX_PERFORMANCE_QUERY_FLAGS: Record<string, string> = {
   pffluid: "1",
 };
 
+const MAX_PERFORMANCE_FLAG_KEYS = Object.keys(MAX_PERFORMANCE_QUERY_FLAGS);
+const WEBVIEW_CACHE_QUERY_KEYS = ["pfv", "pfrefresh", ...MAX_PERFORMANCE_FLAG_KEYS];
+const WEBVIEW_MIN_BRANDED_LOADING_MS = 2000;
+const PRODUCTION_HOSTNAME = (() => {
+  try {
+    return new URL(PRODUCTION_URL).hostname;
+  } catch {
+    return "";
+  }
+})();
+
 const MOBILE_SCROLL_HINT_SCRIPT = `
 (() => {
   try {
@@ -39,6 +50,58 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
     root.classList.add("pf-mobile-webview");
     root.classList.add("pf-mobile-fluid");
     root.classList.add("pf-mobile-maxperf");
+
+    const postCurrentRoute = () => {
+      try {
+        if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === "function") {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: "pf-route",
+              href: String(window.location.href || ""),
+            })
+          );
+        }
+      } catch (_error) {
+        true;
+      }
+    };
+
+    const hookHistoryMethod = (methodName) => {
+      try {
+        const historyRef = window.history;
+        if (!historyRef) {
+          return;
+        }
+
+        const original = historyRef[methodName];
+        if (typeof original !== "function") {
+          return;
+        }
+
+        const wrappedFlag = "__PF_ROUTE_HOOK_" + methodName + "__";
+        if (window[wrappedFlag]) {
+          return;
+        }
+
+        window[wrappedFlag] = true;
+
+        historyRef[methodName] = function (...args) {
+          const result = original.apply(this, args);
+          setTimeout(postCurrentRoute, 0);
+          return result;
+        };
+      } catch (_error) {
+        true;
+      }
+    };
+
+    hookHistoryMethod("pushState");
+    hookHistoryMethod("replaceState");
+
+    window.addEventListener("popstate", postCurrentRoute, { passive: true });
+    window.addEventListener("hashchange", postCurrentRoute, { passive: true });
+
+    setTimeout(postCurrentRoute, 0);
 
     const styleId = "pf-mobile-maxperf-style";
     if (!document.getElementById(styleId)) {
@@ -89,20 +152,166 @@ function withCacheBust(url: string, refreshSeed: number): string {
   }
 }
 
+function buildInPlaceRefreshScript(refreshSeed: number): string {
+  const serializedCacheTag = JSON.stringify(WEBVIEW_CACHE_TAG);
+  const serializedSeed = JSON.stringify(String(refreshSeed));
+  const serializedFlags = JSON.stringify(
+    MAX_PERFORMANCE_MODE ? MAX_PERFORMANCE_QUERY_FLAGS : {}
+  );
+
+  return `
+(() => {
+  try {
+    const parsed = new URL(String(window.location.href || ""));
+    parsed.searchParams.set("pfv", ${serializedCacheTag});
+    parsed.searchParams.set("pfrefresh", ${serializedSeed});
+
+    const flags = ${serializedFlags};
+    Object.keys(flags).forEach((key) => {
+      parsed.searchParams.set(key, String(flags[key]));
+    });
+
+    const nextUrl = parsed.toString();
+
+    if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === "function") {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "pf-route",
+          href: nextUrl,
+        })
+      );
+    }
+
+    window.location.replace(nextUrl);
+  } catch (_error) {
+    window.location.reload();
+  }
+
+  true;
+})();
+`;
+}
+
+function normalizeWebViewRouteUrl(rawUrl: string): string | null {
+  const normalizedRaw = String(rawUrl || "").trim();
+  if (!normalizedRaw) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(normalizedRaw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+
+    if (PRODUCTION_HOSTNAME && parsed.hostname !== PRODUCTION_HOSTNAME) {
+      return null;
+    }
+
+    WEBVIEW_CACHE_QUERY_KEYS.forEach((key) => {
+      parsed.searchParams.delete(key);
+    });
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [webViewKey, setWebViewKey] = useState(0);
   const [refreshSeed, setRefreshSeed] = useState(() => Date.now());
   const [webError, setWebError] = useState("");
+  const [baseUrl, setBaseUrl] = useState(PRODUCTION_URL);
+  const [showBrandedLoading, setShowBrandedLoading] = useState(true);
+  const loadingStartedAtRef = useRef<number>(Date.now());
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const webViewRef = useRef<any>(null);
   const isWeb = Platform.OS === "web";
 
+  const clearLoadingTimer = useCallback(() => {
+    if (loadingTimerRef.current !== null) {
+      clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = null;
+    }
+  }, []);
+
+  const beginBrandedLoading = useCallback(() => {
+    clearLoadingTimer();
+    loadingStartedAtRef.current = Date.now();
+    setShowBrandedLoading(true);
+  }, [clearLoadingTimer]);
+
+  const endBrandedLoading = useCallback(() => {
+    const elapsedMs = Date.now() - loadingStartedAtRef.current;
+    const remainingMs = Math.max(0, WEBVIEW_MIN_BRANDED_LOADING_MS - elapsedMs);
+
+    clearLoadingTimer();
+
+    if (remainingMs === 0) {
+      setShowBrandedLoading(false);
+      return;
+    }
+
+    loadingTimerRef.current = setTimeout(() => {
+      loadingTimerRef.current = null;
+      setShowBrandedLoading(false);
+    }, remainingMs);
+  }, [clearLoadingTimer]);
+
+  useEffect(() => {
+    return () => {
+      clearLoadingTimer();
+    };
+  }, [clearLoadingTimer]);
+
   const forceRefresh = () => {
-    setRefreshSeed(Date.now());
+    const nextRefreshSeed = Date.now();
+    beginBrandedLoading();
+
+    if (!isWeb && webViewRef.current && typeof webViewRef.current.injectJavaScript === "function") {
+      webViewRef.current.injectJavaScript(buildInPlaceRefreshScript(nextRefreshSeed));
+      return;
+    }
+
+    setRefreshSeed(nextRefreshSeed);
     setWebViewKey((prev) => prev + 1);
   };
 
+  const rememberCurrentUrl = useCallback((rawUrl: string) => {
+    const normalizedUrl = normalizeWebViewRouteUrl(rawUrl);
+    if (!normalizedUrl) {
+      return;
+    }
+
+    setBaseUrl((previous) => (previous === normalizedUrl ? previous : normalizedUrl));
+  }, []);
+
+  const handleWebViewMessage = useCallback(
+    (rawMessage: string) => {
+      const payload = String(rawMessage || "").trim();
+      if (!payload) {
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(payload);
+        if (parsed && typeof parsed === "object" && parsed.type === "pf-route") {
+          rememberCurrentUrl(String(parsed.href || ""));
+          return;
+        }
+      } catch {
+        // Ignore JSON parse errors and fallback to raw payload handling.
+      }
+
+      rememberCurrentUrl(payload);
+    },
+    [rememberCurrentUrl]
+  );
+
   const activeUrl = useMemo(() => {
-    return withCacheBust(PRODUCTION_URL, refreshSeed);
-  }, [refreshSeed]);
+    return withCacheBust(baseUrl, refreshSeed);
+  }, [baseUrl, refreshSeed]);
 
   return (
     <SafeAreaProvider>
@@ -124,7 +333,7 @@ export default function App() {
         </View>
 
         {isWeb ? (
-          <View style={styles.webview}>
+          <View style={styles.webviewContainer}>
             {createElement("iframe" as any, {
               key: `${webViewKey}`,
               src: activeUrl,
@@ -133,9 +342,16 @@ export default function App() {
                 height: "100%",
                 border: "0",
                 backgroundColor: "#020617",
+                opacity: showBrandedLoading ? 0 : 1,
               },
-              onLoad: () => setWebError(""),
-              onError: () => setWebError("No se pudo cargar la URL dentro del panel."),
+              onLoad: () => {
+                setWebError("");
+                endBrandedLoading();
+              },
+              onError: () => {
+                setWebError("No se pudo cargar la URL dentro del panel.");
+                endBrandedLoading();
+              },
             })}
 
             <View style={styles.webHintBar}>
@@ -146,41 +362,67 @@ export default function App() {
             </View>
           </View>
         ) : (
-          <WebView
-            key={`${webViewKey}`}
-            source={{ uri: activeUrl }}
-            style={styles.webview}
-            startInLoadingState
-            cacheEnabled={false}
-            incognito={false}
-            onLoadStart={() => setWebError("")}
-            onError={() => setWebError("No se pudo cargar la URL. Revisa la direccion local y la red.")}
-            renderLoading={() => (
-              <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#73e2bf" />
-                <Text style={styles.loadingText}>Cargando plataforma...</Text>
-              </View>
-            )}
-            setSupportMultipleWindows={false}
-            javaScriptEnabled
-            domStorageEnabled
-            nestedScrollEnabled
-            cacheMode="LOAD_NO_CACHE"
-            setBuiltInZoomControls={false}
-            setDisplayZoomControls={false}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-            allowsBackForwardNavigationGestures={false}
-            allowsInlineMediaPlayback={false}
-            mediaPlaybackRequiresUserAction
-            injectedJavaScriptBeforeContentLoaded={MOBILE_SCROLL_HINT_SCRIPT}
-            pullToRefreshEnabled={false}
-            overScrollMode="never"
-            androidLayerType="software"
-            androidHardwareAccelerationDisabled
-          />
+          <View style={styles.webviewContainer}>
+            <WebView
+              ref={webViewRef}
+              key={`${webViewKey}`}
+              source={{ uri: activeUrl }}
+              style={[styles.webview, showBrandedLoading ? styles.webviewMasked : null]}
+              cacheEnabled={false}
+              incognito={false}
+              onLoadStart={() => {
+                setWebError("");
+                beginBrandedLoading();
+              }}
+              onLoadEnd={endBrandedLoading}
+              onNavigationStateChange={(navigationState) => {
+                rememberCurrentUrl(String(navigationState.url || ""));
+              }}
+              onShouldStartLoadWithRequest={(request) => {
+                rememberCurrentUrl(String(request.url || ""));
+                return true;
+              }}
+              onMessage={(event) => {
+                handleWebViewMessage(String(event.nativeEvent.data || ""));
+              }}
+              onError={() => {
+                setWebError("No se pudo cargar la URL. Revisa la direccion local y la red.");
+                endBrandedLoading();
+              }}
+              setSupportMultipleWindows={false}
+              javaScriptEnabled
+              domStorageEnabled
+              nestedScrollEnabled
+              cacheMode="LOAD_NO_CACHE"
+              setBuiltInZoomControls={false}
+              setDisplayZoomControls={false}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              allowsBackForwardNavigationGestures={false}
+              allowsInlineMediaPlayback={false}
+              mediaPlaybackRequiresUserAction
+              injectedJavaScriptBeforeContentLoaded={MOBILE_SCROLL_HINT_SCRIPT}
+              pullToRefreshEnabled={false}
+              overScrollMode="never"
+              androidLayerType="software"
+              androidHardwareAccelerationDisabled
+            />
+          </View>
         )}
+
+        {showBrandedLoading ? (
+          <View style={styles.loadingOverlay} pointerEvents="none">
+            <View style={styles.loadingLogoWrap}>
+              <View style={styles.loadingLogoCore}>
+                <Text style={styles.loadingLogoText}>PF</Text>
+              </View>
+            </View>
+            <Text style={styles.loadingBrand}>PF Control</Text>
+            <ActivityIndicator size="small" color="#73e2bf" />
+            <Text style={styles.loadingText}>Cargando plataforma...</Text>
+          </View>
+        ) : null}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -247,6 +489,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#05070a",
   },
+  webviewMasked: {
+    opacity: 0,
+  },
+  webviewContainer: {
+    flex: 1,
+    backgroundColor: "#05070a",
+  },
   webHintBar: {
     position: "absolute",
     right: 10,
@@ -280,15 +529,48 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   loadingOverlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#05070a",
-    gap: 10,
+    gap: 8,
+    zIndex: 5,
+  },
+  loadingLogoWrap: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    borderWidth: 2,
+    borderColor: "rgba(115,226,191,0.42)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingLogoCore: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(146,190,255,0.58)",
+    backgroundColor: "rgba(9,16,26,0.92)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingLogoText: {
+    color: "#ecfff7",
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+  },
+  loadingBrand: {
+    color: "#9db4cd",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
   },
   loadingText: {
     color: "#d9e8f8",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
   },
 });

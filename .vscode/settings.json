@@ -1,7 +1,54 @@
 {
   "emulator.emulatorPathWindows": "C:\\Users\\Marqu\\AppData\\Local\\Android\\Sdk\\emulator",
   "emulator.androidColdBoot": true,
-  "task.allowAutomaticTasks": "on",
+  "task.allowAutomaticTasks": "off",
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000
+  "files.autoSaveDelay": 1500,
+  "terminal.integrated.scrollback": 1500,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.tsserver.maxTsServerMemory": 2048,
+  "git.autoRepositoryDetection": "openEditors",
+  "github.copilot.chat.useResponsesApiTruncation": true,
+  "github.copilot.chat.responsesApiContextManagement.enabled": true,
+  "github.copilot.chat.agent.omitFileAttachmentContents": true,
+  "github.copilot.chat.agent.largeToolResultsToDisk.thresholdBytes": 4096,
+  "github.copilot.chat.backgroundAgent.enabled": false,
+  "github.copilot.chat.cloudAgent.enabled": false,
+  "github.copilot.chat.workspace.enableCodeSearch": false,
+  "github.copilot.chat.workspace.maxLocalIndexSize": 30000,
+  "github.copilot.chat.debug.requestLogger.maxEntries": 30,
+  "files.exclude": {
+    "**/.next": true,
+    "**/.turbo": true,
+    "**/node_modules": true,
+    "**/pf-control-mobile/node_modules": true,
+    "**/storage": true,
+    "**/coverage": true,
+    "**/out": true,
+    "**/build": true
+  },
+  "search.exclude": {
+    "**/.next": true,
+    "**/.turbo": true,
+    "**/node_modules": true,
+    "**/pf-control-mobile/node_modules": true,
+    "**/storage": true,
+    "**/coverage": true,
+    "**/out": true,
+    "**/build": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/.next/**": true,
+    "**/.turbo/**": true,
+    "**/node_modules/**": true,
+    "**/pf-control-mobile/node_modules/**": true,
+    "**/storage/**": true,
+    "**/coverage/**": true,
+    "**/out/**": true,
+    "**/build/**": true,
+    "**/.vercel/**": true,
+    "**/*.sst": true
+  }
 }
