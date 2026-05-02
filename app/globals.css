@@ -3216,7 +3216,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: fixed;
   inset: 0;
   z-index: 140;
-  padding: max(0.84rem, env(safe-area-inset-top)) max(0.64rem, env(safe-area-inset-right)) max(0.84rem, env(safe-area-inset-bottom)) max(0.64rem, env(safe-area-inset-left));
+  padding: max(0.84rem, env(safe-area-inset-top)) max(0.72rem, env(safe-area-inset-right)) max(0.84rem, env(safe-area-inset-bottom)) max(0.72rem, env(safe-area-inset-left));
   background: radial-gradient(circle at top, rgba(38, 56, 90, 0.34), transparent 52%), rgba(4, 8, 15, 0.84);
   display: flex;
   align-items: center;
@@ -3226,34 +3226,35 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-panel {
-  width: min(860px, 100%);
-  max-height: min(94dvh, 920px);
+  width: min(860px, calc(100% - 0.18rem));
+  max-height: min(92dvh, 920px);
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
   border-radius: 1.04rem;
   border: 1px solid rgba(114, 136, 175, 0.58);
   background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
-  padding: 0.78rem;
+  padding: 0.82rem 0.8rem 0.9rem;
   margin: auto;
 }
 
 .pf-a3-routine-log-overlay-mobile {
-  padding: env(safe-area-inset-top) max(0.38rem, env(safe-area-inset-right)) env(safe-area-inset-bottom)
-    max(0.38rem, env(safe-area-inset-left));
-  align-items: stretch;
+  padding: max(0.46rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right))
+    max(0.46rem, env(safe-area-inset-bottom)) max(0.4rem, env(safe-area-inset-left));
+  align-items: center;
   justify-content: center;
   overflow-y: auto;
 }
 
 .pf-a3-routine-log-panel-mobile {
-  width: min(100%, 900px);
+  width: min(100%, 860px);
   max-width: 100%;
-  height: 100%;
-  min-height: 100%;
-  max-height: 100%;
-  border-radius: 0.82rem;
-  padding: 0.66rem 0.64rem 0.72rem;
+  height: auto;
+  min-height: 0;
+  max-height: calc(100dvh - max(0.72rem, env(safe-area-inset-top)) - max(0.72rem, env(safe-area-inset-bottom)));
+  border-radius: 0.98rem;
+  padding: 0.72rem 0.66rem calc(0.78rem + env(safe-area-inset-bottom));
+  margin: auto;
 }
 
 .pf-a3-routine-log-head {
@@ -3387,6 +3388,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   background: #000;
   min-height: clamp(198px, 35vh, 352px);
   max-height: min(54vh, 420px);
+}
+
+.pf-a3-routine-log-panel-has-video .pf-a3-routine-log-video-frame {
+  min-height: clamp(220px, 38vh, 360px);
+  max-height: min(56vh, 430px);
 }
 
 video.pf-a3-routine-log-video-frame {
@@ -4235,22 +4241,22 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-log-overlay {
-    padding: env(safe-area-inset-top) max(0.36rem, env(safe-area-inset-right)) env(safe-area-inset-bottom)
-      max(0.36rem, env(safe-area-inset-left));
-    align-items: stretch;
+    padding: max(0.42rem, env(safe-area-inset-top)) max(0.36rem, env(safe-area-inset-right))
+      max(0.42rem, env(safe-area-inset-bottom)) max(0.36rem, env(safe-area-inset-left));
+    align-items: center;
     overflow-y: auto;
   }
 
   .pf-a3-routine-log-panel {
-    width: min(100%, 960px);
+    width: min(100%, 900px);
     max-width: 100%;
-    height: 100%;
-    min-height: 100%;
-    max-height: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: calc(100dvh - max(0.64rem, env(safe-area-inset-top)) - max(0.64rem, env(safe-area-inset-bottom)));
     border-radius: 0.76rem;
     border-left: 1px solid rgba(114, 136, 175, 0.58);
     border-right: 1px solid rgba(114, 136, 175, 0.58);
-    padding: 0.62rem 0.56rem calc(0.68rem + env(safe-area-inset-bottom));
+    padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
   }
 
   .pf-a3-routine-log-presets {
@@ -4268,8 +4274,8 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-log-video-frame {
-    min-height: clamp(186px, 34vh, 272px);
-    max-height: min(44vh, 280px);
+    min-height: clamp(196px, 34vh, 296px);
+    max-height: min(46vh, 320px);
   }
 
   .pf-a3-routine-log-grid {
