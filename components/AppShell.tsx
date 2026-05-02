@@ -464,6 +464,10 @@ export default function AppShell({
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
+  const [alumnosBootLoadingRaw, setAlumnosBootLoadingRaw] = useState<boolean>(() => {
+    const normalizedInitialPathname = normalizePath(pathname);
+    return normalizedInitialPathname === "/alumnos" || normalizedInitialPathname.startsWith("/alumnos/");
+  });
   const [sidebarWidgetSettings, setSidebarWidgetSettings] = useState<SidebarWidgetSettings>(() =>
     normalizeSidebarWidgetSettings({
       transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
@@ -1343,14 +1347,28 @@ export default function AppShell({
   }, [links, normalizedRole, colaboradorAccessMap]);
 
   const normalizedPathname = normalizePath(pathname);
+  const isAlumnosRoute =
+    normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
+  const alumnosBootLoading = useMinimumLoading(
+    alumnosBootLoadingRaw && isAlumnosRoute,
+    APP_TRANSITION_MIN_MS
+  );
+
+  useEffect(() => {
+    if (!alumnosBootLoadingRaw) {
+      return;
+    }
+
+    setAlumnosBootLoadingRaw(false);
+  }, [alumnosBootLoadingRaw]);
+
   const appRouteTransitionRaw =
     optimisticNavHref !== null && optimisticNavHref !== normalizedPathname;
   const appRouteTransitionLoading = useMinimumLoading(
     appRouteTransitionRaw,
     APP_TRANSITION_MIN_MS
   );
-  const isAlumnosRoute =
-    normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
+  const appTransitionOverlayActive = appRouteTransitionLoading || alumnosBootLoading;
   const allVisibleHrefs = visibleLinks.map((link) => normalizePath(link.href));
 
   useEffect(() => {
@@ -1653,6 +1671,19 @@ export default function AppShell({
         detail="Abriendo pantalla..."
         className="pointer-events-none md:left-[clamp(132px,14vw,170px)]"
       />
+      {alumnosBootLoading ? (
+        <div className="pf-a3-routine-log-overlay pf-a3-routine-log-overlay-mobile z-[121]" aria-live="polite">
+          <section className="pf-a3-routine-empty pf-a3-routine-loading w-[min(420px,92vw)]">
+            <div className="pf-a3-routine-loading-visual" aria-hidden="true">
+              <span className="pf-a3-routine-loading-ring" />
+              <span className="pf-a3-routine-loading-core">PF</span>
+            </div>
+            <p className="pf-a3-routine-loading-brand">PF Control</p>
+            <h2>Cargando plataforma...</h2>
+            <p>Preparando tu pantalla de entrenamiento.</p>
+          </section>
+        </div>
+      ) : null}
       {!isClienteRole ? (
         <ReliableActionButton
           type="button"
@@ -1974,7 +2005,7 @@ export default function AppShell({
       >
         <div
           className={`${isAlumnosRoute ? "px-0 md:px-4" : "px-4"} transition-opacity duration-150 ${
-            appRouteTransitionLoading ? "pointer-events-none opacity-0" : "opacity-100"
+            appTransitionOverlayActive ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
         >
           {children}
