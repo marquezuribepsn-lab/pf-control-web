@@ -3178,6 +3178,98 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   padding: 0.28rem 0.48rem;
 }
 
+.pf-a3-routine-superset-stack {
+  margin-top: 0.44rem;
+  border-radius: 0.66rem;
+  border: 1px dashed rgba(244, 132, 132, 0.5);
+  background: linear-gradient(155deg, rgba(49, 21, 35, 0.6), rgba(28, 15, 24, 0.64));
+  padding: 0.42rem;
+}
+
+.pf-a3-routine-superset-title {
+  margin: 0 0 0.3rem;
+  color: #ffd4d4;
+  font-size: 0.6rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-superset-row + .pf-a3-routine-superset-row {
+  margin-top: 0.3rem;
+}
+
+.pf-a3-routine-superset-row {
+  border-radius: 0.54rem;
+  border: 1px solid rgba(222, 128, 128, 0.44);
+  background: rgba(24, 13, 20, 0.68);
+  padding: 0.34rem;
+}
+
+.pf-a3-routine-superset-main {
+  display: flex;
+  align-items: center;
+  gap: 0.34rem;
+}
+
+.pf-a3-routine-superset-index {
+  width: 1.26rem;
+  height: 1.02rem;
+  border-radius: 0.42rem;
+  border: 1px solid rgba(248, 150, 150, 0.62);
+  background: rgba(118, 41, 41, 0.56);
+  color: #fff2f2;
+  font-size: 0.55rem;
+  line-height: 1;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.pf-a3-routine-superset-name {
+  margin: 0;
+  color: #ffe8e8;
+  font-size: 0.64rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.pf-a3-routine-superset-stats {
+  margin-top: 0.32rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.22rem;
+}
+
+.pf-a3-routine-superset-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.24rem;
+  border-radius: 0.36rem;
+  border: 1px solid rgba(198, 121, 121, 0.4);
+  background: rgba(35, 18, 28, 0.64);
+  padding: 0.2rem 0.26rem;
+}
+
+.pf-a3-routine-superset-stat span {
+  color: #edc4c4;
+  font-size: 0.5rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-superset-stat strong {
+  color: #fff5f5;
+  font-size: 0.56rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
 .pf-a3-routine-exercise-metrics,
 .pf-a3-routine-exercise-note {
   margin: 0.24rem 0 0;
@@ -4234,6 +4326,37 @@ video.pf-a3-routine-log-video-frame {
     font-size: 0.53rem;
   }
 
+  .pf-a3-routine-superset-stack {
+    margin-top: 0.34rem;
+    padding: 0.32rem;
+  }
+
+  .pf-a3-routine-superset-title {
+    margin-bottom: 0.24rem;
+    font-size: 0.56rem;
+  }
+
+  .pf-a3-routine-superset-row {
+    border-radius: 0.46rem;
+    padding: 0.28rem;
+  }
+
+  .pf-a3-routine-superset-name {
+    font-size: 0.58rem;
+  }
+
+  .pf-a3-routine-superset-stats {
+    margin-top: 0.26rem;
+  }
+
+  .pf-a3-routine-superset-stat span {
+    font-size: 0.48rem;
+  }
+
+  .pf-a3-routine-superset-stat strong {
+    font-size: 0.53rem;
+  }
+
   .pf-a3-routine-toggle,
   .pf-a3-routine-more,
   .pf-a3-routine-session-chip {
@@ -4371,7 +4494,8 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a3-routine-session-card,
   html.pf-mobile-fluid .pf-a3-routine-empty,
   html.pf-mobile-fluid .pf-a3-routine-block,
-  html.pf-mobile-fluid .pf-a3-routine-exercise-row {
+  html.pf-mobile-fluid .pf-a3-routine-exercise-row,
+  html.pf-mobile-fluid .pf-a3-routine-superset-row {
     box-shadow: none !important;
     backdrop-filter: none !important;
     border-color: rgba(141, 132, 188, 0.3) !important;
