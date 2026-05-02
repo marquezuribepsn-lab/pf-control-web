@@ -223,6 +223,7 @@ export default function AlumnoPagosClient() {
   }, []);
 
   const loadStatus = useCallback(async (options?: { silent?: boolean; withBrandedLoader?: boolean }) => {
+    const isSilent = Boolean(options?.silent);
     const withBrandedLoader = Boolean(options?.withBrandedLoader);
     const refreshToken = withBrandedLoader ? ++statusRefreshTokenRef.current : statusRefreshTokenRef.current;
     const brandedLoadingStartedAt = withBrandedLoader ? Date.now() : 0;
@@ -235,7 +236,10 @@ export default function AlumnoPagosClient() {
 
       setStatusRefreshLoading(true);
       setError("");
-    } else if (!options?.silent) {
+      if (!isSilent) {
+        setLoading(true);
+      }
+    } else if (!isSilent) {
       setLoading(true);
       setError("");
     }
@@ -252,7 +256,7 @@ export default function AlumnoPagosClient() {
 
       setStatus(data);
     } catch (loadError) {
-      if (!options?.silent) {
+      if (!isSilent) {
         setError(
           loadError instanceof Error
             ? loadError.message
@@ -277,14 +281,16 @@ export default function AlumnoPagosClient() {
         if (refreshToken === statusRefreshTokenRef.current) {
           setStatusRefreshLoading(false);
         }
-      } else if (!options?.silent) {
+      }
+
+      if (!isSilent) {
         setLoading(false);
       }
     }
   }, []);
 
   useEffect(() => {
-    void loadStatus();
+    void loadStatus({ withBrandedLoader: true });
   }, [loadStatus]);
 
   useEffect(() => {
