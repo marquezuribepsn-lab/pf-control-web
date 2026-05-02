@@ -1,9 +1,9 @@
-$ErrorActionPreference = "Stop"
-
 param(
   [string]$Device = "emulator-5554",
   [string]$OutputPath = "storage/copilot-screenshot.png"
 )
+
+$ErrorActionPreference = "Stop"
 
 function Test-SupportedImageSignature {
   param([byte[]]$Bytes)
