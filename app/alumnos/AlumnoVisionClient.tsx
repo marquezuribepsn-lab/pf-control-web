@@ -4273,7 +4273,12 @@ export default function AlumnoVisionClient({
               ) : null}
 
               {routineDayWeekLoading ? (
-                <section className="pf-a3-routine-empty" aria-live="polite">
+                <section className="pf-a3-routine-empty pf-a3-routine-loading" aria-live="polite">
+                  <div className="pf-a3-routine-loading-visual" aria-hidden="true">
+                    <span className="pf-a3-routine-loading-ring" />
+                    <span className="pf-a3-routine-loading-core">PF</span>
+                  </div>
+                  <p className="pf-a3-routine-loading-brand">PF Control</p>
                   <h2>Cargando ejercicios...</h2>
                   <p>Actualizando rutina del dia o semana seleccionada.</p>
                 </section>
