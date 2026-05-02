@@ -8,6 +8,8 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "android": "npm --prefix pf-control-mobile run android",
     "android:dev": "npm --prefix pf-control-mobile run android:dev",
+    "img:capture": "powershell -ExecutionPolicy Bypass -File scripts/capture-emulator-screenshot.ps1",
+    "img:repair": "powershell -ExecutionPolicy Bypass -File scripts/repair-copilot-image.ps1",
     "lint": "eslint",
     "git:autosync": "node scripts/git-autosync.js",
     "db:generate": "prisma generate --schema=prisma/schema.prisma",
