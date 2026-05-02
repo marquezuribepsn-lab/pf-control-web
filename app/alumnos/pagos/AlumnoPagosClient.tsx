@@ -4,7 +4,7 @@ import Image from "next/image";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import ReliableLink from "@/components/ReliableLink";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type PaymentStatusResponse = {
   active: boolean;
@@ -192,6 +192,8 @@ function resolveStatusTone(isActive: boolean, reason: PaymentStatusResponse["rea
   return "neutral";
 }
 
+const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 2000;
+
 export default function AlumnoPagosClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -203,13 +205,37 @@ export default function AlumnoPagosClient() {
   const [manualLoadingMethod, setManualLoadingMethod] = useState<
     "transferencia" | "efectivo" | "mercadopago" | null
   >(null);
+  const [statusRefreshLoading, setStatusRefreshLoading] = useState(false);
   const [manualNote, setManualNote] = useState("");
   const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const statusRefreshTimerRef = useRef<number | null>(null);
+  const statusRefreshTokenRef = useRef(0);
 
-  const loadStatus = useCallback(async (options?: { silent?: boolean }) => {
-    if (!options?.silent) {
+  useEffect(() => {
+    return () => {
+      if (statusRefreshTimerRef.current !== null) {
+        window.clearTimeout(statusRefreshTimerRef.current);
+        statusRefreshTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const loadStatus = useCallback(async (options?: { silent?: boolean; withBrandedLoader?: boolean }) => {
+    const withBrandedLoader = Boolean(options?.withBrandedLoader);
+    const refreshToken = withBrandedLoader ? ++statusRefreshTokenRef.current : statusRefreshTokenRef.current;
+    const brandedLoadingStartedAt = withBrandedLoader ? Date.now() : 0;
+
+    if (withBrandedLoader) {
+      if (statusRefreshTimerRef.current !== null) {
+        window.clearTimeout(statusRefreshTimerRef.current);
+        statusRefreshTimerRef.current = null;
+      }
+
+      setStatusRefreshLoading(true);
+      setError("");
+    } else if (!options?.silent) {
       setLoading(true);
       setError("");
     }
@@ -235,7 +261,23 @@ export default function AlumnoPagosClient() {
         setStatus(null);
       }
     } finally {
-      if (!options?.silent) {
+      if (withBrandedLoader) {
+        const elapsed = Date.now() - brandedLoadingStartedAt;
+        const remaining = Math.max(0, PAYMENT_STATUS_BRANDED_LOADING_MIN_MS - elapsed);
+
+        if (remaining > 0 && typeof window !== "undefined") {
+          await new Promise<void>((resolve) => {
+            statusRefreshTimerRef.current = window.setTimeout(() => {
+              statusRefreshTimerRef.current = null;
+              resolve();
+            }, remaining);
+          });
+        }
+
+        if (refreshToken === statusRefreshTokenRef.current) {
+          setStatusRefreshLoading(false);
+        }
+      } else if (!options?.silent) {
         setLoading(false);
       }
     }
@@ -362,7 +404,7 @@ export default function AlumnoPagosClient() {
       );
       setManualReceipt(data.receipt || null);
       setManualNote("");
-      await loadStatus();
+      await loadStatus({ withBrandedLoader: true });
     } catch (manualError) {
       setError(
         manualError instanceof Error
@@ -387,6 +429,25 @@ export default function AlumnoPagosClient() {
   return (
     <main className="pf-alumno-main pf-alumno-v2">
       <div className="pf-a2-shell pb-24 md:pb-8">
+        {statusRefreshLoading ? (
+          <div
+            className="pf-a3-routine-log-overlay pf-a2-payments-loading-overlay"
+            role="status"
+            aria-live="polite"
+            aria-label="Actualizando estado de pagos"
+          >
+            <section className="pf-a3-routine-empty pf-a3-routine-loading pf-a2-payments-loading-panel">
+              <div className="pf-a3-routine-loading-visual" aria-hidden="true">
+                <span className="pf-a3-routine-loading-ring" />
+                <span className="pf-a3-routine-loading-core">PF</span>
+              </div>
+              <p className="pf-a3-routine-loading-brand">PF Control</p>
+              <h2>Actualizando estado...</h2>
+              <p>Sincronizando pagos y validaciones del centro.</p>
+            </section>
+          </div>
+        ) : null}
+
         <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
@@ -422,8 +483,9 @@ export default function AlumnoPagosClient() {
 
             <ReliableActionButton
               type="button"
-              onClick={() => void loadStatus()}
-              className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold"
+              onClick={() => void loadStatus({ withBrandedLoader: true })}
+              disabled={statusRefreshLoading}
+              className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
             >
               Actualizar estado
             </ReliableActionButton>
@@ -563,7 +625,7 @@ export default function AlumnoPagosClient() {
               <ReliableActionButton
                 type="button"
                 onClick={startCheckout}
-                disabled={!canPay || checkoutLoading || loading}
+                disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
                 className="pf-a2-solid-btn rounded-xl px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
@@ -629,7 +691,7 @@ export default function AlumnoPagosClient() {
               <ReliableActionButton
                 type="button"
                 onClick={() => void requestManualReview("transferencia")}
-                disabled={Boolean(manualLoadingMethod) || loading || !canRequestManual}
+                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
                 className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {manualLoadingMethod === "transferencia" ? "Enviando..." : "Informar transferencia"}
@@ -638,7 +700,7 @@ export default function AlumnoPagosClient() {
               <ReliableActionButton
                 type="button"
                 onClick={() => void requestManualReview("efectivo")}
-                disabled={Boolean(manualLoadingMethod) || loading || !canRequestManual}
+                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
                 className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {manualLoadingMethod === "efectivo" ? "Enviando..." : "Informar efectivo"}
@@ -647,7 +709,7 @@ export default function AlumnoPagosClient() {
               <ReliableActionButton
                 type="button"
                 onClick={() => void requestManualReview("mercadopago")}
-                disabled={Boolean(manualLoadingMethod) || loading || !canRequestManual}
+                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
                 className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {manualLoadingMethod === "mercadopago" ? "Enviando..." : "Informar pago QR MP"}
