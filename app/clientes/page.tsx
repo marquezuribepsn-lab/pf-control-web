@@ -1271,6 +1271,7 @@ export default function ClientesPage() {
     INITIAL_TRAINING_RECORD_DRAFT
   );
   const [trainingRecordStatus, setTrainingRecordStatus] = useState("");
+  const [trainingPlanReloading, setTrainingPlanReloading] = useState(false);
   const [trainingWeekInlineEdit, setTrainingWeekInlineEdit] = useState<{
     weekId: string;
     value: string;
@@ -1992,6 +1993,36 @@ export default function ClientesPage() {
           },
         })
       );
+    }
+  };
+
+  const reloadTrainingPlanOnly = async () => {
+    if (trainingPlanReloading) return;
+
+    try {
+      setTrainingPlanReloading(true);
+
+      const response = await fetch(`/api/sync/${encodeURIComponent(WEEK_PLAN_KEY)}`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("sync read failed");
+      }
+
+      const payload = (await response.json()) as { value?: unknown };
+      setWeekStoreRaw(normalizeWeekStore(payload?.value));
+      emitTrainingStructureToast(
+        "success",
+        "Plan recargado sin refrescar la pagina completa."
+      );
+    } catch {
+      emitTrainingStructureToast(
+        "error",
+        "No se pudo recargar el plan ahora. Vuelve a intentarlo."
+      );
+    } finally {
+      setTrainingPlanReloading(false);
     }
   };
 
@@ -4732,6 +4763,14 @@ export default function ClientesPage() {
                         </Link>
                         <ReliableActionButton
                           type="button"
+                          onClick={reloadTrainingPlanOnly}
+                          disabled={trainingPlanReloading}
+                          className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20 disabled:opacity-60"
+                        >
+                          {trainingPlanReloading ? "Recargando plan..." : "Recargar plan"}
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
                           onClick={syncTrainingPlanWithAlumnoProfile}
                           disabled={!selectedClientTrainingPlan}
                           className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10 disabled:opacity-60"
@@ -4739,6 +4778,10 @@ export default function ClientesPage() {
                           Actualizar planilla
                         </ReliableActionButton>
                       </div>
+
+                      <p className="w-full text-[11px] text-slate-300/85">
+                        Recargar plan actualiza solo esta seccion. Recargar el navegador actualiza toda la pagina.
+                      </p>
                     </div>
 
                     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
