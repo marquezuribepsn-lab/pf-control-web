@@ -2932,6 +2932,103 @@ export default function ClientesPage() {
     );
   };
 
+  const addTrainingSuperSerieExercise = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            const nextSuperItem = {
+              id: createTrainingEntityId("super"),
+              ejercicioId: "",
+              series: String(exercise.series || ""),
+              repeticiones: String(exercise.repeticiones || ""),
+              descanso: String(exercise.descanso || ""),
+              carga: String(exercise.carga || ""),
+            };
+
+            return {
+              ...exercise,
+              superSerie: [...(Array.isArray(exercise.superSerie) ? exercise.superSerie : []), nextSuperItem],
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const updateTrainingSuperSerieField = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    superId: string,
+    field: "ejercicioId" | "series" | "repeticiones" | "descanso" | "carga",
+    value: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            return {
+              ...exercise,
+              superSerie: (Array.isArray(exercise.superSerie) ? exercise.superSerie : []).map((superItem) =>
+                superItem.id === superId
+                  ? {
+                      ...superItem,
+                      [field]: value,
+                    }
+                  : superItem
+              ),
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const removeTrainingSuperSerieExercise = (
+    weekId: string,
+    dayId: string,
+    blockId: string,
+    exerciseId: string,
+    superId: string
+  ) => {
+    updateTrainingBlocks(weekId, dayId, (blocks) =>
+      blocks.map((block) => {
+        if (block.id !== blockId) return block;
+
+        return {
+          ...block,
+          ejercicios: (block.ejercicios || []).map((exercise) => {
+            if (exercise.id !== exerciseId) return exercise;
+
+            return {
+              ...exercise,
+              superSerie: (Array.isArray(exercise.superSerie) ? exercise.superSerie : []).filter(
+                (superItem) => superItem.id !== superId
+              ),
+            };
+          }),
+        };
+      })
+    );
+  };
+
   const removeTrainingExercise = (
     weekId: string,
     dayId: string,
@@ -5367,6 +5464,9 @@ export default function ClientesPage() {
                                                   "160px",
                                                   ...blockGridColumns.map(() => "160px"),
                                                 ].join(" ");
+                                                const superSerieRows = Array.isArray(exercise.superSerie)
+                                                  ? exercise.superSerie
+                                                  : [];
 
                                                 return (
                                                   <div
@@ -5533,7 +5633,20 @@ export default function ClientesPage() {
 
                                                     <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
                                                       <span className="text-cyan-200">Desglosar serie</span>
-                                                      <span className="text-slate-400">Agregar ejercicio super-serie</span>
+                                                      <ReliableActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                          addTrainingSuperSerieExercise(
+                                                            selectedTrainingWeek.id,
+                                                            selectedTrainingDay.id,
+                                                            block.id,
+                                                            exercise.id
+                                                          )
+                                                        }
+                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                      >
+                                                        Agregar ejercicio super-serie
+                                                      </ReliableActionButton>
                                                       <ReliableActionButton
                                                         type="button"
                                                         onClick={() => openTrainingExercisePanel("ver-pesos", actionTarget)}
@@ -5563,6 +5676,152 @@ export default function ClientesPage() {
                                                         Eliminar
                                                       </ReliableActionButton>
                                                     </div>
+
+                                                    {superSerieRows.length > 0 ? (
+                                                      <div className="mt-3 rounded-xl border border-cyan-300/20 bg-slate-900/60 p-3">
+                                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-cyan-100">
+                                                          Super serie
+                                                        </p>
+                                                        <div className="space-y-2">
+                                                          {superSerieRows.map((superItem, superIndex) => {
+                                                            const superKey =
+                                                              String(superItem.id || "").trim() ||
+                                                              `${exercise.id}-super-${superIndex + 1}`;
+
+                                                            return (
+                                                              <div
+                                                                key={superKey}
+                                                                className="grid gap-2 rounded-lg border border-white/12 bg-slate-950/40 p-2 md:grid-cols-[minmax(220px,1.6fr)_120px_120px_120px_120px_auto]"
+                                                              >
+                                                                <label className="space-y-1">
+                                                                  <span className="text-[11px] font-semibold text-slate-100">
+                                                                    Ejercicio super-serie
+                                                                  </span>
+                                                                  <select
+                                                                    value={superItem.ejercicioId || ""}
+                                                                    onChange={(event) =>
+                                                                      updateTrainingSuperSerieField(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey,
+                                                                        "ejercicioId",
+                                                                        event.target.value
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                  >
+                                                                    <option value="">Seleccione ejercicio</option>
+                                                                    {ejercicios.map((exerciseOption) => (
+                                                                      <option key={exerciseOption.id} value={exerciseOption.id}>
+                                                                        {exerciseOption.nombre}
+                                                                      </option>
+                                                                    ))}
+                                                                  </select>
+                                                                </label>
+
+                                                                <label className="space-y-1">
+                                                                  <span className="text-[11px] font-semibold text-slate-100">Series</span>
+                                                                  <input
+                                                                    value={superItem.series || ""}
+                                                                    onChange={(event) =>
+                                                                      updateTrainingSuperSerieField(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey,
+                                                                        "series",
+                                                                        event.target.value
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                  />
+                                                                </label>
+
+                                                                <label className="space-y-1">
+                                                                  <span className="text-[11px] font-semibold text-slate-100">
+                                                                    Repeticiones
+                                                                  </span>
+                                                                  <input
+                                                                    value={superItem.repeticiones || ""}
+                                                                    onChange={(event) =>
+                                                                      updateTrainingSuperSerieField(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey,
+                                                                        "repeticiones",
+                                                                        event.target.value
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                  />
+                                                                </label>
+
+                                                                <label className="space-y-1">
+                                                                  <span className="text-[11px] font-semibold text-slate-100">Descanso</span>
+                                                                  <input
+                                                                    value={superItem.descanso || ""}
+                                                                    onChange={(event) =>
+                                                                      updateTrainingSuperSerieField(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey,
+                                                                        "descanso",
+                                                                        event.target.value
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                  />
+                                                                </label>
+
+                                                                <label className="space-y-1">
+                                                                  <span className="text-[11px] font-semibold text-slate-100">Carga</span>
+                                                                  <input
+                                                                    value={superItem.carga || ""}
+                                                                    onChange={(event) =>
+                                                                      updateTrainingSuperSerieField(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey,
+                                                                        "carga",
+                                                                        event.target.value
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                  />
+                                                                </label>
+
+                                                                <div className="flex items-end">
+                                                                  <ReliableActionButton
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                      removeTrainingSuperSerieExercise(
+                                                                        selectedTrainingWeek.id,
+                                                                        selectedTrainingDay.id,
+                                                                        block.id,
+                                                                        exercise.id,
+                                                                        superKey
+                                                                      )
+                                                                    }
+                                                                    className="w-full rounded-md border border-rose-300/35 bg-rose-500/10 px-2.5 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
+                                                                  >
+                                                                    Eliminar
+                                                                  </ReliableActionButton>
+                                                                </div>
+                                                              </div>
+                                                            );
+                                                          })}
+                                                        </div>
+                                                      </div>
+                                                    ) : null}
 
                                                     {panelOpenForExercise ? (
                                                       <div className="mt-3 rounded-xl border border-cyan-300/25 bg-slate-900/65 p-3">
