@@ -3042,13 +3042,57 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-group-linked {
-  padding: 0.54rem 0.46rem 0.46rem 0.94rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 0.54rem 0.46rem 0.46rem 0.56rem;
   border-radius: 1rem;
   border: 1px solid rgba(89, 158, 228, 0.34);
   background:
     radial-gradient(circle at 4% 24%, rgba(72, 145, 238, 0.2), rgba(13, 20, 33, 0.88) 36%),
     linear-gradient(165deg, rgba(15, 22, 35, 0.94), rgba(10, 15, 25, 0.94));
   box-shadow: inset 0 0 0 1px rgba(140, 177, 214, 0.08), 0 10px 26px rgba(5, 10, 18, 0.3);
+  animation: pf-a3-superset-group-glow 3.2s ease-in-out infinite;
+}
+
+.pf-a3-routine-exercise-group-linked::before {
+  content: "";
+  position: absolute;
+  left: -34%;
+  top: -28%;
+  width: 68%;
+  height: 168%;
+  pointer-events: none;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(155, 226, 255, 0.56) 0%,
+    rgba(90, 186, 255, 0.3) 32%,
+    rgba(90, 186, 255, 0) 72%
+  );
+  filter: blur(1px);
+  opacity: 0.3;
+  animation: pf-a3-superset-wave 3.8s ease-in-out infinite alternate;
+}
+
+.pf-a3-routine-exercise-group-linked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    rgba(157, 224, 255, 0) 16%,
+    rgba(157, 224, 255, 0.12) 34%,
+    rgba(157, 224, 255, 0) 58%
+  );
+  opacity: 0.22;
+  animation: pf-a3-superset-shimmer 4.6s linear infinite;
+}
+
+.pf-a3-routine-exercise-group-linked > * {
+  position: relative;
+  z-index: 1;
 }
 
 .pf-a3-routine-exercise-group-badge {
@@ -3075,50 +3119,44 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   letter-spacing: 0.02em;
 }
 
-.pf-a3-routine-exercise-bracket {
-  position: absolute;
-  left: 0.14rem;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  width: 0.5rem;
-  border-left: 2px solid rgba(100, 206, 255, 0.9);
-  border-top: 2px solid rgba(100, 206, 255, 0.9);
-  border-bottom: 2px solid rgba(100, 206, 255, 0.9);
-  border-radius: 0.52rem 0 0 0.52rem;
-  filter: drop-shadow(0 0 7px rgba(40, 185, 255, 0.28));
-  pointer-events: none;
-  animation: pf-a3-superset-bracket-pulse 2.8s ease-in-out infinite;
-}
-
-.pf-a3-routine-exercise-bracket::before,
-.pf-a3-routine-exercise-bracket::after {
-  content: "";
-  position: absolute;
-  right: -0.28rem;
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 999px;
-  border: 1px solid rgba(133, 223, 255, 0.68);
-  background: radial-gradient(circle, rgba(161, 238, 255, 0.95), rgba(70, 161, 221, 0.78));
-}
-
-.pf-a3-routine-exercise-bracket::before {
-  top: -0.22rem;
-}
-
-.pf-a3-routine-exercise-bracket::after {
-  bottom: -0.22rem;
-}
-
-@keyframes pf-a3-superset-bracket-pulse {
+@keyframes pf-a3-superset-group-glow {
   0%,
   100% {
-    opacity: 0.86;
-    filter: drop-shadow(0 0 6px rgba(42, 191, 255, 0.24));
+    border-color: rgba(89, 158, 228, 0.32);
+    box-shadow:
+      inset 0 0 0 1px rgba(140, 177, 214, 0.08),
+      0 10px 26px rgba(5, 10, 18, 0.3),
+      0 0 12px rgba(74, 178, 255, 0.08);
   }
   50% {
-    opacity: 1;
-    filter: drop-shadow(0 0 12px rgba(67, 204, 255, 0.46));
+    border-color: rgba(122, 199, 255, 0.58);
+    box-shadow:
+      inset 0 0 0 1px rgba(176, 216, 246, 0.16),
+      0 12px 30px rgba(6, 13, 24, 0.34),
+      0 0 24px rgba(74, 178, 255, 0.24);
+  }
+}
+
+@keyframes pf-a3-superset-wave {
+  0% {
+    transform: translateX(-16%) scale(0.96);
+    opacity: 0.26;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(178%) scale(1.03);
+    opacity: 0.34;
+  }
+}
+
+@keyframes pf-a3-superset-shimmer {
+  0% {
+    transform: translateX(-34%);
+  }
+  100% {
+    transform: translateX(34%);
   }
 }
 
@@ -4460,14 +4498,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-exercise-group-linked {
-    padding: 0.44rem 0.3rem 0.34rem 0.72rem;
-  }
-
-  .pf-a3-routine-exercise-bracket {
-    left: 0.12rem;
-    width: 0.36rem;
-    top: 0.36rem;
-    bottom: 0.36rem;
+    padding: 0.44rem 0.3rem 0.34rem 0.4rem;
   }
 
   .pf-a3-routine-exercise-group-badge {
@@ -4481,7 +4512,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-exercise-row-superset {
-    margin-left: 0.14rem;
+    margin-left: 0.08rem;
   }
 
   .pf-a3-routine-exercise-thumb {
