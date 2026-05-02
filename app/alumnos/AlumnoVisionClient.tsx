@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -3212,6 +3213,8 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
   }, []);
 
+  const routineSelectionSnapshotRef = useRef<string | null>(null);
+
   const triggerRoutineDayWeekLoading = useCallback(() => {
     setRoutineDayWeekLoading(true);
 
@@ -3225,6 +3228,40 @@ export default function AlumnoVisionClient({
       setRoutineDayWeekLoading(false);
     }, ROUTINE_DAY_WEEK_MIN_LOADING_MS);
   }, []);
+
+  useLayoutEffect(() => {
+    if (activeCategory !== "rutina") {
+      routineSelectionSnapshotRef.current = null;
+      return;
+    }
+
+    const nextSelectionKey = hasWeekPlanRoutine
+      ? `${selectedRoutineWeek?.id || selectedRoutineWeekId || ""}:${selectedRoutineDay?.id || selectedRoutineDayId || ""}`
+      : String(selectedRoutineSessionId || "").trim();
+
+    if (!nextSelectionKey || nextSelectionKey === ":") {
+      return;
+    }
+
+    if (routineSelectionSnapshotRef.current === null) {
+      routineSelectionSnapshotRef.current = nextSelectionKey;
+      return;
+    }
+
+    if (routineSelectionSnapshotRef.current !== nextSelectionKey) {
+      routineSelectionSnapshotRef.current = nextSelectionKey;
+      triggerRoutineDayWeekLoading();
+    }
+  }, [
+    activeCategory,
+    hasWeekPlanRoutine,
+    selectedRoutineDay?.id,
+    selectedRoutineDayId,
+    selectedRoutineSessionId,
+    selectedRoutineWeek?.id,
+    selectedRoutineWeekId,
+    triggerRoutineDayWeekLoading,
+  ]);
 
   const handleRoutineSessionSelect = useCallback(
     (sessionId: string) => {
