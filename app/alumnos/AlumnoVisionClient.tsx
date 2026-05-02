@@ -1636,10 +1636,15 @@ export default function AlumnoVisionClient({
     setRoutineLastSyncAt(Date.now());
   }, [weekPlanStoreRaw, weekPlanSyncLoaded, workoutLogsShared, workoutLogsSyncLoaded]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const nextCategory = resolveInitialMainCategory(initialCategory);
-    activeCategoryRef.current = nextCategory;
     categoryHistoryRef.current = nextCategory === "inicio" ? [] : ["inicio"];
+
+    if (activeCategoryRef.current === nextCategory) {
+      return;
+    }
+
+    activeCategoryRef.current = nextCategory;
     setActiveCategory(nextCategory);
   }, [initialCategory]);
 
