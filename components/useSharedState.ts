@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type SharedStateOptions = {
   key: string;
@@ -529,7 +529,7 @@ export function useSharedState<T>(
     return () => clearInterval(interval);
   }, [key, loaded, pollIntervalMs]);
 
-  const guardedSetState: Dispatch<SetStateAction<T>> = (nextState) => {
+  const guardedSetState: Dispatch<SetStateAction<T>> = useCallback((nextState) => {
     if (typeof window !== "undefined" && !window.navigator.onLine) {
       const now = Date.now();
       if (now - lastOfflineWriteToastAtRef.current > OFFLINE_WRITE_TOAST_TTL_MS) {
@@ -542,7 +542,7 @@ export function useSharedState<T>(
     }
 
     setState(nextState);
-  };
+  }, []);
 
   return [state, guardedSetState, loaded];
 }
