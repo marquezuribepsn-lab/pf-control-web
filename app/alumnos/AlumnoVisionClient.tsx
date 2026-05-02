@@ -4508,10 +4508,6 @@ export default function AlumnoVisionClient({
                                     }`}
                                   >
                                     {hasSuperSerieGroup ? (
-                                      <span className="pf-a3-routine-exercise-bracket" aria-hidden="true" />
-                                    ) : null}
-
-                                    {hasSuperSerieGroup ? (
                                       <p className="pf-a3-routine-exercise-group-badge">
                                         <span>Super serie</span>
                                         <strong>{superSerieRows.length + 1} ejercicios fusionados</strong>
