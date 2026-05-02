@@ -326,6 +326,33 @@ type PaymentBadgeTone = "ok" | "warning" | "danger" | "neutral";
 
 const CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
 
+function normalizeMainCategoryValue(value: string): MainCategory | null {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (CATEGORIES.includes(normalized as MainCategory)) {
+    return normalized as MainCategory;
+  }
+
+  return null;
+}
+
+function resolveMainCategoryFromPath(pathname: string | null | undefined): MainCategory | null {
+  const normalizedPath = String(pathname || "").split("?")[0].trim().toLowerCase();
+  const match = normalizedPath.match(/^\/alumnos\/([^/?#]+)/i);
+  if (!match) {
+    return null;
+  }
+
+  return normalizeMainCategoryValue(match[1] || "");
+}
+
+function resolveInitialMainCategory(initialCategory: MainCategory): MainCategory {
+  if (typeof window === "undefined") {
+    return initialCategory;
+  }
+
+  return resolveMainCategoryFromPath(window.location.pathname) || initialCategory;
+}
+
 const CATEGORY_COPY: Record<
   MainCategory,
   {
@@ -1521,11 +1548,12 @@ export default function AlumnoVisionClient({
   initialCategory = "inicio",
 }: AlumnoVisionClientProps) {
   const router = useRouter();
+  const resolvedInitialCategory = resolveInitialMainCategory(initialCategory);
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
   const { ejercicios } = useEjercicios();
 
-  const [activeCategory, setActiveCategory] = useState<MainCategory>(initialCategory);
+  const [activeCategory, setActiveCategory] = useState<MainCategory>(resolvedInitialCategory);
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
@@ -1559,8 +1587,8 @@ export default function AlumnoVisionClient({
   const lastStorageRefreshTsRef = useRef<number>(0);
   const requestedMusicArtworkRef = useRef<Set<string>>(new Set());
   const homeNavGuardRef = useRef<number>(0);
-  const activeCategoryRef = useRef<MainCategory>(initialCategory);
-  const categoryHistoryRef = useRef<MainCategory[]>(initialCategory === "inicio" ? [] : ["inicio"]);
+  const activeCategoryRef = useRef<MainCategory>(resolvedInitialCategory);
+  const categoryHistoryRef = useRef<MainCategory[]>(resolvedInitialCategory === "inicio" ? [] : ["inicio"]);
   const routinePullStartYRef = useRef<number | null>(null);
   const routinePullActiveRef = useRef(false);
   const routinePullDistanceRef = useRef(0);
@@ -1609,9 +1637,10 @@ export default function AlumnoVisionClient({
   }, [weekPlanStoreRaw, weekPlanSyncLoaded, workoutLogsShared, workoutLogsSyncLoaded]);
 
   useEffect(() => {
-    activeCategoryRef.current = initialCategory;
-    categoryHistoryRef.current = initialCategory === "inicio" ? [] : ["inicio"];
-    setActiveCategory(initialCategory);
+    const nextCategory = resolveInitialMainCategory(initialCategory);
+    activeCategoryRef.current = nextCategory;
+    categoryHistoryRef.current = nextCategory === "inicio" ? [] : ["inicio"];
+    setActiveCategory(nextCategory);
   }, [initialCategory]);
 
   useEffect(() => {
