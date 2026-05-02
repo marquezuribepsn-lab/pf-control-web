@@ -78,13 +78,7 @@ if (Test-Path $tmpPath) {
   Remove-Item $tmpPath -Force
 }
 
-$process = Start-Process \
-  -FilePath "adb" \
-  -ArgumentList @("-s", $Device, "exec-out", "screencap", "-p") \
-  -NoNewWindow \
-  -Wait \
-  -PassThru \
-  -RedirectStandardOutput $tmpPath
+$process = Start-Process -FilePath "adb" -ArgumentList @("-s", $Device, "exec-out", "screencap", "-p") -NoNewWindow -Wait -PassThru -RedirectStandardOutput $tmpPath
 
 if ($process.ExitCode -ne 0) {
   if (Test-Path $tmpPath) {
