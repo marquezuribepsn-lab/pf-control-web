@@ -376,6 +376,7 @@ const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
 const ULTRA_MOBILE_INITIAL_BLOCKS = 1;
 const ULTRA_MOBILE_ROUTINE_FALLBACK_SESSIONS = 2;
 const ULTRA_MOBILE_STORAGE_REFRESH_MS = 6000;
+const ROUTINE_DAY_WEEK_MIN_LOADING_MS = 2000;
 const ROUTINE_PULL_THRESHOLD = 74;
 const ROUTINE_PULL_MAX_DISTANCE = 120;
 const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -1541,6 +1542,7 @@ export default function AlumnoVisionClient({
   const [visibleRoutineBlockCount, setVisibleRoutineBlockCount] = useState<number>(ULTRA_MOBILE_INITIAL_BLOCKS);
   const [routinePullDistance, setRoutinePullDistance] = useState(0);
   const [routinePullRefreshing, setRoutinePullRefreshing] = useState(false);
+  const [routineDayWeekLoading, setRoutineDayWeekLoading] = useState(false);
   const [routineExerciseLogTarget, setRoutineExerciseLogTarget] = useState<RoutineExerciseLogTarget | null>(null);
   const [routineExerciseLogDraft, setRoutineExerciseLogDraft] = useState<RoutineExerciseLogDraft>(
     createRoutineExerciseLogDraft()
@@ -1561,6 +1563,7 @@ export default function AlumnoVisionClient({
   const routinePullStartYRef = useRef<number | null>(null);
   const routinePullActiveRef = useRef(false);
   const routinePullDistanceRef = useRef(0);
+  const routineDayWeekLoadingTimerRef = useRef<number | null>(null);
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1624,17 +1627,32 @@ export default function AlumnoVisionClient({
 
   useEffect(() => {
     if (activeCategory !== "rutina") {
+      if (routineDayWeekLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineDayWeekLoadingTimerRef.current);
+        routineDayWeekLoadingTimerRef.current = null;
+      }
+
       setSelectedRoutineSessionId(null);
       setSelectedRoutineWeekId(null);
       setSelectedRoutineDayId(null);
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
       setRoutinePullDistance(0);
+      setRoutineDayWeekLoading(false);
       setRoutineExerciseLogTarget(null);
       setRoutineExerciseLogStatus("");
       setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
     }
   }, [activeCategory]);
+
+  useEffect(() => {
+    return () => {
+      if (routineDayWeekLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineDayWeekLoadingTimerRef.current);
+        routineDayWeekLoadingTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -3194,13 +3212,33 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
   }, []);
 
-  const handleRoutineSessionSelect = useCallback((sessionId: string) => {
-    setSelectedRoutineSessionId(sessionId);
-    setRoutineExerciseLogTarget(null);
-    setRoutineExerciseLogStatus("");
-    setExpandedRoutineBlocks({});
-    setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+  const triggerRoutineDayWeekLoading = useCallback(() => {
+    setRoutineDayWeekLoading(true);
+
+    if (routineDayWeekLoadingTimerRef.current !== null) {
+      window.clearTimeout(routineDayWeekLoadingTimerRef.current);
+      routineDayWeekLoadingTimerRef.current = null;
+    }
+
+    routineDayWeekLoadingTimerRef.current = window.setTimeout(() => {
+      routineDayWeekLoadingTimerRef.current = null;
+      setRoutineDayWeekLoading(false);
+    }, ROUTINE_DAY_WEEK_MIN_LOADING_MS);
   }, []);
+
+  const handleRoutineSessionSelect = useCallback(
+    (sessionId: string) => {
+      if (sessionId === selectedRoutineSessionId) return;
+
+      triggerRoutineDayWeekLoading();
+      setSelectedRoutineSessionId(sessionId);
+      setRoutineExerciseLogTarget(null);
+      setRoutineExerciseLogStatus("");
+      setExpandedRoutineBlocks({});
+      setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+    },
+    [selectedRoutineSessionId, triggerRoutineDayWeekLoading]
+  );
 
   const handleRoutineWeekStep = useCallback(
     (step: -1 | 1) => {
@@ -3215,6 +3253,7 @@ export default function AlumnoVisionClient({
 
       const visibleDays = (Array.isArray(nextWeek.dias) ? nextWeek.dias : []).filter((day) => !day.oculto);
 
+      triggerRoutineDayWeekLoading();
       setSelectedRoutineWeekId(nextWeek.id);
       setSelectedRoutineDayId(visibleDays[0]?.id || null);
       setRoutineExerciseLogTarget(null);
@@ -3222,16 +3261,22 @@ export default function AlumnoVisionClient({
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     },
-    [routineWeeks, selectedRoutineWeek]
+    [routineWeeks, selectedRoutineWeek, triggerRoutineDayWeekLoading]
   );
 
-  const handleRoutineDaySelect = useCallback((dayId: string) => {
-    setSelectedRoutineDayId(dayId);
-    setRoutineExerciseLogTarget(null);
-    setRoutineExerciseLogStatus("");
-    setExpandedRoutineBlocks({});
-    setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
-  }, []);
+  const handleRoutineDaySelect = useCallback(
+    (dayId: string) => {
+      if (dayId === selectedRoutineDay?.id) return;
+
+      triggerRoutineDayWeekLoading();
+      setSelectedRoutineDayId(dayId);
+      setRoutineExerciseLogTarget(null);
+      setRoutineExerciseLogStatus("");
+      setExpandedRoutineBlocks({});
+      setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
+    },
+    [selectedRoutineDay?.id, triggerRoutineDayWeekLoading]
+  );
 
   const triggerRoutineRefresh = useCallback(() => {
     setRoutinePullRefreshing(true);
@@ -4128,7 +4173,7 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(-1)}
-                      disabled={!canGoPrevRoutineWeek}
+                      disabled={!canGoPrevRoutineWeek || routineDayWeekLoading}
                       className="pf-a3-routine-week-arrow"
                       aria-label="Semana anterior"
                       title={canGoPrevRoutineWeek ? "Semana anterior" : "No hay semana anterior"}
@@ -4141,7 +4186,7 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(1)}
-                      disabled={!canGoNextRoutineWeek}
+                      disabled={!canGoNextRoutineWeek || routineDayWeekLoading}
                       className="pf-a3-routine-week-arrow"
                       aria-label="Semana siguiente"
                       title={canGoNextRoutineWeek ? "Semana siguiente" : "No hay semana siguiente"}
@@ -4162,6 +4207,7 @@ export default function AlumnoVisionClient({
                           key={`week-day-${day.id}`}
                           type="button"
                           onClick={() => handleRoutineDaySelect(day.id)}
+                          disabled={routineDayWeekLoading}
                           className={`pf-a3-routine-session-chip ${
                             isSelected ? "pf-a3-routine-session-chip-active" : ""
                           }`}
@@ -4211,6 +4257,7 @@ export default function AlumnoVisionClient({
                           key={`session-chip-${session.id}`}
                           type="button"
                           onClick={() => handleRoutineSessionSelect(session.id)}
+                          disabled={routineDayWeekLoading}
                           className={`pf-a3-routine-session-chip ${
                             isSelected ? "pf-a3-routine-session-chip-active" : ""
                           }`}
@@ -4225,7 +4272,12 @@ export default function AlumnoVisionClient({
                 </section>
               ) : null}
 
-              {!selectedRoutineEntry ? (
+              {routineDayWeekLoading ? (
+                <section className="pf-a3-routine-empty" aria-live="polite">
+                  <h2>Cargando ejercicios...</h2>
+                  <p>Actualizando rutina del dia o semana seleccionada.</p>
+                </section>
+              ) : !selectedRoutineEntry ? (
                 <section className="pf-a3-routine-empty">
                   <h2>{hasWeekPlanRoutine ? "Sin bloques para este dia" : "No hay sesiones cargadas"}</h2>
                   <p>
