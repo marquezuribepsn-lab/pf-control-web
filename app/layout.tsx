@@ -291,6 +291,8 @@ export default async function RootLayout({
 
   var startedAt = Date.now();
   var hidden = false;
+  var finishScheduled = false;
+  var hardReleaseTimer = null;
 
   var hideOverlay = function () {
     if (hidden || !overlay) {
@@ -298,6 +300,10 @@ export default async function RootLayout({
     }
 
     hidden = true;
+    if (hardReleaseTimer !== null) {
+      window.clearTimeout(hardReleaseTimer);
+      hardReleaseTimer = null;
+    }
     overlay.style.opacity = "0";
     overlay.style.pointerEvents = "none";
     overlay.style.transition = "opacity 220ms ease";
@@ -326,7 +332,7 @@ export default async function RootLayout({
       }
 
       var startedWaitAt = Date.now();
-      var maxWaitMs = 4500;
+      var maxWaitMs = 1200;
 
       var checkReady = function () {
         var selector = '[data-pf-alumno-category="' + expectedCategory + '"]';
@@ -366,6 +372,10 @@ export default async function RootLayout({
         return false;
       }
 
+      if (currentCategory !== "inicio") {
+        return false;
+      }
+
       var storedCategoryRaw = window.sessionStorage.getItem(LAST_CATEGORY_KEY);
       var storedCategory = String(storedCategoryRaw || "").trim().toLowerCase();
       if (!ALLOWED_ALUMNO_CATEGORIES[storedCategory]) {
@@ -381,6 +391,7 @@ export default async function RootLayout({
       }
 
       var nextUrl = "/alumnos/" + storedCategory + String(window.location.search || "") + String(window.location.hash || "");
+      window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 1200});
       window.location.replace(nextUrl);
       return true;
     } catch (_error) {
@@ -392,7 +403,12 @@ export default async function RootLayout({
     return;
   }
 
-  var finishWithMinimum = function () {
+  var scheduleFinishWithMinimum = function () {
+    if (finishScheduled) {
+      return;
+    }
+
+    finishScheduled = true;
     var elapsed = Date.now() - startedAt;
     var remaining = Math.max(0, ${HARD_RELOAD_SPLASH_MIN_MS} - elapsed);
     window.setTimeout(function () {
@@ -400,13 +416,15 @@ export default async function RootLayout({
     }, remaining);
   };
 
-  if (document.readyState === "complete") {
-    finishWithMinimum();
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    scheduleFinishWithMinimum();
   } else {
-    window.addEventListener("load", finishWithMinimum, { once: true });
+    document.addEventListener("DOMContentLoaded", scheduleFinishWithMinimum, { once: true });
   }
 
-  window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 6000});
+  window.addEventListener("load", scheduleFinishWithMinimum, { once: true });
+
+  hardReleaseTimer = window.setTimeout(hideOverlay, ${HARD_RELOAD_SPLASH_MIN_MS + 2200});
 })();`,
           }}
         />
