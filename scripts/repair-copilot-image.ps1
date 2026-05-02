@@ -1,9 +1,9 @@
-$ErrorActionPreference = "Stop"
-
 param(
   [Parameter(Mandatory = $true)][string]$InputPath,
   [string]$OutputPath
 )
+
+$ErrorActionPreference = "Stop"
 
 function Get-ImageFormat {
   param([byte[]]$Bytes)
