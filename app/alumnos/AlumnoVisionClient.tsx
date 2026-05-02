@@ -1431,6 +1431,15 @@ function resolveRoutineExerciseVideoSource(rawUrl: string): RoutineExerciseVideo
   return { kind: "external", src: normalized };
 }
 
+function resolveYouTubeThumbnailFromEmbed(embedUrl: string): string | null {
+  const match = String(embedUrl || "").match(/\/embed\/([^/?#]+)/i);
+  const videoId = String(match?.[1] || "").trim();
+  if (!videoId || videoId.toLowerCase() === "videoseries") {
+    return null;
+  }
+  return `https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+}
+
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
