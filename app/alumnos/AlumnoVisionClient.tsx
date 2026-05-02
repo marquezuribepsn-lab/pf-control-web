@@ -4544,7 +4544,11 @@ export default function AlumnoVisionClient({
                                       className="pf-a3-routine-exercise-row"
                                     >
                                       <div className="pf-a3-routine-exercise-main">
-                                        <span className="pf-a3-routine-exercise-index">
+                                        <span
+                                          className={`pf-a3-routine-exercise-index ${
+                                            row.isSuperSerie ? "pf-a3-routine-exercise-index-superset" : ""
+                                          }`}
+                                        >
                                           {row.isSuperSerie ? "SS" : index + 1}
                                         </span>
                                         <span className="pf-a3-routine-exercise-thumb" aria-hidden="true">
