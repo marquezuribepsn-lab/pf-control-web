@@ -4637,16 +4637,7 @@ export default function AlumnoVisionClient({
                                                   aria-label={`Registrar cargas de ${row.rowName}`}
                                                 >
                                                   <p className="pf-a3-routine-exercise-name">
-                                                    {row.isSuperSerie && row.rowParentName ? (
-                                                      <>
-                                                        <span className="pf-a3-routine-exercise-parent-pill">
-                                                          [{row.rowParentName}]
-                                                        </span>{" "}
-                                                        <span>{row.rowHeadline}</span>
-                                                      </>
-                                                    ) : (
-                                                      row.rowHeadline
-                                                    )}
+                                                    {row.rowHeadline}
                                                   </p>
                                                 </ReliableActionButton>
                                                 <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
