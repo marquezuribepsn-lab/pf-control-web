@@ -3526,6 +3526,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  box-sizing: border-box;
   border-radius: 1.04rem;
   border: 1px solid rgba(114, 136, 175, 0.58);
   background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
@@ -3721,6 +3722,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-pane {
   margin-top: 0.58rem;
+  box-sizing: border-box;
   border-radius: 0.84rem;
   border: 1px solid rgba(94, 114, 148, 0.56);
   background: rgba(12, 19, 31, 0.9);
@@ -3753,6 +3755,7 @@ video.pf-a3-routine-log-video-frame {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .pf-a3-routine-log-field span {
@@ -3766,6 +3769,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-field input,
 .pf-a3-routine-log-field textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   border-radius: 0.58rem;
   border: 1px solid rgba(106, 125, 159, 0.62);
   background: rgba(18, 25, 39, 0.92);
@@ -4617,8 +4623,7 @@ video.pf-a3-routine-log-video-frame {
     min-height: 0;
     max-height: calc(100dvh - max(0.64rem, env(safe-area-inset-top)) - max(0.64rem, env(safe-area-inset-bottom)));
     border-radius: 0.76rem;
-    border-left: 1px solid rgba(114, 136, 175, 0.58);
-    border-right: 1px solid rgba(114, 136, 175, 0.58);
+    border: 1px solid rgba(114, 136, 175, 0.58);
     padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
   }
 
