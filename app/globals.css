@@ -3066,6 +3066,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
 }
 
+.pf-a3-routine-exercise-index-superset {
+  width: 1.02rem;
+  height: 1.02rem;
+  border-color: rgba(173, 188, 212, 0.54);
+  background: rgba(69, 83, 108, 0.42);
+  color: #dce4f2;
+  font-size: 0.5rem;
+  font-weight: 700;
+}
+
 .pf-a3-routine-exercise-thumb {
   width: 58px;
   height: 40px;
@@ -4320,6 +4330,12 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a3-routine-exercise-name {
     font-size: 0.72rem;
+  }
+
+  .pf-a3-routine-exercise-index-superset {
+    width: 0.92rem;
+    height: 0.92rem;
+    font-size: 0.46rem;
   }
 
   .pf-a3-routine-exercise-tag {
