@@ -464,7 +464,6 @@ export default function AppShell({
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
-  const [alumnosBootLoadingRaw, setAlumnosBootLoadingRaw] = useState<boolean>(true);
   const [sidebarWidgetSettings, setSidebarWidgetSettings] = useState<SidebarWidgetSettings>(() =>
     normalizeSidebarWidgetSettings({
       transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
@@ -1346,18 +1345,7 @@ export default function AppShell({
   const normalizedPathname = normalizePath(pathname);
   const isAlumnosRoute =
     normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
-  const alumnosBootLoading = useMinimumLoading(
-    alumnosBootLoadingRaw,
-    APP_TRANSITION_MIN_MS
-  );
-
-  useEffect(() => {
-    if (!alumnosBootLoadingRaw) {
-      return;
-    }
-
-    setAlumnosBootLoadingRaw(false);
-  }, [alumnosBootLoadingRaw]);
+  const alumnosBootLoading = false;
 
   const appRouteTransitionRaw =
     optimisticNavHref !== null && optimisticNavHref !== normalizedPathname;
