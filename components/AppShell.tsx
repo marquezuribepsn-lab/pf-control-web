@@ -464,10 +464,7 @@ export default function AppShell({
   const [pendingSaveKeys, setPendingSaveKeys] = useState<string[]>([]);
   const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const [optimisticNavHref, setOptimisticNavHref] = useState<string | null>(null);
-  const [alumnosBootLoadingRaw, setAlumnosBootLoadingRaw] = useState<boolean>(() => {
-    const normalizedInitialPathname = normalizePath(pathname);
-    return normalizedInitialPathname === "/alumnos" || normalizedInitialPathname.startsWith("/alumnos/");
-  });
+  const [alumnosBootLoadingRaw, setAlumnosBootLoadingRaw] = useState<boolean>(true);
   const [sidebarWidgetSettings, setSidebarWidgetSettings] = useState<SidebarWidgetSettings>(() =>
     normalizeSidebarWidgetSettings({
       transitionMs: SIDEBAR_WIDGET_DEFAULT_TRANSITION_MS,
@@ -1350,7 +1347,7 @@ export default function AppShell({
   const isAlumnosRoute =
     normalizedPathname === "/alumnos" || normalizedPathname.startsWith("/alumnos/");
   const alumnosBootLoading = useMinimumLoading(
-    alumnosBootLoadingRaw && isAlumnosRoute,
+    alumnosBootLoadingRaw,
     APP_TRANSITION_MIN_MS
   );
 
@@ -1672,7 +1669,19 @@ export default function AppShell({
         className="pointer-events-none md:left-[clamp(132px,14vw,170px)]"
       />
       {alumnosBootLoading ? (
-        <div className="pf-a3-routine-log-overlay pf-a3-routine-log-overlay-mobile z-[121]" aria-live="polite">
+        <div
+          className="pf-a3-routine-log-overlay pf-a3-routine-log-overlay-mobile z-[121]"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#05070a",
+            padding: "16px",
+          }}
+        >
           <section className="pf-a3-routine-empty pf-a3-routine-loading w-[min(420px,92vw)]">
             <div className="pf-a3-routine-loading-visual" aria-hidden="true">
               <span className="pf-a3-routine-loading-ring" />
@@ -1680,7 +1689,7 @@ export default function AppShell({
             </div>
             <p className="pf-a3-routine-loading-brand">PF Control</p>
             <h2>Cargando plataforma...</h2>
-            <p>Preparando tu pantalla de entrenamiento.</p>
+            <p>Preparando tu pantalla.</p>
           </section>
         </div>
       ) : null}
@@ -2004,9 +2013,17 @@ export default function AppShell({
         }`}
       >
         <div
-          className={`${isAlumnosRoute ? "px-0 md:px-4" : "px-4"} transition-opacity duration-150 ${
-            appTransitionOverlayActive ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
+          className={`${isAlumnosRoute ? "px-0 md:px-4" : "px-4"} transition-opacity duration-150`}
+          style={
+            appTransitionOverlayActive
+              ? {
+                  pointerEvents: "none",
+                  opacity: 0,
+                }
+              : {
+                  opacity: 1,
+                }
+          }
         >
           {children}
         </div>
