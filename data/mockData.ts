@@ -56,6 +56,14 @@ export type BloqueEntrenamiento = {
       nombre: string;
       valor: string;
     }[];
+    superSerie?: {
+      id?: string;
+      ejercicioId?: string;
+      series?: string | number;
+      repeticiones?: string | number;
+      descanso?: string;
+      carga?: string;
+    }[];
   }[];
 };
 
