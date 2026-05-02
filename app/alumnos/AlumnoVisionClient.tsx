@@ -1655,6 +1655,19 @@ export default function AlumnoVisionClient({
   }, [activeCategory]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem("pf-alumno-last-category-v1", activeCategory);
+      window.sessionStorage.setItem("pf-alumno-last-category-ts-v1", String(Date.now()));
+    } catch {
+      // Ignore storage exceptions in restricted browser modes.
+    }
+  }, [activeCategory]);
+
+  useEffect(() => {
     if (!isUltraMobile || typeof document === "undefined") return;
 
     const root = document.documentElement;
