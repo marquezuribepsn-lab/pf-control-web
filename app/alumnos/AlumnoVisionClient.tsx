@@ -228,6 +228,14 @@ type WeekExerciseLite = {
     nombre?: string;
     valor?: string;
   }>;
+  superSerie?: Array<{
+    id?: string;
+    ejercicioId?: string;
+    series?: string | number;
+    repeticiones?: string | number;
+    descanso?: string;
+    carga?: string;
+  }>;
 };
 
 type WeekBlockLite = {
@@ -1178,6 +1186,9 @@ function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
                       const rawMetrics = Array.isArray(exerciseItem.metricas)
                         ? exerciseItem.metricas
                         : [];
+                      const rawSuperSerie = Array.isArray(exerciseItem.superSerie)
+                        ? exerciseItem.superSerie
+                        : [];
 
                       return {
                         id: String(exerciseItem.id || "").trim() || undefined,
@@ -1194,6 +1205,19 @@ function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
                             return {
                               nombre: String(metricItem.nombre || "").trim() || undefined,
                               valor: String(metricItem.valor || "").trim() || undefined,
+                            };
+                          }),
+                        superSerie: rawSuperSerie
+                          .filter((superItem) => superItem && typeof superItem === "object")
+                          .map((superItem) => {
+                            const superRow = superItem as Record<string, unknown>;
+                            return {
+                              id: String(superRow.id || "").trim() || undefined,
+                              ejercicioId: String(superRow.ejercicioId || "").trim() || undefined,
+                              series: superRow.series as string | number | undefined,
+                              repeticiones: superRow.repeticiones as string | number | undefined,
+                              descanso: String(superRow.descanso || "").trim() || undefined,
+                              carga: String(superRow.carga || "").trim() || undefined,
                             };
                           }),
                       };
@@ -1344,6 +1368,7 @@ function buildRoutineBlocksFromDayTraining(training?: WeekDayTrainingLite): Rout
     objetivo: String(block.objetivo || ""),
     ejercicios: (Array.isArray(block.ejercicios) ? block.ejercicios : []).map((exercise, exerciseIndex) => {
       const rawSeries = Math.round(Number(toSafeNumeric(exercise.series) || 0));
+      const superSerieRows = Array.isArray(exercise.superSerie) ? exercise.superSerie : [];
 
       return {
         ejercicioId: String(exercise.ejercicioId || exercise.id || `exercise-${exerciseIndex + 1}`),
@@ -1360,6 +1385,17 @@ function buildRoutineBlocksFromDayTraining(training?: WeekDayTrainingLite): Rout
               }))
               .filter((metric) => metric.nombre || metric.valor)
           : undefined,
+        superSerie:
+          superSerieRows.length > 0
+            ? superSerieRows.map((superItem, superIndex) => ({
+                id: String(superItem.id || "").trim() || `super-${superIndex + 1}`,
+                ejercicioId: String(superItem.ejercicioId || "").trim(),
+                series: String(superItem.series || "").trim(),
+                repeticiones: String(superItem.repeticiones || "").trim(),
+                descanso: String(superItem.descanso || "").trim() || undefined,
+                carga: String(superItem.carga || "").trim() || undefined,
+              }))
+            : undefined,
       };
     }),
   }));
@@ -4384,9 +4420,11 @@ export default function AlumnoVisionClient({
                       const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
                       const isExpanded = !isUltraMobile || Boolean(expandedRoutineBlocks[blockKey]);
                       const visibleExercises = isExpanded ? block.ejercicios : [];
-                      const hasSupersetFlag = normalizePersonKey(`${block.titulo || ""} ${block.objetivo || ""}`).includes(
-                        "superserie"
-                      );
+                      const hasSupersetFlag =
+                        normalizePersonKey(`${block.titulo || ""} ${block.objetivo || ""}`).includes("superserie") ||
+                        block.ejercicios.some(
+                          (exercise) => Array.isArray(exercise.superSerie) && exercise.superSerie.length > 0
+                        );
 
                       return (
                         <section key={blockKey} className="pf-a3-routine-block">
@@ -4408,6 +4446,9 @@ export default function AlumnoVisionClient({
                                       normalizePersonKey(metric.nombre).includes("rir")
                                     )
                                   : null;
+                                const superSerieRows = Array.isArray(exercise.superSerie)
+                                  ? exercise.superSerie
+                                  : [];
                                 const exerciseTags = Array.from(
                                   new Set(
                                     [
@@ -4511,6 +4552,53 @@ export default function AlumnoVisionClient({
                                             {tag}
                                           </span>
                                         ))}
+                                      </div>
+                                    ) : null}
+
+                                    {superSerieRows.length > 0 ? (
+                                      <div className="pf-a3-routine-superset-stack">
+                                        <p className="pf-a3-routine-superset-title">Super serie</p>
+                                        {superSerieRows.map((superItem, superIndex) => {
+                                          const superExerciseDetail = superItem.ejercicioId
+                                            ? ejerciciosById.get(superItem.ejercicioId) || null
+                                            : null;
+                                          const superExerciseName =
+                                            superExerciseDetail?.nombre ||
+                                            `Ejercicio combinado ${superIndex + 1}`;
+
+                                          return (
+                                            <article
+                                              key={`${block.id}-${exerciseId}-super-${superItem.id || superIndex}`}
+                                              className="pf-a3-routine-superset-row"
+                                            >
+                                              <div className="pf-a3-routine-superset-main">
+                                                <span className="pf-a3-routine-superset-index">
+                                                  SS{superIndex + 1}
+                                                </span>
+                                                <p className="pf-a3-routine-superset-name">{superExerciseName}</p>
+                                              </div>
+
+                                              <div className="pf-a3-routine-superset-stats">
+                                                <div className="pf-a3-routine-superset-stat">
+                                                  <span>Series:</span>
+                                                  <strong>{superItem.series || "S/D"}</strong>
+                                                </div>
+                                                <div className="pf-a3-routine-superset-stat">
+                                                  <span>Rep.:</span>
+                                                  <strong>{superItem.repeticiones || "S/D"}</strong>
+                                                </div>
+                                                <div className="pf-a3-routine-superset-stat">
+                                                  <span>Desc.:</span>
+                                                  <strong>{superItem.descanso || "S/D"}</strong>
+                                                </div>
+                                                <div className="pf-a3-routine-superset-stat">
+                                                  <span>Carga:</span>
+                                                  <strong>{superItem.carga || "S/D"}</strong>
+                                                </div>
+                                              </div>
+                                            </article>
+                                          );
+                                        })}
                                       </div>
                                     ) : null}
                                   </article>
