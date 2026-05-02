@@ -4457,6 +4457,8 @@ export default function AlumnoVisionClient({
                                   {
                                     rowId: baseExerciseId,
                                     rowName: baseExerciseName,
+                                    rowHeadline: baseExerciseName,
+                                    rowParentName: "",
                                     detail: baseExerciseDetail,
                                     series: exercise.series,
                                     repeticiones: exercise.repeticiones,
@@ -4482,6 +4484,8 @@ export default function AlumnoVisionClient({
                                           `${baseExerciseId}-super-${superIndex + 1}`
                                       ),
                                       rowName: `[${baseExerciseName}] ${superName}`,
+                                      rowHeadline: superName,
+                                      rowParentName: baseExerciseName,
                                       detail: superDetail,
                                       series: superItem.series,
                                       repeticiones: superItem.repeticiones,
@@ -4505,6 +4509,13 @@ export default function AlumnoVisionClient({
                                   >
                                     {hasSuperSerieGroup ? (
                                       <span className="pf-a3-routine-exercise-bracket" aria-hidden="true" />
+                                    ) : null}
+
+                                    {hasSuperSerieGroup ? (
+                                      <p className="pf-a3-routine-exercise-group-badge">
+                                        <span>Super serie</span>
+                                        <strong>{superSerieRows.length + 1} ejercicios fusionados</strong>
+                                      </p>
                                     ) : null}
 
                                     <div className="pf-a3-routine-exercise-group-stack">
@@ -4570,7 +4581,11 @@ export default function AlumnoVisionClient({
                                         return (
                                           <article
                                             key={`${block.id}-${row.rowKeySuffix}`}
-                                            className="pf-a3-routine-exercise-row"
+                                            className={`pf-a3-routine-exercise-row ${
+                                              row.isSuperSerie
+                                                ? "pf-a3-routine-exercise-row-superset"
+                                                : "pf-a3-routine-exercise-row-base"
+                                            }`}
                                           >
                                             <div className="pf-a3-routine-exercise-main">
                                               <span
@@ -4607,6 +4622,12 @@ export default function AlumnoVisionClient({
                                                 ) : (
                                                   getInitials(row.rowName)
                                                 )}
+
+                                                {hasVideoPreview ? (
+                                                  <span className="pf-a3-routine-exercise-thumb-play" aria-hidden="true">
+                                                    ▶
+                                                  </span>
+                                                ) : null}
                                               </span>
                                               <div className="min-w-0">
                                                 <ReliableActionButton
@@ -4615,7 +4636,18 @@ export default function AlumnoVisionClient({
                                                   className="pf-a3-routine-exercise-name-btn"
                                                   aria-label={`Registrar cargas de ${row.rowName}`}
                                                 >
-                                                  <p className="pf-a3-routine-exercise-name">{row.rowName}</p>
+                                                  <p className="pf-a3-routine-exercise-name">
+                                                    {row.isSuperSerie && row.rowParentName ? (
+                                                      <>
+                                                        <span className="pf-a3-routine-exercise-parent-pill">
+                                                          [{row.rowParentName}]
+                                                        </span>{" "}
+                                                        <span>{row.rowHeadline}</span>
+                                                      </>
+                                                    ) : (
+                                                      row.rowHeadline
+                                                    )}
+                                                  </p>
                                                 </ReliableActionButton>
                                                 <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
                                               </div>
