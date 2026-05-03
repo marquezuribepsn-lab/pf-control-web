@@ -7826,6 +7826,56 @@ export default function AlumnoVisionClient({
                   </ReliableActionButton>
                 </div>
 
+                <div className="pf-a3-nutrition-week-head mt-3">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleNutritionTrackerWeekShift(-1)}
+                    className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                  >
+                    Semana anterior
+                  </ReliableActionButton>
+
+                  <p className="pf-a3-nutrition-week-label">
+                    Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
+                  </p>
+
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => handleNutritionTrackerWeekShift(1)}
+                    className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                  >
+                    Semana siguiente
+                  </ReliableActionButton>
+                </div>
+
+                <div className="pf-a3-nutrition-streak-grid mt-3">
+                  <div className="pf-a3-nutrition-streak-card">
+                    <p className="pf-a3-nutrition-streak-title">Racha actual</p>
+                    <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} dias</p>
+                    <p className="pf-a3-nutrition-streak-note">
+                      Ultimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
+                    </p>
+                  </div>
+
+                  <div className="pf-a3-nutrition-streak-card">
+                    <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
+                    <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} dias</p>
+                    <p className="pf-a3-nutrition-streak-note">Historico de adherencia</p>
+                  </div>
+
+                  <div className="pf-a3-nutrition-streak-card">
+                    <p className="pf-a3-nutrition-streak-title">Dias activos</p>
+                    <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
+                    <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
+                  </div>
+
+                  <div className="pf-a3-nutrition-streak-card">
+                    <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
+                    <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
+                    <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
+                  </div>
+                </div>
+
                 <p className="mt-2 text-xs text-slate-400">Resumen del {formatDate(normalizedNutritionTrackerDate)}</p>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -7917,6 +7967,35 @@ export default function AlumnoVisionClient({
                         style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="pf-a3-nutrition-week-grid-wrap mt-4">
+                  <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
+                  <div className="pf-a3-nutrition-week-grid">
+                    {nutritionWeeklyHistory.map((day) => (
+                      <ReliableActionButton
+                        key={`nutri-week-${day.date}`}
+                        type="button"
+                        onClick={() => handleNutritionTrackerDateSelect(day.date)}
+                        className={`pf-a3-nutrition-weekday-card ${
+                          day.isSelected ? "is-selected" : ""
+                        } ${
+                          day.status === "empty"
+                            ? "is-empty"
+                            : day.status === "low"
+                              ? "is-low"
+                              : day.status === "high"
+                                ? "is-high"
+                                : "is-on-target"
+                        }`}
+                      >
+                        <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
+                        <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
+                        <span className="pf-a3-nutrition-weekday-meta">{day.doneMeals} comidas</span>
+                        <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                      </ReliableActionButton>
+                    ))}
                   </div>
                 </div>
 
