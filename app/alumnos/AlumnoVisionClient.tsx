@@ -6058,25 +6058,25 @@ export default function AlumnoVisionClient({
               {activeRoutineActionScreen === "timer" && typeof document !== "undefined"
                 ? createPortal(
                 <aside
+                  ref={(node) => {
+                    routineStopwatchFloatHostRef.current = node;
+                  }}
                   className={`pf-a3-routine-stopwatch-float ${
-                    isUltraMobile ? "pf-a3-routine-stopwatch-float-mobile" : ""
+                    routineStopwatchDragging ? "pf-a3-routine-stopwatch-float-dragging" : ""
                   }`}
+                  style={
+                    routineStopwatchFloatPosition
+                      ? {
+                          transform: `translate3d(${routineStopwatchFloatPosition.x}px, ${routineStopwatchFloatPosition.y}px, 0)`,
+                        }
+                      : undefined
+                  }
+                  onPointerDown={handleRoutineStopwatchPointerDown}
+                  onPointerMove={handleRoutineStopwatchPointerMove}
+                  onPointerUp={handleRoutineStopwatchPointerUp}
+                  onPointerCancel={handleRoutineStopwatchPointerCancel}
                   aria-live="polite"
                 >
-                  <div className="pf-a3-routine-stopwatch-float-head">
-                    <p className="pf-a3-routine-log-kicker">Cronómetro</p>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => setRoutineQuickPanel("none")}
-                      className="pf-a3-routine-stopwatch-float-close"
-                      aria-label="Ocultar cronómetro"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
-                      </svg>
-                    </ReliableActionButton>
-                  </div>
-
                   <p className="pf-a3-routine-stopwatch-display">{routineStopwatchDisplay}</p>
                   <p
                     className={`pf-a3-routine-stopwatch-status ${
@@ -6085,28 +6085,65 @@ export default function AlumnoVisionClient({
                         : ""
                     }`}
                   >
-                    {routineStopwatchStatusLabel}
+                    {routineStopwatchStatusShortLabel}
                   </p>
 
-                  <div className="pf-a3-routine-stopwatch-actions">
+                  <div className="pf-a3-routine-stopwatch-mini-actions">
                     <ReliableActionButton
                       type="button"
                       onClick={routineStopwatchRunning ? pauseRoutineStopwatch : startRoutineStopwatch}
-                      className="pf-a3-routine-action-primary pf-a3-routine-action-primary-timer"
+                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-play"
+                      aria-label={
+                        routineStopwatchRunning
+                          ? "Pausar cronómetro"
+                          : routineStopwatchElapsedMs > 0
+                            ? "Reanudar cronómetro"
+                            : "Iniciar cronómetro"
+                      }
+                      title={
+                        routineStopwatchRunning
+                          ? "Pausar"
+                          : routineStopwatchElapsedMs > 0
+                            ? "Reanudar"
+                            : "Play"
+                      }
                     >
-                      {routineStopwatchRunning
-                        ? "Pausar"
-                        : routineStopwatchElapsedMs > 0
-                          ? "Reanudar"
-                          : "Play"}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+                        {routineStopwatchRunning ? (
+                          <>
+                            <path d="M9 7.5v9" strokeLinecap="round" />
+                            <path d="M15 7.5v9" strokeLinecap="round" />
+                          </>
+                        ) : (
+                          <path d="M9 7.5v9l7-4.5-7-4.5Z" fill="currentColor" stroke="none" />
+                        )}
+                      </svg>
                     </ReliableActionButton>
+
                     <ReliableActionButton
                       type="button"
                       onClick={stopRoutineStopwatch}
                       disabled={!routineStopwatchRunning && routineStopwatchElapsedMs <= 0}
-                      className="pf-a3-routine-action-secondary pf-a3-routine-action-secondary-danger"
+                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-stop"
+                      aria-label="Frenar cronómetro"
+                      title="Frenar"
                     >
-                      Frenar
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+                        <rect x="8" y="8" width="8" height="8" rx="1.2" />
+                      </svg>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setRoutineQuickPanel("none")}
+                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-close"
+                      aria-label="Ocultar cronómetro"
+                      title="Ocultar"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M7.5 7.5 16.5 16.5" strokeLinecap="round" />
+                        <path d="M16.5 7.5 7.5 16.5" strokeLinecap="round" />
+                      </svg>
                     </ReliableActionButton>
                   </div>
                 </aside>,
