@@ -2931,6 +2931,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   .pf-a3-routine-loading-core {
     animation: none;
   }
+
+  .pf-a3-routine-finalize-cta-wave {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .pf-a3-routine-session-card {
