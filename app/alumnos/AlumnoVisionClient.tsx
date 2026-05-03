@@ -3632,6 +3632,232 @@ export default function AlumnoVisionClient({
     nutritionDailyGoalMacros.proteinas,
   ]);
 
+  const nutritionMealPlanById = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        kcal: number;
+        proteinas: number;
+        carbohidratos: number;
+        grasas: number;
+      }
+    >();
+
+    nutritionMealsDetailed.forEach((meal) => {
+      map.set(meal.mealId, {
+        kcal: meal.totalKcal,
+        proteinas: meal.totalProtein,
+        carbohidratos: meal.totalCarbs,
+        grasas: meal.totalFat,
+      });
+    });
+
+    return map;
+  }, [nutritionMealsDetailed]);
+
+  const getNutritionDaySummary = useCallback(
+    (dateInput: string) => {
+      const safeDate = normalizeDateInputValue(dateInput);
+      const dayLog = nutritionDailyLogs.find((row) => row.date === safeDate) || null;
+      const mealLogs = Array.isArray(dayLog?.mealLogs) ? dayLog.mealLogs : [];
+
+      let doneMeals = 0;
+      let consumedKcal = 0;
+      let consumedProteins = 0;
+      let consumedCarbs = 0;
+      let consumedFats = 0;
+
+      mealLogs.forEach((mealLog) => {
+        if (!mealLog?.done) {
+          return;
+        }
+
+        doneMeals += 1;
+
+        const mealId = String(mealLog.mealId || "").trim();
+        const mealPlan = mealId ? nutritionMealPlanById.get(mealId) : undefined;
+        const plannedKcal = Math.max(0, mealPlan?.kcal || 0);
+        const loggedKcal = Math.max(0, toNumber(mealLog.consumedKcal) || 0);
+        const effectiveKcal = loggedKcal > 0 ? loggedKcal : plannedKcal;
+
+        consumedKcal += effectiveKcal;
+
+        if (!mealPlan) {
+          return;
+        }
+
+        let ratio = 0;
+        if (plannedKcal > 0) {
+          ratio = effectiveKcal / plannedKcal;
+        } else if (effectiveKcal > 0) {
+          ratio = 1;
+        }
+
+        const safeRatio = Math.max(0, Math.min(2.5, ratio));
+        consumedProteins += mealPlan.proteinas * safeRatio;
+        consumedCarbs += mealPlan.carbohidratos * safeRatio;
+        consumedFats += mealPlan.grasas * safeRatio;
+      });
+
+      const clampedDoneMeals = Math.min(doneMeals, nutritionMealsDetailed.length || doneMeals);
+      const completionPct =
+        nutritionMealsDetailed.length > 0
+          ? Math.round((clampedDoneMeals * 100) / nutritionMealsDetailed.length)
+          : doneMeals > 0
+            ? 100
+            : 0;
+      const progressKcalPct =
+        nutritionDailyGoalKcal > 0
+          ? Math.max(0, Math.min(180, Math.round((consumedKcal * 100) / nutritionDailyGoalKcal)))
+          : 0;
+
+      let status: "empty" | "low" | "on-target" | "high" = "empty";
+      if (doneMeals > 0) {
+        if (nutritionDailyGoalKcal <= 0) {
+          status = "on-target";
+        } else if (progressKcalPct < 85) {
+          status = "low";
+        } else if (progressKcalPct > 115) {
+          status = "high";
+        } else {
+          status = "on-target";
+        }
+      }
+
+      return {
+        date: safeDate,
+        doneMeals: clampedDoneMeals,
+        consumedKcal: roundToOneDecimal(consumedKcal),
+        consumedMacros: {
+          proteinas: roundToOneDecimal(consumedProteins),
+          carbohidratos: roundToOneDecimal(consumedCarbs),
+          grasas: roundToOneDecimal(consumedFats),
+        },
+        completionPct,
+        progressKcalPct,
+        goalKcal: nutritionDailyGoalKcal,
+        status,
+      };
+    },
+    [nutritionDailyGoalKcal, nutritionDailyLogs, nutritionMealPlanById, nutritionMealsDetailed.length]
+  );
+
+  const nutritionWeekStartDate = useMemo(() => {
+    const safeDate = normalizeDateInputValue(normalizedNutritionTrackerDate);
+    const parsed = new Date(`${safeDate}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) {
+      return safeDate;
+    }
+
+    const dayIndex = parsed.getDay();
+    const daysFromMonday = dayIndex === 0 ? 6 : dayIndex - 1;
+    parsed.setDate(parsed.getDate() - daysFromMonday);
+
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, [normalizedNutritionTrackerDate]);
+
+  const nutritionWeekEndDate = useMemo(
+    () => shiftDateInputValue(nutritionWeekStartDate, 6),
+    [nutritionWeekStartDate]
+  );
+
+  const nutritionWeeklyHistory = useMemo(() => {
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = shiftDateInputValue(nutritionWeekStartDate, index);
+      const summary = getNutritionDaySummary(date);
+      const parsed = new Date(`${date}T00:00:00`);
+      const dayLabel = Number.isNaN(parsed.getTime()) ? "--" : WEEKDAY_SHORT_LABELS[parsed.getDay()] || "--";
+      const dayNumber = Number.isNaN(parsed.getTime()) ? index + 1 : parsed.getDate();
+
+      return {
+        ...summary,
+        date,
+        dayLabel,
+        dayNumber,
+        isSelected: date === normalizedNutritionTrackerDate,
+      };
+    });
+  }, [getNutritionDaySummary, normalizedNutritionTrackerDate, nutritionWeekStartDate]);
+
+  const nutritionWeeklyCompletedDays = useMemo(
+    () => nutritionWeeklyHistory.filter((day) => day.doneMeals > 0).length,
+    [nutritionWeeklyHistory]
+  );
+
+  const nutritionWeeklyAverageKcal = useMemo(() => {
+    const activeDays = nutritionWeeklyHistory.filter((day) => day.doneMeals > 0);
+    if (activeDays.length === 0) {
+      return 0;
+    }
+
+    const total = activeDays.reduce((sum, day) => sum + day.consumedKcal, 0);
+    return roundToOneDecimal(total / activeDays.length);
+  }, [nutritionWeeklyHistory]);
+
+  const nutritionWeeklyAdherencePct = useMemo(() => {
+    const activeDays = nutritionWeeklyHistory.filter((day) => day.doneMeals > 0 && day.goalKcal > 0);
+    if (activeDays.length === 0) {
+      return 0;
+    }
+
+    const totalPct = activeDays.reduce(
+      (sum, day) => sum + Math.max(0, Math.min(160, day.progressKcalPct)),
+      0
+    );
+
+    return Math.round(totalPct / activeDays.length);
+  }, [nutritionWeeklyHistory]);
+
+  const nutritionStreakStats = useMemo(() => {
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    const completedDates = nutritionDailyLogs
+      .map((row) => normalizeDateInputValue(row.date))
+      .filter((date, index, allDates) => allDates.indexOf(date) === index)
+      .filter((date) => getNutritionDaySummary(date).doneMeals > 0)
+      .sort();
+
+    if (completedDates.length === 0) {
+      return { current: 0, best: 0, lastDate: "" };
+    }
+
+    let best = 1;
+    let running = 1;
+
+    for (let index = 1; index < completedDates.length; index += 1) {
+      const previousTs = new Date(`${completedDates[index - 1]}T00:00:00`).getTime();
+      const currentTs = new Date(`${completedDates[index]}T00:00:00`).getTime();
+
+      if (currentTs - previousTs === dayMs) {
+        running += 1;
+        best = Math.max(best, running);
+      } else {
+        running = 1;
+      }
+    }
+
+    let current = 1;
+    for (let index = completedDates.length - 1; index > 0; index -= 1) {
+      const currentTs = new Date(`${completedDates[index]}T00:00:00`).getTime();
+      const previousTs = new Date(`${completedDates[index - 1]}T00:00:00`).getTime();
+
+      if (currentTs - previousTs === dayMs) {
+        current += 1;
+      } else {
+        break;
+      }
+    }
+
+    return {
+      current,
+      best,
+      lastDate: completedDates[completedDates.length - 1] || "",
+    };
+  }, [getNutritionDaySummary, nutritionDailyLogs]);
+
   const nutritionMealQuickChips = useMemo(
     () => [
       { id: "half", label: "50%", ratio: 0.5 },
