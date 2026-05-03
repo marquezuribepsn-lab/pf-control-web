@@ -2109,6 +2109,11 @@ export default function AlumnoVisionClient({
         window.clearTimeout(routineDayWeekLoadingTimerRef.current);
         routineDayWeekLoadingTimerRef.current = null;
       }
+
+      if (routineStopwatchIntervalRef.current !== null) {
+        window.clearInterval(routineStopwatchIntervalRef.current);
+        routineStopwatchIntervalRef.current = null;
+      }
     };
   }, []);
 
