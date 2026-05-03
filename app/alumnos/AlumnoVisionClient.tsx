@@ -11,6 +11,7 @@ import type {
   PrescripcionSesionPersona,
   Sesion,
 } from "@/data/mockData";
+import { argentineFoodsBase } from "@/data/argentineFoods";
 import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
@@ -70,12 +71,26 @@ type NutritionMealItem = {
   nombre?: string;
   foodId?: string;
   gramos?: number;
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
 };
 
 type NutritionMeal = {
   id?: string;
   nombre?: string;
   items?: NutritionMealItem[];
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
 };
 
 type NutritionPlanLite = {
@@ -93,6 +108,40 @@ type NutritionAssignmentLite = {
   alumnoNombre?: string;
   planId?: string;
   assignedAt?: string;
+};
+
+type NutritionFoodLite = {
+  id?: string;
+  nombre?: string;
+  kcalPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
+};
+
+type NutritionDailyMealLogLite = {
+  mealId: string;
+  done?: boolean;
+  consumedKcal?: number;
+  updatedAt?: string;
+};
+
+type NutritionDailyLogLite = {
+  id: string;
+  ownerKey?: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  date: string;
+  mealLogs: NutritionDailyMealLogLite[];
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type WorkoutLogLite = {
@@ -476,6 +525,8 @@ const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const MUSIC_PLAYLISTS_KEY = "pf-control-music-playlists-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
+const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const NUTRITION_DAILY_LOGS_KEY = "pf-control-nutricion-diario-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const ROUTINE_CHANGE_REQUESTS_KEY = "pf-control-routine-change-requests-v1";
@@ -1140,6 +1191,120 @@ function getTodayDateInputValue() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function normalizeDateInputValue(value: string | null | undefined): string {
+  const raw = String(value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = parseDateValue(raw);
+  if (!parsed) {
+    return getTodayDateInputValue();
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function shiftDateInputValue(value: string, deltaDays: number): string {
+  const safeDate = normalizeDateInputValue(value);
+  const base = new Date(`${safeDate}T00:00:00`);
+  if (Number.isNaN(base.getTime())) {
+    return getTodayDateInputValue();
+  }
+
+  base.setDate(base.getDate() + deltaDays);
+  const year = base.getFullYear();
+  const month = String(base.getMonth() + 1).padStart(2, "0");
+  const day = String(base.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function roundToOneDecimal(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.round(value * 10) / 10;
+}
+
+function normalizeMediaUrl(rawUrl: string | null | undefined): string {
+  const value = String(rawUrl || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  if (/^data:image\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
+function resolveNutritionImageUrl(values: Array<string | null | undefined>): string | null {
+  const resolved = uniqueStrings(values)
+    .map((value) => normalizeMediaUrl(value))
+    .find(Boolean);
+
+  return resolved || null;
+}
+
+function normalizeNutritionFoodRows(rawRows: unknown[]): NutritionFoodLite[] {
+  return rawRows
+    .filter((row) => row && typeof row === "object")
+    .map((row) => {
+      const candidate = row as Record<string, unknown>;
+      return {
+        id: String(candidate.id || "").trim(),
+        nombre: String(candidate.nombre || "").trim(),
+        kcalPer100g: toSafeNumeric(candidate.kcalPer100g) || 0,
+        proteinPer100g: toSafeNumeric(candidate.proteinPer100g) || 0,
+        carbsPer100g: toSafeNumeric(candidate.carbsPer100g) || 0,
+        fatPer100g: toSafeNumeric(candidate.fatPer100g) || 0,
+        imageUrl: String(candidate.imageUrl || "").trim(),
+        imagenUrl: String(candidate.imagenUrl || "").trim(),
+        photoUrl: String(candidate.photoUrl || "").trim(),
+        fotoUrl: String(candidate.fotoUrl || "").trim(),
+        thumbnailUrl: String(candidate.thumbnailUrl || "").trim(),
+        coverUrl: String(candidate.coverUrl || "").trim(),
+        artworkUrl: String(candidate.artworkUrl || "").trim(),
+      };
+    })
+    .filter((row) => Boolean(row.id));
+}
+
+function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[] {
+  return rawRows
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const candidate = row as Record<string, unknown>;
+      const date = normalizeDateInputValue(String(candidate.date || ""));
+      const mealLogsRaw = Array.isArray(candidate.mealLogs) ? candidate.mealLogs : [];
+      const mealLogs = mealLogsRaw
+        .filter((meal) => meal && typeof meal === "object")
+        .map((meal) => {
+          const mealCandidate = meal as Record<string, unknown>;
+          const mealId = String(mealCandidate.mealId || "").trim();
+
+          return {
+            mealId,
+            done: Boolean(mealCandidate.done),
+            consumedKcal: Math.max(0, roundToOneDecimal(toSafeNumeric(mealCandidate.consumedKcal) || 0)),
+            updatedAt: String(mealCandidate.updatedAt || "").trim() || undefined,
+          };
+        })
+        .filter((meal) => Boolean(meal.mealId));
+
+      return {
+        id: String(candidate.id || `nutri-log-${date}-${index}`).trim() || `nutri-log-${date}-${index}`,
+        ownerKey: String(candidate.ownerKey || "").trim() || undefined,
+        alumnoNombre: String(candidate.alumnoNombre || "").trim() || undefined,
+        alumnoEmail: String(candidate.alumnoEmail || "").trim() || undefined,
+        date,
+        mealLogs,
+        createdAt: String(candidate.createdAt || "").trim() || undefined,
+        updatedAt: String(candidate.updatedAt || "").trim() || undefined,
+      };
+    });
 }
 
 function createRoutineExerciseLogDraft(seed?: Partial<RoutineExerciseLogDraft>): RoutineExerciseLogDraft {
