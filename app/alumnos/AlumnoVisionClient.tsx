@@ -5844,6 +5844,65 @@ export default function AlumnoVisionClient({
                   )
                 : null}
 
+              {activeRoutineActionScreen === "timer" && typeof document !== "undefined"
+                ? createPortal(
+                <aside
+                  className={`pf-a3-routine-stopwatch-float ${
+                    isUltraMobile ? "pf-a3-routine-stopwatch-float-mobile" : ""
+                  }`}
+                  aria-live="polite"
+                >
+                  <div className="pf-a3-routine-stopwatch-float-head">
+                    <p className="pf-a3-routine-log-kicker">Cronómetro</p>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setRoutineQuickPanel("none")}
+                      className="pf-a3-routine-stopwatch-float-close"
+                      aria-label="Ocultar cronómetro"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                      </svg>
+                    </ReliableActionButton>
+                  </div>
+
+                  <p className="pf-a3-routine-stopwatch-display">{routineStopwatchDisplay}</p>
+                  <p
+                    className={`pf-a3-routine-stopwatch-status ${
+                      routineStopwatchRunning
+                        ? "pf-a3-routine-stopwatch-status-running"
+                        : ""
+                    }`}
+                  >
+                    {routineStopwatchStatusLabel}
+                  </p>
+
+                  <div className="pf-a3-routine-stopwatch-actions">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={routineStopwatchRunning ? pauseRoutineStopwatch : startRoutineStopwatch}
+                      className="pf-a3-routine-action-primary pf-a3-routine-action-primary-timer"
+                    >
+                      {routineStopwatchRunning
+                        ? "Pausar"
+                        : routineStopwatchElapsedMs > 0
+                          ? "Reanudar"
+                          : "Play"}
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={stopRoutineStopwatch}
+                      disabled={!routineStopwatchRunning && routineStopwatchElapsedMs <= 0}
+                      className="pf-a3-routine-action-secondary pf-a3-routine-action-secondary-danger"
+                    >
+                      Frenar
+                    </ReliableActionButton>
+                  </div>
+                </aside>,
+                document.body
+                  )
+                : null}
+
               {routineExerciseLogTarget && typeof document !== "undefined"
                 ? createPortal(
                 <div
