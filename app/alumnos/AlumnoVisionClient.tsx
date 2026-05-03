@@ -3706,18 +3706,6 @@ export default function AlumnoVisionClient({
     [routineStopwatchElapsedMs]
   );
 
-  const routineStopwatchStatusLabel = useMemo(() => {
-    if (routineStopwatchRunning) {
-      return "Cronómetro en marcha";
-    }
-
-    if (routineStopwatchElapsedMs > 0) {
-      return "Cronómetro en pausa";
-    }
-
-    return "Listo para iniciar";
-  }, [routineStopwatchElapsedMs, routineStopwatchRunning]);
-
   const routineStopwatchStatusShortLabel = useMemo(() => {
     if (routineStopwatchRunning) {
       return "En marcha";
