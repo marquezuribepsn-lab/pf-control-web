@@ -1120,35 +1120,58 @@ function resolveRoutinePainTrainingRecommendation(input: {
   const shoulderOrElbow =
     ubicacion.includes("hombro") || ubicacion.includes("codo") || ubicacion.includes("muneca");
 
+  const composeRecommendation = (plan: string) => {
+    const safetyRule = "Entrena solo en zona tolerable (dolor 0-3/10) y sin compensaciones tecnicas.";
+    const coachRule =
+      "Consulta al profesor para cambiar por otro ejercicio si la molestia persiste, aumenta o limita la tecnica.";
+    return `${plan} ${safetyRule} ${coachRule}`;
+  };
+
   if (hasIrradiation || appearsAtRest) {
-    return "Baja hoy a intensidad suave (RPE 4-5), evita impacto y detene el ejercicio que dispara el dolor. Si no mejora en 24-48 h, no cargues y consulta al profe antes de seguir.";
+    return composeRecommendation(
+      "Baja hoy a intensidad suave (RPE 4-5), evita impacto y detene el ejercicio que dispara el dolor. Si no mejora en 24-48 h, no cargues."
+    );
   }
 
   if (hasSharpPain || hasInflammation) {
-    return "Mantene solo trabajo tecnico y controlado: reduce carga 30-40%, recorta rango en el tramo doloroso y descansa mas entre series. Si el dolor sube durante la sesion, corta ese ejercicio.";
+    return composeRecommendation(
+      "Mantene solo trabajo tecnico y controlado: reduce carga 30-40%, recorta rango en el tramo doloroso y descansa mas entre series. Si el dolor sube durante la sesion, corta ese ejercicio."
+    );
   }
 
   if (lumbarZone) {
-    return "Prioriza estabilidad de tronco: baja carga, tempo lento (3-1-2), respiracion y braceo activo. Evita esfuerzos explosivos hasta entrenar sin dolor.";
+    return composeRecommendation(
+      "Prioriza estabilidad de tronco: baja carga, tempo lento (3-1-2), respiracion y braceo activo. Evita esfuerzos explosivos hasta entrenar sin dolor."
+    );
   }
 
   if (kneeOrAnkle) {
-    return "Trabaja con rango tolerable y eje controlado: baja carga, evita rebotes y usa pausas cortas en la parte media del movimiento para mantener tecnica limpia.";
+    return composeRecommendation(
+      "Trabaja con rango tolerable y eje controlado: baja carga, evita rebotes y usa pausas cortas en la parte media del movimiento para mantener tecnica limpia."
+    );
   }
 
   if (shoulderOrElbow) {
-    return "Usa agarre comodo y recorrido sin pinzamiento: reduce carga, controla descenso y evita bloqueos fuertes al final del movimiento.";
+    return composeRecommendation(
+      "Usa agarre comodo y recorrido sin pinzamiento: reduce carga, controla descenso y evita bloqueos fuertes al final del movimiento."
+    );
   }
 
   if (appearsDuringSet) {
-    return "Segui entrenando con carga moderada (10-20% menos), tempo controlado y sin llegar al fallo. La regla es dolor estable o menor durante toda la serie.";
+    return composeRecommendation(
+      "Segui entrenando con carga moderada (10-20% menos), tempo controlado y sin llegar al fallo. La regla es dolor estable o menor durante toda la serie."
+    );
   }
 
   if (appearsOnWarmup) {
-    return "Extende la entrada en calor 8-10 min y agrega una serie de aproximacion extra con baja carga antes de las series efectivas.";
+    return composeRecommendation(
+      "Extende la entrada en calor 8-10 min y agrega una serie de aproximacion extra con baja carga antes de las series efectivas."
+    );
   }
 
-  return "Mantene tecnica estricta, baja un punto de esfuerzo (RPE) y monitorea en cada serie. Si el dolor aumenta, cambia el ejercicio por una variante sin molestia.";
+  return composeRecommendation(
+    "Mantene tecnica estricta, baja un punto de esfuerzo (RPE), monitorea en cada serie y usa una variante sin molestia cuando sea necesario."
+  );
 }
 
 function buildRoutineExerciseKey(
