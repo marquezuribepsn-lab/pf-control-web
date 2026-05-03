@@ -5463,6 +5463,277 @@ export default function AlumnoVisionClient({
                 </article>
               )}
 
+              {activeRoutineActionScreen !== "none" && typeof document !== "undefined"
+                ? createPortal(
+                <div
+                  className={`pf-a3-routine-log-overlay ${
+                    isUltraMobile ? "pf-a3-routine-log-overlay-mobile" : ""
+                  } pf-a3-routine-action-overlay`}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <article
+                    className={`pf-a3-routine-log-panel ${
+                      isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
+                    } pf-a3-routine-action-panel ${
+                      activeRoutineActionScreen === "change"
+                        ? "pf-a3-routine-action-panel-change"
+                        : activeRoutineActionScreen === "sessions"
+                          ? "pf-a3-routine-action-panel-sessions"
+                          : "pf-a3-routine-action-panel-finalize"
+                    }`}
+                  >
+                    {routineActionScreenLoading ? (
+                      <>
+                        <div className="pf-a3-routine-log-head">
+                          <div className="min-w-0">
+                            <p className="pf-a3-routine-log-kicker">Cargando</p>
+                            <h3 className="pf-a3-routine-log-title">
+                              {activeRoutineActionScreen === "change"
+                                ? "Solicitud de cambio"
+                                : activeRoutineActionScreen === "sessions"
+                                  ? "Sesiones finalizadas"
+                                  : "Finalizar sesión"}
+                            </h3>
+                            <p className="pf-a3-routine-log-meta">Preparando pantalla.</p>
+                          </div>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineActionScreen}
+                            className="pf-a3-routine-log-close"
+                            aria-label="Cerrar panel"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                            </svg>
+                          </ReliableActionButton>
+                        </div>
+
+                        <section className="pf-a3-routine-empty pf-a3-routine-loading pf-a3-routine-action-loading" aria-live="polite">
+                          <div className="pf-a3-routine-loading-visual" aria-hidden="true">
+                            <span className="pf-a3-routine-loading-ring" />
+                            <span className="pf-a3-routine-loading-core">PF</span>
+                          </div>
+                          <p className="pf-a3-routine-loading-brand">PF Control</p>
+                          <h2>Cargando panel...</h2>
+                          <p>Actualizando vista de rutina.</p>
+                        </section>
+                      </>
+                    ) : activeRoutineActionScreen === "change" ? (
+                      <>
+                        <div className="pf-a3-routine-log-head">
+                          <div className="min-w-0">
+                            <p className="pf-a3-routine-log-kicker">Solicitud</p>
+                            <h3 className="pf-a3-routine-log-title">Solicitar cambio de rutina</h3>
+                            <p className="pf-a3-routine-log-meta">
+                              Envia al profesor el motivo para ajustar este día o sesión.
+                            </p>
+                          </div>
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineActionScreen}
+                            className="pf-a3-routine-log-close"
+                            aria-label="Cerrar solicitud"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                            </svg>
+                          </ReliableActionButton>
+                        </div>
+
+                        <textarea
+                          value={routineChangeRequestDraft}
+                          onChange={(event) => setRoutineChangeRequestDraft(event.target.value)}
+                          rows={4}
+                          className="pf-a3-routine-action-textarea"
+                          placeholder="Ej: esta variante me genera dolor en rodilla y necesito otra opción de ejercicio."
+                        />
+
+                        <div className="pf-a3-routine-action-row">
+                          <span className="pf-a3-routine-action-counter">
+                            {routineChangeRequestDraft.trim().length} caracteres
+                          </span>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={submitRoutineChangeRequest}
+                            className="pf-a3-routine-action-primary pf-a3-routine-action-primary-change"
+                          >
+                            Enviar solicitud
+                          </ReliableActionButton>
+                        </div>
+
+                        {routineChangeRequestStatus ? (
+                          <p className="pf-a3-routine-action-status">{routineChangeRequestStatus}</p>
+                        ) : null}
+
+                        {routineChangeRequests[0] ? (
+                          <p className="pf-a3-routine-action-meta">
+                            Última solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
+                          </p>
+                        ) : null}
+                      </>
+                    ) : activeRoutineActionScreen === "sessions" ? (
+                      <>
+                        <div className="pf-a3-routine-log-head">
+                          <div className="min-w-0">
+                            <p className="pf-a3-routine-log-kicker">Historial</p>
+                            <h3 className="pf-a3-routine-log-title">Sesiones finalizadas</h3>
+                            <p className="pf-a3-routine-log-meta">
+                              Historial de cierres diarios con feedback enviado.
+                            </p>
+                          </div>
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineActionScreen}
+                            className="pf-a3-routine-log-close"
+                            aria-label="Cerrar historial"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                            </svg>
+                          </ReliableActionButton>
+                        </div>
+
+                        {routineSessionFeedbackHistory.length === 0 ? (
+                          <p className="pf-a3-routine-action-empty">Todavía no finalizaste sesiones con feedback.</p>
+                        ) : (
+                          <div className="pf-a3-routine-action-list">
+                            {routineSessionFeedbackHistory.map((record) => (
+                              <article
+                                key={record.id}
+                                className="pf-a3-routine-action-card"
+                              >
+                                <div className="pf-a3-routine-action-card-head">
+                                  <p>
+                                    {record.dayName || record.sessionTitle || "Sesión"}
+                                  </p>
+                                  <span>{formatDateTime(record.createdAt)} hs</span>
+                                </div>
+
+                                {record.answers.length > 0 ? (
+                                  <ul className="pf-a3-routine-action-answer-list">
+                                    {record.answers.map((answer) => (
+                                      <li key={`${record.id}-${answer.questionId}-${answer.optionId}`}>
+                                        {answer.questionPrompt}: <span>{answer.optionLabel}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="pf-a3-routine-action-meta">Sin respuestas cargadas.</p>
+                                )}
+
+                                <p className="pf-a3-routine-action-meta">
+                                  Registros del día: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
+                                </p>
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="pf-a3-routine-log-head">
+                          <div className="min-w-0">
+                            <p className="pf-a3-routine-log-kicker">Feedback</p>
+                            <h3 className="pf-a3-routine-log-title">Finalizar sesión</h3>
+                            <p className="pf-a3-routine-log-meta">
+                              Cierra el día y envía tu feedback al profesor.
+                            </p>
+                          </div>
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineActionScreen}
+                            className="pf-a3-routine-log-close"
+                            aria-label="Cerrar finalización"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                            </svg>
+                          </ReliableActionButton>
+                        </div>
+
+                        {selectedRoutineDayFeedbackQuestions.length > 0 ? (
+                          <div className="pf-a3-routine-action-question-list">
+                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión") ? (
+                              <p className="pf-a3-routine-action-title">
+                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión"}
+                              </p>
+                            ) : null}
+
+                            {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
+                              <article
+                                key={question.id}
+                                className="pf-a3-routine-action-card"
+                              >
+                                <p className="pf-a3-routine-action-question-label">
+                                  {question.prompt || `Pregunta ${questionIndex + 1}`}
+                                </p>
+                                <div className="pf-a3-routine-action-options-row">
+                                  {question.options.map((option) => {
+                                    const isSelected =
+                                      routineFinalizeAnswerByQuestionId[question.id] === option.id;
+
+                                    return (
+                                      <ReliableActionButton
+                                        key={`${question.id}-${option.id}`}
+                                        type="button"
+                                        onClick={() =>
+                                          setRoutineFinalizeAnswerByQuestionId((previous) => ({
+                                            ...previous,
+                                            [question.id]: option.id,
+                                          }))
+                                        }
+                                        className={`pf-a3-routine-action-option-btn ${
+                                          isSelected
+                                            ? "pf-a3-routine-action-option-btn-active"
+                                            : ""
+                                        }`}
+                                      >
+                                        {option.label}
+                                      </ReliableActionButton>
+                                    );
+                                  })}
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="pf-a3-routine-action-empty">
+                            El profesor aún no asignó un cuestionario para este día. Puedes finalizar igual.
+                          </p>
+                        )}
+
+                        <div className="pf-a3-routine-action-actions">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeRoutineActionScreen}
+                            className="pf-a3-routine-action-secondary"
+                          >
+                            Cancelar
+                          </ReliableActionButton>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={submitRoutineFinalize}
+                            className="pf-a3-routine-action-primary pf-a3-routine-action-primary-finalize"
+                          >
+                            Guardar cierre
+                          </ReliableActionButton>
+                        </div>
+
+                        {routineFinalizeStatus ? (
+                          <p className="pf-a3-routine-action-status">{routineFinalizeStatus}</p>
+                        ) : null}
+                      </>
+                    )}
+                  </article>
+                </div>,
+                document.body
+                  )
+                : null}
+
               {routineExerciseLogTarget && typeof document !== "undefined"
                 ? createPortal(
                 <div
