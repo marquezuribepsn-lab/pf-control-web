@@ -5573,7 +5573,7 @@ export default function AlumnoVisionClient({
                 </article>
               )}
 
-              {activeRoutineActionScreen !== "none" && typeof document !== "undefined"
+              {activeRoutineActionScreen !== "none" && activeRoutineActionScreen !== "timer" && typeof document !== "undefined"
                 ? createPortal(
                 <div
                   className={`pf-a3-routine-log-overlay ${
@@ -5590,8 +5590,6 @@ export default function AlumnoVisionClient({
                         ? "pf-a3-routine-action-panel-change"
                         : activeRoutineActionScreen === "sessions"
                           ? "pf-a3-routine-action-panel-sessions"
-                          : activeRoutineActionScreen === "timer"
-                            ? "pf-a3-routine-action-panel-timer"
                           : "pf-a3-routine-action-panel-finalize"
                     }`}
                   >
@@ -5605,8 +5603,6 @@ export default function AlumnoVisionClient({
                                 ? "Solicitud de cambio"
                                 : activeRoutineActionScreen === "sessions"
                                   ? "Sesiones finalizadas"
-                                  : activeRoutineActionScreen === "timer"
-                                    ? "Cronómetro"
                                   : "Finalizar sesión"}
                             </h3>
                             <p className="pf-a3-routine-log-meta">Preparando pantalla.</p>
