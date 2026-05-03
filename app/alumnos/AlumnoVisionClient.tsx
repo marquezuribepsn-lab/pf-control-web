@@ -3614,17 +3614,6 @@ export default function AlumnoVisionClient({
     return "PF Control";
   }, [coachContact?.nombre]);
 
-  const isRoutineFullyExpanded = useMemo(() => {
-    if (!selectedRoutineEntry || selectedRoutineEntry.blocks.length === 0) {
-      return false;
-    }
-
-    return selectedRoutineEntry.blocks.every((block) => {
-      const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
-      return Boolean(expandedRoutineBlocks[blockKey]);
-    });
-  }, [expandedRoutineBlocks, selectedRoutineEntry]);
-
   const routineExerciseVideoCandidate = useMemo(() => {
     if (!routineExerciseLogTarget) {
       return "";
@@ -3877,10 +3866,6 @@ export default function AlumnoVisionClient({
       setRoutinePullRefreshing(false);
     }
   }, [clearRoutineExerciseLogStatusTimer, scheduleStorageRefresh]);
-
-  const handleRoutineRefresh = useCallback(() => {
-    triggerRoutineRefresh();
-  }, [triggerRoutineRefresh]);
 
   const handleRoutineTouchStart = useCallback(
     (event: TouchEvent<HTMLDivElement>) => {
@@ -4211,22 +4196,6 @@ export default function AlumnoVisionClient({
       setWorkoutLogsShared,
     ]
   );
-
-  const handleRoutineToggleAll = useCallback(() => {
-    if (!selectedRoutineEntry) return;
-
-    const shouldExpand = !isRoutineFullyExpanded;
-    const nextState: Record<string, boolean> = {};
-
-    selectedRoutineEntry.blocks.forEach((block) => {
-      nextState[`${selectedRoutineEntry.sesion.id}-${block.id}`] = shouldExpand;
-    });
-
-    setExpandedRoutineBlocks((previous) => ({
-      ...previous,
-      ...nextState,
-    }));
-  }, [isRoutineFullyExpanded, selectedRoutineEntry]);
 
   const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions") => {
     setRoutineQuickPanel((current) => (current === panel ? "none" : panel));
