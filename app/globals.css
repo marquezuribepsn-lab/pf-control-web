@@ -4761,6 +4761,35 @@ video.pf-a3-routine-log-video-frame {
   box-shadow: none;
 }
 
+.pf-a3-nutrition-mode-toggle {
+  display: grid;
+  gap: 0.48rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pf-a3-nutrition-mode-btn {
+  border-radius: 0.86rem;
+  border: 1px solid rgba(128, 167, 200, 0.42);
+  background: linear-gradient(165deg, rgba(13, 24, 35, 0.88), rgba(10, 18, 28, 0.9));
+  color: rgba(219, 238, 252, 0.9);
+  min-height: 40px;
+  padding: 0.46rem 0.64rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.pf-a3-nutrition-mode-btn.is-active {
+  border-color: rgba(103, 232, 249, 0.82);
+  background:
+    radial-gradient(120% 130% at 100% -20%, rgba(103, 232, 249, 0.2), transparent 62%),
+    linear-gradient(165deg, rgba(8, 29, 37, 0.88), rgba(7, 22, 30, 0.9));
+  color: #effbff;
+  box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.28);
+}
+
 .pf-a3-nutrition-tracker-head {
   display: flex;
   flex-wrap: wrap;
@@ -5253,8 +5282,134 @@ video.pf-a3-routine-log-video-frame {
   text-align: right;
 }
 
+.pf-a3-nutrition-student-food-card {
+  border-radius: 0.94rem;
+  border: 1px solid rgba(137, 180, 215, 0.38);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(125, 211, 252, 0.16), transparent 62%),
+    linear-gradient(168deg, rgba(12, 22, 33, 0.9), rgba(9, 17, 27, 0.92));
+  padding: 0.72rem 0.78rem;
+}
+
+.pf-a3-nutrition-student-food-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(183, 212, 236, 0.86);
+}
+
+.pf-a3-nutrition-student-food-title {
+  margin-top: 0.22rem;
+  font-size: 0.94rem;
+  font-weight: 900;
+  color: #f5fbff;
+}
+
+.pf-a3-nutrition-student-food-subtitle {
+  margin-top: 0.24rem;
+  font-size: 0.72rem;
+  color: rgba(180, 208, 232, 0.86);
+}
+
+.pf-a3-nutrition-student-food-grid {
+  margin-top: 0.56rem;
+  display: grid;
+  gap: 0.46rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pf-a3-nutrition-student-food-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.pf-a3-nutrition-student-food-field span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(180, 208, 235, 0.86);
+}
+
+.pf-a3-nutrition-student-food-field input {
+  border-radius: 0.62rem;
+  border: 1px solid rgba(142, 181, 216, 0.46);
+  background: rgba(9, 16, 25, 0.86);
+  color: #ebf7ff;
+  min-height: 34px;
+  padding: 0.32rem 0.52rem;
+  font-size: 0.8rem;
+}
+
+.pf-a3-nutrition-student-food-actions {
+  margin-top: 0.58rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pf-a3-nutrition-student-food-list {
+  margin-top: 0.62rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.pf-a3-nutrition-student-food-item {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(128, 164, 197, 0.34);
+  background: rgba(11, 19, 29, 0.82);
+  padding: 0.44rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.44rem;
+}
+
+.pf-a3-nutrition-student-food-name {
+  font-size: 0.77rem;
+  font-weight: 800;
+  color: #f5fbff;
+}
+
+.pf-a3-nutrition-student-food-meta {
+  margin-top: 0.08rem;
+  font-size: 0.66rem;
+  color: rgba(180, 207, 232, 0.84);
+}
+
+.pf-a3-nutrition-student-food-delete {
+  border-radius: 0.56rem;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  background: rgba(120, 53, 15, 0.34);
+  color: rgba(255, 236, 179, 0.94);
+  font-size: 0.66rem;
+  font-weight: 700;
+  min-height: 30px;
+  padding: 0.26rem 0.5rem;
+}
+
+.pf-a3-nutrition-student-food-empty {
+  margin-top: 0.62rem;
+  font-size: 0.72rem;
+  color: rgba(176, 204, 229, 0.84);
+}
+
+.pf-a3-nutrition-student-food-status {
+  margin-top: 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(167, 243, 208, 0.96);
+}
+
 .pf-a3-nutrition-kcal-input input:focus,
-.pf-a3-nutrition-tracker-date-input input:focus {
+.pf-a3-nutrition-tracker-date-input input:focus,
+.pf-a3-nutrition-student-food-field input:focus {
   outline: none;
   border-color: rgba(56, 189, 248, 0.82);
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
