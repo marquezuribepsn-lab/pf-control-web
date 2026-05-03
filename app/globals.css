@@ -5218,6 +5218,42 @@ video.pf-a3-routine-log-video-frame {
     justify-content: center;
   }
 
+  .pf-a3-routine-finalize-cta {
+    min-height: 48px;
+    border-radius: 0.94rem;
+    padding: 0.64rem 0.72rem;
+  }
+
+  .pf-a3-routine-finalize-cta-label {
+    font-size: clamp(0.82rem, 4.4vw, 0.96rem);
+  }
+
+  .pf-a3-routine-action-panel {
+    width: min(900px, 100%);
+  }
+
+  .pf-a3-routine-action-textarea {
+    min-height: 128px;
+    font-size: 0.84rem;
+  }
+
+  .pf-a3-routine-action-row,
+  .pf-a3-routine-action-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-a3-routine-action-primary,
+  .pf-a3-routine-action-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pf-a3-routine-action-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .pf-a3-bmi-value {
     font-size: 1.12rem;
   }
