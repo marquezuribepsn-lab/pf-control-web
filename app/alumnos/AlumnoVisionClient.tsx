@@ -23,6 +23,7 @@ import {
   type ReactNode,
   type TouchEvent,
 } from "react";
+import { createPortal } from "react-dom";
 
 type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
 
@@ -4719,7 +4720,8 @@ export default function AlumnoVisionClient({
                 </article>
               )}
 
-              {routineExerciseLogTarget ? (
+              {routineExerciseLogTarget && typeof document !== "undefined"
+                ? createPortal(
                 <div
                   className={`pf-a3-routine-log-overlay ${
                     isUltraMobile ? "pf-a3-routine-log-overlay-mobile" : ""
@@ -5015,8 +5017,10 @@ export default function AlumnoVisionClient({
                       )
                     ) : null}
                   </article>
-                </div>
-              ) : null}
+                </div>,
+                document.body
+              )
+                : null}
             </div>
           ) : null}
 
