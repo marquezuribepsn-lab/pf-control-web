@@ -234,6 +234,23 @@ type WeekDayTrainingLite = {
   bloques: WeekBlockLite[];
 };
 
+type PostSessionFeedbackOptionLite = {
+  id: string;
+  label: string;
+};
+
+type PostSessionFeedbackQuestionLite = {
+  id: string;
+  prompt: string;
+  options: PostSessionFeedbackOptionLite[];
+};
+
+type PostSessionFeedbackConfigLite = {
+  enabled: boolean;
+  title?: string;
+  questions: PostSessionFeedbackQuestionLite[];
+};
+
 type WeekDayPlanLite = {
   id: string;
   dia: string;
@@ -242,6 +259,7 @@ type WeekDayPlanLite = {
   sesionId: string;
   oculto?: boolean;
   entrenamiento?: WeekDayTrainingLite;
+  postSesionFeedback?: PostSessionFeedbackConfigLite;
 };
 
 type WeekPlanLite = {
@@ -396,6 +414,99 @@ const TRAINING_STRUCTURE_ACTION_COOLDOWN_MS = 320;
 
 const createTrainingEntityId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedbackConfigLite | undefined {
+  if (!rawValue || typeof rawValue !== "object") {
+    return undefined;
+  }
+
+  const row = rawValue as Record<string, unknown>;
+  const rawQuestions = Array.isArray(row.questions) ? row.questions : [];
+
+  const questions: PostSessionFeedbackQuestionLite[] = rawQuestions
+    .filter((question) => question && typeof question === "object")
+    .map((question, questionIndex) => {
+      const questionRow = question as Record<string, unknown>;
+      const rawOptions = Array.isArray(questionRow.options) ? questionRow.options : [];
+
+      const options: PostSessionFeedbackOptionLite[] = rawOptions
+        .filter((option) => option && typeof option === "object")
+        .map((option, optionIndex) => {
+          const optionRow = option as Record<string, unknown>;
+
+          return {
+            id:
+              String(optionRow.id || "").trim() ||
+              createTrainingEntityId(`feedback-option-${questionIndex + 1}-${optionIndex + 1}`),
+            label: String(optionRow.label || optionRow.opcion || "").trim(),
+          };
+        })
+        .filter((option) => Boolean(option.label));
+
+      if (options.length < 2) {
+        return {
+          id: String(questionRow.id || "").trim() || createTrainingEntityId("feedback-question"),
+          prompt: String(questionRow.prompt || questionRow.pregunta || "").trim(),
+          options: [
+            { id: createTrainingEntityId("feedback-option"), label: "Excelente" },
+            { id: createTrainingEntityId("feedback-option"), label: "Necesito ayuda" },
+          ],
+        };
+      }
+
+      return {
+        id: String(questionRow.id || "").trim() || createTrainingEntityId("feedback-question"),
+        prompt:
+          String(questionRow.prompt || questionRow.pregunta || "").trim() ||
+          `Pregunta ${questionIndex + 1}`,
+        options,
+      };
+    })
+    .filter((question) => question.options.length >= 2);
+
+  const title = String(row.title || "").trim() || undefined;
+  const enabled = row.enabled === true;
+
+  if (!enabled && questions.length === 0 && !title) {
+    return undefined;
+  }
+
+  return {
+    enabled,
+    title,
+    questions,
+  };
+}
+
+function sanitizePostSessionFeedbackConfig(
+  config: PostSessionFeedbackConfigLite | null | undefined
+): PostSessionFeedbackConfigLite | undefined {
+  if (!config) {
+    return undefined;
+  }
+
+  return normalizePostSessionFeedbackConfig(config);
+}
+
+function createDefaultPostSessionFeedbackQuestion(questionIndex: number): PostSessionFeedbackQuestionLite {
+  return {
+    id: createTrainingEntityId("feedback-question"),
+    prompt: `Pregunta ${questionIndex + 1}`,
+    options: [
+      { id: createTrainingEntityId("feedback-option"), label: "Excelente" },
+      { id: createTrainingEntityId("feedback-option"), label: "Bien" },
+      { id: createTrainingEntityId("feedback-option"), label: "Necesito ayuda" },
+    ],
+  };
+}
+
+function createDefaultPostSessionFeedbackConfig(): PostSessionFeedbackConfigLite {
+  return {
+    enabled: true,
+    title: "Feedback post sesion",
+    questions: [createDefaultPostSessionFeedbackQuestion(0)],
+  };
+}
 
 const INITIAL_TRAINING_RECORD_DRAFT: TrainingRecordDraft = {
   fecha: new Date().toISOString().slice(0, 10),
@@ -556,6 +667,7 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                 dayRow.entrenamiento && typeof dayRow.entrenamiento === "object"
                   ? (dayRow.entrenamiento as Record<string, unknown>)
                   : null;
+              const postSesionFeedback = normalizePostSessionFeedbackConfig(dayRow.postSesionFeedback);
               const bloquesRaw = Array.isArray(entrenamientoRaw?.bloques) ? entrenamientoRaw?.bloques : [];
 
               const bloques: WeekBlockLite[] = bloquesRaw
@@ -627,6 +739,7 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                       bloques,
                     }
                   : undefined,
+                postSesionFeedback,
               };
             });
 
@@ -989,6 +1102,7 @@ function cloneTrainingDayForDuplicate(source: WeekDayPlanLite, dayIndex: number)
     objetivo: String(source.objetivo || ""),
     sesionId: String(source.sesionId || ""),
     oculto: false,
+    postSesionFeedback: sanitizePostSessionFeedbackConfig(source.postSesionFeedback),
     entrenamiento: {
       bloques: baseBlocks.map((block, blockIndex) =>
         cloneTrainingBlockForDuplicate(block, blockIndex)
