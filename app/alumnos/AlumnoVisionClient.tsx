@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TouchEvent,
 } from "react";
@@ -381,6 +382,11 @@ type RoutineExerciseLogDraft = {
   videoMimeType: string;
 };
 
+type RoutineStopwatchFloatPosition = {
+  x: number;
+  y: number;
+};
+
 type IdentityRef = {
   names: string[];
   emails: string[];
@@ -482,6 +488,8 @@ const ROUTINE_DAY_WEEK_MIN_LOADING_MS = 2000;
 const ROUTINE_ACTION_SCREEN_MIN_LOADING_MS = 2000;
 const ROUTINE_PULL_THRESHOLD = 74;
 const ROUTINE_PULL_MAX_DISTANCE = 120;
+const ROUTINE_STOPWATCH_FLOAT_SIZE_DESKTOP = 126;
+const ROUTINE_STOPWATCH_FLOAT_SIZE_MOBILE = 108;
 const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
 const DIRECT_AUDIO_EXTENSIONS = [".mp3", ".m4a", ".aac", ".wav", ".ogg", ".flac"];
 
