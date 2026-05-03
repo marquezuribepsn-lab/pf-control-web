@@ -1312,6 +1312,29 @@ function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[
         })
         .filter((meal) => Boolean(meal.mealId));
 
+      const customFoodsRaw = Array.isArray(candidate.customFoods) ? candidate.customFoods : [];
+      const customFoods = customFoodsRaw
+        .filter((entry) => entry && typeof entry === "object")
+        .map((entry, entryIndex) => {
+          const foodCandidate = entry as Record<string, unknown>;
+          const id =
+            String(foodCandidate.id || "").trim() ||
+            `food-${date}-${index}-${entryIndex}`;
+          const nombre = String(foodCandidate.nombre || "").trim() || "Alimento";
+
+          return {
+            id,
+            nombre,
+            porcion: String(foodCandidate.porcion || "").trim() || undefined,
+            calorias: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.calorias) || 0)),
+            proteinas: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.proteinas) || 0)),
+            carbohidratos: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.carbohidratos) || 0)),
+            grasas: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.grasas) || 0)),
+            createdAt: String(foodCandidate.createdAt || "").trim() || undefined,
+          };
+        })
+        .filter((entry) => Boolean(entry.id) && Boolean(entry.nombre));
+
       return {
         id: String(candidate.id || `nutri-log-${date}-${index}`).trim() || `nutri-log-${date}-${index}`,
         ownerKey: String(candidate.ownerKey || "").trim() || undefined,
@@ -1319,6 +1342,7 @@ function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[
         alumnoEmail: String(candidate.alumnoEmail || "").trim() || undefined,
         date,
         mealLogs,
+        customFoods,
         createdAt: String(candidate.createdAt || "").trim() || undefined,
         updatedAt: String(candidate.updatedAt || "").trim() || undefined,
       };
