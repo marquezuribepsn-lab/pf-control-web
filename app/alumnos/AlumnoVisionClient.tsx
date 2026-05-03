@@ -1248,6 +1248,171 @@ function buildRoutineExerciseKey(
   ].join("::");
 }
 
+function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedbackConfigLite | undefined {
+  if (!rawValue || typeof rawValue !== "object") {
+    return undefined;
+  }
+
+  const row = rawValue as Record<string, unknown>;
+  const rawQuestions = Array.isArray(row.questions) ? row.questions : [];
+
+  const questions: PostSessionFeedbackQuestionLite[] = rawQuestions
+    .filter((question) => question && typeof question === "object")
+    .map((question, questionIndex) => {
+      const questionRow = question as Record<string, unknown>;
+      const rawOptions = Array.isArray(questionRow.options) ? questionRow.options : [];
+
+      const options: PostSessionFeedbackOptionLite[] = rawOptions
+        .filter((option) => option && typeof option === "object")
+        .map((option, optionIndex) => {
+          const optionRow = option as Record<string, unknown>;
+
+          return {
+            id:
+              String(optionRow.id || "").trim() ||
+              `feedback-option-${questionIndex + 1}-${optionIndex + 1}`,
+            label: String(optionRow.label || optionRow.opcion || "").trim(),
+          };
+        })
+        .filter((option) => Boolean(option.label));
+
+      const normalizedOptions =
+        options.length >= 2
+          ? options
+          : [
+              { id: `feedback-option-${questionIndex + 1}-1`, label: "Excelente" },
+              { id: `feedback-option-${questionIndex + 1}-2`, label: "Necesito ayuda" },
+            ];
+
+      return {
+        id: String(questionRow.id || "").trim() || `feedback-question-${questionIndex + 1}`,
+        prompt:
+          String(questionRow.prompt || questionRow.pregunta || "").trim() ||
+          `Pregunta ${questionIndex + 1}`,
+        options: normalizedOptions,
+      };
+    })
+    .filter((question) => question.options.length >= 2);
+
+  const title = String(row.title || "").trim() || undefined;
+  const enabled = row.enabled === true;
+
+  if (!enabled && questions.length === 0 && !title) {
+    return undefined;
+  }
+
+  return {
+    enabled,
+    title,
+    questions,
+  };
+}
+
+function normalizeRoutineChangeRequestRows(rawValue: unknown): RoutineChangeRequestLite[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const item = row as Record<string, unknown>;
+
+      return {
+        id: String(item.id || `change-request-${index + 1}`).trim(),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim() || undefined,
+        alumnoEmail:
+          String(item.alumnoEmail || item.email || "")
+            .trim()
+            .toLowerCase() || undefined,
+        sessionId: String(item.sessionId || "").trim() || undefined,
+        sessionTitle: String(item.sessionTitle || item.sesion || "").trim() || undefined,
+        weekId: String(item.weekId || "").trim() || undefined,
+        weekName: String(item.weekName || item.semana || "").trim() || undefined,
+        dayId: String(item.dayId || "").trim() || undefined,
+        dayName: String(item.dayName || item.dia || "").trim() || undefined,
+        message: String(item.message || item.mensaje || "").trim() || undefined,
+        createdAt: String(item.createdAt || "").trim() || new Date().toISOString(),
+      };
+    })
+    .filter((item) => Boolean(item.message))
+    .sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
+}
+
+function buildSessionFeedbackIdentityKey(value: {
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  weekId?: string;
+  dayId?: string;
+}): string {
+  const personaKey = String(value.alumnoEmail || value.alumnoNombre || "")
+    .trim()
+    .toLowerCase();
+
+  return [
+    personaKey,
+    String(value.sessionId || "").trim(),
+    String(value.weekId || "").trim(),
+    String(value.dayId || "").trim(),
+  ].join("::");
+}
+
+function normalizeSessionFeedbackRows(rawValue: unknown): SessionFeedbackRecordLite[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const item = row as Record<string, unknown>;
+      const rawAnswers = Array.isArray(item.answers) ? item.answers : [];
+
+      const answers: SessionFeedbackAnswerLite[] = rawAnswers
+        .filter((answer) => answer && typeof answer === "object")
+        .map((answer, answerIndex) => {
+          const answerRow = answer as Record<string, unknown>;
+
+          return {
+            questionId:
+              String(answerRow.questionId || "").trim() ||
+              `feedback-question-${answerIndex + 1}`,
+            questionPrompt:
+              String(answerRow.questionPrompt || answerRow.prompt || "").trim() ||
+              `Pregunta ${answerIndex + 1}`,
+            optionId:
+              String(answerRow.optionId || "").trim() ||
+              `feedback-option-${answerIndex + 1}`,
+            optionLabel: String(answerRow.optionLabel || answerRow.respuesta || "").trim(),
+          };
+        })
+        .filter((answer) => Boolean(answer.optionLabel));
+
+      return {
+        id: String(item.id || `session-feedback-${index + 1}`).trim(),
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim() || undefined,
+        alumnoEmail:
+          String(item.alumnoEmail || item.email || "")
+            .trim()
+            .toLowerCase() || undefined,
+        sessionId: String(item.sessionId || "").trim() || undefined,
+        sessionTitle: String(item.sessionTitle || item.sesion || "").trim() || undefined,
+        weekId: String(item.weekId || "").trim() || undefined,
+        weekName: String(item.weekName || item.semana || "").trim() || undefined,
+        dayId: String(item.dayId || "").trim() || undefined,
+        dayName: String(item.dayName || item.dia || "").trim() || undefined,
+        feedbackTitle: String(item.feedbackTitle || "").trim() || undefined,
+        answers,
+        totalWorkoutLogs: Math.max(0, Math.round(Number(toSafeNumeric(item.totalWorkoutLogs) || 0))),
+        logsWithPain: Math.max(0, Math.round(Number(toSafeNumeric(item.logsWithPain) || 0))),
+        createdAt: String(item.createdAt || "").trim() || new Date().toISOString(),
+      };
+    })
+    .filter((item) => Boolean(item.sessionId || item.dayId || item.answers.length > 0))
+    .sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
+}
+
 function normalizeWorkoutLogsLiteRows(rawValue: unknown): WorkoutLogLite[] {
   if (!Array.isArray(rawValue)) {
     return [];
