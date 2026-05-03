@@ -2235,6 +2235,36 @@ export default function AlumnoVisionClient({
     });
   }, [matchIdentityEmail, matchIdentityName, shouldLoadWorkoutData, workoutLogsShared]);
 
+  const routineChangeRequests = useMemo<RoutineChangeRequestLite[]>(() => {
+    if (!shouldLoadWorkoutData) {
+      return [];
+    }
+
+    return normalizeRoutineChangeRequestRows(routineChangeRequestsRaw).filter((item) => {
+      return matchIdentityName(item.alumnoNombre) || matchIdentityEmail(item.alumnoEmail);
+    });
+  }, [
+    matchIdentityEmail,
+    matchIdentityName,
+    routineChangeRequestsRaw,
+    shouldLoadWorkoutData,
+  ]);
+
+  const sessionFeedbackRecords = useMemo<SessionFeedbackRecordLite[]>(() => {
+    if (!shouldLoadWorkoutData) {
+      return [];
+    }
+
+    return normalizeSessionFeedbackRows(sessionFeedbackRecordsRaw).filter((item) => {
+      return matchIdentityName(item.alumnoNombre) || matchIdentityEmail(item.alumnoEmail);
+    });
+  }, [
+    matchIdentityEmail,
+    matchIdentityName,
+    sessionFeedbackRecordsRaw,
+    shouldLoadWorkoutData,
+  ]);
+
   const alumnoWeekPlan = useMemo<WeekPersonPlanLite | null>(() => {
     return selectAlumnoWeekPlanFromStore(weekPlanStoreRaw, profileName, matchIdentityName);
   }, [matchIdentityName, profileName, weekPlanStoreRaw]);
