@@ -257,6 +257,23 @@ type WeekDayTrainingLite = {
   bloques: WeekBlockLite[];
 };
 
+type PostSessionFeedbackOptionLite = {
+  id: string;
+  label: string;
+};
+
+type PostSessionFeedbackQuestionLite = {
+  id: string;
+  prompt: string;
+  options: PostSessionFeedbackOptionLite[];
+};
+
+type PostSessionFeedbackConfigLite = {
+  enabled: boolean;
+  title?: string;
+  questions: PostSessionFeedbackQuestionLite[];
+};
+
 type WeekDayPlanLite = {
   id: string;
   dia: string;
@@ -265,6 +282,7 @@ type WeekDayPlanLite = {
   sesionId: string;
   oculto?: boolean;
   entrenamiento?: WeekDayTrainingLite;
+  postSesionFeedback?: PostSessionFeedbackConfigLite;
 };
 
 type WeekPlanLite = {
