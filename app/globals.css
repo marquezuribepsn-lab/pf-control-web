@@ -3761,6 +3761,38 @@ video.pf-a3-routine-log-video-frame {
   padding: 0.52rem;
 }
 
+.pf-a3-routine-log-pane-registro {
+  overflow: hidden;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"] {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding-right: 1.9rem;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+  opacity: 0.92;
+}
+
 .pf-a3-routine-log-description {
   margin: 0;
   color: #dce7fa;
