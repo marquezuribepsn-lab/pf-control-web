@@ -4246,7 +4246,7 @@ export default function AlumnoVisionClient({
 
   const openRoutineFinalizePanel = useCallback(() => {
     if (!selectedRoutineEntry) {
-      setRoutineFinalizeStatus("Selecciona una sesion para finalizar.");
+      setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
       return;
     }
 
@@ -4268,7 +4268,7 @@ export default function AlumnoVisionClient({
 
   const submitRoutineFinalize = useCallback(() => {
     if (!selectedRoutineEntry) {
-      setRoutineFinalizeStatus("Selecciona una sesion para finalizar.");
+      setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
       return;
     }
 
@@ -4314,7 +4314,7 @@ export default function AlumnoVisionClient({
       weekName: selectedRoutineEntry.weekName,
       dayId: selectedRoutineEntry.dayId,
       dayName: selectedRoutineEntry.dayName,
-      feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion",
+      feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión",
       answers,
       totalWorkoutLogs: selectedRoutineDayLogSummary.total,
       logsWithPain: selectedRoutineDayLogSummary.withPain,
@@ -4334,7 +4334,7 @@ export default function AlumnoVisionClient({
     });
 
     setRoutineFinalizePanelOpen(false);
-    setRoutineFinalizeStatus("Sesion finalizada correctamente.");
+    setRoutineFinalizeStatus("Sesión finalizada correctamente.");
     setRoutineQuickPanel("sessions");
   }, [
     profileEmail,
@@ -4996,7 +4996,7 @@ export default function AlumnoVisionClient({
 
                   {routineChangeRequests[0] ? (
                     <p className="mt-2 text-[11px] text-emerald-50/80">
-                      Ultima solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
+                      Última solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
                     </p>
                   ) : null}
                 </section>
@@ -5023,7 +5023,7 @@ export default function AlumnoVisionClient({
                   </div>
 
                   {routineSessionFeedbackHistory.length === 0 ? (
-                    <p className="mt-3 text-sm text-rose-50/90">Todavia no finalizaste sesiones con feedback.</p>
+                    <p className="mt-3 text-sm text-rose-50/90">Todavía no finalizaste sesiones con feedback.</p>
                   ) : (
                     <div className="mt-3 space-y-2">
                       {routineSessionFeedbackHistory.map((record) => (
@@ -5033,7 +5033,7 @@ export default function AlumnoVisionClient({
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                             <p className="font-semibold text-rose-100">
-                              {record.dayName || record.sessionTitle || "Sesion"}
+                              {record.dayName || record.sessionTitle || "Sesión"}
                             </p>
                             <p className="text-rose-50/85">{formatDateTime(record.createdAt)} hs</p>
                           </div>
@@ -5049,7 +5049,7 @@ export default function AlumnoVisionClient({
                             <p className="mt-1 text-[11px] text-slate-300">Sin respuestas cargadas.</p>
                           )}
                           <p className="mt-1 text-[11px] text-slate-300">
-                            Registros del dia: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
+                            Registros del día: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
                           </p>
                         </article>
                       ))}
@@ -5175,11 +5175,11 @@ export default function AlumnoVisionClient({
                 </section>
               ) : !selectedRoutineEntry ? (
                 <section className="pf-a3-routine-empty">
-                  <h2>{hasWeekPlanRoutine ? "Sin bloques para este dia" : "No hay sesiones cargadas"}</h2>
+                  <h2>{hasWeekPlanRoutine ? "Sin bloques para este día" : "No hay sesiones cargadas"}</h2>
                   <p>
                     {hasWeekPlanRoutine
-                      ? "Tu profe aun no cargo ejercicios en este dia. Cambia de dia o actualiza para sincronizar."
-                      : "Cuando tu profe asigne una sesion, la rutina aparecera aca automaticamente."}
+                      ? "Tu profe aún no cargó ejercicios en este día. Cambia de día o actualiza para sincronizar."
+                      : "Cuando tu profe asigne una sesión, la rutina aparecerá acá automáticamente."}
                   </p>
                 </section>
               ) : (
@@ -5483,12 +5483,12 @@ export default function AlumnoVisionClient({
                       onClick={openRoutineFinalizePanel}
                       className="w-full rounded-[1.65rem] border border-violet-200/55 bg-[linear-gradient(180deg,rgba(152,82,255,0.98),rgba(111,58,241,0.96))] px-4 py-3.5 text-center text-[clamp(1.05rem,5.8vw,2rem)] font-medium tracking-[0.01em] text-white shadow-[0_24px_45px_-26px_rgba(126,72,255,0.98)]"
                     >
-                      Finalizar Sesion
+                      Finalizar Sesión
                     </ReliableActionButton>
 
                     {existingRoutineSessionFeedback ? (
                       <p className="mt-2 text-[11px] text-violet-100/80">
-                        Ultimo cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
+                        Último cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
                       </p>
                     ) : null}
 
@@ -5496,9 +5496,9 @@ export default function AlumnoVisionClient({
                       <div className="mt-3 space-y-3 rounded-2xl border border-violet-300/25 bg-slate-950/78 p-3">
                         {selectedRoutineDayFeedbackQuestions.length > 0 ? (
                           <div className="space-y-2">
-                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion") ? (
+                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión") ? (
                               <p className="text-sm font-semibold text-violet-100">
-                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion"}
+                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión"}
                               </p>
                             ) : null}
 
@@ -5541,7 +5541,7 @@ export default function AlumnoVisionClient({
                           </div>
                         ) : (
                           <p className="text-sm text-emerald-50/90">
-                            El profesor aun no asigno un cuestionario para este dia. Puedes finalizar igual.
+                            El profesor aún no asignó un cuestionario para este día. Puedes finalizar igual.
                           </p>
                         )}
 
