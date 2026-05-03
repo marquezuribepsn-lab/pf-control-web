@@ -1981,12 +1981,26 @@ export default function AlumnoVisionClient({
   const shouldLoadMusicData = !isUltraMobile || activeCategory === "musica" || activeCategory === "inicio";
 
   useEffect(() => {
-    if (!weekPlanSyncLoaded && !workoutLogsSyncLoaded) {
+    if (
+      !weekPlanSyncLoaded &&
+      !workoutLogsSyncLoaded &&
+      !routineChangeRequestsSyncLoaded &&
+      !sessionFeedbackSyncLoaded
+    ) {
       return;
     }
 
     setRoutineLastSyncAt(Date.now());
-  }, [weekPlanStoreRaw, weekPlanSyncLoaded, workoutLogsShared, workoutLogsSyncLoaded]);
+  }, [
+    routineChangeRequestsRaw,
+    routineChangeRequestsSyncLoaded,
+    sessionFeedbackRecordsRaw,
+    sessionFeedbackSyncLoaded,
+    weekPlanStoreRaw,
+    weekPlanSyncLoaded,
+    workoutLogsShared,
+    workoutLogsSyncLoaded,
+  ]);
 
   useLayoutEffect(() => {
     const nextCategory = routeCategory || resolveInitialMainCategory(initialCategory);
