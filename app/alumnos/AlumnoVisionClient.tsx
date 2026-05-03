@@ -4362,6 +4362,173 @@ export default function AlumnoVisionClient({
     ]
   );
 
+  const clampRoutineStopwatchFloatPosition = useCallback(
+    (candidate: RoutineStopwatchFloatPosition): RoutineStopwatchFloatPosition => {
+      if (typeof window === "undefined") {
+        return candidate;
+      }
+
+      const fallbackSize = isUltraMobile
+        ? ROUTINE_STOPWATCH_FLOAT_SIZE_MOBILE
+        : ROUTINE_STOPWATCH_FLOAT_SIZE_DESKTOP;
+      const hostWidth = Math.max(fallbackSize, routineStopwatchFloatHostRef.current?.offsetWidth || 0) || fallbackSize;
+      const hostHeight = Math.max(fallbackSize, routineStopwatchFloatHostRef.current?.offsetHeight || 0) || fallbackSize;
+      const margin = 8;
+
+      const minX = margin;
+      const maxX = Math.max(minX, window.innerWidth - hostWidth - margin);
+      const minY = Math.max(56, margin);
+      const maxY = Math.max(minY, window.innerHeight - hostHeight - margin);
+
+      return {
+        x: Math.min(maxX, Math.max(minX, candidate.x)),
+        y: Math.min(maxY, Math.max(minY, candidate.y)),
+      };
+    },
+    [isUltraMobile]
+  );
+
+  const getDefaultRoutineStopwatchFloatPosition = useCallback((): RoutineStopwatchFloatPosition => {
+    if (typeof window === "undefined") {
+      return { x: 12, y: 12 };
+    }
+
+    const baseSize = isUltraMobile
+      ? ROUTINE_STOPWATCH_FLOAT_SIZE_MOBILE
+      : ROUTINE_STOPWATCH_FLOAT_SIZE_DESKTOP;
+
+    return clampRoutineStopwatchFloatPosition({
+      x: window.innerWidth - baseSize - 12,
+      y: window.innerHeight - baseSize - (isUltraMobile ? 88 : 82),
+    });
+  }, [clampRoutineStopwatchFloatPosition, isUltraMobile]);
+
+  useEffect(() => {
+    if (activeCategory !== "rutina" || activeRoutineActionScreen !== "timer") {
+      setRoutineStopwatchDragging(false);
+      return;
+    }
+
+    setRoutineStopwatchFloatPosition((previous) => {
+      if (!previous) {
+        return getDefaultRoutineStopwatchFloatPosition();
+      }
+
+      return clampRoutineStopwatchFloatPosition(previous);
+    });
+  }, [
+    activeCategory,
+    activeRoutineActionScreen,
+    clampRoutineStopwatchFloatPosition,
+    getDefaultRoutineStopwatchFloatPosition,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleResize = () => {
+      setRoutineStopwatchFloatPosition((previous) => {
+        if (!previous) {
+          return previous;
+        }
+
+        return clampRoutineStopwatchFloatPosition(previous);
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [clampRoutineStopwatchFloatPosition]);
+
+  const handleRoutineStopwatchPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+
+      const targetNode = event.target as HTMLElement | null;
+      if (targetNode?.closest("button")) {
+        return;
+      }
+
+      const basePosition = routineStopwatchFloatPosition || getDefaultRoutineStopwatchFloatPosition();
+      const startPosition = clampRoutineStopwatchFloatPosition(basePosition);
+
+      routineStopwatchDragStateRef.current = {
+        active: true,
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        originX: startPosition.x,
+        originY: startPosition.y,
+      };
+
+      setRoutineStopwatchFloatPosition(startPosition);
+      setRoutineStopwatchDragging(true);
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    },
+    [
+      clampRoutineStopwatchFloatPosition,
+      getDefaultRoutineStopwatchFloatPosition,
+      routineStopwatchFloatPosition,
+    ]
+  );
+
+  const handleRoutineStopwatchPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const drag = routineStopwatchDragStateRef.current;
+      if (!drag.active || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - drag.startClientX;
+      const deltaY = event.clientY - drag.startClientY;
+      setRoutineStopwatchFloatPosition(
+        clampRoutineStopwatchFloatPosition({
+          x: drag.originX + deltaX,
+          y: drag.originY + deltaY,
+        })
+      );
+      event.preventDefault();
+    },
+    [clampRoutineStopwatchFloatPosition]
+  );
+
+  const finishRoutineStopwatchDrag = useCallback(() => {
+    routineStopwatchDragStateRef.current.active = false;
+    routineStopwatchDragStateRef.current.pointerId = -1;
+    setRoutineStopwatchDragging(false);
+  }, []);
+
+  const handleRoutineStopwatchPointerUp = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const drag = routineStopwatchDragStateRef.current;
+      if (!drag.active || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      finishRoutineStopwatchDrag();
+    },
+    [finishRoutineStopwatchDrag]
+  );
+
+  const handleRoutineStopwatchPointerCancel = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (routineStopwatchDragStateRef.current.pointerId === event.pointerId) {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      }
+
+      finishRoutineStopwatchDrag();
+    },
+    [finishRoutineStopwatchDrag]
+  );
+
   const clearRoutineStopwatchInterval = useCallback(() => {
     if (routineStopwatchIntervalRef.current === null) {
       return;
