@@ -2311,6 +2311,16 @@ export default function AlumnoVisionClient({
     return routineDaysForSelectedWeek[0] || null;
   }, [routineDaysForSelectedWeek, selectedRoutineDayId]);
 
+  const selectedRoutineDayFeedbackConfig = useMemo(
+    () => normalizePostSessionFeedbackConfig(selectedRoutineDay?.postSesionFeedback),
+    [selectedRoutineDay?.postSesionFeedback]
+  );
+
+  const selectedRoutineDayFeedbackQuestions =
+    selectedRoutineDayFeedbackConfig?.enabled
+      ? selectedRoutineDayFeedbackConfig.questions
+      : [];
+
   const hasWeekPlanRoutine = routineWeeks.length > 0;
 
   const musicAssignments = useMemo<MusicAssignmentLite[]>(() => {
