@@ -5443,87 +5443,17 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={openRoutineFinalizePanel}
-                      className="w-full rounded-[1.65rem] border border-violet-200/55 bg-[linear-gradient(180deg,rgba(152,82,255,0.98),rgba(111,58,241,0.96))] px-4 py-3.5 text-center text-[clamp(1.05rem,5.8vw,2rem)] font-medium tracking-[0.01em] text-white shadow-[0_24px_45px_-26px_rgba(126,72,255,0.98)]"
+                      className="pf-a3-routine-finalize-cta"
                     >
-                      Finalizar Sesión
+                      <span className="pf-a3-routine-finalize-cta-wave" aria-hidden="true" />
+                      <span className="pf-a3-routine-finalize-cta-wave pf-a3-routine-finalize-cta-wave-delay" aria-hidden="true" />
+                      <span className="pf-a3-routine-finalize-cta-label">Finalizar Sesión</span>
                     </ReliableActionButton>
 
                     {existingRoutineSessionFeedback ? (
                       <p className="mt-2 text-[11px] text-violet-100/80">
                         Último cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
                       </p>
-                    ) : null}
-
-                    {routineFinalizePanelOpen ? (
-                      <div className="mt-3 space-y-3 rounded-2xl border border-violet-300/25 bg-slate-950/78 p-3">
-                        {selectedRoutineDayFeedbackQuestions.length > 0 ? (
-                          <div className="space-y-2">
-                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión") ? (
-                              <p className="text-sm font-semibold text-violet-100">
-                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión"}
-                              </p>
-                            ) : null}
-
-                            {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
-                              <article
-                                key={question.id}
-                                className="rounded-xl border border-white/15 bg-slate-950/70 p-2.5"
-                              >
-                                <p className="text-xs font-semibold text-slate-100">
-                                  {question.prompt || `Pregunta ${questionIndex + 1}`}
-                                </p>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  {question.options.map((option) => {
-                                    const isSelected =
-                                      routineFinalizeAnswerByQuestionId[question.id] === option.id;
-
-                                    return (
-                                      <ReliableActionButton
-                                        key={`${question.id}-${option.id}`}
-                                        type="button"
-                                        onClick={() =>
-                                          setRoutineFinalizeAnswerByQuestionId((previous) => ({
-                                            ...previous,
-                                            [question.id]: option.id,
-                                          }))
-                                        }
-                                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                                          isSelected
-                                            ? "border-violet-100 bg-violet-500/42 text-white"
-                                            : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
-                                        }`}
-                                      >
-                                        {option.label}
-                                      </ReliableActionButton>
-                                    );
-                                  })}
-                                </div>
-                              </article>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-emerald-50/90">
-                            El profesor aún no asignó un cuestionario para este día. Puedes finalizar igual.
-                          </p>
-                        )}
-
-                        <div className="flex flex-wrap justify-end gap-2">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={() => setRoutineFinalizePanelOpen(false)}
-                            className="rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
-                          >
-                            Cancelar
-                          </ReliableActionButton>
-                          <ReliableActionButton
-                            type="button"
-                            onClick={submitRoutineFinalize}
-                            className="rounded-lg border border-violet-200/55 bg-violet-500/42 px-3 py-1.5 text-xs font-bold text-white"
-                          >
-                            Guardar cierre
-                          </ReliableActionButton>
-                        </div>
-                      </div>
                     ) : null}
 
                     {routineFinalizeStatus ? (
