@@ -3522,14 +3522,18 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-panel {
-  width: min(860px, 100%);
+  width: min(860px, calc(100% - 0.72rem));
   max-height: none;
   overflow: visible;
   overscroll-behavior: contain;
   box-sizing: border-box;
   border-radius: 1.04rem;
-  border: 1px solid rgba(114, 136, 175, 0.58);
+  border: 1.5px solid rgba(132, 164, 214, 0.76);
   background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(191, 220, 255, 0.14),
+    0 14px 34px rgba(2, 7, 14, 0.38);
   padding: 0.82rem 0.8rem 0.9rem;
   margin: auto;
 }
@@ -3634,8 +3638,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   min-width: 0;
   border-radius: 0.72rem;
-  border: 1px solid rgba(93, 113, 147, 0.62);
+  border: 1.5px solid rgba(111, 138, 179, 0.72);
   background: rgba(23, 31, 47, 0.88);
+  background-clip: padding-box;
   color: #cfdbf2;
   font-size: 0.62rem;
   line-height: 1.12;
@@ -3728,8 +3733,10 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   overflow: visible;
   border-radius: 0.84rem;
-  border: 1px solid rgba(94, 114, 148, 0.56);
+  border: 1.5px solid rgba(123, 154, 202, 0.66);
   background: rgba(12, 19, 31, 0.9);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgba(186, 218, 255, 0.1);
   padding: 0.52rem;
 }
 
@@ -3777,8 +3784,10 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
   box-sizing: border-box;
   border-radius: 0.58rem;
-  border: 1px solid rgba(106, 125, 159, 0.62);
+  border: 1.5px solid rgba(128, 157, 203, 0.76);
   background: rgba(18, 25, 39, 0.92);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgba(186, 215, 250, 0.08);
   color: #f2f6ff;
   font-size: 0.74rem;
   line-height: 1.2;
@@ -3824,8 +3833,9 @@ video.pf-a3-routine-log-video-frame {
   position: relative;
   overflow: hidden;
   border-radius: 0.58rem;
-  border: 1px solid rgba(137, 220, 195, 0.66);
+  border: 1.5px solid rgba(137, 220, 195, 0.76);
   background: rgba(18, 67, 57, 0.32);
+  background-clip: padding-box;
   color: #d4fff0;
   font-size: 0.62rem;
   line-height: 1;
@@ -4621,14 +4631,14 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-log-panel {
-    width: min(100%, 900px);
+    width: min(900px, calc(100% - 0.3rem));
     max-width: 100%;
     height: auto;
     min-height: 0;
     max-height: none;
     overflow: visible;
     border-radius: 0.76rem;
-    border: 1px solid rgba(114, 136, 175, 0.58);
+    border: 1.5px solid rgba(132, 164, 214, 0.76);
     padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
   }
 
