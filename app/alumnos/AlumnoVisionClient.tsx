@@ -363,6 +363,8 @@ type RoutineExerciseLogTarget = {
 
 type RoutineExerciseLogView = "descripcion" | "registro" | "registros";
 
+type RoutineActionScreen = "none" | "change" | "sessions" | "finalize";
+
 type RoutineExerciseLogDraft = {
   fecha: string;
   series: string;
@@ -477,6 +479,7 @@ const ULTRA_MOBILE_INITIAL_BLOCKS = 1;
 const ULTRA_MOBILE_ROUTINE_FALLBACK_SESSIONS = 2;
 const ULTRA_MOBILE_STORAGE_REFRESH_MS = 6000;
 const ROUTINE_DAY_WEEK_MIN_LOADING_MS = 2000;
+const ROUTINE_ACTION_SCREEN_MIN_LOADING_MS = 2000;
 const ROUTINE_PULL_THRESHOLD = 74;
 const ROUTINE_PULL_MAX_DISTANCE = 120;
 const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -1916,6 +1919,7 @@ export default function AlumnoVisionClient({
   const [routineFinalizeAnswerByQuestionId, setRoutineFinalizeAnswerByQuestionId] = useState<
     Record<string, string>
   >({});
+  const [routineActionScreenLoading, setRoutineActionScreenLoading] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
@@ -1931,6 +1935,8 @@ export default function AlumnoVisionClient({
   const routinePullDistanceRef = useRef(0);
   const routineDayWeekLoadingTimerRef = useRef<number | null>(null);
   const routineExerciseLogStatusTimerRef = useRef<number | null>(null);
+  const routineActionScreenLoadingTimerRef = useRef<number | null>(null);
+  const previousRoutineActionScreenRef = useRef<RoutineActionScreen>("none");
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -2322,6 +2328,64 @@ export default function AlumnoVisionClient({
       : [];
 
   const hasWeekPlanRoutine = routineWeeks.length > 0;
+
+  const activeRoutineActionScreen = useMemo<RoutineActionScreen>(() => {
+    if (routineFinalizePanelOpen) {
+      return "finalize";
+    }
+
+    return routineQuickPanel;
+  }, [routineFinalizePanelOpen, routineQuickPanel]);
+
+  useEffect(() => {
+    if (activeCategory !== "rutina") {
+      if (routineActionScreenLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineActionScreenLoadingTimerRef.current);
+        routineActionScreenLoadingTimerRef.current = null;
+      }
+
+      previousRoutineActionScreenRef.current = "none";
+      setRoutineActionScreenLoading(false);
+      return;
+    }
+
+    if (activeRoutineActionScreen === "none") {
+      if (routineActionScreenLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineActionScreenLoadingTimerRef.current);
+        routineActionScreenLoadingTimerRef.current = null;
+      }
+
+      previousRoutineActionScreenRef.current = "none";
+      setRoutineActionScreenLoading(false);
+      return;
+    }
+
+    if (previousRoutineActionScreenRef.current === activeRoutineActionScreen) {
+      return;
+    }
+
+    previousRoutineActionScreenRef.current = activeRoutineActionScreen;
+    setRoutineActionScreenLoading(true);
+
+    if (routineActionScreenLoadingTimerRef.current !== null) {
+      window.clearTimeout(routineActionScreenLoadingTimerRef.current);
+      routineActionScreenLoadingTimerRef.current = null;
+    }
+
+    routineActionScreenLoadingTimerRef.current = window.setTimeout(() => {
+      routineActionScreenLoadingTimerRef.current = null;
+      setRoutineActionScreenLoading(false);
+    }, ROUTINE_ACTION_SCREEN_MIN_LOADING_MS);
+  }, [activeCategory, activeRoutineActionScreen]);
+
+  useEffect(() => {
+    return () => {
+      if (routineActionScreenLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineActionScreenLoadingTimerRef.current);
+        routineActionScreenLoadingTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const musicAssignments = useMemo<MusicAssignmentLite[]>(() => {
     if (!shouldLoadMusicData) {
@@ -4198,8 +4262,14 @@ export default function AlumnoVisionClient({
   );
 
   const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions") => {
+    setRoutineFinalizePanelOpen(false);
     setRoutineQuickPanel((current) => (current === panel ? "none" : panel));
     setRoutineChangeRequestStatus("");
+  }, []);
+
+  const closeRoutineActionScreen = useCallback(() => {
+    setRoutineQuickPanel("none");
+    setRoutineFinalizePanelOpen(false);
   }, []);
 
   const submitRoutineChangeRequest = useCallback(() => {
@@ -4263,6 +4333,7 @@ export default function AlumnoVisionClient({
     }
 
     setRoutineFinalizeStatus("");
+    setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(true);
   }, [existingRoutineSessionFeedback, selectedRoutineEntry]);
 
