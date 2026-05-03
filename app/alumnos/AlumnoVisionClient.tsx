@@ -4125,7 +4125,7 @@ export default function AlumnoVisionClient({
         consumedKcal: nextKcal,
       }));
 
-      setNutritionTrackerStatus("Calorias diarias actualizadas.");
+      setNutritionTrackerStatus("Calorías diarias actualizadas.");
     },
     [updateNutritionDailyMealLog]
   );
@@ -4177,9 +4177,9 @@ export default function AlumnoVisionClient({
       });
 
       const statusByTemplate: Record<"full" | "training" | "rest" | "clear", string> = {
-        full: "Plantilla aplicada: Dia completo.",
-        training: "Plantilla aplicada: Dia de entreno.",
-        rest: "Plantilla aplicada: Dia de descanso.",
+        full: "Plantilla aplicada: Día completo.",
+        training: "Plantilla aplicada: Día de entreno.",
+        rest: "Plantilla aplicada: Día de descanso.",
         clear: "Plantilla aplicada: Reinicio diario.",
       };
 
@@ -4191,13 +4191,13 @@ export default function AlumnoVisionClient({
   const addNutritionCustomFood = useCallback(() => {
     const nombre = String(nutritionCustomFoodDraft.nombre || "").trim();
     if (nombre.length < 2) {
-      setNutritionCustomFoodStatus("Escribe un alimento valido.");
+      setNutritionCustomFoodStatus("Escribe un alimento válido.");
       return;
     }
 
     const calorias = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.calorias) || 0));
     if (calorias <= 0) {
-      setNutritionCustomFoodStatus("Carga las calorias del alimento.");
+      setNutritionCustomFoodStatus("Carga las calorías del alimento.");
       return;
     }
 
@@ -4346,7 +4346,7 @@ export default function AlumnoVisionClient({
         return nextRows;
       });
 
-      setNutritionCustomFoodStatus("Alimento eliminado del dia.");
+      setNutritionCustomFoodStatus("Alimento eliminado del día.");
     },
     [
       nutritionTrackerDate,
@@ -7920,7 +7920,7 @@ export default function AlumnoVisionClient({
             <div className="space-y-4">
               <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                 <p className="pf-a2-eyebrow">Plan nutricional</p>
-                <h2 className="mt-1 text-xl font-black text-white">Nutricion del alumno</h2>
+                <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
                 <p className="mt-2 text-sm text-slate-300">
                   Separa la vista entre el plan pautado por el profesor y la carga diaria que completa el alumno.
                 </p>
@@ -7953,16 +7953,16 @@ export default function AlumnoVisionClient({
                       Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
-                      Ultima asignacion: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
+                      Última asignación: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
                     </p>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="pf-a2-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias objetivo</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionDailyGoalKcal} kcal</p>
                       </div>
                       <div className="pf-a2-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias del plan</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionPlanCaloriesFromMeals} kcal</p>
                       </div>
                     </div>
@@ -8055,7 +8055,7 @@ export default function AlumnoVisionClient({
                       </div>
                     ) : (
                       <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                        Aun no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una version actualizada.
+                        Aún no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una versión actualizada.
                       </div>
                     )}
                   </article>
@@ -8069,7 +8069,7 @@ export default function AlumnoVisionClient({
                       <p className="pf-a2-eyebrow">Registro del alumno</p>
                       <h2 className="mt-1 text-xl font-black text-white">Carga diaria de alimentos</h2>
                       <p className="mt-1 text-sm text-slate-300">
-                        Registra las comidas pautadas y agrega alimentos extras para llevar un control facil y ordenado.
+                        Registra las comidas pautadas y agrega alimentos extra para llevar un control fácil y ordenado.
                       </p>
                     </div>
 
@@ -8096,40 +8096,40 @@ export default function AlumnoVisionClient({
                         onClick={() => handleNutritionTrackerDateShift(1)}
                         className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                       >
-                        Manana
+                        Mañana
                       </ReliableActionButton>
                     </div>
                   </div>
 
                   <div className="pf-a3-nutrition-template-row mt-3">
-                    <span className="pf-a3-nutrition-template-label">Plantillas del dia</span>
+                    <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
                     <ReliableActionButton
                       type="button"
                       onClick={() => applyNutritionDayTemplate("full")}
                       className="pf-a3-nutrition-template-chip"
                     >
-                      Dia completo
+                      Día completo
                     </ReliableActionButton>
                     <ReliableActionButton
                       type="button"
                       onClick={() => applyNutritionDayTemplate("training")}
                       className="pf-a3-nutrition-template-chip"
                     >
-                      Dia de entreno
+                      Día de entreno
                     </ReliableActionButton>
                     <ReliableActionButton
                       type="button"
                       onClick={() => applyNutritionDayTemplate("rest")}
                       className="pf-a3-nutrition-template-chip"
                     >
-                      Dia de descanso
+                      Día de descanso
                     </ReliableActionButton>
                     <ReliableActionButton
                       type="button"
                       onClick={() => applyNutritionDayTemplate("clear")}
                       className="pf-a3-nutrition-template-chip is-muted"
                     >
-                      Reiniciar dia
+                      Reiniciar día
                     </ReliableActionButton>
                   </div>
 
@@ -8158,7 +8158,7 @@ export default function AlumnoVisionClient({
                   <div className="pf-a3-nutrition-streak-grid mt-3">
                     <div className="pf-a3-nutrition-streak-card">
                       <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} dias</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
                       <p className="pf-a3-nutrition-streak-note">
                         Ultimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
                       </p>
@@ -8166,12 +8166,12 @@ export default function AlumnoVisionClient({
 
                     <div className="pf-a3-nutrition-streak-card">
                       <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} dias</p>
-                      <p className="pf-a3-nutrition-streak-note">Historico de adherencia</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
+                      <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
                     </div>
 
                     <div className="pf-a3-nutrition-streak-card">
-                      <p className="pf-a3-nutrition-streak-title">Dias activos</p>
+                      <p className="pf-a3-nutrition-streak-title">Días activos</p>
                       <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
                       <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
                     </div>
@@ -8348,7 +8348,7 @@ export default function AlumnoVisionClient({
                             ) : null}
 
                             <div className="pf-a3-nutrition-quickchips">
-                              <span className="pf-a3-nutrition-quickchips-label">Chips rapidos</span>
+                              <span className="pf-a3-nutrition-quickchips-label">Chips rápidos</span>
                               {nutritionMealQuickChips.map((chip) => (
                                 <ReliableActionButton
                                   key={`${meal.mealId}-${chip.id}`}
@@ -8394,15 +8394,15 @@ export default function AlumnoVisionClient({
                     </div>
                   ) : (
                     <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                      Sin comidas pautadas por ahora. Cuando el profesor actualice tu plan, podras registrarlas aqui.
+                      Sin comidas pautadas por ahora. Cuando el profesor actualice tu plan, podrás registrarlas aquí.
                     </div>
                   )}
 
                   <article className="pf-a3-nutrition-student-food-card mt-4">
                     <p className="pf-a3-nutrition-student-food-eyebrow">Carga libre del alumno</p>
-                    <h3 className="pf-a3-nutrition-student-food-title">Agregar alimentos del dia</h3>
+                    <h3 className="pf-a3-nutrition-student-food-title">Agregar alimentos del día</h3>
                     <p className="pf-a3-nutrition-student-food-subtitle">
-                      Usa este bloque para sumar alimentos adicionales que no esten en las comidas pautadas.
+                      Usa este bloque para sumar alimentos adicionales que no estén en las comidas pautadas.
                     </p>
 
                     <div className="pf-a3-nutrition-student-food-grid">
@@ -8421,7 +8421,7 @@ export default function AlumnoVisionClient({
                       </label>
 
                       <label className="pf-a3-nutrition-student-food-field">
-                        <span>Porcion</span>
+                        <span>Porción</span>
                         <input
                           value={nutritionCustomFoodDraft.porcion}
                           onChange={(event) =>
@@ -8435,7 +8435,7 @@ export default function AlumnoVisionClient({
                       </label>
 
                       <label className="pf-a3-nutrition-student-food-field">
-                        <span>Calorias</span>
+                        <span>Calorías</span>
                         <input
                           type="number"
                           min="0"
@@ -8538,7 +8538,7 @@ export default function AlumnoVisionClient({
                         ))}
                       </div>
                     ) : (
-                      <p className="pf-a3-nutrition-student-food-empty">Todavia no cargaste alimentos libres para este dia.</p>
+                      <p className="pf-a3-nutrition-student-food-empty">Todavía no cargaste alimentos libres para este día.</p>
                     )}
 
                     {nutritionCustomFoodStatus ? (
