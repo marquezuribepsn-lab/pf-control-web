@@ -3718,6 +3718,18 @@ export default function AlumnoVisionClient({
     return "Listo para iniciar";
   }, [routineStopwatchElapsedMs, routineStopwatchRunning]);
 
+  const routineStopwatchStatusShortLabel = useMemo(() => {
+    if (routineStopwatchRunning) {
+      return "En marcha";
+    }
+
+    if (routineStopwatchElapsedMs > 0) {
+      return "Pausado";
+    }
+
+    return "Listo";
+  }, [routineStopwatchElapsedMs, routineStopwatchRunning]);
+
   const selectedRoutineWeekIndex = useMemo(() => {
     if (!selectedRoutineWeek || routineWeeks.length === 0) {
       return -1;
