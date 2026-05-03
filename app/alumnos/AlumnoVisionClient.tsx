@@ -7917,470 +7917,642 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "nutricion" ? (
-            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+            <div className="space-y-4">
               <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Plan asignado</p>
-                <h2 className="mt-1 text-xl font-black text-white">
-                  {nutritionPlan?.nombre || "Sin plan cargado"}
-                </h2>
+                <p className="pf-a2-eyebrow">Plan nutricional</p>
+                <h2 className="mt-1 text-xl font-black text-white">Nutricion del alumno</h2>
                 <p className="mt-2 text-sm text-slate-300">
-                  Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  Ultima asignacion: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
+                  Separa la vista entre el plan pautado por el profesor y la carga diaria que completa el alumno.
                 </p>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="pf-a2-kpi rounded-xl border p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias objetivo</p>
-                    <p className="mt-1 text-lg font-black text-white">
-                      {nutritionDailyGoalKcal} kcal
-                    </p>
-                  </div>
-                  <div className="pf-a2-kpi rounded-xl border p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias del plan</p>
-                    <p className="mt-1 text-lg font-black text-white">
-                      {nutritionPlanCaloriesFromMeals} kcal
-                    </p>
-                  </div>
-                </div>
+                <div className="pf-a3-nutrition-mode-toggle mt-4">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => setNutritionPanelView("plan")}
+                    className={`pf-a3-nutrition-mode-btn ${nutritionPanelView === "plan" ? "is-active" : ""}`}
+                  >
+                    Plan pautado por el profesor
+                  </ReliableActionButton>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="pf-a2-kpi rounded-xl border p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas</p>
-                    <p className="mt-1 text-lg font-black text-white">{nutritionMealsDetailed.length}</p>
-                  </div>
-                  <div className="pf-a2-kpi rounded-xl border p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Registro del dia</p>
-                    <p className="mt-1 text-lg font-black text-white">
-                      {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
-                    </p>
-                  </div>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => setNutritionPanelView("registro")}
+                    className={`pf-a3-nutrition-mode-btn ${nutritionPanelView === "registro" ? "is-active" : ""}`}
+                  >
+                    Carga y seguimiento del alumno
+                  </ReliableActionButton>
                 </div>
-
-                <div className="mt-4 space-y-3">
-                  {macroRows.map((macro) => (
-                    <div key={macro.key}>
-                      <div className="flex items-center justify-between text-xs text-slate-300">
-                        <span>{macro.label}</span>
-                        <span>
-                          {macro.grams} g · {macro.ratio}%
-                        </span>
-                      </div>
-                      <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
-                        <div
-                          className="pf-a2-progress-fill h-full rounded-full"
-                          style={{ width: `${Math.max(4, macro.ratio)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {nutritionPlan?.notas ? (
-                  <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3 text-sm text-slate-200">
-                    {nutritionPlan.notas}
-                  </div>
-                ) : null}
               </article>
 
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Distribucion</p>
-                <h2 className="mt-1 text-xl font-black text-white">Comidas del plan</h2>
+              {nutritionPanelView === "plan" ? (
+                <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+                  <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                    <p className="pf-a2-eyebrow">Plan pautado</p>
+                    <h2 className="mt-1 text-xl font-black text-white">{nutritionPlan?.nombre || "Sin plan cargado"}</h2>
+                    <p className="mt-2 text-sm text-slate-300">
+                      Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Ultima asignacion: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
+                    </p>
 
-                {nutritionMealsDetailed.length > 0 ? (
-                  <div className="mt-4 space-y-3">
-                    {nutritionMealsDetailed.map((meal, index) => (
-                      <section
-                        key={meal.mealId || `${meal.mealName || "meal"}-${index}`}
-                        className="pf-a2-kpi rounded-xl border p-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
-                            <p className="mt-1 text-[11px] uppercase tracking-[0.09em] text-slate-400">
-                              {meal.totalProtein}P · {meal.totalCarbs}C · {meal.totalFat}G
-                            </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="pf-a2-kpi rounded-xl border p-3">
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias objetivo</p>
+                        <p className="mt-1 text-lg font-black text-white">{nutritionDailyGoalKcal} kcal</p>
+                      </div>
+                      <div className="pf-a2-kpi rounded-xl border p-3">
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorias del plan</p>
+                        <p className="mt-1 text-lg font-black text-white">{nutritionPlanCaloriesFromMeals} kcal</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="pf-a2-kpi rounded-xl border p-3">
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas pautadas</p>
+                        <p className="mt-1 text-lg font-black text-white">{nutritionMealsDetailed.length}</p>
+                      </div>
+                      <div className="pf-a2-kpi rounded-xl border p-3">
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Macros objetivo</p>
+                        <p className="mt-1 text-sm font-black text-white">
+                          {nutritionDailyGoalMacros.proteinas}P / {nutritionDailyGoalMacros.carbohidratos}C / {nutritionDailyGoalMacros.grasas}G
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                      {macroRows.map((macro) => (
+                        <div key={macro.key}>
+                          <div className="flex items-center justify-between text-xs text-slate-300">
+                            <span>{macro.label}</span>
+                            <span>
+                              {macro.grams} g · {macro.ratio}%
+                            </span>
                           </div>
-                          <span className="pf-a2-pill">{meal.totalKcal} kcal</span>
-                        </div>
-
-                        {meal.imageUrl ? (
-                          <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-900/55">
-                            <img
-                              src={meal.imageUrl}
-                              alt={meal.mealName || `Plato ${index + 1}`}
-                              className="h-36 w-full object-cover"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
+                          <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                            <div
+                              className="pf-a2-progress-fill h-full rounded-full"
+                              style={{ width: `${Math.max(4, macro.ratio)}%` }}
                             />
                           </div>
-                        ) : null}
-
-                        <div className="mt-2 space-y-1">
-                          {meal.items.map((item, itemIndex) => {
-                            return (
-                              <div
-                                key={`${meal.mealId}-${item.id || itemIndex}`}
-                                className="flex items-center justify-between gap-3 text-xs text-slate-300"
-                              >
-                                <p className="truncate">
-                                  {item.label}
-                                  {item.grams !== null ? ` · ${item.grams} g` : ""}
-                                </p>
-                                <span className="shrink-0 text-slate-400">{item.calories} kcal</span>
-                              </div>
-                            );
-                          })}
                         </div>
-                      </section>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                    Aun no tienes comidas cargadas en tu plan. Pide a tu profe que te asigne una version actualizada.
-                  </div>
-                )}
-
-              </article>
-
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5 xl:col-span-2">
-                <div className="pf-a3-nutrition-tracker-head">
-                  <div>
-                    <p className="pf-a2-eyebrow">Registro diario</p>
-                    <h2 className="mt-1 text-xl font-black text-white">Contador nutricional</h2>
-                    <p className="mt-1 text-sm text-slate-300">
-                      Marca cada comida del dia y ajusta calorias consumidas como en MyFitnessPal.
-                    </p>
-                  </div>
-
-                  <div className="pf-a3-nutrition-tracker-date">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => handleNutritionTrackerDateShift(-1)}
-                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                    >
-                      Ayer
-                    </ReliableActionButton>
-
-                    <label className="pf-a3-nutrition-tracker-date-input">
-                      <span>Fecha</span>
-                      <input
-                        type="date"
-                        value={normalizedNutritionTrackerDate}
-                        onChange={handleNutritionTrackerDateChange}
-                      />
-                    </label>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => handleNutritionTrackerDateShift(1)}
-                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                    >
-                      Manana
-                    </ReliableActionButton>
-                  </div>
-                </div>
-
-                <div className="pf-a3-nutrition-template-row mt-3">
-                  <span className="pf-a3-nutrition-template-label">Plantillas de dia</span>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => applyNutritionDayTemplate("full")}
-                    className="pf-a3-nutrition-template-chip"
-                  >
-                    Completo
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => applyNutritionDayTemplate("training")}
-                    className="pf-a3-nutrition-template-chip"
-                  >
-                    Entreno
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => applyNutritionDayTemplate("rest")}
-                    className="pf-a3-nutrition-template-chip"
-                  >
-                    Descanso
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => applyNutritionDayTemplate("clear")}
-                    className="pf-a3-nutrition-template-chip is-muted"
-                  >
-                    Reiniciar
-                  </ReliableActionButton>
-                </div>
-
-                <div className="pf-a3-nutrition-week-head mt-3">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => handleNutritionTrackerWeekShift(-1)}
-                    className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                  >
-                    Semana anterior
-                  </ReliableActionButton>
-
-                  <p className="pf-a3-nutrition-week-label">
-                    Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
-                  </p>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => handleNutritionTrackerWeekShift(1)}
-                    className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                  >
-                    Semana siguiente
-                  </ReliableActionButton>
-                </div>
-
-                <div className="pf-a3-nutrition-streak-grid mt-3">
-                  <div className="pf-a3-nutrition-streak-card">
-                    <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                    <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} dias</p>
-                    <p className="pf-a3-nutrition-streak-note">
-                      Ultimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
-                    </p>
-                  </div>
-
-                  <div className="pf-a3-nutrition-streak-card">
-                    <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                    <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} dias</p>
-                    <p className="pf-a3-nutrition-streak-note">Historico de adherencia</p>
-                  </div>
-
-                  <div className="pf-a3-nutrition-streak-card">
-                    <p className="pf-a3-nutrition-streak-title">Dias activos</p>
-                    <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
-                    <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
-                  </div>
-
-                  <div className="pf-a3-nutrition-streak-card">
-                    <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
-                    <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
-                    <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
-                  </div>
-                </div>
-
-                <p className="mt-2 text-xs text-slate-400">Resumen del {formatDate(normalizedNutritionTrackerDate)}</p>
-
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="pf-a3-nutrition-kpi">
-                    <p className="pf-a3-nutrition-kpi-label">Consumidas</p>
-                    <p className="pf-a3-nutrition-kpi-value">{nutritionDailyConsumedKcal} kcal</p>
-                  </div>
-                  <div className="pf-a3-nutrition-kpi">
-                    <p className="pf-a3-nutrition-kpi-label">Objetivo</p>
-                    <p className="pf-a3-nutrition-kpi-value">{nutritionDailyGoalKcal} kcal</p>
-                  </div>
-                  <div className="pf-a3-nutrition-kpi">
-                    <p className="pf-a3-nutrition-kpi-label">Restantes</p>
-                    <p className={`pf-a3-nutrition-kpi-value ${nutritionDailyRemainingKcal < 0 ? "text-amber-200" : ""}`}>
-                      {nutritionDailyRemainingKcal} kcal
-                    </p>
-                  </div>
-                  <div className="pf-a3-nutrition-kpi">
-                    <p className="pf-a3-nutrition-kpi-label">Comidas listas</p>
-                    <p className="pf-a3-nutrition-kpi-value">
-                      {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pf-a3-nutrition-progress mt-3">
-                  <div className="pf-a3-nutrition-progress-track">
-                    <div
-                      className={`pf-a3-nutrition-progress-fill ${nutritionDailyProgressPct > 100 ? "is-over" : ""}`}
-                      style={{ width: `${Math.max(4, nutritionDailyProgressPct)}%` }}
-                    />
-                  </div>
-                  <p className="pf-a3-nutrition-progress-label">Progreso diario: {nutritionDailyProgressPct}%</p>
-                </div>
-
-                <div className="pf-a3-nutrition-macro-grid mt-3">
-                  <div className="pf-a3-nutrition-macro-card">
-                    <div className="pf-a3-nutrition-macro-head">
-                      <span className="pf-a3-nutrition-macro-key">P</span>
-                      <p className="pf-a3-nutrition-macro-title">Proteinas</p>
+                      ))}
                     </div>
-                    <p className="pf-a3-nutrition-macro-value">
-                      {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
-                    </p>
-                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.proteinas < 0 ? "is-over" : ""}`}>
-                      Restan: {nutritionDailyRemainingMacros.proteinas} g
-                    </p>
-                    <div className="pf-a3-nutrition-macro-track">
-                      <div
-                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.proteinas > 100 ? "is-over" : ""}`}
-                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="pf-a3-nutrition-macro-card">
-                    <div className="pf-a3-nutrition-macro-head">
-                      <span className="pf-a3-nutrition-macro-key">C</span>
-                      <p className="pf-a3-nutrition-macro-title">Carbohidratos</p>
-                    </div>
-                    <p className="pf-a3-nutrition-macro-value">
-                      {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
-                    </p>
-                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.carbohidratos < 0 ? "is-over" : ""}`}>
-                      Restan: {nutritionDailyRemainingMacros.carbohidratos} g
-                    </p>
-                    <div className="pf-a3-nutrition-macro-track">
-                      <div
-                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.carbohidratos > 100 ? "is-over" : ""}`}
-                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
-                      />
-                    </div>
-                  </div>
+                    {nutritionPlan?.notas ? (
+                      <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3 text-sm text-slate-200">
+                        {nutritionPlan.notas}
+                      </div>
+                    ) : null}
+                  </article>
 
-                  <div className="pf-a3-nutrition-macro-card">
-                    <div className="pf-a3-nutrition-macro-head">
-                      <span className="pf-a3-nutrition-macro-key">G</span>
-                      <p className="pf-a3-nutrition-macro-title">Grasas</p>
-                    </div>
-                    <p className="pf-a3-nutrition-macro-value">
-                      {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
-                    </p>
-                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.grasas < 0 ? "is-over" : ""}`}>
-                      Restan: {nutritionDailyRemainingMacros.grasas} g
-                    </p>
-                    <div className="pf-a3-nutrition-macro-track">
-                      <div
-                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.grasas > 100 ? "is-over" : ""}`}
-                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                  <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                    <p className="pf-a2-eyebrow">Distribucion</p>
+                    <h2 className="mt-1 text-xl font-black text-white">Comidas del plan</h2>
 
-                <div className="pf-a3-nutrition-week-grid-wrap mt-4">
-                  <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
-                  <div className="pf-a3-nutrition-week-grid">
-                    {nutritionWeeklyHistory.map((day) => (
-                      <ReliableActionButton
-                        key={`nutri-week-${day.date}`}
-                        type="button"
-                        onClick={() => handleNutritionTrackerDateSelect(day.date)}
-                        className={`pf-a3-nutrition-weekday-card ${
-                          day.isSelected ? "is-selected" : ""
-                        } ${
-                          day.status === "empty"
-                            ? "is-empty"
-                            : day.status === "low"
-                              ? "is-low"
-                              : day.status === "high"
-                                ? "is-high"
-                                : "is-on-target"
-                        }`}
-                      >
-                        <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
-                        <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
-                        <span className="pf-a3-nutrition-weekday-meta">{day.doneMeals} comidas</span>
-                        <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
-                      </ReliableActionButton>
-                    ))}
-                  </div>
-                </div>
-
-                {nutritionMealsDetailed.length > 0 ? (
-                  <div className="pf-a3-nutrition-tracker-list mt-4">
-                    {nutritionMealsDetailed.map((meal, index) => {
-                      const mealLog = nutritionDayMealLogById.get(meal.mealId);
-                      const isDone = Boolean(mealLog?.done);
-                      const loggedKcal = toNumber(mealLog?.consumedKcal);
-                      const displayKcal = loggedKcal !== null && loggedKcal > 0 ? loggedKcal : meal.totalKcal;
-
-                      return (
-                        <section
-                          key={`${meal.mealId}-${normalizedNutritionTrackerDate}`}
-                          className={`pf-a3-nutrition-tracker-row ${isDone ? "is-done" : ""}`}
-                        >
-                          <div className="pf-a3-nutrition-tracker-row-head">
-                            <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
-                            <div className="flex items-center gap-2">
-                              <span className="pf-a2-pill">Plan: {meal.totalKcal} kcal</span>
-                              <span className={`pf-a3-nutrition-check ${isDone ? "is-done" : ""}`}>
-                                <span className="pf-a3-nutrition-check-dot" />
-                                {isDone ? "OK" : "Pendiente"}
-                              </span>
+                    {nutritionMealsDetailed.length > 0 ? (
+                      <div className="mt-4 space-y-3">
+                        {nutritionMealsDetailed.map((meal, index) => (
+                          <section key={meal.mealId || `${meal.mealName || "meal"}-${index}`} className="pf-a2-kpi rounded-xl border p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
+                                <p className="mt-1 text-[11px] uppercase tracking-[0.09em] text-slate-400">
+                                  {meal.totalProtein}P · {meal.totalCarbs}C · {meal.totalFat}G
+                                </p>
+                              </div>
+                              <span className="pf-a2-pill">{meal.totalKcal} kcal</span>
                             </div>
-                          </div>
 
-                          {meal.galleryUrls.length > 0 ? (
-                            <div className="pf-a3-nutrition-mini-gallery">
-                              {meal.galleryUrls.slice(0, 4).map((imageUrl, imageIndex) => (
-                                <div key={`${meal.mealId}-gallery-${imageIndex}`} className="pf-a3-nutrition-mini-thumb">
-                                  <img
-                                    src={imageUrl}
-                                    alt={`${meal.mealName || `Comida ${index + 1}`} ${imageIndex + 1}`}
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer"
-                                  />
+                            {meal.imageUrl ? (
+                              <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-900/55">
+                                <img
+                                  src={meal.imageUrl}
+                                  alt={meal.mealName || `Plato ${index + 1}`}
+                                  className="h-36 w-full object-cover"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : null}
+
+                            <div className="mt-2 space-y-1">
+                              {meal.items.map((item, itemIndex) => (
+                                <div
+                                  key={`${meal.mealId}-${item.id || itemIndex}`}
+                                  className="flex items-center justify-between gap-3 text-xs text-slate-300"
+                                >
+                                  <p className="truncate">
+                                    {item.label}
+                                    {item.grams !== null ? ` · ${item.grams} g` : ""}
+                                  </p>
+                                  <span className="shrink-0 text-slate-400">{item.calories} kcal</span>
                                 </div>
                               ))}
                             </div>
-                          ) : null}
+                          </section>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                        Aun no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una version actualizada.
+                      </div>
+                    )}
+                  </article>
+                </div>
+              ) : null}
 
-                          <div className="pf-a3-nutrition-quickchips">
-                            <span className="pf-a3-nutrition-quickchips-label">Chips rapidos</span>
-                            {nutritionMealQuickChips.map((chip) => (
+              {nutritionPanelView === "registro" ? (
+                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                  <div className="pf-a3-nutrition-tracker-head">
+                    <div>
+                      <p className="pf-a2-eyebrow">Registro del alumno</p>
+                      <h2 className="mt-1 text-xl font-black text-white">Carga diaria de alimentos</h2>
+                      <p className="mt-1 text-sm text-slate-300">
+                        Registra las comidas pautadas y agrega alimentos extras para llevar un control facil y ordenado.
+                      </p>
+                    </div>
+
+                    <div className="pf-a3-nutrition-tracker-date">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => handleNutritionTrackerDateShift(-1)}
+                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Ayer
+                      </ReliableActionButton>
+
+                      <label className="pf-a3-nutrition-tracker-date-input">
+                        <span>Fecha</span>
+                        <input
+                          type="date"
+                          value={normalizedNutritionTrackerDate}
+                          onChange={handleNutritionTrackerDateChange}
+                        />
+                      </label>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => handleNutritionTrackerDateShift(1)}
+                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Manana
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-nutrition-template-row mt-3">
+                    <span className="pf-a3-nutrition-template-label">Plantillas del dia</span>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => applyNutritionDayTemplate("full")}
+                      className="pf-a3-nutrition-template-chip"
+                    >
+                      Dia completo
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => applyNutritionDayTemplate("training")}
+                      className="pf-a3-nutrition-template-chip"
+                    >
+                      Dia de entreno
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => applyNutritionDayTemplate("rest")}
+                      className="pf-a3-nutrition-template-chip"
+                    >
+                      Dia de descanso
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => applyNutritionDayTemplate("clear")}
+                      className="pf-a3-nutrition-template-chip is-muted"
+                    >
+                      Reiniciar dia
+                    </ReliableActionButton>
+                  </div>
+
+                  <div className="pf-a3-nutrition-week-head mt-3">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => handleNutritionTrackerWeekShift(-1)}
+                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                    >
+                      Semana anterior
+                    </ReliableActionButton>
+
+                    <p className="pf-a3-nutrition-week-label">
+                      Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
+                    </p>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => handleNutritionTrackerWeekShift(1)}
+                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                    >
+                      Semana siguiente
+                    </ReliableActionButton>
+                  </div>
+
+                  <div className="pf-a3-nutrition-streak-grid mt-3">
+                    <div className="pf-a3-nutrition-streak-card">
+                      <p className="pf-a3-nutrition-streak-title">Racha actual</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} dias</p>
+                      <p className="pf-a3-nutrition-streak-note">
+                        Ultimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
+                      </p>
+                    </div>
+
+                    <div className="pf-a3-nutrition-streak-card">
+                      <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} dias</p>
+                      <p className="pf-a3-nutrition-streak-note">Historico de adherencia</p>
+                    </div>
+
+                    <div className="pf-a3-nutrition-streak-card">
+                      <p className="pf-a3-nutrition-streak-title">Dias activos</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
+                      <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
+                    </div>
+
+                    <div className="pf-a3-nutrition-streak-card">
+                      <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
+                      <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
+                      <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
+                    </div>
+                  </div>
+
+                  <p className="mt-2 text-xs text-slate-400">Resumen del {formatDate(normalizedNutritionTrackerDate)}</p>
+
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="pf-a3-nutrition-kpi">
+                      <p className="pf-a3-nutrition-kpi-label">Consumidas</p>
+                      <p className="pf-a3-nutrition-kpi-value">{nutritionDailyConsumedKcal} kcal</p>
+                    </div>
+                    <div className="pf-a3-nutrition-kpi">
+                      <p className="pf-a3-nutrition-kpi-label">Objetivo</p>
+                      <p className="pf-a3-nutrition-kpi-value">{nutritionDailyGoalKcal} kcal</p>
+                    </div>
+                    <div className="pf-a3-nutrition-kpi">
+                      <p className="pf-a3-nutrition-kpi-label">Restantes</p>
+                      <p className={`pf-a3-nutrition-kpi-value ${nutritionDailyRemainingKcal < 0 ? "text-amber-200" : ""}`}>
+                        {nutritionDailyRemainingKcal} kcal
+                      </p>
+                    </div>
+                    <div className="pf-a3-nutrition-kpi">
+                      <p className="pf-a3-nutrition-kpi-label">Alimentos cargados</p>
+                      <p className="pf-a3-nutrition-kpi-value">{nutritionSelectedDayCustomFoods.length}</p>
+                    </div>
+                  </div>
+
+                  <p className="mt-2 text-xs text-slate-300">
+                    Comidas pautadas registradas: {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
+                  </p>
+
+                  <div className="pf-a3-nutrition-progress mt-3">
+                    <div className="pf-a3-nutrition-progress-track">
+                      <div
+                        className={`pf-a3-nutrition-progress-fill ${nutritionDailyProgressPct > 100 ? "is-over" : ""}`}
+                        style={{ width: `${Math.max(4, nutritionDailyProgressPct)}%` }}
+                      />
+                    </div>
+                    <p className="pf-a3-nutrition-progress-label">Progreso diario: {nutritionDailyProgressPct}%</p>
+                  </div>
+
+                  <div className="pf-a3-nutrition-macro-grid mt-3">
+                    <div className="pf-a3-nutrition-macro-card">
+                      <div className="pf-a3-nutrition-macro-head">
+                        <span className="pf-a3-nutrition-macro-key">P</span>
+                        <p className="pf-a3-nutrition-macro-title">Proteinas</p>
+                      </div>
+                      <p className="pf-a3-nutrition-macro-value">
+                        {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
+                      </p>
+                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.proteinas < 0 ? "is-over" : ""}`}>
+                        Restan: {nutritionDailyRemainingMacros.proteinas} g
+                      </p>
+                      <div className="pf-a3-nutrition-macro-track">
+                        <div
+                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.proteinas > 100 ? "is-over" : ""}`}
+                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pf-a3-nutrition-macro-card">
+                      <div className="pf-a3-nutrition-macro-head">
+                        <span className="pf-a3-nutrition-macro-key">C</span>
+                        <p className="pf-a3-nutrition-macro-title">Carbohidratos</p>
+                      </div>
+                      <p className="pf-a3-nutrition-macro-value">
+                        {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
+                      </p>
+                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.carbohidratos < 0 ? "is-over" : ""}`}>
+                        Restan: {nutritionDailyRemainingMacros.carbohidratos} g
+                      </p>
+                      <div className="pf-a3-nutrition-macro-track">
+                        <div
+                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.carbohidratos > 100 ? "is-over" : ""}`}
+                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pf-a3-nutrition-macro-card">
+                      <div className="pf-a3-nutrition-macro-head">
+                        <span className="pf-a3-nutrition-macro-key">G</span>
+                        <p className="pf-a3-nutrition-macro-title">Grasas</p>
+                      </div>
+                      <p className="pf-a3-nutrition-macro-value">
+                        {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
+                      </p>
+                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.grasas < 0 ? "is-over" : ""}`}>
+                        Restan: {nutritionDailyRemainingMacros.grasas} g
+                      </p>
+                      <div className="pf-a3-nutrition-macro-track">
+                        <div
+                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.grasas > 100 ? "is-over" : ""}`}
+                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-nutrition-week-grid-wrap mt-4">
+                    <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
+                    <div className="pf-a3-nutrition-week-grid">
+                      {nutritionWeeklyHistory.map((day) => (
+                        <ReliableActionButton
+                          key={`nutri-week-${day.date}`}
+                          type="button"
+                          onClick={() => handleNutritionTrackerDateSelect(day.date)}
+                          className={`pf-a3-nutrition-weekday-card ${
+                            day.isSelected ? "is-selected" : ""
+                          } ${
+                            day.status === "empty"
+                              ? "is-empty"
+                              : day.status === "low"
+                                ? "is-low"
+                                : day.status === "high"
+                                  ? "is-high"
+                                  : "is-on-target"
+                          }`}
+                        >
+                          <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
+                          <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
+                          <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
+                          <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                        </ReliableActionButton>
+                      ))}
+                    </div>
+                  </div>
+
+                  {nutritionMealsDetailed.length > 0 ? (
+                    <div className="pf-a3-nutrition-tracker-list mt-4">
+                      {nutritionMealsDetailed.map((meal, index) => {
+                        const mealLog = nutritionDayMealLogById.get(meal.mealId);
+                        const isDone = Boolean(mealLog?.done);
+                        const loggedKcal = toNumber(mealLog?.consumedKcal);
+                        const displayKcal = loggedKcal !== null && loggedKcal > 0 ? loggedKcal : meal.totalKcal;
+
+                        return (
+                          <section
+                            key={`${meal.mealId}-${normalizedNutritionTrackerDate}`}
+                            className={`pf-a3-nutrition-tracker-row ${isDone ? "is-done" : ""}`}
+                          >
+                            <div className="pf-a3-nutrition-tracker-row-head">
+                              <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
+                              <div className="flex items-center gap-2">
+                                <span className="pf-a2-pill">Plan: {meal.totalKcal} kcal</span>
+                                <span className={`pf-a3-nutrition-check ${isDone ? "is-done" : ""}`}>
+                                  <span className="pf-a3-nutrition-check-dot" />
+                                  {isDone ? "OK" : "Pendiente"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {meal.galleryUrls.length > 0 ? (
+                              <div className="pf-a3-nutrition-mini-gallery">
+                                {meal.galleryUrls.slice(0, 4).map((imageUrl, imageIndex) => (
+                                  <div key={`${meal.mealId}-gallery-${imageIndex}`} className="pf-a3-nutrition-mini-thumb">
+                                    <img
+                                      src={imageUrl}
+                                      alt={`${meal.mealName || `Comida ${index + 1}`} ${imageIndex + 1}`}
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            <div className="pf-a3-nutrition-quickchips">
+                              <span className="pf-a3-nutrition-quickchips-label">Chips rapidos</span>
+                              {nutritionMealQuickChips.map((chip) => (
+                                <ReliableActionButton
+                                  key={`${meal.mealId}-${chip.id}`}
+                                  type="button"
+                                  onClick={() =>
+                                    handleNutritionMealQuickChip(meal.mealId, meal.totalKcal, chip.ratio, chip.label)
+                                  }
+                                  className="pf-a3-nutrition-chip-btn"
+                                >
+                                  {chip.label}
+                                </ReliableActionButton>
+                              ))}
+                            </div>
+
+                            <div className="pf-a3-nutrition-tracker-row-controls">
                               <ReliableActionButton
-                                key={`${meal.mealId}-${chip.id}`}
                                 type="button"
-                                onClick={() => handleNutritionMealQuickChip(meal.mealId, meal.totalKcal, chip.ratio, chip.label)}
-                                className="pf-a3-nutrition-chip-btn"
+                                onClick={() => handleNutritionMealToggle(meal.mealId, !isDone, meal.totalKcal)}
+                                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
+                                  isDone
+                                    ? "border-emerald-300/50 bg-emerald-500/20 text-emerald-100"
+                                    : "pf-a2-ghost-btn"
+                                }`}
                               >
-                                {chip.label}
+                                {isDone ? "Registrada" : "Marcar comida"}
                               </ReliableActionButton>
-                            ))}
-                          </div>
 
-                          <div className="pf-a3-nutrition-tracker-row-controls">
+                              <label className="pf-a3-nutrition-kcal-input">
+                                <span>Kcal consumidas</span>
+                                <input
+                                  key={`${meal.mealId}-${normalizedNutritionTrackerDate}-${mealLog?.updatedAt || "base"}`}
+                                  type="number"
+                                  min="0"
+                                  step="10"
+                                  defaultValue={String(displayKcal)}
+                                  onBlur={(event) => handleNutritionMealCaloriesBlur(meal.mealId, meal.totalKcal, event)}
+                                />
+                              </label>
+                            </div>
+                          </section>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                      Sin comidas pautadas por ahora. Cuando el profesor actualice tu plan, podras registrarlas aqui.
+                    </div>
+                  )}
+
+                  <article className="pf-a3-nutrition-student-food-card mt-4">
+                    <p className="pf-a3-nutrition-student-food-eyebrow">Carga libre del alumno</p>
+                    <h3 className="pf-a3-nutrition-student-food-title">Agregar alimentos del dia</h3>
+                    <p className="pf-a3-nutrition-student-food-subtitle">
+                      Usa este bloque para sumar alimentos adicionales que no esten en las comidas pautadas.
+                    </p>
+
+                    <div className="pf-a3-nutrition-student-food-grid">
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Alimento</span>
+                        <input
+                          value={nutritionCustomFoodDraft.nombre}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              nombre: event.target.value,
+                            }))
+                          }
+                          placeholder="Ej: Yogur con frutas"
+                        />
+                      </label>
+
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Porcion</span>
+                        <input
+                          value={nutritionCustomFoodDraft.porcion}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              porcion: event.target.value,
+                            }))
+                          }
+                          placeholder="Ej: 1 taza / 120 g"
+                        />
+                      </label>
+
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Calorias</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={nutritionCustomFoodDraft.calorias}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              calorias: event.target.value,
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </label>
+
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Proteinas (g)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={nutritionCustomFoodDraft.proteinas}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              proteinas: event.target.value,
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </label>
+
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Carbohidratos (g)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={nutritionCustomFoodDraft.carbohidratos}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              carbohidratos: event.target.value,
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </label>
+
+                      <label className="pf-a3-nutrition-student-food-field">
+                        <span>Grasas (g)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={nutritionCustomFoodDraft.grasas}
+                          onChange={(event) =>
+                            setNutritionCustomFoodDraft((previous) => ({
+                              ...previous,
+                              grasas: event.target.value,
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="pf-a3-nutrition-student-food-actions">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={addNutritionCustomFood}
+                        className="pf-a2-solid-btn rounded-lg px-4 py-2 text-sm font-semibold"
+                      >
+                        Cargar alimento
+                      </ReliableActionButton>
+                      <span className="text-xs text-slate-400">
+                        Totales cargados: {nutritionSelectedDayCustomTotals.calorias} kcal · {nutritionSelectedDayCustomTotals.proteinas}P / {nutritionSelectedDayCustomTotals.carbohidratos}C / {nutritionSelectedDayCustomTotals.grasas}G
+                      </span>
+                    </div>
+
+                    {nutritionSelectedDayCustomFoods.length > 0 ? (
+                      <div className="pf-a3-nutrition-student-food-list">
+                        {nutritionSelectedDayCustomFoods.map((entry) => (
+                          <div key={entry.id} className="pf-a3-nutrition-student-food-item">
+                            <div>
+                              <p className="pf-a3-nutrition-student-food-name">{entry.nombre}</p>
+                              <p className="pf-a3-nutrition-student-food-meta">
+                                {entry.porcion ? `${entry.porcion} · ` : ""}
+                                {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
+                              </p>
+                            </div>
                             <ReliableActionButton
                               type="button"
-                              onClick={() => handleNutritionMealToggle(meal.mealId, !isDone, meal.totalKcal)}
-                              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
-                                isDone
-                                  ? "border-emerald-300/50 bg-emerald-500/20 text-emerald-100"
-                                  : "pf-a2-ghost-btn"
-                              }`}
+                              onClick={() => removeNutritionCustomFood(entry.id)}
+                              className="pf-a3-nutrition-student-food-delete"
                             >
-                              {isDone ? "Registrada" : "Marcar comida"}
+                              Eliminar
                             </ReliableActionButton>
-
-                            <label className="pf-a3-nutrition-kcal-input">
-                              <span>Kcal consumidas</span>
-                              <input
-                                key={`${meal.mealId}-${normalizedNutritionTrackerDate}-${mealLog?.updatedAt || "base"}`}
-                                type="number"
-                                min="0"
-                                step="10"
-                                defaultValue={String(displayKcal)}
-                                onBlur={(event) => handleNutritionMealCaloriesBlur(meal.mealId, meal.totalKcal, event)}
-                              />
-                            </label>
                           </div>
-                        </section>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                    Sin comidas cargadas en el plan. Cuando el profe las configure, aqui podras registrarlas por dia.
-                  </div>
-                )}
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="pf-a3-nutrition-student-food-empty">Todavia no cargaste alimentos libres para este dia.</p>
+                    )}
 
-                {nutritionTrackerStatus ? (
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
-                    {nutritionTrackerStatus}
-                  </p>
-                ) : null}
-              </article>
+                    {nutritionCustomFoodStatus ? (
+                      <p className="pf-a3-nutrition-student-food-status">{nutritionCustomFoodStatus}</p>
+                    ) : null}
+                  </article>
+
+                  {nutritionTrackerStatus ? (
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
+                      {nutritionTrackerStatus}
+                    </p>
+                  ) : null}
+                </article>
+              ) : null}
             </div>
           ) : null}
 
