@@ -2386,6 +2386,10 @@ export default function AlumnoVisionClient({
     return fromCurrent || "";
   }, [alumnoProfile?.email, currentEmail]);
 
+  const nutritionTrackerOwnerKey = useMemo(() => {
+    return normalizePersonKey(profileEmail || profileName || currentEmail || currentName || "alumno");
+  }, [currentEmail, currentName, profileEmail, profileName]);
+
   const profileDisplayName = useMemo(() => {
     const candidate = uniqueStrings([
       accountProfile?.nombreCompleto,
