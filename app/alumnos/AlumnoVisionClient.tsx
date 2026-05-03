@@ -3978,6 +3978,16 @@ export default function AlumnoVisionClient({
     setNutritionTrackerStatus("");
   }, []);
 
+  const handleNutritionTrackerDateSelect = useCallback((nextDate: string) => {
+    setNutritionTrackerDate(normalizeDateInputValue(nextDate));
+    setNutritionTrackerStatus("");
+  }, []);
+
+  const handleNutritionTrackerWeekShift = useCallback((deltaWeeks: number) => {
+    setNutritionTrackerDate((current) => shiftDateInputValue(current, deltaWeeks * 7));
+    setNutritionTrackerStatus("");
+  }, []);
+
   const handleNutritionMealToggle = useCallback(
     (mealId: string, nextDone: boolean, fallbackKcal: number) => {
       updateNutritionDailyMealLog(mealId, (previous) => {
