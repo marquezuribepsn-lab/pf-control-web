@@ -4228,6 +4228,157 @@ export default function AlumnoVisionClient({
     }));
   }, [isRoutineFullyExpanded, selectedRoutineEntry]);
 
+  const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions") => {
+    setRoutineQuickPanel((current) => (current === panel ? "none" : panel));
+    setRoutineChangeRequestStatus("");
+  }, []);
+
+  const submitRoutineChangeRequest = useCallback(() => {
+    if (!selectedRoutineEntry) {
+      setRoutineChangeRequestStatus("Selecciona una sesion para enviar la solicitud.");
+      return;
+    }
+
+    const cleanMessage = String(routineChangeRequestDraft || "").trim();
+    if (cleanMessage.length < 8) {
+      setRoutineChangeRequestStatus("Describe el cambio con al menos 8 caracteres.");
+      return;
+    }
+
+    const payload: RoutineChangeRequestLite = {
+      id: `change-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      alumnoNombre: profileName,
+      alumnoEmail: profileEmail || undefined,
+      sessionId: selectedRoutineEntry.sesion.id,
+      sessionTitle: selectedRoutineEntry.sesion.titulo,
+      weekId: selectedRoutineEntry.weekId,
+      weekName: selectedRoutineEntry.weekName,
+      dayId: selectedRoutineEntry.dayId,
+      dayName: selectedRoutineEntry.dayName,
+      message: cleanMessage,
+      createdAt: new Date().toISOString(),
+    };
+
+    markManualSaveIntent(ROUTINE_CHANGE_REQUESTS_KEY);
+    setRoutineChangeRequestsRaw((previous) => [
+      payload,
+      ...normalizeRoutineChangeRequestRows(previous),
+    ]);
+
+    setRoutineChangeRequestDraft("");
+    setRoutineChangeRequestStatus("Solicitud enviada al profesor.");
+  }, [
+    profileEmail,
+    profileName,
+    routineChangeRequestDraft,
+    selectedRoutineEntry,
+    setRoutineChangeRequestsRaw,
+  ]);
+
+  const openRoutineFinalizePanel = useCallback(() => {
+    if (!selectedRoutineEntry) {
+      setRoutineFinalizeStatus("Selecciona una sesion para finalizar.");
+      return;
+    }
+
+    if (existingRoutineSessionFeedback?.answers?.length) {
+      const mappedAnswers: Record<string, string> = {};
+      existingRoutineSessionFeedback.answers.forEach((answer) => {
+        if (answer.questionId && answer.optionId) {
+          mappedAnswers[answer.questionId] = answer.optionId;
+        }
+      });
+      setRoutineFinalizeAnswerByQuestionId(mappedAnswers);
+    } else {
+      setRoutineFinalizeAnswerByQuestionId({});
+    }
+
+    setRoutineFinalizeStatus("");
+    setRoutineFinalizePanelOpen(true);
+  }, [existingRoutineSessionFeedback, selectedRoutineEntry]);
+
+  const submitRoutineFinalize = useCallback(() => {
+    if (!selectedRoutineEntry) {
+      setRoutineFinalizeStatus("Selecciona una sesion para finalizar.");
+      return;
+    }
+
+    if (selectedRoutineDayFeedbackQuestions.length > 0) {
+      const missingQuestion = selectedRoutineDayFeedbackQuestions.find(
+        (question) => !routineFinalizeAnswerByQuestionId[question.id]
+      );
+
+      if (missingQuestion) {
+        setRoutineFinalizeStatus("Completa todo el feedback antes de finalizar.");
+        return;
+      }
+    }
+
+    const answers: SessionFeedbackAnswerLite[] = selectedRoutineDayFeedbackQuestions
+      .map((question) => {
+        const selectedOptionId = String(routineFinalizeAnswerByQuestionId[question.id] || "").trim();
+        if (!selectedOptionId) {
+          return null;
+        }
+
+        const selectedOption = question.options.find((option) => option.id === selectedOptionId) || null;
+        if (!selectedOption) {
+          return null;
+        }
+
+        return {
+          questionId: question.id,
+          questionPrompt: question.prompt,
+          optionId: selectedOption.id,
+          optionLabel: selectedOption.label,
+        };
+      })
+      .filter((answer): answer is SessionFeedbackAnswerLite => Boolean(answer));
+
+    const payload: SessionFeedbackRecordLite = {
+      id: `feedback-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      alumnoNombre: profileName,
+      alumnoEmail: profileEmail || undefined,
+      sessionId: selectedRoutineEntry.sesion.id,
+      sessionTitle: selectedRoutineEntry.sesion.titulo,
+      weekId: selectedRoutineEntry.weekId,
+      weekName: selectedRoutineEntry.weekName,
+      dayId: selectedRoutineEntry.dayId,
+      dayName: selectedRoutineEntry.dayName,
+      feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion",
+      answers,
+      totalWorkoutLogs: selectedRoutineDayLogSummary.total,
+      logsWithPain: selectedRoutineDayLogSummary.withPain,
+      createdAt: new Date().toISOString(),
+    };
+
+    const identityKey = buildSessionFeedbackIdentityKey(payload);
+
+    markManualSaveIntent(SESSION_FEEDBACK_RECORDS_KEY);
+    setSessionFeedbackRecordsRaw((previous) => {
+      const normalized = normalizeSessionFeedbackRows(previous);
+      const filtered = normalized.filter(
+        (row) => buildSessionFeedbackIdentityKey(row) !== identityKey
+      );
+
+      return [payload, ...filtered];
+    });
+
+    setRoutineFinalizePanelOpen(false);
+    setRoutineFinalizeStatus("Sesion finalizada correctamente.");
+    setRoutineQuickPanel("sessions");
+  }, [
+    profileEmail,
+    profileName,
+    routineFinalizeAnswerByQuestionId,
+    selectedRoutineDayFeedbackConfig?.title,
+    selectedRoutineDayFeedbackQuestions,
+    selectedRoutineDayLogSummary.total,
+    selectedRoutineDayLogSummary.withPain,
+    selectedRoutineEntry,
+    setSessionFeedbackRecordsRaw,
+  ]);
+
   const homeDockItems: Array<{ key: MainCategory; label: string; icon: ReactNode }> = [
     {
       key: "rutina",
