@@ -21,6 +21,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type FocusEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TouchEvent,
