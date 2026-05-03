@@ -1500,6 +1500,7 @@ function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
                 dayItem.entrenamiento && typeof dayItem.entrenamiento === "object"
                   ? (dayItem.entrenamiento as Record<string, unknown>)
                   : null;
+              const postSesionFeedback = normalizePostSessionFeedbackConfig(dayItem.postSesionFeedback);
               const rawBlocks = rawTraining && Array.isArray(rawTraining.bloques) ? rawTraining.bloques : [];
 
               const bloques: WeekBlockLite[] = rawBlocks
@@ -1579,6 +1580,7 @@ function normalizeWeekStorePlans(rawValue: unknown): WeekPersonPlanLite[] {
                 sesionId: String(dayItem.sesionId || "").trim(),
                 oculto: Boolean(dayItem.oculto),
                 entrenamiento,
+                postSesionFeedback,
               };
             });
 
