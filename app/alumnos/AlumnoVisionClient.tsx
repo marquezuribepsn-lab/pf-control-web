@@ -2061,6 +2061,12 @@ export default function AlumnoVisionClient({
       setRoutineExerciseLogTarget(null);
       setRoutineExerciseLogStatus("");
       setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
+      setRoutineQuickPanel("none");
+      setRoutineChangeRequestDraft("");
+      setRoutineChangeRequestStatus("");
+      setRoutineFinalizePanelOpen(false);
+      setRoutineFinalizeStatus("");
+      setRoutineFinalizeAnswerByQuestionId({});
     }
   }, [activeCategory]);
 
