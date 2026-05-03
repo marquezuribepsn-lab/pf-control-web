@@ -4123,6 +4123,10 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
 }
 
+.pf-a3-routine-log-history-item-editing {
+  align-items: stretch;
+}
+
 .pf-a3-routine-log-history-main {
   min-width: 0;
   display: flex;
@@ -4130,11 +4134,31 @@ video.pf-a3-routine-log-video-frame {
   gap: 0.16rem;
 }
 
+.pf-a3-routine-log-history-edit {
+  width: 100%;
+  margin-top: 0.16rem;
+  padding-top: 0.34rem;
+  border-top: 1px dashed rgba(95, 121, 164, 0.46);
+}
+
+.pf-a3-routine-log-history-edit-grid {
+  margin-top: 0.24rem;
+}
+
+.pf-a3-routine-log-history-edit .pf-a3-routine-log-field-full {
+  margin-top: 0.34rem;
+}
+
 .pf-a3-routine-log-history-actions {
   display: inline-flex;
   align-items: center;
   gap: 0.24rem;
   flex-shrink: 0;
+}
+
+.pf-a3-routine-log-history-edit-actions {
+  width: 100%;
+  margin-top: 0.42rem;
 }
 
 .pf-a3-routine-log-history-btn {
