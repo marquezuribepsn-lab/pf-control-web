@@ -127,6 +127,44 @@ type WorkoutLogLite = {
   videoMimeType?: string;
 };
 
+type RoutineChangeRequestLite = {
+  id: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  message?: string;
+  createdAt?: string;
+};
+
+type SessionFeedbackAnswerLite = {
+  questionId: string;
+  questionPrompt: string;
+  optionId: string;
+  optionLabel: string;
+};
+
+type SessionFeedbackRecordLite = {
+  id: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  feedbackTitle?: string;
+  answers: SessionFeedbackAnswerLite[];
+  totalWorkoutLogs?: number;
+  logsWithPain?: number;
+  createdAt?: string;
+};
+
 type AnthropometryEntryLite = {
   id?: string;
   alumnoNombre?: string;
