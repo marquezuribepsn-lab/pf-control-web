@@ -134,6 +134,17 @@ type NutritionDailyMealLogLite = {
   updatedAt?: string;
 };
 
+type NutritionDailyCustomFoodLite = {
+  id: string;
+  nombre: string;
+  porcion?: string;
+  calorias: number;
+  proteinas?: number;
+  carbohidratos?: number;
+  grasas?: number;
+  createdAt?: string;
+};
+
 type NutritionDailyLogLite = {
   id: string;
   ownerKey?: string;
@@ -141,6 +152,7 @@ type NutritionDailyLogLite = {
   alumnoEmail?: string;
   date: string;
   mealLogs: NutritionDailyMealLogLite[];
+  customFoods?: NutritionDailyCustomFoodLite[];
   createdAt?: string;
   updatedAt?: string;
 };
