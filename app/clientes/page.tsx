@@ -6742,6 +6742,12 @@ export default function ClientesPage() {
                                   </span>
                                 </div>
 
+                                {selectedTrainingDayFeedbackConfig?.enabled ? (
+                                  <div className="rounded-xl border border-emerald-300/25 bg-emerald-500/[0.07] p-2.5 text-xs text-emerald-100">
+                                    {selectedTrainingDayFeedbackConfig.title || "Feedback post sesion"} · {selectedTrainingDayFeedbackQuestions.length} preguntas
+                                  </div>
+                                ) : null}
+
                                 {selectedTrainingDayBlocks.length > 0 ? (
                                   <div className="space-y-2">
                                     {selectedTrainingDayBlocks.map((block, blockIndex) => (
