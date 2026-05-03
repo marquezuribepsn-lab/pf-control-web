@@ -3507,6 +3507,84 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
 }
 
+.pf-a3-routine-finalize-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 1.12rem;
+  border: 1px solid rgba(198, 173, 255, 0.74);
+  background: linear-gradient(180deg, rgba(151, 83, 255, 0.97), rgba(108, 58, 236, 0.95));
+  color: #ffffff;
+  padding: 0.72rem 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(237, 227, 255, 0.24),
+    0 16px 30px -22px rgba(124, 73, 241, 0.82);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.pf-a3-routine-finalize-cta-wave {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 170%;
+  height: 310%;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 243, 255, 0.36);
+  transform: translate(-50%, -50%) scale(0.22);
+  opacity: 0.45;
+  animation: pf-a3-routine-finalize-wave 2.3s ease-out infinite;
+  pointer-events: none;
+}
+
+.pf-a3-routine-finalize-cta-wave-delay {
+  animation-delay: 1.15s;
+  opacity: 0.38;
+}
+
+.pf-a3-routine-finalize-cta-label {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-size: clamp(0.88rem, 3.2vw, 1.04rem);
+  line-height: 1.14;
+  font-weight: 800;
+  letter-spacing: 0.018em;
+}
+
+@keyframes pf-a3-routine-finalize-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.52;
+  }
+
+  72% {
+    opacity: 0.16;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+.pf-a3-routine-finalize-cta:hover,
+.pf-a3-routine-finalize-cta:focus-visible {
+  border-color: rgba(241, 229, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(249, 243, 255, 0.3),
+    0 20px 34px -24px rgba(134, 83, 247, 0.9);
+}
+
+.pf-a3-routine-finalize-cta:active {
+  transform: translateY(1px) scale(0.996);
+}
+
 .pf-a3-routine-log-overlay {
   position: fixed;
   inset: 0;
@@ -3675,6 +3753,222 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-color: rgba(171, 132, 255, 0.82);
   background: linear-gradient(160deg, rgba(145, 86, 255, 0.96), rgba(116, 60, 238, 0.93));
   color: #fff;
+}
+
+.pf-a3-routine-action-overlay {
+  z-index: 146;
+}
+
+.pf-a3-routine-action-panel {
+  width: min(760px, 100%);
+  max-height: calc(100dvh - max(1.2rem, env(safe-area-inset-top)) - max(1.2rem, env(safe-area-inset-bottom)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pf-a3-routine-action-panel-change {
+  border-color: rgba(114, 218, 163, 0.62);
+  background: linear-gradient(166deg, rgba(8, 22, 18, 0.99), rgba(10, 24, 21, 0.98));
+}
+
+.pf-a3-routine-action-panel-sessions {
+  border-color: rgba(236, 137, 155, 0.54);
+  background: linear-gradient(166deg, rgba(23, 10, 17, 0.99), rgba(24, 10, 19, 0.98));
+}
+
+.pf-a3-routine-action-panel-finalize {
+  border-color: rgba(178, 134, 255, 0.62);
+  background: linear-gradient(166deg, rgba(14, 10, 27, 0.99), rgba(14, 10, 29, 0.98));
+}
+
+.pf-a3-routine-action-loading {
+  min-height: clamp(240px, 42vh, 330px);
+}
+
+.pf-a3-routine-action-textarea {
+  margin-top: 0.74rem;
+  width: 100%;
+  min-height: 140px;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(157, 178, 216, 0.36);
+  background: rgba(9, 15, 27, 0.88);
+  color: #eef6ff;
+  font-size: 0.9rem;
+  line-height: 1.36;
+  font-weight: 600;
+  padding: 0.74rem 0.78rem;
+  resize: vertical;
+  outline: none;
+}
+
+.pf-a3-routine-action-textarea::placeholder {
+  color: #8f9db8;
+}
+
+.pf-a3-routine-action-textarea:focus {
+  border-color: rgba(186, 223, 255, 0.78);
+  box-shadow: 0 0 0 1px rgba(186, 223, 255, 0.34);
+}
+
+.pf-a3-routine-action-row,
+.pf-a3-routine-action-actions {
+  margin-top: 0.66rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.48rem;
+}
+
+.pf-a3-routine-action-counter {
+  color: #b9c4db;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pf-a3-routine-action-secondary,
+.pf-a3-routine-action-primary {
+  border-radius: 0.76rem;
+  border: 1px solid rgba(167, 186, 220, 0.44);
+  padding: 0.48rem 0.74rem;
+  color: #f8fbff;
+  font-size: 0.77rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.pf-a3-routine-action-secondary {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pf-a3-routine-action-primary {
+  background: linear-gradient(160deg, rgba(99, 133, 255, 0.9), rgba(75, 96, 221, 0.88));
+}
+
+.pf-a3-routine-action-primary-change {
+  border-color: rgba(130, 232, 180, 0.66);
+  background: linear-gradient(160deg, rgba(64, 167, 117, 0.95), rgba(38, 132, 88, 0.93));
+}
+
+.pf-a3-routine-action-primary-finalize {
+  border-color: rgba(199, 166, 255, 0.74);
+  background: linear-gradient(160deg, rgba(144, 89, 255, 0.95), rgba(108, 56, 236, 0.94));
+}
+
+.pf-a3-routine-action-status {
+  margin: 0.62rem 0 0;
+  color: #d9f8e8;
+  font-size: 0.76rem;
+  line-height: 1.28;
+  font-weight: 700;
+}
+
+.pf-a3-routine-action-meta {
+  margin: 0.48rem 0 0;
+  color: #b5c4df;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.pf-a3-routine-action-empty {
+  margin: 0.82rem 0 0;
+  color: #d8e1f2;
+  font-size: 0.82rem;
+  line-height: 1.34;
+  font-weight: 600;
+}
+
+.pf-a3-routine-action-list,
+.pf-a3-routine-action-question-list {
+  margin-top: 0.72rem;
+  display: grid;
+  gap: 0.48rem;
+}
+
+.pf-a3-routine-action-card {
+  border-radius: 0.84rem;
+  border: 1px solid rgba(178, 189, 211, 0.34);
+  background: rgba(8, 13, 24, 0.76);
+  padding: 0.56rem 0.6rem;
+}
+
+.pf-a3-routine-action-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.34rem;
+}
+
+.pf-a3-routine-action-card-head p {
+  margin: 0;
+  color: #f2f7ff;
+  font-size: 0.76rem;
+  line-height: 1.24;
+  font-weight: 800;
+}
+
+.pf-a3-routine-action-card-head span {
+  color: #bdcae2;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pf-a3-routine-action-answer-list {
+  margin: 0.46rem 0 0;
+  display: grid;
+  gap: 0.26rem;
+  padding-left: 1rem;
+  color: #d6e2f8;
+  font-size: 0.72rem;
+  line-height: 1.28;
+}
+
+.pf-a3-routine-action-answer-list span {
+  color: #ffe2ee;
+  font-weight: 700;
+}
+
+.pf-a3-routine-action-title {
+  margin: 0;
+  color: #ece1ff;
+  font-size: 0.84rem;
+  line-height: 1.28;
+  font-weight: 800;
+}
+
+.pf-a3-routine-action-question-label {
+  margin: 0;
+  color: #e7f0ff;
+  font-size: 0.76rem;
+  line-height: 1.28;
+  font-weight: 700;
+}
+
+.pf-a3-routine-action-options-row {
+  margin-top: 0.46rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pf-a3-routine-action-option-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(176, 192, 222, 0.42);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.34rem 0.68rem;
+  color: #eaf2ff;
+  font-size: 0.73rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pf-a3-routine-action-option-btn-active {
+  border-color: rgba(206, 179, 255, 0.82);
+  background: rgba(145, 89, 255, 0.42);
 }
 
 .pf-a3-routine-log-close {
