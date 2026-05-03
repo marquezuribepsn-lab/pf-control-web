@@ -3573,23 +3573,54 @@ export default function AlumnoVisionClient({
     return map;
   }, [nutritionSelectedDayLog?.mealLogs]);
 
+  const nutritionSelectedDayCustomFoods = useMemo(() => {
+    const rows = Array.isArray(nutritionSelectedDayLog?.customFoods)
+      ? nutritionSelectedDayLog.customFoods
+      : [];
+
+    return [...rows].sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt));
+  }, [nutritionSelectedDayLog?.customFoods]);
+
+  const nutritionSelectedDayCustomTotals = useMemo(() => {
+    const totals = {
+      calorias: 0,
+      proteinas: 0,
+      carbohidratos: 0,
+      grasas: 0,
+    };
+
+    nutritionSelectedDayCustomFoods.forEach((entry) => {
+      totals.calorias += Math.max(0, toNumber(entry.calorias) || 0);
+      totals.proteinas += Math.max(0, toNumber(entry.proteinas) || 0);
+      totals.carbohidratos += Math.max(0, toNumber(entry.carbohidratos) || 0);
+      totals.grasas += Math.max(0, toNumber(entry.grasas) || 0);
+    });
+
+    return {
+      calorias: roundToOneDecimal(totals.calorias),
+      proteinas: roundToOneDecimal(totals.proteinas),
+      carbohidratos: roundToOneDecimal(totals.carbohidratos),
+      grasas: roundToOneDecimal(totals.grasas),
+    };
+  }, [nutritionSelectedDayCustomFoods]);
+
   const nutritionDailyConsumedKcal = useMemo(() => {
-    return roundToOneDecimal(
-      nutritionMealsDetailed.reduce((total, meal) => {
-        const mealLog = nutritionDayMealLogById.get(meal.mealId);
-        if (!mealLog?.done) {
-          return total;
-        }
+    const mealsKcal = nutritionMealsDetailed.reduce((total, meal) => {
+      const mealLog = nutritionDayMealLogById.get(meal.mealId);
+      if (!mealLog?.done) {
+        return total;
+      }
 
-        const consumed = toNumber(mealLog.consumedKcal);
-        if (consumed !== null && consumed > 0) {
-          return total + consumed;
-        }
+      const consumed = toNumber(mealLog.consumedKcal);
+      if (consumed !== null && consumed > 0) {
+        return total + consumed;
+      }
 
-        return total + meal.totalKcal;
-      }, 0)
-    );
-  }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+      return total + meal.totalKcal;
+    }, 0);
+
+    return roundToOneDecimal(mealsKcal + nutritionSelectedDayCustomTotals.calorias);
+  }, [nutritionDayMealLogById, nutritionMealsDetailed, nutritionSelectedDayCustomTotals.calorias]);
 
   const nutritionDailyConsumedMacros = useMemo(() => {
     const totals = {
@@ -3599,10 +3630,10 @@ export default function AlumnoVisionClient({
     };
 
     nutritionMealsDetailed.forEach((meal) => {
-      const mealLog = nutritionDayMealLogById.get(meal.mealId);
-      if (!mealLog?.done) {
-        return;
-      }
+        const mealLog = nutritionDayMealLogById.get(meal.mealId);
+        if (!mealLog?.done) {
+          return;
+        }
 
       const plannedKcal = Math.max(0, meal.totalKcal);
       const consumedKcal = Math.max(0, toNumber(mealLog.consumedKcal) || 0);
@@ -3622,12 +3653,22 @@ export default function AlumnoVisionClient({
       totals.grasas += meal.totalFat * safeRatio;
     });
 
+    totals.proteinas += nutritionSelectedDayCustomTotals.proteinas;
+    totals.carbohidratos += nutritionSelectedDayCustomTotals.carbohidratos;
+    totals.grasas += nutritionSelectedDayCustomTotals.grasas;
+
     return {
       proteinas: roundToOneDecimal(totals.proteinas),
       carbohidratos: roundToOneDecimal(totals.carbohidratos),
       grasas: roundToOneDecimal(totals.grasas),
     };
-  }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+  }, [
+    nutritionDayMealLogById,
+    nutritionMealsDetailed,
+    nutritionSelectedDayCustomTotals.carbohidratos,
+    nutritionSelectedDayCustomTotals.grasas,
+    nutritionSelectedDayCustomTotals.proteinas,
+  ]);
 
   const nutritionDailyRemainingKcal = useMemo(
     () => roundToOneDecimal(nutritionDailyGoalKcal - nutritionDailyConsumedKcal),
