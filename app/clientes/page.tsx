@@ -5484,6 +5484,162 @@ export default function ClientesPage() {
                           <section className="space-y-4 border-t border-cyan-300/18 pt-4">
                             {selectedTrainingDay ? (
                                 <div className="space-y-3 pt-2">
+                                  <section className="rounded-2xl border border-emerald-300/25 bg-emerald-500/[0.07] p-3">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">
+                                          Feedback post sesion
+                                        </p>
+                                        <p className="mt-1 text-xs text-emerald-50/90">
+                                          Este cuestionario se muestra al alumno al finalizar el dia.
+                                        </p>
+                                      </div>
+
+                                      <label className="inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-100">
+                                        <input
+                                          type="checkbox"
+                                          checked={Boolean(selectedTrainingDayFeedbackConfig?.enabled)}
+                                          onChange={(event) =>
+                                            toggleTrainingDayPostSessionFeedbackEnabled(
+                                              selectedTrainingWeek.id,
+                                              selectedTrainingDay.id,
+                                              event.target.checked
+                                            )
+                                          }
+                                          className="h-3.5 w-3.5 accent-emerald-400"
+                                        />
+                                        Activar feedback
+                                      </label>
+                                    </div>
+
+                                    <label className="mt-3 block space-y-1">
+                                      <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-200">
+                                        Titulo opcional
+                                      </span>
+                                      <input
+                                        value={selectedTrainingDayFeedbackConfig?.title || ""}
+                                        onChange={(event) =>
+                                          updateTrainingDayPostSessionFeedbackTitle(
+                                            selectedTrainingWeek.id,
+                                            selectedTrainingDay.id,
+                                            event.target.value
+                                          )
+                                        }
+                                        className="w-full rounded-lg border border-white/20 bg-slate-900/75 px-3 py-2 text-sm text-white"
+                                        placeholder="Ej: Como te sentiste al cerrar la sesion"
+                                      />
+                                    </label>
+
+                                    {selectedTrainingDayFeedbackConfig?.enabled ? (
+                                      <div className="mt-3 space-y-3">
+                                        {selectedTrainingDayFeedbackQuestions.map((question, questionIndex) => (
+                                          <article
+                                            key={question.id}
+                                            className="rounded-xl border border-white/15 bg-slate-900/60 p-3"
+                                          >
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              <input
+                                                value={question.prompt || ""}
+                                                onChange={(event) =>
+                                                  updateTrainingDayPostSessionFeedbackQuestionPrompt(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    question.id,
+                                                    event.target.value
+                                                  )
+                                                }
+                                                className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm text-white"
+                                                placeholder={`Pregunta ${questionIndex + 1}`}
+                                              />
+                                              <ReliableActionButton
+                                                type="button"
+                                                onClick={() =>
+                                                  removeTrainingDayPostSessionFeedbackQuestion(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    question.id
+                                                  )
+                                                }
+                                                className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-2.5 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
+                                              >
+                                                Eliminar
+                                              </ReliableActionButton>
+                                            </div>
+
+                                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                              {question.options.map((option, optionIndex) => (
+                                                <div key={option.id} className="flex items-center gap-2">
+                                                  <input
+                                                    value={option.label || ""}
+                                                    onChange={(event) =>
+                                                      updateTrainingDayPostSessionFeedbackOptionLabel(
+                                                        selectedTrainingWeek.id,
+                                                        selectedTrainingDay.id,
+                                                        question.id,
+                                                        option.id,
+                                                        event.target.value
+                                                      )
+                                                    }
+                                                    className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs text-white"
+                                                    placeholder={`Opcion ${optionIndex + 1}`}
+                                                  />
+                                                  <ReliableActionButton
+                                                    type="button"
+                                                    onClick={() =>
+                                                      removeTrainingDayPostSessionFeedbackOption(
+                                                        selectedTrainingWeek.id,
+                                                        selectedTrainingDay.id,
+                                                        question.id,
+                                                        option.id
+                                                      )
+                                                    }
+                                                    disabled={question.options.length <= 2}
+                                                    className="rounded-md border border-rose-300/30 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100 disabled:opacity-45"
+                                                  >
+                                                    x
+                                                  </ReliableActionButton>
+                                                </div>
+                                              ))}
+                                            </div>
+
+                                            <div className="mt-2 flex justify-end">
+                                              <ReliableActionButton
+                                                type="button"
+                                                onClick={() =>
+                                                  addTrainingDayPostSessionFeedbackOption(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    question.id
+                                                  )
+                                                }
+                                                className="rounded-full border border-emerald-300/35 bg-emerald-500/12 px-2.5 py-1 text-[11px] font-semibold text-emerald-100"
+                                              >
+                                                Agregar opcion
+                                              </ReliableActionButton>
+                                            </div>
+                                          </article>
+                                        ))}
+
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() =>
+                                            addTrainingDayPostSessionFeedbackQuestion(
+                                              selectedTrainingWeek.id,
+                                              selectedTrainingDay.id
+                                            )
+                                          }
+                                          className="rounded-full border border-emerald-300/40 bg-emerald-500/14 px-3 py-1.5 text-xs font-semibold text-emerald-100"
+                                        >
+                                          Agregar pregunta
+                                        </ReliableActionButton>
+                                      </div>
+                                    ) : (
+                                      <p className="mt-3 text-xs text-slate-300">
+                                        Activa el feedback para asignar preguntas multiples al cierre del dia.
+                                      </p>
+                                    )}
+                                  </section>
+
                                   <div className="mt-1 border-t border-cyan-300/18 pt-4">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                       <div>
