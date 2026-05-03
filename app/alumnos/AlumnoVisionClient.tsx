@@ -4188,6 +4188,174 @@ export default function AlumnoVisionClient({
     [nutritionMealsDetailed, updateNutritionDailyMealLog]
   );
 
+  const addNutritionCustomFood = useCallback(() => {
+    const nombre = String(nutritionCustomFoodDraft.nombre || "").trim();
+    if (nombre.length < 2) {
+      setNutritionCustomFoodStatus("Escribe un alimento valido.");
+      return;
+    }
+
+    const calorias = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.calorias) || 0));
+    if (calorias <= 0) {
+      setNutritionCustomFoodStatus("Carga las calorias del alimento.");
+      return;
+    }
+
+    const proteinas = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.proteinas) || 0));
+    const carbohidratos = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.carbohidratos) || 0));
+    const grasas = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.grasas) || 0));
+    const porcion = String(nutritionCustomFoodDraft.porcion || "").trim();
+
+    const safeDate = normalizeDateInputValue(nutritionTrackerDate);
+    const nowIso = new Date().toISOString();
+
+    markManualSaveIntent(NUTRITION_DAILY_LOGS_KEY);
+    setNutritionDailyLogsRaw((previous) => {
+      const rows = normalizeNutritionDailyLogs(Array.isArray(previous) ? previous : []);
+
+      const targetIndex = rows.findIndex((row) => {
+        if (row.date !== safeDate) {
+          return false;
+        }
+
+        const ownerKey = normalizePersonKey(row.ownerKey || "");
+        if (ownerKey) {
+          return ownerKey === nutritionTrackerOwnerKey;
+        }
+
+        return (
+          matchesPreparedIdentityName(row.alumnoNombre, preparedIdentity) ||
+          matchesPreparedIdentityEmail(row.alumnoEmail, preparedIdentity)
+        );
+      });
+
+      const baseRow: NutritionDailyLogLite =
+        targetIndex >= 0
+          ? rows[targetIndex]
+          : {
+              id: `nutri-log-${nutritionTrackerOwnerKey || "alumno"}-${safeDate}`,
+              ownerKey: nutritionTrackerOwnerKey || undefined,
+              alumnoNombre: profileName || undefined,
+              alumnoEmail: profileEmail || undefined,
+              date: safeDate,
+              mealLogs: [],
+              customFoods: [],
+              createdAt: nowIso,
+              updatedAt: nowIso,
+            };
+
+      const nextCustomFoods = Array.isArray(baseRow.customFoods) ? [...baseRow.customFoods] : [];
+      nextCustomFoods.unshift({
+        id: `nf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+        nombre,
+        porcion: porcion || undefined,
+        calorias,
+        proteinas,
+        carbohidratos,
+        grasas,
+        createdAt: nowIso,
+      });
+
+      const nextRow: NutritionDailyLogLite = {
+        ...baseRow,
+        ownerKey: nutritionTrackerOwnerKey || baseRow.ownerKey,
+        alumnoNombre: profileName || baseRow.alumnoNombre,
+        alumnoEmail: profileEmail || baseRow.alumnoEmail,
+        date: safeDate,
+        customFoods: nextCustomFoods,
+        createdAt: baseRow.createdAt || nowIso,
+        updatedAt: nowIso,
+      };
+
+      if (targetIndex >= 0) {
+        const nextRows = [...rows];
+        nextRows[targetIndex] = nextRow;
+        return nextRows;
+      }
+
+      return [nextRow, ...rows];
+    });
+
+    setNutritionCustomFoodDraft({
+      nombre: "",
+      porcion: "",
+      calorias: "",
+      proteinas: "",
+      carbohidratos: "",
+      grasas: "",
+    });
+    setNutritionCustomFoodStatus("Alimento cargado en tu registro diario.");
+  }, [
+    nutritionCustomFoodDraft.carbohidratos,
+    nutritionCustomFoodDraft.calorias,
+    nutritionCustomFoodDraft.grasas,
+    nutritionCustomFoodDraft.nombre,
+    nutritionCustomFoodDraft.porcion,
+    nutritionCustomFoodDraft.proteinas,
+    nutritionTrackerDate,
+    nutritionTrackerOwnerKey,
+    preparedIdentity,
+    profileEmail,
+    profileName,
+    setNutritionDailyLogsRaw,
+  ]);
+
+  const removeNutritionCustomFood = useCallback(
+    (entryId: string) => {
+      const safeId = String(entryId || "").trim();
+      if (!safeId) {
+        return;
+      }
+
+      const safeDate = normalizeDateInputValue(nutritionTrackerDate);
+      markManualSaveIntent(NUTRITION_DAILY_LOGS_KEY);
+
+      setNutritionDailyLogsRaw((previous) => {
+        const rows = normalizeNutritionDailyLogs(Array.isArray(previous) ? previous : []);
+        const targetIndex = rows.findIndex((row) => {
+          if (row.date !== safeDate) {
+            return false;
+          }
+
+          const ownerKey = normalizePersonKey(row.ownerKey || "");
+          if (ownerKey) {
+            return ownerKey === nutritionTrackerOwnerKey;
+          }
+
+          return (
+            matchesPreparedIdentityName(row.alumnoNombre, preparedIdentity) ||
+            matchesPreparedIdentityEmail(row.alumnoEmail, preparedIdentity)
+          );
+        });
+
+        if (targetIndex < 0) {
+          return rows;
+        }
+
+        const targetRow = rows[targetIndex];
+        const currentCustomFoods = Array.isArray(targetRow.customFoods) ? targetRow.customFoods : [];
+        const nextCustomFoods = currentCustomFoods.filter((entry) => String(entry.id || "").trim() !== safeId);
+
+        const nextRows = [...rows];
+        nextRows[targetIndex] = {
+          ...targetRow,
+          customFoods: nextCustomFoods,
+          updatedAt: new Date().toISOString(),
+        };
+
+        return nextRows;
+      });
+
+      setNutritionCustomFoodStatus("Alimento eliminado del dia.");
+    },
+    [
+      nutritionTrackerDate,
+      nutritionTrackerOwnerKey,
+      preparedIdentity,
+      setNutritionDailyLogsRaw,
+    ]
+  );
+
   useEffect(() => {
     if (!nutritionTrackerStatus) {
       return;
@@ -4201,6 +4369,20 @@ export default function AlumnoVisionClient({
       window.clearTimeout(timeoutId);
     };
   }, [nutritionTrackerStatus]);
+
+  useEffect(() => {
+    if (!nutritionCustomFoodStatus) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNutritionCustomFoodStatus("");
+    }, 2200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [nutritionCustomFoodStatus]);
 
   const latestAnthropometry = anthropometryEntries[0] || null;
   const previousAnthropometry = anthropometryEntries[1] || null;
