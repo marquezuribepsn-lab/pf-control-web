@@ -1733,6 +1733,7 @@ export default function AlumnoVisionClient({
   const [routineExerciseLogDraft, setRoutineExerciseLogDraft] = useState<RoutineExerciseLogDraft>(
     createRoutineExerciseLogDraft()
   );
+  const [routineExerciseLogEditingId, setRoutineExerciseLogEditingId] = useState<string | null>(null);
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
   const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
@@ -3415,6 +3416,7 @@ export default function AlumnoVisionClient({
 
   const openRoutineExerciseLogPanel = useCallback((target: RoutineExerciseLogTarget) => {
     setRoutineExerciseLogStatus("");
+    setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogTarget(target);
     setRoutineExerciseLogDraft(
@@ -3429,6 +3431,7 @@ export default function AlumnoVisionClient({
 
   const closeRoutineExerciseLogPanel = useCallback(() => {
     setRoutineExerciseLogTarget(null);
+    setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogStatus("");
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
@@ -3662,6 +3665,8 @@ export default function AlumnoVisionClient({
       return;
     }
 
+    const editingLogId = routineExerciseLogEditingId;
+
     const parsedSeries =
       Math.max(
         1,
@@ -3702,7 +3707,7 @@ export default function AlumnoVisionClient({
         : "";
 
     const payload: WorkoutLogLite = {
-      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      id: editingLogId || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       alumnoNombre: profileName,
       alumnoEmail: profileEmail || undefined,
       sessionId: routineExerciseLogTarget.sessionId,
@@ -3735,8 +3740,37 @@ export default function AlumnoVisionClient({
 
     setRoutineExerciseLogSaving(true);
     markManualSaveIntent(WORKOUT_LOGS_KEY);
-    setWorkoutLogsShared((previous) => [payload, ...normalizeWorkoutLogsLiteRows(previous)]);
-    setRoutineExerciseLogStatus(`Registro guardado para ${routineExerciseLogTarget.exerciseName}.`);
+    setWorkoutLogsShared((previous) => {
+      const normalized = normalizeWorkoutLogsLiteRows(previous);
+
+      if (editingLogId) {
+        let updatedExisting = false;
+        const updatedRows = normalized.map((row) => {
+          if (String(row.id || "").trim() !== editingLogId) {
+            return row;
+          }
+
+          updatedExisting = true;
+          return {
+            ...payload,
+            id: editingLogId,
+            createdAt: row.createdAt || payload.createdAt,
+          };
+        });
+
+        if (updatedExisting) {
+          return updatedRows;
+        }
+      }
+
+      return [payload, ...normalized];
+    });
+    setRoutineExerciseLogEditingId(null);
+    setRoutineExerciseLogStatus(
+      editingLogId
+        ? `Registro actualizado para ${routineExerciseLogTarget.exerciseName}.`
+        : `Registro guardado para ${routineExerciseLogTarget.exerciseName}.`
+    );
     setRoutineExerciseLogDraft((previous) =>
       createRoutineExerciseLogDraft({
         fecha: previous.fecha,
@@ -3763,10 +3797,86 @@ export default function AlumnoVisionClient({
     profileEmail,
     profileName,
     routineExerciseLogDraft,
+    routineExerciseLogEditingId,
     routineExerciseLogSaving,
     routineExerciseLogTarget,
     setWorkoutLogsShared,
   ]);
+
+  const editRoutineExerciseRecentLog = useCallback((log: WorkoutLogLite) => {
+    const logId = String(log.id || "").trim();
+    if (!logId) {
+      return;
+    }
+
+    setRoutineExerciseLogEditingId(logId);
+    setRoutineExerciseLogView("registro");
+    setRoutineExerciseLogStatus("Editando registro. Guarda para aplicar cambios.");
+    setRoutineExerciseLogDraft(
+      createRoutineExerciseLogDraft({
+        fecha: String(log.fecha || "").trim() || getTodayDateInputValue(),
+        series: String(log.series ?? "").trim(),
+        repeticiones: String(log.repeticiones ?? "").trim(),
+        pesoKg: String(log.pesoKg ?? "").trim(),
+        comentarios: String(log.comentarios || log.comentario || ""),
+        molestia: Boolean(log.molestia),
+        dolorUbicacion: String(log.dolorUbicacion || ""),
+        dolorMomento: String(log.dolorMomento || ""),
+        dolorSensacion: String(log.dolorSensacion || ""),
+        videoUrl: String(log.videoUrl || ""),
+        videoDataUrl: String(log.videoDataUrl || ""),
+        videoFileName: String(log.videoFileName || ""),
+        videoMimeType: String(log.videoMimeType || ""),
+      })
+    );
+  }, []);
+
+  const cancelRoutineExerciseLogEdit = useCallback(() => {
+    setRoutineExerciseLogEditingId(null);
+    setRoutineExerciseLogStatus("Edicion cancelada.");
+
+    if (!routineExerciseLogTarget) {
+      setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
+      return;
+    }
+
+    setRoutineExerciseLogDraft(
+      createRoutineExerciseLogDraft({
+        series: String(routineExerciseLogTarget.prescribedSeries || "").trim(),
+        repeticiones: String(routineExerciseLogTarget.prescribedRepeticiones || "").trim(),
+        pesoKg: String(routineExerciseLogTarget.prescribedCarga || "").trim(),
+        videoUrl: String(routineExerciseLogTarget.suggestedVideoUrl || "").trim(),
+      })
+    );
+  }, [routineExerciseLogTarget]);
+
+  const deleteRoutineExerciseRecentLog = useCallback(
+    (log: WorkoutLogLite) => {
+      const logId = String(log.id || "").trim();
+      if (!logId) {
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        const confirmed = window.confirm("Eliminar este registro? Podras volver a cargarlo cuando quieras.");
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      markManualSaveIntent(WORKOUT_LOGS_KEY);
+      setWorkoutLogsShared((previous) =>
+        normalizeWorkoutLogsLiteRows(previous).filter((row) => String(row.id || "").trim() !== logId)
+      );
+
+      if (routineExerciseLogEditingId === logId) {
+        setRoutineExerciseLogEditingId(null);
+      }
+
+      setRoutineExerciseLogStatus("Registro eliminado. Podes volver a guardarlo cuando quieras.");
+    },
+    [routineExerciseLogEditingId, setWorkoutLogsShared]
+  );
 
   const handleRoutineToggleAll = useCallback(() => {
     if (!selectedRoutineEntry) return;
@@ -5176,14 +5286,35 @@ export default function AlumnoVisionClient({
                           </p>
                         ) : null}
 
+                        {routineExerciseLogEditingId ? (
+                          <p className="pf-a3-routine-log-editing-hint">Estas editando un registro guardado.</p>
+                        ) : null}
+
                         <div className="pf-a3-routine-log-actions">
+                          {routineExerciseLogEditingId ? (
+                            <ReliableActionButton
+                              type="button"
+                              onClick={cancelRoutineExerciseLogEdit}
+                              className="pf-a3-routine-log-secondary-btn"
+                              disabled={routineExerciseLogSaving}
+                            >
+                              Cancelar edicion
+                            </ReliableActionButton>
+                          ) : null}
+
                           <ReliableActionButton
                             type="button"
                             onClick={saveRoutineExerciseLog}
                             className="pf-a3-routine-log-primary-btn"
                             disabled={routineExerciseLogSaving}
                           >
-                            {routineExerciseLogSaving ? "Guardando..." : "Guardar registro"}
+                            {routineExerciseLogSaving
+                              ? routineExerciseLogEditingId
+                                ? "Actualizando..."
+                                : "Guardando..."
+                              : routineExerciseLogEditingId
+                                ? "Actualizar registro"
+                                : "Guardar registro"}
                           </ReliableActionButton>
                         </div>
 
@@ -5200,14 +5331,36 @@ export default function AlumnoVisionClient({
                           <ul>
                             {routineExerciseRecentLogs.map((log) => (
                               <li key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}>
-                                <span>
-                                  {log.fecha
-                                    ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
-                                    : "Sin fecha"}
-                                </span>
-                                <strong>
-                                  {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
-                                </strong>
+                                <div className="pf-a3-routine-log-history-main">
+                                  <span>
+                                    {log.fecha
+                                      ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                      : "Sin fecha"}
+                                  </span>
+                                  <strong>
+                                    {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
+                                  </strong>
+                                </div>
+
+                                <div className="pf-a3-routine-log-history-actions">
+                                  <ReliableActionButton
+                                    type="button"
+                                    className="pf-a3-routine-log-history-btn"
+                                    onClick={() => editRoutineExerciseRecentLog(log)}
+                                    disabled={routineExerciseLogSaving}
+                                  >
+                                    Editar
+                                  </ReliableActionButton>
+
+                                  <ReliableActionButton
+                                    type="button"
+                                    className="pf-a3-routine-log-history-btn pf-a3-routine-log-history-btn-danger"
+                                    onClick={() => deleteRoutineExerciseRecentLog(log)}
+                                    disabled={routineExerciseLogSaving}
+                                  >
+                                    Eliminar
+                                  </ReliableActionButton>
+                                </div>
                               </li>
                             ))}
                           </ul>
