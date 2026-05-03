@@ -5742,64 +5742,6 @@ export default function AlumnoVisionClient({
                           </div>
                         )}
                       </>
-                    ) : activeRoutineActionScreen === "timer" ? (
-                      <>
-                        <div className="pf-a3-routine-log-head">
-                          <div className="min-w-0">
-                            <p className="pf-a3-routine-log-kicker">Cronómetro</p>
-                            <h3 className="pf-a3-routine-log-title">Control de tiempo</h3>
-                            <p className="pf-a3-routine-log-meta">
-                              Usa play, pausa y frenar para controlar cada bloque.
-                            </p>
-                          </div>
-
-                          <ReliableActionButton
-                            type="button"
-                            onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-log-close"
-                            aria-label="Cerrar cronómetro"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                              <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
-                            </svg>
-                          </ReliableActionButton>
-                        </div>
-
-                        <section className="pf-a3-routine-stopwatch-wrap" aria-live="polite">
-                          <p className="pf-a3-routine-stopwatch-display">{routineStopwatchDisplay}</p>
-                          <p
-                            className={`pf-a3-routine-stopwatch-status ${
-                              routineStopwatchRunning
-                                ? "pf-a3-routine-stopwatch-status-running"
-                                : ""
-                            }`}
-                          >
-                            {routineStopwatchStatusLabel}
-                          </p>
-
-                          <div className="pf-a3-routine-stopwatch-actions">
-                            <ReliableActionButton
-                              type="button"
-                              onClick={routineStopwatchRunning ? pauseRoutineStopwatch : startRoutineStopwatch}
-                              className="pf-a3-routine-action-primary pf-a3-routine-action-primary-timer"
-                            >
-                              {routineStopwatchRunning
-                                ? "Pausar"
-                                : routineStopwatchElapsedMs > 0
-                                  ? "Reanudar"
-                                  : "Play"}
-                            </ReliableActionButton>
-                            <ReliableActionButton
-                              type="button"
-                              onClick={stopRoutineStopwatch}
-                              disabled={!routineStopwatchRunning && routineStopwatchElapsedMs <= 0}
-                              className="pf-a3-routine-action-secondary pf-a3-routine-action-secondary-danger"
-                            >
-                              Frenar
-                            </ReliableActionButton>
-                          </div>
-                        </section>
-                      </>
                     ) : (
                       <>
                         <div className="pf-a3-routine-log-head">
