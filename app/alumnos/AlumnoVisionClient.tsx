@@ -1241,10 +1241,14 @@ function normalizeMediaUrl(rawUrl: string | null | undefined): string {
   return `https://${value}`;
 }
 
-function resolveNutritionImageUrl(values: Array<string | null | undefined>): string | null {
-  const resolved = uniqueStrings(values)
+function resolveNutritionImageUrls(values: Array<string | null | undefined>): string[] {
+  return uniqueStrings(values)
     .map((value) => normalizeMediaUrl(value))
-    .find(Boolean);
+    .filter(Boolean);
+}
+
+function resolveNutritionImageUrl(values: Array<string | null | undefined>): string | null {
+  const resolved = resolveNutritionImageUrls(values)[0] || "";
 
   return resolved || null;
 }
