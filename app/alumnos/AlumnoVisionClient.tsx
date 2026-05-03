@@ -117,6 +117,10 @@ type WorkoutLogLite = {
   molestia?: boolean;
   comentarios?: string;
   comentario?: string;
+  dolorUbicacion?: string;
+  dolorMomento?: string;
+  dolorSensacion?: string;
+  dolorRecomendacion?: string;
   videoUrl?: string;
   videoDataUrl?: string;
   videoFileName?: string;
@@ -310,6 +314,9 @@ type RoutineExerciseLogDraft = {
   pesoKg: string;
   comentarios: string;
   molestia: boolean;
+  dolorUbicacion: string;
+  dolorMomento: string;
+  dolorSensacion: string;
   videoUrl: string;
   videoDataUrl: string;
   videoFileName: string;
@@ -1062,11 +1069,86 @@ function createRoutineExerciseLogDraft(seed?: Partial<RoutineExerciseLogDraft>):
     pesoKg: seed?.pesoKg || "",
     comentarios: seed?.comentarios || "",
     molestia: Boolean(seed?.molestia),
+    dolorUbicacion: seed?.dolorUbicacion || "",
+    dolorMomento: seed?.dolorMomento || "",
+    dolorSensacion: seed?.dolorSensacion || "",
     videoUrl: seed?.videoUrl || "",
     videoDataUrl: seed?.videoDataUrl || "",
     videoFileName: seed?.videoFileName || "",
     videoMimeType: seed?.videoMimeType || "",
   };
+}
+
+function resolveRoutinePainTrainingRecommendation(input: {
+  dolorUbicacion?: string;
+  dolorMomento?: string;
+  dolorSensacion?: string;
+}): string {
+  const ubicacion = normalizePersonKey(input.dolorUbicacion || "");
+  const momento = normalizePersonKey(input.dolorMomento || "");
+  const sensacion = normalizePersonKey(input.dolorSensacion || "");
+
+  const hasSharpPain =
+    sensacion.includes("punz") ||
+    sensacion.includes("agud") ||
+    sensacion.includes("pinch") ||
+    sensacion.includes("corriente") ||
+    sensacion.includes("latigazo");
+  const hasIrradiation =
+    sensacion.includes("hormigue") ||
+    sensacion.includes("adormec") ||
+    sensacion.includes("entumec") ||
+    sensacion.includes("irrad");
+  const hasInflammation =
+    sensacion.includes("inflam") ||
+    sensacion.includes("hinch") ||
+    sensacion.includes("calor") ||
+    sensacion.includes("ardor");
+
+  const appearsAtRest =
+    momento.includes("reposo") ||
+    momento.includes("todo el tiempo") ||
+    momento.includes("siempre") ||
+    momento.includes("noche");
+  const appearsDuringSet =
+    momento.includes("durante") || momento.includes("serie") || momento.includes("carga");
+  const appearsOnWarmup = momento.includes("calent") || momento.includes("inicio");
+
+  const lumbarZone = ubicacion.includes("lumbar") || ubicacion.includes("espalda");
+  const kneeOrAnkle =
+    ubicacion.includes("rodilla") || ubicacion.includes("tobillo") || ubicacion.includes("pie");
+  const shoulderOrElbow =
+    ubicacion.includes("hombro") || ubicacion.includes("codo") || ubicacion.includes("muneca");
+
+  if (hasIrradiation || appearsAtRest) {
+    return "Baja hoy a intensidad suave (RPE 4-5), evita impacto y detene el ejercicio que dispara el dolor. Si no mejora en 24-48 h, no cargues y consulta al profe antes de seguir.";
+  }
+
+  if (hasSharpPain || hasInflammation) {
+    return "Mantene solo trabajo tecnico y controlado: reduce carga 30-40%, recorta rango en el tramo doloroso y descansa mas entre series. Si el dolor sube durante la sesion, corta ese ejercicio.";
+  }
+
+  if (lumbarZone) {
+    return "Prioriza estabilidad de tronco: baja carga, tempo lento (3-1-2), respiracion y braceo activo. Evita esfuerzos explosivos hasta entrenar sin dolor.";
+  }
+
+  if (kneeOrAnkle) {
+    return "Trabaja con rango tolerable y eje controlado: baja carga, evita rebotes y usa pausas cortas en la parte media del movimiento para mantener tecnica limpia.";
+  }
+
+  if (shoulderOrElbow) {
+    return "Usa agarre comodo y recorrido sin pinzamiento: reduce carga, controla descenso y evita bloqueos fuertes al final del movimiento.";
+  }
+
+  if (appearsDuringSet) {
+    return "Segui entrenando con carga moderada (10-20% menos), tempo controlado y sin llegar al fallo. La regla es dolor estable o menor durante toda la serie.";
+  }
+
+  if (appearsOnWarmup) {
+    return "Extende la entrada en calor 8-10 min y agrega una serie de aproximacion extra con baja carga antes de las series efectivas.";
+  }
+
+  return "Mantene tecnica estricta, baja un punto de esfuerzo (RPE) y monitorea en cada serie. Si el dolor aumenta, cambia el ejercicio por una variante sin molestia.";
 }
 
 function buildRoutineExerciseKey(
@@ -1124,6 +1206,10 @@ function normalizeWorkoutLogsLiteRows(rawValue: unknown): WorkoutLogLite[] {
         pesoKg: safePeso,
         molestia: Boolean(item.molestia),
         comentarios: String(item.comentarios || item.comentario || "").trim() || undefined,
+        dolorUbicacion: String(item.dolorUbicacion || "").trim() || undefined,
+        dolorMomento: String(item.dolorMomento || "").trim() || undefined,
+        dolorSensacion: String(item.dolorSensacion || "").trim() || undefined,
+        dolorRecomendacion: String(item.dolorRecomendacion || "").trim() || undefined,
         videoUrl: String(item.videoUrl || "").trim() || undefined,
         videoDataUrl: String(item.videoDataUrl || "").trim() || undefined,
         videoFileName: String(item.videoFileName || "").trim() || undefined,
@@ -3246,6 +3332,23 @@ export default function AlumnoVisionClient({
     return resolveRoutineExerciseVideoSource(routineExerciseVideoCandidate);
   }, [routineExerciseVideoCandidate]);
 
+  const routinePainRecommendation = useMemo(() => {
+    if (!routineExerciseLogDraft.molestia) {
+      return "";
+    }
+
+    return resolveRoutinePainTrainingRecommendation({
+      dolorUbicacion: routineExerciseLogDraft.dolorUbicacion,
+      dolorMomento: routineExerciseLogDraft.dolorMomento,
+      dolorSensacion: routineExerciseLogDraft.dolorSensacion,
+    });
+  }, [
+    routineExerciseLogDraft.dolorMomento,
+    routineExerciseLogDraft.dolorSensacion,
+    routineExerciseLogDraft.dolorUbicacion,
+    routineExerciseLogDraft.molestia,
+  ]);
+
   const routineExerciseRecentLogs = useMemo(() => {
     if (!routineExerciseLogTarget) {
       return [];
@@ -3563,6 +3666,17 @@ export default function AlumnoVisionClient({
       Number(toSafeNumeric(routineExerciseLogDraft.pesoKg) ?? toSafeNumeric(routineExerciseLogTarget.prescribedCarga) ?? 0)
     );
     const cleanComentario = String(routineExerciseLogDraft.comentarios || "").trim();
+    const dolorUbicacion = String(routineExerciseLogDraft.dolorUbicacion || "").trim();
+    const dolorMomento = String(routineExerciseLogDraft.dolorMomento || "").trim();
+    const dolorSensacion = String(routineExerciseLogDraft.dolorSensacion || "").trim();
+    const dolorRecomendacion =
+      routineExerciseLogDraft.molestia
+        ? resolveRoutinePainTrainingRecommendation({
+            dolorUbicacion,
+            dolorMomento,
+            dolorSensacion,
+          })
+        : "";
 
     const payload: WorkoutLogLite = {
       id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -3585,6 +3699,10 @@ export default function AlumnoVisionClient({
       pesoKg: parsedPeso,
       molestia: Boolean(routineExerciseLogDraft.molestia),
       comentarios: cleanComentario || undefined,
+      dolorUbicacion: dolorUbicacion || undefined,
+      dolorMomento: dolorMomento || undefined,
+      dolorSensacion: dolorSensacion || undefined,
+      dolorRecomendacion: dolorRecomendacion || undefined,
       videoUrl: String(routineExerciseLogDraft.videoUrl || "").trim() || undefined,
       videoDataUrl: String(routineExerciseLogDraft.videoDataUrl || "").trim() || undefined,
       videoFileName: String(routineExerciseLogDraft.videoFileName || "").trim() || undefined,
@@ -3604,6 +3722,9 @@ export default function AlumnoVisionClient({
         pesoKg: "",
         comentarios: "",
         molestia: false,
+        dolorUbicacion: "",
+        dolorMomento: "",
+        dolorSensacion: "",
         videoUrl: previous.videoUrl,
       })
     );
@@ -4874,7 +4995,7 @@ export default function AlumnoVisionClient({
                     {routineExerciseLogView === "registro" ? (
                       <section className="pf-a3-routine-log-pane pf-a3-routine-log-pane-registro">
                         <div className="pf-a3-routine-log-grid">
-                          <label className="pf-a3-routine-log-field">
+                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-fecha">
                             <span>Fecha</span>
                             <input
                               type="date"
@@ -4887,7 +5008,7 @@ export default function AlumnoVisionClient({
                               }
                             />
                           </label>
-                          <label className="pf-a3-routine-log-field">
+                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-series">
                             <span>Series</span>
                             <input
                               value={routineExerciseLogDraft.series}
@@ -4900,7 +5021,7 @@ export default function AlumnoVisionClient({
                               placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
                             />
                           </label>
-                          <label className="pf-a3-routine-log-field">
+                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-repeticiones">
                             <span>Repeticiones</span>
                             <input
                               value={routineExerciseLogDraft.repeticiones}
@@ -4913,7 +5034,7 @@ export default function AlumnoVisionClient({
                               placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
                             />
                           </label>
-                          <label className="pf-a3-routine-log-field">
+                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-carga">
                             <span>Carga (kg)</span>
                             <input
                               value={routineExerciseLogDraft.pesoKg}
@@ -4967,6 +5088,64 @@ export default function AlumnoVisionClient({
                             Subir video
                           </label>
                         </div>
+
+                        {routineExerciseLogDraft.molestia ? (
+                          <div className="pf-a3-routine-log-pain-grid">
+                            <label className="pf-a3-routine-log-field">
+                              <span>Ubicacion del dolor</span>
+                              <input
+                                value={routineExerciseLogDraft.dolorUbicacion}
+                                onChange={(event) =>
+                                  setRoutineExerciseLogDraft((previous) => ({
+                                    ...previous,
+                                    dolorUbicacion: event.target.value,
+                                  }))
+                                }
+                                placeholder="Ej: rodilla derecha, lumbar, hombro"
+                              />
+                            </label>
+
+                            <label className="pf-a3-routine-log-field">
+                              <span>En que momento aparece</span>
+                              <select
+                                value={routineExerciseLogDraft.dolorMomento}
+                                onChange={(event) =>
+                                  setRoutineExerciseLogDraft((previous) => ({
+                                    ...previous,
+                                    dolorMomento: event.target.value,
+                                  }))
+                                }
+                              >
+                                <option value="">Seleccionar momento</option>
+                                <option value="Al calentar">Al calentar</option>
+                                <option value="Durante la serie">Durante la serie</option>
+                                <option value="Al terminar la serie">Al terminar la serie</option>
+                                <option value="En reposo">En reposo</option>
+                                <option value="Todo el tiempo">Todo el tiempo</option>
+                              </select>
+                            </label>
+
+                            <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                              <span>Que siente ahora</span>
+                              <textarea
+                                rows={2}
+                                value={routineExerciseLogDraft.dolorSensacion}
+                                onChange={(event) =>
+                                  setRoutineExerciseLogDraft((previous) => ({
+                                    ...previous,
+                                    dolorSensacion: event.target.value,
+                                  }))
+                                }
+                                placeholder="Ej: punzante, tirantez, ardor, hormigueo"
+                              />
+                            </label>
+
+                            <article className="pf-a3-routine-log-pain-recommendation">
+                              <p className="pf-a3-routine-log-pain-kicker">Recomendacion para seguir entrenando</p>
+                              <p className="pf-a3-routine-log-pain-text">{routinePainRecommendation}</p>
+                            </article>
+                          </div>
+                        ) : null}
 
                         {routineExerciseLogDraft.videoFileName ? (
                           <p className="pf-a3-routine-log-upload-note">
