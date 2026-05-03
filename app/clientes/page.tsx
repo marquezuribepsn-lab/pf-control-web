@@ -2551,6 +2551,172 @@ export default function ClientesPage() {
     }));
   };
 
+  const updateTrainingDayPostSessionFeedback = (
+    weekId: string,
+    dayId: string,
+    updater: (feedback: PostSessionFeedbackConfigLite) => PostSessionFeedbackConfigLite
+  ) => {
+    upsertSelectedClientTrainingPlan((plan) => ({
+      ...plan,
+      semanas: plan.semanas.map((week) => {
+        if (week.id !== weekId) return week;
+
+        return {
+          ...week,
+          dias: week.dias.map((day) => {
+            if (day.id !== dayId) return day;
+
+            const currentFeedback =
+              sanitizePostSessionFeedbackConfig(day.postSesionFeedback) ||
+              createDefaultPostSessionFeedbackConfig();
+            const nextFeedback = sanitizePostSessionFeedbackConfig(updater(currentFeedback));
+
+            return {
+              ...day,
+              postSesionFeedback: nextFeedback,
+            };
+          }),
+        };
+      }),
+    }));
+  };
+
+  const toggleTrainingDayPostSessionFeedbackEnabled = (
+    weekId: string,
+    dayId: string,
+    enabled: boolean
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      enabled,
+      title: feedback.title || "Feedback post sesion",
+      questions:
+        enabled && feedback.questions.length === 0
+          ? [createDefaultPostSessionFeedbackQuestion(0)]
+          : feedback.questions,
+    }));
+  };
+
+  const updateTrainingDayPostSessionFeedbackTitle = (
+    weekId: string,
+    dayId: string,
+    value: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      title: value,
+    }));
+  };
+
+  const addTrainingDayPostSessionFeedbackQuestion = (weekId: string, dayId: string) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      enabled: true,
+      questions: [...feedback.questions, createDefaultPostSessionFeedbackQuestion(feedback.questions.length)],
+    }));
+  };
+
+  const removeTrainingDayPostSessionFeedbackQuestion = (
+    weekId: string,
+    dayId: string,
+    questionId: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      questions: feedback.questions.filter((question) => question.id !== questionId),
+    }));
+  };
+
+  const updateTrainingDayPostSessionFeedbackQuestionPrompt = (
+    weekId: string,
+    dayId: string,
+    questionId: string,
+    value: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      questions: feedback.questions.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              prompt: value,
+            }
+          : question
+      ),
+    }));
+  };
+
+  const addTrainingDayPostSessionFeedbackOption = (
+    weekId: string,
+    dayId: string,
+    questionId: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      questions: feedback.questions.map((question) => {
+        if (question.id !== questionId) return question;
+
+        return {
+          ...question,
+          options: [
+            ...question.options,
+            {
+              id: createTrainingEntityId("feedback-option"),
+              label: `Opcion ${question.options.length + 1}`,
+            },
+          ],
+        };
+      }),
+    }));
+  };
+
+  const updateTrainingDayPostSessionFeedbackOptionLabel = (
+    weekId: string,
+    dayId: string,
+    questionId: string,
+    optionId: string,
+    value: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      questions: feedback.questions.map((question) => {
+        if (question.id !== questionId) return question;
+
+        return {
+          ...question,
+          options: question.options.map((option) =>
+            option.id === optionId
+              ? {
+                  ...option,
+                  label: value,
+                }
+              : option
+          ),
+        };
+      }),
+    }));
+  };
+
+  const removeTrainingDayPostSessionFeedbackOption = (
+    weekId: string,
+    dayId: string,
+    questionId: string,
+    optionId: string
+  ) => {
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      questions: feedback.questions.map((question) => {
+        if (question.id !== questionId) return question;
+        if (question.options.length <= 2) return question;
+
+        return {
+          ...question,
+          options: question.options.filter((option) => option.id !== optionId),
+        };
+      }),
+    }));
+  };
+
   const addTrainingDay = (weekId: string) => {
     if (isTrainingStructureActionBlocked(`add-day:${weekId}`)) {
       return;
