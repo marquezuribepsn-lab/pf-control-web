@@ -5787,7 +5787,11 @@ export default function AlumnoVisionClient({
                               onClick={routineStopwatchRunning ? pauseRoutineStopwatch : startRoutineStopwatch}
                               className="pf-a3-routine-action-primary pf-a3-routine-action-primary-timer"
                             >
-                              {routineStopwatchRunning ? "Pausar" : "Play"}
+                              {routineStopwatchRunning
+                                ? "Pausar"
+                                : routineStopwatchElapsedMs > 0
+                                  ? "Reanudar"
+                                  : "Play"}
                             </ReliableActionButton>
                             <ReliableActionButton
                               type="button"
