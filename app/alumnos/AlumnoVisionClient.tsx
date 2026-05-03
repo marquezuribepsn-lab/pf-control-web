@@ -2392,6 +2392,17 @@ export default function AlumnoVisionClient({
       return;
     }
 
+    if (activeRoutineActionScreen === "timer") {
+      if (routineActionScreenLoadingTimerRef.current !== null) {
+        window.clearTimeout(routineActionScreenLoadingTimerRef.current);
+        routineActionScreenLoadingTimerRef.current = null;
+      }
+
+      previousRoutineActionScreenRef.current = activeRoutineActionScreen;
+      setRoutineActionScreenLoading(false);
+      return;
+    }
+
     if (previousRoutineActionScreenRef.current === activeRoutineActionScreen) {
       return;
     }
