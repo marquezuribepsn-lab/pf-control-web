@@ -6069,7 +6069,9 @@ export default function AlumnoVisionClient({
                       ? {
                           transform: `translate3d(${routineStopwatchFloatPosition.x}px, ${routineStopwatchFloatPosition.y}px, 0)`,
                         }
-                      : undefined
+                      : {
+                          visibility: "hidden",
+                        }
                   }
                   onPointerDown={handleRoutineStopwatchPointerDown}
                   onPointerMove={handleRoutineStopwatchPointerMove}
