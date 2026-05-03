@@ -2117,8 +2117,25 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
+  const [nutritionPanelView, setNutritionPanelView] = useState<"plan" | "registro">("plan");
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
   const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
+  const [nutritionCustomFoodDraft, setNutritionCustomFoodDraft] = useState<{
+    nombre: string;
+    porcion: string;
+    calorias: string;
+    proteinas: string;
+    carbohidratos: string;
+    grasas: string;
+  }>({
+    nombre: "",
+    porcion: "",
+    calorias: "",
+    proteinas: "",
+    carbohidratos: "",
+    grasas: "",
+  });
+  const [nutritionCustomFoodStatus, setNutritionCustomFoodStatus] = useState<string>("");
   const [selectedMusicAssignmentId, setSelectedMusicAssignmentId] = useState<string | null>(null);
   const [musicArtworkByUrl, setMusicArtworkByUrl] = useState<Record<string, string>>({});
   const [musicNameByUrl, setMusicNameByUrl] = useState<Record<string, string>>({});
