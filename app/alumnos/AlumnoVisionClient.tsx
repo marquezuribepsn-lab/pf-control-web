@@ -2075,6 +2075,8 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
+  const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
+  const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
   const [selectedMusicAssignmentId, setSelectedMusicAssignmentId] = useState<string | null>(null);
   const [musicArtworkByUrl, setMusicArtworkByUrl] = useState<Record<string, string>>({});
   const [musicNameByUrl, setMusicNameByUrl] = useState<Record<string, string>>({});
@@ -2193,6 +2195,18 @@ export default function AlumnoVisionClient({
       pollMs: isUltraMobile ? 15000 : 12000,
     });
 
+  const [nutritionCustomFoodsRaw, , nutritionCustomFoodsSyncLoaded] = useSharedState<unknown[]>([], {
+    key: NUTRITION_CUSTOM_FOODS_KEY,
+    legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
+  const [nutritionDailyLogsRaw, setNutritionDailyLogsRaw, nutritionDailyLogsSyncLoaded] = useSharedState<unknown[]>([], {
+    key: NUTRITION_DAILY_LOGS_KEY,
+    legacyLocalStorageKey: NUTRITION_DAILY_LOGS_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
   const shouldLoadNutritionData = !isUltraMobile || activeCategory === "nutricion";
   const shouldLoadWorkoutData =
     !isUltraMobile || activeCategory === "progreso" || activeCategory === "rutina" || activeCategory === "inicio";
@@ -2204,7 +2218,9 @@ export default function AlumnoVisionClient({
       !weekPlanSyncLoaded &&
       !workoutLogsSyncLoaded &&
       !routineChangeRequestsSyncLoaded &&
-      !sessionFeedbackSyncLoaded
+      !sessionFeedbackSyncLoaded &&
+      !nutritionCustomFoodsSyncLoaded &&
+      !nutritionDailyLogsSyncLoaded
     ) {
       return;
     }
@@ -2215,6 +2231,10 @@ export default function AlumnoVisionClient({
     routineChangeRequestsSyncLoaded,
     sessionFeedbackRecordsRaw,
     sessionFeedbackSyncLoaded,
+    nutritionCustomFoodsRaw,
+    nutritionCustomFoodsSyncLoaded,
+    nutritionDailyLogsRaw,
+    nutritionDailyLogsSyncLoaded,
     weekPlanStoreRaw,
     weekPlanSyncLoaded,
     workoutLogsShared,
@@ -3230,6 +3250,8 @@ export default function AlumnoVisionClient({
     if (shouldLoadNutritionData) {
       trackedKeys.add(NUTRITION_PLANS_KEY);
       trackedKeys.add(NUTRITION_ASSIGNMENTS_KEY);
+      trackedKeys.add(NUTRITION_CUSTOM_FOODS_KEY);
+      trackedKeys.add(NUTRITION_DAILY_LOGS_KEY);
     }
 
     if (shouldLoadAnthropometryData) {
