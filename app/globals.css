@@ -3768,12 +3768,29 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-grid {
   width: 100%;
   min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+}
+
+.pf-a3-routine-log-field-fecha {
+  order: 1;
+}
+
+.pf-a3-routine-log-field-series {
+  order: 2;
+}
+
+.pf-a3-routine-log-field-repeticiones {
+  order: 3;
+}
+
+.pf-a3-routine-log-field-carga {
+  order: 4;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input {
@@ -3836,6 +3853,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-field input,
+.pf-a3-routine-log-field select,
 .pf-a3-routine-log-field textarea {
   width: 100%;
   min-width: 0;
@@ -3852,6 +3870,17 @@ video.pf-a3-routine-log-video-frame {
   padding: 0.42rem 0.52rem;
 }
 
+.pf-a3-routine-log-field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #d4e7ff 50%), linear-gradient(135deg, #d4e7ff 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) calc(50% - 2px),
+    calc(100% - 9px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 1.45rem;
+}
+
 .pf-a3-routine-log-field textarea {
   resize: vertical;
   min-height: 72px;
@@ -3859,6 +3888,48 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-field-full {
   margin-top: 0.42rem;
+}
+
+.pf-a3-routine-log-pain-grid {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.36rem;
+  border-radius: 0.72rem;
+  border: 1px solid rgba(255, 160, 160, 0.44);
+  background: linear-gradient(165deg, rgba(47, 23, 33, 0.56), rgba(26, 14, 22, 0.54));
+  padding: 0.42rem;
+}
+
+.pf-a3-routine-log-pain-grid .pf-a3-routine-log-field-full {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.pf-a3-routine-log-pain-recommendation {
+  grid-column: 1 / -1;
+  border-radius: 0.62rem;
+  border: 1px solid rgba(248, 182, 182, 0.4);
+  background: rgba(52, 22, 34, 0.58);
+  padding: 0.38rem 0.42rem;
+}
+
+.pf-a3-routine-log-pain-kicker {
+  margin: 0;
+  color: #ffd6d6;
+  font-size: 0.55rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-pain-text {
+  margin: 0.26rem 0 0;
+  color: #fff0f0;
+  font-size: 0.63rem;
+  line-height: 1.32;
+  font-weight: 600;
 }
 
 .pf-a3-routine-log-row {
@@ -4727,6 +4798,16 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a3-routine-log-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pf-a3-routine-log-pane-registro .pf-a3-routine-log-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .pf-a3-routine-log-pain-grid {
+    gap: 0.3rem;
+    padding: 0.34rem;
   }
 
   .pf-a3-routine-log-actions {
