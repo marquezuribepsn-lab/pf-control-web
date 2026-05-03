@@ -3477,6 +3477,67 @@ export default function AlumnoVisionClient({
 
   const selectedRoutineEntry = routineEntries[0] || null;
 
+  const currentRoutineFeedbackIdentityKey = useMemo(() => {
+    if (!selectedRoutineEntry) {
+      return "";
+    }
+
+    return buildSessionFeedbackIdentityKey({
+      alumnoNombre: profileName,
+      alumnoEmail: profileEmail,
+      sessionId: selectedRoutineEntry.sesion.id,
+      weekId: selectedRoutineEntry.weekId,
+      dayId: selectedRoutineEntry.dayId,
+    });
+  }, [profileEmail, profileName, selectedRoutineEntry]);
+
+  const existingRoutineSessionFeedback = useMemo<SessionFeedbackRecordLite | null>(() => {
+    if (!currentRoutineFeedbackIdentityKey) {
+      return null;
+    }
+
+    return (
+      sessionFeedbackRecords.find(
+        (item) => buildSessionFeedbackIdentityKey(item) === currentRoutineFeedbackIdentityKey
+      ) || null
+    );
+  }, [currentRoutineFeedbackIdentityKey, sessionFeedbackRecords]);
+
+  const selectedRoutineDayWorkoutLogs = useMemo(() => {
+    if (!selectedRoutineEntry) {
+      return [];
+    }
+
+    const sessionId = String(selectedRoutineEntry.sesion.id || "").trim();
+    const dayId = String(selectedRoutineEntry.dayId || "").trim();
+
+    return workoutLogs.filter((log) => {
+      const logSessionId = String(log.sessionId || "").trim();
+      const logDayId = String(log.dayId || "").trim();
+
+      if (!sessionId || logSessionId !== sessionId) {
+        return false;
+      }
+
+      if (dayId && logDayId && logDayId !== dayId) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [selectedRoutineEntry, workoutLogs]);
+
+  const selectedRoutineDayLogSummary = useMemo(() => {
+    return {
+      total: selectedRoutineDayWorkoutLogs.length,
+      withPain: selectedRoutineDayWorkoutLogs.filter((log) => Boolean(log.molestia)).length,
+    };
+  }, [selectedRoutineDayWorkoutLogs]);
+
+  const routineSessionFeedbackHistory = useMemo(() => {
+    return sessionFeedbackRecords.slice(0, 14);
+  }, [sessionFeedbackRecords]);
+
   const routineVisibleBlocks = useMemo(() => {
     if (!selectedRoutineEntry) return [];
     if (!isUltraMobile) return selectedRoutineEntry.blocks;
