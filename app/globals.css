@@ -3795,6 +3795,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input {
   block-size: 2.06rem;
+  min-block-size: 2.06rem;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"] {
@@ -3802,6 +3803,11 @@ video.pf-a3-routine-log-video-frame {
   inline-size: 100%;
   max-inline-size: 100%;
   min-inline-size: 0;
+  block-size: 2.06rem;
+  min-block-size: 2.06rem;
+  max-block-size: 2.06rem;
+  font: inherit;
+  line-height: 1.2;
   padding-right: 1.9rem;
 }
 
