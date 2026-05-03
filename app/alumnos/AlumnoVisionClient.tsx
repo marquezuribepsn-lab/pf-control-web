@@ -1965,6 +1965,7 @@ export default function AlumnoVisionClient({
   const routineActionScreenLoadingTimerRef = useRef<number | null>(null);
   const routineStopwatchStartedAtRef = useRef<number | null>(null);
   const routineStopwatchIntervalRef = useRef<number | null>(null);
+  const previousRoutineQuickPanelRef = useRef<"none" | "change" | "sessions" | "timer">("none");
   const routineStopwatchFloatHostRef = useRef<HTMLElement | null>(null);
   const routineStopwatchDragStateRef = useRef<{
     active: boolean;
@@ -4565,6 +4566,20 @@ export default function AlumnoVisionClient({
     setRoutineStopwatchElapsedMs(0);
     clearRoutineStopwatchInterval();
   }, [clearRoutineStopwatchInterval]);
+
+  useEffect(() => {
+    const previousPanel = previousRoutineQuickPanelRef.current;
+
+    if (previousPanel === "timer" && routineQuickPanel !== "timer") {
+      stopRoutineStopwatch();
+      routineStopwatchDragStateRef.current.active = false;
+      routineStopwatchDragStateRef.current.pointerId = -1;
+      setRoutineStopwatchDragging(false);
+      setRoutineStopwatchFloatPosition(null);
+    }
+
+    previousRoutineQuickPanelRef.current = routineQuickPanel;
+  }, [routineQuickPanel, stopRoutineStopwatch]);
 
   const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions" | "timer") => {
     setRoutineFinalizePanelOpen(false);
