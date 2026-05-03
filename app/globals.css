@@ -3786,6 +3786,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   background: linear-gradient(166deg, rgba(14, 10, 27, 0.99), rgba(14, 10, 29, 0.98));
 }
 
+.pf-a3-routine-action-panel-timer {
+  border-color: rgba(133, 211, 255, 0.6);
+  background: linear-gradient(166deg, rgba(8, 17, 28, 0.99), rgba(8, 20, 34, 0.98));
+}
+
 .pf-a3-routine-action-loading {
   min-height: clamp(240px, 42vh, 330px);
 }
@@ -3859,6 +3864,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-action-primary-finalize {
   border-color: rgba(199, 166, 255, 0.74);
   background: linear-gradient(160deg, rgba(144, 89, 255, 0.95), rgba(108, 56, 236, 0.94));
+}
+
+.pf-a3-routine-action-primary-timer {
+  border-color: rgba(153, 229, 255, 0.74);
+  background: linear-gradient(160deg, rgba(76, 178, 241, 0.95), rgba(49, 131, 214, 0.94));
+}
+
+.pf-a3-routine-action-secondary-danger {
+  border-color: rgba(255, 173, 181, 0.62);
+  background: rgba(88, 24, 32, 0.82);
+}
+
+.pf-a3-routine-action-secondary-danger:disabled {
+  border-color: rgba(173, 179, 197, 0.36);
+  background: rgba(37, 42, 57, 0.56);
+  color: #9da8c0;
 }
 
 .pf-a3-routine-action-status {
@@ -3974,6 +3995,49 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-action-option-btn-active {
   border-color: rgba(206, 179, 255, 0.82);
   background: rgba(145, 89, 255, 0.42);
+}
+
+.pf-a3-routine-stopwatch-wrap {
+  margin-top: 0.74rem;
+  border-radius: 0.92rem;
+  border: 1px solid rgba(147, 189, 236, 0.42);
+  background:
+    radial-gradient(circle at 16% 22%, rgba(140, 219, 255, 0.22), transparent 52%),
+    radial-gradient(circle at 82% 78%, rgba(118, 182, 255, 0.17), transparent 56%),
+    rgba(8, 15, 26, 0.78);
+  padding: 0.78rem 0.8rem;
+  display: grid;
+  gap: 0.58rem;
+}
+
+.pf-a3-routine-stopwatch-display {
+  margin: 0;
+  color: #f4fbff;
+  font-family: var(--font-display), "Sora", sans-serif;
+  font-size: clamp(2rem, 8.2vw, 3rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.pf-a3-routine-stopwatch-status {
+  margin: 0;
+  color: #bad2ef;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pf-a3-routine-stopwatch-status-running {
+  color: #8ff1d4;
+}
+
+.pf-a3-routine-stopwatch-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.44rem;
 }
 
 .pf-a3-routine-log-close {
