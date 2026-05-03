@@ -5375,51 +5375,165 @@ export default function AlumnoVisionClient({
                     ) : null}
 
                     {routineExerciseLogView === "registros" ? (
-                      routineExerciseRecentLogs.length > 0 ? (
-                        <div className="pf-a3-routine-log-history">
-                          <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
-                          <ul>
-                            {routineExerciseRecentLogs.map((log) => (
-                              <li key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}>
-                                <div className="pf-a3-routine-log-history-main">
-                                  <span>
-                                    {log.fecha
-                                      ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
-                                      : "Sin fecha"}
-                                  </span>
-                                  <strong>
-                                    {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
-                                  </strong>
-                                </div>
+                      <>
+                        {routineExerciseRecentLogs.length > 0 ? (
+                          <div className="pf-a3-routine-log-history">
+                            <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
+                            <ul>
+                              {routineExerciseRecentLogs.map((log) => {
+                                const logRowId = String(log.id || "").trim();
+                                const isEditingThisLog = Boolean(
+                                  logRowId && routineExerciseLogEditingId && routineExerciseLogEditingId === logRowId
+                                );
 
-                                <div className="pf-a3-routine-log-history-actions">
-                                  <ReliableActionButton
-                                    type="button"
-                                    className="pf-a3-routine-log-history-btn"
-                                    onClick={() => editRoutineExerciseRecentLog(log)}
-                                    disabled={routineExerciseLogSaving}
+                                return (
+                                  <li
+                                    key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}
+                                    className={`pf-a3-routine-log-history-item${
+                                      isEditingThisLog ? " pf-a3-routine-log-history-item-editing" : ""
+                                    }`}
                                   >
-                                    Editar
-                                  </ReliableActionButton>
+                                    <div className="pf-a3-routine-log-history-main">
+                                      <span>
+                                        {log.fecha
+                                          ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
+                                          : "Sin fecha"}
+                                      </span>
+                                      <strong>
+                                        {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
+                                      </strong>
+                                    </div>
 
-                                  <ReliableActionButton
-                                    type="button"
-                                    className="pf-a3-routine-log-history-btn pf-a3-routine-log-history-btn-danger"
-                                    onClick={() => deleteRoutineExerciseRecentLog(log)}
-                                    disabled={routineExerciseLogSaving}
-                                  >
-                                    Eliminar
-                                  </ReliableActionButton>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : (
-                        <div className="pf-a3-routine-log-history pf-a3-routine-log-history-empty">
-                          Todavia no hay registros cargados para este ejercicio.
-                        </div>
-                      )
+                                    {isEditingThisLog ? (
+                                      <div className="pf-a3-routine-log-history-edit pf-a3-routine-log-pane-registro">
+                                        <p className="pf-a3-routine-log-editing-hint">Modo edicion activo para este registro.</p>
+
+                                        <div className="pf-a3-routine-log-grid pf-a3-routine-log-history-edit-grid">
+                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-fecha">
+                                            <span>Fecha</span>
+                                            <input
+                                              type="date"
+                                              value={routineExerciseLogDraft.fecha}
+                                              onChange={(event) =>
+                                                setRoutineExerciseLogDraft((previous) => ({
+                                                  ...previous,
+                                                  fecha: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+
+                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-series">
+                                            <span>Series</span>
+                                            <input
+                                              value={routineExerciseLogDraft.series}
+                                              onChange={(event) =>
+                                                setRoutineExerciseLogDraft((previous) => ({
+                                                  ...previous,
+                                                  series: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+
+                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-repeticiones">
+                                            <span>Repeticiones</span>
+                                            <input
+                                              value={routineExerciseLogDraft.repeticiones}
+                                              onChange={(event) =>
+                                                setRoutineExerciseLogDraft((previous) => ({
+                                                  ...previous,
+                                                  repeticiones: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+
+                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-carga">
+                                            <span>Carga (kg)</span>
+                                            <input
+                                              value={routineExerciseLogDraft.pesoKg}
+                                              onChange={(event) =>
+                                                setRoutineExerciseLogDraft((previous) => ({
+                                                  ...previous,
+                                                  pesoKg: event.target.value,
+                                                }))
+                                              }
+                                            />
+                                          </label>
+                                        </div>
+
+                                        <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                                          <span>Comentarios</span>
+                                          <textarea
+                                            rows={2}
+                                            value={routineExerciseLogDraft.comentarios}
+                                            onChange={(event) =>
+                                              setRoutineExerciseLogDraft((previous) => ({
+                                                ...previous,
+                                                comentarios: event.target.value,
+                                              }))
+                                            }
+                                            placeholder="Actualizar comentario si hace falta"
+                                          />
+                                        </label>
+
+                                        <div className="pf-a3-routine-log-history-actions pf-a3-routine-log-history-edit-actions">
+                                          <ReliableActionButton
+                                            type="button"
+                                            className="pf-a3-routine-log-secondary-btn"
+                                            onClick={cancelRoutineExerciseLogEdit}
+                                            disabled={routineExerciseLogSaving}
+                                          >
+                                            Cancelar
+                                          </ReliableActionButton>
+
+                                          <ReliableActionButton
+                                            type="button"
+                                            className="pf-a3-routine-log-primary-btn"
+                                            onClick={saveRoutineExerciseLog}
+                                            disabled={routineExerciseLogSaving}
+                                          >
+                                            {routineExerciseLogSaving ? "Actualizando..." : "Actualizar registro"}
+                                          </ReliableActionButton>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="pf-a3-routine-log-history-actions">
+                                        <ReliableActionButton
+                                          type="button"
+                                          className="pf-a3-routine-log-history-btn"
+                                          onClick={() => editRoutineExerciseRecentLog(log)}
+                                          disabled={routineExerciseLogSaving}
+                                        >
+                                          Editar
+                                        </ReliableActionButton>
+
+                                        <ReliableActionButton
+                                          type="button"
+                                          className="pf-a3-routine-log-history-btn pf-a3-routine-log-history-btn-danger"
+                                          onClick={() => deleteRoutineExerciseRecentLog(log)}
+                                          disabled={routineExerciseLogSaving}
+                                        >
+                                          Eliminar
+                                        </ReliableActionButton>
+                                      </div>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="pf-a3-routine-log-history pf-a3-routine-log-history-empty">
+                            Todavia no hay registros cargados para este ejercicio.
+                          </div>
+                        )}
+
+                        {routineExerciseLogStatus ? (
+                          <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
+                        ) : null}
+                      </>
                     ) : null}
                   </article>
                 </div>,
