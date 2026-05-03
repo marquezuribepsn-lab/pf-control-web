@@ -4954,7 +4954,6 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("change")}
-                      onPointerUp={() => toggleRoutineQuickPanel("change")}
                       className={`pf-a3-routine-icon-btn !border !border-emerald-200/65 !bg-emerald-500/30 transition-colors ${
                         routineQuickPanel === "change"
                           ? "!border-emerald-100 !bg-emerald-400/48"
@@ -4972,7 +4971,6 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("sessions")}
-                      onPointerUp={() => toggleRoutineQuickPanel("sessions")}
                       className={`pf-a3-routine-icon-btn !border !border-rose-200/65 !bg-rose-500/30 transition-colors ${
                         routineQuickPanel === "sessions"
                           ? "!border-rose-100 !bg-rose-400/48"
