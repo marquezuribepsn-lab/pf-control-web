@@ -3511,7 +3511,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: fixed;
   inset: 0;
   z-index: 140;
-  padding: max(0.84rem, env(safe-area-inset-top)) max(0.72rem, env(safe-area-inset-right)) max(0.84rem, env(safe-area-inset-bottom)) max(0.72rem, env(safe-area-inset-left));
+  padding:
+    max(0.84rem, env(safe-area-inset-top))
+    max(0.9rem, calc(env(safe-area-inset-right) + 0.52rem))
+    max(0.84rem, env(safe-area-inset-bottom))
+    max(0.9rem, calc(env(safe-area-inset-left) + 0.52rem));
   background: radial-gradient(circle at top, rgba(38, 56, 90, 0.34), transparent 52%), rgba(4, 8, 15, 0.84);
   display: flex;
   align-items: center;
@@ -3522,8 +3526,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-panel {
-  width: min(860px, calc(100% - 0.72rem));
+  width: min(860px, 100%);
   max-height: none;
+  position: relative;
+  isolation: isolate;
   overflow: visible;
   overscroll-behavior: contain;
   box-sizing: border-box;
@@ -3536,6 +3542,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     0 14px 34px rgba(2, 7, 14, 0.38);
   padding: 0.82rem 0.8rem 0.9rem;
   margin: auto;
+}
+
+.pf-a3-routine-log-panel::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(1.04rem - 1px);
+  border: 1px solid rgba(221, 236, 255, 0.26);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pf-a3-routine-log-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .pf-a3-routine-log-overlay-mobile {
@@ -4624,14 +4645,17 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-log-overlay {
-    padding: max(0.42rem, env(safe-area-inset-top)) max(0.36rem, env(safe-area-inset-right))
-      max(0.42rem, env(safe-area-inset-bottom)) max(0.36rem, env(safe-area-inset-left));
+    padding:
+      max(0.42rem, env(safe-area-inset-top))
+      max(0.7rem, calc(env(safe-area-inset-right) + 0.46rem))
+      max(0.42rem, env(safe-area-inset-bottom))
+      max(0.7rem, calc(env(safe-area-inset-left) + 0.46rem));
     align-items: center;
     overflow-y: auto;
   }
 
   .pf-a3-routine-log-panel {
-    width: min(900px, calc(100% - 0.3rem));
+    width: min(900px, 100%);
     max-width: 100%;
     height: auto;
     min-height: 0;
@@ -4640,6 +4664,10 @@ video.pf-a3-routine-log-video-frame {
     border-radius: 0.76rem;
     border: 1.5px solid rgba(132, 164, 214, 0.76);
     padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
+  }
+
+  .pf-a3-routine-log-panel::before {
+    border-radius: calc(0.76rem - 1px);
   }
 
   .pf-a3-routine-log-presets {
