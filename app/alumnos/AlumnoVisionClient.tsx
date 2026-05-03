@@ -4047,22 +4047,6 @@ export default function AlumnoVisionClient({
                 </div>
               </div>
 
-              {activeCategory !== "musica" ? (
-                <div className="flex max-w-full flex-wrap items-center gap-2">
-                  <span className={`pf-a2-badge pf-a2-badge-${paymentBadge.tone}`}>
-                    Estado pago: {paymentBadge.label}
-                  </span>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={openPayments}
-                    onPointerUp={() => openPayments()}
-                    data-nav-href="/alumnos/pagos"
-                    className="pf-a2-ghost-btn rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-[0.12em]"
-                  >
-                    Pagos
-                  </ReliableActionButton>
-                </div>
-              ) : null}
             </div>
 
             <div className="pf-a2-tab-rail mt-4 hidden flex-nowrap gap-2 overflow-x-auto pb-1 md:flex">
