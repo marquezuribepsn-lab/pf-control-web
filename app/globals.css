@@ -5427,16 +5427,18 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-stopwatch-float {
-    right: max(0.46rem, calc(env(safe-area-inset-right) + 0.26rem));
-    left: max(0.46rem, calc(env(safe-area-inset-left) + 0.26rem));
-    bottom: calc(max(0.52rem, env(safe-area-inset-bottom)) + 66px);
-    width: auto;
-    padding: 0.5rem 0.52rem;
-    border-radius: 0.82rem;
+    --pf-stopwatch-size: 108px;
+    border-radius: 0.86rem;
+    padding: 0.4rem;
   }
 
   .pf-a3-routine-stopwatch-float .pf-a3-routine-stopwatch-display {
-    font-size: clamp(1.38rem, 10vw, 1.98rem);
+    font-size: clamp(1.24rem, 8.4vw, 1.6rem);
+  }
+
+  .pf-a3-routine-stopwatch-mini-btn svg {
+    width: 14px;
+    height: 14px;
   }
 
   .pf-a3-bmi-value {
