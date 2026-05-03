@@ -338,8 +338,6 @@ type PreparedIdentity = {
   emails: Set<string>;
 };
 
-type PaymentBadgeTone = "ok" | "warning" | "danger" | "neutral";
-
 const CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
 
 function normalizeMainCategoryValue(value: string): MainCategory | null {
@@ -381,7 +379,7 @@ const CATEGORY_COPY: Record<
   inicio: {
     badge: "HOME",
     title: "Panel central",
-    subtitle: "Resumen de hoy, estado de pago y atajos rapidos.",
+    subtitle: "Resumen de hoy y atajos rapidos.",
     short: "Inicio",
   },
   rutina: {
@@ -1640,58 +1638,6 @@ function matchesPreparedIdentityEmail(value: string | null | undefined, identity
   return identity.emails.has(candidate);
 }
 
-function resolvePaymentBadge(meta: ClienteMetaLite | null): {
-  tone: PaymentBadgeTone;
-  label: string;
-  detail: string;
-} {
-  if (!meta) {
-    return {
-      tone: "neutral",
-      label: "Sin ficha",
-      detail: "No encontramos una ficha de pago vinculada a tu cuenta.",
-    };
-  }
-
-  const status = String(meta.pagoEstado || "").trim().toLowerCase();
-  const endDate = parseDateValue(meta.endDate);
-  const now = Date.now();
-  const isExpired = Boolean(endDate && endDate.getTime() < now);
-  const isActiveByDate = Boolean(endDate && endDate.getTime() >= now);
-
-  if (isExpired) {
-    return {
-      tone: "danger",
-      label: "Vencido",
-      detail: `Tu pase vencio el ${formatDate(meta.endDate)}.`,
-    };
-  }
-
-  if (status.includes("pend") || status.includes("proceso")) {
-    return {
-      tone: "warning",
-      label: "Pendiente",
-      detail: "Tu pago esta pendiente de confirmacion.",
-    };
-  }
-
-  if (status.includes("aprob") || status.includes("activo") || isActiveByDate) {
-    return {
-      tone: "ok",
-      label: "Al dia",
-      detail: endDate
-        ? `Pase activo hasta ${formatDate(meta.endDate)}.`
-        : "Tu pase se encuentra activo.",
-    };
-  }
-
-  return {
-    tone: "neutral",
-    label: "A revisar",
-    detail: "Tu estado de pago necesita revision.",
-  };
-}
-
 function toNumber(value: unknown): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -2714,47 +2660,6 @@ export default function AlumnoVisionClient({
     shouldLoadNutritionData,
   ]);
 
-
-  const paymentBadge = useMemo(() => resolvePaymentBadge(clientMeta), [clientMeta]);
-
-  const paymentHomeSummary = useMemo(() => {
-    const hasPaymentLabel =
-      paymentBadge.tone === "ok" ? "Si, activo" : paymentBadge.tone === "warning" ? "En proceso" : "No";
-
-    const actionLabel =
-      paymentBadge.tone === "ok"
-        ? "Sin deuda"
-        : paymentBadge.tone === "warning"
-        ? "Confirmar pago"
-        : paymentBadge.tone === "danger"
-        ? "Pagar ahora"
-        : "Regularizar ficha";
-
-    const actionDetail =
-      paymentBadge.tone === "ok"
-        ? "Tu pase esta habilitado para entrenar."
-        : paymentBadge.tone === "warning"
-        ? "Tu pago esta en validacion."
-        : paymentBadge.tone === "danger"
-        ? "Debes pagar para mantener el acceso."
-        : "Aun no hay una ficha de pago activa.";
-
-    return {
-      hasPaymentLabel,
-      lastPaymentLabel: formatDate(clientMeta?.startDate),
-      dueDateLabel: formatDate(clientMeta?.endDate),
-      actionLabel,
-      actionDetail,
-    };
-  }, [clientMeta?.endDate, clientMeta?.startDate, paymentBadge.tone]);
-
-  const paymentActionToneClass =
-    paymentBadge.tone === "ok"
-      ? "pf-a3-status-item-ok"
-      : paymentBadge.tone === "danger"
-      ? "pf-a3-status-item-danger"
-      : "pf-a3-status-item-warning";
-
   const nutritionTargets = nutritionPlan?.targets || null;
 
   const macroRows = useMemo(() => {
@@ -3187,29 +3092,6 @@ export default function AlumnoVisionClient({
     }, fallbackDelay);
   }, [goToCategory, isUltraMobile, router]);
 
-  const openPayments = useCallback(() => {
-    const targetHref = "/alumnos/pagos";
-
-    if (typeof window === "undefined") {
-      router.push(targetHref);
-      return;
-    }
-
-    if (isUltraMobile) {
-      window.location.assign(targetHref);
-      return;
-    }
-
-    router.push(targetHref);
-
-    // WebView fallback: if router navigation is swallowed, force a hard navigation.
-    window.setTimeout(() => {
-      if (window.location.pathname !== targetHref) {
-        window.location.assign(targetHref);
-      }
-    }, 180);
-  }, [isUltraMobile, router]);
-
   const openMusicPlaylistExternal = useCallback((assignment: MusicAssignmentLite) => {
     const playlistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
     if (!playlistUrl || typeof window === "undefined") return;
@@ -3244,7 +3126,6 @@ export default function AlumnoVisionClient({
   useEffect(() => {
     if (isUltraMobile) return;
 
-    router.prefetch("/alumnos/pagos");
     CATEGORIES.forEach((category) => {
       router.prefetch(`/alumnos/${category}`);
     });
@@ -4125,15 +4006,6 @@ export default function AlumnoVisionClient({
                 >
                   Reservas
                 </ReliableActionButton>
-                <ReliableActionButton
-                  type="button"
-                  onClick={openPayments}
-                  onPointerUp={() => openPayments()}
-                  data-nav-href="/alumnos/pagos"
-                  className="pf-a3-main-action-btn"
-                >
-                  Controles
-                </ReliableActionButton>
               </div>
 
               <section className="pf-a3-panel-block">
@@ -4308,23 +4180,6 @@ export default function AlumnoVisionClient({
                     </span>
                     <span>Progreso</span>
                   </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={openPayments}
-                    onPointerUp={() => openPayments()}
-                    data-nav-href="/alumnos/pagos"
-                    className="pf-a3-quick-item"
-                  >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-pagos" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <rect x="3.5" y="6" width="17" height="12" rx="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M6.5 10.5h11" strokeLinecap="round" />
-                        <circle cx="8" cy="14.2" r="0.8" fill="currentColor" stroke="none" />
-                      </svg>
-                    </span>
-                    <span>Pagos</span>
-                  </ReliableActionButton>
                 </div>
               </section>
 
@@ -4414,48 +4269,6 @@ export default function AlumnoVisionClient({
                 </div>
               </section>
 
-              <section className="pf-a3-panel-block pf-a3-panel-block-pagos">
-                <div className="pf-a3-section-head">
-                  <h2 className="pf-a3-section-title">Pagos</h2>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={openPayments}
-                    onPointerUp={() => openPayments()}
-                    data-nav-href="/alumnos/pagos"
-                    className="pf-a3-link-btn"
-                    aria-label="Ir a pagos"
-                    title="Pagos"
-                  >
-                    Gestionar
-                  </ReliableActionButton>
-                </div>
-
-                <div className="pf-a3-status-grid">
-                  <article className={`pf-a3-status-item pf-a3-status-item-${paymentBadge.tone}`}>
-                    <p className="pf-a3-status-kicker">Estado</p>
-                    <p className="pf-a3-status-value">{paymentBadge.label}</p>
-                    <p className="pf-a3-status-detail">{paymentBadge.detail}</p>
-                  </article>
-
-                  <article className="pf-a3-status-item">
-                    <p className="pf-a3-status-kicker">Tiene pago</p>
-                    <p className="pf-a3-status-value">{paymentHomeSummary.hasPaymentLabel}</p>
-                    <p className="pf-a3-status-detail">Ultimo pago: {paymentHomeSummary.lastPaymentLabel}</p>
-                  </article>
-
-                  <article className="pf-a3-status-item">
-                    <p className="pf-a3-status-kicker">Vencimiento</p>
-                    <p className="pf-a3-status-value">{paymentHomeSummary.dueDateLabel}</p>
-                    <p className="pf-a3-status-detail">Plan: {coachPlanLabel}</p>
-                  </article>
-
-                  <article className={`pf-a3-status-item ${paymentActionToneClass}`}>
-                    <p className="pf-a3-status-kicker">Accion</p>
-                    <p className="pf-a3-status-value">{paymentHomeSummary.actionLabel}</p>
-                    <p className="pf-a3-status-detail">{paymentHomeSummary.actionDetail}</p>
-                  </article>
-                </div>
-              </section>
             </div>
           ) : null}
 
@@ -5623,15 +5436,6 @@ export default function AlumnoVisionClient({
                   </div>
                 )}
 
-                <ReliableActionButton
-                  type="button"
-                  onClick={openPayments}
-                  onPointerUp={() => openPayments()}
-                  data-nav-href="/alumnos/pagos"
-                  className="pf-a2-ghost-btn mt-4 rounded-xl border px-4 py-2 text-sm font-semibold"
-                >
-                  Revisar estado de pagos
-                </ReliableActionButton>
               </article>
             </div>
           ) : null}
