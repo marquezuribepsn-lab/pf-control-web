@@ -1908,6 +1908,14 @@ export default function AlumnoVisionClient({
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
   const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
+  const [routineQuickPanel, setRoutineQuickPanel] = useState<"none" | "change" | "sessions">("none");
+  const [routineChangeRequestDraft, setRoutineChangeRequestDraft] = useState("");
+  const [routineChangeRequestStatus, setRoutineChangeRequestStatus] = useState("");
+  const [routineFinalizePanelOpen, setRoutineFinalizePanelOpen] = useState(false);
+  const [routineFinalizeStatus, setRoutineFinalizeStatus] = useState("");
+  const [routineFinalizeAnswerByQuestionId, setRoutineFinalizeAnswerByQuestionId] = useState<
+    Record<string, string>
+  >({});
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
