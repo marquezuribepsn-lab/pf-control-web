@@ -3092,6 +3092,28 @@ export default function AlumnoVisionClient({
     }, fallbackDelay);
   }, [goToCategory, isUltraMobile, router]);
 
+  const openPayments = useCallback(() => {
+    const targetHref = "/alumnos/pagos";
+
+    if (typeof window === "undefined") {
+      router.push(targetHref);
+      return;
+    }
+
+    if (isUltraMobile) {
+      window.location.assign(targetHref);
+      return;
+    }
+
+    router.push(targetHref);
+
+    window.setTimeout(() => {
+      if (window.location.pathname !== targetHref) {
+        window.location.assign(targetHref);
+      }
+    }, 180);
+  }, [isUltraMobile, router]);
+
   const openMusicPlaylistExternal = useCallback((assignment: MusicAssignmentLite) => {
     const playlistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
     if (!playlistUrl || typeof window === "undefined") return;
@@ -4179,6 +4201,23 @@ export default function AlumnoVisionClient({
                       </svg>
                     </span>
                     <span>Progreso</span>
+                  </ReliableActionButton>
+
+                  <ReliableActionButton
+                    type="button"
+                    onClick={openPayments}
+                    onPointerUp={() => openPayments()}
+                    data-nav-href="/alumnos/pagos"
+                    className="pf-a3-quick-item"
+                  >
+                    <span className="pf-a3-quick-icon pf-a3-quick-icon-pagos" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
+                        <rect x="3.5" y="6" width="17" height="12" rx="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M6.5 10.5h11" strokeLinecap="round" />
+                        <circle cx="8" cy="14.2" r="0.8" fill="currentColor" stroke="none" />
+                      </svg>
+                    </span>
+                    <span>Pagos</span>
                   </ReliableActionButton>
                 </div>
               </section>
