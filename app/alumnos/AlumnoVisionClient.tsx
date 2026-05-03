@@ -7471,7 +7471,12 @@ export default function AlumnoVisionClient({
                         className="pf-a2-kpi rounded-xl border p-3"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
+                          <div>
+                            <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
+                            <p className="mt-1 text-[11px] uppercase tracking-[0.09em] text-slate-400">
+                              {meal.totalProtein}P · {meal.totalCarbs}C · {meal.totalFat}G
+                            </p>
+                          </div>
                           <span className="pf-a2-pill">{meal.totalKcal} kcal</span>
                         </div>
 
@@ -7552,6 +7557,38 @@ export default function AlumnoVisionClient({
                   </div>
                 </div>
 
+                <div className="pf-a3-nutrition-template-row mt-3">
+                  <span className="pf-a3-nutrition-template-label">Plantillas de dia</span>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => applyNutritionDayTemplate("full")}
+                    className="pf-a3-nutrition-template-chip"
+                  >
+                    Completo
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => applyNutritionDayTemplate("training")}
+                    className="pf-a3-nutrition-template-chip"
+                  >
+                    Entreno
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => applyNutritionDayTemplate("rest")}
+                    className="pf-a3-nutrition-template-chip"
+                  >
+                    Descanso
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => applyNutritionDayTemplate("clear")}
+                    className="pf-a3-nutrition-template-chip is-muted"
+                  >
+                    Reiniciar
+                  </ReliableActionButton>
+                </div>
+
                 <p className="mt-2 text-xs text-slate-400">Resumen del {formatDate(normalizedNutritionTrackerDate)}</p>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -7587,6 +7624,65 @@ export default function AlumnoVisionClient({
                   <p className="pf-a3-nutrition-progress-label">Progreso diario: {nutritionDailyProgressPct}%</p>
                 </div>
 
+                <div className="pf-a3-nutrition-macro-grid mt-3">
+                  <div className="pf-a3-nutrition-macro-card">
+                    <div className="pf-a3-nutrition-macro-head">
+                      <span className="pf-a3-nutrition-macro-key">P</span>
+                      <p className="pf-a3-nutrition-macro-title">Proteinas</p>
+                    </div>
+                    <p className="pf-a3-nutrition-macro-value">
+                      {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
+                    </p>
+                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.proteinas < 0 ? "is-over" : ""}`}>
+                      Restan: {nutritionDailyRemainingMacros.proteinas} g
+                    </p>
+                    <div className="pf-a3-nutrition-macro-track">
+                      <div
+                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.proteinas > 100 ? "is-over" : ""}`}
+                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-nutrition-macro-card">
+                    <div className="pf-a3-nutrition-macro-head">
+                      <span className="pf-a3-nutrition-macro-key">C</span>
+                      <p className="pf-a3-nutrition-macro-title">Carbohidratos</p>
+                    </div>
+                    <p className="pf-a3-nutrition-macro-value">
+                      {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
+                    </p>
+                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.carbohidratos < 0 ? "is-over" : ""}`}>
+                      Restan: {nutritionDailyRemainingMacros.carbohidratos} g
+                    </p>
+                    <div className="pf-a3-nutrition-macro-track">
+                      <div
+                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.carbohidratos > 100 ? "is-over" : ""}`}
+                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-nutrition-macro-card">
+                    <div className="pf-a3-nutrition-macro-head">
+                      <span className="pf-a3-nutrition-macro-key">G</span>
+                      <p className="pf-a3-nutrition-macro-title">Grasas</p>
+                    </div>
+                    <p className="pf-a3-nutrition-macro-value">
+                      {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
+                    </p>
+                    <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.grasas < 0 ? "is-over" : ""}`}>
+                      Restan: {nutritionDailyRemainingMacros.grasas} g
+                    </p>
+                    <div className="pf-a3-nutrition-macro-track">
+                      <div
+                        className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.grasas > 100 ? "is-over" : ""}`}
+                        style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {nutritionMealsDetailed.length > 0 ? (
                   <div className="pf-a3-nutrition-tracker-list mt-4">
                     {nutritionMealsDetailed.map((meal, index) => {
@@ -7602,7 +7698,42 @@ export default function AlumnoVisionClient({
                         >
                           <div className="pf-a3-nutrition-tracker-row-head">
                             <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
-                            <span className="pf-a2-pill">Plan: {meal.totalKcal} kcal</span>
+                            <div className="flex items-center gap-2">
+                              <span className="pf-a2-pill">Plan: {meal.totalKcal} kcal</span>
+                              <span className={`pf-a3-nutrition-check ${isDone ? "is-done" : ""}`}>
+                                <span className="pf-a3-nutrition-check-dot" />
+                                {isDone ? "OK" : "Pendiente"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {meal.galleryUrls.length > 0 ? (
+                            <div className="pf-a3-nutrition-mini-gallery">
+                              {meal.galleryUrls.slice(0, 4).map((imageUrl, imageIndex) => (
+                                <div key={`${meal.mealId}-gallery-${imageIndex}`} className="pf-a3-nutrition-mini-thumb">
+                                  <img
+                                    src={imageUrl}
+                                    alt={`${meal.mealName || `Comida ${index + 1}`} ${imageIndex + 1}`}
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          <div className="pf-a3-nutrition-quickchips">
+                            <span className="pf-a3-nutrition-quickchips-label">Chips rapidos</span>
+                            {nutritionMealQuickChips.map((chip) => (
+                              <ReliableActionButton
+                                key={`${meal.mealId}-${chip.id}`}
+                                type="button"
+                                onClick={() => handleNutritionMealQuickChip(meal.mealId, meal.totalKcal, chip.ratio, chip.label)}
+                                className="pf-a3-nutrition-chip-btn"
+                              >
+                                {chip.label}
+                              </ReliableActionButton>
+                            ))}
                           </div>
 
                           <div className="pf-a3-nutrition-tracker-row-controls">
