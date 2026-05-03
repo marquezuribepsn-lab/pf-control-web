@@ -2483,6 +2483,52 @@ export default function AlumnoVisionClient({
     [preparedIdentity]
   );
 
+  const normalizedNutritionTrackerDate = useMemo(
+    () => normalizeDateInputValue(nutritionTrackerDate),
+    [nutritionTrackerDate]
+  );
+
+  const nutritionFoodsById = useMemo(() => {
+    if (!shouldLoadNutritionData) {
+      return new Map<string, NutritionFoodLite>();
+    }
+
+    const rows = [
+      ...(argentineFoodsBase as NutritionFoodLite[]),
+      ...normalizeNutritionFoodRows(nutritionCustomFoodsRaw),
+    ];
+
+    const map = new Map<string, NutritionFoodLite>();
+    rows.forEach((row) => {
+      const id = String(row.id || "").trim();
+      if (!id) return;
+      map.set(id, row);
+    });
+
+    return map;
+  }, [nutritionCustomFoodsRaw, shouldLoadNutritionData]);
+
+  const nutritionDailyLogs = useMemo<NutritionDailyLogLite[]>(() => {
+    if (!shouldLoadNutritionData) {
+      return [];
+    }
+
+    return normalizeNutritionDailyLogs(nutritionDailyLogsRaw).filter((row) => {
+      const ownerKey = normalizePersonKey(row.ownerKey || "");
+      if (ownerKey && ownerKey === nutritionTrackerOwnerKey) {
+        return true;
+      }
+
+      return matchIdentityName(row.alumnoNombre) || matchIdentityEmail(row.alumnoEmail);
+    });
+  }, [
+    matchIdentityEmail,
+    matchIdentityName,
+    nutritionDailyLogsRaw,
+    nutritionTrackerOwnerKey,
+    shouldLoadNutritionData,
+  ]);
+
   const workoutLogs = useMemo<WorkoutLogLite[]>(() => {
     if (!shouldLoadWorkoutData) {
       return [];
