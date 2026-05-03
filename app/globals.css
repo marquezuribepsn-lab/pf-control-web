@@ -6227,6 +6227,14 @@ video.pf-a3-routine-log-video-frame {
     align-items: stretch;
   }
 
+  .pf-a3-nutrition-mode-toggle {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a3-nutrition-mode-btn {
+    justify-content: center;
+  }
+
   .pf-a3-nutrition-tracker-date .pf-a2-ghost-btn {
     flex: 1 1 0;
     justify-content: center;
@@ -6294,6 +6302,24 @@ video.pf-a3-routine-log-video-frame {
   .pf-a3-nutrition-kcal-input input {
     width: 100%;
     text-align: left;
+  }
+
+  .pf-a3-nutrition-student-food-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a3-nutrition-student-food-actions {
+    align-items: stretch;
+  }
+
+  .pf-a3-nutrition-student-food-actions .pf-a2-solid-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pf-a3-nutrition-student-food-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .pf-a2-dock {
