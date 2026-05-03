@@ -5318,6 +5318,19 @@ video.pf-a3-routine-log-video-frame {
     align-items: flex-start;
   }
 
+  .pf-a3-routine-stopwatch-wrap {
+    padding: 0.68rem 0.64rem;
+  }
+
+  .pf-a3-routine-stopwatch-display {
+    font-size: clamp(1.7rem, 12vw, 2.4rem);
+    letter-spacing: 0.05em;
+  }
+
+  .pf-a3-routine-stopwatch-actions {
+    grid-template-columns: 1fr;
+  }
+
   .pf-a3-bmi-value {
     font-size: 1.12rem;
   }
