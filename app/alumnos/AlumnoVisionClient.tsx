@@ -1925,7 +1925,9 @@ export default function AlumnoVisionClient({
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
   const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
-  const [routineQuickPanel, setRoutineQuickPanel] = useState<"none" | "change" | "sessions">("none");
+  const [routineQuickPanel, setRoutineQuickPanel] = useState<"none" | "change" | "sessions" | "timer">("none");
+  const [routineStopwatchElapsedMs, setRoutineStopwatchElapsedMs] = useState(0);
+  const [routineStopwatchRunning, setRoutineStopwatchRunning] = useState(false);
   const [routineChangeRequestDraft, setRoutineChangeRequestDraft] = useState("");
   const [routineChangeRequestStatus, setRoutineChangeRequestStatus] = useState("");
   const [routineFinalizePanelOpen, setRoutineFinalizePanelOpen] = useState(false);
@@ -1950,6 +1952,8 @@ export default function AlumnoVisionClient({
   const routineDayWeekLoadingTimerRef = useRef<number | null>(null);
   const routineExerciseLogStatusTimerRef = useRef<number | null>(null);
   const routineActionScreenLoadingTimerRef = useRef<number | null>(null);
+  const routineStopwatchStartedAtRef = useRef<number | null>(null);
+  const routineStopwatchIntervalRef = useRef<number | null>(null);
   const previousRoutineActionScreenRef = useRef<RoutineActionScreen>("none");
 
   const isUltraMobile = useMemo(() => {
