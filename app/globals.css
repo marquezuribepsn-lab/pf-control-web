@@ -4834,6 +4834,145 @@ video.pf-a3-routine-log-video-frame {
   background: linear-gradient(170deg, rgba(17, 25, 35, 0.88), rgba(12, 18, 27, 0.9));
 }
 
+.pf-a3-nutrition-week-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.56rem;
+}
+
+.pf-a3-nutrition-week-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(203, 228, 250, 0.9);
+  text-align: center;
+}
+
+.pf-a3-nutrition-streak-grid {
+  display: grid;
+  gap: 0.56rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pf-a3-nutrition-streak-card {
+  border-radius: 0.82rem;
+  border: 1px solid rgba(142, 184, 218, 0.36);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(56, 189, 248, 0.18), transparent 65%),
+    linear-gradient(168deg, rgba(12, 21, 31, 0.89), rgba(9, 16, 25, 0.9));
+  padding: 0.56rem 0.6rem;
+}
+
+.pf-a3-nutrition-streak-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(181, 208, 233, 0.86);
+}
+
+.pf-a3-nutrition-streak-value {
+  margin-top: 0.28rem;
+  font-size: 0.96rem;
+  font-weight: 900;
+  color: #f4fbff;
+}
+
+.pf-a3-nutrition-streak-note {
+  margin-top: 0.14rem;
+  font-size: 0.66rem;
+  color: rgba(175, 201, 226, 0.82);
+}
+
+.pf-a3-nutrition-week-grid-wrap {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(139, 180, 215, 0.34);
+  background: linear-gradient(170deg, rgba(13, 21, 31, 0.85), rgba(9, 16, 25, 0.88));
+  padding: 0.6rem 0.62rem;
+}
+
+.pf-a3-nutrition-week-grid-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(188, 215, 239, 0.88);
+}
+
+.pf-a3-nutrition-week-grid {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.42rem;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.pf-a3-nutrition-weekday-card {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(125, 158, 189, 0.34);
+  background: linear-gradient(165deg, rgba(14, 22, 32, 0.9), rgba(9, 16, 24, 0.92));
+  min-height: 94px;
+  padding: 0.42rem 0.36rem;
+  display: grid;
+  align-content: start;
+  gap: 0.22rem;
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.pf-a3-nutrition-weekday-card.is-selected {
+  border-color: rgba(103, 232, 249, 0.8);
+  box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.3);
+}
+
+.pf-a3-nutrition-weekday-card.is-empty {
+  border-color: rgba(125, 154, 181, 0.3);
+  background: linear-gradient(165deg, rgba(15, 23, 33, 0.82), rgba(10, 17, 26, 0.84));
+}
+
+.pf-a3-nutrition-weekday-card.is-low {
+  border-color: rgba(245, 158, 11, 0.48);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(245, 158, 11, 0.18), transparent 60%),
+    linear-gradient(165deg, rgba(26, 24, 16, 0.88), rgba(19, 17, 11, 0.9));
+}
+
+.pf-a3-nutrition-weekday-card.is-high {
+  border-color: rgba(249, 115, 22, 0.52);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(249, 115, 22, 0.2), transparent 60%),
+    linear-gradient(165deg, rgba(29, 20, 13, 0.9), rgba(20, 14, 9, 0.92));
+}
+
+.pf-a3-nutrition-weekday-card.is-on-target {
+  border-color: rgba(16, 185, 129, 0.52);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(16, 185, 129, 0.2), transparent 60%),
+    linear-gradient(165deg, rgba(10, 28, 24, 0.9), rgba(8, 20, 18, 0.92));
+}
+
+.pf-a3-nutrition-weekday-name {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(188, 214, 238, 0.86);
+}
+
+.pf-a3-nutrition-weekday-day {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #f6fbff;
+  line-height: 1;
+}
+
+.pf-a3-nutrition-weekday-meta {
+  font-size: 0.56rem;
+  color: rgba(181, 206, 231, 0.8);
+}
+
 .pf-a3-nutrition-macro-grid {
   display: grid;
   gap: 0.56rem;
@@ -5957,8 +6096,36 @@ video.pf-a3-routine-log-video-frame {
     justify-content: center;
   }
 
+  .pf-a3-nutrition-week-head {
+    align-items: stretch;
+  }
+
+  .pf-a3-nutrition-week-head .pf-a2-ghost-btn {
+    flex: 1 1 calc(50% - 0.34rem);
+    justify-content: center;
+  }
+
+  .pf-a3-nutrition-week-label {
+    width: 100%;
+    order: -1;
+  }
+
+  .pf-a3-nutrition-streak-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .pf-a3-nutrition-macro-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pf-a3-nutrition-week-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.34rem;
+  }
+
+  .pf-a3-nutrition-weekday-card {
+    min-height: 86px;
+    padding: 0.38rem 0.3rem;
   }
 
   .pf-a3-nutrition-quickchips {
