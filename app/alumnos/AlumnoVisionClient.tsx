@@ -1960,6 +1960,20 @@ export default function AlumnoVisionClient({
     pollMs: isUltraMobile ? 15000 : 12000,
   });
 
+  const [routineChangeRequestsRaw, setRoutineChangeRequestsRaw, routineChangeRequestsSyncLoaded] =
+    useSharedState<unknown[]>([], {
+      key: ROUTINE_CHANGE_REQUESTS_KEY,
+      legacyLocalStorageKey: ROUTINE_CHANGE_REQUESTS_KEY,
+      pollMs: isUltraMobile ? 15000 : 12000,
+    });
+
+  const [sessionFeedbackRecordsRaw, setSessionFeedbackRecordsRaw, sessionFeedbackSyncLoaded] =
+    useSharedState<unknown[]>([], {
+      key: SESSION_FEEDBACK_RECORDS_KEY,
+      legacyLocalStorageKey: SESSION_FEEDBACK_RECORDS_KEY,
+      pollMs: isUltraMobile ? 15000 : 12000,
+    });
+
   const shouldLoadNutritionData = !isUltraMobile || activeCategory === "nutricion";
   const shouldLoadWorkoutData =
     !isUltraMobile || activeCategory === "progreso" || activeCategory === "rutina" || activeCategory === "inicio";
