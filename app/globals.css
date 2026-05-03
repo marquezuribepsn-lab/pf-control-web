@@ -4761,6 +4761,173 @@ video.pf-a3-routine-log-video-frame {
   box-shadow: none;
 }
 
+.pf-a3-nutrition-tracker-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.pf-a3-nutrition-tracker-date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.52rem;
+}
+
+.pf-a3-nutrition-tracker-date-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.26rem;
+}
+
+.pf-a3-nutrition-tracker-date-input span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(191, 216, 241, 0.88);
+}
+
+.pf-a3-nutrition-tracker-date-input input {
+  border-radius: 0.62rem;
+  border: 1px solid rgba(142, 180, 216, 0.45);
+  background: linear-gradient(170deg, rgba(12, 21, 31, 0.9), rgba(9, 16, 24, 0.92));
+  color: #e8f4ff;
+  min-height: 34px;
+  padding: 0.3rem 0.58rem;
+  font-size: 0.82rem;
+}
+
+.pf-a3-nutrition-kpi {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(146, 192, 230, 0.34);
+  background:
+    radial-gradient(120% 130% at 100% -20%, rgba(125, 211, 252, 0.22), transparent 62%),
+    linear-gradient(168deg, rgba(15, 24, 34, 0.92), rgba(11, 19, 28, 0.9));
+  padding: 0.74rem 0.8rem;
+}
+
+.pf-a3-nutrition-kpi-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(182, 208, 233, 0.78);
+}
+
+.pf-a3-nutrition-kpi-value {
+  margin-top: 0.32rem;
+  font-size: clamp(0.98rem, 2.5vw, 1.18rem);
+  font-weight: 900;
+  color: #f7fbff;
+}
+
+.pf-a3-nutrition-progress {
+  border-radius: 0.92rem;
+  border: 1px solid rgba(142, 182, 219, 0.35);
+  background: linear-gradient(170deg, rgba(14, 23, 34, 0.82), rgba(10, 18, 28, 0.84));
+  padding: 0.62rem 0.72rem;
+}
+
+.pf-a3-nutrition-progress-track {
+  height: 0.56rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(74, 96, 123, 0.38);
+}
+
+.pf-a3-nutrition-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(56, 189, 248, 0.95));
+  transition: width 220ms ease;
+}
+
+.pf-a3-nutrition-progress-fill.is-over {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.95), rgba(249, 115, 22, 0.95));
+}
+
+.pf-a3-nutrition-progress-label {
+  margin-top: 0.38rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(182, 211, 239, 0.9);
+}
+
+.pf-a3-nutrition-tracker-list {
+  display: grid;
+  gap: 0.58rem;
+}
+
+.pf-a3-nutrition-tracker-row {
+  border-radius: 0.86rem;
+  border: 1px solid rgba(129, 163, 198, 0.34);
+  background: linear-gradient(165deg, rgba(14, 23, 33, 0.88), rgba(10, 18, 27, 0.9));
+  padding: 0.66rem 0.72rem;
+  display: grid;
+  gap: 0.52rem;
+}
+
+.pf-a3-nutrition-tracker-row.is-done {
+  border-color: rgba(52, 211, 153, 0.44);
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(52, 211, 153, 0.16), transparent 65%),
+    linear-gradient(165deg, rgba(9, 27, 26, 0.88), rgba(8, 20, 24, 0.92));
+}
+
+.pf-a3-nutrition-tracker-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pf-a3-nutrition-tracker-row-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.58rem;
+}
+
+.pf-a3-nutrition-kcal-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.pf-a3-nutrition-kcal-input span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(181, 208, 235, 0.82);
+}
+
+.pf-a3-nutrition-kcal-input input {
+  width: 132px;
+  border-radius: 0.62rem;
+  border: 1px solid rgba(142, 181, 216, 0.45);
+  background: rgba(9, 16, 25, 0.86);
+  color: #ecf7ff;
+  min-height: 34px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.pf-a3-nutrition-kcal-input input:focus,
+.pf-a3-nutrition-tracker-date-input input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.82);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
+}
+
 @keyframes pf-a2-orbit-right {
   0%,
   100% {
@@ -5551,6 +5718,30 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-alumno-v2 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.2rem !important;
+  }
+
+  .pf-a3-nutrition-tracker-date {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .pf-a3-nutrition-tracker-date .pf-a2-ghost-btn {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .pf-a3-nutrition-tracker-date-input {
+    flex: 1 1 100%;
+  }
+
+  .pf-a3-nutrition-tracker-row-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-a3-nutrition-kcal-input input {
+    width: 100%;
+    text-align: left;
   }
 
   .pf-a2-dock {
