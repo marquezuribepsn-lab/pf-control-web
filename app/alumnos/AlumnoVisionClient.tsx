@@ -2688,6 +2688,14 @@ export default function AlumnoVisionClient({
     setExpandedRoutineBlocks({});
   }, [activeCategory, selectedRoutineDayId, selectedRoutineSessionId, selectedRoutineWeekId]);
 
+  useEffect(() => {
+    if (activeCategory !== "rutina") return;
+    setRoutineFinalizePanelOpen(false);
+    setRoutineFinalizeStatus("");
+    setRoutineFinalizeAnswerByQuestionId({});
+    setRoutineChangeRequestStatus("");
+  }, [activeCategory, selectedRoutineDayId, selectedRoutineSessionId, selectedRoutineWeekId]);
+
   const routineSessionsForDetails = useMemo(() => {
     if (activeCategory !== "rutina") return [];
 
