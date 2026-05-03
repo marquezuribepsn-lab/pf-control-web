@@ -4914,15 +4914,16 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("change")}
-                      className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-[0.72rem] border p-0 text-white transition-colors ${
+                      onPointerUp={() => toggleRoutineQuickPanel("change")}
+                      className={`pf-a3-routine-icon-btn !border !border-emerald-200/65 !bg-emerald-500/30 transition-colors ${
                         routineQuickPanel === "change"
-                          ? "border-emerald-100 bg-emerald-400/45"
-                          : "border-emerald-300/75 bg-emerald-500/25"
+                          ? "!border-emerald-100 !bg-emerald-400/48"
+                          : ""
                       }`}
                       aria-label="Solicitar cambio de rutina"
                       title="Solicitar cambio de rutina"
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" className="h-[19px] w-[19px]" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
                         <path d="M4 6.5a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 6.5v6A2.5 2.5 0 0 1 17.5 15H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 12.5v-6Z" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M8 8.5h8M8 11.5h5" strokeLinecap="round" />
                       </svg>
@@ -4931,44 +4932,18 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("sessions")}
-                      className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-[0.72rem] border p-0 text-white transition-colors ${
+                      onPointerUp={() => toggleRoutineQuickPanel("sessions")}
+                      className={`pf-a3-routine-icon-btn !border !border-rose-200/65 !bg-rose-500/30 transition-colors ${
                         routineQuickPanel === "sessions"
-                          ? "border-rose-100 bg-rose-400/45"
-                          : "border-rose-300/75 bg-rose-500/25"
+                          ? "!border-rose-100 !bg-rose-400/48"
+                          : ""
                       }`}
                       aria-label="Ver sesiones finalizadas"
                       title="Ver sesiones finalizadas"
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" className="h-[19px] w-[19px]" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
                         <path d="M6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9A2.5 2.5 0 0 1 6.5 5Z" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M8 9h8M8 12h8M8 15h5" strokeLinecap="round" />
-                      </svg>
-                    </ReliableActionButton>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={handleRoutineRefresh}
-                      onPointerUp={() => handleRoutineRefresh()}
-                      className="pf-a3-routine-icon-btn"
-                      aria-label="Recargar plan"
-                      title="Recargar plan"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="M20 12a8 8 0 1 1-2.34-5.66" strokeLinecap="round" />
-                        <path d="M20 4v6h-6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </ReliableActionButton>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={handleRoutineToggleAll}
-                      className="pf-a3-routine-icon-btn"
-                      aria-label={isRoutineFullyExpanded ? "Contraer bloques" : "Expandir bloques"}
-                      title={isRoutineFullyExpanded ? "Contraer bloques" : "Expandir bloques"}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="M8 7h8M8 12h8M8 17h8" strokeLinecap="round" />
-                        <path d="m5 7 1 1 2-2M5 12l1 1 2-2M5 17l1 1 2-2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </ReliableActionButton>
 
