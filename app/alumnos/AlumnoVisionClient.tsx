@@ -5532,6 +5532,108 @@ export default function AlumnoVisionClient({
                       Cargar 2 bloques mas ({routineRemainingBlocks} restantes)
                     </ReliableActionButton>
                   ) : null}
+
+                  <section className="mt-4 rounded-2xl border border-emerald-300/22 bg-emerald-500/[0.09] p-3 text-slate-100">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">
+                          Cierre del dia
+                        </p>
+                        <p className="mt-1 text-xs text-emerald-50/90">
+                          Finaliza la sesion y completa el feedback asignado por el profesor.
+                        </p>
+                      </div>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={openRoutineFinalizePanel}
+                        className="rounded-lg border border-emerald-200/55 bg-emerald-400/35 px-3 py-1.5 text-xs font-bold text-white"
+                      >
+                        Finalizar sesion
+                      </ReliableActionButton>
+                    </div>
+
+                    {existingRoutineSessionFeedback ? (
+                      <p className="mt-2 text-[11px] text-emerald-50/85">
+                        Ultimo cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
+                      </p>
+                    ) : null}
+
+                    {routineFinalizePanelOpen ? (
+                      <div className="mt-3 space-y-3 border-t border-emerald-200/25 pt-3">
+                        {selectedRoutineDayFeedbackQuestions.length > 0 ? (
+                          <div className="space-y-2">
+                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion") ? (
+                              <p className="text-sm font-semibold text-emerald-100">
+                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion"}
+                              </p>
+                            ) : null}
+
+                            {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
+                              <article
+                                key={question.id}
+                                className="rounded-xl border border-white/15 bg-slate-950/70 p-2.5"
+                              >
+                                <p className="text-xs font-semibold text-slate-100">
+                                  {question.prompt || `Pregunta ${questionIndex + 1}`}
+                                </p>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {question.options.map((option) => {
+                                    const isSelected =
+                                      routineFinalizeAnswerByQuestionId[question.id] === option.id;
+
+                                    return (
+                                      <ReliableActionButton
+                                        key={`${question.id}-${option.id}`}
+                                        type="button"
+                                        onClick={() =>
+                                          setRoutineFinalizeAnswerByQuestionId((previous) => ({
+                                            ...previous,
+                                            [question.id]: option.id,
+                                          }))
+                                        }
+                                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                                          isSelected
+                                            ? "border-emerald-100 bg-emerald-400/35 text-white"
+                                            : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                        }`}
+                                      >
+                                        {option.label}
+                                      </ReliableActionButton>
+                                    );
+                                  })}
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-emerald-50/90">
+                            El profesor aun no asigno un cuestionario para este dia. Puedes finalizar igual.
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => setRoutineFinalizePanelOpen(false)}
+                            className="rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+                          >
+                            Cancelar
+                          </ReliableActionButton>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={submitRoutineFinalize}
+                            className="rounded-lg border border-emerald-200/55 bg-emerald-400/35 px-3 py-1.5 text-xs font-bold text-white"
+                          >
+                            Guardar cierre
+                          </ReliableActionButton>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {routineFinalizeStatus ? (
+                      <p className="mt-2 text-xs font-semibold text-emerald-100">{routineFinalizeStatus}</p>
+                    ) : null}
+                  </section>
                 </article>
               )}
 
