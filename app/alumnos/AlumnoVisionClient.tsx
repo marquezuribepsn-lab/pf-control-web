@@ -3381,6 +3381,294 @@ export default function AlumnoVisionClient({
     ];
   }, [nutritionTargets?.carbohidratos, nutritionTargets?.grasas, nutritionTargets?.proteinas]);
 
+  const nutritionMealsDetailed = useMemo(() => {
+    const meals = Array.isArray(nutritionPlan?.comidas) ? nutritionPlan.comidas : [];
+
+    return meals.map((meal, index) => {
+      const mealId = String(meal.id || `meal-${index + 1}`).trim() || `meal-${index + 1}`;
+      const mealItems = Array.isArray(meal.items) ? meal.items : [];
+
+      const items = mealItems.map((item, itemIndex) => {
+        const foodId = String(item.foodId || "").trim();
+        const food = foodId ? nutritionFoodsById.get(foodId) : undefined;
+        const grams = toNumber(item.gramos);
+        const safeGrams = Math.max(0, grams || 0);
+        const kcalPer100g = Math.max(0, toNumber(food?.kcalPer100g) || 0);
+        const calories = roundToOneDecimal((kcalPer100g * safeGrams) / 100);
+        const imageUrl = resolveNutritionImageUrl([
+          item.imageUrl,
+          item.imagenUrl,
+          item.photoUrl,
+          item.fotoUrl,
+          item.thumbnailUrl,
+          item.coverUrl,
+          item.artworkUrl,
+          food?.imageUrl,
+          food?.imagenUrl,
+          food?.photoUrl,
+          food?.fotoUrl,
+          food?.thumbnailUrl,
+          food?.coverUrl,
+          food?.artworkUrl,
+        ]);
+
+        return {
+          id: String(item.id || `${mealId}-item-${itemIndex + 1}`).trim() || `${mealId}-item-${itemIndex + 1}`,
+          label: String(item.nombre || food?.nombre || foodId || `Item ${itemIndex + 1}`).trim() || `Item ${itemIndex + 1}`,
+          grams,
+          calories,
+          imageUrl,
+        };
+      });
+
+      const totalKcal = roundToOneDecimal(items.reduce((total, item) => total + item.calories, 0));
+      const imageUrl = resolveNutritionImageUrl([
+        meal.imageUrl,
+        meal.imagenUrl,
+        meal.photoUrl,
+        meal.fotoUrl,
+        meal.thumbnailUrl,
+        meal.coverUrl,
+        meal.artworkUrl,
+        ...items.map((item) => item.imageUrl),
+      ]);
+
+      return {
+        mealId,
+        mealName: String(meal.nombre || `Comida ${index + 1}`).trim() || `Comida ${index + 1}`,
+        totalKcal,
+        imageUrl,
+        items,
+      };
+    });
+  }, [nutritionFoodsById, nutritionPlan?.comidas]);
+
+  const nutritionPlanCaloriesFromMeals = useMemo(
+    () => roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalKcal, 0)),
+    [nutritionMealsDetailed]
+  );
+
+  const nutritionDailyGoalKcal = useMemo(() => {
+    const targetKcal = toNumber(nutritionTargets?.calorias);
+    if (targetKcal !== null && targetKcal > 0) {
+      return targetKcal;
+    }
+
+    return nutritionPlanCaloriesFromMeals;
+  }, [nutritionPlanCaloriesFromMeals, nutritionTargets?.calorias]);
+
+  const nutritionSelectedDayLog = useMemo(() => {
+    return nutritionDailyLogs.find((row) => row.date === normalizedNutritionTrackerDate) || null;
+  }, [nutritionDailyLogs, normalizedNutritionTrackerDate]);
+
+  const nutritionDayMealLogById = useMemo(() => {
+    const map = new Map<string, NutritionDailyMealLogLite>();
+    (nutritionSelectedDayLog?.mealLogs || []).forEach((row) => {
+      const mealId = String(row.mealId || "").trim();
+      if (!mealId) return;
+      map.set(mealId, row);
+    });
+    return map;
+  }, [nutritionSelectedDayLog?.mealLogs]);
+
+  const nutritionDailyConsumedKcal = useMemo(() => {
+    return roundToOneDecimal(
+      nutritionMealsDetailed.reduce((total, meal) => {
+        const mealLog = nutritionDayMealLogById.get(meal.mealId);
+        if (!mealLog?.done) {
+          return total;
+        }
+
+        const consumed = toNumber(mealLog.consumedKcal);
+        if (consumed !== null && consumed > 0) {
+          return total + consumed;
+        }
+
+        return total + meal.totalKcal;
+      }, 0)
+    );
+  }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+
+  const nutritionDailyRemainingKcal = useMemo(
+    () => roundToOneDecimal(nutritionDailyGoalKcal - nutritionDailyConsumedKcal),
+    [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]
+  );
+
+  const nutritionDailyDoneMeals = useMemo(() => {
+    return nutritionMealsDetailed.reduce((total, meal) => {
+      return total + (nutritionDayMealLogById.get(meal.mealId)?.done ? 1 : 0);
+    }, 0);
+  }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+
+  const nutritionDailyProgressPct = useMemo(() => {
+    if (nutritionDailyGoalKcal <= 0) {
+      return 0;
+    }
+
+    const raw = (nutritionDailyConsumedKcal * 100) / nutritionDailyGoalKcal;
+    return Math.max(0, Math.min(160, Math.round(raw)));
+  }, [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]);
+
+  const updateNutritionDailyMealLog = useCallback(
+    (mealId: string, updater: (previous: NutritionDailyMealLogLite) => NutritionDailyMealLogLite) => {
+      const cleanMealId = String(mealId || "").trim();
+      if (!cleanMealId) {
+        return;
+      }
+
+      const safeDate = normalizeDateInputValue(nutritionTrackerDate);
+      const nowIso = new Date().toISOString();
+
+      markManualSaveIntent(NUTRITION_DAILY_LOGS_KEY);
+      setNutritionDailyLogsRaw((previous) => {
+        const rows = normalizeNutritionDailyLogs(Array.isArray(previous) ? previous : []);
+
+        const targetIndex = rows.findIndex((row) => {
+          if (row.date !== safeDate) {
+            return false;
+          }
+
+          const ownerKey = normalizePersonKey(row.ownerKey || "");
+          if (ownerKey) {
+            return ownerKey === nutritionTrackerOwnerKey;
+          }
+
+          return (
+            matchesPreparedIdentityName(row.alumnoNombre, preparedIdentity) ||
+            matchesPreparedIdentityEmail(row.alumnoEmail, preparedIdentity)
+          );
+        });
+
+        const baseRow: NutritionDailyLogLite =
+          targetIndex >= 0
+            ? rows[targetIndex]
+            : {
+                id: `nutri-log-${nutritionTrackerOwnerKey || "alumno"}-${safeDate}`,
+                ownerKey: nutritionTrackerOwnerKey || undefined,
+                alumnoNombre: profileName || undefined,
+                alumnoEmail: profileEmail || undefined,
+                date: safeDate,
+                mealLogs: [],
+                createdAt: nowIso,
+                updatedAt: nowIso,
+              };
+
+        const nextMealLogs = Array.isArray(baseRow.mealLogs) ? [...baseRow.mealLogs] : [];
+        const targetMealIndex = nextMealLogs.findIndex((row) => String(row.mealId || "").trim() === cleanMealId);
+        const previousMealLog: NutritionDailyMealLogLite =
+          targetMealIndex >= 0
+            ? nextMealLogs[targetMealIndex]
+            : {
+                mealId: cleanMealId,
+                done: false,
+                consumedKcal: 0,
+                updatedAt: nowIso,
+              };
+
+        const nextMealLog = updater(previousMealLog);
+        const normalizedMealLog: NutritionDailyMealLogLite = {
+          mealId: cleanMealId,
+          done: Boolean(nextMealLog.done),
+          consumedKcal: Math.max(0, roundToOneDecimal(toNumber(nextMealLog.consumedKcal) || 0)),
+          updatedAt: nowIso,
+        };
+
+        if (targetMealIndex >= 0) {
+          nextMealLogs[targetMealIndex] = normalizedMealLog;
+        } else {
+          nextMealLogs.push(normalizedMealLog);
+        }
+
+        const nextRow: NutritionDailyLogLite = {
+          ...baseRow,
+          ownerKey: nutritionTrackerOwnerKey || baseRow.ownerKey,
+          alumnoNombre: profileName || baseRow.alumnoNombre,
+          alumnoEmail: profileEmail || baseRow.alumnoEmail,
+          date: safeDate,
+          mealLogs: nextMealLogs,
+          createdAt: baseRow.createdAt || nowIso,
+          updatedAt: nowIso,
+        };
+
+        if (targetIndex >= 0) {
+          const nextRows = [...rows];
+          nextRows[targetIndex] = nextRow;
+          return nextRows;
+        }
+
+        return [nextRow, ...rows];
+      });
+    },
+    [
+      nutritionTrackerDate,
+      nutritionTrackerOwnerKey,
+      preparedIdentity,
+      profileEmail,
+      profileName,
+      setNutritionDailyLogsRaw,
+    ]
+  );
+
+  const handleNutritionTrackerDateChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setNutritionTrackerDate(normalizeDateInputValue(event.target.value));
+    setNutritionTrackerStatus("");
+  }, []);
+
+  const handleNutritionTrackerDateShift = useCallback((deltaDays: number) => {
+    setNutritionTrackerDate((current) => shiftDateInputValue(current, deltaDays));
+    setNutritionTrackerStatus("");
+  }, []);
+
+  const handleNutritionMealToggle = useCallback(
+    (mealId: string, nextDone: boolean, fallbackKcal: number) => {
+      updateNutritionDailyMealLog(mealId, (previous) => {
+        const previousKcal = toNumber(previous.consumedKcal);
+        const resolvedFallback = Math.max(0, roundToOneDecimal(fallbackKcal));
+
+        return {
+          ...previous,
+          done: nextDone,
+          consumedKcal: nextDone
+            ? Math.max(0, roundToOneDecimal(previousKcal !== null && previousKcal > 0 ? previousKcal : resolvedFallback))
+            : 0,
+        };
+      });
+
+      setNutritionTrackerStatus(nextDone ? "Comida registrada." : "Comida desmarcada.");
+    },
+    [updateNutritionDailyMealLog]
+  );
+
+  const handleNutritionMealCaloriesBlur = useCallback(
+    (mealId: string, fallbackKcal: number, event: FocusEvent<HTMLInputElement>) => {
+      const parsedValue = toSafeNumeric(event.currentTarget.value);
+      const nextKcal = Math.max(0, roundToOneDecimal(parsedValue === null ? fallbackKcal : parsedValue));
+
+      updateNutritionDailyMealLog(mealId, (previous) => ({
+        ...previous,
+        done: true,
+        consumedKcal: nextKcal,
+      }));
+
+      setNutritionTrackerStatus("Calorias diarias actualizadas.");
+    },
+    [updateNutritionDailyMealLog]
+  );
+
+  useEffect(() => {
+    if (!nutritionTrackerStatus) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNutritionTrackerStatus("");
+    }, 1800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [nutritionTrackerStatus]);
+
   const latestAnthropometry = anthropometryEntries[0] || null;
   const previousAnthropometry = anthropometryEntries[1] || null;
 
