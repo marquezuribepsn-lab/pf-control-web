@@ -1751,6 +1751,7 @@ export default function AlumnoVisionClient({
   const routinePullActiveRef = useRef(false);
   const routinePullDistanceRef = useRef(0);
   const routineDayWeekLoadingTimerRef = useRef<number | null>(null);
+  const routineExerciseLogStatusTimerRef = useRef<number | null>(null);
 
   const isUltraMobile = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -3414,7 +3415,33 @@ export default function AlumnoVisionClient({
       .slice(0, 6);
   }, [routineExerciseLogTarget, workoutLogs]);
 
+  const clearRoutineExerciseLogStatusTimer = useCallback(() => {
+    if (routineExerciseLogStatusTimerRef.current === null || typeof window === "undefined") {
+      routineExerciseLogStatusTimerRef.current = null;
+      return;
+    }
+
+    window.clearTimeout(routineExerciseLogStatusTimerRef.current);
+    routineExerciseLogStatusTimerRef.current = null;
+  }, []);
+
+  const scheduleRoutineExerciseLogStatusReset = useCallback(
+    (delayMs = 2200) => {
+      clearRoutineExerciseLogStatusTimer();
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      routineExerciseLogStatusTimerRef.current = window.setTimeout(() => {
+        routineExerciseLogStatusTimerRef.current = null;
+        setRoutineExerciseLogStatus("");
+      }, delayMs);
+    },
+    [clearRoutineExerciseLogStatusTimer]
+  );
+
   const openRoutineExerciseLogPanel = useCallback((target: RoutineExerciseLogTarget) => {
+    clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogStatus("");
     setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogView("registro");
@@ -3427,15 +3454,16 @@ export default function AlumnoVisionClient({
         videoUrl: String(target.suggestedVideoUrl || "").trim(),
       })
     );
-  }, []);
+  }, [clearRoutineExerciseLogStatusTimer]);
 
   const closeRoutineExerciseLogPanel = useCallback(() => {
+    clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogTarget(null);
     setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogStatus("");
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
-  }, []);
+  }, [clearRoutineExerciseLogStatusTimer]);
 
   const routineSelectionSnapshotRef = useRef<string | null>(null);
 
@@ -3487,6 +3515,12 @@ export default function AlumnoVisionClient({
     triggerRoutineDayWeekLoading,
   ]);
 
+  useEffect(() => {
+    return () => {
+      clearRoutineExerciseLogStatusTimer();
+    };
+  }, [clearRoutineExerciseLogStatusTimer]);
+
   const handleRoutineSessionSelect = useCallback(
     (sessionId: string) => {
       if (sessionId === selectedRoutineSessionId) return;
@@ -3494,11 +3528,12 @@ export default function AlumnoVisionClient({
       triggerRoutineDayWeekLoading();
       setSelectedRoutineSessionId(sessionId);
       setRoutineExerciseLogTarget(null);
+      clearRoutineExerciseLogStatusTimer();
       setRoutineExerciseLogStatus("");
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     },
-    [selectedRoutineSessionId, triggerRoutineDayWeekLoading]
+    [clearRoutineExerciseLogStatusTimer, selectedRoutineSessionId, triggerRoutineDayWeekLoading]
   );
 
   const handleRoutineWeekStep = useCallback(
@@ -3518,11 +3553,12 @@ export default function AlumnoVisionClient({
       setSelectedRoutineWeekId(nextWeek.id);
       setSelectedRoutineDayId(visibleDays[0]?.id || null);
       setRoutineExerciseLogTarget(null);
+      clearRoutineExerciseLogStatusTimer();
       setRoutineExerciseLogStatus("");
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     },
-    [routineWeeks, selectedRoutineWeek, triggerRoutineDayWeekLoading]
+    [clearRoutineExerciseLogStatusTimer, routineWeeks, selectedRoutineWeek, triggerRoutineDayWeekLoading]
   );
 
   const handleRoutineDaySelect = useCallback(
@@ -3532,15 +3568,17 @@ export default function AlumnoVisionClient({
       triggerRoutineDayWeekLoading();
       setSelectedRoutineDayId(dayId);
       setRoutineExerciseLogTarget(null);
+      clearRoutineExerciseLogStatusTimer();
       setRoutineExerciseLogStatus("");
       setExpandedRoutineBlocks({});
       setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
     },
-    [selectedRoutineDay?.id, triggerRoutineDayWeekLoading]
+    [clearRoutineExerciseLogStatusTimer, selectedRoutineDay?.id, triggerRoutineDayWeekLoading]
   );
 
   const triggerRoutineRefresh = useCallback(() => {
     setRoutinePullRefreshing(true);
+    clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogStatus("");
     setExpandedRoutineBlocks({});
     setVisibleRoutineBlockCount(ULTRA_MOBILE_INITIAL_BLOCKS);
@@ -3554,7 +3592,7 @@ export default function AlumnoVisionClient({
     } else {
       setRoutinePullRefreshing(false);
     }
-  }, [scheduleStorageRefresh]);
+  }, [clearRoutineExerciseLogStatusTimer, scheduleStorageRefresh]);
 
   const handleRoutineRefresh = useCallback(() => {
     triggerRoutineRefresh();
@@ -3627,6 +3665,7 @@ export default function AlumnoVisionClient({
       }
 
       if (file.size > MAX_WORKOUT_VIDEO_UPLOAD_BYTES) {
+        clearRoutineExerciseLogStatusTimer();
         setRoutineExerciseLogStatus("El video supera 2 MB. Usa un clip mas corto o pega URL de YouTube.");
         setRoutineExerciseLogDraft((previous) => ({
           ...previous,
@@ -3646,12 +3685,14 @@ export default function AlumnoVisionClient({
           videoFileName: file.name,
           videoMimeType: file.type || "video/mp4",
         }));
+        clearRoutineExerciseLogStatusTimer();
         setRoutineExerciseLogStatus("Video adjuntado al registro.");
       } catch {
+        clearRoutineExerciseLogStatusTimer();
         setRoutineExerciseLogStatus("No se pudo leer el archivo de video.");
       }
     },
-    []
+    [clearRoutineExerciseLogStatusTimer]
   );
 
   const openRoutineVideoExternal = useCallback((rawUrl: string) => {
@@ -3766,11 +3807,9 @@ export default function AlumnoVisionClient({
       return [payload, ...normalized];
     });
     setRoutineExerciseLogEditingId(null);
-    setRoutineExerciseLogStatus(
-      editingLogId
-        ? `Registro actualizado para ${routineExerciseLogTarget.exerciseName}.`
-        : `Registro guardado para ${routineExerciseLogTarget.exerciseName}.`
-    );
+    clearRoutineExerciseLogStatusTimer();
+    setRoutineExerciseLogStatus(editingLogId ? "Registro actualizado correctamente." : "Registro guardado correctamente.");
+    scheduleRoutineExerciseLogStatusReset();
     setRoutineExerciseLogDraft((previous) =>
       createRoutineExerciseLogDraft({
         fecha: previous.fecha,
@@ -3796,10 +3835,12 @@ export default function AlumnoVisionClient({
   }, [
     profileEmail,
     profileName,
+    clearRoutineExerciseLogStatusTimer,
     routineExerciseLogDraft,
     routineExerciseLogEditingId,
     routineExerciseLogSaving,
     routineExerciseLogTarget,
+    scheduleRoutineExerciseLogStatusReset,
     setWorkoutLogsShared,
   ]);
 
@@ -3810,7 +3851,7 @@ export default function AlumnoVisionClient({
     }
 
     setRoutineExerciseLogEditingId(logId);
-    setRoutineExerciseLogView("registro");
+    clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogStatus("Editando registro. Guarda para aplicar cambios.");
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
@@ -3829,11 +3870,13 @@ export default function AlumnoVisionClient({
         videoMimeType: String(log.videoMimeType || ""),
       })
     );
-  }, []);
+  }, [clearRoutineExerciseLogStatusTimer]);
 
   const cancelRoutineExerciseLogEdit = useCallback(() => {
     setRoutineExerciseLogEditingId(null);
+    clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogStatus("Edicion cancelada.");
+    scheduleRoutineExerciseLogStatusReset(1400);
 
     if (!routineExerciseLogTarget) {
       setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
@@ -3848,7 +3891,7 @@ export default function AlumnoVisionClient({
         videoUrl: String(routineExerciseLogTarget.suggestedVideoUrl || "").trim(),
       })
     );
-  }, [routineExerciseLogTarget]);
+  }, [clearRoutineExerciseLogStatusTimer, routineExerciseLogTarget, scheduleRoutineExerciseLogStatusReset]);
 
   const deleteRoutineExerciseRecentLog = useCallback(
     (log: WorkoutLogLite) => {
@@ -3873,9 +3916,16 @@ export default function AlumnoVisionClient({
         setRoutineExerciseLogEditingId(null);
       }
 
-      setRoutineExerciseLogStatus("Registro eliminado. Podes volver a guardarlo cuando quieras.");
+      clearRoutineExerciseLogStatusTimer();
+      setRoutineExerciseLogStatus("Registro eliminado correctamente.");
+      scheduleRoutineExerciseLogStatusReset();
     },
-    [routineExerciseLogEditingId, setWorkoutLogsShared]
+    [
+      clearRoutineExerciseLogStatusTimer,
+      routineExerciseLogEditingId,
+      scheduleRoutineExerciseLogStatusReset,
+      setWorkoutLogsShared,
+    ]
   );
 
   const handleRoutineToggleAll = useCallback(() => {
