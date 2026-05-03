@@ -544,6 +544,7 @@ const ROUTINE_STOPWATCH_FLOAT_SIZE_DESKTOP = 126;
 const ROUTINE_STOPWATCH_FLOAT_SIZE_MOBILE = 108;
 const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
 const DIRECT_AUDIO_EXTENSIONS = [".mp3", ".m4a", ".aac", ".wav", ".ogg", ".flac"];
+const WEEKDAY_SHORT_LABELS = ["DO", "LU", "MA", "MI", "JU", "VI", "SA"];
 
 const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
   {
