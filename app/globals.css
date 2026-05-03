@@ -3769,28 +3769,32 @@ video.pf-a3-routine-log-video-frame {
   width: 100%;
   min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "fecha series"
+    "repeticiones carga";
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .pf-a3-routine-log-field-fecha {
-  order: 1;
+  grid-area: fecha;
 }
 
 .pf-a3-routine-log-field-series {
-  order: 2;
+  grid-area: series;
 }
 
 .pf-a3-routine-log-field-repeticiones {
-  order: 3;
+  grid-area: repeticiones;
 }
 
 .pf-a3-routine-log-field-carga {
-  order: 4;
+  grid-area: carga;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input {
@@ -3806,9 +3810,19 @@ video.pf-a3-routine-log-video-frame {
   block-size: 2.06rem;
   min-block-size: 2.06rem;
   max-block-size: 2.06rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font: inherit;
   line-height: 1.2;
-  padding-right: 1.9rem;
+  padding-inline: 0.52rem;
+}
+
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-datetime-edit,
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+  min-width: 0;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-date-and-time-value {
