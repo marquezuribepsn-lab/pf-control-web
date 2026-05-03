@@ -3816,7 +3816,8 @@ video.pf-a3-routine-log-video-frame {
   max-block-size: 2.06rem;
   box-sizing: border-box;
   margin: 0;
-  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
   line-height: 1.2;
   padding: 0.42rem 0.52rem;
 }
@@ -3827,6 +3828,9 @@ video.pf-a3-routine-log-video-frame {
   width: 100%;
   padding: 0;
   min-width: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-date-and-time-value {
