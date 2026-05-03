@@ -5477,37 +5477,27 @@ export default function AlumnoVisionClient({
                     </ReliableActionButton>
                   ) : null}
 
-                  <section className="mt-4 rounded-2xl border border-emerald-300/22 bg-emerald-500/[0.09] p-3 text-slate-100">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">
-                          Cierre del dia
-                        </p>
-                        <p className="mt-1 text-xs text-emerald-50/90">
-                          Finaliza la sesion y completa el feedback asignado por el profesor.
-                        </p>
-                      </div>
-                      <ReliableActionButton
-                        type="button"
-                        onClick={openRoutineFinalizePanel}
-                        className="rounded-lg border border-emerald-200/55 bg-emerald-400/35 px-3 py-1.5 text-xs font-bold text-white"
-                      >
-                        Finalizar sesion
-                      </ReliableActionButton>
-                    </div>
+                  <section className="mt-4 text-slate-100">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={openRoutineFinalizePanel}
+                      className="w-full rounded-[1.65rem] border border-violet-200/55 bg-[linear-gradient(180deg,rgba(152,82,255,0.98),rgba(111,58,241,0.96))] px-4 py-3.5 text-center text-[clamp(1.05rem,5.8vw,2rem)] font-medium tracking-[0.01em] text-white shadow-[0_24px_45px_-26px_rgba(126,72,255,0.98)]"
+                    >
+                      Finalizar Sesion
+                    </ReliableActionButton>
 
                     {existingRoutineSessionFeedback ? (
-                      <p className="mt-2 text-[11px] text-emerald-50/85">
+                      <p className="mt-2 text-[11px] text-violet-100/80">
                         Ultimo cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
                       </p>
                     ) : null}
 
                     {routineFinalizePanelOpen ? (
-                      <div className="mt-3 space-y-3 border-t border-emerald-200/25 pt-3">
+                      <div className="mt-3 space-y-3 rounded-2xl border border-violet-300/25 bg-slate-950/78 p-3">
                         {selectedRoutineDayFeedbackQuestions.length > 0 ? (
                           <div className="space-y-2">
                             {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion") ? (
-                              <p className="text-sm font-semibold text-emerald-100">
+                              <p className="text-sm font-semibold text-violet-100">
                                 {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesion"}
                               </p>
                             ) : null}
@@ -5537,7 +5527,7 @@ export default function AlumnoVisionClient({
                                         }
                                         className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
                                           isSelected
-                                            ? "border-emerald-100 bg-emerald-400/35 text-white"
+                                            ? "border-violet-100 bg-violet-500/42 text-white"
                                             : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
                                         }`}
                                       >
@@ -5566,7 +5556,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={submitRoutineFinalize}
-                            className="rounded-lg border border-emerald-200/55 bg-emerald-400/35 px-3 py-1.5 text-xs font-bold text-white"
+                            className="rounded-lg border border-violet-200/55 bg-violet-500/42 px-3 py-1.5 text-xs font-bold text-white"
                           >
                             Guardar cierre
                           </ReliableActionButton>
@@ -5575,7 +5565,7 @@ export default function AlumnoVisionClient({
                     ) : null}
 
                     {routineFinalizeStatus ? (
-                      <p className="mt-2 text-xs font-semibold text-emerald-100">{routineFinalizeStatus}</p>
+                      <p className="mt-2 text-xs font-semibold text-violet-100">{routineFinalizeStatus}</p>
                     ) : null}
                   </section>
                 </article>
