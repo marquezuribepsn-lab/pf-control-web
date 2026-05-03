@@ -3754,8 +3754,10 @@ export default function AlumnoVisionClient({
       const safeDate = normalizeDateInputValue(dateInput);
       const dayLog = nutritionDailyLogs.find((row) => row.date === safeDate) || null;
       const mealLogs = Array.isArray(dayLog?.mealLogs) ? dayLog.mealLogs : [];
+      const customFoods = Array.isArray(dayLog?.customFoods) ? dayLog.customFoods : [];
 
       let doneMeals = 0;
+      let customFoodsCount = 0;
       let consumedKcal = 0;
       let consumedProteins = 0;
       let consumedCarbs = 0;
@@ -3793,11 +3795,19 @@ export default function AlumnoVisionClient({
         consumedFats += mealPlan.grasas * safeRatio;
       });
 
+      customFoods.forEach((entry) => {
+        customFoodsCount += 1;
+        consumedKcal += Math.max(0, toNumber(entry.calorias) || 0);
+        consumedProteins += Math.max(0, toNumber(entry.proteinas) || 0);
+        consumedCarbs += Math.max(0, toNumber(entry.carbohidratos) || 0);
+        consumedFats += Math.max(0, toNumber(entry.grasas) || 0);
+      });
+
       const clampedDoneMeals = Math.min(doneMeals, nutritionMealsDetailed.length || doneMeals);
       const completionPct =
         nutritionMealsDetailed.length > 0
           ? Math.round((clampedDoneMeals * 100) / nutritionMealsDetailed.length)
-          : doneMeals > 0
+          : doneMeals > 0 || customFoodsCount > 0
             ? 100
             : 0;
       const progressKcalPct =
@@ -3806,7 +3816,7 @@ export default function AlumnoVisionClient({
           : 0;
 
       let status: "empty" | "low" | "on-target" | "high" = "empty";
-      if (doneMeals > 0) {
+      if (doneMeals > 0 || customFoodsCount > 0) {
         if (nutritionDailyGoalKcal <= 0) {
           status = "on-target";
         } else if (progressKcalPct < 85) {
@@ -3821,6 +3831,8 @@ export default function AlumnoVisionClient({
       return {
         date: safeDate,
         doneMeals: clampedDoneMeals,
+        customFoodsCount,
+        totalEntries: clampedDoneMeals + customFoodsCount,
         consumedKcal: roundToOneDecimal(consumedKcal),
         consumedMacros: {
           proteinas: roundToOneDecimal(consumedProteins),
@@ -3877,12 +3889,12 @@ export default function AlumnoVisionClient({
   }, [getNutritionDaySummary, normalizedNutritionTrackerDate, nutritionWeekStartDate]);
 
   const nutritionWeeklyCompletedDays = useMemo(
-    () => nutritionWeeklyHistory.filter((day) => day.doneMeals > 0).length,
+    () => nutritionWeeklyHistory.filter((day) => day.totalEntries > 0).length,
     [nutritionWeeklyHistory]
   );
 
   const nutritionWeeklyAverageKcal = useMemo(() => {
-    const activeDays = nutritionWeeklyHistory.filter((day) => day.doneMeals > 0);
+    const activeDays = nutritionWeeklyHistory.filter((day) => day.totalEntries > 0);
     if (activeDays.length === 0) {
       return 0;
     }
@@ -3892,7 +3904,7 @@ export default function AlumnoVisionClient({
   }, [nutritionWeeklyHistory]);
 
   const nutritionWeeklyAdherencePct = useMemo(() => {
-    const activeDays = nutritionWeeklyHistory.filter((day) => day.doneMeals > 0 && day.goalKcal > 0);
+    const activeDays = nutritionWeeklyHistory.filter((day) => day.totalEntries > 0 && day.goalKcal > 0);
     if (activeDays.length === 0) {
       return 0;
     }
@@ -3911,7 +3923,7 @@ export default function AlumnoVisionClient({
     const completedDates = nutritionDailyLogs
       .map((row) => normalizeDateInputValue(row.date))
       .filter((date, index, allDates) => allDates.indexOf(date) === index)
-      .filter((date) => getNutritionDaySummary(date).doneMeals > 0)
+      .filter((date) => getNutritionDaySummary(date).totalEntries > 0)
       .sort();
 
     if (completedDates.length === 0) {
