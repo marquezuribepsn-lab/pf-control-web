@@ -3398,8 +3398,14 @@ export default function AlumnoVisionClient({
         const grams = toNumber(item.gramos);
         const safeGrams = Math.max(0, grams || 0);
         const kcalPer100g = Math.max(0, toNumber(food?.kcalPer100g) || 0);
+        const proteinPer100g = Math.max(0, toNumber(food?.proteinPer100g) || 0);
+        const carbsPer100g = Math.max(0, toNumber(food?.carbsPer100g) || 0);
+        const fatPer100g = Math.max(0, toNumber(food?.fatPer100g) || 0);
         const calories = roundToOneDecimal((kcalPer100g * safeGrams) / 100);
-        const imageUrl = resolveNutritionImageUrl([
+        const protein = roundToOneDecimal((proteinPer100g * safeGrams) / 100);
+        const carbs = roundToOneDecimal((carbsPer100g * safeGrams) / 100);
+        const fat = roundToOneDecimal((fatPer100g * safeGrams) / 100);
+        const imageUrls = resolveNutritionImageUrls([
           item.imageUrl,
           item.imagenUrl,
           item.photoUrl,
@@ -3415,18 +3421,26 @@ export default function AlumnoVisionClient({
           food?.coverUrl,
           food?.artworkUrl,
         ]);
+        const imageUrl = imageUrls[0] || null;
 
         return {
           id: String(item.id || `${mealId}-item-${itemIndex + 1}`).trim() || `${mealId}-item-${itemIndex + 1}`,
           label: String(item.nombre || food?.nombre || foodId || `Item ${itemIndex + 1}`).trim() || `Item ${itemIndex + 1}`,
           grams,
           calories,
+          protein,
+          carbs,
+          fat,
           imageUrl,
+          imageUrls,
         };
       });
 
       const totalKcal = roundToOneDecimal(items.reduce((total, item) => total + item.calories, 0));
-      const imageUrl = resolveNutritionImageUrl([
+      const totalProtein = roundToOneDecimal(items.reduce((total, item) => total + item.protein, 0));
+      const totalCarbs = roundToOneDecimal(items.reduce((total, item) => total + item.carbs, 0));
+      const totalFat = roundToOneDecimal(items.reduce((total, item) => total + item.fat, 0));
+      const galleryUrls = resolveNutritionImageUrls([
         meal.imageUrl,
         meal.imagenUrl,
         meal.photoUrl,
@@ -3434,14 +3448,19 @@ export default function AlumnoVisionClient({
         meal.thumbnailUrl,
         meal.coverUrl,
         meal.artworkUrl,
-        ...items.map((item) => item.imageUrl),
+        ...items.flatMap((item) => item.imageUrls),
       ]);
+      const imageUrl = galleryUrls[0] || null;
 
       return {
         mealId,
         mealName: String(meal.nombre || `Comida ${index + 1}`).trim() || `Comida ${index + 1}`,
         totalKcal,
+        totalProtein,
+        totalCarbs,
+        totalFat,
         imageUrl,
+        galleryUrls,
         items,
       };
     });
@@ -3449,6 +3468,15 @@ export default function AlumnoVisionClient({
 
   const nutritionPlanCaloriesFromMeals = useMemo(
     () => roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalKcal, 0)),
+    [nutritionMealsDetailed]
+  );
+
+  const nutritionPlanMacrosFromMeals = useMemo(
+    () => ({
+      proteinas: roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalProtein, 0)),
+      carbohidratos: roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalCarbs, 0)),
+      grasas: roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalFat, 0)),
+    }),
     [nutritionMealsDetailed]
   );
 
@@ -3460,6 +3488,22 @@ export default function AlumnoVisionClient({
 
     return nutritionPlanCaloriesFromMeals;
   }, [nutritionPlanCaloriesFromMeals, nutritionTargets?.calorias]);
+
+  const nutritionDailyGoalMacros = useMemo(
+    () => ({
+      proteinas: Math.max(0, toNumber(nutritionTargets?.proteinas) || nutritionPlanMacrosFromMeals.proteinas),
+      carbohidratos: Math.max(0, toNumber(nutritionTargets?.carbohidratos) || nutritionPlanMacrosFromMeals.carbohidratos),
+      grasas: Math.max(0, toNumber(nutritionTargets?.grasas) || nutritionPlanMacrosFromMeals.grasas),
+    }),
+    [
+      nutritionPlanMacrosFromMeals.carbohidratos,
+      nutritionPlanMacrosFromMeals.grasas,
+      nutritionPlanMacrosFromMeals.proteinas,
+      nutritionTargets?.carbohidratos,
+      nutritionTargets?.grasas,
+      nutritionTargets?.proteinas,
+    ]
+  );
 
   const nutritionSelectedDayLog = useMemo(() => {
     return nutritionDailyLogs.find((row) => row.date === normalizedNutritionTrackerDate) || null;
@@ -3493,9 +3537,63 @@ export default function AlumnoVisionClient({
     );
   }, [nutritionDayMealLogById, nutritionMealsDetailed]);
 
+  const nutritionDailyConsumedMacros = useMemo(() => {
+    const totals = {
+      proteinas: 0,
+      carbohidratos: 0,
+      grasas: 0,
+    };
+
+    nutritionMealsDetailed.forEach((meal) => {
+      const mealLog = nutritionDayMealLogById.get(meal.mealId);
+      if (!mealLog?.done) {
+        return;
+      }
+
+      const plannedKcal = Math.max(0, meal.totalKcal);
+      const consumedKcal = Math.max(0, toNumber(mealLog.consumedKcal) || 0);
+      const effectiveKcal = consumedKcal > 0 ? consumedKcal : plannedKcal;
+
+      let ratio = 0;
+      if (plannedKcal > 0) {
+        ratio = effectiveKcal / plannedKcal;
+      } else if (effectiveKcal > 0) {
+        ratio = 1;
+      }
+
+      const safeRatio = Math.max(0, Math.min(2.5, ratio));
+
+      totals.proteinas += meal.totalProtein * safeRatio;
+      totals.carbohidratos += meal.totalCarbs * safeRatio;
+      totals.grasas += meal.totalFat * safeRatio;
+    });
+
+    return {
+      proteinas: roundToOneDecimal(totals.proteinas),
+      carbohidratos: roundToOneDecimal(totals.carbohidratos),
+      grasas: roundToOneDecimal(totals.grasas),
+    };
+  }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+
   const nutritionDailyRemainingKcal = useMemo(
     () => roundToOneDecimal(nutritionDailyGoalKcal - nutritionDailyConsumedKcal),
     [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]
+  );
+
+  const nutritionDailyRemainingMacros = useMemo(
+    () => ({
+      proteinas: roundToOneDecimal(nutritionDailyGoalMacros.proteinas - nutritionDailyConsumedMacros.proteinas),
+      carbohidratos: roundToOneDecimal(nutritionDailyGoalMacros.carbohidratos - nutritionDailyConsumedMacros.carbohidratos),
+      grasas: roundToOneDecimal(nutritionDailyGoalMacros.grasas - nutritionDailyConsumedMacros.grasas),
+    }),
+    [
+      nutritionDailyConsumedMacros.carbohidratos,
+      nutritionDailyConsumedMacros.grasas,
+      nutritionDailyConsumedMacros.proteinas,
+      nutritionDailyGoalMacros.carbohidratos,
+      nutritionDailyGoalMacros.grasas,
+      nutritionDailyGoalMacros.proteinas,
+    ]
   );
 
   const nutritionDailyDoneMeals = useMemo(() => {
@@ -3512,6 +3610,36 @@ export default function AlumnoVisionClient({
     const raw = (nutritionDailyConsumedKcal * 100) / nutritionDailyGoalKcal;
     return Math.max(0, Math.min(160, Math.round(raw)));
   }, [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]);
+
+  const nutritionDailyMacroProgress = useMemo(() => {
+    const progressFor = (consumed: number, goal: number) => {
+      if (goal <= 0) return 0;
+      return Math.max(0, Math.min(180, Math.round((consumed * 100) / goal)));
+    };
+
+    return {
+      proteinas: progressFor(nutritionDailyConsumedMacros.proteinas, nutritionDailyGoalMacros.proteinas),
+      carbohidratos: progressFor(nutritionDailyConsumedMacros.carbohidratos, nutritionDailyGoalMacros.carbohidratos),
+      grasas: progressFor(nutritionDailyConsumedMacros.grasas, nutritionDailyGoalMacros.grasas),
+    };
+  }, [
+    nutritionDailyConsumedMacros.carbohidratos,
+    nutritionDailyConsumedMacros.grasas,
+    nutritionDailyConsumedMacros.proteinas,
+    nutritionDailyGoalMacros.carbohidratos,
+    nutritionDailyGoalMacros.grasas,
+    nutritionDailyGoalMacros.proteinas,
+  ]);
+
+  const nutritionMealQuickChips = useMemo(
+    () => [
+      { id: "half", label: "50%", ratio: 0.5 },
+      { id: "base", label: "100%", ratio: 1 },
+      { id: "plus", label: "+20%", ratio: 1.2 },
+      { id: "double-snack", label: "+Snack", ratio: 1.35 },
+    ],
+    []
+  );
 
   const updateNutritionDailyMealLog = useCallback(
     (mealId: string, updater: (previous: NutritionDailyMealLogLite) => NutritionDailyMealLogLite) => {
@@ -3657,6 +3785,64 @@ export default function AlumnoVisionClient({
       setNutritionTrackerStatus("Calorias diarias actualizadas.");
     },
     [updateNutritionDailyMealLog]
+  );
+
+  const handleNutritionMealQuickChip = useCallback(
+    (mealId: string, baseMealKcal: number, ratio: number, label: string) => {
+      const nextKcal = Math.max(0, roundToOneDecimal(baseMealKcal * ratio));
+      updateNutritionDailyMealLog(mealId, (previous) => ({
+        ...previous,
+        done: true,
+        consumedKcal: nextKcal,
+      }));
+
+      setNutritionTrackerStatus(`Carga rapida aplicada: ${label}.`);
+    },
+    [updateNutritionDailyMealLog]
+  );
+
+  const applyNutritionDayTemplate = useCallback(
+    (templateId: "full" | "training" | "rest" | "clear") => {
+      if (nutritionMealsDetailed.length === 0) {
+        setNutritionTrackerStatus("No hay comidas para aplicar plantilla.");
+        return;
+      }
+
+      const factorByTemplate: Record<"full" | "training" | "rest", number> = {
+        full: 1,
+        training: 1.15,
+        rest: 0.85,
+      };
+
+      nutritionMealsDetailed.forEach((meal) => {
+        updateNutritionDailyMealLog(meal.mealId, (previous) => {
+          if (templateId === "clear") {
+            return {
+              ...previous,
+              done: false,
+              consumedKcal: 0,
+            };
+          }
+
+          const factor = factorByTemplate[templateId];
+          return {
+            ...previous,
+            done: true,
+            consumedKcal: Math.max(0, roundToOneDecimal(meal.totalKcal * factor)),
+          };
+        });
+      });
+
+      const statusByTemplate: Record<"full" | "training" | "rest" | "clear", string> = {
+        full: "Plantilla aplicada: Dia completo.",
+        training: "Plantilla aplicada: Dia de entreno.",
+        rest: "Plantilla aplicada: Dia de descanso.",
+        clear: "Plantilla aplicada: Reinicio diario.",
+      };
+
+      setNutritionTrackerStatus(statusByTemplate[templateId]);
+    },
+    [nutritionMealsDetailed, updateNutritionDailyMealLog]
   );
 
   useEffect(() => {
