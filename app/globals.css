@@ -3776,6 +3776,10 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
 }
 
+.pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input {
+  block-size: 2.06rem;
+}
+
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"] {
   display: block;
   inline-size: 100%;
