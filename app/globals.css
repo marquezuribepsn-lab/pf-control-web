@@ -3769,9 +3769,7 @@ video.pf-a3-routine-log-video-frame {
   width: 100%;
   min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas:
-    "fecha series"
-    "repeticiones carga";
+  grid-template-rows: repeat(2, minmax(0, auto));
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field {
@@ -3782,19 +3780,23 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-field-fecha {
-  grid-area: fecha;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .pf-a3-routine-log-field-series {
-  grid-area: series;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .pf-a3-routine-log-field-repeticiones {
-  grid-area: repeticiones;
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .pf-a3-routine-log-field-carga {
-  grid-area: carga;
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input {
@@ -3803,6 +3805,8 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
   display: block;
   inline-size: 100%;
   max-inline-size: 100%;
@@ -3811,16 +3815,16 @@ video.pf-a3-routine-log-video-frame {
   min-block-size: 2.06rem;
   max-block-size: 2.06rem;
   box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin: 0;
   font: inherit;
   line-height: 1.2;
-  padding-inline: 0.52rem;
+  padding: 0.42rem 0.52rem;
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-datetime-edit,
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  display: inline-block;
+  width: 100%;
   padding: 0;
   min-width: 0;
 }
@@ -3830,8 +3834,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-pane-registro .pf-a3-routine-log-field input[type="date"]::-webkit-calendar-picker-indicator {
-  margin: 0;
-  opacity: 0.92;
+  display: none;
 }
 
 .pf-a3-routine-log-description {
