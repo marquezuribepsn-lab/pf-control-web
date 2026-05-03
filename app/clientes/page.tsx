@@ -2186,6 +2186,14 @@ export default function ClientesPage() {
     return normalizeTrainingBlocksForEditing(selectedTrainingDay.entrenamiento?.bloques || []);
   }, [selectedTrainingDay]);
 
+  const selectedTrainingDayFeedbackConfig = useMemo(
+    () => sanitizePostSessionFeedbackConfig(selectedTrainingDay?.postSesionFeedback),
+    [selectedTrainingDay?.postSesionFeedback]
+  );
+
+  const selectedTrainingDayFeedbackQuestions =
+    selectedTrainingDayFeedbackConfig?.questions || [];
+
   const selectedTrainingDayBlockSummary = useMemo(
     () => selectedTrainingDayBlocks.reduce((acc, block) => acc + (block.ejercicios || []).length, 0),
     [selectedTrainingDayBlocks]
