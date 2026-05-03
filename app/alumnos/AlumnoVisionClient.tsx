@@ -4872,7 +4872,7 @@ export default function AlumnoVisionClient({
                     ) : null}
 
                     {routineExerciseLogView === "registro" ? (
-                      <section className="pf-a3-routine-log-pane">
+                      <section className="pf-a3-routine-log-pane pf-a3-routine-log-pane-registro">
                         <div className="pf-a3-routine-log-grid">
                           <label className="pf-a3-routine-log-field">
                             <span>Fecha</span>
