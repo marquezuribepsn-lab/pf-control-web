@@ -363,7 +363,7 @@ type RoutineExerciseLogTarget = {
 
 type RoutineExerciseLogView = "descripcion" | "registro" | "registros";
 
-type RoutineActionScreen = "none" | "change" | "sessions" | "finalize";
+type RoutineActionScreen = "none" | "change" | "sessions" | "finalize" | "timer";
 
 type RoutineExerciseLogDraft = {
   fecha: string;
@@ -571,6 +571,20 @@ function formatDateTime(value: string | Date | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatStopwatchDuration(totalMs: number): string {
+  const safeMs = Math.max(0, Math.floor(Number(totalMs) || 0));
+  const totalSeconds = Math.floor(safeMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function formatDateTag(value: string | Date | null | undefined): string {
