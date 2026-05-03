@@ -5096,16 +5096,19 @@ export default function AlumnoVisionClient({
 
                     <ReliableActionButton
                       type="button"
-                      onClick={() => goToCategory("progreso")}
-                      onPointerUp={() => goToCategory("progreso")}
-                      data-nav-href="/alumnos/progreso"
-                      className="pf-a3-routine-icon-btn"
-                      aria-label="Ir a progreso"
-                      title="Ir a progreso"
+                      onClick={() => toggleRoutineQuickPanel("timer")}
+                      className={`pf-a3-routine-icon-btn !border !border-sky-200/65 !bg-sky-500/28 transition-colors ${
+                        activeRoutineActionScreen === "timer" || routineStopwatchRunning
+                          ? "!border-sky-100 !bg-sky-400/45"
+                          : ""
+                      }`}
+                      aria-label="Abrir cronómetro"
+                      title={routineStopwatchRunning ? "Cronómetro en marcha" : "Abrir cronómetro"}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                         <circle cx="12" cy="12" r="8" />
                         <path d="M12 8v4l2.6 1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M9.2 3.5h5.6" strokeLinecap="round" />
                       </svg>
                     </ReliableActionButton>
                   </div>
