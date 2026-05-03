@@ -1936,6 +1936,9 @@ export default function AlumnoVisionClient({
   const [routineQuickPanel, setRoutineQuickPanel] = useState<"none" | "change" | "sessions" | "timer">("none");
   const [routineStopwatchElapsedMs, setRoutineStopwatchElapsedMs] = useState(0);
   const [routineStopwatchRunning, setRoutineStopwatchRunning] = useState(false);
+  const [routineStopwatchFloatPosition, setRoutineStopwatchFloatPosition] =
+    useState<RoutineStopwatchFloatPosition | null>(null);
+  const [routineStopwatchDragging, setRoutineStopwatchDragging] = useState(false);
   const [routineChangeRequestDraft, setRoutineChangeRequestDraft] = useState("");
   const [routineChangeRequestStatus, setRoutineChangeRequestStatus] = useState("");
   const [routineFinalizePanelOpen, setRoutineFinalizePanelOpen] = useState(false);
@@ -1962,6 +1965,24 @@ export default function AlumnoVisionClient({
   const routineActionScreenLoadingTimerRef = useRef<number | null>(null);
   const routineStopwatchStartedAtRef = useRef<number | null>(null);
   const routineStopwatchIntervalRef = useRef<number | null>(null);
+  const routineStopwatchFloatHostRef = useRef<HTMLElement | null>(null);
+  const routineStopwatchDragStateRef = useRef<{
+    active: boolean;
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    originX: number;
+    originY: number;
+  }>(
+    {
+      active: false,
+      pointerId: -1,
+      startClientX: 0,
+      startClientY: 0,
+      originX: 0,
+      originY: 0,
+    }
+  );
   const previousRoutineActionScreenRef = useRef<RoutineActionScreen>("none");
 
   const isUltraMobile = useMemo(() => {
