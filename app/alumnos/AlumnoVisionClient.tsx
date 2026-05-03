@@ -3672,6 +3672,23 @@ export default function AlumnoVisionClient({
     return `Ultima sincronizacion: ${formatDateTime(new Date(routineLastSyncAt))} hs`;
   }, [routineLastSyncAt]);
 
+  const routineStopwatchDisplay = useMemo(
+    () => formatStopwatchDuration(routineStopwatchElapsedMs),
+    [routineStopwatchElapsedMs]
+  );
+
+  const routineStopwatchStatusLabel = useMemo(() => {
+    if (routineStopwatchRunning) {
+      return "Cronómetro en marcha";
+    }
+
+    if (routineStopwatchElapsedMs > 0) {
+      return "Cronómetro en pausa";
+    }
+
+    return "Listo para iniciar";
+  }, [routineStopwatchElapsedMs, routineStopwatchRunning]);
+
   const selectedRoutineWeekIndex = useMemo(() => {
     if (!selectedRoutineWeek || routineWeeks.length === 0) {
       return -1;
@@ -4304,7 +4321,56 @@ export default function AlumnoVisionClient({
     ]
   );
 
-  const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions") => {
+  const clearRoutineStopwatchInterval = useCallback(() => {
+    if (routineStopwatchIntervalRef.current === null) {
+      return;
+    }
+
+    window.clearInterval(routineStopwatchIntervalRef.current);
+    routineStopwatchIntervalRef.current = null;
+  }, []);
+
+  const startRoutineStopwatch = useCallback(() => {
+    if (routineStopwatchRunning || typeof window === "undefined") {
+      return;
+    }
+
+    const baseElapsed = Math.max(0, routineStopwatchElapsedMs);
+    routineStopwatchStartedAtRef.current = Date.now() - baseElapsed;
+    setRoutineStopwatchRunning(true);
+
+    clearRoutineStopwatchInterval();
+    routineStopwatchIntervalRef.current = window.setInterval(() => {
+      if (routineStopwatchStartedAtRef.current === null) {
+        return;
+      }
+
+      setRoutineStopwatchElapsedMs(Math.max(0, Date.now() - routineStopwatchStartedAtRef.current));
+    }, 200);
+  }, [clearRoutineStopwatchInterval, routineStopwatchElapsedMs, routineStopwatchRunning]);
+
+  const pauseRoutineStopwatch = useCallback(() => {
+    if (!routineStopwatchRunning) {
+      return;
+    }
+
+    if (routineStopwatchStartedAtRef.current !== null) {
+      setRoutineStopwatchElapsedMs(Math.max(0, Date.now() - routineStopwatchStartedAtRef.current));
+    }
+
+    routineStopwatchStartedAtRef.current = null;
+    setRoutineStopwatchRunning(false);
+    clearRoutineStopwatchInterval();
+  }, [clearRoutineStopwatchInterval, routineStopwatchRunning]);
+
+  const stopRoutineStopwatch = useCallback(() => {
+    routineStopwatchStartedAtRef.current = null;
+    setRoutineStopwatchRunning(false);
+    setRoutineStopwatchElapsedMs(0);
+    clearRoutineStopwatchInterval();
+  }, [clearRoutineStopwatchInterval]);
+
+  const toggleRoutineQuickPanel = useCallback((panel: "change" | "sessions" | "timer") => {
     setRoutineFinalizePanelOpen(false);
     setRoutineQuickPanel((current) => (current === panel ? "none" : panel));
     setRoutineChangeRequestStatus("");
