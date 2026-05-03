@@ -5005,6 +5005,115 @@ export default function AlumnoVisionClient({
                 </div>
               </section>
 
+              {routineQuickPanel === "change" ? (
+                <section className="mt-3 rounded-2xl border border-emerald-300/25 bg-emerald-500/[0.1] p-3 text-slate-100">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">
+                        Solicitar cambio de rutina
+                      </p>
+                      <p className="mt-1 text-xs text-emerald-50/90">
+                        Envia al profesor el motivo para ajustar este dia o sesion.
+                      </p>
+                    </div>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setRoutineQuickPanel("none")}
+                      className="rounded-md border border-white/25 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white"
+                    >
+                      Cerrar
+                    </ReliableActionButton>
+                  </div>
+
+                  <textarea
+                    value={routineChangeRequestDraft}
+                    onChange={(event) => setRoutineChangeRequestDraft(event.target.value)}
+                    rows={3}
+                    className="mt-3 min-h-[88px] w-full rounded-xl border border-white/20 bg-slate-950/70 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-400"
+                    placeholder="Ej: esta variante me genera dolor en rodilla y necesito otra opcion de ejercicio."
+                  />
+
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] text-emerald-100/85">
+                      {routineChangeRequestDraft.trim().length} caracteres
+                    </span>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={submitRoutineChangeRequest}
+                      className="rounded-lg border border-emerald-200/55 bg-emerald-400/35 px-3 py-1.5 text-xs font-bold text-white"
+                    >
+                      Enviar solicitud
+                    </ReliableActionButton>
+                  </div>
+
+                  {routineChangeRequestStatus ? (
+                    <p className="mt-2 text-xs font-semibold text-emerald-100">{routineChangeRequestStatus}</p>
+                  ) : null}
+
+                  {routineChangeRequests[0] ? (
+                    <p className="mt-2 text-[11px] text-emerald-50/80">
+                      Ultima solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {routineQuickPanel === "sessions" ? (
+                <section className="mt-3 rounded-2xl border border-rose-300/22 bg-rose-500/[0.1] p-3 text-slate-100">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-rose-100">
+                        Sesiones finalizadas
+                      </p>
+                      <p className="mt-1 text-xs text-rose-50/90">
+                        Historial de cierres diarios con feedback enviado.
+                      </p>
+                    </div>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setRoutineQuickPanel("none")}
+                      className="rounded-md border border-white/25 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white"
+                    >
+                      Cerrar
+                    </ReliableActionButton>
+                  </div>
+
+                  {routineSessionFeedbackHistory.length === 0 ? (
+                    <p className="mt-3 text-sm text-rose-50/90">Todavia no finalizaste sesiones con feedback.</p>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      {routineSessionFeedbackHistory.map((record) => (
+                        <article
+                          key={record.id}
+                          className="rounded-xl border border-white/15 bg-slate-950/70 px-3 py-2"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <p className="font-semibold text-rose-100">
+                              {record.dayName || record.sessionTitle || "Sesion"}
+                            </p>
+                            <p className="text-rose-50/85">{formatDateTime(record.createdAt)} hs</p>
+                          </div>
+                          {record.answers.length > 0 ? (
+                            <ul className="mt-1 space-y-1 text-[11px] text-slate-200">
+                              {record.answers.map((answer) => (
+                                <li key={`${record.id}-${answer.questionId}-${answer.optionId}`}>
+                                  {answer.questionPrompt}: <span className="font-semibold text-rose-100">{answer.optionLabel}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="mt-1 text-[11px] text-slate-300">Sin respuestas cargadas.</p>
+                          )}
+                          <p className="mt-1 text-[11px] text-slate-300">
+                            Registros del dia: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              ) : null}
+
               {hasWeekPlanRoutine ? (
                 <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
                   <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
