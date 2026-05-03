@@ -4585,6 +4585,9 @@ export default function AlumnoVisionClient({
   }, []);
 
   const closeRoutineActionScreen = useCallback(() => {
+    routineStopwatchDragStateRef.current.active = false;
+    routineStopwatchDragStateRef.current.pointerId = -1;
+    setRoutineStopwatchDragging(false);
     setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(false);
   }, []);
