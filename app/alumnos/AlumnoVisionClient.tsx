@@ -2075,6 +2075,15 @@ export default function AlumnoVisionClient({
         routineExerciseLogStatusTimerRef.current = null;
       }
 
+      if (routineStopwatchIntervalRef.current !== null) {
+        window.clearInterval(routineStopwatchIntervalRef.current);
+        routineStopwatchIntervalRef.current = null;
+      }
+
+      routineStopwatchStartedAtRef.current = null;
+      setRoutineStopwatchRunning(false);
+      setRoutineStopwatchElapsedMs(0);
+
       setSelectedRoutineSessionId(null);
       setSelectedRoutineWeekId(null);
       setSelectedRoutineDayId(null);
