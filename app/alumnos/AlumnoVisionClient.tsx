@@ -1839,6 +1839,11 @@ export default function AlumnoVisionClient({
         routineDayWeekLoadingTimerRef.current = null;
       }
 
+      if (routineExerciseLogStatusTimerRef.current !== null) {
+        window.clearTimeout(routineExerciseLogStatusTimerRef.current);
+        routineExerciseLogStatusTimerRef.current = null;
+      }
+
       setSelectedRoutineSessionId(null);
       setSelectedRoutineWeekId(null);
       setSelectedRoutineDayId(null);
