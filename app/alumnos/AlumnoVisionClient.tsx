@@ -1306,6 +1306,22 @@ function roundToOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
+function formatCompactNumber(value: number, decimals = 1): string {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  const safeDecimals = Math.max(0, Math.min(3, Math.floor(decimals)));
+  const factor = Math.pow(10, safeDecimals);
+  const rounded = Math.round(value * factor) / factor;
+
+  if (Math.abs(rounded - Math.round(rounded)) < 0.0001) {
+    return String(Math.round(rounded));
+  }
+
+  return rounded.toFixed(safeDecimals);
+}
+
 function normalizeMediaUrl(rawUrl: string | null | undefined): string {
   const value = String(rawUrl || "").trim();
   if (!value) return "";
@@ -9471,46 +9487,98 @@ export default function AlumnoVisionClient({
 
                     {nutritionMealsDetailed.length > 0 ? (
                       <div className="mt-4 space-y-3">
-                        {nutritionMealsDetailed.map((meal, index) => (
-                          <section key={meal.mealId || `${meal.mealName || "meal"}-${index}`} className="pf-a2-kpi rounded-xl border p-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
-                                <p className="mt-1 text-[11px] uppercase tracking-[0.09em] text-slate-400">
-                                  {meal.totalProtein}P · {meal.totalCarbs}C · {meal.totalFat}G
-                                </p>
-                              </div>
-                              <span className="pf-a2-pill">{meal.totalKcal} kcal</span>
-                            </div>
+                        {nutritionMealsDetailed.map((meal, index) => {
+                          const mealName = meal.mealName || `Comida ${index + 1}`;
+                          const mealTimeMatch = String(mealName).match(/(\d{1,2}:\d{2})/);
+                          const mealTime = String(mealTimeMatch?.[1] || "").trim();
 
-                            {meal.imageUrl ? (
-                              <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-900/55">
-                                <img
-                                  src={meal.imageUrl}
-                                  alt={meal.mealName || `Plato ${index + 1}`}
-                                  className="h-36 w-full object-cover"
-                                  loading="lazy"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            ) : null}
+                          return (
+                            <section key={meal.mealId || `${meal.mealName || "meal"}-${index}`} className="pf-a2-kpi rounded-xl border p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h3 className="text-sm font-black text-slate-100">{mealName}</h3>
+                                    {mealTime ? (
+                                      <span className="rounded-full border border-cyan-200/35 bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-100">
+                                        {mealTime}
+                                      </span>
+                                    ) : null}
+                                  </div>
 
-                            <div className="mt-2 space-y-1">
-                              {meal.items.map((item, itemIndex) => (
-                                <div
-                                  key={`${meal.mealId}-${item.id || itemIndex}`}
-                                  className="flex items-center justify-between gap-3 text-xs text-slate-300"
-                                >
-                                  <p className="truncate">
-                                    {item.label}
-                                    {item.grams !== null ? ` · ${item.grams} g` : ""}
-                                  </p>
-                                  <span className="shrink-0 text-slate-400">{item.calories} kcal</span>
+                                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
+                                    <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                                      P {formatCompactNumber(meal.totalProtein)} g
+                                    </span>
+                                    <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                                      C {formatCompactNumber(meal.totalCarbs)} g
+                                    </span>
+                                    <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                                      G {formatCompactNumber(meal.totalFat)} g
+                                    </span>
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
-                          </section>
-                        ))}
+
+                                <span className="pf-a2-pill shrink-0">{formatCompactNumber(meal.totalKcal)} kcal</span>
+                              </div>
+
+                              {meal.imageUrl ? (
+                                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-900/55">
+                                  <img
+                                    src={meal.imageUrl}
+                                    alt={meal.mealName || `Plato ${index + 1}`}
+                                    className="h-36 w-full object-cover"
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </div>
+                              ) : null}
+
+                              <div className="mt-3 space-y-2">
+                                {meal.items.map((item, itemIndex) => {
+                                  const gramsLabel =
+                                    item.grams !== null && Number.isFinite(item.grams)
+                                      ? `${formatCompactNumber(item.grams)} g`
+                                      : null;
+
+                                  return (
+                                    <article
+                                      key={`${meal.mealId}-${item.id || itemIndex}`}
+                                      className="rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2.5"
+                                    >
+                                      <div className="flex items-start justify-between gap-2">
+                                        <p className="min-w-0 text-sm font-semibold text-slate-100">{item.label}</p>
+
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                          {gramsLabel ? (
+                                            <span className="rounded-full border border-slate-400/35 bg-slate-800/70 px-2 py-0.5 text-[11px] font-semibold text-slate-100">
+                                              {gramsLabel}
+                                            </span>
+                                          ) : null}
+
+                                          <span className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-100">
+                                            {formatCompactNumber(item.calories)} kcal
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+                                        <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                                          P {formatCompactNumber(item.protein)} g
+                                        </span>
+                                        <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                                          C {formatCompactNumber(item.carbs)} g
+                                        </span>
+                                        <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                                          G {formatCompactNumber(item.fat)} g
+                                        </span>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </section>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
