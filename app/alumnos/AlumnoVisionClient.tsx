@@ -3936,6 +3936,106 @@ export default function AlumnoVisionClient({
     ]
   );
 
+  const nutritionPlanMealSchedule = useMemo(() => {
+    const seen = new Set<string>();
+    const rows: Array<{ label: string; minutes: number }> = [];
+
+    nutritionMealsDetailed.forEach((meal) => {
+      const name = String(meal.mealName || "");
+      const match = name.match(/(\d{1,2}:\d{2})/);
+      const value = String(match?.[1] || "").trim();
+      if (!value || seen.has(value)) {
+        return;
+      }
+
+      const [hourRaw, minuteRaw] = value.split(":");
+      const hour = Number.parseInt(hourRaw || "", 10);
+      const minute = Number.parseInt(minuteRaw || "", 10);
+
+      if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+        return;
+      }
+
+      seen.add(value);
+      rows.push({
+        label: value,
+        minutes: hour * 60 + minute,
+      });
+    });
+
+    return rows
+      .sort((a, b) => a.minutes - b.minutes)
+      .map((item) => item.label);
+  }, [nutritionMealsDetailed]);
+
+  const nutritionPlanTrainingSplit = useMemo(() => {
+    const notes = String(nutritionPlan?.notas || "");
+    if (!notes) {
+      return null;
+    }
+
+    const match = notes.match(/(\d+)\s*dias?\s*con\s*entrenamiento.*?(\d+)\s*dias?\s*sin\s*entrenamiento/i);
+    if (!match) {
+      return null;
+    }
+
+    const trainingDays = Number.parseInt(match[1] || "", 10);
+    const restDays = Number.parseInt(match[2] || "", 10);
+
+    if (!Number.isFinite(trainingDays) || !Number.isFinite(restDays)) {
+      return null;
+    }
+
+    return {
+      trainingDays,
+      restDays,
+    };
+  }, [nutritionPlan?.notas]);
+
+  const nutritionPlanGuideRows = useMemo(() => {
+    if (!nutritionPlan || nutritionMealsDetailed.length === 0) {
+      return [];
+    }
+
+    const mealsByKcal = [...nutritionMealsDetailed].sort((a, b) => b.totalKcal - a.totalKcal);
+    const mealsByProtein = [...nutritionMealsDetailed].sort((a, b) => b.totalProtein - a.totalProtein);
+    const heaviestMeal = mealsByKcal[0] || null;
+    const lightestMeal = mealsByKcal[mealsByKcal.length - 1] || null;
+    const highestProteinMeal = mealsByProtein[0] || null;
+    const kcalDelta = roundToOneDecimal(nutritionPlanCaloriesFromMeals - nutritionDailyGoalKcal);
+
+    return [
+      {
+        label: "Comida más fuerte",
+        value: heaviestMeal ? `${heaviestMeal.mealName} · ${heaviestMeal.totalKcal} kcal` : "-",
+      },
+      {
+        label: "Comida más liviana",
+        value: lightestMeal ? `${lightestMeal.mealName} · ${lightestMeal.totalKcal} kcal` : "-",
+      },
+      {
+        label: "Mayor proteína",
+        value: highestProteinMeal
+          ? `${highestProteinMeal.mealName} · ${highestProteinMeal.totalProtein} g`
+          : "-",
+      },
+      {
+        label: "Balance del plan",
+        value:
+          Math.abs(kcalDelta) <= 80
+            ? "Calorías bien alineadas"
+            : kcalDelta > 0
+              ? `Plan por encima (+${kcalDelta} kcal)`
+              : `Plan por debajo (${kcalDelta} kcal)`,
+      },
+    ];
+  }, [
+    nutritionDailyGoalKcal,
+    nutritionMealsDetailed,
+    nutritionPlan,
+    nutritionPlanCaloriesFromMeals,
+  ]);
+
   const nutritionSelectedDayLog = useMemo(() => {
     return nutritionDailyLogs.find((row) => row.date === normalizedNutritionTrackerDate) || null;
   }, [nutritionDailyLogs, normalizedNutritionTrackerDate]);
