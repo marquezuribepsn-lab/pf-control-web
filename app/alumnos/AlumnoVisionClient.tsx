@@ -4668,6 +4668,336 @@ export default function AlumnoVisionClient({
     nutritionCustomFoodDraft.proteinas,
   ]);
 
+  const openNutritionMealComposer = useCallback((mealId: string) => {
+    const safeMealId = String(mealId || "").trim();
+    if (!safeMealId) {
+      return;
+    }
+
+    setNutritionMealComposerMealId(safeMealId);
+    setNutritionFoodSearchStatus("");
+    setNutritionBarcodeStatus("");
+    setNutritionCalIaStatus("");
+    setNutritionCalIaEstimate(null);
+  }, []);
+
+  const closeNutritionMealComposer = useCallback(() => {
+    setNutritionMealComposerMealId(null);
+    setNutritionFoodSearchQuery("");
+    setNutritionFoodGramsDraft("100");
+    setNutritionRemoteSearchResults([]);
+    setNutritionFoodSearchStatus("");
+    setNutritionBarcodeStatus("");
+    setNutritionCalIaStatus("");
+    setNutritionCalIaEstimate(null);
+  }, []);
+
+  const toggleNutritionFavoriteFood = useCallback(
+    (food: NutritionSearchFoodResult) => {
+      const safeId = String(food.id || "").trim();
+      if (!safeId) {
+        return;
+      }
+
+      markManualSaveIntent(NUTRITION_FAVORITES_KEY);
+      setNutritionFavoritesRaw((previous) => {
+        const rows = normalizeNutritionFavoriteRows(Array.isArray(previous) ? previous : []);
+        const existingIndex = rows.findIndex((entry) => entry.id === safeId);
+
+        if (existingIndex >= 0) {
+          return rows.filter((entry) => entry.id !== safeId);
+        }
+
+        const next: NutritionFoodFavoriteLite = {
+          id: safeId,
+          nombre: String(food.nombre || "").trim() || safeId,
+          kcalPer100g: Math.max(0, roundToOneDecimal(toNumber(food.kcalPer100g) || 0)),
+          proteinPer100g: Math.max(0, roundToOneDecimal(toNumber(food.proteinPer100g) || 0)),
+          carbsPer100g: Math.max(0, roundToOneDecimal(toNumber(food.carbsPer100g) || 0)),
+          fatPer100g: Math.max(0, roundToOneDecimal(toNumber(food.fatPer100g) || 0)),
+          imageUrl: String(food.imageUrl || "").trim() || undefined,
+          barcode: String(food.barcode || "").trim() || undefined,
+          updatedAt: new Date().toISOString(),
+        };
+
+        return [next, ...rows];
+      });
+
+      setNutritionFoodSearchStatus(
+        nutritionFavoriteFoodIds.has(safeId)
+          ? "Alimento quitado de favoritos."
+          : "Alimento guardado en favoritos."
+      );
+    },
+    [nutritionFavoriteFoodIds, setNutritionFavoritesRaw]
+  );
+
+  const addNutritionFoodFromSearch = useCallback(
+    (food: NutritionSearchFoodResult, source: "search" | "barcode" | "camera" = "search") => {
+      if (!nutritionActiveMealComposer) {
+        setNutritionFoodSearchStatus("Selecciona una comida para cargar el alimento.");
+        return;
+      }
+
+      const grams = Math.max(1, roundToOneDecimal(toSafeNumeric(nutritionFoodGramsDraft) || 0));
+      if (grams <= 0) {
+        setNutritionFoodSearchStatus("Ingresa un gramaje válido.");
+        return;
+      }
+
+      const kcalPer100g = Math.max(0, toNumber(food.kcalPer100g) || 0);
+      const proteinPer100g = Math.max(0, toNumber(food.proteinPer100g) || 0);
+      const carbsPer100g = Math.max(0, toNumber(food.carbsPer100g) || 0);
+      const fatPer100g = Math.max(0, toNumber(food.fatPer100g) || 0);
+
+      appendNutritionCustomFoodEntry(
+        {
+          nombre: food.nombre,
+          foodId: food.id,
+          mealId: nutritionActiveMealComposer.mealId,
+          gramos: grams,
+          porcion: `${grams} g`,
+          calorias: roundToOneDecimal((kcalPer100g * grams) / 100),
+          proteinas: roundToOneDecimal((proteinPer100g * grams) / 100),
+          carbohidratos: roundToOneDecimal((carbsPer100g * grams) / 100),
+          grasas: roundToOneDecimal((fatPer100g * grams) / 100),
+          barcode: String(food.barcode || "").trim() || undefined,
+          source,
+          imageUrl: String(food.imageUrl || "").trim() || undefined,
+        },
+        `Agregado a ${nutritionActiveMealComposer.mealName}.`
+      );
+
+      setNutritionFoodSearchStatus(`Cargado: ${food.nombre}.`);
+      setNutritionCalIaEstimate(null);
+    },
+    [appendNutritionCustomFoodEntry, nutritionActiveMealComposer, nutritionFoodGramsDraft]
+  );
+
+  const lookupNutritionBarcode = useCallback(async (rawCode: string) => {
+    const normalizedCode = String(rawCode || "").replace(/\s+/g, "").trim();
+    if (normalizedCode.length < 6) {
+      setNutritionBarcodeStatus("Código de barras inválido.");
+      return;
+    }
+
+    setNutritionBarcodeStatus("Buscando producto...");
+    setNutritionFoodSearchLoading(true);
+
+    try {
+      const response = await fetch(`/api/nutrition/catalog?barcode=${encodeURIComponent(normalizedCode)}`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo consultar el catálogo por código de barras.");
+      }
+
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        items?: NutritionSearchFoodResult[];
+      };
+      const item = Array.isArray(payload.items) ? payload.items[0] : null;
+
+      if (!payload.ok || !item) {
+        setNutritionBarcodeStatus("No se encontró un producto para ese código.");
+        return;
+      }
+
+      setNutritionRemoteSearchResults((previous) => {
+        const map = new Map<string, NutritionSearchFoodResult>();
+        previous.forEach((row) => map.set(row.id, row));
+        map.set(item.id, item);
+        return Array.from(map.values());
+      });
+      setNutritionFoodSearchQuery(item.nombre);
+      setNutritionBarcodeStatus(`Producto detectado: ${item.nombre}.`);
+      setNutritionFoodSearchStatus("Revisa gramajes y pulsa Agregar.");
+    } catch (error) {
+      setNutritionBarcodeStatus(error instanceof Error ? error.message : "Error al buscar por código de barras.");
+    } finally {
+      setNutritionFoodSearchLoading(false);
+    }
+  }, []);
+
+  const triggerNutritionBarcodeCapture = useCallback(() => {
+    nutritionBarcodeCaptureInputRef.current?.click();
+  }, []);
+
+  const triggerNutritionCalIaCapture = useCallback(() => {
+    nutritionCalIaCaptureInputRef.current?.click();
+  }, []);
+
+  const handleNutritionBarcodeCaptureChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+
+      if (!file) {
+        return;
+      }
+
+      const barcodeDetectorCtor = (
+        window as unknown as {
+          BarcodeDetector?: new (options?: { formats?: string[] }) => {
+            detect: (source: ImageBitmap) => Promise<Array<{ rawValue?: string }>>;
+          };
+        }
+      ).BarcodeDetector;
+
+      let detectedCode = "";
+      if (barcodeDetectorCtor) {
+        try {
+          const detector = new barcodeDetectorCtor({
+            formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"],
+          });
+          const bitmap = await createImageBitmap(file);
+          const results = await detector.detect(bitmap);
+          bitmap.close();
+          detectedCode = String(results?.[0]?.rawValue || "").trim();
+        } catch {
+          detectedCode = "";
+        }
+      }
+
+      if (!detectedCode) {
+        const manualCode = window.prompt(
+          "No se detectó automáticamente. Ingresa el código de barras manualmente:"
+        );
+        detectedCode = String(manualCode || "").trim();
+      }
+
+      if (!detectedCode) {
+        setNutritionBarcodeStatus("No se detectó ningún código.");
+        return;
+      }
+
+      await lookupNutritionBarcode(detectedCode);
+    },
+    [lookupNutritionBarcode]
+  );
+
+  const handleNutritionCalIaCaptureChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+
+      if (!file) {
+        return;
+      }
+
+      if (!nutritionActiveMealComposer) {
+        setNutritionCalIaStatus("Selecciona una comida antes de estimar con cámara.");
+        return;
+      }
+
+      const toDataUrl = () =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+          reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+          reader.readAsDataURL(file);
+        });
+
+      let imageWidth = 1280;
+      let imageHeight = 720;
+      try {
+        const bitmap = await createImageBitmap(file);
+        imageWidth = bitmap.width;
+        imageHeight = bitmap.height;
+        bitmap.close();
+      } catch {
+        // Fallback dimensions are enough for heuristic estimate.
+      }
+
+      const queryHint = normalizePersonKey(nutritionFoodSearchQuery);
+      const hintFood = queryHint
+        ? nutritionCatalogFoods.find((item) => normalizePersonKey(item.nombre).includes(queryHint))
+        : null;
+
+      const megapixels = Math.max(0.3, (imageWidth * imageHeight) / 1_000_000);
+      const sizeScore = Math.max(0.55, Math.min(2.35, file.size / 320_000));
+      const portionScore = Math.max(0.7, Math.min(2.8, megapixels * 0.55 + sizeScore * 0.6));
+      const estimatedGrams = roundToOneDecimal(Math.max(90, Math.min(650, 160 * portionScore)));
+
+      const baseKcal = Math.max(70, toNumber(hintFood?.kcalPer100g) || 185);
+      const baseProtein = Math.max(1, toNumber(hintFood?.proteinPer100g) || 7.5);
+      const baseCarbs = Math.max(1, toNumber(hintFood?.carbsPer100g) || 19);
+      const baseFat = Math.max(0.5, toNumber(hintFood?.fatPer100g) || 8);
+
+      const estimatedEntry: NutritionDailyCustomFoodLite = {
+        id: "cal-ia-draft",
+        nombre: hintFood?.nombre || `Estimación CAL IA - ${nutritionActiveMealComposer.mealName}`,
+        foodId: hintFood?.id || undefined,
+        mealId: nutritionActiveMealComposer.mealId,
+        gramos: estimatedGrams,
+        porcion: `${estimatedGrams} g (estimado)`,
+        calorias: roundToOneDecimal((baseKcal * estimatedGrams) / 100),
+        proteinas: roundToOneDecimal((baseProtein * estimatedGrams) / 100),
+        carbohidratos: roundToOneDecimal((baseCarbs * estimatedGrams) / 100),
+        grasas: roundToOneDecimal((baseFat * estimatedGrams) / 100),
+        source: "camera",
+      };
+
+      try {
+        const previewUrl = await toDataUrl();
+        setNutritionCalIaEstimate({
+          previewUrl,
+          entry: estimatedEntry,
+        });
+        setNutritionCalIaStatus("Estimación lista. Puedes agregarla o volver a escanear.");
+      } catch {
+        setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorías.");
+      }
+    },
+    [nutritionActiveMealComposer, nutritionCatalogFoods, nutritionFoodSearchQuery]
+  );
+
+  const confirmNutritionCalIaEstimate = useCallback(() => {
+    if (!nutritionCalIaEstimate?.entry) {
+      setNutritionCalIaStatus("Primero toma una foto para obtener una estimación.");
+      return;
+    }
+
+    addNutritionFoodFromSearch(
+      {
+        id: nutritionCalIaEstimate.entry.foodId || nutritionCalIaEstimate.entry.id,
+        nombre: nutritionCalIaEstimate.entry.nombre,
+        kcalPer100g: Math.max(
+          0,
+          roundToOneDecimal(
+            (Math.max(0, toNumber(nutritionCalIaEstimate.entry.calorias) || 0) * 100) /
+              Math.max(1, toNumber(nutritionCalIaEstimate.entry.gramos) || 100)
+          )
+        ),
+        proteinPer100g: Math.max(
+          0,
+          roundToOneDecimal(
+            (Math.max(0, toNumber(nutritionCalIaEstimate.entry.proteinas) || 0) * 100) /
+              Math.max(1, toNumber(nutritionCalIaEstimate.entry.gramos) || 100)
+          )
+        ),
+        carbsPer100g: Math.max(
+          0,
+          roundToOneDecimal(
+            (Math.max(0, toNumber(nutritionCalIaEstimate.entry.carbohidratos) || 0) * 100) /
+              Math.max(1, toNumber(nutritionCalIaEstimate.entry.gramos) || 100)
+          )
+        ),
+        fatPer100g: Math.max(
+          0,
+          roundToOneDecimal(
+            (Math.max(0, toNumber(nutritionCalIaEstimate.entry.grasas) || 0) * 100) /
+              Math.max(1, toNumber(nutritionCalIaEstimate.entry.gramos) || 100)
+          )
+        ),
+        sourceLabel: "CAL IA",
+      },
+      "camera"
+    );
+    setNutritionCalIaEstimate(null);
+  }, [addNutritionFoodFromSearch, nutritionCalIaEstimate]);
+
   const removeNutritionCustomFood = useCallback(
     (entryId: string) => {
       const safeId = String(entryId || "").trim();
