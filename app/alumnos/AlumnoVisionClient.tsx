@@ -3590,7 +3590,11 @@ export default function AlumnoVisionClient({
   }, [activeCategory, isUltraMobile, routineEntries]);
 
   const loadStorageState = useCallback(() => {
-    const clienteMetaRows = readArrayFromStorage<ClienteMetaLite>(CLIENTE_META_KEY);
+    const clienteMetaRowsShared = coerceRowsFromUnknown<ClienteMetaLite>(clientesMetaSharedRaw);
+    const clienteMetaRows =
+      clienteMetaRowsShared.length > 0
+        ? clienteMetaRowsShared
+        : readArrayFromStorage<ClienteMetaLite>(CLIENTE_META_KEY);
     const matchedMeta =
       clienteMetaRows.find(
         (row) =>
@@ -3600,9 +3604,16 @@ export default function AlumnoVisionClient({
     setClientMeta(matchedMeta);
 
     if (shouldLoadNutritionData) {
-      const plans = readArrayFromStorage<NutritionPlanLite>(NUTRITION_PLANS_KEY);
+      const plansShared = coerceRowsFromUnknown<NutritionPlanLite>(nutritionPlansSharedRaw);
+      const plans =
+        plansShared.length > 0
+          ? plansShared
+          : readArrayFromStorage<NutritionPlanLite>(NUTRITION_PLANS_KEY);
+      const assignmentRowsShared = coerceRowsFromUnknown<unknown>(nutritionAssignmentsSharedRaw);
       const assignments = normalizeNutritionAssignmentRows(
-        readArrayFromStorage<unknown>(NUTRITION_ASSIGNMENTS_KEY)
+        assignmentRowsShared.length > 0
+          ? assignmentRowsShared
+          : readArrayFromStorage<unknown>(NUTRITION_ASSIGNMENTS_KEY)
       ).sort((a, b) => getTimestamp(b.assignedAt) - getTimestamp(a.assignedAt));
 
       const matchedAssignment = assignments.find(
@@ -3640,8 +3651,11 @@ export default function AlumnoVisionClient({
       setAnthropometryEntries(anthropometryRows);
     }
   }, [
+    clientesMetaSharedRaw,
     matchIdentityEmail,
     matchIdentityName,
+    nutritionAssignmentsSharedRaw,
+    nutritionPlansSharedRaw,
     shouldLoadAnthropometryData,
     shouldLoadNutritionData,
   ]);
