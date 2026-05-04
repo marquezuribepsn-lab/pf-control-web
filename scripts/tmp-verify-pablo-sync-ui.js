@@ -227,6 +227,101 @@ async function extractAlumnoPlanName(page) {
   });
 }
 
+function extractClientIdFromHref(rawHref) {
+  const href = String(rawHref || "").trim();
+  if (!href) return "";
+
+  if (href.includes("/clientes/ficha/")) {
+    const afterFicha = href.split("/clientes/ficha/")[1] || "";
+    const encodedClientId = afterFicha.split("/")[0] || "";
+    if (!encodedClientId) return "";
+    try {
+      return decodeURIComponent(encodedClientId);
+    } catch {
+      return encodedClientId;
+    }
+  }
+
+  if (href.includes("/clientes/plan?")) {
+    const query = href.split("?")[1] || "";
+    const params = new URLSearchParams(query);
+    return params.get("cliente") || "";
+  }
+
+  return "";
+}
+
+async function resolveClientIdFromClientesPage(adminCookieHeader) {
+  const clientesUrl = `${baseUrl}/clientes`;
+  const screenshotPath = path.join("/tmp", `pf-manual-clientes-pablo-${Date.now()}.png`);
+
+  const result = await chromium.launch({ headless: true }).then((browser) =>
+    browser
+      .newContext({
+        viewport: { width: 1600, height: 1200 },
+        extraHTTPHeaders: { Cookie: adminCookieHeader },
+      })
+      .then(async (ctx) => {
+        const page = await ctx.newPage();
+        await page.goto(clientesUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+        await page.waitForTimeout(2500);
+
+        const discovered = await page.evaluate(() => {
+          const cards = Array.from(document.querySelectorAll('article[data-layout-lock="clientes-row-card"]'));
+
+          for (const card of cards) {
+            const text = String(card.textContent || "").toLowerCase();
+            if (!text.includes("pablo")) continue;
+
+            const link =
+              card.querySelector('a[href*="/clientes/ficha/"]') ||
+              card.querySelector('a[href*="/clientes/plan?"]');
+
+            if (link) {
+              return {
+                href: String(link.getAttribute("href") || ""),
+                cardText: String(card.textContent || "").replace(/\s+/g, " ").trim(),
+              };
+            }
+          }
+
+          const genericLink = Array.from(document.querySelectorAll('a[href*="/clientes/ficha/"]')).find((node) => {
+            const surrounding = String(node.closest("article")?.textContent || "").toLowerCase();
+            const ownText = String(node.textContent || "").toLowerCase();
+            return surrounding.includes("pablo") || ownText.includes("pablo");
+          });
+
+          if (genericLink) {
+            const card = genericLink.closest("article");
+            return {
+              href: String(genericLink.getAttribute("href") || ""),
+              cardText: String(card?.textContent || "").replace(/\s+/g, " ").trim(),
+            };
+          }
+
+          return {
+            href: "",
+            cardText: "",
+          };
+        });
+
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        await ctx.close();
+        await browser.close();
+
+        return {
+          clientesUrl,
+          screenshotPath,
+          href: discovered.href,
+          cardText: discovered.cardText,
+          clientId: extractClientIdFromHref(discovered.href),
+        };
+      })
+  );
+
+  return result;
+}
+
 async function captureAdminPlanName(clientId, adminCookieHeader) {
   const adminUrl = `${baseUrl}/clientes/plan?cliente=${encodeURIComponent(clientId)}&tab=plan-nutricional`;
   const screenshotPath = path.join("/tmp", `pf-manual-admin-plan-${Date.now()}.png`);
@@ -291,13 +386,22 @@ async function main() {
   const failures = [];
 
   const pabloContext = await resolvePabloContext();
-  if (!pabloContext.clientId) {
-    throw new Error("No se pudo resolver clientId de Pablo para abrir ficha/plan.");
-  }
 
   const adminLogin = await loginForSmoke({ prisma });
   if (!adminLogin.ok) {
     throw new Error(`Login admin fallo: status=${adminLogin.status} location=${adminLogin.location}`);
+  }
+
+  let resolvedClientId = pabloContext.clientId;
+  let clientesLookup = null;
+
+  if (!resolvedClientId) {
+    clientesLookup = await resolveClientIdFromClientesPage(adminLogin.cookieHeader);
+    resolvedClientId = clientesLookup.clientId;
+  }
+
+  if (!resolvedClientId) {
+    failures.push("No se pudo resolver clientId de Pablo para abrir ficha/plan.");
   }
 
   const alumnoLogin = await loginByToken(alumnoEmail);
@@ -305,7 +409,14 @@ async function main() {
     throw new Error(`Login alumno fallo: status=${alumnoLogin.status} location=${alumnoLogin.location}`);
   }
 
-  const adminView = await captureAdminPlanName(pabloContext.clientId, adminLogin.cookieHeader);
+  const adminView = resolvedClientId
+    ? await captureAdminPlanName(resolvedClientId, adminLogin.cookieHeader)
+    : {
+        url: "",
+        headingFound: false,
+        planName: "",
+        screenshotPath: "",
+      };
   const alumnoView = await captureAlumnoPlanName(alumnoLogin.cookieHeader);
 
   const assignmentPlanName = String(pabloContext.assignmentPlan?.nombre || pabloContext.assignmentPlan?.title || "").trim();
@@ -337,13 +448,14 @@ async function main() {
         ok: failures.length === 0,
         baseUrl,
         alumnoEmail,
-        clientId: pabloContext.clientId,
+        clientId: resolvedClientId,
         assignment: {
           planId: assignmentPlanId,
           planName: assignmentPlanName,
           assignedAt: toIso(pabloContext.assignment?.assignedAt),
         },
         debug: pabloContext.debug,
+        clientesLookup,
         adminView,
         alumnoView,
         failures,
