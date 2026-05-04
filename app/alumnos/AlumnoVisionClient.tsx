@@ -2505,6 +2505,24 @@ export default function AlumnoVisionClient({
       pollMs: isUltraMobile ? 15000 : 12000,
     });
 
+  const [clientesMetaSharedRaw, , clientesMetaSyncLoaded] = useSharedState<unknown>([], {
+    key: CLIENTE_META_KEY,
+    legacyLocalStorageKey: CLIENTE_META_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
+  const [nutritionPlansSharedRaw, , nutritionPlansSyncLoaded] = useSharedState<unknown[]>([], {
+    key: NUTRITION_PLANS_KEY,
+    legacyLocalStorageKey: NUTRITION_PLANS_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
+  const [nutritionAssignmentsSharedRaw, , nutritionAssignmentsSyncLoaded] = useSharedState<unknown[]>([], {
+    key: NUTRITION_ASSIGNMENTS_KEY,
+    legacyLocalStorageKey: NUTRITION_ASSIGNMENTS_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
   const [nutritionFavoritesRaw, setNutritionFavoritesRaw, nutritionFavoritesSyncLoaded] = useSharedState<unknown[]>([], {
     key: NUTRITION_FAVORITES_KEY,
     legacyLocalStorageKey: NUTRITION_FAVORITES_KEY,
@@ -2535,6 +2553,9 @@ export default function AlumnoVisionClient({
       !workoutLogsSyncLoaded &&
       !routineChangeRequestsSyncLoaded &&
       !sessionFeedbackSyncLoaded &&
+      !clientesMetaSyncLoaded &&
+      !nutritionPlansSyncLoaded &&
+      !nutritionAssignmentsSyncLoaded &&
       !nutritionFavoritesSyncLoaded &&
       !nutritionCustomFoodsSyncLoaded &&
       !nutritionDailyLogsSyncLoaded
@@ -2548,6 +2569,12 @@ export default function AlumnoVisionClient({
     routineChangeRequestsSyncLoaded,
     sessionFeedbackRecordsRaw,
     sessionFeedbackSyncLoaded,
+    clientesMetaSharedRaw,
+    clientesMetaSyncLoaded,
+    nutritionPlansSharedRaw,
+    nutritionPlansSyncLoaded,
+    nutritionAssignmentsSharedRaw,
+    nutritionAssignmentsSyncLoaded,
     nutritionFavoritesRaw,
     nutritionFavoritesSyncLoaded,
     nutritionCustomFoodsRaw,
