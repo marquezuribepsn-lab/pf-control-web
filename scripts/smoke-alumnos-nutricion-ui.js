@@ -214,18 +214,41 @@ async function main() {
       failureReasons.push("no se encontro encabezado de nutricion del alumno");
     }
 
-    const registroButton = page
-      .locator("button", { hasText: "Carga y seguimiento del alumno" })
-      .first();
-    const registroButtonCount = await registroButton.count();
+    const modeButtons = page.locator(".pf-a3-nutrition-mode-btn");
+    const modeButtonsCount = await modeButtons.count();
 
-    if (registroButtonCount === 0) {
-      failureReasons.push("no se encontro el boton para abrir carga y seguimiento del alumno");
+    if (modeButtonsCount < 2) {
+      failureReasons.push("no se encontraron los botones de modo de nutricion");
     } else {
+      const registroButton = modeButtons.nth(1);
+      await registroButton.scrollIntoViewIfNeeded().catch(() => {});
       await registroButton.click({ force: true });
+
+      await page
+        .waitForFunction(() => {
+          const buttons = Array.from(document.querySelectorAll(".pf-a3-nutrition-mode-btn"));
+          if (buttons.length < 2) {
+            return false;
+          }
+
+          const registroButtonEl = buttons[1];
+          const isRegistroActive = registroButtonEl.classList.contains("is-active");
+          const hasDiaryHead = Boolean(document.querySelector(".pf-a4-nutrition-diary-head"));
+          return isRegistroActive && hasDiaryHead;
+        }, null, { timeout: 12000 })
+        .catch(async () => {
+          await page.evaluate(() => {
+            const buttons = Array.from(document.querySelectorAll(".pf-a3-nutrition-mode-btn"));
+            const target = buttons[1];
+            if (target && target instanceof HTMLElement) {
+              target.click();
+            }
+          });
+        });
+
       await page.waitForTimeout(Number.isFinite(waitAfterActionMs) ? waitAfterActionMs : 1200);
       interaction.switchedToRegistro =
-        (await page.locator("p", { hasText: "Registro del alumno" }).count()) > 0;
+        (await page.locator(".pf-a4-nutrition-diary-head").count()) > 0;
 
       if (!interaction.switchedToRegistro) {
         failureReasons.push("no se abrio la vista de registro del alumno");
