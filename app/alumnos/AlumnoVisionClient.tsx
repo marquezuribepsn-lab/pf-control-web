@@ -2305,7 +2305,7 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
-  const [nutritionPanelView, setNutritionPanelView] = useState<"plan" | "registro">("plan");
+  const [nutritionPanelView] = useState<"plan" | "registro">("plan");
   const [nutritionShowTrackerDetails, setNutritionShowTrackerDetails] = useState(false);
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
   const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
@@ -9174,26 +9174,8 @@ export default function AlumnoVisionClient({
                 <p className="pf-a2-eyebrow">Plan nutricional</p>
                 <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
                 <p className="mt-2 text-sm text-slate-300">
-                  Separa la vista entre el plan pautado por el profesor y la carga diaria que completa el alumno.
+                  Espacio centrado en el plan nutricional asignado por el profesor.
                 </p>
-
-                <div className="pf-a3-nutrition-mode-toggle mt-4">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => setNutritionPanelView("plan")}
-                    className={`pf-a3-nutrition-mode-btn ${nutritionPanelView === "plan" ? "is-active" : ""}`}
-                  >
-                    Plan pautado por el profesor
-                  </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => setNutritionPanelView("registro")}
-                    className={`pf-a3-nutrition-mode-btn ${nutritionPanelView === "registro" ? "is-active" : ""}`}
-                  >
-                    Carga y seguimiento del alumno
-                  </ReliableActionButton>
-                </div>
               </article>
 
               {nutritionPanelView === "plan" ? (
