@@ -2505,6 +2505,7 @@ export default function AlumnoVisionClient({
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
   const nutritionBarcodeCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const nutritionCalIaCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const nutritionPlanActionsSectionRef = useRef<HTMLDivElement | null>(null);
   const nutritionLiveVideoRef = useRef<HTMLVideoElement | null>(null);
   const nutritionLiveStreamRef = useRef<MediaStream | null>(null);
   const nutritionBarcodeScanRafRef = useRef<number | null>(null);
@@ -4013,6 +4014,35 @@ export default function AlumnoVisionClient({
     [nutritionMealsDetailed]
   );
 
+  const nutritionQuickReplacementCandidate = useMemo(() => {
+    for (const meal of nutritionMealsDetailed) {
+      const itemIndex = meal.items.findIndex((item) => Math.max(0, toNumber(item.calories) || 0) > 0);
+      if (itemIndex < 0) {
+        continue;
+      }
+
+      const item = meal.items[itemIndex];
+      if (!item) {
+        continue;
+      }
+
+      return {
+        mealId: meal.mealId,
+        mealName: meal.mealName,
+        itemId: String(item.id || `${meal.mealId}-${itemIndex}`),
+        label: item.label,
+        foodId: item.foodId,
+        grams: item.grams,
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fat: item.fat,
+      };
+    }
+
+    return null;
+  }, [nutritionMealsDetailed]);
+
   const nutritionPlanMacrosFromMeals = useMemo(
     () => ({
       proteinas: roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalProtein, 0)),
@@ -4464,6 +4494,43 @@ export default function AlumnoVisionClient({
     },
     [nutritionCatalogFoods]
   );
+
+  const focusNutritionPlanActions = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      nutritionPlanActionsSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  }, []);
+
+  const openNutritionVariationActions = useCallback(() => {
+    if (!nutritionPlan?.id) {
+      setNutritionVariationStatus("No hay un plan activo para enviar solicitud.");
+      return;
+    }
+
+    setNutritionVariationStatus("Completa el motivo y envia la solicitud.");
+    focusNutritionPlanActions();
+  }, [focusNutritionPlanActions, nutritionPlan?.id]);
+
+  const triggerQuickNutritionReplacement = useCallback(() => {
+    if (!nutritionQuickReplacementCandidate) {
+      setNutritionVariationStatus("No hay alimentos con calorias para sugerir reemplazo.");
+      return;
+    }
+
+    generateNutritionReplacementForPlanItem(nutritionQuickReplacementCandidate);
+    focusNutritionPlanActions();
+  }, [
+    focusNutritionPlanActions,
+    generateNutritionReplacementForPlanItem,
+    nutritionQuickReplacementCandidate,
+  ]);
 
   const nutritionEstimatedBurnedKcal = useMemo(() => {
     const selectedDayLogs = workoutLogs.filter((row) => {
@@ -9696,6 +9763,26 @@ export default function AlumnoVisionClient({
                       Última asignación: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
                     </p>
 
+                    <div className="pf-a4-nutrition-plan-quick-row mt-3">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={openNutritionVariationActions}
+                        className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                        disabled={!nutritionPlan?.id}
+                      >
+                        Pedir variacion de comida
+                      </ReliableActionButton>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={triggerQuickNutritionReplacement}
+                        className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                        disabled={!nutritionQuickReplacementCandidate}
+                      >
+                        Reemplazo equivalente
+                      </ReliableActionButton>
+                    </div>
+
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="pf-a2-kpi rounded-xl border p-3">
                         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
@@ -9782,7 +9869,7 @@ export default function AlumnoVisionClient({
                       </div>
                     ) : null}
 
-                    <div className="pf-a4-nutrition-plan-actions-card mt-4">
+                    <div ref={nutritionPlanActionsSectionRef} className="pf-a4-nutrition-plan-actions-card mt-4">
                       <p className="pf-a4-nutrition-plan-actions-kicker">Variaciones del plan</p>
                       <h3 className="pf-a4-nutrition-plan-actions-title">Solicitar cambio de comida</h3>
                       <p className="pf-a4-nutrition-plan-actions-copy">
