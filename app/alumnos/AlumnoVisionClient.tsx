@@ -4153,6 +4153,23 @@ export default function AlumnoVisionClient({
     return Math.max(0, Math.min(160, Math.round(raw)));
   }, [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]);
 
+  const nutritionDailyProgressRatio = useMemo(() => {
+    if (nutritionDailyGoalKcal <= 0) {
+      return 0;
+    }
+
+    return Math.max(0, nutritionDailyConsumedKcal / nutritionDailyGoalKcal);
+  }, [nutritionDailyConsumedKcal, nutritionDailyGoalKcal]);
+
+  const nutritionDailySemiGaugeProgress = useMemo(
+    () => Math.max(0, Math.min(1, nutritionDailyProgressRatio)),
+    [nutritionDailyProgressRatio]
+  );
+
+  const nutritionDailySemiGaugeDashOffset = useMemo(() => {
+    return roundToOneDecimal(NUTRITION_KCAL_SEMI_GAUGE_ARC_LENGTH * (1 - nutritionDailySemiGaugeProgress));
+  }, [nutritionDailySemiGaugeProgress]);
+
   const nutritionDailyMacroProgress = useMemo(() => {
     const progressFor = (consumed: number, goal: number) => {
       if (goal <= 0) return 0;
