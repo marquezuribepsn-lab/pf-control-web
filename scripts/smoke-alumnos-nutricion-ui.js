@@ -164,6 +164,7 @@ async function main() {
     const failureReasons = [];
     const interaction = {
       nutritionHeadingFound: false,
+      planViewDetected: false,
       switchedToRegistro: false,
       composerOpened: false,
       searchResultsCount: 0,
@@ -216,9 +217,15 @@ async function main() {
 
     const modeButtons = page.locator(".pf-a3-nutrition-mode-btn");
     const modeButtonsCount = await modeButtons.count();
+    let shouldRunRegistroFlow = false;
 
     if (modeButtonsCount < 2) {
-      failureReasons.push("no se encontraron los botones de modo de nutricion");
+      interaction.planViewDetected =
+        (await page.locator("h2", { hasText: "Comidas del plan" }).count()) > 0;
+
+      if (!interaction.planViewDetected) {
+        failureReasons.push("no se detecto la vista de plan nutricional");
+      }
     } else {
       const registroButton = modeButtons.nth(1);
       await registroButton.scrollIntoViewIfNeeded().catch(() => {});
@@ -252,186 +259,192 @@ async function main() {
 
       if (!interaction.switchedToRegistro) {
         failureReasons.push("no se abrio la vista de registro del alumno");
-      }
-    }
-
-    const tokenBefore = await page.evaluate(() => {
-      window.__pfNutritionSmokeToken = Math.random().toString(36).slice(2);
-      return window.__pfNutritionSmokeToken;
-    });
-
-    const plusButton = page.locator('button[aria-label^="Agregar alimento en"]').first();
-    const plusButtonCount = await plusButton.count();
-
-    if (plusButtonCount === 0) {
-      failureReasons.push("no se encontro el boton + para agregar alimentos");
-    } else {
-      await plusButton.click({ force: true });
-      await page.waitForTimeout(Number.isFinite(waitAfterActionMs) ? waitAfterActionMs : 1200);
-
-      interaction.composerOpened =
-        (await page.locator("p", { hasText: /Carga de alimento|Pantalla de comida/i }).count()) > 0;
-
-      if (!interaction.composerOpened) {
-        failureReasons.push("el boton + no abrio el composer de alimento");
-      }
-    }
-
-    const searchInput = page
-      .locator('label:has-text("Buscador de alimentos") input, label:has-text("Buscar alimentos") input')
-      .first();
-    const gramsInput = page.locator('label:has-text("Gramaje") input').first();
-
-    if ((await searchInput.count()) === 0) {
-      failureReasons.push("no se encontro el input del buscador de alimentos");
-    } else {
-      await searchInput.fill(searchQuery || "banana");
-    }
-
-    if ((await gramsInput.count()) === 0) {
-      failureReasons.push("no se encontro el input de gramaje");
-    } else {
-      await gramsInput.fill(gramsDraftRaw || "180");
-    }
-
-    const searchRows = page.locator(".pf-a4-nutrition-search-row");
-    try {
-      await searchRows.first().waitFor({ state: "visible", timeout: 15000 });
-    } catch {
-      failureReasons.push("el buscador no devolvio resultados visibles");
-    }
-
-    interaction.searchResultsCount = await searchRows.count();
-
-    let firstFoodName = "";
-    if (interaction.searchResultsCount > 0) {
-      const firstRow = searchRows.first();
-      firstFoodName = String(
-        (await firstRow.locator(".pf-a4-nutrition-search-name").first().textContent()) || ""
-      ).trim();
-
-      const favoriteToggle = firstRow.locator('button[aria-label*="favorito"]').first();
-      if ((await favoriteToggle.count()) === 0) {
-        failureReasons.push("no se encontro el boton de favorito en resultados");
       } else {
-        const beforeLabel = String((await favoriteToggle.getAttribute("aria-label")) || "").trim();
-        await favoriteToggle.click({ force: true });
-        await page.waitForTimeout(450);
-        const afterLabel = String((await favoriteToggle.getAttribute("aria-label")) || "").trim();
+        shouldRunRegistroFlow = true;
+      }
+    }
 
-        interaction.favoriteToggleChanged = Boolean(beforeLabel && afterLabel && beforeLabel !== afterLabel);
-        if (!interaction.favoriteToggleChanged) {
-          failureReasons.push("el boton de favorito no cambio de estado tras el click");
+    if (shouldRunRegistroFlow) {
+      const tokenBefore = await page.evaluate(() => {
+        window.__pfNutritionSmokeToken = Math.random().toString(36).slice(2);
+        return window.__pfNutritionSmokeToken;
+      });
+
+      const plusButton = page.locator('button[aria-label^="Agregar alimento en"]').first();
+      const plusButtonCount = await plusButton.count();
+
+      if (plusButtonCount === 0) {
+        failureReasons.push("no se encontro el boton + para agregar alimentos");
+      } else {
+        await plusButton.click({ force: true });
+        await page.waitForTimeout(Number.isFinite(waitAfterActionMs) ? waitAfterActionMs : 1200);
+
+        interaction.composerOpened =
+          (await page.locator("p", { hasText: /Carga de alimento|Pantalla de comida/i }).count()) > 0;
+
+        if (!interaction.composerOpened) {
+          failureReasons.push("el boton + no abrio el composer de alimento");
         }
       }
 
-      const mealEntriesBefore = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
-      const addButton = firstRow.locator("button", { hasText: "Agregar" }).first();
+      const searchInput = page
+        .locator('label:has-text("Buscador de alimentos") input, label:has-text("Buscar alimentos") input')
+        .first();
+      const gramsInput = page.locator('label:has-text("Gramaje") input').first();
 
-      if ((await addButton.count()) === 0) {
-        failureReasons.push("no se encontro el boton Agregar en resultados");
+      if ((await searchInput.count()) === 0) {
+        failureReasons.push("no se encontro el input del buscador de alimentos");
       } else {
-        await addButton.click({ force: true });
-        await page
-          .waitForFunction(
-            (beforeCount) => {
-              return document.querySelectorAll(".pf-a4-nutrition-meal-entry-row").length > beforeCount;
-            },
-            mealEntriesBefore,
-            { timeout: 12000 }
-          )
-          .catch(() => {
-            failureReasons.push("Agregar no sumo entradas en la comida seleccionada");
-          });
+        await searchInput.fill(searchQuery || "banana");
+      }
 
-        const mealEntriesAfter = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
-        interaction.addButtonWorked = mealEntriesAfter > mealEntriesBefore;
+      if ((await gramsInput.count()) === 0) {
+        failureReasons.push("no se encontro el input de gramaje");
+      } else {
+        await gramsInput.fill(gramsDraftRaw || "180");
+      }
 
-        const matchingEntry = page
-          .locator(".pf-a4-nutrition-meal-entry-row", { hasText: firstFoodName || searchQuery || "banana" })
-          .first();
+      const searchRows = page.locator(".pf-a4-nutrition-search-row");
+      try {
+        await searchRows.first().waitFor({ state: "visible", timeout: 15000 });
+      } catch {
+        failureReasons.push("el buscador no devolvio resultados visibles");
+      }
 
-        if ((await matchingEntry.count()) === 0) {
-          failureReasons.push(`no se encontro la entrada agregada para ${firstFoodName || "alimento"}`);
+      interaction.searchResultsCount = await searchRows.count();
+
+      let firstFoodName = "";
+      if (interaction.searchResultsCount > 0) {
+        const firstRow = searchRows.first();
+        firstFoodName = String(
+          (await firstRow.locator(".pf-a4-nutrition-search-name").first().textContent()) || ""
+        ).trim();
+
+        const favoriteToggle = firstRow.locator('button[aria-label*="favorito"]').first();
+        if ((await favoriteToggle.count()) === 0) {
+          failureReasons.push("no se encontro el boton de favorito en resultados");
         } else {
-          const metaText = String(
-            (await matchingEntry.locator(".pf-a4-nutrition-meal-entry-meta").first().textContent()) || ""
-          );
-          interaction.gramsApplied = gramsToRegex(gramsDraftRaw).test(metaText);
+          const beforeLabel = String((await favoriteToggle.getAttribute("aria-label")) || "").trim();
+          await favoriteToggle.click({ force: true });
+          await page.waitForTimeout(450);
+          const afterLabel = String((await favoriteToggle.getAttribute("aria-label")) || "").trim();
 
-          if (!interaction.gramsApplied) {
-            failureReasons.push(
-              `la entrada agregada no refleja gramaje esperado (${gramsDraftRaw} g): ${metaText.trim()}`
-            );
+          interaction.favoriteToggleChanged = Boolean(beforeLabel && afterLabel && beforeLabel !== afterLabel);
+          if (!interaction.favoriteToggleChanged) {
+            failureReasons.push("el boton de favorito no cambio de estado tras el click");
           }
         }
-      }
-    }
 
-    const fileInputs = page.locator('input[type="file"][accept="image/*"][capture="environment"]');
-    const fileInputsCount = await fileInputs.count();
+        const mealEntriesBefore = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
+        const addButton = firstRow.locator("button", { hasText: "Agregar" }).first();
 
-    if (fileInputsCount < 2) {
-      failureReasons.push("no se encontraron los inputs de captura para barcode y CAL IA");
-    } else {
-      const barcodeInput = fileInputs.nth(0);
-      await barcodeInput.setInputFiles(preparedFixtureImage);
-
-      await page
-        .locator("p", { hasText: /Producto detectado:|Escaneo automático:|Código detectado/i })
-        .first()
-        .waitFor({ state: "visible", timeout: 20000 })
-        .then(() => {
-          interaction.barcodeDetected = true;
-        })
-        .catch(() => {
-          failureReasons.push("escanear codigo no llego a estado de producto detectado");
-        });
-
-      const calIaInput = fileInputs.nth(1);
-      await calIaInput.setInputFiles(preparedFixtureImage);
-
-      await page
-        .locator(".pf-a4-nutrition-cal-ia-card")
-        .first()
-        .waitFor({ state: "visible", timeout: 20000 })
-        .then(() => {
-          interaction.calIaEstimated = true;
-        })
-        .catch(() => {
-          failureReasons.push("estimador CAL IA no genero una tarjeta de estimacion");
-        });
-
-      if (interaction.calIaEstimated) {
-        const mealEntriesBeforeCalIa = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
-        const addEstimateButton = page.locator("button", { hasText: "Agregar estimación" }).first();
-
-        if ((await addEstimateButton.count()) === 0) {
-          failureReasons.push("no se encontro boton Agregar estimacion");
+        if ((await addButton.count()) === 0) {
+          failureReasons.push("no se encontro el boton Agregar en resultados");
         } else {
-          await addEstimateButton.click({ force: true });
+          await addButton.click({ force: true });
           await page
             .waitForFunction(
               (beforeCount) => {
                 return document.querySelectorAll(".pf-a4-nutrition-meal-entry-row").length > beforeCount;
               },
-              mealEntriesBeforeCalIa,
+              mealEntriesBefore,
               { timeout: 12000 }
             )
             .catch(() => {
-              failureReasons.push("Agregar estimacion no sumo entrada en la comida");
+              failureReasons.push("Agregar no sumo entradas en la comida seleccionada");
             });
 
-          const mealEntriesAfterCalIa = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
-          interaction.calIaAdded = mealEntriesAfterCalIa > mealEntriesBeforeCalIa;
+          const mealEntriesAfter = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
+          interaction.addButtonWorked = mealEntriesAfter > mealEntriesBefore;
+
+          const matchingEntry = page
+            .locator(".pf-a4-nutrition-meal-entry-row", { hasText: firstFoodName || searchQuery || "banana" })
+            .first();
+
+          if ((await matchingEntry.count()) === 0) {
+            failureReasons.push(`no se encontro la entrada agregada para ${firstFoodName || "alimento"}`);
+          } else {
+            const metaText = String(
+              (await matchingEntry.locator(".pf-a4-nutrition-meal-entry-meta").first().textContent()) || ""
+            );
+            interaction.gramsApplied = gramsToRegex(gramsDraftRaw).test(metaText);
+
+            if (!interaction.gramsApplied) {
+              failureReasons.push(
+                `la entrada agregada no refleja gramaje esperado (${gramsDraftRaw} g): ${metaText.trim()}`
+              );
+            }
+          }
         }
       }
-    }
 
-    const tokenAfter = await readTokenWithRetry(page);
-    interaction.tokenPreserved = tokenAfter === tokenBefore;
-    if (!interaction.tokenPreserved) {
-      failureReasons.push("se detecto recarga completa durante el flujo de nutricion");
+      const fileInputs = page.locator('input[type="file"][accept="image/*"][capture="environment"]');
+      const fileInputsCount = await fileInputs.count();
+
+      if (fileInputsCount < 2) {
+        failureReasons.push("no se encontraron los inputs de captura para barcode y CAL IA");
+      } else {
+        const barcodeInput = fileInputs.nth(0);
+        await barcodeInput.setInputFiles(preparedFixtureImage);
+
+        await page
+          .locator("p", { hasText: /Producto detectado:|Escaneo automático:|Código detectado/i })
+          .first()
+          .waitFor({ state: "visible", timeout: 20000 })
+          .then(() => {
+            interaction.barcodeDetected = true;
+          })
+          .catch(() => {
+            failureReasons.push("escanear codigo no llego a estado de producto detectado");
+          });
+
+        const calIaInput = fileInputs.nth(1);
+        await calIaInput.setInputFiles(preparedFixtureImage);
+
+        await page
+          .locator(".pf-a4-nutrition-cal-ia-card")
+          .first()
+          .waitFor({ state: "visible", timeout: 20000 })
+          .then(() => {
+            interaction.calIaEstimated = true;
+          })
+          .catch(() => {
+            failureReasons.push("estimador CAL IA no genero una tarjeta de estimacion");
+          });
+
+        if (interaction.calIaEstimated) {
+          const mealEntriesBeforeCalIa = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
+          const addEstimateButton = page.locator("button", { hasText: "Agregar estimación" }).first();
+
+          if ((await addEstimateButton.count()) === 0) {
+            failureReasons.push("no se encontro boton Agregar estimacion");
+          } else {
+            await addEstimateButton.click({ force: true });
+            await page
+              .waitForFunction(
+                (beforeCount) => {
+                  return document.querySelectorAll(".pf-a4-nutrition-meal-entry-row").length > beforeCount;
+                },
+                mealEntriesBeforeCalIa,
+                { timeout: 12000 }
+              )
+              .catch(() => {
+                failureReasons.push("Agregar estimacion no sumo entrada en la comida");
+              });
+
+            const mealEntriesAfterCalIa = await page.locator(".pf-a4-nutrition-meal-entry-row").count();
+            interaction.calIaAdded = mealEntriesAfterCalIa > mealEntriesBeforeCalIa;
+          }
+        }
+      }
+
+      const tokenAfter = await readTokenWithRetry(page);
+      interaction.tokenPreserved = tokenAfter === tokenBefore;
+      if (!interaction.tokenPreserved) {
+        failureReasons.push("se detecto recarga completa durante el flujo de nutricion");
+      }
+    } else {
+      interaction.tokenPreserved = true;
     }
 
     await ensureParentDir(screenshotPath);
