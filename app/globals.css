@@ -5430,6 +5430,9 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a4-nutrition-diary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   border: 1px solid rgba(126, 171, 205, 0.4);
   background: rgba(11, 21, 32, 0.82);
