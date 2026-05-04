@@ -187,6 +187,20 @@ type NutritionDailyLogLite = {
   updatedAt?: string;
 };
 
+type NutritionCaptureMode = "none" | "barcode" | "cal-ia";
+
+type NutritionBarcodeDetection = {
+  rawValue?: string;
+};
+
+type NutritionBarcodeDetectorLike = {
+  detect: (source: ImageBitmap) => Promise<NutritionBarcodeDetection[]>;
+};
+
+type NutritionBarcodeDetectorCtorLike = new (options?: {
+  formats?: string[];
+}) => NutritionBarcodeDetectorLike;
+
 type WorkoutLogLite = {
   id?: string;
   alumnoNombre?: string;
@@ -594,6 +608,13 @@ const DEFAULT_NUTRITION_MEAL_DISTRIBUTION = [
   { mealId: "meal-cena", mealName: "Cena", icon: "🥗", goalRatio: 0.25 },
   { mealId: "meal-snacks", mealName: "Snacks", icon: "🍎", goalRatio: 0.1 },
 ] as const;
+const NUTRITION_KCAL_SEMI_GAUGE_ARC_LENGTH = 264;
+const NUTRITION_CAL_IA_MEAL_HINTS: Record<string, string[]> = {
+  desayuno: ["avena", "yogur", "fruta", "banana", "huevo", "tostada", "granola", "leche"],
+  almuerzo: ["pollo", "carne", "arroz", "pasta", "papa", "ensalada", "sandwich", "lenteja"],
+  cena: ["pescado", "pollo", "ensalada", "sopa", "huevo", "verdura", "arroz", "omelette"],
+  snacks: ["barra", "fruta", "yogur", "galleta", "frutos", "licuado", "mani", "almendra"],
+};
 
 const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
   {
@@ -2168,6 +2189,103 @@ function matchesPreparedIdentityEmail(value: string | null | undefined, identity
 function toNumber(value: unknown): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function readBlobAsDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function analyzeNutritionImageBitmap(imageBitmap: ImageBitmap): {
+  coverageRatio: number;
+  edgeRatio: number;
+  vibrancyRatio: number;
+  warmRatio: number;
+} {
+  const sampleWidth = 220;
+  const scale = Math.min(1, sampleWidth / Math.max(1, imageBitmap.width));
+  const width = Math.max(56, Math.round(imageBitmap.width * scale));
+  const height = Math.max(56, Math.round(imageBitmap.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    return {
+      coverageRatio: 0.58,
+      edgeRatio: 0.32,
+      vibrancyRatio: 0.38,
+      warmRatio: 0.34,
+    };
+  }
+
+  context.drawImage(imageBitmap, 0, 0, width, height);
+  const { data } = context.getImageData(0, 0, width, height);
+
+  let coverageCount = 0;
+  let warmCount = 0;
+  let saturationSum = 0;
+  let edgeCount = 0;
+
+  const totalPixels = width * height;
+  const totalEdgeChecks = Math.max(1, (width - 1) * (height - 1));
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = (y * width + x) * 4;
+      const r = data[index] || 0;
+      const g = data[index + 1] || 0;
+      const b = data[index + 2] || 0;
+
+      const maxRgb = Math.max(r, g, b);
+      const minRgb = Math.min(r, g, b);
+      const delta = maxRgb - minRgb;
+      const saturation = maxRgb === 0 ? 0 : delta / maxRgb;
+      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+      saturationSum += saturation;
+
+      if (r > g && g > b) {
+        warmCount += 1;
+      }
+
+      if (luma > 16 && luma < 244 && (saturation > 0.09 || luma < 212)) {
+        coverageCount += 1;
+      }
+
+      if (x < width - 1 && y < height - 1) {
+        const rightIndex = (y * width + (x + 1)) * 4;
+        const downIndex = ((y + 1) * width + x) * 4;
+
+        const rightLuma =
+          0.2126 * (data[rightIndex] || 0) +
+          0.7152 * (data[rightIndex + 1] || 0) +
+          0.0722 * (data[rightIndex + 2] || 0);
+        const downLuma =
+          0.2126 * (data[downIndex] || 0) +
+          0.7152 * (data[downIndex + 1] || 0) +
+          0.0722 * (data[downIndex + 2] || 0);
+
+        const gradient = Math.abs(luma - rightLuma) + Math.abs(luma - downLuma);
+        if (gradient > 58) {
+          edgeCount += 1;
+        }
+      }
+    }
+  }
+
+  return {
+    coverageRatio: Math.max(0.25, Math.min(0.92, coverageCount / Math.max(1, totalPixels))),
+    edgeRatio: Math.max(0.08, Math.min(0.86, edgeCount / totalEdgeChecks)),
+    vibrancyRatio: Math.max(0.12, Math.min(0.92, saturationSum / Math.max(1, totalPixels))),
+    warmRatio: Math.max(0.08, Math.min(0.92, warmCount / Math.max(1, totalPixels))),
+  };
 }
 
 export default function AlumnoVisionClient({
