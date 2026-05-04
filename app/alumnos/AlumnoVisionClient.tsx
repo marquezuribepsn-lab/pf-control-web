@@ -3456,6 +3456,7 @@ export default function AlumnoVisionClient({
     if (shouldLoadNutritionData) {
       trackedKeys.add(NUTRITION_PLANS_KEY);
       trackedKeys.add(NUTRITION_ASSIGNMENTS_KEY);
+      trackedKeys.add(NUTRITION_FAVORITES_KEY);
       trackedKeys.add(NUTRITION_CUSTOM_FOODS_KEY);
       trackedKeys.add(NUTRITION_DAILY_LOGS_KEY);
     }
