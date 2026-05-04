@@ -9749,6 +9749,26 @@ export default function AlumnoVisionClient({
                 <p className="mt-2 text-sm text-slate-300">
                   Espacio centrado en el plan nutricional asignado por el profesor.
                 </p>
+
+                <div className="pf-a4-nutrition-plan-quick-row mt-3">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={openNutritionVariationActions}
+                    className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                    disabled={!nutritionPlan?.id}
+                  >
+                    Solicitar cambio de plan
+                  </ReliableActionButton>
+
+                  <ReliableActionButton
+                    type="button"
+                    onClick={triggerQuickNutritionReplacement}
+                    className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                    disabled={!nutritionQuickReplacementCandidate}
+                  >
+                    Sustituir alimento
+                  </ReliableActionButton>
+                </div>
               </article>
 
               {nutritionPanelView === "plan" ? (
@@ -9762,26 +9782,6 @@ export default function AlumnoVisionClient({
                     <p className="mt-1 text-xs text-slate-400">
                       Última asignación: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
                     </p>
-
-                    <div className="pf-a4-nutrition-plan-quick-row mt-3">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={openNutritionVariationActions}
-                        className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
-                        disabled={!nutritionPlan?.id}
-                      >
-                        Pedir variacion de comida
-                      </ReliableActionButton>
-
-                      <ReliableActionButton
-                        type="button"
-                        onClick={triggerQuickNutritionReplacement}
-                        className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
-                        disabled={!nutritionQuickReplacementCandidate}
-                      >
-                        Reemplazo equivalente
-                      </ReliableActionButton>
-                    </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="pf-a2-kpi rounded-xl border p-3">
