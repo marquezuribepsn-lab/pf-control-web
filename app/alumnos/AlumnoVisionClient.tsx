@@ -1380,6 +1380,11 @@ function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[
             String(foodCandidate.id || "").trim() ||
             `food-${date}-${index}-${entryIndex}`;
           const nombre = String(foodCandidate.nombre || "").trim() || "Alimento";
+          const sourceRaw = String(foodCandidate.source || "").trim();
+          const source: NutritionDailyCustomFoodLite["source"] =
+            sourceRaw === "search" || sourceRaw === "barcode" || sourceRaw === "camera"
+              ? sourceRaw
+              : "manual";
 
           return {
             id,
@@ -1393,12 +1398,7 @@ function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[
             carbohidratos: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.carbohidratos) || 0)),
             grasas: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.grasas) || 0)),
             barcode: String(foodCandidate.barcode || "").trim() || undefined,
-            source:
-              String(foodCandidate.source || "").trim() === "search" ||
-              String(foodCandidate.source || "").trim() === "barcode" ||
-              String(foodCandidate.source || "").trim() === "camera"
-                ? (String(foodCandidate.source || "").trim() as "search" | "barcode" | "camera")
-                : "manual",
+            source,
             imageUrl: String(foodCandidate.imageUrl || "").trim() || undefined,
             createdAt: String(foodCandidate.createdAt || "").trim() || undefined,
           };
