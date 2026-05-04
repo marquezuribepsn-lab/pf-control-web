@@ -37,6 +37,7 @@
     "smoke:login:password-sync": "node scripts/smoke-login-password-sync.js",
     "smoke:dock:no-reload": "node scripts/smoke-dock-no-reload.js",
     "smoke:alumnos:rutina:back": "node scripts/smoke-alumnos-rutina-back.js",
+    "smoke:alumnos:nutricion": "node scripts/smoke-alumnos-nutricion-ui.js",
     "smoke:sidebar:order": "node scripts/smoke-sidebar-order-stability.js",
     "smoke:clientes:visual": "node scripts/smoke-clientes-visual.js",
     "smoke:mail:guard": "node scripts/smoke-mail-guard.js",
