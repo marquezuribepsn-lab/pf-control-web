@@ -9597,194 +9597,197 @@ export default function AlumnoVisionClient({
                   </div>
 
                   {nutritionActiveMealComposer ? (
-                    <article className="pf-a4-nutrition-composer mt-4">
-                      <div className="pf-a4-nutrition-composer-head">
-                        <div>
-                          <p className="pf-a4-nutrition-composer-kicker">Carga de alimento</p>
-                          <h3 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h3>
-                        </div>
-
-                        <ReliableActionButton
-                          type="button"
-                          onClick={closeNutritionMealComposer}
-                          className="pf-a3-nutrition-student-food-delete"
-                        >
-                          Cerrar
-                        </ReliableActionButton>
-                      </div>
-
-                      <div className="pf-a4-nutrition-composer-grid">
-                        <label className="pf-a3-nutrition-student-food-field">
-                          <span>Buscador de alimentos</span>
-                          <input
-                            value={nutritionFoodSearchQuery}
-                            onChange={(event) => setNutritionFoodSearchQuery(event.target.value)}
-                            placeholder="Ej: yogur, arroz, barrita, galletitas..."
-                          />
-                        </label>
-
-                        <label className="pf-a3-nutrition-student-food-field">
-                          <span>Gramaje</span>
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={nutritionFoodGramsDraft}
-                            onChange={(event) => setNutritionFoodGramsDraft(event.target.value)}
-                            placeholder="100"
-                          />
-                        </label>
-                      </div>
-
-                      <div className="pf-a4-nutrition-composer-actions mt-2">
-                        <ReliableActionButton
-                          type="button"
-                          onClick={triggerNutritionBarcodeCapture}
-                          className="pf-a3-nutrition-template-chip"
-                        >
-                          Escanear código
-                        </ReliableActionButton>
-                        <ReliableActionButton
-                          type="button"
-                          onClick={triggerNutritionCalIaCapture}
-                          className="pf-a3-nutrition-template-chip"
-                        >
-                          Estimador CAL IA
-                        </ReliableActionButton>
-                      </div>
-
-                      {nutritionCalIaEstimate ? (
-                        <article className="pf-a4-nutrition-cal-ia-card mt-3">
-                          <div className="pf-a4-nutrition-cal-ia-preview">
-                            <img src={nutritionCalIaEstimate.previewUrl} alt="Estimación CAL IA" loading="lazy" />
-                          </div>
+                    <div className="pf-a4-nutrition-meal-screen-layer">
+                      <article className="pf-a4-nutrition-composer pf-a4-nutrition-composer-screen">
+                        <div className="pf-a4-nutrition-composer-head">
                           <div>
-                            <p className="pf-a4-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
-                            <p className="pf-a4-nutrition-cal-ia-meta">
-                              {nutritionCalIaEstimate.entry.gramos || 0} g · {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
-                            </p>
-                            <ReliableActionButton
-                              type="button"
-                              onClick={confirmNutritionCalIaEstimate}
-                              className="pf-a2-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
-                            >
-                              Agregar estimación
-                            </ReliableActionButton>
+                            <p className="pf-a4-nutrition-composer-kicker">Pantalla de comida</p>
+                            <h3 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h3>
                           </div>
-                        </article>
-                      ) : null}
 
-                      {nutritionFavoriteFoods.length > 0 ? (
-                        <div className="pf-a4-nutrition-favorites-row mt-3">
-                          {nutritionFavoriteFoods.slice(0, 8).map((favorite) => (
-                            <ReliableActionButton
-                              key={`nutrition-favorite-${favorite.id}`}
-                              type="button"
-                              onClick={() =>
-                                addNutritionFoodFromSearch(
-                                  {
-                                    id: favorite.id,
-                                    nombre: favorite.nombre,
-                                    kcalPer100g: favorite.kcalPer100g,
-                                    proteinPer100g: favorite.proteinPer100g,
-                                    carbsPer100g: favorite.carbsPer100g,
-                                    fatPer100g: favorite.fatPer100g,
-                                    imageUrl: favorite.imageUrl,
-                                    barcode: favorite.barcode,
-                                    sourceLabel: "Favorito",
-                                  },
-                                  "search"
-                                )
-                              }
-                              className="pf-a4-nutrition-favorite-chip"
-                            >
-                              ★ {favorite.nombre}
-                            </ReliableActionButton>
-                          ))}
+                          <ReliableActionButton
+                            type="button"
+                            onClick={closeNutritionMealComposer}
+                            className="pf-a3-nutrition-student-food-delete"
+                          >
+                            Volver
+                          </ReliableActionButton>
                         </div>
-                      ) : null}
 
-                      <div className="pf-a4-nutrition-search-results mt-3">
-                        {nutritionFoodSearchLoading ? (
-                          <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
-                        ) : nutritionCombinedSearchResults.length === 0 ? (
-                          <p className="pf-a4-nutrition-search-empty">
-                            No hay resultados para este filtro. Prueba otro término o usa el escáner.
-                          </p>
-                        ) : (
-                          nutritionCombinedSearchResults.map((food) => {
-                            const isFavorite = nutritionFavoriteFoodIds.has(food.id);
+                        <div className="pf-a4-nutrition-composer-grid">
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Buscar alimentos</span>
+                            <input
+                              value={nutritionFoodSearchQuery}
+                              onChange={(event) => setNutritionFoodSearchQuery(event.target.value)}
+                              placeholder="Ej: yogur, arroz, barrita, galletitas..."
+                            />
+                          </label>
 
-                            return (
-                              <article key={`search-food-${food.id}`} className="pf-a4-nutrition-search-row">
-                                {food.imageUrl ? (
-                                  <div className="pf-a4-nutrition-search-thumb">
-                                    <img src={food.imageUrl} alt={food.nombre} loading="lazy" referrerPolicy="no-referrer" />
-                                  </div>
-                                ) : (
-                                  <div className="pf-a4-nutrition-search-thumb pf-a4-nutrition-search-thumb-empty">FOOD</div>
-                                )}
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Gramaje</span>
+                            <input
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={nutritionFoodGramsDraft}
+                              onChange={(event) => setNutritionFoodGramsDraft(event.target.value)}
+                              placeholder="100"
+                            />
+                          </label>
+                        </div>
 
-                                <div className="min-w-0">
-                                  <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
-                                  <p className="pf-a4-nutrition-search-meta">
-                                    {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P · {food.carbsPer100g}C · {food.fatPer100g}G
-                                  </p>
-                                  <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
-                                </div>
+                        <div className="pf-a4-nutrition-composer-actions mt-2">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={triggerNutritionBarcodeCapture}
+                            className="pf-a3-nutrition-template-chip"
+                          >
+                            Escáner automático
+                          </ReliableActionButton>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={triggerNutritionCalIaCapture}
+                            className="pf-a3-nutrition-template-chip"
+                          >
+                            Cámara CAL IA
+                          </ReliableActionButton>
+                        </div>
 
-                                <div className="pf-a4-nutrition-search-actions">
-                                  <ReliableActionButton
-                                    type="button"
-                                    onClick={() => toggleNutritionFavoriteFood(food)}
-                                    className={`pf-a4-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
-                                    aria-label={isFavorite ? `Quitar favorito ${food.nombre}` : `Guardar favorito ${food.nombre}`}
-                                  >
-                                    ★
-                                  </ReliableActionButton>
-
-                                  <ReliableActionButton
-                                    type="button"
-                                    onClick={() =>
-                                      addNutritionFoodFromSearch(
-                                        food,
-                                        food.sourceLabel?.toLowerCase().includes("barcode") ? "barcode" : "search"
-                                      )
-                                    }
-                                    className="pf-a4-nutrition-search-add"
-                                  >
-                                    Agregar
-                                  </ReliableActionButton>
-                                </div>
-                              </article>
-                            );
-                          })
-                        )}
-                      </div>
-
-                      {nutritionActiveMealComposer.mealEntries.length > 0 ? (
-                        <div className="pf-a4-nutrition-meal-entry-list mt-3">
-                          {nutritionActiveMealComposer.mealEntries.map((entry) => (
-                            <article key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-row">
-                              <div>
-                                <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
-                                <p className="pf-a4-nutrition-meal-entry-meta">
-                                  {entry.porcion ? `${entry.porcion} · ` : ""}
-                                  {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
-                                </p>
-                              </div>
+                        {nutritionCalIaEstimate ? (
+                          <article className="pf-a4-nutrition-cal-ia-card mt-3">
+                            <div className="pf-a4-nutrition-cal-ia-preview">
+                              <img src={nutritionCalIaEstimate.previewUrl} alt="Estimación CAL IA" loading="lazy" />
+                            </div>
+                            <div>
+                              <p className="pf-a4-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
+                              <p className="pf-a4-nutrition-cal-ia-meta">
+                                {nutritionCalIaEstimate.entry.gramos || 0} g · {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
+                              </p>
                               <ReliableActionButton
                                 type="button"
-                                onClick={() => removeNutritionCustomFood(entry.id)}
-                                className="pf-a3-nutrition-student-food-delete"
+                                onClick={confirmNutritionCalIaEstimate}
+                                className="pf-a2-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                                disabled={nutritionCalIaProcessing}
                               >
-                                Eliminar
+                                {nutritionCalIaProcessing ? "Procesando..." : "Agregar estimación"}
                               </ReliableActionButton>
-                            </article>
-                          ))}
+                            </div>
+                          </article>
+                        ) : null}
+
+                        {nutritionFavoriteFoods.length > 0 ? (
+                          <div className="pf-a4-nutrition-favorites-row mt-3">
+                            {nutritionFavoriteFoods.slice(0, 8).map((favorite) => (
+                              <ReliableActionButton
+                                key={`nutrition-favorite-${favorite.id}`}
+                                type="button"
+                                onClick={() =>
+                                  addNutritionFoodFromSearch(
+                                    {
+                                      id: favorite.id,
+                                      nombre: favorite.nombre,
+                                      kcalPer100g: favorite.kcalPer100g,
+                                      proteinPer100g: favorite.proteinPer100g,
+                                      carbsPer100g: favorite.carbsPer100g,
+                                      fatPer100g: favorite.fatPer100g,
+                                      imageUrl: favorite.imageUrl,
+                                      barcode: favorite.barcode,
+                                      sourceLabel: "Favorito",
+                                    },
+                                    "search"
+                                  )
+                                }
+                                className="pf-a4-nutrition-favorite-chip"
+                              >
+                                ★ {favorite.nombre}
+                              </ReliableActionButton>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        <div className="pf-a4-nutrition-search-results mt-3">
+                          {nutritionFoodSearchLoading ? (
+                            <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
+                          ) : nutritionCombinedSearchResults.length === 0 ? (
+                            <p className="pf-a4-nutrition-search-empty">
+                              No hay resultados para este filtro. Prueba otro término o usa el escáner.
+                            </p>
+                          ) : (
+                            nutritionCombinedSearchResults.map((food) => {
+                              const isFavorite = nutritionFavoriteFoodIds.has(food.id);
+
+                              return (
+                                <article key={`search-food-${food.id}`} className="pf-a4-nutrition-search-row">
+                                  {food.imageUrl ? (
+                                    <div className="pf-a4-nutrition-search-thumb">
+                                      <img src={food.imageUrl} alt={food.nombre} loading="lazy" referrerPolicy="no-referrer" />
+                                    </div>
+                                  ) : (
+                                    <div className="pf-a4-nutrition-search-thumb pf-a4-nutrition-search-thumb-empty">FOOD</div>
+                                  )}
+
+                                  <div className="min-w-0">
+                                    <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
+                                    <p className="pf-a4-nutrition-search-meta">
+                                      {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P · {food.carbsPer100g}C · {food.fatPer100g}G
+                                    </p>
+                                    <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
+                                  </div>
+
+                                  <div className="pf-a4-nutrition-search-actions">
+                                    <ReliableActionButton
+                                      type="button"
+                                      onClick={() => toggleNutritionFavoriteFood(food)}
+                                      className={`pf-a4-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
+                                      aria-label={isFavorite ? `Quitar favorito ${food.nombre}` : `Guardar favorito ${food.nombre}`}
+                                    >
+                                      ★
+                                    </ReliableActionButton>
+
+                                    <ReliableActionButton
+                                      type="button"
+                                      onClick={() =>
+                                        addNutritionFoodFromSearch(
+                                          food,
+                                          food.sourceLabel?.toLowerCase().includes("barcode") ? "barcode" : "search"
+                                        )
+                                      }
+                                      className="pf-a4-nutrition-search-add"
+                                    >
+                                      Agregar
+                                    </ReliableActionButton>
+                                  </div>
+                                </article>
+                              );
+                            })
+                          )}
                         </div>
-                      ) : null}
-                    </article>
+
+                        {nutritionActiveMealComposer.mealEntries.length > 0 ? (
+                          <div className="pf-a4-nutrition-meal-entry-list mt-3">
+                            {nutritionActiveMealComposer.mealEntries.map((entry) => (
+                              <article key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-row">
+                                <div>
+                                  <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
+                                  <p className="pf-a4-nutrition-meal-entry-meta">
+                                    {entry.porcion ? `${entry.porcion} · ` : ""}
+                                    {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
+                                  </p>
+                                </div>
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => removeNutritionCustomFood(entry.id)}
+                                  className="pf-a3-nutrition-student-food-delete"
+                                >
+                                  Eliminar
+                                </ReliableActionButton>
+                              </article>
+                            ))}
+                          </div>
+                        ) : null}
+                      </article>
+                    </div>
                   ) : null}
 
                   {nutritionShowTrackerDetails ? (
