@@ -270,14 +270,16 @@ async function main() {
       await page.waitForTimeout(Number.isFinite(waitAfterActionMs) ? waitAfterActionMs : 1200);
 
       interaction.composerOpened =
-        (await page.locator("p", { hasText: "Carga de alimento" }).count()) > 0;
+        (await page.locator("p", { hasText: /Carga de alimento|Pantalla de comida/i }).count()) > 0;
 
       if (!interaction.composerOpened) {
         failureReasons.push("el boton + no abrio el composer de alimento");
       }
     }
 
-    const searchInput = page.locator('label:has-text("Buscador de alimentos") input').first();
+    const searchInput = page
+      .locator('label:has-text("Buscador de alimentos") input, label:has-text("Buscar alimentos") input')
+      .first();
     const gramsInput = page.locator('label:has-text("Gramaje") input').first();
 
     if ((await searchInput.count()) === 0) {
@@ -376,7 +378,7 @@ async function main() {
       await barcodeInput.setInputFiles(preparedFixtureImage);
 
       await page
-        .locator("p", { hasText: "Producto detectado:" })
+        .locator("p", { hasText: /Producto detectado:|Escaneo automático:|Código detectado/i })
         .first()
         .waitFor({ state: "visible", timeout: 20000 })
         .then(() => {
