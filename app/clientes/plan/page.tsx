@@ -24,6 +24,10 @@ type ClienteView = {
   categoria?: string;
 };
 
+type ClienteMetaLite = {
+  email?: string;
+};
+
 type NutritionGoal = "mantenimiento" | "recomposicion" | "masa" | "deficit";
 
 type NutritionTargets = {
@@ -54,6 +58,7 @@ type NutritionPlan = {
 
 type AlumnoNutritionAssignment = {
   alumnoNombre: string;
+  alumnoEmail?: string;
   planId: string;
   assignedAt: string;
 };
@@ -130,6 +135,7 @@ type TemplateLibraryItem = {
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const AI_TRAINING_PLANS_KEY = "pf-control-ai-training-plans-v1";
 
@@ -427,6 +433,10 @@ function ClientePlanContent() {
   const { alumnos } = useAlumnos();
   const { sesiones, agregarSesion, editarSesion } = useSessions();
   const { ejercicios, agregarEjercicio } = useEjercicios();
+  const [clientesMeta] = useSharedState<Record<string, ClienteMetaLite>>({}, {
+    key: CLIENTE_META_KEY,
+    legacyLocalStorageKey: CLIENTE_META_KEY,
+  });
   const [nutritionPlans] = useSharedState<NutritionPlan[]>([], {
     key: NUTRITION_PLANS_KEY,
     legacyLocalStorageKey: NUTRITION_PLANS_KEY,
@@ -501,6 +511,13 @@ function ClientePlanContent() {
 
     return null;
   }, [clientes, rawClientId]);
+
+  const selectedClientEmail = useMemo(() => {
+    if (!selectedClient) return "";
+    return String(clientesMeta[selectedClient.id]?.email || "")
+      .trim()
+      .toLowerCase();
+  }, [clientesMeta, selectedClient]);
 
   const weekStore = useMemo(() => normalizeWeekStore(weekStoreRaw), [weekStoreRaw]);
 
@@ -821,9 +838,16 @@ function ClientePlanContent() {
     const clientName = selectedClient.nombre;
     const clientIdName = selectedClient.id.split(":")[1] || "";
     const matches = nutritionAssignments.filter(
-      (assignment) =>
-        namesLikelyMatch(assignment.alumnoNombre, clientName) ||
-        namesLikelyMatch(assignment.alumnoNombre, clientIdName)
+      (assignment) => {
+        const assignmentEmail = String(assignment.alumnoEmail || "")
+          .trim()
+          .toLowerCase();
+        const byName =
+          namesLikelyMatch(assignment.alumnoNombre, clientName) ||
+          namesLikelyMatch(assignment.alumnoNombre, clientIdName);
+        const byEmail = Boolean(selectedClientEmail && assignmentEmail && assignmentEmail === selectedClientEmail);
+        return byName || byEmail;
+      }
     );
 
     if (matches.length === 0) return null;
@@ -834,7 +858,7 @@ function ClientePlanContent() {
         (a, b) =>
           new Date(b.assignedAt || 0).getTime() - new Date(a.assignedAt || 0).getTime()
       )[0];
-  }, [nutritionAssignments, selectedClient]);
+  }, [nutritionAssignments, selectedClient, selectedClientEmail]);
 
   const selectedNutritionPlan = useMemo(() => {
     if (!selectedClient) return null;
