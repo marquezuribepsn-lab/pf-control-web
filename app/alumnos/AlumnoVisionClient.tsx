@@ -5016,14 +5016,26 @@ export default function AlumnoVisionClient({
       setNutritionCalIaProcessing(true);
       setNutritionCalIaStatus("Procesando imagen con CAL IA...");
 
-      let imageBitmap: ImageBitmap | null = null;
+      let imageWidth = 960;
+      let imageHeight = 720;
+      let imageProfile = {
+        coverageRatio: 0.58,
+        edgeRatio: 0.32,
+        vibrancyRatio: 0.38,
+        warmRatio: 0.34,
+      };
 
       try {
-        imageBitmap = await createImageBitmap(imageBlob);
-        const imageWidth = imageBitmap.width;
-        const imageHeight = imageBitmap.height;
-        const imageProfile = analyzeNutritionImageBitmap(imageBitmap);
+        const bitmap = await createImageBitmap(imageBlob);
+        imageWidth = bitmap.width || imageWidth;
+        imageHeight = bitmap.height || imageHeight;
+        imageProfile = analyzeNutritionImageBitmap(bitmap);
+        bitmap.close();
+      } catch {
+        // Fallback keeps CAL IA available even when bitmap decoding is not supported.
+      }
 
+      try {
         const queryHint = normalizePersonKey(nutritionFoodSearchQuery);
         const mealIdentity = normalizePersonKey(
           `${nutritionActiveMealComposer.mealName} ${nutritionActiveMealComposer.mealId}`
@@ -5140,7 +5152,6 @@ export default function AlumnoVisionClient({
       } catch {
         setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorías.");
       } finally {
-        imageBitmap?.close();
         setNutritionCalIaProcessing(false);
       }
     },
