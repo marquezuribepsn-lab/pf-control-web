@@ -3744,6 +3744,95 @@ export default function AlumnoVisionClient({
     return [...rows].sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt));
   }, [nutritionSelectedDayLog?.customFoods]);
 
+  const nutritionCustomFoodsByMealId = useMemo(() => {
+    const map = new Map<string, NutritionDailyCustomFoodLite[]>();
+
+    nutritionSelectedDayCustomFoods.forEach((entry) => {
+      const mealId = String(entry.mealId || "").trim();
+      if (!mealId) {
+        return;
+      }
+
+      const current = map.get(mealId) || [];
+      current.push(entry);
+      map.set(mealId, current);
+    });
+
+    return map;
+  }, [nutritionSelectedDayCustomFoods]);
+
+  const nutritionDiaryMealRows = useMemo(() => {
+    const hasPlanMeals = nutritionMealsDetailed.length > 0;
+
+    const baseRows = hasPlanMeals
+      ? nutritionMealsDetailed.map((meal) => {
+          const normalizedName = normalizePersonKey(meal.mealName);
+          let fallbackIcon = "ME";
+          if (normalizedName.includes("desay")) fallbackIcon = "DS";
+          else if (normalizedName.includes("almuer") || normalizedName.includes("comida")) fallbackIcon = "AL";
+          else if (normalizedName.includes("cena")) fallbackIcon = "CN";
+          else if (normalizedName.includes("snack") || normalizedName.includes("colaci")) fallbackIcon = "SK";
+
+          return {
+            mealId: meal.mealId,
+            mealName: meal.mealName,
+            icon: fallbackIcon,
+            goalKcal: meal.totalKcal,
+          };
+        })
+      : DEFAULT_NUTRITION_MEAL_DISTRIBUTION.map((item) => ({
+          mealId: item.mealId,
+          mealName: item.mealName,
+          icon: item.icon,
+          goalKcal: roundToOneDecimal(Math.max(0, nutritionDailyGoalKcal * item.goalRatio)),
+        }));
+
+    return baseRows.map((row) => {
+      const planMeal = nutritionMealsDetailed.find((meal) => meal.mealId === row.mealId);
+      const mealLog = nutritionDayMealLogById.get(row.mealId);
+      const consumedFromPlan = mealLog?.done
+        ? Math.max(0, toNumber(mealLog.consumedKcal) || planMeal?.totalKcal || 0)
+        : 0;
+
+      const mealEntries = (nutritionCustomFoodsByMealId.get(row.mealId) || []).slice().sort((left, right) => {
+        return getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+      });
+
+      const consumedFromEntries = mealEntries.reduce((sum, entry) => {
+        return sum + Math.max(0, toNumber(entry.calorias) || 0);
+      }, 0);
+
+      const consumedKcal = roundToOneDecimal(consumedFromPlan + consumedFromEntries);
+      const goalKcal = Math.max(0, roundToOneDecimal(row.goalKcal || 0));
+      const previewText = mealEntries
+        .slice(0, 3)
+        .map((entry) => entry.nombre)
+        .filter(Boolean)
+        .join(", ");
+
+      return {
+        ...row,
+        consumedKcal,
+        goalKcal,
+        mealEntries,
+        previewText,
+      };
+    });
+  }, [
+    nutritionCustomFoodsByMealId,
+    nutritionDailyGoalKcal,
+    nutritionDayMealLogById,
+    nutritionMealsDetailed,
+  ]);
+
+  const nutritionActiveMealComposer = useMemo(() => {
+    if (!nutritionMealComposerMealId) {
+      return null;
+    }
+
+    return nutritionDiaryMealRows.find((row) => row.mealId === nutritionMealComposerMealId) || null;
+  }, [nutritionDiaryMealRows, nutritionMealComposerMealId]);
+
   const nutritionSelectedDayCustomTotals = useMemo(() => {
     const totals = {
       calorias: 0,
