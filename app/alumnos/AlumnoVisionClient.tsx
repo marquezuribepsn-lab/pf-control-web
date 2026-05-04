@@ -5082,6 +5082,81 @@ export default function AlumnoVisionClient({
     };
   }, [nutritionCustomFoodStatus]);
 
+  useEffect(() => {
+    if (!nutritionMealComposerMealId) {
+      setNutritionRemoteSearchResults([]);
+      setNutritionFoodSearchLoading(false);
+      return;
+    }
+
+    const query = String(nutritionFoodSearchQuery || "").trim();
+    if (query.length < 3) {
+      setNutritionRemoteSearchResults([]);
+      setNutritionFoodSearchLoading(false);
+      return;
+    }
+
+    const abortController = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setNutritionFoodSearchLoading(true);
+
+      try {
+        const response = await fetch(`/api/nutrition/catalog?q=${encodeURIComponent(query)}`, {
+          cache: "no-store",
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("No se pudo consultar el buscador externo de alimentos.");
+        }
+
+        const payload = (await response.json()) as {
+          ok?: boolean;
+          items?: NutritionSearchFoodResult[];
+        };
+
+        if (!payload.ok) {
+          setNutritionRemoteSearchResults([]);
+          return;
+        }
+
+        const rows = Array.isArray(payload.items) ? payload.items : [];
+        setNutritionRemoteSearchResults(rows);
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          setNutritionFoodSearchStatus(
+            error instanceof Error ? error.message : "No se pudo completar la búsqueda externa."
+          );
+        }
+      } finally {
+        if (!abortController.signal.aborted) {
+          setNutritionFoodSearchLoading(false);
+        }
+      }
+    }, 280);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      abortController.abort();
+    };
+  }, [nutritionFoodSearchQuery, nutritionMealComposerMealId]);
+
+  useEffect(() => {
+    if (!nutritionFoodSearchStatus && !nutritionBarcodeStatus && !nutritionCalIaStatus) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNutritionFoodSearchStatus("");
+      setNutritionBarcodeStatus("");
+      setNutritionCalIaStatus("");
+    }, 2600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [nutritionBarcodeStatus, nutritionCalIaStatus, nutritionFoodSearchStatus]);
+
   const latestAnthropometry = anthropometryEntries[0] || null;
   const previousAnthropometry = anthropometryEntries[1] || null;
 
