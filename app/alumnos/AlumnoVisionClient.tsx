@@ -9316,6 +9316,86 @@ export default function AlumnoVisionClient({
                     onChange={handleNutritionCalIaCaptureChange}
                   />
 
+                  {nutritionLiveCaptureMode !== "none" ? (
+                    <div className="pf-a4-nutrition-camera-layer">
+                      <div className="pf-a4-nutrition-camera-sheet">
+                        <div className="pf-a4-nutrition-camera-head">
+                          <div>
+                            <p className="pf-a4-nutrition-camera-kicker">
+                              {nutritionLiveCaptureMode === "barcode" ? "Escáner automático" : "Cámara CAL IA"}
+                            </p>
+                            <h4 className="pf-a4-nutrition-camera-title">
+                              {nutritionLiveCaptureMode === "barcode"
+                                ? "Apunta al código para cargarlo automáticamente"
+                                : "Saca una foto y CAL IA estimará calorías"}
+                            </h4>
+                          </div>
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={stopNutritionLiveCapture}
+                            className="pf-a3-nutrition-student-food-delete"
+                          >
+                            Cerrar
+                          </ReliableActionButton>
+                        </div>
+
+                        <div className="pf-a4-nutrition-camera-preview">
+                          <video
+                            ref={nutritionLiveVideoRef}
+                            autoPlay
+                            muted
+                            playsInline
+                            className="pf-a4-nutrition-camera-video"
+                          />
+
+                          {nutritionLiveCaptureMode === "barcode" ? (
+                            <div className="pf-a4-nutrition-camera-scan-frame">
+                              <span className="pf-a4-nutrition-camera-scan-line" />
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <p className="pf-a4-nutrition-camera-status">
+                          {nutritionLiveCaptureStatus ||
+                            (nutritionLiveCaptureMode === "barcode"
+                              ? "Buscando código..."
+                              : "Encuadra el plato completo para una mejor estimación.")}
+                        </p>
+
+                        <div className="pf-a4-nutrition-camera-actions">
+                          {nutritionLiveCaptureMode === "cal-ia" ? (
+                            <ReliableActionButton
+                              type="button"
+                              onClick={captureNutritionCalIaFromLiveCamera}
+                              disabled={!nutritionLiveCaptureReady || nutritionCalIaProcessing}
+                              className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
+                            >
+                              {nutritionCalIaProcessing ? "Procesando..." : "Sacar foto y estimar"}
+                            </ReliableActionButton>
+                          ) : null}
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => {
+                              if (nutritionLiveCaptureMode === "barcode") {
+                                nutritionBarcodeCaptureInputRef.current?.click();
+                                return;
+                              }
+
+                              nutritionCalIaCaptureInputRef.current?.click();
+                            }}
+                            className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                          >
+                            {nutritionLiveCaptureMode === "barcode"
+                              ? "Subir foto del código"
+                              : "Subir foto del plato"}
+                          </ReliableActionButton>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="pf-a4-nutrition-diary-head">
                     <div>
                       <p className="pf-a2-eyebrow">Registro del alumno</p>
