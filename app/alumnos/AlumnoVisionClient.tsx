@@ -127,6 +127,30 @@ type NutritionFoodLite = {
   artworkUrl?: string;
 };
 
+type NutritionFoodFavoriteLite = {
+  id: string;
+  nombre: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  imageUrl?: string;
+  barcode?: string;
+  updatedAt?: string;
+};
+
+type NutritionSearchFoodResult = {
+  id: string;
+  nombre: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  imageUrl?: string;
+  barcode?: string;
+  sourceLabel?: string;
+};
+
 type NutritionDailyMealLogLite = {
   mealId: string;
   done?: boolean;
@@ -137,11 +161,17 @@ type NutritionDailyMealLogLite = {
 type NutritionDailyCustomFoodLite = {
   id: string;
   nombre: string;
+  foodId?: string;
+  mealId?: string;
+  gramos?: number;
   porcion?: string;
   calorias: number;
   proteinas?: number;
   carbohidratos?: number;
   grasas?: number;
+  barcode?: string;
+  source?: "manual" | "search" | "barcode" | "camera";
+  imageUrl?: string;
   createdAt?: string;
 };
 
