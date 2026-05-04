@@ -5,18 +5,494 @@ import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
+import type {
+  Alumno,
+  BloqueEntrenamiento,
+  PrescripcionSesionPersona,
+  Sesion,
+} from "@/data/mockData";
 import { argentineFoodsBase } from "@/data/argentineFoods";
 import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ChangeEvent,
+  type FocusEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TouchEvent,
 } from "react";
+import { createPortal } from "react-dom";
+
+type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
+
+type AlumnoVisionClientProps = {
+  currentName: string;
+  currentEmail: string;
+  initialCategory?: MainCategory;
+};
+
+type AlumnoRecord = Alumno & {
+  email?: string;
+  telefono?: string;
+  edad?: number;
+  altura?: number | null;
+};
+
+type ClienteMetaLite = {
+  nombre?: string;
+  email?: string;
+  telefono?: string;
+  alturaCm?: number | null;
+  objNutricional?: string;
+  startDate?: string;
+  endDate?: string;
+  pagoEstado?: string;
+  tipoAsesoria?: string;
+  modalidad?: string;
+  categoriaPlan?: string;
+  planNombre?: string;
+  diasPlan?: number;
+  membresia?: string;
+};
+
+type NutritionTargets = {
+  calorias?: number;
+  proteinas?: number;
+  carbohidratos?: number;
+  grasas?: number;
+};
+
+type NutritionMealItem = {
+  id?: string;
+  nombre?: string;
+  foodId?: string;
+  gramos?: number;
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
+};
+
+type NutritionMeal = {
+  id?: string;
+  nombre?: string;
+  items?: NutritionMealItem[];
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
+};
+
+type NutritionPlanLite = {
+  id: string;
+  nombre?: string;
+  alumnoAsignado?: string | null;
+  objetivo?: string;
+  notas?: string;
+  targets?: NutritionTargets;
+  comidas?: NutritionMeal[];
+  updatedAt?: string;
+};
+
+type NutritionAssignmentLite = {
+  alumnoNombre?: string;
+  planId?: string;
+  assignedAt?: string;
+};
+
+type NutritionFoodLite = {
+  id?: string;
+  nombre?: string;
+  kcalPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  imageUrl?: string;
+  imagenUrl?: string;
+  photoUrl?: string;
+  fotoUrl?: string;
+  thumbnailUrl?: string;
+  coverUrl?: string;
+  artworkUrl?: string;
+};
+
+type NutritionFoodFavoriteLite = {
+  id: string;
+  nombre: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  imageUrl?: string;
+  barcode?: string;
+  updatedAt?: string;
+};
+
+type NutritionSearchFoodResult = {
+  id: string;
+  nombre: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  imageUrl?: string;
+  barcode?: string;
+  sourceLabel?: string;
+};
+
+type NutritionDailyMealLogLite = {
+  mealId: string;
+  done?: boolean;
+  consumedKcal?: number;
+  updatedAt?: string;
+};
+
+type NutritionDailyCustomFoodLite = {
+  id: string;
+  nombre: string;
+  foodId?: string;
+  mealId?: string;
+  gramos?: number;
+  porcion?: string;
+  calorias: number;
+  proteinas?: number;
+  carbohidratos?: number;
+  grasas?: number;
+  barcode?: string;
+  source?: "manual" | "search" | "barcode" | "camera";
+  imageUrl?: string;
+  createdAt?: string;
+};
+
+type NutritionDailyLogLite = {
+  id: string;
+  ownerKey?: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  date: string;
+  mealLogs: NutritionDailyMealLogLite[];
+  customFoods?: NutritionDailyCustomFoodLite[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type WorkoutLogLite = {
+  id?: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId?: string;
+  blockTitle?: string;
+  exerciseId?: string;
+  exerciseKey?: string;
+  exerciseName?: string;
+  fecha?: string;
+  createdAt?: string;
+  series?: number;
+  repeticiones?: number;
+  pesoKg?: number;
+  molestia?: boolean;
+  comentarios?: string;
+  comentario?: string;
+  dolorUbicacion?: string;
+  dolorMomento?: string;
+  dolorSensacion?: string;
+  dolorRecomendacion?: string;
+  videoUrl?: string;
+  videoDataUrl?: string;
+  videoFileName?: string;
+  videoMimeType?: string;
+};
+
+type RoutineChangeRequestLite = {
+  id: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  message?: string;
+  createdAt?: string;
+};
+
+type SessionFeedbackAnswerLite = {
+  questionId: string;
+  questionPrompt: string;
+  optionId: string;
+  optionLabel: string;
+};
+
+type SessionFeedbackRecordLite = {
+  id: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  feedbackTitle?: string;
+  answers: SessionFeedbackAnswerLite[];
+  totalWorkoutLogs?: number;
+  logsWithPain?: number;
+  createdAt?: string;
+};
+
+type AnthropometryEntryLite = {
+  id?: string;
+  alumnoNombre?: string;
+  createdAt?: string;
+  alturaCm?: number | null;
+  pesoKg?: number | null;
+  aguaLitros?: number | null;
+  suenoHoras?: number | null;
+  actividadNivel?: number | null;
+  cinturaCm?: number | null;
+  caderaCm?: number | null;
+  grasaPct?: number | null;
+  musculoPct?: number | null;
+};
+
+type MusicAssignmentLite = {
+  id?: string;
+  platform?: string;
+  alumnoNombre?: string;
+  playlistName?: string;
+  playlistUrl?: string;
+  objetivo?: string;
+  diaSemana?: string;
+  recommendedSongTitle?: string;
+  recommendedSongArtist?: string;
+  coverUrl?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  artworkUrl?: string;
+  createdAt?: string;
+};
+
+type MusicPlatform =
+  | "SPOTIFY"
+  | "YOUTUBE"
+  | "YOUTUBE_MUSIC"
+  | "SOUNDCLOUD"
+  | "APPLE_MUSIC"
+  | "DEEZER"
+  | "AMAZON_MUSIC"
+  | "AUDIO_FILE"
+  | "OTHER";
+
+type MusicContentType = "SONG" | "PLAYLIST" | "OTHER";
+
+type MusicPlayerSource = {
+  kind: "iframe" | "audio" | "none";
+  src: string | null;
+};
+
+type AccountProfileLite = {
+  nombreCompleto?: string;
+  sidebarImage?: string | null;
+};
+
+type CoachContactLite = {
+  id?: string;
+  nombre?: string;
+  role?: string;
+  telefono?: string;
+  source?: string;
+};
+
+type HomeMusicCard = {
+  id: string;
+  title: string;
+  artist: string;
+  coverUrl: string | null;
+  accentClass: string;
+  playlistUrl: string | null;
+  platform: MusicPlatform;
+  contentType: MusicContentType;
+};
+
+type RoutineExercise = BloqueEntrenamiento["ejercicios"][number];
+
+type RoutineBlock = Omit<BloqueEntrenamiento, "ejercicios"> & {
+  ejercicios: RoutineExercise[];
+};
+
+type RoutineEntry = {
+  sesion: Sesion;
+  prescripcion: PrescripcionSesionPersona | null;
+  blocks: RoutineBlock[];
+  totalExercises: number;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  source: "session" | "week-plan";
+};
+
+type WeekPlanPersonType = "jugadoras" | "alumnos";
+
+type WeekExerciseLite = {
+  id?: string;
+  ejercicioId?: string;
+  series?: string | number;
+  repeticiones?: string | number;
+  descanso?: string;
+  carga?: string;
+  observaciones?: string;
+  metricas?: Array<{
+    nombre?: string;
+    valor?: string;
+  }>;
+  superSerie?: Array<{
+    id?: string;
+    ejercicioId?: string;
+    series?: string | number;
+    repeticiones?: string | number;
+    descanso?: string;
+    carga?: string;
+  }>;
+};
+
+type WeekBlockLite = {
+  id: string;
+  titulo: string;
+  objetivo: string;
+  ejercicios: WeekExerciseLite[];
+};
+
+type WeekDayTrainingLite = {
+  titulo?: string;
+  descripcion?: string;
+  duracion?: string;
+  bloques: WeekBlockLite[];
+};
+
+type PostSessionFeedbackOptionLite = {
+  id: string;
+  label: string;
+};
+
+type PostSessionFeedbackQuestionLite = {
+  id: string;
+  prompt: string;
+  options: PostSessionFeedbackOptionLite[];
+};
+
+type PostSessionFeedbackConfigLite = {
+  enabled: boolean;
+  title?: string;
+  questions: PostSessionFeedbackQuestionLite[];
+};
+
+type WeekDayPlanLite = {
+  id: string;
+  dia: string;
+  planificacion: string;
+  objetivo: string;
+  sesionId: string;
+  oculto?: boolean;
+  entrenamiento?: WeekDayTrainingLite;
+  postSesionFeedback?: PostSessionFeedbackConfigLite;
+};
+
+type WeekPlanLite = {
+  id: string;
+  nombre: string;
+  objetivo: string;
+  oculto?: boolean;
+  dias: WeekDayPlanLite[];
+};
+
+type WeekPersonPlanLite = {
+  ownerKey: string;
+  tipo: WeekPlanPersonType;
+  nombre: string;
+  categoria?: string;
+  semanas: WeekPlanLite[];
+};
+
+type RoutineExerciseLogTarget = {
+  sessionId: string;
+  sessionTitle: string;
+  weekId?: string;
+  weekName?: string;
+  dayId?: string;
+  dayName?: string;
+  blockId: string;
+  blockTitle: string;
+  exerciseId: string;
+  exerciseName: string;
+  exerciseKey: string;
+  prescribedSeries?: string;
+  prescribedRepeticiones?: string;
+  prescribedCarga?: string;
+  prescribedDescanso?: string;
+  prescribedRir?: string;
+  suggestedVideoUrl?: string;
+  exerciseDescription?: string;
+  exerciseTags?: string[];
+};
+
+type RoutineExerciseLogView = "descripcion" | "registro" | "registros";
+
+type RoutineActionScreen = "none" | "change" | "sessions" | "finalize" | "timer";
+
+type RoutineExerciseLogDraft = {
+  fecha: string;
+  series: string;
+  repeticiones: string;
+  pesoKg: string;
+  comentarios: string;
+  molestia: boolean;
+  dolorUbicacion: string;
+  dolorMomento: string;
+  dolorSensacion: string;
+  videoUrl: string;
+  videoDataUrl: string;
+  videoFileName: string;
+  videoMimeType: string;
+};
+
+type RoutineStopwatchFloatPosition = {
+  x: number;
+  y: number;
+};
+
+type IdentityRef = {
+  names: string[];
+  emails: string[];
+};
+
+type PreparedIdentityName = {
+  value: string;
+  tokenSet: Set<string>;
+};
+
+type PreparedIdentity = {
+  names: PreparedIdentityName[];
+  emails: Set<string>;
+};
 
 const CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
 
