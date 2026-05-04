@@ -6947,8 +6947,40 @@ video.pf-a3-routine-log-video-frame {
     grid-template-columns: 1fr;
   }
 
+  .pf-a4-nutrition-summary-gauge {
+    min-height: 122px;
+  }
+
+  .pf-a4-nutrition-summary-gauge-svg {
+    max-width: 220px;
+  }
+
+  .pf-a4-nutrition-summary-gauge-kcal {
+    font-size: 0.98rem;
+  }
+
+  .pf-a4-nutrition-summary-gauge-goal {
+    font-size: 0.58rem;
+  }
+
+  .pf-a4-nutrition-summary-gauge-pct {
+    font-size: 0.64rem;
+  }
+
   .pf-a4-nutrition-composer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-meal-screen-layer {
+    padding: max(0.5rem, env(safe-area-inset-top)) 0.36rem
+      max(0.34rem, env(safe-area-inset-bottom));
+    align-items: stretch;
+  }
+
+  .pf-a4-nutrition-composer-screen {
+    width: 100%;
+    max-height: none;
+    border-radius: 0.9rem;
   }
 
   .pf-a4-nutrition-composer-actions {
@@ -6968,6 +7000,22 @@ video.pf-a3-routine-log-video-frame {
   .pf-a4-nutrition-cal-ia-preview {
     width: 100%;
     height: 132px;
+  }
+
+  .pf-a4-nutrition-camera-sheet {
+    width: 100%;
+    border-radius: 0.86rem;
+    padding: 0.52rem;
+  }
+
+  .pf-a4-nutrition-camera-preview,
+  .pf-a4-nutrition-camera-video {
+    min-height: 224px;
+  }
+
+  .pf-a4-nutrition-camera-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .pf-a4-nutrition-search-row {
