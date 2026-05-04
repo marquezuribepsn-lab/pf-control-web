@@ -5195,7 +5195,7 @@ export default function AlumnoVisionClient({
         setNutritionLiveCaptureStatus(
           mode === "barcode"
             ? "Escaneando automáticamente..."
-            : "Enfoca el plato y toca " + '"Sacar foto".'
+            : "Enfoca el plato y toca \"Sacar foto\"."
         );
 
         const stream = await mediaDevices.getUserMedia({
