@@ -1900,8 +1900,6 @@ export default function AlumnoVisionClient({
       !nutritionCustomFoodsSyncLoaded &&
       !nutritionDailyLogsSyncLoaded
     ) {
-      nutritionFavoritesRaw,
-      nutritionFavoritesSyncLoaded,
       return;
     }
 
@@ -1911,6 +1909,8 @@ export default function AlumnoVisionClient({
     routineChangeRequestsSyncLoaded,
     sessionFeedbackRecordsRaw,
     sessionFeedbackSyncLoaded,
+    nutritionFavoritesRaw,
+    nutritionFavoritesSyncLoaded,
     nutritionCustomFoodsRaw,
     nutritionCustomFoodsSyncLoaded,
     nutritionDailyLogsRaw,
