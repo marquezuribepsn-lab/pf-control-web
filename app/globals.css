@@ -6712,6 +6712,64 @@ video.pf-a3-routine-log-video-frame {
     align-items: flex-start;
   }
 
+  .pf-a4-nutrition-diary-head {
+    align-items: stretch;
+  }
+
+  .pf-a4-nutrition-diary-section-head {
+    flex-wrap: wrap;
+  }
+
+  .pf-a4-nutrition-diary-link {
+    width: 100%;
+  }
+
+  .pf-a4-nutrition-summary-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-composer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-composer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-a4-nutrition-composer-actions .pf-a3-nutrition-template-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pf-a4-nutrition-cal-ia-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-cal-ia-preview {
+    width: 100%;
+    height: 132px;
+  }
+
+  .pf-a4-nutrition-search-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .pf-a4-nutrition-search-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .pf-a4-nutrition-search-add {
+    min-width: 84px;
+    justify-content: center;
+  }
+
+  .pf-a4-nutrition-meal-entry-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .pf-a2-dock {
     width: calc(100% - 0.42rem);
     border-radius: 0.82rem;
