@@ -650,6 +650,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
   },
 ];
 
+const LOCAL_SYNC_CACHE_PREFIX = "pf-control-sync-cache-v1:";
 const STORAGE_ARRAY_CACHE = new Map<string, { raw: string | null; parsed: unknown[] }>();
 
 function normalizePersonKey(value: string): string {
@@ -2129,10 +2130,14 @@ function readArrayFromStorage<T>(key: string): T[] {
   if (typeof window === "undefined") return [];
 
   try {
-    const raw = window.localStorage.getItem(key);
+    const syncCacheRaw = window.localStorage.getItem(`${LOCAL_SYNC_CACHE_PREFIX}${key}`);
+    const legacyRaw = window.localStorage.getItem(key);
+    const raw = syncCacheRaw ?? legacyRaw;
+    const sourcePrefix = syncCacheRaw !== null ? "sync:" : "legacy:";
+    const cacheRaw = raw === null ? null : `${sourcePrefix}${raw}`;
 
     const cached = STORAGE_ARRAY_CACHE.get(key);
-    if (cached && cached.raw === raw) {
+    if (cached && cached.raw === cacheRaw) {
       return cached.parsed as T[];
     }
 
@@ -2142,11 +2147,15 @@ function readArrayFromStorage<T>(key: string): T[] {
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    const rows = Array.isArray(parsed) ? (parsed as T[]) : [];
+    const rows = Array.isArray(parsed)
+      ? (parsed as T[])
+      : parsed && typeof parsed === "object"
+      ? (Object.values(parsed as Record<string, unknown>) as T[])
+      : [];
 
     STORAGE_ARRAY_CACHE.set(key, {
-      raw,
-      parsed: Array.isArray(parsed) ? (parsed as unknown[]) : [],
+      raw: cacheRaw,
+      parsed: rows as unknown[],
     });
 
     return rows;
@@ -3667,17 +3676,23 @@ export default function AlumnoVisionClient({
     if (typeof window === "undefined") return;
 
     const trackedKeys = new Set<string>([CLIENTE_META_KEY]);
+    const trackKey = (storageKey: string) => {
+      trackedKeys.add(storageKey);
+      trackedKeys.add(`${LOCAL_SYNC_CACHE_PREFIX}${storageKey}`);
+    };
+
+    trackKey(CLIENTE_META_KEY);
 
     if (shouldLoadNutritionData) {
-      trackedKeys.add(NUTRITION_PLANS_KEY);
-      trackedKeys.add(NUTRITION_ASSIGNMENTS_KEY);
-      trackedKeys.add(NUTRITION_FAVORITES_KEY);
-      trackedKeys.add(NUTRITION_CUSTOM_FOODS_KEY);
-      trackedKeys.add(NUTRITION_DAILY_LOGS_KEY);
+      trackKey(NUTRITION_PLANS_KEY);
+      trackKey(NUTRITION_ASSIGNMENTS_KEY);
+      trackKey(NUTRITION_FAVORITES_KEY);
+      trackKey(NUTRITION_CUSTOM_FOODS_KEY);
+      trackKey(NUTRITION_DAILY_LOGS_KEY);
     }
 
     if (shouldLoadAnthropometryData) {
-      trackedKeys.add(ANTHROPOMETRY_KEY);
+      trackKey(ANTHROPOMETRY_KEY);
     }
 
     const handleStorage = (event: StorageEvent) => {
