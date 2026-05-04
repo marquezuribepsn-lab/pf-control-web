@@ -13,7 +13,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 const PRODUCTION_URL = "https://pf-control.com";
-const WEBVIEW_CACHE_TAG = "alumno-v2-20260425-ultra-max";
+const WEBVIEW_CACHE_TAG = "alumno-v2-20260504-nutricion-actions";
 const MAX_PERFORMANCE_MODE = true;
 const MAX_PERFORMANCE_QUERY_FLAGS: Record<string, string> = {
   pfperf: "1",
@@ -113,6 +113,8 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
         "html.pf-mobile-maxperf :where([class*=\\\"shadow\\\"], [style*=\\\"box-shadow\\\"], [class*=\\\"backdrop-blur\\\"]) { box-shadow: none !important; backdrop-filter: none !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview, html.pf-mobile-maxperf.pf-mobile-webview body, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-stage, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-dock { background-color: #081a2d !important; background-image: none !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }",
+        "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-quick-row { display: grid !important; grid-template-columns: 1fr !important; gap: 0.48rem !important; margin-top: 0.75rem !important; }",
+        "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-action-btn-quick { width: 100% !important; min-height: 38px !important; opacity: 1 !important; visibility: visible !important; }",
       ].join("\\n");
       (document.head || document.documentElement).appendChild(style);
 
