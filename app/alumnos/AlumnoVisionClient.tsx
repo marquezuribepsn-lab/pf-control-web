@@ -1,555 +1,22 @@
-"use client";
+﻿"use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
-                  <div className="pf-a4-nutrition-diary-head">
-                    <div>
-                      <p className="pf-a2-eyebrow">Registro del alumno</p>
-                      <h2 className="mt-1 text-2xl font-black text-white">Hoy</h2>
-                      <p className="mt-1 text-sm text-slate-300">{formatDate(normalizedNutritionTrackerDate)}</p>
-                    </div>
-
-                    <div className="pf-a3-nutrition-tracker-date">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={() => handleNutritionTrackerDateShift(-1)}
-                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                      >
-                        Ayer
-                      </ReliableActionButton>
-
-                      <label className="pf-a3-nutrition-tracker-date-input">
-                        <span>Fecha</span>
-                        <input
-                          type="date"
-                          value={normalizedNutritionTrackerDate}
-                          onChange={handleNutritionTrackerDateChange}
-                        />
-                      </label>
-
-                      <ReliableActionButton
-                        type="button"
-                        onClick={() => handleNutritionTrackerDateShift(1)}
-                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                      >
-                        Mañana
-                      </ReliableActionButton>
-                    </div>
-                  </div>
-
-                  <div className="pf-a4-nutrition-diary-section-head mt-3">
-                    <h3>Resumen</h3>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => setNutritionShowTrackerDetails((previous) => !previous)}
-                      className="pf-a4-nutrition-detail-toggle"
-                    >
-                      {nutritionShowTrackerDetails ? "Ocultar detalles" : "Detalles"}
-                    </ReliableActionButton>
-                  </div>
-
-                  <section className="pf-a4-nutrition-summary-card">
-                    <div className="pf-a4-nutrition-summary-main">
-                      <div>
-                        <p className="pf-a4-nutrition-summary-label">Consumidas</p>
-                        <p className="pf-a4-nutrition-summary-value">{nutritionDailyConsumedKcal} kcal</p>
-                      </div>
-                      <div>
-                        <p className="pf-a4-nutrition-summary-label">Restantes</p>
-                        <p className="pf-a4-nutrition-summary-value">{nutritionDailyRemainingKcal} kcal</p>
-                      </div>
-                      <div>
-                        <p className="pf-a4-nutrition-summary-label">Gastadas</p>
-                        <p className="pf-a4-nutrition-summary-value">{nutritionEstimatedBurnedKcal} kcal</p>
-                      </div>
-                    </div>
-
-                    <div className="pf-a4-nutrition-summary-macros">
-                      <div className="pf-a4-nutrition-summary-macro-row">
-                        <span>Carbohidratos</span>
-                        <span>{nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g</span>
-                        <div className="pf-a4-nutrition-summary-track">
-                          <div
-                            className="pf-a4-nutrition-summary-fill"
-                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="pf-a4-nutrition-summary-macro-row">
-                        <span>Proteínas</span>
-                        <span>{nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g</span>
-                        <div className="pf-a4-nutrition-summary-track">
-                          <div
-                            className="pf-a4-nutrition-summary-fill"
-                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="pf-a4-nutrition-summary-macro-row">
-                        <span>Grasas</span>
-                        <span>{nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g</span>
-                        <div className="pf-a4-nutrition-summary-track">
-                          <div
-                            className="pf-a4-nutrition-summary-fill"
-                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <div className="pf-a4-nutrition-diary-section-head mt-4">
-                    <h3>Alimentación</h3>
-                    <span>{nutritionActiveMealComposer ? `Editando: ${nutritionActiveMealComposer.mealName}` : "Toca + para cargar"}</span>
-                  </div>
-
-                  <div className="pf-a4-nutrition-meal-list">
-                    {nutritionDiaryMealRows.map((meal) => (
-                      <article key={`meal-row-${meal.mealId}`} className="pf-a4-nutrition-meal-row">
-                        <div className="pf-a4-nutrition-meal-left">
-                          <span className="pf-a4-nutrition-meal-icon">{meal.icon}</span>
-                          <div className="min-w-0">
-                            <p className="pf-a4-nutrition-meal-title">{meal.mealName}</p>
-                            <p className="pf-a4-nutrition-meal-kcal">{meal.consumedKcal} / {meal.goalKcal} kcal</p>
-                            <p className="pf-a4-nutrition-meal-preview">
-                              {meal.previewText || "Sin alimentos cargados todavía"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => openNutritionMealComposer(meal.mealId)}
-                          className="pf-a4-nutrition-meal-plus"
-                          aria-label={`Agregar alimentos en ${meal.mealName}`}
-                        >
-                          +
-                        </ReliableActionButton>
-                      </article>
-                    ))}
-                  </div>
-
-                  {nutritionActiveMealComposer ? (
-                    <article className="pf-a4-nutrition-composer mt-4">
-                      <div className="pf-a4-nutrition-composer-head">
-                        <div>
-                          <p className="pf-a4-nutrition-composer-kicker">Cargar alimentos</p>
-                          <h4 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h4>
-                        </div>
-
-                        <ReliableActionButton
-                          type="button"
-                          onClick={closeNutritionMealComposer}
-                          className="pf-a4-nutrition-composer-close"
-                        >
-                          Cerrar
-                        </ReliableActionButton>
-                      </div>
-
-                      <div className="pf-a4-nutrition-composer-controls">
-                        <label className="pf-a4-nutrition-composer-field">
-                          <span>Buscar alimento</span>
-                          <input
-                            value={nutritionFoodSearchQuery}
-                            onChange={(event) => setNutritionFoodSearchQuery(event.target.value)}
-                            placeholder="Ej: yogur natural, arroz, atún..."
-                          />
-                        </label>
-
-                        <label className="pf-a4-nutrition-composer-field pf-a4-nutrition-composer-field-grams">
-                          <span>Gramaje</span>
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={nutritionFoodGramsDraft}
-                            onChange={(event) => setNutritionFoodGramsDraft(event.target.value)}
-                          />
-                        </label>
-                      </div>
-
-                      <div className="pf-a4-nutrition-composer-actions">
-                        <ReliableActionButton
-                          type="button"
-                          onClick={triggerNutritionBarcodeCapture}
-                          className="pf-a4-nutrition-composer-btn"
-                        >
-                          Escanear código
-                        </ReliableActionButton>
-
-                        <ReliableActionButton
-                          type="button"
-                          onClick={triggerNutritionCalIaCapture}
-                          className="pf-a4-nutrition-composer-btn"
-                        >
-                          CAL IA cámara
-                        </ReliableActionButton>
-                      </div>
-
-                      <input
-                        ref={nutritionBarcodeCaptureInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={handleNutritionBarcodeCaptureChange}
-                        className="hidden"
-                      />
-
-                      <input
-                        ref={nutritionCalIaCaptureInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={handleNutritionCalIaCaptureChange}
-                        className="hidden"
-                      />
-
-                      {nutritionCalIaEstimate ? (
-                        <div className="pf-a4-nutrition-cal-ia-card">
-                          <div className="pf-a4-nutrition-cal-ia-preview">
-                            <img src={nutritionCalIaEstimate.previewUrl} alt="Vista previa estimacion calorica" />
-                          </div>
-                          <div className="pf-a4-nutrition-cal-ia-body">
-                            <p className="pf-a4-nutrition-cal-ia-title">Estimación CAL IA</p>
-                            <p className="pf-a4-nutrition-cal-ia-meta">
-                              {nutritionCalIaEstimate.entry.nombre} · {nutritionCalIaEstimate.entry.porcion || "Estimado"}
-                            </p>
-                            <p className="pf-a4-nutrition-cal-ia-meta">
-                              {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
-                            </p>
-                            <ReliableActionButton
-                              type="button"
-                              onClick={confirmNutritionCalIaEstimate}
-                              className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
-                            >
-                              Agregar estimación
-                            </ReliableActionButton>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <div className="pf-a4-nutrition-search-results">
-                        {nutritionFoodSearchLoading ? (
-                          <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
-                        ) : nutritionCombinedSearchResults.length > 0 ? (
-                          nutritionCombinedSearchResults.map((food) => (
-                            <div key={`nutrition-search-${food.id}`} className="pf-a4-nutrition-search-item">
-                              <div className="min-w-0">
-                                <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
-                                <p className="pf-a4-nutrition-search-meta">
-                                  {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P / {food.carbsPer100g}C / {food.fatPer100g}G
-                                </p>
-                                {food.sourceLabel ? (
-                                  <p className="pf-a4-nutrition-search-source">Fuente: {food.sourceLabel}</p>
-                                ) : null}
-                              </div>
-
-                              <div className="pf-a4-nutrition-search-actions">
-                                <ReliableActionButton
-                                  type="button"
-                                  onClick={() => toggleNutritionFavoriteFood(food)}
-                                  className="pf-a4-nutrition-search-btn"
-                                >
-                                  {nutritionFavoriteFoodIds.has(food.id) ? "Quitar fav" : "Fav"}
-                                </ReliableActionButton>
-
-                                <ReliableActionButton
-                                  type="button"
-                                  onClick={() => addNutritionFoodFromSearch(food, "search")}
-                                  className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
-                                >
-                                  Agregar
-                                </ReliableActionButton>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="pf-a4-nutrition-search-empty">
-                            Escribe al menos 3 letras para ampliar la búsqueda, o usa favoritos/código.
-                          </p>
-                        )}
-                      </div>
-
-                      {nutritionActiveMealComposer.mealEntries.length > 0 ? (
-                        <div className="pf-a4-nutrition-meal-entry-list">
-                          {nutritionActiveMealComposer.mealEntries.map((entry) => (
-                            <div key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-item">
-                              <div>
-                                <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
-                                <p className="pf-a4-nutrition-meal-entry-meta">
-                                  {entry.porcion ? `${entry.porcion} · ` : ""}
-                                  {entry.calorias} kcal
-                                </p>
-                              </div>
-                              <ReliableActionButton
-                                type="button"
-                                onClick={() => removeNutritionCustomFood(entry.id)}
-                                className="pf-a4-nutrition-meal-entry-remove"
-                              >
-                                Eliminar
-                              </ReliableActionButton>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </article>
-                  ) : null}
-
-                  {nutritionShowTrackerDetails ? (
-                    <div className="mt-4 space-y-4">
-                      <div className="pf-a3-nutrition-template-row">
-                        <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => applyNutritionDayTemplate("full")}
-                          className="pf-a3-nutrition-template-chip"
-                        >
-                          Día completo
-                        </ReliableActionButton>
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => applyNutritionDayTemplate("training")}
-                          className="pf-a3-nutrition-template-chip"
-                        >
-                          Día de entreno
-                        </ReliableActionButton>
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => applyNutritionDayTemplate("rest")}
-                          className="pf-a3-nutrition-template-chip"
-                        >
-                          Día de descanso
-                        </ReliableActionButton>
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => applyNutritionDayTemplate("clear")}
-                          className="pf-a3-nutrition-template-chip is-muted"
-                        >
-                          Reiniciar día
-                        </ReliableActionButton>
-                      </div>
-
-                      <div className="pf-a3-nutrition-week-head">
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => handleNutritionTrackerWeekShift(-1)}
-                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                        >
-                          Semana anterior
-                        </ReliableActionButton>
-
-                        <p className="pf-a3-nutrition-week-label">
-                          Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
-                        </p>
-
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => handleNutritionTrackerWeekShift(1)}
-                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                        >
-                          Semana siguiente
-                        </ReliableActionButton>
-                      </div>
-
-                      <div className="pf-a3-nutrition-streak-grid">
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
-                          <p className="pf-a3-nutrition-streak-note">
-                            Último check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
-                          </p>
-                        </div>
-
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
-                          <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
-                        </div>
-
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Días activos</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
-                          <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
-                        </div>
-
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
-                          <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
-                        </div>
-                      </div>
-
-                      <div className="pf-a3-nutrition-week-grid-wrap">
-                        <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
-                        <div className="pf-a3-nutrition-week-grid">
-                          {nutritionWeeklyHistory.map((day) => (
-                            <ReliableActionButton
-                              key={`nutri-week-${day.date}`}
-                              type="button"
-                              onClick={() => handleNutritionTrackerDateSelect(day.date)}
-                              className={`pf-a3-nutrition-weekday-card ${
-                                day.isSelected ? "is-selected" : ""
-                              } ${
-                                day.status === "empty"
-                                  ? "is-empty"
-                                  : day.status === "low"
-                                    ? "is-low"
-                                    : day.status === "high"
-                                      ? "is-high"
-                                      : "is-on-target"
-                              }`}
-                            >
-                              <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
-                              <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
-                              <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
-                              <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
-                            </ReliableActionButton>
-                          ))}
-                        </div>
-                      </div>
-
-                      <article className="pf-a3-nutrition-student-food-card">
-                        <p className="pf-a3-nutrition-student-food-eyebrow">Carga manual rápida</p>
-                        <h3 className="pf-a3-nutrition-student-food-title">Agregar alimento libre</h3>
-                        <div className="pf-a3-nutrition-student-food-grid">
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Alimento</span>
-                            <input
-                              value={nutritionCustomFoodDraft.nombre}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  nombre: event.target.value,
-                                }))
-                              }
-                              placeholder="Ej: Yogur con frutas"
-                            />
-                          </label>
-
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Porción</span>
-                            <input
-                              value={nutritionCustomFoodDraft.porcion}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  porcion: event.target.value,
-                                }))
-                              }
-                              placeholder="Ej: 1 taza / 120 g"
-                            />
-                          </label>
-
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Calorías</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="1"
-                              value={nutritionCustomFoodDraft.calorias}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  calorias: event.target.value,
-                                }))
-                              }
-                              placeholder="0"
-                            />
-                          </label>
-
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Proteinas (g)</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.1"
-                              value={nutritionCustomFoodDraft.proteinas}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  proteinas: event.target.value,
-                                }))
-                              }
-                              placeholder="0"
-                            />
-                          </label>
-
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Carbohidratos (g)</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.1"
-                              value={nutritionCustomFoodDraft.carbohidratos}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  carbohidratos: event.target.value,
-                                }))
-                              }
-                              placeholder="0"
-                            />
-                          </label>
-
-                          <label className="pf-a3-nutrition-student-food-field">
-                            <span>Grasas (g)</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.1"
-                              value={nutritionCustomFoodDraft.grasas}
-                              onChange={(event) =>
-                                setNutritionCustomFoodDraft((previous) => ({
-                                  ...previous,
-                                  grasas: event.target.value,
-                                }))
-                              }
-                              placeholder="0"
-                            />
-                          </label>
-                        </div>
-
-                        <div className="pf-a3-nutrition-student-food-actions">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={addNutritionCustomFood}
-                            className="pf-a2-solid-btn rounded-lg px-4 py-2 text-sm font-semibold"
-                          >
-                            Cargar alimento
-                          </ReliableActionButton>
-                          <span className="text-xs text-slate-400">
-                            Totales cargados: {nutritionSelectedDayCustomTotals.calorias} kcal · {nutritionSelectedDayCustomTotals.proteinas}P / {nutritionSelectedDayCustomTotals.carbohidratos}C / {nutritionSelectedDayCustomTotals.grasas}G
-                          </span>
-                        </div>
-                      </article>
-                    </div>
-                  ) : null}
-
-                  {nutritionTrackerStatus || nutritionCustomFoodStatus || nutritionFoodSearchStatus || nutritionBarcodeStatus || nutritionCalIaStatus ? (
-                    <div className="mt-3 space-y-1">
-                      {nutritionTrackerStatus ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">{nutritionTrackerStatus}</p>
-                      ) : null}
-                      {nutritionCustomFoodStatus ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">{nutritionCustomFoodStatus}</p>
-                      ) : null}
-                      {nutritionFoodSearchStatus ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">{nutritionFoodSearchStatus}</p>
-                      ) : null}
-                      {nutritionBarcodeStatus ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-200">{nutritionBarcodeStatus}</p>
-                      ) : null}
-                      {nutritionCalIaStatus ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">{nutritionCalIaStatus}</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-};
+import { argentineFoodsBase } from "@/data/argentineFoods";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+  type TouchEvent,
+} from "react";
 
 const CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
 
@@ -646,10 +113,10 @@ const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
 const DIRECT_AUDIO_EXTENSIONS = [".mp3", ".m4a", ".aac", ".wav", ".ogg", ".flac"];
 const WEEKDAY_SHORT_LABELS = ["DO", "LU", "MA", "MI", "JU", "VI", "SA"];
 const DEFAULT_NUTRITION_MEAL_DISTRIBUTION = [
-  { mealId: "meal-desayuno", mealName: "Desayuno", icon: "☕", goalRatio: 0.3 },
-  { mealId: "meal-almuerzo", mealName: "Almuerzo", icon: "🍽️", goalRatio: 0.35 },
-  { mealId: "meal-cena", mealName: "Cena", icon: "🥗", goalRatio: 0.25 },
-  { mealId: "meal-snacks", mealName: "Snacks", icon: "🍎", goalRatio: 0.1 },
+  { mealId: "meal-desayuno", mealName: "Desayuno", icon: "â˜•", goalRatio: 0.3 },
+  { mealId: "meal-almuerzo", mealName: "Almuerzo", icon: "ðŸ½ï¸", goalRatio: 0.35 },
+  { mealId: "meal-cena", mealName: "Cena", icon: "ðŸ¥—", goalRatio: 0.25 },
+  { mealId: "meal-snacks", mealName: "Snacks", icon: "ðŸŽ", goalRatio: 0.1 },
 ] as const;
 
 const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
@@ -4503,7 +3970,7 @@ export default function AlumnoVisionClient({
         consumedKcal: nextKcal,
       }));
 
-      setNutritionTrackerStatus("Calorías diarias actualizadas.");
+      setNutritionTrackerStatus("CalorÃ­as diarias actualizadas.");
     },
     [updateNutritionDailyMealLog]
   );
@@ -4555,9 +4022,9 @@ export default function AlumnoVisionClient({
       });
 
       const statusByTemplate: Record<"full" | "training" | "rest" | "clear", string> = {
-        full: "Plantilla aplicada: Día completo.",
-        training: "Plantilla aplicada: Día de entreno.",
-        rest: "Plantilla aplicada: Día de descanso.",
+        full: "Plantilla aplicada: DÃ­a completo.",
+        training: "Plantilla aplicada: DÃ­a de entreno.",
+        rest: "Plantilla aplicada: DÃ­a de descanso.",
         clear: "Plantilla aplicada: Reinicio diario.",
       };
 
@@ -4586,13 +4053,13 @@ export default function AlumnoVisionClient({
     ) => {
       const nombre = String(entry.nombre || "").trim();
       if (nombre.length < 2) {
-        setNutritionCustomFoodStatus("Escribe un alimento válido.");
+        setNutritionCustomFoodStatus("Escribe un alimento vÃ¡lido.");
         return;
       }
 
       const calorias = Math.max(0, roundToOneDecimal(toNumber(entry.calorias) || 0));
       if (calorias <= 0) {
-        setNutritionCustomFoodStatus("Carga las calorías del alimento.");
+        setNutritionCustomFoodStatus("Carga las calorÃ­as del alimento.");
         return;
       }
 
@@ -4687,13 +4154,13 @@ export default function AlumnoVisionClient({
   const addNutritionCustomFood = useCallback(() => {
     const nombre = String(nutritionCustomFoodDraft.nombre || "").trim();
     if (nombre.length < 2) {
-      setNutritionCustomFoodStatus("Escribe un alimento válido.");
+      setNutritionCustomFoodStatus("Escribe un alimento vÃ¡lido.");
       return;
     }
 
     const calorias = Math.max(0, roundToOneDecimal(toSafeNumeric(nutritionCustomFoodDraft.calorias) || 0));
     if (calorias <= 0) {
-      setNutritionCustomFoodStatus("Carga las calorías del alimento.");
+      setNutritionCustomFoodStatus("Carga las calorÃ­as del alimento.");
       return;
     }
 
@@ -4798,7 +4265,7 @@ export default function AlumnoVisionClient({
 
       const grams = Math.max(1, roundToOneDecimal(toSafeNumeric(nutritionFoodGramsDraft) || 0));
       if (grams <= 0) {
-        setNutritionFoodSearchStatus("Ingresa un gramaje válido.");
+        setNutritionFoodSearchStatus("Ingresa un gramaje vÃ¡lido.");
         return;
       }
 
@@ -4834,7 +4301,7 @@ export default function AlumnoVisionClient({
   const lookupNutritionBarcode = useCallback(async (rawCode: string) => {
     const normalizedCode = String(rawCode || "").replace(/\s+/g, "").trim();
     if (normalizedCode.length < 6) {
-      setNutritionBarcodeStatus("Código de barras inválido.");
+      setNutritionBarcodeStatus("CÃ³digo de barras invÃ¡lido.");
       return;
     }
 
@@ -4847,7 +4314,7 @@ export default function AlumnoVisionClient({
       });
 
       if (!response.ok) {
-        throw new Error("No se pudo consultar el catálogo por código de barras.");
+        throw new Error("No se pudo consultar el catÃ¡logo por cÃ³digo de barras.");
       }
 
       const payload = (await response.json()) as {
@@ -4857,7 +4324,7 @@ export default function AlumnoVisionClient({
       const item = Array.isArray(payload.items) ? payload.items[0] : null;
 
       if (!payload.ok || !item) {
-        setNutritionBarcodeStatus("No se encontró un producto para ese código.");
+        setNutritionBarcodeStatus("No se encontrÃ³ un producto para ese cÃ³digo.");
         return;
       }
 
@@ -4871,7 +4338,7 @@ export default function AlumnoVisionClient({
       setNutritionBarcodeStatus(`Producto detectado: ${item.nombre}.`);
       setNutritionFoodSearchStatus("Revisa gramajes y pulsa Agregar.");
     } catch (error) {
-      setNutritionBarcodeStatus(error instanceof Error ? error.message : "Error al buscar por código de barras.");
+      setNutritionBarcodeStatus(error instanceof Error ? error.message : "Error al buscar por cÃ³digo de barras.");
     } finally {
       setNutritionFoodSearchLoading(false);
     }
@@ -4919,13 +4386,13 @@ export default function AlumnoVisionClient({
 
       if (!detectedCode) {
         const manualCode = window.prompt(
-          "No se detectó automáticamente. Ingresa el código de barras manualmente:"
+          "No se detectÃ³ automÃ¡ticamente. Ingresa el cÃ³digo de barras manualmente:"
         );
         detectedCode = String(manualCode || "").trim();
       }
 
       if (!detectedCode) {
-        setNutritionBarcodeStatus("No se detectó ningún código.");
+        setNutritionBarcodeStatus("No se detectÃ³ ningÃºn cÃ³digo.");
         return;
       }
 
@@ -4944,7 +4411,7 @@ export default function AlumnoVisionClient({
       }
 
       if (!nutritionActiveMealComposer) {
-        setNutritionCalIaStatus("Selecciona una comida antes de estimar con cámara.");
+        setNutritionCalIaStatus("Selecciona una comida antes de estimar con cÃ¡mara.");
         return;
       }
 
@@ -4984,7 +4451,7 @@ export default function AlumnoVisionClient({
 
       const estimatedEntry: NutritionDailyCustomFoodLite = {
         id: "cal-ia-draft",
-        nombre: hintFood?.nombre || `Estimación CAL IA - ${nutritionActiveMealComposer.mealName}`,
+        nombre: hintFood?.nombre || `EstimaciÃ³n CAL IA - ${nutritionActiveMealComposer.mealName}`,
         foodId: hintFood?.id || undefined,
         mealId: nutritionActiveMealComposer.mealId,
         gramos: estimatedGrams,
@@ -5002,9 +4469,9 @@ export default function AlumnoVisionClient({
           previewUrl,
           entry: estimatedEntry,
         });
-        setNutritionCalIaStatus("Estimación lista. Puedes agregarla o volver a escanear.");
+        setNutritionCalIaStatus("EstimaciÃ³n lista. Puedes agregarla o volver a escanear.");
       } catch {
-        setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorías.");
+        setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorÃ­as.");
       }
     },
     [nutritionActiveMealComposer, nutritionCatalogFoods, nutritionFoodSearchQuery]
@@ -5012,7 +4479,7 @@ export default function AlumnoVisionClient({
 
   const confirmNutritionCalIaEstimate = useCallback(() => {
     if (!nutritionCalIaEstimate?.entry) {
-      setNutritionCalIaStatus("Primero toma una foto para obtener una estimación.");
+      setNutritionCalIaStatus("Primero toma una foto para obtener una estimaciÃ³n.");
       return;
     }
 
@@ -5101,7 +4568,7 @@ export default function AlumnoVisionClient({
         return nextRows;
       });
 
-      setNutritionCustomFoodStatus("Alimento eliminado del día.");
+      setNutritionCustomFoodStatus("Alimento eliminado del dÃ­a.");
     },
     [
       nutritionTrackerDate,
@@ -5182,7 +4649,7 @@ export default function AlumnoVisionClient({
       } catch (error) {
         if (!abortController.signal.aborted) {
           setNutritionFoodSearchStatus(
-            error instanceof Error ? error.message : "No se pudo completar la búsqueda externa."
+            error instanceof Error ? error.message : "No se pudo completar la bÃºsqueda externa."
           );
         }
       } finally {
@@ -5329,7 +4796,7 @@ export default function AlumnoVisionClient({
       const artist =
         String(assignment.recommendedSongArtist || "").trim() ||
         String(assignment.objetivo || "").trim() ||
-        `${resolveMusicPlatformLabel(platform)} · ${resolveMusicContentTypeLabel(contentType)}`;
+        `${resolveMusicPlatformLabel(platform)} Â· ${resolveMusicContentTypeLabel(contentType)}`;
 
       const coverUrl = uniqueStrings([
         assignment.coverUrl,
@@ -5484,7 +4951,7 @@ export default function AlumnoVisionClient({
         label: "IMC",
         value: bmiSnapshot ? String(bmiSnapshot.bmi) : "-",
         detail: bmiSnapshot
-          ? `${bmiSnapshot.label} · Rango saludable ${bmiSnapshot.healthyRange}`
+          ? `${bmiSnapshot.label} Â· Rango saludable ${bmiSnapshot.healthyRange}`
           : "Se calcula automatico con altura y peso.",
         tone: bmiSnapshot?.tone,
       },
@@ -6710,7 +6177,7 @@ export default function AlumnoVisionClient({
 
   const openRoutineFinalizePanel = useCallback(() => {
     if (!selectedRoutineEntry) {
-      setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
+      setRoutineFinalizeStatus("Selecciona una sesiÃ³n para finalizar.");
       return;
     }
 
@@ -6733,7 +6200,7 @@ export default function AlumnoVisionClient({
 
   const submitRoutineFinalize = useCallback(() => {
     if (!selectedRoutineEntry) {
-      setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
+      setRoutineFinalizeStatus("Selecciona una sesiÃ³n para finalizar.");
       return;
     }
 
@@ -6779,7 +6246,7 @@ export default function AlumnoVisionClient({
       weekName: selectedRoutineEntry.weekName,
       dayId: selectedRoutineEntry.dayId,
       dayName: selectedRoutineEntry.dayName,
-      feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión",
+      feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesiÃ³n",
       answers,
       totalWorkoutLogs: selectedRoutineDayLogSummary.total,
       logsWithPain: selectedRoutineDayLogSummary.withPain,
@@ -6799,7 +6266,7 @@ export default function AlumnoVisionClient({
     });
 
     setRoutineFinalizePanelOpen(false);
-    setRoutineFinalizeStatus("Sesión finalizada correctamente.");
+    setRoutineFinalizeStatus("SesiÃ³n finalizada correctamente.");
     setRoutineQuickPanel("sessions");
   }, [
     profileEmail,
@@ -6954,7 +6421,7 @@ export default function AlumnoVisionClient({
                     </div>
                   </div>
                   <span className="pf-a3-coach-star" aria-hidden="true">
-                    ★
+                    â˜…
                   </span>
                 </div>
 
@@ -7016,7 +6483,7 @@ export default function AlumnoVisionClient({
                         <h3 className="mt-1 break-words text-base font-black text-white">{selectedMusicDisplayName}</h3>
                         <p className="mt-1 text-[11px] text-slate-300">
                           Objetivo: {selectedMusicAssignment.objetivo || "General"}
-                          {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
+                          {selectedMusicAssignment.diaSemana ? ` Â· ${selectedMusicAssignment.diaSemana}` : ""}
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -7097,7 +6564,7 @@ export default function AlumnoVisionClient({
                           <p className="pf-a3-music-title">{track.title}</p>
                           <p className="pf-a3-music-artist">{track.artist}</p>
                           <p className="pf-a3-music-hint">
-                            {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
+                            {resolveMusicPlatformLabel(track.platform)} Â· {resolveMusicContentTypeLabel(track.contentType)}
                           </p>
                           <p className="pf-a3-music-hint-secondary">
                             {track.playlistUrl ? "Tocar para escuchar" : "Tocar para abrir musica"}
@@ -7387,8 +6854,8 @@ export default function AlumnoVisionClient({
                           ? "!border-sky-100 !bg-sky-400/45"
                           : ""
                       }`}
-                      aria-label="Abrir cronómetro"
-                      title={routineStopwatchRunning ? "Cronómetro en marcha" : "Abrir cronómetro"}
+                      aria-label="Abrir cronÃ³metro"
+                      title={routineStopwatchRunning ? "CronÃ³metro en marcha" : "Abrir cronÃ³metro"}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                         <circle cx="12" cy="12" r="8" />
@@ -7532,11 +6999,11 @@ export default function AlumnoVisionClient({
                 </section>
               ) : !selectedRoutineEntry ? (
                 <section className="pf-a3-routine-empty">
-                  <h2>{hasWeekPlanRoutine ? "Sin bloques para este día" : "No hay sesiones cargadas"}</h2>
+                  <h2>{hasWeekPlanRoutine ? "Sin bloques para este dÃ­a" : "No hay sesiones cargadas"}</h2>
                   <p>
                     {hasWeekPlanRoutine
-                      ? "Tu profe aún no cargó ejercicios en este día. Cambia de día o actualiza para sincronizar."
-                      : "Cuando tu profe asigne una sesión, la rutina aparecerá acá automáticamente."}
+                      ? "Tu profe aÃºn no cargÃ³ ejercicios en este dÃ­a. Cambia de dÃ­a o actualiza para sincronizar."
+                      : "Cuando tu profe asigne una sesiÃ³n, la rutina aparecerÃ¡ acÃ¡ automÃ¡ticamente."}
                   </p>
                 </section>
               ) : (
@@ -7738,7 +7205,7 @@ export default function AlumnoVisionClient({
 
                                                 {hasVideoPreview ? (
                                                   <span className="pf-a3-routine-exercise-thumb-play" aria-hidden="true">
-                                                    ▶
+                                                    â–¶
                                                   </span>
                                                 ) : null}
                                               </span>
@@ -7842,12 +7309,12 @@ export default function AlumnoVisionClient({
                     >
                       <span className="pf-a3-routine-finalize-cta-wave" aria-hidden="true" />
                       <span className="pf-a3-routine-finalize-cta-wave pf-a3-routine-finalize-cta-wave-delay" aria-hidden="true" />
-                      <span className="pf-a3-routine-finalize-cta-label">Finalizar Sesión</span>
+                      <span className="pf-a3-routine-finalize-cta-label">Finalizar SesiÃ³n</span>
                     </ReliableActionButton>
 
                     {existingRoutineSessionFeedback ? (
                       <p className="mt-2 text-[11px] text-violet-100/80">
-                        Último cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
+                        Ãšltimo cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
                       </p>
                     ) : null}
 
@@ -7888,7 +7355,7 @@ export default function AlumnoVisionClient({
                                 ? "Solicitud de cambio"
                                 : activeRoutineActionScreen === "sessions"
                                   ? "Sesiones finalizadas"
-                                  : "Finalizar sesión"}
+                                  : "Finalizar sesiÃ³n"}
                             </h3>
                             <p className="pf-a3-routine-log-meta">Preparando pantalla.</p>
                           </div>
@@ -7921,7 +7388,7 @@ export default function AlumnoVisionClient({
                             <p className="pf-a3-routine-log-kicker">Solicitud</p>
                             <h3 className="pf-a3-routine-log-title">Solicitar cambio de rutina</h3>
                             <p className="pf-a3-routine-log-meta">
-                              Envia al profesor el motivo para ajustar este día o sesión.
+                              Envia al profesor el motivo para ajustar este dÃ­a o sesiÃ³n.
                             </p>
                           </div>
 
@@ -7942,7 +7409,7 @@ export default function AlumnoVisionClient({
                           onChange={(event) => setRoutineChangeRequestDraft(event.target.value)}
                           rows={4}
                           className="pf-a3-routine-action-textarea"
-                          placeholder="Ej: esta variante me genera dolor en rodilla y necesito otra opción de ejercicio."
+                          placeholder="Ej: esta variante me genera dolor en rodilla y necesito otra opciÃ³n de ejercicio."
                         />
 
                         <div className="pf-a3-routine-action-row">
@@ -7964,7 +7431,7 @@ export default function AlumnoVisionClient({
 
                         {routineChangeRequests[0] ? (
                           <p className="pf-a3-routine-action-meta">
-                            Última solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
+                            Ãšltima solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
                           </p>
                         ) : null}
                       </>
@@ -7992,7 +7459,7 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {routineSessionFeedbackHistory.length === 0 ? (
-                          <p className="pf-a3-routine-action-empty">Todavía no finalizaste sesiones con feedback.</p>
+                          <p className="pf-a3-routine-action-empty">TodavÃ­a no finalizaste sesiones con feedback.</p>
                         ) : (
                           <div className="pf-a3-routine-action-list">
                             {routineSessionFeedbackHistory.map((record) => (
@@ -8002,7 +7469,7 @@ export default function AlumnoVisionClient({
                               >
                                 <div className="pf-a3-routine-action-card-head">
                                   <p>
-                                    {record.dayName || record.sessionTitle || "Sesión"}
+                                    {record.dayName || record.sessionTitle || "SesiÃ³n"}
                                   </p>
                                   <span>{formatDateTime(record.createdAt)} hs</span>
                                 </div>
@@ -8020,7 +7487,7 @@ export default function AlumnoVisionClient({
                                 )}
 
                                 <p className="pf-a3-routine-action-meta">
-                                  Registros del día: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
+                                  Registros del dÃ­a: {record.totalWorkoutLogs || 0} Â· Con molestia: {record.logsWithPain || 0}
                                 </p>
                               </article>
                             ))}
@@ -8032,9 +7499,9 @@ export default function AlumnoVisionClient({
                         <div className="pf-a3-routine-log-head">
                           <div className="min-w-0">
                             <p className="pf-a3-routine-log-kicker">Feedback</p>
-                            <h3 className="pf-a3-routine-log-title">Finalizar sesión</h3>
+                            <h3 className="pf-a3-routine-log-title">Finalizar sesiÃ³n</h3>
                             <p className="pf-a3-routine-log-meta">
-                              Cierra el día y envía tu feedback al profesor.
+                              Cierra el dÃ­a y envÃ­a tu feedback al profesor.
                             </p>
                           </div>
 
@@ -8042,7 +7509,7 @@ export default function AlumnoVisionClient({
                             type="button"
                             onClick={closeRoutineActionScreen}
                             className="pf-a3-routine-log-close"
-                            aria-label="Cerrar finalización"
+                            aria-label="Cerrar finalizaciÃ³n"
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                               <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
@@ -8052,9 +7519,9 @@ export default function AlumnoVisionClient({
 
                         {selectedRoutineDayFeedbackQuestions.length > 0 ? (
                           <div className="pf-a3-routine-action-question-list">
-                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión") ? (
+                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesiÃ³n") ? (
                               <p className="pf-a3-routine-action-title">
-                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión"}
+                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesiÃ³n"}
                               </p>
                             ) : null}
 
@@ -8097,7 +7564,7 @@ export default function AlumnoVisionClient({
                           </div>
                         ) : (
                           <p className="pf-a3-routine-action-empty">
-                            El profesor aún no asignó un cuestionario para este día. Puedes finalizar igual.
+                            El profesor aÃºn no asignÃ³ un cuestionario para este dÃ­a. Puedes finalizar igual.
                           </p>
                         )}
 
@@ -8171,10 +7638,10 @@ export default function AlumnoVisionClient({
                       className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-play"
                       aria-label={
                         routineStopwatchRunning
-                          ? "Pausar cronómetro"
+                          ? "Pausar cronÃ³metro"
                           : routineStopwatchElapsedMs > 0
-                            ? "Reanudar cronómetro"
-                            : "Iniciar cronómetro"
+                            ? "Reanudar cronÃ³metro"
+                            : "Iniciar cronÃ³metro"
                       }
                       title={
                         routineStopwatchRunning
@@ -8201,7 +7668,7 @@ export default function AlumnoVisionClient({
                       onClick={stopRoutineStopwatch}
                       disabled={!routineStopwatchRunning && routineStopwatchElapsedMs <= 0}
                       className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-stop"
-                      aria-label="Frenar cronómetro"
+                      aria-label="Frenar cronÃ³metro"
                       title="Frenar"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
@@ -8213,7 +7680,7 @@ export default function AlumnoVisionClient({
                       type="button"
                       onClick={() => setRoutineQuickPanel("none")}
                       className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-close"
-                      aria-label="Ocultar cronómetro"
+                      aria-label="Ocultar cronÃ³metro"
                       title="Ocultar"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -8249,7 +7716,7 @@ export default function AlumnoVisionClient({
                         <h3 className="pf-a3-routine-log-title">{routineExerciseLogTarget.exerciseName}</h3>
                         <p className="pf-a3-routine-log-meta">
                           {routineExerciseLogTarget.weekName || routineWeekLabel}
-                          {routineExerciseLogTarget.dayName ? ` · ${routineExerciseLogTarget.dayName}` : ""}
+                          {routineExerciseLogTarget.dayName ? ` Â· ${routineExerciseLogTarget.dayName}` : ""}
                         </p>
                       </div>
 
@@ -8603,7 +8070,7 @@ export default function AlumnoVisionClient({
                                           : "Sin fecha"}
                                       </span>
                                       <strong>
-                                        {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series || 0} x {log.repeticiones || 0}
+                                        {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg Â· {log.series || 0} x {log.repeticiones || 0}
                                       </strong>
                                     </div>
 
@@ -8750,7 +8217,7 @@ export default function AlumnoVisionClient({
             <div className="space-y-4">
               <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                 <p className="pf-a2-eyebrow">Plan nutricional</p>
-                <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
+                <h2 className="mt-1 text-xl font-black text-white">NutriciÃ³n del alumno</h2>
                 <p className="mt-2 text-sm text-slate-300">
                   Separa la vista entre el plan pautado por el profesor y la carga diaria que completa el alumno.
                 </p>
@@ -8783,16 +8250,16 @@ export default function AlumnoVisionClient({
                       Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
-                      Última asignación: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
+                      Ãšltima asignaciÃ³n: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
                     </p>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="pf-a2-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">CalorÃ­as objetivo</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionDailyGoalKcal} kcal</p>
                       </div>
                       <div className="pf-a2-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">CalorÃ­as del plan</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionPlanCaloriesFromMeals} kcal</p>
                       </div>
                     </div>
@@ -8816,7 +8283,7 @@ export default function AlumnoVisionClient({
                           <div className="flex items-center justify-between text-xs text-slate-300">
                             <span>{macro.label}</span>
                             <span>
-                              {macro.grams} g · {macro.ratio}%
+                              {macro.grams} g Â· {macro.ratio}%
                             </span>
                           </div>
                           <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
@@ -8848,7 +8315,7 @@ export default function AlumnoVisionClient({
                               <div>
                                 <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
                                 <p className="mt-1 text-[11px] uppercase tracking-[0.09em] text-slate-400">
-                                  {meal.totalProtein}P · {meal.totalCarbs}C · {meal.totalFat}G
+                                  {meal.totalProtein}P Â· {meal.totalCarbs}C Â· {meal.totalFat}G
                                 </p>
                               </div>
                               <span className="pf-a2-pill">{meal.totalKcal} kcal</span>
@@ -8874,7 +8341,7 @@ export default function AlumnoVisionClient({
                                 >
                                   <p className="truncate">
                                     {item.label}
-                                    {item.grams !== null ? ` · ${item.grams} g` : ""}
+                                    {item.grams !== null ? ` Â· ${item.grams} g` : ""}
                                   </p>
                                   <span className="shrink-0 text-slate-400">{item.calories} kcal</span>
                                 </div>
@@ -8885,7 +8352,7 @@ export default function AlumnoVisionClient({
                       </div>
                     ) : (
                       <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                        Aún no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una versión actualizada.
+                        AÃºn no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una versiÃ³n actualizada.
                       </div>
                     )}
                   </article>
@@ -8941,7 +8408,7 @@ export default function AlumnoVisionClient({
                         onClick={() => handleNutritionTrackerDateShift(1)}
                         className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                       >
-                        Mañana
+                        MaÃ±ana
                       </ReliableActionButton>
                     </div>
                   </div>
@@ -8991,7 +8458,7 @@ export default function AlumnoVisionClient({
 
                       <div>
                         <div className="flex items-center justify-between text-[11px] text-slate-300">
-                          <span>Proteínas</span>
+                          <span>ProteÃ­nas</span>
                           <span>
                             {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
                           </span>
@@ -9022,7 +8489,7 @@ export default function AlumnoVisionClient({
                   </article>
 
                   <div className="pf-a4-nutrition-diary-section-head mt-4">
-                    <h3 className="pf-a4-nutrition-diary-title">Alimentación</h3>
+                    <h3 className="pf-a4-nutrition-diary-title">AlimentaciÃ³n</h3>
                     <ReliableActionButton
                       type="button"
                       onClick={() =>
@@ -9032,7 +8499,7 @@ export default function AlumnoVisionClient({
                       }
                       className="pf-a4-nutrition-diary-link"
                     >
-                      Más
+                      MÃ¡s
                     </ReliableActionButton>
                   </div>
 
@@ -9109,7 +8576,7 @@ export default function AlumnoVisionClient({
                           onClick={triggerNutritionBarcodeCapture}
                           className="pf-a3-nutrition-template-chip"
                         >
-                          Escanear código
+                          Escanear cÃ³digo
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
@@ -9123,19 +8590,19 @@ export default function AlumnoVisionClient({
                       {nutritionCalIaEstimate ? (
                         <article className="pf-a4-nutrition-cal-ia-card mt-3">
                           <div className="pf-a4-nutrition-cal-ia-preview">
-                            <img src={nutritionCalIaEstimate.previewUrl} alt="Estimación CAL IA" loading="lazy" />
+                            <img src={nutritionCalIaEstimate.previewUrl} alt="EstimaciÃ³n CAL IA" loading="lazy" />
                           </div>
                           <div>
                             <p className="pf-a4-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
                             <p className="pf-a4-nutrition-cal-ia-meta">
-                              {nutritionCalIaEstimate.entry.gramos || 0} g · {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
+                              {nutritionCalIaEstimate.entry.gramos || 0} g Â· {nutritionCalIaEstimate.entry.calorias} kcal Â· {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
                             </p>
                             <ReliableActionButton
                               type="button"
                               onClick={confirmNutritionCalIaEstimate}
                               className="pf-a2-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
                             >
-                              Agregar estimación
+                              Agregar estimaciÃ³n
                             </ReliableActionButton>
                           </div>
                         </article>
@@ -9165,7 +8632,7 @@ export default function AlumnoVisionClient({
                               }
                               className="pf-a4-nutrition-favorite-chip"
                             >
-                              ★ {favorite.nombre}
+                              â˜… {favorite.nombre}
                             </ReliableActionButton>
                           ))}
                         </div>
@@ -9176,7 +8643,7 @@ export default function AlumnoVisionClient({
                           <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
                         ) : nutritionCombinedSearchResults.length === 0 ? (
                           <p className="pf-a4-nutrition-search-empty">
-                            No hay resultados para este filtro. Prueba otro término o usa el escáner.
+                            No hay resultados para este filtro. Prueba otro tÃ©rmino o usa el escÃ¡ner.
                           </p>
                         ) : (
                           nutritionCombinedSearchResults.map((food) => {
@@ -9195,9 +8662,9 @@ export default function AlumnoVisionClient({
                                 <div className="min-w-0">
                                   <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
                                   <p className="pf-a4-nutrition-search-meta">
-                                    {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P · {food.carbsPer100g}C · {food.fatPer100g}G
+                                    {food.kcalPer100g} kcal/100g Â· {food.proteinPer100g}P Â· {food.carbsPer100g}C Â· {food.fatPer100g}G
                                   </p>
-                                  <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
+                                  <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "CatÃ¡logo"}</p>
                                 </div>
 
                                 <div className="pf-a4-nutrition-search-actions">
@@ -9207,7 +8674,7 @@ export default function AlumnoVisionClient({
                                     className={`pf-a4-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
                                     aria-label={isFavorite ? `Quitar favorito ${food.nombre}` : `Guardar favorito ${food.nombre}`}
                                   >
-                                    ★
+                                    â˜…
                                   </ReliableActionButton>
 
                                   <ReliableActionButton
@@ -9236,8 +8703,8 @@ export default function AlumnoVisionClient({
                               <div>
                                 <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
                                 <p className="pf-a4-nutrition-meal-entry-meta">
-                                  {entry.porcion ? `${entry.porcion} · ` : ""}
-                                  {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
+                                  {entry.porcion ? `${entry.porcion} Â· ` : ""}
+                                  {entry.calorias} kcal Â· {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
                                 </p>
                               </div>
                               <ReliableActionButton
@@ -9257,34 +8724,34 @@ export default function AlumnoVisionClient({
                   {nutritionShowTrackerDetails ? (
                     <section className="mt-4 space-y-3">
                       <div className="pf-a3-nutrition-template-row">
-                        <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
+                        <span className="pf-a3-nutrition-template-label">Plantillas del dÃ­a</span>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("full")}
                           className="pf-a3-nutrition-template-chip"
                         >
-                          Día completo
+                          DÃ­a completo
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("training")}
                           className="pf-a3-nutrition-template-chip"
                         >
-                          Día de entreno
+                          DÃ­a de entreno
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("rest")}
                           className="pf-a3-nutrition-template-chip"
                         >
-                          Día de descanso
+                          DÃ­a de descanso
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("clear")}
                           className="pf-a3-nutrition-template-chip is-muted"
                         >
-                          Reiniciar día
+                          Reiniciar dÃ­a
                         </ReliableActionButton>
                       </div>
 
@@ -9313,18 +8780,18 @@ export default function AlumnoVisionClient({
                       <div className="pf-a3-nutrition-streak-grid">
                         <div className="pf-a3-nutrition-streak-card">
                           <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} dÃ­as</p>
                           <p className="pf-a3-nutrition-streak-note">
-                            Último check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
+                            Ãšltimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
                           </p>
                         </div>
                         <div className="pf-a3-nutrition-streak-card">
                           <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
-                          <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} dÃ­as</p>
+                          <p className="pf-a3-nutrition-streak-note">HistÃ³rico de adherencia</p>
                         </div>
                         <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Días activos</p>
+                          <p className="pf-a3-nutrition-streak-title">DÃ­as activos</p>
                           <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
                           <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
                         </div>
@@ -9505,9 +8972,9 @@ export default function AlumnoVisionClient({
                         </div>
                         <p className="mt-1 text-xs text-slate-300">
                           {log.exerciseName || "Ejercicio"}
-                          {log.series ? ` · ${log.series} series` : ""}
-                          {log.repeticiones ? ` · ${log.repeticiones} reps` : ""}
-                          {toNumber(log.pesoKg) !== null ? ` · ${log.pesoKg} kg` : ""}
+                          {log.series ? ` Â· ${log.series} series` : ""}
+                          {log.repeticiones ? ` Â· ${log.repeticiones} reps` : ""}
+                          {toNumber(log.pesoKg) !== null ? ` Â· ${log.pesoKg} kg` : ""}
                         </p>
                         {log.blockTitle ? (
                           <p className="mt-1 text-xs text-slate-400">Bloque: {log.blockTitle}</p>
@@ -9555,7 +9022,7 @@ export default function AlumnoVisionClient({
                       </h3>
                       <p className="mt-1 text-xs text-slate-300">
                         Objetivo: {selectedMusicAssignment.objetivo || "General"}
-                        {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
+                        {selectedMusicAssignment.diaSemana ? ` Â· ${selectedMusicAssignment.diaSemana}` : ""}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -9683,7 +9150,7 @@ export default function AlumnoVisionClient({
                             </div>
                             <p className="mt-1 text-xs text-slate-300">
                               Objetivo: {assignment.objetivo || "General"}
-                              {assignment.diaSemana ? ` · ${assignment.diaSemana}` : ""}
+                              {assignment.diaSemana ? ` Â· ${assignment.diaSemana}` : ""}
                             </p>
                             {assignment.recommendedSongTitle ? (
                               <p className="mt-1 text-xs text-slate-400">
