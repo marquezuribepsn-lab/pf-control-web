@@ -107,6 +107,7 @@ type NutritionPlanLite = {
 
 type NutritionAssignmentLite = {
   alumnoNombre?: string;
+  alumnoEmail?: string;
   planId?: string;
   assignedAt?: string;
 };
@@ -1346,6 +1347,25 @@ function normalizeNutritionFoodRows(rawRows: unknown[]): NutritionFoodLite[] {
       };
     })
     .filter((row) => Boolean(row.id));
+}
+
+function normalizeNutritionAssignmentRows(rawRows: unknown[]): NutritionAssignmentLite[] {
+  return rawRows
+    .filter((row) => row && typeof row === "object")
+    .map((row) => {
+      const candidate = row as Record<string, unknown>;
+
+      return {
+        alumnoNombre: String(candidate.alumnoNombre || candidate.alumno || "").trim() || undefined,
+        alumnoEmail:
+          String(candidate.alumnoEmail || candidate.email || "")
+            .trim()
+            .toLowerCase() || undefined,
+        planId: String(candidate.planId || "").trim() || undefined,
+        assignedAt: String(candidate.assignedAt || "").trim() || undefined,
+      };
+    })
+    .filter((row) => Boolean(row.alumnoNombre || row.alumnoEmail) && Boolean(row.planId));
 }
 
 function normalizeNutritionFavoriteRows(rawRows: unknown[]): NutritionFoodFavoriteLite[] {
@@ -3537,11 +3557,15 @@ export default function AlumnoVisionClient({
 
     if (shouldLoadNutritionData) {
       const plans = readArrayFromStorage<NutritionPlanLite>(NUTRITION_PLANS_KEY);
-      const assignments = readArrayFromStorage<NutritionAssignmentLite>(NUTRITION_ASSIGNMENTS_KEY).sort(
-        (a, b) => getTimestamp(b.assignedAt) - getTimestamp(a.assignedAt)
-      );
+      const assignments = normalizeNutritionAssignmentRows(
+        readArrayFromStorage<unknown>(NUTRITION_ASSIGNMENTS_KEY)
+      ).sort((a, b) => getTimestamp(b.assignedAt) - getTimestamp(a.assignedAt));
 
-      const matchedAssignment = assignments.find((item) => matchIdentityName(item.alumnoNombre));
+      const matchedAssignment = assignments.find(
+        (item) =>
+          matchIdentityName(item.alumnoNombre) ||
+          matchIdentityEmail(item.alumnoEmail)
+      );
 
       let matchedPlan: NutritionPlanLite | null = null;
       let assignedAt: string | null = matchedAssignment?.assignedAt || null;
