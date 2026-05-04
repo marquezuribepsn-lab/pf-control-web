@@ -2188,8 +2188,24 @@ export default function AlumnoVisionClient({
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
   const [nutritionPanelView, setNutritionPanelView] = useState<"plan" | "registro">("plan");
+  const [nutritionShowTrackerDetails, setNutritionShowTrackerDetails] = useState(false);
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
   const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
+  const [nutritionMealComposerMealId, setNutritionMealComposerMealId] = useState<string | null>(null);
+  const [nutritionFoodSearchQuery, setNutritionFoodSearchQuery] = useState("");
+  const [nutritionFoodGramsDraft, setNutritionFoodGramsDraft] = useState("100");
+  const [nutritionRemoteSearchResults, setNutritionRemoteSearchResults] = useState<NutritionSearchFoodResult[]>([]);
+  const [nutritionFoodSearchLoading, setNutritionFoodSearchLoading] = useState(false);
+  const [nutritionFoodSearchStatus, setNutritionFoodSearchStatus] = useState("");
+  const [nutritionBarcodeStatus, setNutritionBarcodeStatus] = useState("");
+  const [nutritionCalIaStatus, setNutritionCalIaStatus] = useState("");
+  const [nutritionCalIaEstimate, setNutritionCalIaEstimate] = useState<
+    | {
+        previewUrl: string;
+        entry: NutritionDailyCustomFoodLite;
+      }
+    | null
+  >(null);
   const [nutritionCustomFoodDraft, setNutritionCustomFoodDraft] = useState<{
     nombre: string;
     porcion: string;
@@ -2246,6 +2262,8 @@ export default function AlumnoVisionClient({
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
+  const nutritionBarcodeCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const nutritionCalIaCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const storageRefreshRafRef = useRef<number | null>(null);
   const storageRefreshIdleRef = useRef<number | null>(null);
   const lastStorageRefreshTsRef = useRef<number>(0);
