@@ -9559,7 +9559,19 @@ export default function AlumnoVisionClient({
 
                   <div className="pf-a4-nutrition-meal-list mt-2">
                     {nutritionDiaryMealRows.map((meal) => (
-                      <article key={`meal-row-${meal.mealId}`} className="pf-a4-nutrition-meal-row">
+                      <article
+                        key={`meal-row-${meal.mealId}`}
+                        className="pf-a4-nutrition-meal-row is-clickable"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openNutritionMealComposer(meal.mealId)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openNutritionMealComposer(meal.mealId);
+                          }
+                        }}
+                      >
                         <div className="pf-a4-nutrition-meal-icon">{meal.icon}</div>
 
                         <div className="min-w-0">
