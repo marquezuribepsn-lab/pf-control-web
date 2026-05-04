@@ -2663,6 +2663,71 @@ export default function AlumnoVisionClient({
     return map;
   }, [nutritionCustomFoodsRaw, shouldLoadNutritionData]);
 
+  const nutritionFavoriteFoods = useMemo(() => {
+    if (!shouldLoadNutritionData) {
+      return [] as NutritionFoodFavoriteLite[];
+    }
+
+    return normalizeNutritionFavoriteRows(nutritionFavoritesRaw);
+  }, [nutritionFavoritesRaw, shouldLoadNutritionData]);
+
+  const nutritionFavoriteFoodIds = useMemo(() => {
+    return new Set(nutritionFavoriteFoods.map((item) => item.id));
+  }, [nutritionFavoriteFoods]);
+
+  const nutritionCatalogFoods = useMemo(() => {
+    if (!shouldLoadNutritionData) {
+      return [] as NutritionSearchFoodResult[];
+    }
+
+    const byId = new Map<string, NutritionSearchFoodResult>();
+
+    nutritionFavoriteFoods.forEach((item) => {
+      byId.set(item.id, {
+        id: item.id,
+        nombre: item.nombre,
+        kcalPer100g: item.kcalPer100g,
+        proteinPer100g: item.proteinPer100g,
+        carbsPer100g: item.carbsPer100g,
+        fatPer100g: item.fatPer100g,
+        imageUrl: item.imageUrl,
+        barcode: item.barcode,
+        sourceLabel: "Favorito",
+      });
+    });
+
+    nutritionFoodsById.forEach((item, id) => {
+      const safeId = String(id || "").trim();
+      if (!safeId) {
+        return;
+      }
+
+      const previous = byId.get(safeId);
+      byId.set(safeId, {
+        id: safeId,
+        nombre: String(item.nombre || previous?.nombre || safeId).trim() || safeId,
+        kcalPer100g: Math.max(0, roundToOneDecimal(toNumber(item.kcalPer100g) || previous?.kcalPer100g || 0)),
+        proteinPer100g: Math.max(0, roundToOneDecimal(toNumber(item.proteinPer100g) || previous?.proteinPer100g || 0)),
+        carbsPer100g: Math.max(0, roundToOneDecimal(toNumber(item.carbsPer100g) || previous?.carbsPer100g || 0)),
+        fatPer100g: Math.max(0, roundToOneDecimal(toNumber(item.fatPer100g) || previous?.fatPer100g || 0)),
+        imageUrl: resolveNutritionImageUrl([
+          item.imageUrl,
+          item.imagenUrl,
+          item.photoUrl,
+          item.fotoUrl,
+          item.thumbnailUrl,
+          item.coverUrl,
+          item.artworkUrl,
+          previous?.imageUrl,
+        ]) || undefined,
+        barcode: previous?.barcode,
+        sourceLabel: previous?.sourceLabel || "Base local",
+      });
+    });
+
+    return Array.from(byId.values()).sort((left, right) => left.nombre.localeCompare(right.nombre));
+  }, [nutritionFavoriteFoods, nutritionFoodsById, shouldLoadNutritionData]);
+
   const nutritionDailyLogs = useMemo<NutritionDailyLogLite[]>(() => {
     if (!shouldLoadNutritionData) {
       return [];
