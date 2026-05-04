@@ -88,8 +88,13 @@ type NutritionPlan = {
 
 type AlumnoNutritionAssignment = {
   alumnoNombre: string;
+  alumnoEmail?: string;
   planId: string;
   assignedAt: string;
+};
+
+type ClienteMetaLite = {
+  email?: string;
 };
 
 type NutritionAIBrief = {
@@ -122,6 +127,7 @@ const PLANS_KEY = "pf-control-nutricion-planes-v1";
 const CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const AI_TEMPLATES_KEY = "pf-control-nutricion-ia-templates-v1";
+const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 
 const DEFAULT_MEALS: PlanMeal[] = [
   { id: "meal-desayuno", nombre: "Desayuno", items: [] },
@@ -171,6 +177,31 @@ function roundValue(value: number) {
 
 function buildPlanName(index: number) {
   return `Plan nutricional ${index}`;
+}
+
+function normalizePersonKey(value: string): string {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function namesLikelyMatch(a: string, b: string): boolean {
+  const left = normalizePersonKey(a);
+  const right = normalizePersonKey(b);
+
+  if (!left || !right) return false;
+  if (left === right) return true;
+  if (left.includes(right) || right.includes(left)) return true;
+
+  const leftTokens = left.split(" ").filter(Boolean);
+  const rightTokens = right.split(" ").filter(Boolean);
+  const shared = leftTokens.filter((token) => rightTokens.includes(token));
+
+  return shared.length >= 2 || shared.some((token) => token.length >= 5);
 }
 
 function calculateTargets({
@@ -296,6 +327,11 @@ export default function NutritionPlanner() {
     legacyLocalStorageKey: AI_TEMPLATES_KEY,
   });
 
+  const [clientesMeta] = useSharedState<Record<string, ClienteMetaLite>>({}, {
+    key: CLIENTE_META_KEY,
+    legacyLocalStorageKey: CLIENTE_META_KEY,
+  });
+
   const [selectedPlanId, setSelectedPlanId] = useState<string>(plans[0]?.id || "");
   const [foodSearch, setFoodSearch] = useState("");
   const [newFoodName, setNewFoodName] = useState("");
@@ -361,6 +397,26 @@ export default function NutritionPlanner() {
     if (!detailPlanId) return null;
     return plans.find((plan) => plan.id === detailPlanId) || null;
   }, [detailPlanId, plans]);
+
+  const alumnoEmailByName = useMemo(() => {
+    const map = new Map<string, string>();
+
+    Object.entries(clientesMeta || {}).forEach(([rawKey, rawMeta]) => {
+      if (!rawKey.toLowerCase().startsWith("alumno:")) {
+        return;
+      }
+
+      const name = rawKey.split(":")[1] || "";
+      const normalizedName = normalizePersonKey(name);
+      const email = String(rawMeta?.email || "").trim().toLowerCase();
+
+      if (normalizedName && email) {
+        map.set(normalizedName, email);
+      }
+    });
+
+    return map;
+  }, [clientesMeta]);
 
   const filteredAssignedClientRows = useMemo(() => {
     return filterAssignedClientRows(assignedClientRows, clientSearch);
@@ -1022,12 +1078,22 @@ export default function NutritionPlanner() {
   const assignPlanToAlumno = (alumnoNombre: string, planId: string) => {
     if (!alumnoNombre || !planId) return;
 
+    const normalizedAlumno = normalizePersonKey(alumnoNombre);
+    const alumnoEmail = alumnoEmailByName.get(normalizedAlumno);
+
     setAssignments((prev) => {
-      const withoutAlumno = prev.filter((assignment) => assignment.alumnoNombre !== alumnoNombre);
+      const withoutAlumno = prev.filter((assignment) => {
+        const matchesName = namesLikelyMatch(assignment.alumnoNombre, alumnoNombre);
+        const assignmentEmail = String(assignment.alumnoEmail || "").trim().toLowerCase();
+        const matchesEmail = Boolean(alumnoEmail && assignmentEmail && assignmentEmail === alumnoEmail);
+        return !(matchesName || matchesEmail);
+      });
+
       return [
         ...withoutAlumno,
         {
           alumnoNombre,
+          alumnoEmail,
           planId,
           assignedAt: new Date().toISOString(),
         },
