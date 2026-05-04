@@ -4861,6 +4861,12 @@ export default function AlumnoVisionClient({
     setNutritionCalIaProcessing(false);
   }, [stopNutritionLiveCapture]);
 
+  useEffect(() => {
+    if (!nutritionMealComposerMealId && nutritionLiveCaptureMode !== "none") {
+      stopNutritionLiveCapture();
+    }
+  }, [nutritionLiveCaptureMode, nutritionMealComposerMealId, stopNutritionLiveCapture]);
+
   const toggleNutritionFavoriteFood = useCallback(
     (food: NutritionSearchFoodResult) => {
       const safeId = String(food.id || "").trim();
