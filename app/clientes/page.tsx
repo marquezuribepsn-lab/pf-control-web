@@ -186,6 +186,7 @@ type NutritionPlanStatus = {
 
 type AlumnoNutritionAssignment = {
   alumnoNombre: string;
+  alumnoEmail?: string;
   planId: string;
   assignedAt: string;
 };
@@ -1602,14 +1603,28 @@ export default function ClientesPage() {
     return new Map(mergedFoods.map((food) => [food.id, food]));
   }, [nutritionCustomFoods]);
 
+  const selectedClientEmail = useMemo(() => {
+    if (!selectedClient) return "";
+    return String(clientesMeta[selectedClient.id]?.email || "")
+      .trim()
+      .toLowerCase();
+  }, [clientesMeta, selectedClient]);
+
   const selectedNutritionAssignment = useMemo(() => {
     if (!selectedClient) return null;
     const clientName = selectedClient.nombre;
     const clientIdName = selectedClient.id.split(":")[1] || "";
     const matches = nutritionAssignments.filter(
-      (assignment) =>
-        namesLikelyMatch(assignment.alumnoNombre, clientName) ||
-        namesLikelyMatch(assignment.alumnoNombre, clientIdName)
+      (assignment) => {
+        const assignmentEmail = String(assignment.alumnoEmail || "")
+          .trim()
+          .toLowerCase();
+        const byName =
+          namesLikelyMatch(assignment.alumnoNombre, clientName) ||
+          namesLikelyMatch(assignment.alumnoNombre, clientIdName);
+        const byEmail = Boolean(selectedClientEmail && assignmentEmail && assignmentEmail === selectedClientEmail);
+        return byName || byEmail;
+      }
     );
 
     if (matches.length === 0) return null;
@@ -1620,7 +1635,7 @@ export default function ClientesPage() {
         (a, b) =>
           new Date(b.assignedAt || 0).getTime() - new Date(a.assignedAt || 0).getTime()
       )[0];
-  }, [nutritionAssignments, selectedClient]);
+  }, [nutritionAssignments, selectedClient, selectedClientEmail]);
 
   const selectedNutritionPlan = useMemo(() => {
     if (!selectedClient) return null;
@@ -1655,12 +1670,22 @@ export default function ClientesPage() {
     for (const client of clientes) {
       const clientName = client.nombre;
       const clientIdName = client.id.split(":")[1] || "";
+      const clientEmail = String(clientesMeta[client.id]?.email || "")
+        .trim()
+        .toLowerCase();
 
       const assignment = nutritionAssignments
         .filter(
-          (item) =>
-            namesLikelyMatch(item.alumnoNombre, clientName) ||
-            namesLikelyMatch(item.alumnoNombre, clientIdName)
+          (item) => {
+            const assignmentEmail = String(item.alumnoEmail || "")
+              .trim()
+              .toLowerCase();
+            const byName =
+              namesLikelyMatch(item.alumnoNombre, clientName) ||
+              namesLikelyMatch(item.alumnoNombre, clientIdName);
+            const byEmail = Boolean(clientEmail && assignmentEmail && assignmentEmail === clientEmail);
+            return byName || byEmail;
+          }
         )
         .sort(
           (a, b) =>
@@ -1703,7 +1728,7 @@ export default function ClientesPage() {
     }
 
     return map;
-  }, [clientes, nutritionAssignments, nutritionPlans]);
+  }, [clientes, clientesMeta, nutritionAssignments, nutritionPlans]);
 
   const selectedNutritionIntake = useMemo(() => {
     if (!selectedNutritionPlan) {
