@@ -8837,13 +8837,28 @@ export default function AlumnoVisionClient({
 
               {nutritionPanelView === "registro" ? (
                 <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                  <div className="pf-a3-nutrition-tracker-head">
+                  <input
+                    ref={nutritionBarcodeCaptureInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleNutritionBarcodeCaptureChange}
+                  />
+                  <input
+                    ref={nutritionCalIaCaptureInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleNutritionCalIaCaptureChange}
+                  />
+
+                  <div className="pf-a4-nutrition-diary-head">
                     <div>
                       <p className="pf-a2-eyebrow">Registro del alumno</p>
-                      <h2 className="mt-1 text-xl font-black text-white">Carga diaria de alimentos</h2>
-                      <p className="mt-1 text-sm text-slate-300">
-                        Registra las comidas pautadas y agrega alimentos extra para llevar un control fácil y ordenado.
-                      </p>
+                      <h2 className="mt-1 text-2xl font-black text-white">Hoy</h2>
+                      <p className="mt-1 text-sm text-slate-300">{formatDate(normalizedNutritionTrackerDate)}</p>
                     </div>
 
                     <div className="pf-a3-nutrition-tracker-date">
@@ -8874,454 +8889,453 @@ export default function AlumnoVisionClient({
                     </div>
                   </div>
 
-                  <div className="pf-a3-nutrition-template-row mt-3">
-                    <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
+                  <div className="pf-a4-nutrition-diary-section-head mt-4">
+                    <h3 className="pf-a4-nutrition-diary-title">Resumen</h3>
                     <ReliableActionButton
                       type="button"
-                      onClick={() => applyNutritionDayTemplate("full")}
-                      className="pf-a3-nutrition-template-chip"
+                      onClick={() => setNutritionShowTrackerDetails((previous) => !previous)}
+                      className="pf-a4-nutrition-diary-link"
                     >
-                      Día completo
-                    </ReliableActionButton>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => applyNutritionDayTemplate("training")}
-                      className="pf-a3-nutrition-template-chip"
-                    >
-                      Día de entreno
-                    </ReliableActionButton>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => applyNutritionDayTemplate("rest")}
-                      className="pf-a3-nutrition-template-chip"
-                    >
-                      Día de descanso
-                    </ReliableActionButton>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => applyNutritionDayTemplate("clear")}
-                      className="pf-a3-nutrition-template-chip is-muted"
-                    >
-                      Reiniciar día
+                      {nutritionShowTrackerDetails ? "Ocultar" : "Detalles"}
                     </ReliableActionButton>
                   </div>
 
-                  <div className="pf-a3-nutrition-week-head mt-3">
+                  <article className="pf-a4-nutrition-summary-card mt-2">
+                    <div className="pf-a4-nutrition-summary-metrics">
+                      <div className="pf-a4-nutrition-summary-metric">
+                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionDailyConsumedKcal}</p>
+                        <p className="pf-a4-nutrition-summary-metric-label">Consumidas</p>
+                      </div>
+                      <div className="pf-a4-nutrition-summary-metric is-highlight">
+                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionDailyRemainingKcal}</p>
+                        <p className="pf-a4-nutrition-summary-metric-label">Restantes</p>
+                      </div>
+                      <div className="pf-a4-nutrition-summary-metric">
+                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionEstimatedBurnedKcal}</p>
+                        <p className="pf-a4-nutrition-summary-metric-label">Quemadas</p>
+                      </div>
+                    </div>
+
+                    <div className="pf-a4-nutrition-summary-macros">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                          <span>Carbohidratos</span>
+                          <span>
+                            {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
+                          </span>
+                        </div>
+                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                          <div
+                            className="pf-a2-progress-fill h-full rounded-full"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                          <span>Proteínas</span>
+                          <span>
+                            {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
+                          </span>
+                        </div>
+                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                          <div
+                            className="pf-a2-progress-fill h-full rounded-full"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                          <span>Grasas</span>
+                          <span>
+                            {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
+                          </span>
+                        </div>
+                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                          <div
+                            className="pf-a2-progress-fill h-full rounded-full"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  <div className="pf-a4-nutrition-diary-section-head mt-4">
+                    <h3 className="pf-a4-nutrition-diary-title">Alimentación</h3>
                     <ReliableActionButton
                       type="button"
-                      onClick={() => handleNutritionTrackerWeekShift(-1)}
-                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      onClick={() =>
+                        openNutritionMealComposer(
+                          nutritionDiaryMealRows[0]?.mealId || DEFAULT_NUTRITION_MEAL_DISTRIBUTION[0].mealId
+                        )
+                      }
+                      className="pf-a4-nutrition-diary-link"
                     >
-                      Semana anterior
-                    </ReliableActionButton>
-
-                    <p className="pf-a3-nutrition-week-label">
-                      Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
-                    </p>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => handleNutritionTrackerWeekShift(1)}
-                      className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                    >
-                      Semana siguiente
+                      Más
                     </ReliableActionButton>
                   </div>
 
-                  <div className="pf-a3-nutrition-streak-grid mt-3">
-                    <div className="pf-a3-nutrition-streak-card">
-                      <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
-                      <p className="pf-a3-nutrition-streak-note">
-                        Ultimo check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
-                      </p>
-                    </div>
+                  <div className="pf-a4-nutrition-meal-list mt-2">
+                    {nutritionDiaryMealRows.map((meal) => (
+                      <article key={`meal-row-${meal.mealId}`} className="pf-a4-nutrition-meal-row">
+                        <div className="pf-a4-nutrition-meal-icon">{meal.icon}</div>
 
-                    <div className="pf-a3-nutrition-streak-card">
-                      <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
-                      <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
-                    </div>
+                        <div className="min-w-0">
+                          <p className="pf-a4-nutrition-meal-name">{meal.mealName}</p>
+                          <p className="pf-a4-nutrition-meal-kcal">
+                            {meal.consumedKcal} / {meal.goalKcal} kcal
+                          </p>
+                          <p className="pf-a4-nutrition-meal-preview">
+                            {meal.previewText || "Toca + para registrar alimentos."}
+                          </p>
+                        </div>
 
-                    <div className="pf-a3-nutrition-streak-card">
-                      <p className="pf-a3-nutrition-streak-title">Días activos</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
-                      <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
-                    </div>
-
-                    <div className="pf-a3-nutrition-streak-card">
-                      <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
-                      <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
-                      <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
-                    </div>
-                  </div>
-
-                  <p className="mt-2 text-xs text-slate-400">Resumen del {formatDate(normalizedNutritionTrackerDate)}</p>
-
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="pf-a3-nutrition-kpi">
-                      <p className="pf-a3-nutrition-kpi-label">Consumidas</p>
-                      <p className="pf-a3-nutrition-kpi-value">{nutritionDailyConsumedKcal} kcal</p>
-                    </div>
-                    <div className="pf-a3-nutrition-kpi">
-                      <p className="pf-a3-nutrition-kpi-label">Objetivo</p>
-                      <p className="pf-a3-nutrition-kpi-value">{nutritionDailyGoalKcal} kcal</p>
-                    </div>
-                    <div className="pf-a3-nutrition-kpi">
-                      <p className="pf-a3-nutrition-kpi-label">Restantes</p>
-                      <p className={`pf-a3-nutrition-kpi-value ${nutritionDailyRemainingKcal < 0 ? "text-amber-200" : ""}`}>
-                        {nutritionDailyRemainingKcal} kcal
-                      </p>
-                    </div>
-                    <div className="pf-a3-nutrition-kpi">
-                      <p className="pf-a3-nutrition-kpi-label">Alimentos cargados</p>
-                      <p className="pf-a3-nutrition-kpi-value">{nutritionSelectedDayCustomFoods.length}</p>
-                    </div>
-                  </div>
-
-                  <p className="mt-2 text-xs text-slate-300">
-                    Comidas pautadas registradas: {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
-                  </p>
-
-                  <div className="pf-a3-nutrition-progress mt-3">
-                    <div className="pf-a3-nutrition-progress-track">
-                      <div
-                        className={`pf-a3-nutrition-progress-fill ${nutritionDailyProgressPct > 100 ? "is-over" : ""}`}
-                        style={{ width: `${Math.max(4, nutritionDailyProgressPct)}%` }}
-                      />
-                    </div>
-                    <p className="pf-a3-nutrition-progress-label">Progreso diario: {nutritionDailyProgressPct}%</p>
-                  </div>
-
-                  <div className="pf-a3-nutrition-macro-grid mt-3">
-                    <div className="pf-a3-nutrition-macro-card">
-                      <div className="pf-a3-nutrition-macro-head">
-                        <span className="pf-a3-nutrition-macro-key">P</span>
-                        <p className="pf-a3-nutrition-macro-title">Proteinas</p>
-                      </div>
-                      <p className="pf-a3-nutrition-macro-value">
-                        {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
-                      </p>
-                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.proteinas < 0 ? "is-over" : ""}`}>
-                        Restan: {nutritionDailyRemainingMacros.proteinas} g
-                      </p>
-                      <div className="pf-a3-nutrition-macro-track">
-                        <div
-                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.proteinas > 100 ? "is-over" : ""}`}
-                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pf-a3-nutrition-macro-card">
-                      <div className="pf-a3-nutrition-macro-head">
-                        <span className="pf-a3-nutrition-macro-key">C</span>
-                        <p className="pf-a3-nutrition-macro-title">Carbohidratos</p>
-                      </div>
-                      <p className="pf-a3-nutrition-macro-value">
-                        {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
-                      </p>
-                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.carbohidratos < 0 ? "is-over" : ""}`}>
-                        Restan: {nutritionDailyRemainingMacros.carbohidratos} g
-                      </p>
-                      <div className="pf-a3-nutrition-macro-track">
-                        <div
-                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.carbohidratos > 100 ? "is-over" : ""}`}
-                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pf-a3-nutrition-macro-card">
-                      <div className="pf-a3-nutrition-macro-head">
-                        <span className="pf-a3-nutrition-macro-key">G</span>
-                        <p className="pf-a3-nutrition-macro-title">Grasas</p>
-                      </div>
-                      <p className="pf-a3-nutrition-macro-value">
-                        {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
-                      </p>
-                      <p className={`pf-a3-nutrition-macro-remaining ${nutritionDailyRemainingMacros.grasas < 0 ? "is-over" : ""}`}>
-                        Restan: {nutritionDailyRemainingMacros.grasas} g
-                      </p>
-                      <div className="pf-a3-nutrition-macro-track">
-                        <div
-                          className={`pf-a3-nutrition-macro-fill ${nutritionDailyMacroProgress.grasas > 100 ? "is-over" : ""}`}
-                          style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pf-a3-nutrition-week-grid-wrap mt-4">
-                    <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
-                    <div className="pf-a3-nutrition-week-grid">
-                      {nutritionWeeklyHistory.map((day) => (
                         <ReliableActionButton
-                          key={`nutri-week-${day.date}`}
                           type="button"
-                          onClick={() => handleNutritionTrackerDateSelect(day.date)}
-                          className={`pf-a3-nutrition-weekday-card ${
-                            day.isSelected ? "is-selected" : ""
-                          } ${
-                            day.status === "empty"
-                              ? "is-empty"
-                              : day.status === "low"
-                                ? "is-low"
-                                : day.status === "high"
-                                  ? "is-high"
-                                  : "is-on-target"
-                          }`}
+                          onClick={() => openNutritionMealComposer(meal.mealId)}
+                          className="pf-a4-nutrition-meal-plus"
+                          aria-label={`Agregar alimento en ${meal.mealName}`}
                         >
-                          <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
-                          <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
-                          <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
-                          <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                          +
                         </ReliableActionButton>
-                      ))}
-                    </div>
+                      </article>
+                    ))}
                   </div>
 
-                  {nutritionMealsDetailed.length > 0 ? (
-                    <div className="pf-a3-nutrition-tracker-list mt-4">
-                      {nutritionMealsDetailed.map((meal, index) => {
-                        const mealLog = nutritionDayMealLogById.get(meal.mealId);
-                        const isDone = Boolean(mealLog?.done);
-                        const loggedKcal = toNumber(mealLog?.consumedKcal);
-                        const displayKcal = loggedKcal !== null && loggedKcal > 0 ? loggedKcal : meal.totalKcal;
+                  {nutritionActiveMealComposer ? (
+                    <article className="pf-a4-nutrition-composer mt-4">
+                      <div className="pf-a4-nutrition-composer-head">
+                        <div>
+                          <p className="pf-a4-nutrition-composer-kicker">Carga de alimento</p>
+                          <h3 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h3>
+                        </div>
 
-                        return (
-                          <section
-                            key={`${meal.mealId}-${normalizedNutritionTrackerDate}`}
-                            className={`pf-a3-nutrition-tracker-row ${isDone ? "is-done" : ""}`}
-                          >
-                            <div className="pf-a3-nutrition-tracker-row-head">
-                              <h3 className="text-sm font-black text-slate-100">{meal.mealName || `Comida ${index + 1}`}</h3>
-                              <div className="flex items-center gap-2">
-                                <span className="pf-a2-pill">Plan: {meal.totalKcal} kcal</span>
-                                <span className={`pf-a3-nutrition-check ${isDone ? "is-done" : ""}`}>
-                                  <span className="pf-a3-nutrition-check-dot" />
-                                  {isDone ? "OK" : "Pendiente"}
-                                </span>
-                              </div>
-                            </div>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={closeNutritionMealComposer}
+                          className="pf-a3-nutrition-student-food-delete"
+                        >
+                          Cerrar
+                        </ReliableActionButton>
+                      </div>
 
-                            {meal.galleryUrls.length > 0 ? (
-                              <div className="pf-a3-nutrition-mini-gallery">
-                                {meal.galleryUrls.slice(0, 4).map((imageUrl, imageIndex) => (
-                                  <div key={`${meal.mealId}-gallery-${imageIndex}`} className="pf-a3-nutrition-mini-thumb">
-                                    <img
-                                      src={imageUrl}
-                                      alt={`${meal.mealName || `Comida ${index + 1}`} ${imageIndex + 1}`}
-                                      loading="lazy"
-                                      referrerPolicy="no-referrer"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
+                      <div className="pf-a4-nutrition-composer-grid">
+                        <label className="pf-a3-nutrition-student-food-field">
+                          <span>Buscador de alimentos</span>
+                          <input
+                            value={nutritionFoodSearchQuery}
+                            onChange={(event) => setNutritionFoodSearchQuery(event.target.value)}
+                            placeholder="Ej: yogur, arroz, barrita, galletitas..."
+                          />
+                        </label>
 
-                            <div className="pf-a3-nutrition-quickchips">
-                              <span className="pf-a3-nutrition-quickchips-label">Chips rápidos</span>
-                              {nutritionMealQuickChips.map((chip) => (
-                                <ReliableActionButton
-                                  key={`${meal.mealId}-${chip.id}`}
-                                  type="button"
-                                  onClick={() =>
-                                    handleNutritionMealQuickChip(meal.mealId, meal.totalKcal, chip.ratio, chip.label)
-                                  }
-                                  className="pf-a3-nutrition-chip-btn"
-                                >
-                                  {chip.label}
-                                </ReliableActionButton>
-                              ))}
-                            </div>
+                        <label className="pf-a3-nutrition-student-food-field">
+                          <span>Gramaje</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={nutritionFoodGramsDraft}
+                            onChange={(event) => setNutritionFoodGramsDraft(event.target.value)}
+                            placeholder="100"
+                          />
+                        </label>
+                      </div>
 
-                            <div className="pf-a3-nutrition-tracker-row-controls">
-                              <ReliableActionButton
-                                type="button"
-                                onClick={() => handleNutritionMealToggle(meal.mealId, !isDone, meal.totalKcal)}
-                                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
-                                  isDone
-                                    ? "border-emerald-300/50 bg-emerald-500/20 text-emerald-100"
-                                    : "pf-a2-ghost-btn"
-                                }`}
-                              >
-                                {isDone ? "Registrada" : "Marcar comida"}
-                              </ReliableActionButton>
+                      <div className="pf-a4-nutrition-composer-actions mt-2">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={triggerNutritionBarcodeCapture}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Escanear código
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={triggerNutritionCalIaCapture}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Estimador CAL IA
+                        </ReliableActionButton>
+                      </div>
 
-                              <label className="pf-a3-nutrition-kcal-input">
-                                <span>Kcal consumidas</span>
-                                <input
-                                  key={`${meal.mealId}-${normalizedNutritionTrackerDate}-${mealLog?.updatedAt || "base"}`}
-                                  type="number"
-                                  min="0"
-                                  step="10"
-                                  defaultValue={String(displayKcal)}
-                                  onBlur={(event) => handleNutritionMealCaloriesBlur(meal.mealId, meal.totalKcal, event)}
-                                />
-                              </label>
-                            </div>
-                          </section>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                      Sin comidas pautadas por ahora. Cuando el profesor actualice tu plan, podrás registrarlas aquí.
-                    </div>
-                  )}
-
-                  <article className="pf-a3-nutrition-student-food-card mt-4">
-                    <p className="pf-a3-nutrition-student-food-eyebrow">Carga libre del alumno</p>
-                    <h3 className="pf-a3-nutrition-student-food-title">Agregar alimentos del día</h3>
-                    <p className="pf-a3-nutrition-student-food-subtitle">
-                      Usa este bloque para sumar alimentos adicionales que no estén en las comidas pautadas.
-                    </p>
-
-                    <div className="pf-a3-nutrition-student-food-grid">
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Alimento</span>
-                        <input
-                          value={nutritionCustomFoodDraft.nombre}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              nombre: event.target.value,
-                            }))
-                          }
-                          placeholder="Ej: Yogur con frutas"
-                        />
-                      </label>
-
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Porción</span>
-                        <input
-                          value={nutritionCustomFoodDraft.porcion}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              porcion: event.target.value,
-                            }))
-                          }
-                          placeholder="Ej: 1 taza / 120 g"
-                        />
-                      </label>
-
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Calorías</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={nutritionCustomFoodDraft.calorias}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              calorias: event.target.value,
-                            }))
-                          }
-                          placeholder="0"
-                        />
-                      </label>
-
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Proteinas (g)</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          value={nutritionCustomFoodDraft.proteinas}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              proteinas: event.target.value,
-                            }))
-                          }
-                          placeholder="0"
-                        />
-                      </label>
-
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Carbohidratos (g)</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          value={nutritionCustomFoodDraft.carbohidratos}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              carbohidratos: event.target.value,
-                            }))
-                          }
-                          placeholder="0"
-                        />
-                      </label>
-
-                      <label className="pf-a3-nutrition-student-food-field">
-                        <span>Grasas (g)</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          value={nutritionCustomFoodDraft.grasas}
-                          onChange={(event) =>
-                            setNutritionCustomFoodDraft((previous) => ({
-                              ...previous,
-                              grasas: event.target.value,
-                            }))
-                          }
-                          placeholder="0"
-                        />
-                      </label>
-                    </div>
-
-                    <div className="pf-a3-nutrition-student-food-actions">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={addNutritionCustomFood}
-                        className="pf-a2-solid-btn rounded-lg px-4 py-2 text-sm font-semibold"
-                      >
-                        Cargar alimento
-                      </ReliableActionButton>
-                      <span className="text-xs text-slate-400">
-                        Totales cargados: {nutritionSelectedDayCustomTotals.calorias} kcal · {nutritionSelectedDayCustomTotals.proteinas}P / {nutritionSelectedDayCustomTotals.carbohidratos}C / {nutritionSelectedDayCustomTotals.grasas}G
-                      </span>
-                    </div>
-
-                    {nutritionSelectedDayCustomFoods.length > 0 ? (
-                      <div className="pf-a3-nutrition-student-food-list">
-                        {nutritionSelectedDayCustomFoods.map((entry) => (
-                          <div key={entry.id} className="pf-a3-nutrition-student-food-item">
-                            <div>
-                              <p className="pf-a3-nutrition-student-food-name">{entry.nombre}</p>
-                              <p className="pf-a3-nutrition-student-food-meta">
-                                {entry.porcion ? `${entry.porcion} · ` : ""}
-                                {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
-                              </p>
-                            </div>
+                      {nutritionCalIaEstimate ? (
+                        <article className="pf-a4-nutrition-cal-ia-card mt-3">
+                          <div className="pf-a4-nutrition-cal-ia-preview">
+                            <img src={nutritionCalIaEstimate.previewUrl} alt="Estimación CAL IA" loading="lazy" />
+                          </div>
+                          <div>
+                            <p className="pf-a4-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
+                            <p className="pf-a4-nutrition-cal-ia-meta">
+                              {nutritionCalIaEstimate.entry.gramos || 0} g · {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
+                            </p>
                             <ReliableActionButton
                               type="button"
-                              onClick={() => removeNutritionCustomFood(entry.id)}
-                              className="pf-a3-nutrition-student-food-delete"
+                              onClick={confirmNutritionCalIaEstimate}
+                              className="pf-a2-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
                             >
-                              Eliminar
+                              Agregar estimación
                             </ReliableActionButton>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="pf-a3-nutrition-student-food-empty">Todavía no cargaste alimentos libres para este día.</p>
-                    )}
+                        </article>
+                      ) : null}
 
-                    {nutritionCustomFoodStatus ? (
-                      <p className="pf-a3-nutrition-student-food-status">{nutritionCustomFoodStatus}</p>
-                    ) : null}
-                  </article>
+                      {nutritionFavoriteFoods.length > 0 ? (
+                        <div className="pf-a4-nutrition-favorites-row mt-3">
+                          {nutritionFavoriteFoods.slice(0, 8).map((favorite) => (
+                            <ReliableActionButton
+                              key={`nutrition-favorite-${favorite.id}`}
+                              type="button"
+                              onClick={() =>
+                                addNutritionFoodFromSearch(
+                                  {
+                                    id: favorite.id,
+                                    nombre: favorite.nombre,
+                                    kcalPer100g: favorite.kcalPer100g,
+                                    proteinPer100g: favorite.proteinPer100g,
+                                    carbsPer100g: favorite.carbsPer100g,
+                                    fatPer100g: favorite.fatPer100g,
+                                    imageUrl: favorite.imageUrl,
+                                    barcode: favorite.barcode,
+                                    sourceLabel: "Favorito",
+                                  },
+                                  "search"
+                                )
+                              }
+                              className="pf-a4-nutrition-favorite-chip"
+                            >
+                              ★ {favorite.nombre}
+                            </ReliableActionButton>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div className="pf-a4-nutrition-search-results mt-3">
+                        {nutritionFoodSearchLoading ? (
+                          <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
+                        ) : nutritionCombinedSearchResults.length === 0 ? (
+                          <p className="pf-a4-nutrition-search-empty">
+                            No hay resultados para este filtro. Prueba otro término o usa el escáner.
+                          </p>
+                        ) : (
+                          nutritionCombinedSearchResults.map((food) => {
+                            const isFavorite = nutritionFavoriteFoodIds.has(food.id);
+
+                            return (
+                              <article key={`search-food-${food.id}`} className="pf-a4-nutrition-search-row">
+                                {food.imageUrl ? (
+                                  <div className="pf-a4-nutrition-search-thumb">
+                                    <img src={food.imageUrl} alt={food.nombre} loading="lazy" referrerPolicy="no-referrer" />
+                                  </div>
+                                ) : (
+                                  <div className="pf-a4-nutrition-search-thumb pf-a4-nutrition-search-thumb-empty">FOOD</div>
+                                )}
+
+                                <div className="min-w-0">
+                                  <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
+                                  <p className="pf-a4-nutrition-search-meta">
+                                    {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P · {food.carbsPer100g}C · {food.fatPer100g}G
+                                  </p>
+                                  <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
+                                </div>
+
+                                <div className="pf-a4-nutrition-search-actions">
+                                  <ReliableActionButton
+                                    type="button"
+                                    onClick={() => toggleNutritionFavoriteFood(food)}
+                                    className={`pf-a4-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
+                                    aria-label={isFavorite ? `Quitar favorito ${food.nombre}` : `Guardar favorito ${food.nombre}`}
+                                  >
+                                    ★
+                                  </ReliableActionButton>
+
+                                  <ReliableActionButton
+                                    type="button"
+                                    onClick={() =>
+                                      addNutritionFoodFromSearch(
+                                        food,
+                                        food.sourceLabel?.toLowerCase().includes("barcode") ? "barcode" : "search"
+                                      )
+                                    }
+                                    className="pf-a4-nutrition-search-add"
+                                  >
+                                    Agregar
+                                  </ReliableActionButton>
+                                </div>
+                              </article>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {nutritionActiveMealComposer.mealEntries.length > 0 ? (
+                        <div className="pf-a4-nutrition-meal-entry-list mt-3">
+                          {nutritionActiveMealComposer.mealEntries.map((entry) => (
+                            <article key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-row">
+                              <div>
+                                <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
+                                <p className="pf-a4-nutrition-meal-entry-meta">
+                                  {entry.porcion ? `${entry.porcion} · ` : ""}
+                                  {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
+                                </p>
+                              </div>
+                              <ReliableActionButton
+                                type="button"
+                                onClick={() => removeNutritionCustomFood(entry.id)}
+                                className="pf-a3-nutrition-student-food-delete"
+                              >
+                                Eliminar
+                              </ReliableActionButton>
+                            </article>
+                          ))}
+                        </div>
+                      ) : null}
+                    </article>
+                  ) : null}
+
+                  {nutritionShowTrackerDetails ? (
+                    <section className="mt-4 space-y-3">
+                      <div className="pf-a3-nutrition-template-row">
+                        <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("full")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día completo
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("training")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día de entreno
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("rest")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día de descanso
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("clear")}
+                          className="pf-a3-nutrition-template-chip is-muted"
+                        >
+                          Reiniciar día
+                        </ReliableActionButton>
+                      </div>
+
+                      <div className="pf-a3-nutrition-week-head">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => handleNutritionTrackerWeekShift(-1)}
+                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        >
+                          Semana anterior
+                        </ReliableActionButton>
+
+                        <p className="pf-a3-nutrition-week-label">
+                          Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
+                        </p>
+
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => handleNutritionTrackerWeekShift(1)}
+                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        >
+                          Semana siguiente
+                        </ReliableActionButton>
+                      </div>
+
+                      <div className="pf-a3-nutrition-streak-grid">
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Racha actual</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
+                          <p className="pf-a3-nutrition-streak-note">
+                            Último check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
+                          </p>
+                        </div>
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
+                          <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
+                        </div>
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Días activos</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
+                          <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
+                        </div>
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
+                          <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
+                        </div>
+                      </div>
+
+                      <div className="pf-a3-nutrition-week-grid-wrap">
+                        <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
+                        <div className="pf-a3-nutrition-week-grid">
+                          {nutritionWeeklyHistory.map((day) => (
+                            <ReliableActionButton
+                              key={`nutri-week-${day.date}`}
+                              type="button"
+                              onClick={() => handleNutritionTrackerDateSelect(day.date)}
+                              className={`pf-a3-nutrition-weekday-card ${
+                                day.isSelected ? "is-selected" : ""
+                              } ${
+                                day.status === "empty"
+                                  ? "is-empty"
+                                  : day.status === "low"
+                                    ? "is-low"
+                                    : day.status === "high"
+                                      ? "is-high"
+                                      : "is-on-target"
+                              }`}
+                            >
+                              <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
+                              <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
+                              <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
+                              <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                            </ReliableActionButton>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                  ) : null}
 
                   {nutritionTrackerStatus ? (
                     <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
                       {nutritionTrackerStatus}
+                    </p>
+                  ) : null}
+
+                  {nutritionCustomFoodStatus ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
+                      {nutritionCustomFoodStatus}
+                    </p>
+                  ) : null}
+
+                  {nutritionFoodSearchStatus ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                      {nutritionFoodSearchStatus}
+                    </p>
+                  ) : null}
+
+                  {nutritionBarcodeStatus ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                      {nutritionBarcodeStatus}
+                    </p>
+                  ) : null}
+
+                  {nutritionCalIaStatus ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                      {nutritionCalIaStatus}
                     </p>
                   ) : null}
                 </article>
