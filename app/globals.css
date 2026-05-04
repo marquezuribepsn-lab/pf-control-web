@@ -5415,6 +5415,123 @@ video.pf-a3-routine-log-video-frame {
   gap: 0.9rem;
 }
 
+.pf-a4-nutrition-quick-actions {
+  display: grid;
+  gap: 0.46rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pf-a4-nutrition-quick-action {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(120, 167, 203, 0.42);
+  background: linear-gradient(164deg, rgba(11, 24, 36, 0.9), rgba(9, 18, 28, 0.9));
+  color: rgba(225, 242, 255, 0.96);
+  min-height: 36px;
+  padding: 0.42rem 0.54rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  justify-content: center;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.pf-a4-nutrition-quick-action:hover,
+.pf-a4-nutrition-quick-action:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(106, 236, 195, 0.65);
+}
+
+.pf-a4-nutrition-budget-card {
+  border-radius: 0.94rem;
+  border: 1px solid rgba(138, 181, 216, 0.37);
+  background:
+    radial-gradient(120% 130% at 100% -10%, rgba(94, 234, 212, 0.15), transparent 62%),
+    linear-gradient(168deg, rgba(10, 21, 32, 0.9), rgba(8, 17, 27, 0.92));
+  padding: 0.64rem 0.7rem;
+  display: grid;
+  gap: 0.56rem;
+}
+
+.pf-a4-nutrition-budget-head {
+  display: grid;
+  gap: 0.16rem;
+}
+
+.pf-a4-nutrition-budget-head h3 {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-budget-head p {
+  margin: 0;
+  font-size: 0.62rem;
+  color: rgba(179, 208, 233, 0.86);
+}
+
+.pf-a4-nutrition-budget-grid {
+  display: grid;
+  gap: 0.42rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pf-a4-nutrition-budget-item {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(136, 173, 203, 0.32);
+  background: rgba(10, 18, 28, 0.7);
+  padding: 0.4rem 0.48rem;
+}
+
+.pf-a4-nutrition-budget-item span {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(184, 212, 236, 0.88);
+}
+
+.pf-a4-nutrition-budget-item strong {
+  margin-top: 0.12rem;
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #f8fcff;
+}
+
+.pf-a4-nutrition-budget-item-available {
+  border-color: rgba(80, 195, 244, 0.5);
+}
+
+.pf-a4-nutrition-budget-item-available.is-positive {
+  background:
+    radial-gradient(120% 130% at 100% -10%, rgba(16, 185, 129, 0.16), transparent 65%),
+    rgba(7, 26, 24, 0.76);
+}
+
+.pf-a4-nutrition-budget-item-available.is-tight {
+  background:
+    radial-gradient(120% 130% at 100% -10%, rgba(250, 204, 21, 0.19), transparent 65%),
+    rgba(30, 24, 8, 0.76);
+}
+
+.pf-a4-nutrition-budget-item-available.is-negative {
+  border-color: rgba(251, 113, 133, 0.62);
+  background:
+    radial-gradient(120% 130% at 100% -10%, rgba(251, 113, 133, 0.2), transparent 65%),
+    rgba(30, 12, 18, 0.78);
+}
+
+.pf-a4-nutrition-budget-foot {
+  margin: 0;
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(182, 210, 234, 0.9);
+}
+
 .pf-a4-nutrition-diary-section-head {
   display: flex;
   align-items: center;
@@ -5632,6 +5749,45 @@ video.pf-a3-routine-log-video-frame {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pf-a4-nutrition-meal-progress {
+  margin-top: 0.22rem;
+  display: grid;
+  gap: 0.16rem;
+}
+
+.pf-a4-nutrition-meal-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(103, 129, 154, 0.42);
+  overflow: hidden;
+}
+
+.pf-a4-nutrition-meal-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(54, 216, 195, 0.9);
+}
+
+.pf-a4-nutrition-meal-progress-fill.is-low {
+  background: rgba(250, 204, 21, 0.92);
+}
+
+.pf-a4-nutrition-meal-progress-fill.is-on-target {
+  background: rgba(45, 212, 191, 0.92);
+}
+
+.pf-a4-nutrition-meal-progress-fill.is-over {
+  background: rgba(251, 113, 133, 0.94);
+}
+
+.pf-a4-nutrition-meal-progress-label {
+  margin: 0;
+  font-size: 0.58rem;
+  color: rgba(169, 197, 222, 0.86);
 }
 
 .pf-a4-nutrition-meal-plus {
@@ -6933,6 +7089,14 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a4-nutrition-diary-head {
     align-items: stretch;
+  }
+
+  .pf-a4-nutrition-quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-budget-grid {
+    grid-template-columns: 1fr;
   }
 
   .pf-a4-nutrition-diary-section-head {
