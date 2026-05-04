@@ -2305,7 +2305,7 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
-  const [nutritionPanelView, setNutritionPanelView] = useState<"plan" | "registro">("plan");
+  const [nutritionPanelView, setNutritionPanelView] = useState<"plan" | "registro">("registro");
   const [nutritionShowTrackerDetails, setNutritionShowTrackerDetails] = useState(false);
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
   const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
@@ -4138,11 +4138,30 @@ export default function AlumnoVisionClient({
     ]
   );
 
+  const nutritionDailyAvailableKcal = useMemo(
+    () => roundToOneDecimal(nutritionDailyGoalKcal - nutritionDailyConsumedKcal + nutritionEstimatedBurnedKcal),
+    [nutritionDailyConsumedKcal, nutritionDailyGoalKcal, nutritionEstimatedBurnedKcal]
+  );
+
   const nutritionDailyDoneMeals = useMemo(() => {
     return nutritionMealsDetailed.reduce((total, meal) => {
       return total + (nutritionDayMealLogById.get(meal.mealId)?.done ? 1 : 0);
     }, 0);
   }, [nutritionDayMealLogById, nutritionMealsDetailed]);
+
+  const nutritionMealsWithEntries = useMemo(() => {
+    return nutritionDiaryMealRows.reduce((total, meal) => {
+      return total + (meal.consumedKcal > 0 || meal.mealEntries.length > 0 ? 1 : 0);
+    }, 0);
+  }, [nutritionDiaryMealRows]);
+
+  const nutritionMealsCompletionPct = useMemo(() => {
+    if (nutritionDiaryMealRows.length === 0) {
+      return 0;
+    }
+
+    return Math.round((nutritionMealsWithEntries * 100) / nutritionDiaryMealRows.length);
+  }, [nutritionDiaryMealRows.length, nutritionMealsWithEntries]);
 
   const nutritionDailyProgressPct = useMemo(() => {
     if (nutritionDailyGoalKcal <= 0) {
@@ -9448,6 +9467,79 @@ export default function AlumnoVisionClient({
                     </div>
                   </div>
 
+                  <div className="pf-a4-nutrition-quick-actions mt-3">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() =>
+                        openNutritionMealComposer(
+                          nutritionDiaryMealRows[0]?.mealId || DEFAULT_NUTRITION_MEAL_DISTRIBUTION[0].mealId
+                        )
+                      }
+                      className="pf-a4-nutrition-quick-action"
+                    >
+                      Agregar comida
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={triggerNutritionBarcodeCapture}
+                      className="pf-a4-nutrition-quick-action"
+                    >
+                      Escanear código
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={triggerNutritionCalIaCapture}
+                      className="pf-a4-nutrition-quick-action"
+                    >
+                      Foto con IA
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setNutritionShowTrackerDetails((previous) => !previous)}
+                      className="pf-a4-nutrition-quick-action"
+                    >
+                      {nutritionShowTrackerDetails ? "Ocultar semana" : "Ver semana"}
+                    </ReliableActionButton>
+                  </div>
+
+                  <article className="pf-a4-nutrition-budget-card mt-3">
+                    <div className="pf-a4-nutrition-budget-head">
+                      <h3>Presupuesto calórico diario</h3>
+                      <p>Disponible = Objetivo - Comida + Actividad</p>
+                    </div>
+
+                    <div className="pf-a4-nutrition-budget-grid">
+                      <div className="pf-a4-nutrition-budget-item">
+                        <span>Objetivo</span>
+                        <strong>{nutritionDailyGoalKcal} kcal</strong>
+                      </div>
+                      <div className="pf-a4-nutrition-budget-item">
+                        <span>Comida</span>
+                        <strong>{nutritionDailyConsumedKcal} kcal</strong>
+                      </div>
+                      <div className="pf-a4-nutrition-budget-item">
+                        <span>Actividad</span>
+                        <strong>{nutritionEstimatedBurnedKcal} kcal</strong>
+                      </div>
+                      <div
+                        className={`pf-a4-nutrition-budget-item pf-a4-nutrition-budget-item-available ${
+                          nutritionDailyAvailableKcal < 0
+                            ? "is-negative"
+                            : nutritionDailyAvailableKcal < 120
+                              ? "is-tight"
+                              : "is-positive"
+                        }`}
+                      >
+                        <span>Disponible</span>
+                        <strong>{nutritionDailyAvailableKcal} kcal</strong>
+                      </div>
+                    </div>
+
+                    <p className="pf-a4-nutrition-budget-foot">
+                      Comidas registradas: {nutritionMealsWithEntries}/{nutritionDiaryMealRows.length || 0} ({nutritionMealsCompletionPct}%) · Adherencia semanal: {nutritionWeeklyAdherencePct}%.
+                    </p>
+                  </article>
+
                   <div className="pf-a4-nutrition-diary-section-head mt-4">
                     <h3 className="pf-a4-nutrition-diary-title">Resumen</h3>
                     <ReliableActionButton
@@ -9505,9 +9597,9 @@ export default function AlumnoVisionClient({
                       </div>
                       <div className="pf-a4-nutrition-summary-metric">
                         <p className="pf-a4-nutrition-summary-metric-value">
-                          {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
+                          {nutritionMealsWithEntries}/{nutritionDiaryMealRows.length || 0}
                         </p>
-                        <p className="pf-a4-nutrition-summary-metric-label">Comidas</p>
+                        <p className="pf-a4-nutrition-summary-metric-label">Cargadas</p>
                       </div>
                     </div>
 
@@ -9575,42 +9667,66 @@ export default function AlumnoVisionClient({
                   </div>
 
                   <div className="pf-a4-nutrition-meal-list mt-2">
-                    {nutritionDiaryMealRows.map((meal) => (
-                      <article
-                        key={`meal-row-${meal.mealId}`}
-                        className="pf-a4-nutrition-meal-row is-clickable"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => openNutritionMealComposer(meal.mealId)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            openNutritionMealComposer(meal.mealId);
-                          }
-                        }}
-                      >
-                        <div className="pf-a4-nutrition-meal-icon">{meal.icon}</div>
+                    {nutritionDiaryMealRows.map((meal) => {
+                      const rawMealProgress =
+                        meal.goalKcal > 0
+                          ? Math.round((Math.max(0, meal.consumedKcal) * 100) / meal.goalKcal)
+                          : meal.consumedKcal > 0
+                            ? 100
+                            : 0;
+                      const mealProgress = Math.max(0, Math.min(160, rawMealProgress));
+                      const mealProgressWidth = mealProgress > 0 ? Math.max(5, Math.min(100, mealProgress)) : 0;
 
-                        <div className="min-w-0">
-                          <p className="pf-a4-nutrition-meal-name">{meal.mealName}</p>
-                          <p className="pf-a4-nutrition-meal-kcal">
-                            {meal.consumedKcal} / {meal.goalKcal} kcal
-                          </p>
-                          <p className="pf-a4-nutrition-meal-preview">
-                            {meal.previewText || "Toca + para registrar alimentos."}
-                          </p>
-                        </div>
-
-                        <ReliableActionButton
-                          type="button"
+                      return (
+                        <article
+                          key={`meal-row-${meal.mealId}`}
+                          className="pf-a4-nutrition-meal-row is-clickable"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => openNutritionMealComposer(meal.mealId)}
-                          className="pf-a4-nutrition-meal-plus"
-                          aria-label={`Agregar alimento en ${meal.mealName}`}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              openNutritionMealComposer(meal.mealId);
+                            }
+                          }}
                         >
-                          +
-                        </ReliableActionButton>
-                      </article>
-                    ))}
+                          <div className="pf-a4-nutrition-meal-icon">{meal.icon}</div>
+
+                          <div className="min-w-0">
+                            <p className="pf-a4-nutrition-meal-name">{meal.mealName}</p>
+                            <p className="pf-a4-nutrition-meal-kcal">
+                              {meal.consumedKcal} / {meal.goalKcal} kcal
+                            </p>
+                            <p className="pf-a4-nutrition-meal-preview">
+                              {meal.previewText || "Toca + para registrar alimentos."}
+                            </p>
+                            <div className="pf-a4-nutrition-meal-progress">
+                              <div className="pf-a4-nutrition-meal-progress-track">
+                                <span
+                                  className={`pf-a4-nutrition-meal-progress-fill ${
+                                    mealProgress > 110 ? "is-over" : mealProgress < 55 ? "is-low" : "is-on-target"
+                                  }`}
+                                  style={{ width: `${mealProgressWidth}%` }}
+                                />
+                              </div>
+                              <p className="pf-a4-nutrition-meal-progress-label">
+                                {meal.mealEntries.length} registros · {mealProgress}% del objetivo
+                              </p>
+                            </div>
+                          </div>
+
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => openNutritionMealComposer(meal.mealId)}
+                            className="pf-a4-nutrition-meal-plus"
+                            aria-label={`Agregar alimento en ${meal.mealName}`}
+                          >
+                            +
+                          </ReliableActionButton>
+                        </article>
+                      );
+                    })}
                   </div>
 
                   {nutritionActiveMealComposer ? (
