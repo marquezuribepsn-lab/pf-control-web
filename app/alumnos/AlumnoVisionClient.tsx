@@ -569,6 +569,7 @@ const MUSIC_PLAYLISTS_KEY = "pf-control-music-playlists-v1";
 const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
+const NUTRITION_FAVORITES_KEY = "pf-control-nutricion-favoritos-v1";
 const NUTRITION_DAILY_LOGS_KEY = "pf-control-nutricion-diario-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
@@ -587,6 +588,12 @@ const ROUTINE_STOPWATCH_FLOAT_SIZE_MOBILE = 108;
 const MAX_WORKOUT_VIDEO_UPLOAD_BYTES = 2 * 1024 * 1024;
 const DIRECT_AUDIO_EXTENSIONS = [".mp3", ".m4a", ".aac", ".wav", ".ogg", ".flac"];
 const WEEKDAY_SHORT_LABELS = ["DO", "LU", "MA", "MI", "JU", "VI", "SA"];
+const DEFAULT_NUTRITION_MEAL_DISTRIBUTION = [
+  { mealId: "meal-desayuno", mealName: "Desayuno", icon: "☕", goalRatio: 0.3 },
+  { mealId: "meal-almuerzo", mealName: "Almuerzo", icon: "🍽️", goalRatio: 0.35 },
+  { mealId: "meal-cena", mealName: "Cena", icon: "🥗", goalRatio: 0.25 },
+  { mealId: "meal-snacks", mealName: "Snacks", icon: "🍎", goalRatio: 0.1 },
+] as const;
 
 const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
   {
