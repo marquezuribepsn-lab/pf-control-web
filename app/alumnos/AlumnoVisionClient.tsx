@@ -4811,6 +4811,30 @@ export default function AlumnoVisionClient({
     nutritionCustomFoodDraft.proteinas,
   ]);
 
+  const stopNutritionLiveCapture = useCallback(() => {
+    if (nutritionBarcodeScanRafRef.current !== null) {
+      window.cancelAnimationFrame(nutritionBarcodeScanRafRef.current);
+      nutritionBarcodeScanRafRef.current = null;
+    }
+
+    const stream = nutritionLiveStreamRef.current;
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    nutritionLiveStreamRef.current = null;
+
+    if (nutritionLiveVideoRef.current) {
+      nutritionLiveVideoRef.current.pause();
+      nutritionLiveVideoRef.current.srcObject = null;
+    }
+
+    nutritionBarcodeLastDetectedRef.current = "";
+    setNutritionLiveCaptureMode("none");
+    setNutritionLiveCaptureReady(false);
+    setNutritionLiveCaptureStatus("");
+  }, []);
+
   const openNutritionMealComposer = useCallback((mealId: string) => {
     const safeMealId = String(mealId || "").trim();
     if (!safeMealId) {
@@ -4825,6 +4849,7 @@ export default function AlumnoVisionClient({
   }, []);
 
   const closeNutritionMealComposer = useCallback(() => {
+    stopNutritionLiveCapture();
     setNutritionMealComposerMealId(null);
     setNutritionFoodSearchQuery("");
     setNutritionFoodGramsDraft("100");
@@ -4833,7 +4858,8 @@ export default function AlumnoVisionClient({
     setNutritionBarcodeStatus("");
     setNutritionCalIaStatus("");
     setNutritionCalIaEstimate(null);
-  }, []);
+    setNutritionCalIaProcessing(false);
+  }, [stopNutritionLiveCapture]);
 
   const toggleNutritionFavoriteFood = useCallback(
     (food: NutritionSearchFoodResult) => {
@@ -4917,7 +4943,10 @@ export default function AlumnoVisionClient({
     [appendNutritionCustomFoodEntry, nutritionActiveMealComposer, nutritionFoodGramsDraft]
   );
 
-  const lookupNutritionBarcode = useCallback(async (rawCode: string) => {
+  const lookupNutritionBarcode = useCallback(async (
+    rawCode: string,
+    options?: { autoAdd?: boolean }
+  ) => {
     const normalizedCode = String(rawCode || "").replace(/\s+/g, "").trim();
     if (normalizedCode.length < 6) {
       setNutritionBarcodeStatus("Código de barras inválido.");
@@ -4953,23 +4982,373 @@ export default function AlumnoVisionClient({
         map.set(item.id, item);
         return Array.from(map.values());
       });
+
       setNutritionFoodSearchQuery(item.nombre);
-      setNutritionBarcodeStatus(`Producto detectado: ${item.nombre}.`);
-      setNutritionFoodSearchStatus("Revisa gramajes y pulsa Agregar.");
+
+      if (options?.autoAdd && nutritionActiveMealComposer) {
+        addNutritionFoodFromSearch(item, "barcode");
+        setNutritionBarcodeStatus(`Escaneo automático: ${item.nombre} agregado.`);
+        setNutritionLiveCaptureStatus(`Código detectado y cargado: ${item.nombre}.`);
+      } else {
+        setNutritionBarcodeStatus(`Producto detectado: ${item.nombre}.`);
+        setNutritionFoodSearchStatus("Revisa gramajes y pulsa Agregar.");
+      }
     } catch (error) {
       setNutritionBarcodeStatus(error instanceof Error ? error.message : "Error al buscar por código de barras.");
     } finally {
       setNutritionFoodSearchLoading(false);
     }
-  }, []);
+  }, [addNutritionFoodFromSearch, nutritionActiveMealComposer]);
+
+  const processNutritionCalIaFromBlob = useCallback(
+    async (imageBlob: Blob) => {
+      if (!nutritionActiveMealComposer) {
+        setNutritionCalIaStatus("Selecciona una comida antes de estimar con cámara.");
+        return;
+      }
+
+      setNutritionCalIaProcessing(true);
+      setNutritionCalIaStatus("Procesando imagen con CAL IA...");
+
+      let imageBitmap: ImageBitmap | null = null;
+
+      try {
+        imageBitmap = await createImageBitmap(imageBlob);
+        const imageWidth = imageBitmap.width;
+        const imageHeight = imageBitmap.height;
+        const imageProfile = analyzeNutritionImageBitmap(imageBitmap);
+
+        const queryHint = normalizePersonKey(nutritionFoodSearchQuery);
+        const mealIdentity = normalizePersonKey(
+          `${nutritionActiveMealComposer.mealName} ${nutritionActiveMealComposer.mealId}`
+        );
+
+        const mealHintKey = mealIdentity.includes("desay")
+          ? "desayuno"
+          : mealIdentity.includes("almuer")
+            ? "almuerzo"
+            : mealIdentity.includes("cena")
+              ? "cena"
+              : "snacks";
+
+        const mealHints = NUTRITION_CAL_IA_MEAL_HINTS[mealHintKey] || NUTRITION_CAL_IA_MEAL_HINTS.snacks;
+        const queryTokens = queryHint.split(" ").filter((token) => token.length > 1);
+
+        const rankedFoods = nutritionCatalogFoods
+          .map((food) => {
+            const normalizedName = normalizePersonKey(food.nombre);
+
+            let score = nutritionFavoriteFoodIds.has(food.id) ? 1.5 : 0;
+            queryTokens.forEach((token) => {
+              if (normalizedName.includes(token)) {
+                score += 5;
+              }
+            });
+
+            mealHints.forEach((token) => {
+              if (normalizedName.includes(normalizePersonKey(token))) {
+                score += 2;
+              }
+            });
+
+            return { food, score };
+          })
+          .filter((row) => row.score > 0)
+          .sort((left, right) => right.score - left.score || left.food.nombre.localeCompare(right.food.nombre));
+
+        const fallbackFavorite = nutritionCatalogFoods.find((item) => nutritionFavoriteFoodIds.has(item.id));
+        const fallbackFood = rankedFoods[0]?.food || fallbackFavorite || nutritionCatalogFoods[0] || null;
+
+        const candidateFoods = rankedFoods.slice(0, 3).map((row) => row.food);
+        if (candidateFoods.length === 0 && fallbackFood) {
+          candidateFoods.push(fallbackFood);
+        }
+
+        const megapixels = Math.max(0.25, (imageWidth * imageHeight) / 1_000_000);
+        const geometryFactor = Math.max(0.85, Math.min(1.55, megapixels * 0.46 + 0.62));
+        const complexityFactor = Math.max(
+          0.72,
+          Math.min(2.35, imageProfile.coverageRatio * 1.7 + imageProfile.edgeRatio * 1.15 + geometryFactor)
+        );
+        const richnessFactor = Math.max(
+          0.78,
+          Math.min(1.85, 0.82 + imageProfile.vibrancyRatio * 0.95 + imageProfile.warmRatio * 0.42)
+        );
+        const estimatedGrams = roundToOneDecimal(
+          Math.max(90, Math.min(760, 118 * complexityFactor * richnessFactor))
+        );
+
+        const weightedNutrition = candidateFoods.reduce(
+          (accumulator, food, index) => {
+            const weight = candidateFoods.length - index;
+            return {
+              kcal: accumulator.kcal + Math.max(60, toNumber(food.kcalPer100g) || 185) * weight,
+              protein: accumulator.protein + Math.max(0.8, toNumber(food.proteinPer100g) || 7.2) * weight,
+              carbs: accumulator.carbs + Math.max(0.8, toNumber(food.carbsPer100g) || 17.4) * weight,
+              fat: accumulator.fat + Math.max(0.4, toNumber(food.fatPer100g) || 7.1) * weight,
+              totalWeight: accumulator.totalWeight + weight,
+            };
+          },
+          { kcal: 0, protein: 0, carbs: 0, fat: 0, totalWeight: 0 }
+        );
+
+        const safeWeight = Math.max(1, weightedNutrition.totalWeight);
+        const baseKcal = weightedNutrition.kcal / safeWeight;
+        const baseProtein = weightedNutrition.protein / safeWeight;
+        const baseCarbs = weightedNutrition.carbs / safeWeight;
+        const baseFat = weightedNutrition.fat / safeWeight;
+
+        const detectedFoodLabels = candidateFoods.map((food) => food.nombre).slice(0, 2);
+        const estimatedLabel = detectedFoodLabels.length > 0
+          ? `CAL IA · ${detectedFoodLabels.join(" + ")}`
+          : `CAL IA · ${nutritionActiveMealComposer.mealName}`;
+
+        const previewUrl = await readBlobAsDataUrl(imageBlob);
+
+        const estimatedEntry: NutritionDailyCustomFoodLite = {
+          id: "cal-ia-draft",
+          nombre: estimatedLabel,
+          foodId: candidateFoods[0]?.id || undefined,
+          mealId: nutritionActiveMealComposer.mealId,
+          gramos: estimatedGrams,
+          porcion: `${estimatedGrams} g (foto IA)`,
+          calorias: roundToOneDecimal((baseKcal * estimatedGrams) / 100),
+          proteinas: roundToOneDecimal((baseProtein * estimatedGrams) / 100),
+          carbohidratos: roundToOneDecimal((baseCarbs * estimatedGrams) / 100),
+          grasas: roundToOneDecimal((baseFat * estimatedGrams) / 100),
+          source: "camera",
+        };
+
+        setNutritionCalIaEstimate({
+          previewUrl,
+          entry: estimatedEntry,
+        });
+
+        if (candidateFoods[0]) {
+          setNutritionFoodSearchQuery(candidateFoods[0].nombre);
+        }
+
+        setNutritionCalIaStatus(
+          `CAL IA estimó ${estimatedEntry.calorias} kcal en ${estimatedEntry.gramos || 0} g.`
+        );
+      } catch {
+        setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorías.");
+      } finally {
+        imageBitmap?.close();
+        setNutritionCalIaProcessing(false);
+      }
+    },
+    [
+      nutritionActiveMealComposer,
+      nutritionCatalogFoods,
+      nutritionFavoriteFoodIds,
+      nutritionFoodSearchQuery,
+    ]
+  );
+
+  const triggerNutritionLiveCapture = useCallback(
+    async (mode: Exclude<NutritionCaptureMode, "none">) => {
+      if (!nutritionActiveMealComposer) {
+        setNutritionFoodSearchStatus("Selecciona una comida antes de abrir la cámara.");
+        return;
+      }
+
+      const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+      const openFileFallback = () => {
+        if (mode === "barcode") {
+          nutritionBarcodeCaptureInputRef.current?.click();
+          return;
+        }
+
+        nutritionCalIaCaptureInputRef.current?.click();
+      };
+
+      if (!mediaDevices?.getUserMedia) {
+        if (mode === "barcode") {
+          setNutritionBarcodeStatus("Tu dispositivo no soporta cámara en vivo. Usa foto de código.");
+        } else {
+          setNutritionCalIaStatus("Tu dispositivo no soporta cámara en vivo. Usa foto de plato.");
+        }
+        openFileFallback();
+        return;
+      }
+
+      if (mode === "barcode") {
+        const barcodeCtor = (
+          window as unknown as {
+            BarcodeDetector?: NutritionBarcodeDetectorCtorLike;
+          }
+        ).BarcodeDetector;
+
+        if (!barcodeCtor) {
+          setNutritionBarcodeStatus("Escaneo automático no disponible. Usa foto del código.");
+          openFileFallback();
+          return;
+        }
+      }
+
+      try {
+        stopNutritionLiveCapture();
+
+        setNutritionLiveCaptureMode(mode);
+        setNutritionLiveCaptureReady(false);
+        setNutritionLiveCaptureStatus(
+          mode === "barcode"
+            ? "Escaneando automáticamente..."
+            : "Enfoca el plato y toca " + '"Sacar foto".'
+        );
+
+        const stream = await mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+
+        nutritionLiveStreamRef.current = stream;
+
+        const video = nutritionLiveVideoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          await video.play().catch(() => undefined);
+        }
+
+        setNutritionLiveCaptureReady(true);
+      } catch (error) {
+        stopNutritionLiveCapture();
+        if (mode === "barcode") {
+          setNutritionBarcodeStatus(error instanceof Error ? error.message : "No se pudo abrir la cámara.");
+        } else {
+          setNutritionCalIaStatus(error instanceof Error ? error.message : "No se pudo abrir la cámara.");
+        }
+        openFileFallback();
+      }
+    },
+    [nutritionActiveMealComposer, stopNutritionLiveCapture]
+  );
 
   const triggerNutritionBarcodeCapture = useCallback(() => {
-    nutritionBarcodeCaptureInputRef.current?.click();
-  }, []);
+    void triggerNutritionLiveCapture("barcode");
+  }, [triggerNutritionLiveCapture]);
 
   const triggerNutritionCalIaCapture = useCallback(() => {
-    nutritionCalIaCaptureInputRef.current?.click();
-  }, []);
+    void triggerNutritionLiveCapture("cal-ia");
+  }, [triggerNutritionLiveCapture]);
+
+  const captureNutritionCalIaFromLiveCamera = useCallback(async () => {
+    const video = nutritionLiveVideoRef.current;
+    if (!video || video.readyState < 2) {
+      setNutritionLiveCaptureStatus("Esperando cámara... intenta de nuevo.");
+      return;
+    }
+
+    const width = Math.max(320, video.videoWidth || 960);
+    const height = Math.max(320, video.videoHeight || 1280);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setNutritionCalIaStatus("No se pudo tomar la foto desde la cámara.");
+      return;
+    }
+
+    context.drawImage(video, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, "image/jpeg", 0.92);
+    });
+
+    if (!blob) {
+      setNutritionCalIaStatus("No se pudo generar la imagen de la cámara.");
+      return;
+    }
+
+    stopNutritionLiveCapture();
+    await processNutritionCalIaFromBlob(blob);
+  }, [processNutritionCalIaFromBlob, stopNutritionLiveCapture]);
+
+  useEffect(() => {
+    if (nutritionLiveCaptureMode !== "barcode" || !nutritionLiveCaptureReady) {
+      return;
+    }
+
+    const barcodeDetectorCtor = (
+      window as unknown as {
+        BarcodeDetector?: NutritionBarcodeDetectorCtorLike;
+      }
+    ).BarcodeDetector;
+
+    if (!barcodeDetectorCtor) {
+      return;
+    }
+
+    const detector = new barcodeDetectorCtor({
+      formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"],
+    });
+
+    let cancelled = false;
+
+    const scanFrame = async () => {
+      if (cancelled) {
+        return;
+      }
+
+      const video = nutritionLiveVideoRef.current;
+      if (!video || video.readyState < 2) {
+        nutritionBarcodeScanRafRef.current = window.requestAnimationFrame(() => {
+          void scanFrame();
+        });
+        return;
+      }
+
+      let bitmap: ImageBitmap | null = null;
+
+      try {
+        bitmap = await createImageBitmap(video);
+        const detections = await detector.detect(bitmap);
+        const detectedCode = String(detections?.[0]?.rawValue || "").trim();
+
+        if (detectedCode && detectedCode !== nutritionBarcodeLastDetectedRef.current) {
+          nutritionBarcodeLastDetectedRef.current = detectedCode;
+          setNutritionLiveCaptureStatus(`Código detectado: ${detectedCode}`);
+          await lookupNutritionBarcode(detectedCode, { autoAdd: true });
+          stopNutritionLiveCapture();
+          return;
+        }
+      } catch {
+        // Keep scanning loop resilient to frame errors.
+      } finally {
+        bitmap?.close();
+      }
+
+      nutritionBarcodeScanRafRef.current = window.requestAnimationFrame(() => {
+        void scanFrame();
+      });
+    };
+
+    nutritionBarcodeScanRafRef.current = window.requestAnimationFrame(() => {
+      void scanFrame();
+    });
+
+    return () => {
+      cancelled = true;
+      if (nutritionBarcodeScanRafRef.current !== null) {
+        window.cancelAnimationFrame(nutritionBarcodeScanRafRef.current);
+        nutritionBarcodeScanRafRef.current = null;
+      }
+    };
+  }, [lookupNutritionBarcode, nutritionLiveCaptureMode, nutritionLiveCaptureReady, stopNutritionLiveCapture]);
+
+  useEffect(() => {
+    return () => {
+      stopNutritionLiveCapture();
+    };
+  }, [stopNutritionLiveCapture]);
 
   const handleNutritionBarcodeCaptureChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -5015,9 +5394,10 @@ export default function AlumnoVisionClient({
         return;
       }
 
-      await lookupNutritionBarcode(detectedCode);
+      stopNutritionLiveCapture();
+      await lookupNutritionBarcode(detectedCode, { autoAdd: true });
     },
-    [lookupNutritionBarcode]
+    [lookupNutritionBarcode, stopNutritionLiveCapture]
   );
 
   const handleNutritionCalIaCaptureChange = useCallback(
@@ -5029,71 +5409,10 @@ export default function AlumnoVisionClient({
         return;
       }
 
-      if (!nutritionActiveMealComposer) {
-        setNutritionCalIaStatus("Selecciona una comida antes de estimar con cámara.");
-        return;
-      }
-
-      const toDataUrl = () =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-          reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
-          reader.readAsDataURL(file);
-        });
-
-      let imageWidth = 1280;
-      let imageHeight = 720;
-      try {
-        const bitmap = await createImageBitmap(file);
-        imageWidth = bitmap.width;
-        imageHeight = bitmap.height;
-        bitmap.close();
-      } catch {
-        // Fallback dimensions are enough for heuristic estimate.
-      }
-
-      const queryHint = normalizePersonKey(nutritionFoodSearchQuery);
-      const hintFood = queryHint
-        ? nutritionCatalogFoods.find((item) => normalizePersonKey(item.nombre).includes(queryHint))
-        : null;
-
-      const megapixels = Math.max(0.3, (imageWidth * imageHeight) / 1_000_000);
-      const sizeScore = Math.max(0.55, Math.min(2.35, file.size / 320_000));
-      const portionScore = Math.max(0.7, Math.min(2.8, megapixels * 0.55 + sizeScore * 0.6));
-      const estimatedGrams = roundToOneDecimal(Math.max(90, Math.min(650, 160 * portionScore)));
-
-      const baseKcal = Math.max(70, toNumber(hintFood?.kcalPer100g) || 185);
-      const baseProtein = Math.max(1, toNumber(hintFood?.proteinPer100g) || 7.5);
-      const baseCarbs = Math.max(1, toNumber(hintFood?.carbsPer100g) || 19);
-      const baseFat = Math.max(0.5, toNumber(hintFood?.fatPer100g) || 8);
-
-      const estimatedEntry: NutritionDailyCustomFoodLite = {
-        id: "cal-ia-draft",
-        nombre: hintFood?.nombre || `Estimación CAL IA - ${nutritionActiveMealComposer.mealName}`,
-        foodId: hintFood?.id || undefined,
-        mealId: nutritionActiveMealComposer.mealId,
-        gramos: estimatedGrams,
-        porcion: `${estimatedGrams} g (estimado)`,
-        calorias: roundToOneDecimal((baseKcal * estimatedGrams) / 100),
-        proteinas: roundToOneDecimal((baseProtein * estimatedGrams) / 100),
-        carbohidratos: roundToOneDecimal((baseCarbs * estimatedGrams) / 100),
-        grasas: roundToOneDecimal((baseFat * estimatedGrams) / 100),
-        source: "camera",
-      };
-
-      try {
-        const previewUrl = await toDataUrl();
-        setNutritionCalIaEstimate({
-          previewUrl,
-          entry: estimatedEntry,
-        });
-        setNutritionCalIaStatus("Estimación lista. Puedes agregarla o volver a escanear.");
-      } catch {
-        setNutritionCalIaStatus("No se pudo procesar la imagen para estimar calorías.");
-      }
+      stopNutritionLiveCapture();
+      await processNutritionCalIaFromBlob(file);
     },
-    [nutritionActiveMealComposer, nutritionCatalogFoods, nutritionFoodSearchQuery]
+    [processNutritionCalIaFromBlob, stopNutritionLiveCapture]
   );
 
   const confirmNutritionCalIaEstimate = useCallback(() => {
