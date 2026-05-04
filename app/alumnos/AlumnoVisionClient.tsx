@@ -2126,6 +2126,18 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+function coerceRowsFromUnknown<T>(value: unknown): T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value as Record<string, unknown>) as T[];
+  }
+
+  return [];
+}
+
 function readArrayFromStorage<T>(key: string): T[] {
   if (typeof window === "undefined") return [];
 
@@ -2147,11 +2159,7 @@ function readArrayFromStorage<T>(key: string): T[] {
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    const rows = Array.isArray(parsed)
-      ? (parsed as T[])
-      : parsed && typeof parsed === "object"
-      ? (Object.values(parsed as Record<string, unknown>) as T[])
-      : [];
+    const rows = coerceRowsFromUnknown<T>(parsed);
 
     STORAGE_ARRAY_CACHE.set(key, {
       raw: cacheRaw,
