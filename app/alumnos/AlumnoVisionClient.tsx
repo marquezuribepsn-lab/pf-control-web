@@ -5,493 +5,550 @@ import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
-import type {
-  Alumno,
-  BloqueEntrenamiento,
-  PrescripcionSesionPersona,
-  Sesion,
-} from "@/data/mockData";
-import { argentineFoodsBase } from "@/data/argentineFoods";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FocusEvent,
-  type PointerEvent as ReactPointerEvent,
-  type ReactNode,
-  type TouchEvent,
-} from "react";
-import { createPortal } from "react-dom";
+                  <div className="pf-a4-nutrition-diary-head">
+                    <div>
+                      <p className="pf-a2-eyebrow">Registro del alumno</p>
+                      <h2 className="mt-1 text-2xl font-black text-white">Hoy</h2>
+                      <p className="mt-1 text-sm text-slate-300">{formatDate(normalizedNutritionTrackerDate)}</p>
+                    </div>
 
-type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
+                    <div className="pf-a3-nutrition-tracker-date">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => handleNutritionTrackerDateShift(-1)}
+                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Ayer
+                      </ReliableActionButton>
 
-type AlumnoVisionClientProps = {
-  currentName: string;
-  currentEmail: string;
-  initialCategory?: MainCategory;
-};
+                      <label className="pf-a3-nutrition-tracker-date-input">
+                        <span>Fecha</span>
+                        <input
+                          type="date"
+                          value={normalizedNutritionTrackerDate}
+                          onChange={handleNutritionTrackerDateChange}
+                        />
+                      </label>
 
-type AlumnoRecord = Alumno & {
-  email?: string;
-  telefono?: string;
-  edad?: number;
-  altura?: number | null;
-};
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => handleNutritionTrackerDateShift(1)}
+                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Mañana
+                      </ReliableActionButton>
+                    </div>
+                  </div>
 
-type ClienteMetaLite = {
-  nombre?: string;
-  email?: string;
-  telefono?: string;
-  alturaCm?: number | null;
-  objNutricional?: string;
-  startDate?: string;
-  endDate?: string;
-  pagoEstado?: string;
-  tipoAsesoria?: string;
-  modalidad?: string;
-  categoriaPlan?: string;
-  planNombre?: string;
-  diasPlan?: number;
-  membresia?: string;
-};
+                  <div className="pf-a4-nutrition-diary-section-head mt-3">
+                    <h3>Resumen</h3>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => setNutritionShowTrackerDetails((previous) => !previous)}
+                      className="pf-a4-nutrition-detail-toggle"
+                    >
+                      {nutritionShowTrackerDetails ? "Ocultar detalles" : "Detalles"}
+                    </ReliableActionButton>
+                  </div>
 
-type NutritionTargets = {
-  calorias?: number;
-  proteinas?: number;
-  carbohidratos?: number;
-  grasas?: number;
-};
+                  <section className="pf-a4-nutrition-summary-card">
+                    <div className="pf-a4-nutrition-summary-main">
+                      <div>
+                        <p className="pf-a4-nutrition-summary-label">Consumidas</p>
+                        <p className="pf-a4-nutrition-summary-value">{nutritionDailyConsumedKcal} kcal</p>
+                      </div>
+                      <div>
+                        <p className="pf-a4-nutrition-summary-label">Restantes</p>
+                        <p className="pf-a4-nutrition-summary-value">{nutritionDailyRemainingKcal} kcal</p>
+                      </div>
+                      <div>
+                        <p className="pf-a4-nutrition-summary-label">Gastadas</p>
+                        <p className="pf-a4-nutrition-summary-value">{nutritionEstimatedBurnedKcal} kcal</p>
+                      </div>
+                    </div>
 
-type NutritionMealItem = {
-  id?: string;
-  nombre?: string;
-  foodId?: string;
-  gramos?: number;
-  imageUrl?: string;
-  imagenUrl?: string;
-  photoUrl?: string;
-  fotoUrl?: string;
-  thumbnailUrl?: string;
-  coverUrl?: string;
-  artworkUrl?: string;
-};
+                    <div className="pf-a4-nutrition-summary-macros">
+                      <div className="pf-a4-nutrition-summary-macro-row">
+                        <span>Carbohidratos</span>
+                        <span>{nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g</span>
+                        <div className="pf-a4-nutrition-summary-track">
+                          <div
+                            className="pf-a4-nutrition-summary-fill"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
+                          />
+                        </div>
+                      </div>
 
-type NutritionMeal = {
-  id?: string;
-  nombre?: string;
-  items?: NutritionMealItem[];
-  imageUrl?: string;
-  imagenUrl?: string;
-  photoUrl?: string;
-  fotoUrl?: string;
-  thumbnailUrl?: string;
-  coverUrl?: string;
-  artworkUrl?: string;
-};
+                      <div className="pf-a4-nutrition-summary-macro-row">
+                        <span>Proteínas</span>
+                        <span>{nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g</span>
+                        <div className="pf-a4-nutrition-summary-track">
+                          <div
+                            className="pf-a4-nutrition-summary-fill"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
+                          />
+                        </div>
+                      </div>
 
-type NutritionPlanLite = {
-  id: string;
-  nombre?: string;
-  alumnoAsignado?: string | null;
-  objetivo?: string;
-  notas?: string;
-  targets?: NutritionTargets;
-  comidas?: NutritionMeal[];
-  updatedAt?: string;
-};
+                      <div className="pf-a4-nutrition-summary-macro-row">
+                        <span>Grasas</span>
+                        <span>{nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g</span>
+                        <div className="pf-a4-nutrition-summary-track">
+                          <div
+                            className="pf-a4-nutrition-summary-fill"
+                            style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
 
-type NutritionAssignmentLite = {
-  alumnoNombre?: string;
-  planId?: string;
-  assignedAt?: string;
-};
+                  <div className="pf-a4-nutrition-diary-section-head mt-4">
+                    <h3>Alimentación</h3>
+                    <span>{nutritionActiveMealComposer ? `Editando: ${nutritionActiveMealComposer.mealName}` : "Toca + para cargar"}</span>
+                  </div>
 
-type NutritionFoodLite = {
-  id?: string;
-  nombre?: string;
-  kcalPer100g?: number;
-  proteinPer100g?: number;
-  carbsPer100g?: number;
-  fatPer100g?: number;
-  imageUrl?: string;
-  imagenUrl?: string;
-  photoUrl?: string;
-  fotoUrl?: string;
-  thumbnailUrl?: string;
-  coverUrl?: string;
-  artworkUrl?: string;
-};
+                  <div className="pf-a4-nutrition-meal-list">
+                    {nutritionDiaryMealRows.map((meal) => (
+                      <article key={`meal-row-${meal.mealId}`} className="pf-a4-nutrition-meal-row">
+                        <div className="pf-a4-nutrition-meal-left">
+                          <span className="pf-a4-nutrition-meal-icon">{meal.icon}</span>
+                          <div className="min-w-0">
+                            <p className="pf-a4-nutrition-meal-title">{meal.mealName}</p>
+                            <p className="pf-a4-nutrition-meal-kcal">{meal.consumedKcal} / {meal.goalKcal} kcal</p>
+                            <p className="pf-a4-nutrition-meal-preview">
+                              {meal.previewText || "Sin alimentos cargados todavía"}
+                            </p>
+                          </div>
+                        </div>
 
-type NutritionFoodFavoriteLite = {
-  id: string;
-  nombre: string;
-  kcalPer100g: number;
-  proteinPer100g: number;
-  carbsPer100g: number;
-  fatPer100g: number;
-  imageUrl?: string;
-  barcode?: string;
-  updatedAt?: string;
-};
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => openNutritionMealComposer(meal.mealId)}
+                          className="pf-a4-nutrition-meal-plus"
+                          aria-label={`Agregar alimentos en ${meal.mealName}`}
+                        >
+                          +
+                        </ReliableActionButton>
+                      </article>
+                    ))}
+                  </div>
 
-type NutritionSearchFoodResult = {
-  id: string;
-  nombre: string;
-  kcalPer100g: number;
-  proteinPer100g: number;
-  carbsPer100g: number;
-  fatPer100g: number;
-  imageUrl?: string;
-  barcode?: string;
-  sourceLabel?: string;
-};
+                  {nutritionActiveMealComposer ? (
+                    <article className="pf-a4-nutrition-composer mt-4">
+                      <div className="pf-a4-nutrition-composer-head">
+                        <div>
+                          <p className="pf-a4-nutrition-composer-kicker">Cargar alimentos</p>
+                          <h4 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h4>
+                        </div>
 
-type NutritionDailyMealLogLite = {
-  mealId: string;
-  done?: boolean;
-  consumedKcal?: number;
-  updatedAt?: string;
-};
+                        <ReliableActionButton
+                          type="button"
+                          onClick={closeNutritionMealComposer}
+                          className="pf-a4-nutrition-composer-close"
+                        >
+                          Cerrar
+                        </ReliableActionButton>
+                      </div>
 
-type NutritionDailyCustomFoodLite = {
-  id: string;
-  nombre: string;
-  foodId?: string;
-  mealId?: string;
-  gramos?: number;
-  porcion?: string;
-  calorias: number;
-  proteinas?: number;
-  carbohidratos?: number;
-  grasas?: number;
-  barcode?: string;
-  source?: "manual" | "search" | "barcode" | "camera";
-  imageUrl?: string;
-  createdAt?: string;
-};
+                      <div className="pf-a4-nutrition-composer-controls">
+                        <label className="pf-a4-nutrition-composer-field">
+                          <span>Buscar alimento</span>
+                          <input
+                            value={nutritionFoodSearchQuery}
+                            onChange={(event) => setNutritionFoodSearchQuery(event.target.value)}
+                            placeholder="Ej: yogur natural, arroz, atún..."
+                          />
+                        </label>
 
-type NutritionDailyLogLite = {
-  id: string;
-  ownerKey?: string;
-  alumnoNombre?: string;
-  alumnoEmail?: string;
-  date: string;
-  mealLogs: NutritionDailyMealLogLite[];
-  customFoods?: NutritionDailyCustomFoodLite[];
-  createdAt?: string;
-  updatedAt?: string;
-};
+                        <label className="pf-a4-nutrition-composer-field pf-a4-nutrition-composer-field-grams">
+                          <span>Gramaje</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={nutritionFoodGramsDraft}
+                            onChange={(event) => setNutritionFoodGramsDraft(event.target.value)}
+                          />
+                        </label>
+                      </div>
 
-type WorkoutLogLite = {
-  id?: string;
-  alumnoNombre?: string;
-  alumnoEmail?: string;
-  sessionId?: string;
-  sessionTitle?: string;
-  weekId?: string;
-  weekName?: string;
-  dayId?: string;
-  dayName?: string;
-  blockId?: string;
-  blockTitle?: string;
-  exerciseId?: string;
-  exerciseKey?: string;
-  exerciseName?: string;
-  fecha?: string;
-  createdAt?: string;
-  series?: number;
-  repeticiones?: number;
-  pesoKg?: number;
-  molestia?: boolean;
-  comentarios?: string;
-  comentario?: string;
-  dolorUbicacion?: string;
-  dolorMomento?: string;
-  dolorSensacion?: string;
-  dolorRecomendacion?: string;
-  videoUrl?: string;
-  videoDataUrl?: string;
-  videoFileName?: string;
-  videoMimeType?: string;
-};
+                      <div className="pf-a4-nutrition-composer-actions">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={triggerNutritionBarcodeCapture}
+                          className="pf-a4-nutrition-composer-btn"
+                        >
+                          Escanear código
+                        </ReliableActionButton>
 
-type RoutineChangeRequestLite = {
-  id: string;
-  alumnoNombre?: string;
-  alumnoEmail?: string;
-  sessionId?: string;
-  sessionTitle?: string;
-  weekId?: string;
-  weekName?: string;
-  dayId?: string;
-  dayName?: string;
-  message?: string;
-  createdAt?: string;
-};
+                        <ReliableActionButton
+                          type="button"
+                          onClick={triggerNutritionCalIaCapture}
+                          className="pf-a4-nutrition-composer-btn"
+                        >
+                          CAL IA cámara
+                        </ReliableActionButton>
+                      </div>
 
-type SessionFeedbackAnswerLite = {
-  questionId: string;
-  questionPrompt: string;
-  optionId: string;
-  optionLabel: string;
-};
+                      <input
+                        ref={nutritionBarcodeCaptureInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleNutritionBarcodeCaptureChange}
+                        className="hidden"
+                      />
 
-type SessionFeedbackRecordLite = {
-  id: string;
-  alumnoNombre?: string;
-  alumnoEmail?: string;
-  sessionId?: string;
-  sessionTitle?: string;
-  weekId?: string;
-  weekName?: string;
-  dayId?: string;
-  dayName?: string;
-  feedbackTitle?: string;
-  answers: SessionFeedbackAnswerLite[];
-  totalWorkoutLogs?: number;
-  logsWithPain?: number;
-  createdAt?: string;
-};
+                      <input
+                        ref={nutritionCalIaCaptureInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleNutritionCalIaCaptureChange}
+                        className="hidden"
+                      />
 
-type AnthropometryEntryLite = {
-  id?: string;
-  alumnoNombre?: string;
-  createdAt?: string;
-  alturaCm?: number | null;
-  pesoKg?: number | null;
-  aguaLitros?: number | null;
-  suenoHoras?: number | null;
-  actividadNivel?: number | null;
-  cinturaCm?: number | null;
-  caderaCm?: number | null;
-  grasaPct?: number | null;
-  musculoPct?: number | null;
-};
+                      {nutritionCalIaEstimate ? (
+                        <div className="pf-a4-nutrition-cal-ia-card">
+                          <div className="pf-a4-nutrition-cal-ia-preview">
+                            <img src={nutritionCalIaEstimate.previewUrl} alt="Vista previa estimacion calorica" />
+                          </div>
+                          <div className="pf-a4-nutrition-cal-ia-body">
+                            <p className="pf-a4-nutrition-cal-ia-title">Estimación CAL IA</p>
+                            <p className="pf-a4-nutrition-cal-ia-meta">
+                              {nutritionCalIaEstimate.entry.nombre} · {nutritionCalIaEstimate.entry.porcion || "Estimado"}
+                            </p>
+                            <p className="pf-a4-nutrition-cal-ia-meta">
+                              {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
+                            </p>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={confirmNutritionCalIaEstimate}
+                              className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
+                            >
+                              Agregar estimación
+                            </ReliableActionButton>
+                          </div>
+                        </div>
+                      ) : null}
 
-type MusicAssignmentLite = {
-  id?: string;
-  platform?: string;
-  alumnoNombre?: string;
-  playlistName?: string;
-  playlistUrl?: string;
-  objetivo?: string;
-  diaSemana?: string;
-  recommendedSongTitle?: string;
-  recommendedSongArtist?: string;
-  coverUrl?: string;
-  imageUrl?: string;
-  thumbnailUrl?: string;
-  artworkUrl?: string;
-  createdAt?: string;
-};
+                      <div className="pf-a4-nutrition-search-results">
+                        {nutritionFoodSearchLoading ? (
+                          <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
+                        ) : nutritionCombinedSearchResults.length > 0 ? (
+                          nutritionCombinedSearchResults.map((food) => (
+                            <div key={`nutrition-search-${food.id}`} className="pf-a4-nutrition-search-item">
+                              <div className="min-w-0">
+                                <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
+                                <p className="pf-a4-nutrition-search-meta">
+                                  {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P / {food.carbsPer100g}C / {food.fatPer100g}G
+                                </p>
+                                {food.sourceLabel ? (
+                                  <p className="pf-a4-nutrition-search-source">Fuente: {food.sourceLabel}</p>
+                                ) : null}
+                              </div>
 
-type MusicPlatform =
-  | "SPOTIFY"
-  | "YOUTUBE"
-  | "YOUTUBE_MUSIC"
-  | "SOUNDCLOUD"
-  | "APPLE_MUSIC"
-  | "DEEZER"
-  | "AMAZON_MUSIC"
-  | "AUDIO_FILE"
-  | "OTHER";
+                              <div className="pf-a4-nutrition-search-actions">
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => toggleNutritionFavoriteFood(food)}
+                                  className="pf-a4-nutrition-search-btn"
+                                >
+                                  {nutritionFavoriteFoodIds.has(food.id) ? "Quitar fav" : "Fav"}
+                                </ReliableActionButton>
 
-type MusicContentType = "SONG" | "PLAYLIST" | "OTHER";
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={() => addNutritionFoodFromSearch(food, "search")}
+                                  className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
+                                >
+                                  Agregar
+                                </ReliableActionButton>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="pf-a4-nutrition-search-empty">
+                            Escribe al menos 3 letras para ampliar la búsqueda, o usa favoritos/código.
+                          </p>
+                        )}
+                      </div>
 
-type MusicPlayerSource = {
-  kind: "iframe" | "audio" | "none";
-  src: string | null;
-};
+                      {nutritionActiveMealComposer.mealEntries.length > 0 ? (
+                        <div className="pf-a4-nutrition-meal-entry-list">
+                          {nutritionActiveMealComposer.mealEntries.map((entry) => (
+                            <div key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-item">
+                              <div>
+                                <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
+                                <p className="pf-a4-nutrition-meal-entry-meta">
+                                  {entry.porcion ? `${entry.porcion} · ` : ""}
+                                  {entry.calorias} kcal
+                                </p>
+                              </div>
+                              <ReliableActionButton
+                                type="button"
+                                onClick={() => removeNutritionCustomFood(entry.id)}
+                                className="pf-a4-nutrition-meal-entry-remove"
+                              >
+                                Eliminar
+                              </ReliableActionButton>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </article>
+                  ) : null}
 
-type AccountProfileLite = {
-  nombreCompleto?: string;
-  sidebarImage?: string | null;
-};
+                  {nutritionShowTrackerDetails ? (
+                    <div className="mt-4 space-y-4">
+                      <div className="pf-a3-nutrition-template-row">
+                        <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("full")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día completo
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("training")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día de entreno
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("rest")}
+                          className="pf-a3-nutrition-template-chip"
+                        >
+                          Día de descanso
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => applyNutritionDayTemplate("clear")}
+                          className="pf-a3-nutrition-template-chip is-muted"
+                        >
+                          Reiniciar día
+                        </ReliableActionButton>
+                      </div>
 
-type CoachContactLite = {
-  id?: string;
-  nombre?: string;
-  role?: string;
-  telefono?: string;
-  source?: string;
-};
+                      <div className="pf-a3-nutrition-week-head">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => handleNutritionTrackerWeekShift(-1)}
+                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        >
+                          Semana anterior
+                        </ReliableActionButton>
 
-type HomeMusicCard = {
-  id: string;
-  title: string;
-  artist: string;
-  coverUrl: string | null;
-  accentClass: string;
-  playlistUrl: string | null;
-  platform: MusicPlatform;
-  contentType: MusicContentType;
-};
+                        <p className="pf-a3-nutrition-week-label">
+                          Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
+                        </p>
 
-type RoutineExercise = BloqueEntrenamiento["ejercicios"][number];
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => handleNutritionTrackerWeekShift(1)}
+                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        >
+                          Semana siguiente
+                        </ReliableActionButton>
+                      </div>
 
-type RoutineBlock = Omit<BloqueEntrenamiento, "ejercicios"> & {
-  ejercicios: RoutineExercise[];
-};
+                      <div className="pf-a3-nutrition-streak-grid">
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Racha actual</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
+                          <p className="pf-a3-nutrition-streak-note">
+                            Último check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
+                          </p>
+                        </div>
 
-type RoutineEntry = {
-  sesion: Sesion;
-  prescripcion: PrescripcionSesionPersona | null;
-  blocks: RoutineBlock[];
-  totalExercises: number;
-  weekId?: string;
-  weekName?: string;
-  dayId?: string;
-  dayName?: string;
-  source: "session" | "week-plan";
-};
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
+                          <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
+                        </div>
 
-type WeekPlanPersonType = "jugadoras" | "alumnos";
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Días activos</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
+                          <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
+                        </div>
 
-type WeekExerciseLite = {
-  id?: string;
-  ejercicioId?: string;
-  series?: string | number;
-  repeticiones?: string | number;
-  descanso?: string;
-  carga?: string;
-  observaciones?: string;
-  metricas?: Array<{
-    nombre?: string;
-    valor?: string;
-  }>;
-  superSerie?: Array<{
-    id?: string;
-    ejercicioId?: string;
-    series?: string | number;
-    repeticiones?: string | number;
-    descanso?: string;
-    carga?: string;
-  }>;
-};
+                        <div className="pf-a3-nutrition-streak-card">
+                          <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
+                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
+                          <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
+                        </div>
+                      </div>
 
-type WeekBlockLite = {
-  id: string;
-  titulo: string;
-  objetivo: string;
-  ejercicios: WeekExerciseLite[];
-};
+                      <div className="pf-a3-nutrition-week-grid-wrap">
+                        <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
+                        <div className="pf-a3-nutrition-week-grid">
+                          {nutritionWeeklyHistory.map((day) => (
+                            <ReliableActionButton
+                              key={`nutri-week-${day.date}`}
+                              type="button"
+                              onClick={() => handleNutritionTrackerDateSelect(day.date)}
+                              className={`pf-a3-nutrition-weekday-card ${
+                                day.isSelected ? "is-selected" : ""
+                              } ${
+                                day.status === "empty"
+                                  ? "is-empty"
+                                  : day.status === "low"
+                                    ? "is-low"
+                                    : day.status === "high"
+                                      ? "is-high"
+                                      : "is-on-target"
+                              }`}
+                            >
+                              <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
+                              <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
+                              <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
+                              <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                            </ReliableActionButton>
+                          ))}
+                        </div>
+                      </div>
 
-type WeekDayTrainingLite = {
-  titulo?: string;
-  descripcion?: string;
-  duracion?: string;
-  bloques: WeekBlockLite[];
-};
+                      <article className="pf-a3-nutrition-student-food-card">
+                        <p className="pf-a3-nutrition-student-food-eyebrow">Carga manual rápida</p>
+                        <h3 className="pf-a3-nutrition-student-food-title">Agregar alimento libre</h3>
+                        <div className="pf-a3-nutrition-student-food-grid">
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Alimento</span>
+                            <input
+                              value={nutritionCustomFoodDraft.nombre}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  nombre: event.target.value,
+                                }))
+                              }
+                              placeholder="Ej: Yogur con frutas"
+                            />
+                          </label>
 
-type PostSessionFeedbackOptionLite = {
-  id: string;
-  label: string;
-};
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Porción</span>
+                            <input
+                              value={nutritionCustomFoodDraft.porcion}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  porcion: event.target.value,
+                                }))
+                              }
+                              placeholder="Ej: 1 taza / 120 g"
+                            />
+                          </label>
 
-type PostSessionFeedbackQuestionLite = {
-  id: string;
-  prompt: string;
-  options: PostSessionFeedbackOptionLite[];
-};
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Calorías</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={nutritionCustomFoodDraft.calorias}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  calorias: event.target.value,
+                                }))
+                              }
+                              placeholder="0"
+                            />
+                          </label>
 
-type PostSessionFeedbackConfigLite = {
-  enabled: boolean;
-  title?: string;
-  questions: PostSessionFeedbackQuestionLite[];
-};
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Proteinas (g)</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={nutritionCustomFoodDraft.proteinas}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  proteinas: event.target.value,
+                                }))
+                              }
+                              placeholder="0"
+                            />
+                          </label>
 
-type WeekDayPlanLite = {
-  id: string;
-  dia: string;
-  planificacion: string;
-  objetivo: string;
-  sesionId: string;
-  oculto?: boolean;
-  entrenamiento?: WeekDayTrainingLite;
-  postSesionFeedback?: PostSessionFeedbackConfigLite;
-};
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Carbohidratos (g)</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={nutritionCustomFoodDraft.carbohidratos}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  carbohidratos: event.target.value,
+                                }))
+                              }
+                              placeholder="0"
+                            />
+                          </label>
 
-type WeekPlanLite = {
-  id: string;
-  nombre: string;
-  objetivo: string;
-  oculto?: boolean;
-  dias: WeekDayPlanLite[];
-};
+                          <label className="pf-a3-nutrition-student-food-field">
+                            <span>Grasas (g)</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={nutritionCustomFoodDraft.grasas}
+                              onChange={(event) =>
+                                setNutritionCustomFoodDraft((previous) => ({
+                                  ...previous,
+                                  grasas: event.target.value,
+                                }))
+                              }
+                              placeholder="0"
+                            />
+                          </label>
+                        </div>
 
-type WeekPersonPlanLite = {
-  ownerKey: string;
-  tipo: WeekPlanPersonType;
-  nombre: string;
-  categoria?: string;
-  semanas: WeekPlanLite[];
-};
+                        <div className="pf-a3-nutrition-student-food-actions">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={addNutritionCustomFood}
+                            className="pf-a2-solid-btn rounded-lg px-4 py-2 text-sm font-semibold"
+                          >
+                            Cargar alimento
+                          </ReliableActionButton>
+                          <span className="text-xs text-slate-400">
+                            Totales cargados: {nutritionSelectedDayCustomTotals.calorias} kcal · {nutritionSelectedDayCustomTotals.proteinas}P / {nutritionSelectedDayCustomTotals.carbohidratos}C / {nutritionSelectedDayCustomTotals.grasas}G
+                          </span>
+                        </div>
+                      </article>
+                    </div>
+                  ) : null}
 
-type RoutineExerciseLogTarget = {
-  sessionId: string;
-  sessionTitle: string;
-  weekId?: string;
-  weekName?: string;
-  dayId?: string;
-  dayName?: string;
-  blockId: string;
-  blockTitle: string;
-  exerciseId: string;
-  exerciseName: string;
-  exerciseKey: string;
-  prescribedSeries?: string;
-  prescribedRepeticiones?: string;
-  prescribedCarga?: string;
-  prescribedDescanso?: string;
-  prescribedRir?: string;
-  suggestedVideoUrl?: string;
-  exerciseDescription?: string;
-  exerciseTags?: string[];
-};
-
-type RoutineExerciseLogView = "descripcion" | "registro" | "registros";
-
-type RoutineActionScreen = "none" | "change" | "sessions" | "finalize" | "timer";
-
-type RoutineExerciseLogDraft = {
-  fecha: string;
-  series: string;
-  repeticiones: string;
-  pesoKg: string;
-  comentarios: string;
-  molestia: boolean;
-  dolorUbicacion: string;
-  dolorMomento: string;
-  dolorSensacion: string;
-  videoUrl: string;
-  videoDataUrl: string;
-  videoFileName: string;
-  videoMimeType: string;
-};
-
-type RoutineStopwatchFloatPosition = {
-  x: number;
-  y: number;
-};
-
-type IdentityRef = {
-  names: string[];
-  emails: string[];
-};
-
-type PreparedIdentityName = {
-  value: string;
-  tokenSet: Set<string>;
-};
-
-type PreparedIdentity = {
-  names: PreparedIdentityName[];
-  emails: Set<string>;
+                  {nutritionTrackerStatus || nutritionCustomFoodStatus || nutritionFoodSearchStatus || nutritionBarcodeStatus || nutritionCalIaStatus ? (
+                    <div className="mt-3 space-y-1">
+                      {nutritionTrackerStatus ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">{nutritionTrackerStatus}</p>
+                      ) : null}
+                      {nutritionCustomFoodStatus ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">{nutritionCustomFoodStatus}</p>
+                      ) : null}
+                      {nutritionFoodSearchStatus ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">{nutritionFoodSearchStatus}</p>
+                      ) : null}
+                      {nutritionBarcodeStatus ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-200">{nutritionBarcodeStatus}</p>
+                      ) : null}
+                      {nutritionCalIaStatus ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">{nutritionCalIaStatus}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
 };
 
 const CATEGORIES: MainCategory[] = ["inicio", "rutina", "nutricion", "progreso", "musica"];
