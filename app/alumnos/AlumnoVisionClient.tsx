@@ -3833,6 +3833,75 @@ export default function AlumnoVisionClient({
     return nutritionDiaryMealRows.find((row) => row.mealId === nutritionMealComposerMealId) || null;
   }, [nutritionDiaryMealRows, nutritionMealComposerMealId]);
 
+  const nutritionEstimatedBurnedKcal = useMemo(() => {
+    const selectedDayLogs = workoutLogs.filter((row) => {
+      const dateValue = normalizeDateInputValue(row.fecha || row.createdAt || "");
+      return dateValue === normalizedNutritionTrackerDate;
+    });
+
+    if (selectedDayLogs.length === 0) {
+      return 0;
+    }
+
+    return roundToOneDecimal(selectedDayLogs.length * 45);
+  }, [normalizedNutritionTrackerDate, workoutLogs]);
+
+  const nutritionNormalizedSearchQuery = useMemo(
+    () => normalizePersonKey(nutritionFoodSearchQuery),
+    [nutritionFoodSearchQuery]
+  );
+
+  const nutritionLocalSearchResults = useMemo(() => {
+    const rawQuery = String(nutritionFoodSearchQuery || "").trim().toLowerCase();
+
+    const filtered = nutritionCatalogFoods.filter((food) => {
+      if (!nutritionNormalizedSearchQuery) {
+        return nutritionFavoriteFoodIds.has(food.id);
+      }
+
+      const normalizedName = normalizePersonKey(food.nombre);
+      const barcode = String(food.barcode || "").trim().toLowerCase();
+      const normalizedId = normalizePersonKey(food.id);
+
+      return (
+        normalizedName.includes(nutritionNormalizedSearchQuery) ||
+        normalizedId.includes(nutritionNormalizedSearchQuery) ||
+        (barcode && barcode.includes(rawQuery))
+      );
+    });
+
+    return filtered
+      .sort((left, right) => {
+        const leftFav = nutritionFavoriteFoodIds.has(left.id) ? 1 : 0;
+        const rightFav = nutritionFavoriteFoodIds.has(right.id) ? 1 : 0;
+        if (leftFav !== rightFav) {
+          return rightFav - leftFav;
+        }
+
+        return left.nombre.localeCompare(right.nombre);
+      })
+      .slice(0, nutritionNormalizedSearchQuery ? 36 : 12);
+  }, [nutritionCatalogFoods, nutritionFavoriteFoodIds, nutritionFoodSearchQuery, nutritionNormalizedSearchQuery]);
+
+  const nutritionCombinedSearchResults = useMemo(() => {
+    const map = new Map<string, NutritionSearchFoodResult>();
+
+    nutritionLocalSearchResults.forEach((item) => {
+      map.set(item.id, item);
+    });
+
+    nutritionRemoteSearchResults.forEach((item, index) => {
+      const key = String(item.id || "").trim() || `remote-item-${index + 1}`;
+      if (map.has(key)) {
+        return;
+      }
+
+      map.set(key, item);
+    });
+
+    return Array.from(map.values()).slice(0, 36);
+  }, [nutritionLocalSearchResults, nutritionRemoteSearchResults]);
+
   const nutritionSelectedDayCustomTotals = useMemo(() => {
     const totals = {
       calorias: 0,
