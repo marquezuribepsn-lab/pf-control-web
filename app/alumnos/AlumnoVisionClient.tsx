@@ -2324,6 +2324,10 @@ export default function AlumnoVisionClient({
       }
     | null
   >(null);
+  const [nutritionLiveCaptureMode, setNutritionLiveCaptureMode] = useState<NutritionCaptureMode>("none");
+  const [nutritionLiveCaptureStatus, setNutritionLiveCaptureStatus] = useState("");
+  const [nutritionLiveCaptureReady, setNutritionLiveCaptureReady] = useState(false);
+  const [nutritionCalIaProcessing, setNutritionCalIaProcessing] = useState(false);
   const [nutritionCustomFoodDraft, setNutritionCustomFoodDraft] = useState<{
     nombre: string;
     porcion: string;
@@ -2382,6 +2386,10 @@ export default function AlumnoVisionClient({
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
   const nutritionBarcodeCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const nutritionCalIaCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const nutritionLiveVideoRef = useRef<HTMLVideoElement | null>(null);
+  const nutritionLiveStreamRef = useRef<MediaStream | null>(null);
+  const nutritionBarcodeScanRafRef = useRef<number | null>(null);
+  const nutritionBarcodeLastDetectedRef = useRef("");
   const storageRefreshRafRef = useRef<number | null>(null);
   const storageRefreshIdleRef = useRef<number | null>(null);
   const lastStorageRefreshTsRef = useRef<number>(0);
