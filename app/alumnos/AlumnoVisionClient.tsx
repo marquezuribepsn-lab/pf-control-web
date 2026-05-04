@@ -1327,6 +1327,28 @@ function normalizeNutritionFoodRows(rawRows: unknown[]): NutritionFoodLite[] {
     .filter((row) => Boolean(row.id));
 }
 
+function normalizeNutritionFavoriteRows(rawRows: unknown[]): NutritionFoodFavoriteLite[] {
+  return rawRows
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const candidate = row as Record<string, unknown>;
+      const id = String(candidate.id || "").trim() || `fav-food-${index + 1}`;
+
+      return {
+        id,
+        nombre: String(candidate.nombre || "").trim() || "Alimento favorito",
+        kcalPer100g: Math.max(0, roundToOneDecimal(toSafeNumeric(candidate.kcalPer100g) || 0)),
+        proteinPer100g: Math.max(0, roundToOneDecimal(toSafeNumeric(candidate.proteinPer100g) || 0)),
+        carbsPer100g: Math.max(0, roundToOneDecimal(toSafeNumeric(candidate.carbsPer100g) || 0)),
+        fatPer100g: Math.max(0, roundToOneDecimal(toSafeNumeric(candidate.fatPer100g) || 0)),
+        imageUrl: String(candidate.imageUrl || "").trim() || undefined,
+        barcode: String(candidate.barcode || "").trim() || undefined,
+        updatedAt: String(candidate.updatedAt || "").trim() || undefined,
+      };
+    })
+    .filter((row) => Boolean(row.id) && Boolean(row.nombre));
+}
+
 function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[] {
   return rawRows
     .filter((row) => row && typeof row === "object")
@@ -1362,11 +1384,22 @@ function normalizeNutritionDailyLogs(rawRows: unknown[]): NutritionDailyLogLite[
           return {
             id,
             nombre,
+            foodId: String(foodCandidate.foodId || "").trim() || undefined,
+            mealId: String(foodCandidate.mealId || "").trim() || undefined,
+            gramos: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.gramos) || 0)) || undefined,
             porcion: String(foodCandidate.porcion || "").trim() || undefined,
             calorias: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.calorias) || 0)),
             proteinas: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.proteinas) || 0)),
             carbohidratos: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.carbohidratos) || 0)),
             grasas: Math.max(0, roundToOneDecimal(toSafeNumeric(foodCandidate.grasas) || 0)),
+            barcode: String(foodCandidate.barcode || "").trim() || undefined,
+            source:
+              String(foodCandidate.source || "").trim() === "search" ||
+              String(foodCandidate.source || "").trim() === "barcode" ||
+              String(foodCandidate.source || "").trim() === "camera"
+                ? (String(foodCandidate.source || "").trim() as "search" | "barcode" | "camera")
+                : "manual",
+            imageUrl: String(foodCandidate.imageUrl || "").trim() || undefined,
             createdAt: String(foodCandidate.createdAt || "").trim() || undefined,
           };
         })
