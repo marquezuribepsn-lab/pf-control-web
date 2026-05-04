@@ -1,7 +1,7 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { markManualSaveIntent, useSharedState } from "../../../components/useSharedState";
@@ -128,6 +128,7 @@ const CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const AI_TEMPLATES_KEY = "pf-control-nutricion-ia-templates-v1";
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
+const NUTRITION_AUTOSYNC_DEBOUNCE_MS = 900;
 
 const DEFAULT_MEALS: PlanMeal[] = [
   { id: "meal-desayuno", nombre: "Desayuno", items: [] },
@@ -350,6 +351,55 @@ export default function NutritionPlanner() {
   const [aiTemplateName, setAiTemplateName] = useState<string>("");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [clientSearch, setClientSearch] = useState("");
+  const nutritionAutoSyncTimerRef = useRef<number | null>(null);
+  const nutritionAutoSyncPendingKeysRef = useRef<Set<string>>(new Set());
+
+  const flushQueuedNutritionSync = useCallback(() => {
+    const keys = Array.from(nutritionAutoSyncPendingKeysRef.current);
+    if (keys.length === 0) {
+      return;
+    }
+
+    nutritionAutoSyncPendingKeysRef.current.clear();
+    keys.forEach((key) => {
+      markManualSaveIntent(key);
+    });
+  }, []);
+
+  const queueNutritionAutoSync = useCallback(
+    (...keys: string[]) => {
+      if (keys.length === 0) {
+        return;
+      }
+
+      keys.forEach((key) => {
+        if (key) {
+          nutritionAutoSyncPendingKeysRef.current.add(key);
+        }
+      });
+
+      if (nutritionAutoSyncTimerRef.current !== null) {
+        window.clearTimeout(nutritionAutoSyncTimerRef.current);
+      }
+
+      nutritionAutoSyncTimerRef.current = window.setTimeout(() => {
+        nutritionAutoSyncTimerRef.current = null;
+        flushQueuedNutritionSync();
+      }, NUTRITION_AUTOSYNC_DEBOUNCE_MS);
+    },
+    [flushQueuedNutritionSync]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (nutritionAutoSyncTimerRef.current !== null) {
+        window.clearTimeout(nutritionAutoSyncTimerRef.current);
+        nutritionAutoSyncTimerRef.current = null;
+      }
+
+      flushQueuedNutritionSync();
+    };
+  }, [flushQueuedNutritionSync]);
 
   const allFoods = useMemo(() => {
     return [...argentineFoodsBase, ...customFoods];
@@ -417,6 +467,75 @@ export default function NutritionPlanner() {
 
     return map;
   }, [clientesMeta]);
+
+  const alumnoCanonicalByKey = useMemo(() => {
+    const map = new Map<string, { nombre: string; email?: string }>();
+
+    (alumnos || []).forEach((alumno) => {
+      const nombre = String(alumno?.nombre || "").trim();
+      if (!nombre) {
+        return;
+      }
+
+      const normalizedName = normalizePersonKey(nombre);
+      if (!normalizedName) {
+        return;
+      }
+
+      const email = alumnoEmailByName.get(normalizedName);
+      map.set(normalizedName, {
+        nombre,
+        email: email || undefined,
+      });
+    });
+
+    return map;
+  }, [alumnoEmailByName, alumnos]);
+
+  useEffect(() => {
+    if (assignments.length === 0 || alumnoCanonicalByKey.size === 0) {
+      return;
+    }
+
+    let didNormalize = false;
+
+    setAssignments((prev) => {
+      const next = prev.map((assignment) => {
+        const normalizedName = normalizePersonKey(assignment.alumnoNombre);
+        if (!normalizedName) {
+          return assignment;
+        }
+
+        const canonical = alumnoCanonicalByKey.get(normalizedName);
+        if (!canonical) {
+          return assignment;
+        }
+
+        const nextName = canonical.nombre || assignment.alumnoNombre;
+        const nextEmail = String(canonical.email || assignment.alumnoEmail || "")
+          .trim()
+          .toLowerCase();
+        const currentEmail = String(assignment.alumnoEmail || "").trim().toLowerCase();
+
+        if (nextName === assignment.alumnoNombre && nextEmail === currentEmail) {
+          return assignment;
+        }
+
+        didNormalize = true;
+        return {
+          ...assignment,
+          alumnoNombre: nextName,
+          alumnoEmail: nextEmail || undefined,
+        };
+      });
+
+      return didNormalize ? next : prev;
+    });
+
+    if (didNormalize) {
+      queueNutritionAutoSync(ASSIGNMENTS_KEY);
+    }
+  }, [alumnoCanonicalByKey, assignments.length, queueNutritionAutoSync]);
 
   const filteredAssignedClientRows = useMemo(() => {
     return filterAssignedClientRows(assignedClientRows, clientSearch);
@@ -597,7 +716,7 @@ export default function NutritionPlanner() {
       nombre: `${plan.nombre} · IA`,
     }));
 
-    setAiGenerationMessage("Plan generado con IA. Revisa y ajusta detalles antes de guardar.");
+    setAiGenerationMessage("Plan generado con IA. Revisa y ajusta detalles antes de continuar.");
   };
 
   const saveCurrentAIBriefAsTemplate = () => {
@@ -611,9 +730,10 @@ export default function NutritionPlanner() {
     };
 
     setAiTemplates((prev) => [template, ...prev]);
+    queueNutritionAutoSync(AI_TEMPLATES_KEY);
     setAiTemplateName("");
     setSelectedTemplateId(template.id);
-    setAiGenerationMessage("Plantilla IA creada. Se guarda junto con Guardar cambios.");
+    setAiGenerationMessage("Plantilla IA creada. Se sincroniza automaticamente.");
   };
 
   const applySelectedTemplate = () => {
@@ -626,8 +746,9 @@ export default function NutritionPlanner() {
   const deleteSelectedTemplate = () => {
     if (!selectedTemplateId) return;
     setAiTemplates((prev) => prev.filter((item) => item.id !== selectedTemplateId));
+    queueNutritionAutoSync(AI_TEMPLATES_KEY);
     setSelectedTemplateId("");
-    setAiGenerationMessage("Plantilla eliminada. Se confirma al guardar cambios.");
+    setAiGenerationMessage("Plantilla eliminada. Se sincroniza automaticamente.");
   };
 
   const exportCurrentPlanPdf = (mode: "paciente" | "profesional") => {
@@ -840,11 +961,13 @@ export default function NutritionPlanner() {
     setPlans((prev) =>
       prev.map((plan) => (plan.id === planId ? { ...updater(plan), updatedAt: new Date().toISOString() } : plan))
     );
+    queueNutritionAutoSync(PLANS_KEY);
   };
 
   const addPlan = () => {
     const newPlan = createDefaultPlan(plans.length + 1);
     setPlans((prev) => [newPlan, ...prev]);
+    queueNutritionAutoSync(PLANS_KEY);
     setSelectedPlanId(newPlan.id);
   };
 
@@ -854,6 +977,7 @@ export default function NutritionPlanner() {
     setPlans((prev) => prev.filter((plan) => plan.id !== planId));
 
     setAssignments((prev) => prev.filter((assignment) => assignment.planId !== planId));
+    queueNutritionAutoSync(PLANS_KEY, ASSIGNMENTS_KEY);
 
     if (selectedPlanId === planId) {
       const next = plans.find((plan) => plan.id !== planId);
@@ -956,6 +1080,7 @@ export default function NutritionPlanner() {
     };
 
     setCustomFoods((prev) => [customFood, ...prev]);
+    queueNutritionAutoSync(CUSTOM_FOODS_KEY);
 
     setNewFoodName("");
     setNewFoodGroup("Personalizado");
@@ -1021,6 +1146,7 @@ export default function NutritionPlanner() {
     }
 
     setCustomFoods((prev) => [...imported, ...prev]);
+    queueNutritionAutoSync(CUSTOM_FOODS_KEY);
     setBulkImportMessage(`Se importaron ${imported.length} alimentos.`);
     setBulkFoodsInput("");
   };
@@ -1079,11 +1205,13 @@ export default function NutritionPlanner() {
     if (!alumnoNombre || !planId) return;
 
     const normalizedAlumno = normalizePersonKey(alumnoNombre);
-    const alumnoEmail = alumnoEmailByName.get(normalizedAlumno);
+    const canonicalAlumno = alumnoCanonicalByKey.get(normalizedAlumno);
+    const resolvedAlumnoNombre = canonicalAlumno?.nombre || alumnoNombre;
+    const alumnoEmail = canonicalAlumno?.email || alumnoEmailByName.get(normalizedAlumno);
 
     setAssignments((prev) => {
       const withoutAlumno = prev.filter((assignment) => {
-        const matchesName = namesLikelyMatch(assignment.alumnoNombre, alumnoNombre);
+        const matchesName = namesLikelyMatch(assignment.alumnoNombre, resolvedAlumnoNombre);
         const assignmentEmail = String(assignment.alumnoEmail || "").trim().toLowerCase();
         const matchesEmail = Boolean(alumnoEmail && assignmentEmail && assignmentEmail === alumnoEmail);
         return !(matchesName || matchesEmail);
@@ -1092,7 +1220,7 @@ export default function NutritionPlanner() {
       return [
         ...withoutAlumno,
         {
-          alumnoNombre,
+          alumnoNombre: resolvedAlumnoNombre,
           alumnoEmail,
           planId,
           assignedAt: new Date().toISOString(),
@@ -1100,13 +1228,21 @@ export default function NutritionPlanner() {
       ];
     });
 
-    updatePlan(planId, (plan) => ({ ...plan, alumnoAsignado: alumnoNombre }));
+    queueNutritionAutoSync(ASSIGNMENTS_KEY);
+
+    updatePlan(planId, (plan) => ({ ...plan, alumnoAsignado: resolvedAlumnoNombre }));
   };
 
   const selectedAlumnoForPlan =
     assignmentSelectionByPlanId[selectedPlan.id] ?? selectedPlan.alumnoAsignado ?? "";
 
   const saveNutritionChanges = () => {
+    if (nutritionAutoSyncTimerRef.current !== null) {
+      window.clearTimeout(nutritionAutoSyncTimerRef.current);
+      nutritionAutoSyncTimerRef.current = null;
+      nutritionAutoSyncPendingKeysRef.current.clear();
+    }
+
     markManualSaveIntent(PLANS_KEY);
     markManualSaveIntent(CUSTOM_FOODS_KEY);
     markManualSaveIntent(ASSIGNMENTS_KEY);
@@ -1486,7 +1622,7 @@ export default function NutritionPlanner() {
               Abrir referencia oficial de tabla argentina
             </a>
             <p className="mt-2 text-xs text-slate-300">
-              Los cambios en planes y comidas quedan en borrador hasta que presiones Guardar cambios.
+              Los cambios se sincronizan de forma automatica. Usa Guardar cambios para forzar un guardado inmediato.
             </p>
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
