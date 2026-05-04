@@ -5407,6 +5407,393 @@ video.pf-a3-routine-log-video-frame {
   color: rgba(167, 243, 208, 0.96);
 }
 
+.pf-a4-nutrition-diary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.pf-a4-nutrition-diary-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.56rem;
+}
+
+.pf-a4-nutrition-diary-title {
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-diary-link {
+  border-radius: 999px;
+  border: 1px solid rgba(126, 171, 205, 0.4);
+  background: rgba(11, 21, 32, 0.82);
+  color: rgba(208, 232, 252, 0.92);
+  min-height: 30px;
+  padding: 0.22rem 0.62rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pf-a4-nutrition-summary-card {
+  border-radius: 0.96rem;
+  border: 1px solid rgba(141, 183, 218, 0.35);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(94, 234, 212, 0.16), transparent 64%),
+    linear-gradient(168deg, rgba(10, 21, 32, 0.9), rgba(8, 17, 27, 0.92));
+  padding: 0.68rem 0.74rem;
+  display: grid;
+  gap: 0.62rem;
+}
+
+.pf-a4-nutrition-summary-metrics {
+  display: grid;
+  gap: 0.44rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pf-a4-nutrition-summary-metric {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(135, 174, 208, 0.3);
+  background: rgba(10, 18, 28, 0.72);
+  padding: 0.42rem 0.48rem;
+}
+
+.pf-a4-nutrition-summary-metric.is-highlight {
+  border-color: rgba(16, 185, 129, 0.52);
+  background:
+    radial-gradient(120% 130% at 100% -20%, rgba(16, 185, 129, 0.18), transparent 62%),
+    rgba(10, 25, 21, 0.74);
+}
+
+.pf-a4-nutrition-summary-metric-value {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #f8fcff;
+}
+
+.pf-a4-nutrition-summary-metric-label {
+  margin-top: 0.2rem;
+  font-size: 0.59rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(188, 215, 240, 0.86);
+}
+
+.pf-a4-nutrition-summary-macros {
+  display: grid;
+  gap: 0.44rem;
+}
+
+.pf-a4-nutrition-meal-list {
+  display: grid;
+  gap: 0.52rem;
+}
+
+.pf-a4-nutrition-meal-row {
+  border-radius: 0.86rem;
+  border: 1px solid rgba(130, 168, 201, 0.33);
+  background: linear-gradient(165deg, rgba(14, 24, 35, 0.88), rgba(9, 18, 27, 0.9));
+  padding: 0.5rem 0.58rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.52rem;
+  align-items: center;
+}
+
+.pf-a4-nutrition-meal-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 0.66rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 1px solid rgba(145, 184, 218, 0.34);
+  background: rgba(12, 22, 33, 0.78);
+}
+
+.pf-a4-nutrition-meal-name {
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-meal-kcal {
+  margin-top: 0.08rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(181, 211, 236, 0.9);
+}
+
+.pf-a4-nutrition-meal-preview {
+  margin-top: 0.08rem;
+  font-size: 0.64rem;
+  color: rgba(171, 199, 225, 0.82);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-a4-nutrition-meal-plus {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 0.68rem;
+  border: 1px solid rgba(84, 181, 243, 0.52);
+  background: linear-gradient(160deg, rgba(10, 75, 117, 0.52), rgba(9, 39, 66, 0.82));
+  color: rgba(227, 245, 255, 0.98);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-a4-nutrition-composer {
+  border-radius: 0.96rem;
+  border: 1px solid rgba(121, 168, 205, 0.38);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(59, 130, 246, 0.16), transparent 63%),
+    linear-gradient(168deg, rgba(10, 21, 32, 0.93), rgba(8, 17, 26, 0.94));
+  padding: 0.66rem 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pf-a4-nutrition-composer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.52rem;
+}
+
+.pf-a4-nutrition-composer-kicker {
+  font-size: 0.59rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(183, 211, 237, 0.86);
+}
+
+.pf-a4-nutrition-composer-title {
+  margin-top: 0.18rem;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-composer-grid {
+  display: grid;
+  gap: 0.44rem;
+  grid-template-columns: minmax(0, 1fr) 122px;
+}
+
+.pf-a4-nutrition-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.pf-a4-nutrition-cal-ia-card {
+  border-radius: 0.82rem;
+  border: 1px solid rgba(136, 177, 212, 0.34);
+  background: rgba(10, 19, 29, 0.76);
+  padding: 0.46rem;
+  display: grid;
+  gap: 0.52rem;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+}
+
+.pf-a4-nutrition-cal-ia-preview {
+  width: 86px;
+  height: 86px;
+  border-radius: 0.66rem;
+  overflow: hidden;
+  border: 1px solid rgba(144, 183, 216, 0.34);
+  background: rgba(8, 14, 22, 0.84);
+}
+
+.pf-a4-nutrition-cal-ia-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-a4-nutrition-cal-ia-title {
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #f6fbff;
+}
+
+.pf-a4-nutrition-cal-ia-meta {
+  margin-top: 0.12rem;
+  font-size: 0.64rem;
+  color: rgba(177, 205, 230, 0.88);
+}
+
+.pf-a4-nutrition-favorites-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.34rem;
+}
+
+.pf-a4-nutrition-favorite-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.38);
+  background: rgba(67, 34, 10, 0.48);
+  color: rgba(254, 240, 196, 0.96);
+  min-height: 28px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.pf-a4-nutrition-search-results {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.pf-a4-nutrition-search-empty {
+  border-radius: 0.7rem;
+  border: 1px dashed rgba(137, 178, 212, 0.34);
+  background: rgba(10, 19, 29, 0.62);
+  padding: 0.46rem;
+  font-size: 0.66rem;
+  color: rgba(176, 203, 228, 0.88);
+}
+
+.pf-a4-nutrition-search-row {
+  border-radius: 0.74rem;
+  border: 1px solid rgba(132, 172, 206, 0.33);
+  background: rgba(10, 18, 28, 0.78);
+  padding: 0.42rem;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 0.44rem;
+  align-items: center;
+}
+
+.pf-a4-nutrition-search-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 0.62rem;
+  overflow: hidden;
+  border: 1px solid rgba(139, 178, 212, 0.34);
+  background: rgba(8, 14, 22, 0.84);
+}
+
+.pf-a4-nutrition-search-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-a4-nutrition-search-thumb-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(173, 201, 226, 0.76);
+}
+
+.pf-a4-nutrition-search-name {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-search-meta {
+  margin-top: 0.1rem;
+  font-size: 0.63rem;
+  color: rgba(180, 207, 232, 0.84);
+}
+
+.pf-a4-nutrition-search-source {
+  margin-top: 0.08rem;
+  font-size: 0.58rem;
+  color: rgba(139, 228, 252, 0.9);
+}
+
+.pf-a4-nutrition-search-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.26rem;
+}
+
+.pf-a4-nutrition-favorite-toggle {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 0.56rem;
+  border: 1px solid rgba(156, 163, 175, 0.45);
+  background: rgba(22, 25, 31, 0.82);
+  color: rgba(212, 219, 228, 0.84);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-a4-nutrition-favorite-toggle.is-active {
+  border-color: rgba(250, 204, 21, 0.65);
+  background: rgba(91, 48, 12, 0.72);
+  color: rgba(254, 240, 196, 1);
+}
+
+.pf-a4-nutrition-search-add {
+  border-radius: 0.56rem;
+  border: 1px solid rgba(84, 184, 246, 0.52);
+  background: linear-gradient(155deg, rgba(12, 80, 127, 0.56), rgba(10, 46, 76, 0.82));
+  color: rgba(221, 244, 255, 0.98);
+  min-height: 28px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.pf-a4-nutrition-meal-entry-list {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.pf-a4-nutrition-meal-entry-row {
+  border-radius: 0.72rem;
+  border: 1px solid rgba(127, 162, 194, 0.34);
+  background: rgba(10, 18, 28, 0.74);
+  padding: 0.4rem 0.46rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.44rem;
+}
+
+.pf-a4-nutrition-meal-entry-name {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #f5fbff;
+}
+
+.pf-a4-nutrition-meal-entry-meta {
+  margin-top: 0.08rem;
+  font-size: 0.62rem;
+  color: rgba(179, 207, 231, 0.82);
+}
+
 .pf-a3-nutrition-kcal-input input:focus,
 .pf-a3-nutrition-tracker-date-input input:focus,
 .pf-a3-nutrition-student-food-field input:focus {
