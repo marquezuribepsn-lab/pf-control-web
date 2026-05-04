@@ -9443,18 +9443,54 @@ export default function AlumnoVisionClient({
                   </div>
 
                   <article className="pf-a4-nutrition-summary-card mt-2">
+                    <div className="pf-a4-nutrition-summary-gauge">
+                      <svg
+                        className="pf-a4-nutrition-summary-gauge-svg"
+                        viewBox="0 0 204 112"
+                        role="img"
+                        aria-label="Contador calorico diario"
+                      >
+                        <path
+                          className="pf-a4-nutrition-summary-gauge-track"
+                          d="M 18 96 A 84 84 0 0 1 186 96"
+                        />
+                        <path
+                          className={`pf-a4-nutrition-summary-gauge-progress ${
+                            nutritionDailyProgressRatio > 1.06
+                              ? "is-over"
+                              : nutritionDailyProgressRatio < 0.55
+                                ? "is-low"
+                                : "is-on-target"
+                          }`}
+                          d="M 18 96 A 84 84 0 0 1 186 96"
+                          style={{
+                            strokeDasharray: `${NUTRITION_KCAL_SEMI_GAUGE_ARC_LENGTH} ${NUTRITION_KCAL_SEMI_GAUGE_ARC_LENGTH}`,
+                            strokeDashoffset: `${nutritionDailySemiGaugeDashOffset}`,
+                          }}
+                        />
+                      </svg>
+
+                      <div className="pf-a4-nutrition-summary-gauge-center">
+                        <p className="pf-a4-nutrition-summary-gauge-kcal">{nutritionDailyConsumedKcal} kcal</p>
+                        <p className="pf-a4-nutrition-summary-gauge-goal">de {nutritionDailyGoalKcal} kcal</p>
+                        <p className="pf-a4-nutrition-summary-gauge-pct">{nutritionDailyProgressPct}%</p>
+                      </div>
+                    </div>
+
                     <div className="pf-a4-nutrition-summary-metrics">
                       <div className="pf-a4-nutrition-summary-metric">
-                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionDailyConsumedKcal}</p>
-                        <p className="pf-a4-nutrition-summary-metric-label">Consumidas</p>
-                      </div>
-                      <div className="pf-a4-nutrition-summary-metric is-highlight">
                         <p className="pf-a4-nutrition-summary-metric-value">{nutritionDailyRemainingKcal}</p>
                         <p className="pf-a4-nutrition-summary-metric-label">Restantes</p>
                       </div>
-                      <div className="pf-a4-nutrition-summary-metric">
+                      <div className="pf-a4-nutrition-summary-metric is-highlight">
                         <p className="pf-a4-nutrition-summary-metric-value">{nutritionEstimatedBurnedKcal}</p>
                         <p className="pf-a4-nutrition-summary-metric-label">Quemadas</p>
+                      </div>
+                      <div className="pf-a4-nutrition-summary-metric">
+                        <p className="pf-a4-nutrition-summary-metric-value">
+                          {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
+                        </p>
+                        <p className="pf-a4-nutrition-summary-metric-label">Comidas</p>
                       </div>
                     </div>
 
