@@ -5445,6 +5445,201 @@ video.pf-a3-routine-log-video-frame {
   text-transform: uppercase;
 }
 
+.pf-a4-nutrition-plan-actions-card {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(88, 164, 117, 0.34);
+  background:
+    radial-gradient(120% 120% at 100% -10%, rgba(16, 185, 129, 0.17), transparent 62%),
+    linear-gradient(168deg, rgba(10, 21, 31, 0.9), rgba(7, 16, 24, 0.92));
+  padding: 0.72rem;
+}
+
+.pf-a4-nutrition-plan-actions-kicker {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(182, 221, 196, 0.86);
+}
+
+.pf-a4-nutrition-plan-actions-title {
+  margin-top: 0.18rem;
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #f4fff8;
+}
+
+.pf-a4-nutrition-plan-actions-copy {
+  margin-top: 0.16rem;
+  font-size: 0.67rem;
+  color: rgba(189, 224, 202, 0.84);
+}
+
+.pf-a4-nutrition-plan-actions-grid {
+  display: grid;
+  gap: 0.52rem;
+  grid-template-columns: minmax(0, 196px) minmax(0, 1fr);
+}
+
+.pf-a4-nutrition-plan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.26rem;
+}
+
+.pf-a4-nutrition-plan-field span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(183, 214, 193, 0.9);
+}
+
+.pf-a4-nutrition-plan-field select,
+.pf-a4-nutrition-plan-field textarea {
+  border-radius: 0.62rem;
+  border: 1px solid rgba(116, 182, 141, 0.42);
+  background: linear-gradient(170deg, rgba(9, 20, 28, 0.94), rgba(7, 15, 23, 0.95));
+  color: #eafcf2;
+  padding: 0.38rem 0.58rem;
+  font-size: 0.76rem;
+}
+
+.pf-a4-nutrition-plan-field textarea {
+  min-height: 82px;
+  resize: vertical;
+}
+
+.pf-a4-nutrition-plan-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.52rem;
+}
+
+.pf-a4-nutrition-plan-action-btn {
+  border-radius: 0.66rem;
+  border: 1px solid rgba(82, 196, 141, 0.56);
+  background: linear-gradient(160deg, rgba(10, 87, 60, 0.72), rgba(7, 49, 38, 0.88));
+  color: rgba(229, 252, 239, 0.98);
+  min-height: 34px;
+  min-width: 188px;
+  padding: 0.32rem 0.68rem;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+  transform: none;
+}
+
+.pf-a4-nutrition-plan-action-btn:hover {
+  border-color: rgba(110, 238, 179, 0.76);
+  color: #f5fff9;
+  transform: none;
+}
+
+.pf-a4-nutrition-plan-action-btn:active {
+  transform: none;
+}
+
+.pf-a4-nutrition-plan-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.pf-a4-nutrition-plan-action-btn-inline {
+  min-height: 30px;
+  min-width: 164px;
+  font-size: 0.62rem;
+  padding: 0.24rem 0.56rem;
+}
+
+.pf-a4-nutrition-plan-action-counter {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(186, 220, 200, 0.85);
+}
+
+.pf-a4-nutrition-plan-actions-feedback {
+  margin-top: 0.46rem;
+  min-height: 38px;
+  display: grid;
+  align-content: start;
+  gap: 0.16rem;
+}
+
+.pf-a4-nutrition-plan-actions-status {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(178, 246, 208, 0.95);
+}
+
+.pf-a4-nutrition-plan-actions-meta {
+  font-size: 0.6rem;
+  color: rgba(180, 218, 194, 0.86);
+}
+
+.pf-a4-nutrition-replacement-badge {
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.48);
+  background: rgba(11, 43, 62, 0.62);
+  color: rgba(208, 241, 255, 0.92);
+  padding: 0.14rem 0.5rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pf-a4-nutrition-replacement-card {
+  border-radius: 0.74rem;
+  border: 1px solid rgba(118, 176, 214, 0.34);
+  background: rgba(9, 18, 28, 0.8);
+  padding: 0.44rem 0.5rem;
+}
+
+.pf-a4-nutrition-replacement-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #eef8ff;
+}
+
+.pf-a4-nutrition-replacement-meta {
+  margin-top: 0.1rem;
+  font-size: 0.61rem;
+  color: rgba(177, 208, 233, 0.88);
+}
+
+.pf-a4-nutrition-replacement-macros {
+  margin-top: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.24rem;
+}
+
+.pf-a4-nutrition-replacement-macros span {
+  border-radius: 999px;
+  border: 1px solid rgba(127, 164, 196, 0.38);
+  background: rgba(10, 24, 36, 0.72);
+  padding: 0.14rem 0.4rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: rgba(207, 233, 251, 0.9);
+}
+
+.pf-a4-nutrition-replacement-source {
+  margin-top: 0.2rem;
+  font-size: 0.58rem;
+  color: rgba(171, 200, 224, 0.84);
+}
+
 .pf-a4-nutrition-summary-card {
   border-radius: 0.96rem;
   border: 1px solid rgba(141, 183, 218, 0.35);
@@ -6004,7 +6199,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-kcal-input input:focus,
 .pf-a3-nutrition-tracker-date-input input:focus,
-.pf-a3-nutrition-student-food-field input:focus {
+.pf-a3-nutrition-student-food-field input:focus,
+.pf-a4-nutrition-plan-field select:focus,
+.pf-a4-nutrition-plan-field textarea:focus {
   outline: none;
   border-color: rgba(56, 189, 248, 0.82);
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
@@ -6941,6 +7138,28 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a4-nutrition-diary-link {
     width: 100%;
+  }
+
+  .pf-a4-nutrition-plan-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-a4-nutrition-plan-actions-row {
+    align-items: stretch;
+  }
+
+  .pf-a4-nutrition-plan-action-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pf-a4-nutrition-plan-action-btn-inline {
+    width: 100%;
+  }
+
+  .pf-a4-nutrition-plan-action-counter {
+    width: 100%;
+    text-align: right;
   }
 
   .pf-a4-nutrition-summary-metrics {

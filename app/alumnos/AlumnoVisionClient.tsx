@@ -188,6 +188,37 @@ type NutritionDailyLogLite = {
   updatedAt?: string;
 };
 
+type NutritionVariationRequestLite = {
+  id: string;
+  alumnoNombre?: string;
+  alumnoEmail?: string;
+  planId?: string;
+  mealId?: string;
+  mealName?: string;
+  message?: string;
+  createdAt?: string;
+};
+
+type NutritionReplacementSuggestionLite = {
+  key: string;
+  mealId: string;
+  mealName: string;
+  sourceItemId: string;
+  sourceItemLabel: string;
+  sourceCalories: number;
+  sourceProtein: number;
+  sourceCarbs: number;
+  sourceFat: number;
+  replacementFoodId: string;
+  replacementLabel: string;
+  replacementCalories: number;
+  replacementProtein: number;
+  replacementCarbs: number;
+  replacementFat: number;
+  replacementGrams: number;
+  generatedAt: string;
+};
+
 type NutritionCaptureMode = "none" | "barcode" | "cal-ia";
 
 type NutritionBarcodeDetection = {
@@ -586,6 +617,7 @@ const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const NUTRITION_FAVORITES_KEY = "pf-control-nutricion-favoritos-v1";
 const NUTRITION_DAILY_LOGS_KEY = "pf-control-nutricion-diario-v1";
+const NUTRITION_VARIATION_REQUESTS_KEY = "pf-control-nutricion-variaciones-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const ROUTINE_CHANGE_REQUESTS_KEY = "pf-control-routine-change-requests-v1";
@@ -1383,6 +1415,34 @@ function normalizeNutritionAssignmentRows(rawRows: unknown[]): NutritionAssignme
       };
     })
     .filter((row) => Boolean(row.alumnoNombre || row.alumnoEmail) && Boolean(row.planId));
+}
+
+function normalizeNutritionVariationRequestRows(rawValue: unknown): NutritionVariationRequestLite[] {
+  if (!Array.isArray(rawValue)) {
+    return [];
+  }
+
+  return rawValue
+    .filter((row) => row && typeof row === "object")
+    .map((row, index) => {
+      const item = row as Record<string, unknown>;
+
+      return {
+        id: String(item.id || `nutrition-variation-${index + 1}`).trim() || `nutrition-variation-${index + 1}`,
+        alumnoNombre: String(item.alumnoNombre || item.alumno || "").trim() || undefined,
+        alumnoEmail:
+          String(item.alumnoEmail || item.email || "")
+            .trim()
+            .toLowerCase() || undefined,
+        planId: String(item.planId || "").trim() || undefined,
+        mealId: String(item.mealId || "").trim() || undefined,
+        mealName: String(item.mealName || item.comida || "").trim() || undefined,
+        message: String(item.message || item.mensaje || "").trim() || undefined,
+        createdAt: String(item.createdAt || "").trim() || new Date().toISOString(),
+      };
+    })
+    .filter((item) => Boolean(item.message))
+    .sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
 }
 
 function normalizeNutritionFavoriteRows(rawRows: unknown[]): NutritionFoodFavoriteLite[] {
@@ -2358,6 +2418,12 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
+  const [nutritionVariationMealId, setNutritionVariationMealId] = useState<string>("");
+  const [nutritionVariationDraft, setNutritionVariationDraft] = useState<string>("");
+  const [nutritionVariationStatus, setNutritionVariationStatus] = useState<string>("");
+  const [nutritionReplacementByItemKey, setNutritionReplacementByItemKey] = useState<
+    Record<string, NutritionReplacementSuggestionLite>
+  >({});
   const [nutritionPanelView] = useState<"plan" | "registro">("plan");
   const [nutritionShowTrackerDetails, setNutritionShowTrackerDetails] = useState(false);
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
@@ -2557,6 +2623,13 @@ export default function AlumnoVisionClient({
     pollMs: isUltraMobile ? 15000 : 12000,
   });
 
+  const [nutritionVariationRequestsRaw, setNutritionVariationRequestsRaw, nutritionVariationRequestsSyncLoaded] =
+    useSharedState<unknown[]>([], {
+      key: NUTRITION_VARIATION_REQUESTS_KEY,
+      legacyLocalStorageKey: NUTRITION_VARIATION_REQUESTS_KEY,
+      pollMs: isUltraMobile ? 15000 : 12000,
+    });
+
   const shouldLoadNutritionData = !isUltraMobile || activeCategory === "nutricion";
   const shouldLoadWorkoutData =
     !isUltraMobile || activeCategory === "progreso" || activeCategory === "rutina" || activeCategory === "inicio";
@@ -2574,7 +2647,8 @@ export default function AlumnoVisionClient({
       !nutritionAssignmentsSyncLoaded &&
       !nutritionFavoritesSyncLoaded &&
       !nutritionCustomFoodsSyncLoaded &&
-      !nutritionDailyLogsSyncLoaded
+      !nutritionDailyLogsSyncLoaded &&
+      !nutritionVariationRequestsSyncLoaded
     ) {
       return;
     }
@@ -2597,6 +2671,8 @@ export default function AlumnoVisionClient({
     nutritionCustomFoodsSyncLoaded,
     nutritionDailyLogsRaw,
     nutritionDailyLogsSyncLoaded,
+    nutritionVariationRequestsRaw,
+    nutritionVariationRequestsSyncLoaded,
     weekPlanStoreRaw,
     weekPlanSyncLoaded,
     workoutLogsShared,
@@ -2979,6 +3055,23 @@ export default function AlumnoVisionClient({
     routineChangeRequestsRaw,
     shouldLoadWorkoutData,
   ]);
+
+  const nutritionVariationRequests = useMemo<NutritionVariationRequestLite[]>(() => {
+    if (!shouldLoadNutritionData) {
+      return [];
+    }
+
+    return normalizeNutritionVariationRequestRows(nutritionVariationRequestsRaw).filter((item) => {
+      return matchIdentityName(item.alumnoNombre) || matchIdentityEmail(item.alumnoEmail);
+    });
+  }, [
+    matchIdentityEmail,
+    matchIdentityName,
+    nutritionVariationRequestsRaw,
+    shouldLoadNutritionData,
+  ]);
+
+  const latestNutritionVariationRequest = nutritionVariationRequests[0] || null;
 
   const sessionFeedbackRecords = useMemo<SessionFeedbackRecordLite[]>(() => {
     if (!shouldLoadWorkoutData) {
@@ -3754,6 +3847,7 @@ export default function AlumnoVisionClient({
       trackKey(NUTRITION_FAVORITES_KEY);
       trackKey(NUTRITION_CUSTOM_FOODS_KEY);
       trackKey(NUTRITION_DAILY_LOGS_KEY);
+      trackKey(NUTRITION_VARIATION_REQUESTS_KEY);
     }
 
     if (shouldLoadAnthropometryData) {
@@ -3873,6 +3967,7 @@ export default function AlumnoVisionClient({
         return {
           id: String(item.id || `${mealId}-item-${itemIndex + 1}`).trim() || `${mealId}-item-${itemIndex + 1}`,
           label: String(item.nombre || food?.nombre || foodId || `Item ${itemIndex + 1}`).trim() || `Item ${itemIndex + 1}`,
+          foodId: foodId || undefined,
           grams,
           calories,
           protein,
@@ -4162,6 +4257,213 @@ export default function AlumnoVisionClient({
 
     return nutritionDiaryMealRows.find((row) => row.mealId === nutritionMealComposerMealId) || null;
   }, [nutritionDiaryMealRows, nutritionMealComposerMealId]);
+
+  useEffect(() => {
+    if (nutritionMealsDetailed.length === 0) {
+      setNutritionVariationMealId("");
+      return;
+    }
+
+    setNutritionVariationMealId((previous) => {
+      if (previous && nutritionMealsDetailed.some((meal) => meal.mealId === previous)) {
+        return previous;
+      }
+
+      return nutritionMealsDetailed[0]?.mealId || "";
+    });
+  }, [nutritionMealsDetailed]);
+
+  useEffect(() => {
+    setNutritionReplacementByItemKey({});
+  }, [nutritionPlan?.id, nutritionPlan?.updatedAt]);
+
+  const submitNutritionVariationRequest = useCallback(() => {
+    if (!nutritionPlan?.id) {
+      setNutritionVariationStatus("No hay un plan activo para enviar solicitud.");
+      return;
+    }
+
+    const cleanMessage = String(nutritionVariationDraft || "").trim();
+    if (cleanMessage.length < 8) {
+      setNutritionVariationStatus("Describe la variacion con al menos 8 caracteres.");
+      return;
+    }
+
+    const selectedMeal = nutritionMealsDetailed.find((meal) => meal.mealId === nutritionVariationMealId) || null;
+    const nowIso = new Date().toISOString();
+
+    const payload: NutritionVariationRequestLite = {
+      id: `nutrition-variation-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      alumnoNombre: profileName || undefined,
+      alumnoEmail: profileEmail || undefined,
+      planId: nutritionPlan.id,
+      mealId: selectedMeal?.mealId || undefined,
+      mealName: selectedMeal?.mealName || "Plan general",
+      message: cleanMessage.slice(0, 280),
+      createdAt: nowIso,
+    };
+
+    markManualSaveIntent(NUTRITION_VARIATION_REQUESTS_KEY);
+    setNutritionVariationRequestsRaw((previous) => [
+      payload,
+      ...normalizeNutritionVariationRequestRows(previous),
+    ]);
+
+    setNutritionVariationDraft("");
+    setNutritionVariationStatus("Solicitud enviada al profesor.");
+  }, [
+    nutritionPlan?.id,
+    nutritionVariationDraft,
+    nutritionMealsDetailed,
+    nutritionVariationMealId,
+    profileEmail,
+    profileName,
+    setNutritionVariationRequestsRaw,
+  ]);
+
+  const generateNutritionReplacementForPlanItem = useCallback(
+    (input: {
+      mealId: string;
+      mealName: string;
+      itemId: string;
+      label: string;
+      foodId?: string;
+      grams: number | null;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+    }) => {
+      const sourceCalories = Math.max(0, roundToOneDecimal(toNumber(input.calories) || 0));
+      if (!Number.isFinite(sourceCalories) || sourceCalories <= 0) {
+        setNutritionVariationStatus("No se pudo calcular reemplazo para este alimento.");
+        return;
+      }
+
+      const sourceProtein = Math.max(0, roundToOneDecimal(toNumber(input.protein) || 0));
+      const sourceCarbs = Math.max(0, roundToOneDecimal(toNumber(input.carbs) || 0));
+      const sourceFat = Math.max(0, roundToOneDecimal(toNumber(input.fat) || 0));
+      const sourceGrams = Math.max(1, roundToOneDecimal(toNumber(input.grams) || 100));
+      const sourceFoodId = String(input.foodId || "").trim();
+      const normalizedSourceLabel = normalizePersonKey(input.label);
+
+      const candidates = nutritionCatalogFoods
+        .filter((food) => {
+          const candidateFoodId = String(food.id || "").trim();
+          if (!candidateFoodId) {
+            return false;
+          }
+
+          if (sourceFoodId && candidateFoodId === sourceFoodId) {
+            return false;
+          }
+
+          const candidateKcalPer100g = Math.max(0, toNumber(food.kcalPer100g) || 0);
+          if (candidateKcalPer100g <= 0) {
+            return false;
+          }
+
+          const normalizedFoodName = normalizePersonKey(food.nombre);
+          if (!normalizedFoodName || !normalizedSourceLabel) {
+            return true;
+          }
+
+          if (
+            normalizedFoodName === normalizedSourceLabel ||
+            normalizedFoodName.includes(normalizedSourceLabel) ||
+            normalizedSourceLabel.includes(normalizedFoodName)
+          ) {
+            return false;
+          }
+
+          return true;
+        })
+        .map((food) => {
+          const kcalPer100g = Math.max(1, toNumber(food.kcalPer100g) || 1);
+          const replacementGrams = Math.max(10, roundToOneDecimal((sourceCalories * 100) / kcalPer100g));
+          const replacementCalories = roundToOneDecimal((kcalPer100g * replacementGrams) / 100);
+          const replacementProtein = roundToOneDecimal(
+            (Math.max(0, toNumber(food.proteinPer100g) || 0) * replacementGrams) / 100
+          );
+          const replacementCarbs = roundToOneDecimal(
+            (Math.max(0, toNumber(food.carbsPer100g) || 0) * replacementGrams) / 100
+          );
+          const replacementFat = roundToOneDecimal(
+            (Math.max(0, toNumber(food.fatPer100g) || 0) * replacementGrams) / 100
+          );
+          const calorieGap = Math.abs(replacementCalories - sourceCalories);
+          const macroGap =
+            Math.abs(replacementProtein - sourceProtein) +
+            Math.abs(replacementCarbs - sourceCarbs) +
+            Math.abs(replacementFat - sourceFat);
+          const gramsGapPenalty = Math.abs(replacementGrams - sourceGrams) * 0.04;
+          const rangePenalty =
+            replacementGrams > 450
+              ? (replacementGrams - 450) * 0.4
+              : replacementGrams < 20
+                ? (20 - replacementGrams) * 0.6
+                : 0;
+          const score = calorieGap * 2.4 + macroGap * 0.55 + gramsGapPenalty + rangePenalty;
+
+          return {
+            replacementFoodId: String(food.id || "").trim(),
+            replacementLabel: String(food.nombre || "").trim() || "Alimento alternativo",
+            replacementCalories,
+            replacementProtein,
+            replacementCarbs,
+            replacementFat,
+            replacementGrams,
+            score,
+            calorieGap,
+          };
+        })
+        .sort((left, right) => {
+          if (left.score !== right.score) {
+            return left.score - right.score;
+          }
+
+          if (left.calorieGap !== right.calorieGap) {
+            return left.calorieGap - right.calorieGap;
+          }
+
+          return left.replacementLabel.localeCompare(right.replacementLabel);
+        });
+
+      const best = candidates[0];
+      if (!best) {
+        setNutritionVariationStatus("No encontramos alternativas equivalentes ahora.");
+        return;
+      }
+
+      const key = `${input.mealId}::${input.itemId}`;
+
+      setNutritionReplacementByItemKey((previous) => ({
+        ...previous,
+        [key]: {
+          key,
+          mealId: input.mealId,
+          mealName: input.mealName,
+          sourceItemId: input.itemId,
+          sourceItemLabel: input.label,
+          sourceCalories,
+          sourceProtein,
+          sourceCarbs,
+          sourceFat,
+          replacementFoodId: best.replacementFoodId,
+          replacementLabel: best.replacementLabel,
+          replacementCalories: best.replacementCalories,
+          replacementProtein: best.replacementProtein,
+          replacementCarbs: best.replacementCarbs,
+          replacementFat: best.replacementFat,
+          replacementGrams: best.replacementGrams,
+          generatedAt: new Date().toISOString(),
+        },
+      }));
+
+      setNutritionVariationStatus(`Reemplazo equivalente generado para ${input.label}.`);
+    },
+    [nutritionCatalogFoods]
+  );
 
   const nutritionEstimatedBurnedKcal = useMemo(() => {
     const selectedDayLogs = workoutLogs.filter((row) => {
@@ -9479,6 +9781,68 @@ export default function AlumnoVisionClient({
                         ) : null}
                       </div>
                     ) : null}
+
+                    <div className="pf-a4-nutrition-plan-actions-card mt-4">
+                      <p className="pf-a4-nutrition-plan-actions-kicker">Variaciones del plan</p>
+                      <h3 className="pf-a4-nutrition-plan-actions-title">Solicitar cambio de comida</h3>
+                      <p className="pf-a4-nutrition-plan-actions-copy">
+                        Envia una solicitud al profesor y pide un ajuste puntual del plan asignado.
+                      </p>
+
+                      <div className="pf-a4-nutrition-plan-actions-grid mt-3">
+                        <label className="pf-a4-nutrition-plan-field">
+                          <span>Comida</span>
+                          <select
+                            value={nutritionVariationMealId}
+                            onChange={(event) => setNutritionVariationMealId(String(event.target.value || ""))}
+                          >
+                            <option value="">Plan general</option>
+                            {nutritionMealsDetailed.map((meal, index) => (
+                              <option key={`variation-meal-${meal.mealId}-${index}`} value={meal.mealId}>
+                                {meal.mealName || `Comida ${index + 1}`}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label className="pf-a4-nutrition-plan-field">
+                          <span>Que variacion necesitas</span>
+                          <textarea
+                            rows={3}
+                            maxLength={280}
+                            value={nutritionVariationDraft}
+                            onChange={(event) => setNutritionVariationDraft(event.target.value)}
+                            placeholder="Ej: necesito alternativa sin lactosa para la merienda."
+                          />
+                        </label>
+                      </div>
+
+                      <div className="pf-a4-nutrition-plan-actions-row mt-3">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={submitNutritionVariationRequest}
+                          className="pf-a4-nutrition-plan-action-btn"
+                          disabled={!nutritionPlan?.id}
+                        >
+                          Pedir variacion al profesor
+                        </ReliableActionButton>
+
+                        <span className="pf-a4-nutrition-plan-action-counter">
+                          {String(nutritionVariationDraft || "").trim().length}/280
+                        </span>
+                      </div>
+
+                      <div className="pf-a4-nutrition-plan-actions-feedback">
+                        <p className="pf-a4-nutrition-plan-actions-status">
+                          {nutritionVariationStatus || "Escribe el cambio y envia la solicitud."}
+                        </p>
+                        <p className="pf-a4-nutrition-plan-actions-meta">
+                          {latestNutritionVariationRequest
+                            ? `Ultima solicitud (${latestNutritionVariationRequest.mealName || "Plan general"}): ${formatDateTime(latestNutritionVariationRequest.createdAt)}`
+                            : "Sin solicitudes enviadas todavia."}
+                        </p>
+                      </div>
+                    </div>
                   </article>
 
                   <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
@@ -9539,6 +9903,8 @@ export default function AlumnoVisionClient({
                                     item.grams !== null && Number.isFinite(item.grams)
                                       ? `${formatCompactNumber(item.grams)} g`
                                       : null;
+                                  const replacementKey = `${meal.mealId}::${item.id || itemIndex}`;
+                                  const replacement = nutritionReplacementByItemKey[replacementKey] || null;
 
                                   return (
                                     <article
@@ -9572,6 +9938,52 @@ export default function AlumnoVisionClient({
                                           G {formatCompactNumber(item.fat)} g
                                         </span>
                                       </div>
+
+                                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() =>
+                                            generateNutritionReplacementForPlanItem({
+                                              mealId: meal.mealId,
+                                              mealName,
+                                              itemId: String(item.id || `${meal.mealId}-${itemIndex}`),
+                                              label: item.label,
+                                              foodId: item.foodId,
+                                              grams: item.grams,
+                                              calories: item.calories,
+                                              protein: item.protein,
+                                              carbs: item.carbs,
+                                              fat: item.fat,
+                                            })
+                                          }
+                                          className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-inline"
+                                        >
+                                          Reemplazo equivalente
+                                        </ReliableActionButton>
+
+                                        {replacement ? (
+                                          <span className="pf-a4-nutrition-replacement-badge">Sugerencia activa</span>
+                                        ) : null}
+                                      </div>
+
+                                      {replacement ? (
+                                        <div className="pf-a4-nutrition-replacement-card mt-2">
+                                          <p className="pf-a4-nutrition-replacement-title">
+                                            Alternativa: {replacement.replacementLabel}
+                                          </p>
+                                          <p className="pf-a4-nutrition-replacement-meta">
+                                            {formatCompactNumber(replacement.replacementGrams)} g · {formatCompactNumber(replacement.replacementCalories)} kcal
+                                          </p>
+                                          <div className="pf-a4-nutrition-replacement-macros">
+                                            <span>P {formatCompactNumber(replacement.replacementProtein)} g</span>
+                                            <span>C {formatCompactNumber(replacement.replacementCarbs)} g</span>
+                                            <span>G {formatCompactNumber(replacement.replacementFat)} g</span>
+                                          </div>
+                                          <p className="pf-a4-nutrition-replacement-source">
+                                            Original: {formatCompactNumber(replacement.sourceCalories)} kcal · {replacement.sourceItemLabel}
+                                          </p>
+                                        </div>
+                                      ) : null}
                                     </article>
                                   );
                                 })}
