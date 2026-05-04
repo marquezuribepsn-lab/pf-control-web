@@ -212,19 +212,109 @@ async function extractAdminPlanName(page) {
 
 async function extractAlumnoPlanName(page) {
   return page.evaluate(() => {
-    const mainHeading = document.querySelector("h2.mt-1.text-xl.font-black.text-white");
-    const headingText = mainHeading?.textContent?.trim() || "";
-    if (headingText) {
-      return headingText;
+    const labels = Array.from(document.querySelectorAll("p")).filter(
+      (node) => node.textContent?.trim().toLowerCase() === "plan pautado"
+    );
+
+    for (const label of labels) {
+      const article = label.closest("article") || label.parentElement;
+      const heading = article?.querySelector("h2");
+      const text = heading?.textContent?.trim() || "";
+      if (text) {
+        return text;
+      }
     }
 
     const fallback = Array.from(document.querySelectorAll("h2")).find((node) => {
       const text = node.textContent?.trim() || "";
-      return text.length > 0 && text.toLowerCase() !== "plan nutricional";
+      return text.length > 0 && text.toLowerCase() !== "nutrición del alumno";
     });
 
     return fallback?.textContent?.trim() || "";
   });
+}
+
+async function fetchSyncValue(key, cookieHeader) {
+  const response = await fetch(`${baseUrl}/api/sync/${encodeURIComponent(key)}`, {
+    headers: {
+      Cookie: cookieHeader,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = await response.json().catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return payload.value ?? null;
+}
+
+async function resolvePabloContextFromApi(adminCookieHeader) {
+  const [clientesMetaRaw, assignmentsRaw, plansRaw, alumnosRaw] = await Promise.all([
+    fetchSyncValue("pf-control-clientes-meta-v1", adminCookieHeader),
+    fetchSyncValue("pf-control-nutricion-asignaciones-v1", adminCookieHeader),
+    fetchSyncValue("pf-control-nutricion-planes-v1", adminCookieHeader),
+    fetchSyncValue("pf-control-alumnos", adminCookieHeader),
+  ]);
+
+  const clientesMeta =
+    clientesMetaRaw && typeof clientesMetaRaw === "object" && !Array.isArray(clientesMetaRaw)
+      ? clientesMetaRaw
+      : {};
+  const assignments = Array.isArray(assignmentsRaw) ? assignmentsRaw : [];
+  const plans = Array.isArray(plansRaw) ? plansRaw : [];
+  const alumnos = Array.isArray(alumnosRaw) ? alumnosRaw : [];
+
+  const metaEntry =
+    Object.entries(clientesMeta).find(([, value]) => {
+      const item = value || {};
+      return normalizeEmail(item.email) === alumnoEmail;
+    }) || null;
+
+  let clientId = metaEntry?.[0] || "";
+
+  if (!clientId) {
+    const alumnoMatch = alumnos.find((item) => {
+      const byEmail = normalizeEmail(item?.email) === alumnoEmail;
+      const byName = String(item?.nombre || "").trim().toLowerCase().includes("pablo");
+      return byEmail || byName;
+    });
+
+    if (alumnoMatch?.nombre) {
+      clientId = `alumno:${String(alumnoMatch.nombre).trim()}`;
+    }
+  }
+
+  const assignmentMatches = assignments
+    .filter((item) => {
+      const byEmail = normalizeEmail(item?.alumnoEmail) === alumnoEmail;
+      const byName = String(item?.alumnoNombre || "").trim().toLowerCase().includes("pablo");
+      return byEmail || byName;
+    })
+    .sort((a, b) => new Date(b?.assignedAt || 0).getTime() - new Date(a?.assignedAt || 0).getTime());
+
+  const assignment = assignmentMatches[0] || null;
+  const assignmentPlan = assignment
+    ? plans.find((plan) => String(plan?.id || "") === String(assignment.planId || "")) || null
+    : null;
+
+  return {
+    clientId,
+    assignment,
+    assignmentPlan,
+    debug: {
+      metaEntryCount: Object.keys(clientesMeta).length,
+      assignmentsCount: assignments.length,
+      plansCount: plans.length,
+      alumnosCount: alumnos.length,
+      assignmentMatchCount: assignmentMatches.length,
+    },
+  };
 }
 
 function extractClientIdFromHref(rawHref) {
@@ -392,7 +482,9 @@ async function main() {
     throw new Error(`Login admin fallo: status=${adminLogin.status} location=${adminLogin.location}`);
   }
 
-  let resolvedClientId = pabloContext.clientId;
+  const apiContext = await resolvePabloContextFromApi(adminLogin.cookieHeader);
+
+  let resolvedClientId = pabloContext.clientId || apiContext.clientId;
   let clientesLookup = null;
 
   if (!resolvedClientId) {
@@ -419,8 +511,14 @@ async function main() {
       };
   const alumnoView = await captureAlumnoPlanName(alumnoLogin.cookieHeader);
 
-  const assignmentPlanName = String(pabloContext.assignmentPlan?.nombre || pabloContext.assignmentPlan?.title || "").trim();
-  const assignmentPlanId = String(pabloContext.assignment?.planId || "").trim();
+  const assignmentPlanName = String(
+    apiContext.assignmentPlan?.nombre ||
+      apiContext.assignmentPlan?.title ||
+      pabloContext.assignmentPlan?.nombre ||
+      pabloContext.assignmentPlan?.title ||
+      ""
+  ).trim();
+  const assignmentPlanId = String(apiContext.assignment?.planId || pabloContext.assignment?.planId || "").trim();
   const adminPlanName = String(adminView.planName || "").trim();
   const alumnoPlanName = String(alumnoView.planName || "").trim();
 
@@ -452,8 +550,9 @@ async function main() {
         assignment: {
           planId: assignmentPlanId,
           planName: assignmentPlanName,
-          assignedAt: toIso(pabloContext.assignment?.assignedAt),
+          assignedAt: toIso(apiContext.assignment?.assignedAt || pabloContext.assignment?.assignedAt),
         },
+        apiContext,
         debug: pabloContext.debug,
         clientesLookup,
         adminView,
