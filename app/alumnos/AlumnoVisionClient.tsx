@@ -2342,6 +2342,12 @@ export default function AlumnoVisionClient({
       pollMs: isUltraMobile ? 15000 : 12000,
     });
 
+  const [nutritionFavoritesRaw, setNutritionFavoritesRaw, nutritionFavoritesSyncLoaded] = useSharedState<unknown[]>([], {
+    key: NUTRITION_FAVORITES_KEY,
+    legacyLocalStorageKey: NUTRITION_FAVORITES_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
   const [nutritionCustomFoodsRaw, , nutritionCustomFoodsSyncLoaded] = useSharedState<unknown[]>([], {
     key: NUTRITION_CUSTOM_FOODS_KEY,
     legacyLocalStorageKey: NUTRITION_CUSTOM_FOODS_KEY,
@@ -2366,9 +2372,12 @@ export default function AlumnoVisionClient({
       !workoutLogsSyncLoaded &&
       !routineChangeRequestsSyncLoaded &&
       !sessionFeedbackSyncLoaded &&
+      !nutritionFavoritesSyncLoaded &&
       !nutritionCustomFoodsSyncLoaded &&
       !nutritionDailyLogsSyncLoaded
     ) {
+      nutritionFavoritesRaw,
+      nutritionFavoritesSyncLoaded,
       return;
     }
 
