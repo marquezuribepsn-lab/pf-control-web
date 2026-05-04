@@ -133,8 +133,28 @@ async function resolvePabloContext() {
   const plans = parseJson(plansRow?.value || "[]", []);
   const alumnos = parseJson(alumnosRow?.value || "[]", []);
 
+  const assignmentMatches = assignments
+    .filter((item) => {
+      const byEmail = normalizeEmail(item?.alumnoEmail) === alumnoEmail;
+      const byName = String(item?.alumnoNombre || "").trim().toLowerCase().includes("pablo");
+      return byEmail || byName;
+    })
+    .sort((a, b) => new Date(b?.assignedAt || 0).getTime() - new Date(a?.assignedAt || 0).getTime());
+
+  const assignment = assignmentMatches[0] || null;
+  const assignmentPlan = assignment
+    ? plans.find((plan) => String(plan?.id || "") === String(assignment.planId || "")) || null
+    : null;
+
+  const metaEntries = Array.isArray(clientesMeta)
+    ? clientesMeta.map((value, index) => {
+        const inferredId = String(value?.id || value?.clientId || value?.key || `row:${index}`);
+        return [inferredId, value];
+      })
+    : Object.entries(clientesMeta || {});
+
   const clienteMetaEntry =
-    Object.entries(clientesMeta).find(([, value]) => {
+    metaEntries.find(([, value]) => {
       const item = value || {};
       return normalizeEmail(item.email) === alumnoEmail;
     }) || null;
@@ -153,23 +173,21 @@ async function resolvePabloContext() {
     }
   }
 
-  const assignmentMatches = assignments
-    .filter((item) => {
-      const byEmail = normalizeEmail(item?.alumnoEmail) === alumnoEmail;
-      const byName = String(item?.alumnoNombre || "").trim().toLowerCase().includes("pablo");
-      return byEmail || byName;
-    })
-    .sort((a, b) => new Date(b?.assignedAt || 0).getTime() - new Date(a?.assignedAt || 0).getTime());
-
-  const assignment = assignmentMatches[0] || null;
-  const assignmentPlan = assignment
-    ? plans.find((plan) => String(plan?.id || "") === String(assignment.planId || "")) || null
-    : null;
+  if (!clientId && assignment?.alumnoNombre) {
+    clientId = `alumno:${String(assignment.alumnoNombre).trim()}`;
+  }
 
   return {
     clientId,
     assignment,
     assignmentPlan,
+    debug: {
+      metaIsArray: Array.isArray(clientesMeta),
+      metaEntryCount: metaEntries.length,
+      alumnosCount: Array.isArray(alumnos) ? alumnos.length : 0,
+      assignmentMatchCount: assignmentMatches.length,
+      assignmentAlumnoNombre: String(assignment?.alumnoNombre || ""),
+    },
   };
 }
 
@@ -325,6 +343,7 @@ async function main() {
           planName: assignmentPlanName,
           assignedAt: toIso(pabloContext.assignment?.assignedAt),
         },
+        debug: pabloContext.debug,
         adminView,
         alumnoView,
         failures,
