@@ -5,7 +5,7 @@ import Link from "@/components/ReliableLink";
 import PlantelPanel from "@/components/PlantelPanel";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useDeportes } from "../../components/DeportesProvider";
@@ -889,16 +889,25 @@ function resolveExercisePreviewImage(value?: string): string | null {
   const source = String(value || "").trim();
   if (!source) return null;
 
-  if (/^https?:\/\/.+\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(source)) {
+  if (/^https?:\/\/.+\.(png|jpe?g|webp|gif|avif)(\?.*)?$/i.test(source)) {
     return source;
   }
 
+  // Handle data URLs that contain images
+  if (source.startsWith("data:image/")) {
+    return source;
+  }
+
+  // YouTube watch, embed, youtu.be, /shorts/, /live/
   const youtubeMatch = source.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/
   );
   if (youtubeMatch?.[1]) {
     return `https://img.youtube.com/vi/${youtubeMatch[1]}/hqdefault.jpg`;
   }
+
+  // Vimeo: https://vimeo.com/123456789 — there's no direct thumbnail API without auth.
+  // Return null so the UI shows a generic preview placeholder for vimeo.
 
   return null;
 }
@@ -1017,10 +1026,18 @@ function normalizeTrainingBlocksForEditing(rawBlocks: unknown): WeekBlockLite[] 
       const fallbackBlockId = String(source.id || `block-${blockIndex + 1}`);
       const rawExercises = Array.isArray(source.ejercicios) ? source.ejercicios : [];
 
+      // Only fall back to a default title when the field is genuinely missing.
+      // An empty string is a valid value (the user is mid-edit) and must not be
+      // overwritten — that's what was reverting deletions.
+      const tituloIsMissing =
+        source.titulo === undefined || source.titulo === null;
+      const objetivoIsMissing =
+        source.objetivo === undefined || source.objetivo === null;
+
       return {
         id: fallbackBlockId,
-        titulo: String(source.titulo || `Bloque ${blockIndex + 1}`),
-        objetivo: String(source.objetivo || ""),
+        titulo: tituloIsMissing ? `Bloque ${blockIndex + 1}` : String(source.titulo),
+        objetivo: objetivoIsMissing ? "" : String(source.objetivo),
         ejercicios: rawExercises.map((exercise, exerciseIndex) =>
           cloneWeekExerciseForEditing(
             (exercise && typeof exercise === "object" ? exercise : null) as Partial<WeekExerciseLite> | null,
@@ -1269,6 +1286,47 @@ export default function ClientesPage() {
   const { data: session } = useSession();
   const [clientesSection, setClientesSection] = useState<ClientesSection>("clientes");
   const [isDetailMode, setIsDetailMode] = useState(false);
+  const [userPhotos, setUserPhotos] = useState<{ byEmail: Record<string, string>; byName: Record<string, string> }>({ byEmail: {}, byName: {} });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/users/photos", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled && data && typeof data === "object") {
+          setUserPhotos({
+            byEmail: data.byEmail || {},
+            byName: data.byName || {},
+          });
+        }
+      } catch {
+        // silent
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const resolveClientePhoto = (cliente: { nombre?: string; email?: string; signupProfile?: { email?: string; nombreCompleto?: string } | null }): string | null => {
+    const emailCandidates = [
+      cliente.email,
+      cliente.signupProfile?.email,
+    ];
+    for (const candidate of emailCandidates) {
+      const normalized = String(candidate || "").trim().toLowerCase();
+      if (normalized && userPhotos.byEmail[normalized]) return userPhotos.byEmail[normalized];
+    }
+    const nameCandidates = [cliente.signupProfile?.nombreCompleto, cliente.nombre];
+    for (const candidate of nameCandidates) {
+      const normalized = String(candidate || "").trim().toLowerCase();
+      if (normalized && userPhotos.byName[normalized]) return userPhotos.byName[normalized];
+    }
+    return null;
+  };
+
   const [detailClientId, setDetailClientId] = useState<string | null>(null);
   const [detailTabId, setDetailTabId] = useState<string | null>(null);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
@@ -1282,10 +1340,80 @@ export default function ClientesPage() {
     startWidth: number;
   } | null>(null);
   const { jugadoras, agregarJugadora, editarJugadora, eliminarJugadora } = usePlayers();
-  const { alumnos, agregarAlumno, editarAlumno, eliminarAlumno } = useAlumnos();
+  const { alumnos, alumnosLoaded, agregarAlumno, editarAlumno, eliminarAlumno } = useAlumnos();
   const { categorias } = useCategories();
   const { deportes } = useDeportes();
-  const { ejercicios } = useEjercicios();
+  const { ejercicios, agregarEjercicio } = useEjercicios();
+  const [newExerciseModalOpen, setNewExerciseModalOpen] = useState(false);
+  const [newExerciseTarget, setNewExerciseTarget] = useState<{
+    weekId: string;
+    dayId: string;
+    blockId: string;
+    exerciseRowId: string;
+  } | null>(null);
+  const [newExerciseNombre, setNewExerciseNombre] = useState("");
+  const [newExerciseVideoUrl, setNewExerciseVideoUrl] = useState("");
+  const [newExerciseDescripcion, setNewExerciseDescripcion] = useState("");
+  const [newExerciseObjetivo, setNewExerciseObjetivo] = useState("");
+  const [newExerciseCategoria, setNewExerciseCategoria] = useState("Fuerza");
+  const [newExerciseSaving, setNewExerciseSaving] = useState(false);
+  const [newExerciseError, setNewExerciseError] = useState<string | null>(null);
+
+  const openNewExerciseModal = (target: { weekId: string; dayId: string; blockId: string; exerciseRowId: string }) => {
+    setNewExerciseTarget(target);
+    setNewExerciseNombre("");
+    setNewExerciseVideoUrl("");
+    setNewExerciseDescripcion("");
+    setNewExerciseObjetivo("");
+    setNewExerciseCategoria("Fuerza");
+    setNewExerciseError(null);
+    setNewExerciseModalOpen(true);
+  };
+
+  const closeNewExerciseModal = () => {
+    setNewExerciseModalOpen(false);
+    setNewExerciseTarget(null);
+  };
+
+  const saveNewExerciseFromModal = async () => {
+    const nombre = newExerciseNombre.trim();
+    if (!nombre) {
+      setNewExerciseError("El nombre del ejercicio es obligatorio");
+      return;
+    }
+    setNewExerciseSaving(true);
+    setNewExerciseError(null);
+    try {
+      const newId = agregarEjercicio({
+        nombre,
+        categoria: newExerciseCategoria || "Fuerza",
+        descripcion: newExerciseDescripcion.trim(),
+        objetivo: newExerciseObjetivo.trim(),
+        videoUrl: newExerciseVideoUrl.trim(),
+      });
+
+      if (newExerciseTarget) {
+        const { weekId, dayId, blockId, exerciseRowId } = newExerciseTarget;
+        if (exerciseRowId.includes("::")) {
+          const [exId, superKey] = exerciseRowId.split("::");
+          updateTrainingSuperSerieField(weekId, dayId, blockId, exId, superKey, "ejercicioId", newId);
+        } else {
+          updateTrainingExerciseField(weekId, dayId, blockId, exerciseRowId, "ejercicioId", newId);
+        }
+      }
+
+      setNewExerciseModalOpen(false);
+      setNewExerciseTarget(null);
+      setNewExerciseNombre("");
+      setNewExerciseVideoUrl("");
+      setNewExerciseDescripcion("");
+      setNewExerciseObjetivo("");
+    } catch (saveError) {
+      setNewExerciseError(saveError instanceof Error ? saveError.message : "No se pudo guardar el ejercicio");
+    } finally {
+      setNewExerciseSaving(false);
+    }
+  };
   const { sesiones } = useSessions();
 
   const sessionScope = useMemo(() => {
@@ -1399,6 +1527,7 @@ export default function ClientesPage() {
   const [trainingStructureMenu, setTrainingStructureMenu] =
     useState<TrainingStructureMenuState>(null);
   const [trainingBlockMenu, setTrainingBlockMenu] = useState<TrainingBlockMenuState>(null);
+  const [trainingBlockEditingId, setTrainingBlockEditingId] = useState<string | null>(null);
   const [trainingBlockGridConfigOpenId, setTrainingBlockGridConfigOpenId] =
     useState<string | null>(null);
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
@@ -2268,6 +2397,106 @@ export default function ClientesPage() {
     [selectedExerciseWorkoutLogs]
   );
 
+  // Build a per-exercise latest-session summary so each row can show its load history
+  // inline above the editor (with detailed tooltip on hover).
+  type LatestSessionSet = { peso: number; reps: number; molestia: boolean };
+  type LatestSessionSummary = {
+    fecha: string;
+    fechaDate: Date | null;
+    seriesCount: number;
+    totalReps: number;
+    topWeight: number;
+    volume: number;
+    molestia: boolean;
+    sets: LatestSessionSet[];
+  };
+
+  const latestSessionByExerciseKey = useMemo(() => {
+    const map = new Map<string, LatestSessionSummary>();
+    if (!selectedClientWorkoutLogs.length) return map;
+
+    // Group logs by exerciseKey + fecha (so same-day sets cluster as one session)
+    type Bucket = { records: WorkoutLogRecord[]; fechaTime: number };
+    const grouped = new Map<string, Map<string, Bucket>>();
+
+    for (const record of selectedClientWorkoutLogs) {
+      const idKey = String(record.exerciseId || "").trim();
+      const nameKey = String(record.exerciseName || "").trim().toLowerCase();
+      const keys = [idKey, nameKey].filter(Boolean);
+      const fecha = String(record.fecha || "").trim();
+      if (!fecha) continue;
+      const fechaTime = new Date(fecha).getTime() || 0;
+
+      for (const key of keys) {
+        if (!grouped.has(key)) grouped.set(key, new Map());
+        const inner = grouped.get(key)!;
+        const fechaStr = fecha.slice(0, 10);
+        if (!inner.has(fechaStr)) inner.set(fechaStr, { records: [], fechaTime });
+        inner.get(fechaStr)!.records.push(record);
+        inner.get(fechaStr)!.fechaTime = Math.max(inner.get(fechaStr)!.fechaTime, fechaTime);
+      }
+    }
+
+    for (const [key, dateMap] of grouped) {
+      let latestKey = "";
+      let latestTime = -1;
+      for (const [dateStr, bucket] of dateMap) {
+        if (bucket.fechaTime > latestTime) {
+          latestTime = bucket.fechaTime;
+          latestKey = dateStr;
+        }
+      }
+      const bucket = dateMap.get(latestKey);
+      if (!bucket) continue;
+
+      const sets: LatestSessionSet[] = bucket.records.map((r) => ({
+        peso: Number(r.pesoKg) || 0,
+        reps: Number(r.repeticiones) || 0,
+        molestia: Boolean(r.molestia),
+      }));
+      const seriesCount = sets.length;
+      const totalReps = sets.reduce((acc, s) => acc + s.reps, 0);
+      const topWeight = sets.reduce((acc, s) => Math.max(acc, s.peso), 0);
+      const volume = sets.reduce((acc, s) => acc + s.peso * s.reps, 0);
+      const molestia = sets.some((s) => s.molestia);
+      const fechaDate = new Date(latestKey);
+
+      map.set(key, {
+        fecha: latestKey,
+        fechaDate: isNaN(fechaDate.getTime()) ? null : fechaDate,
+        seriesCount,
+        totalReps,
+        topWeight,
+        volume,
+        molestia,
+        sets,
+      });
+    }
+
+    return map;
+  }, [selectedClientWorkoutLogs]);
+
+  const formatLatestSessionRelative = useCallback((d: Date | null) => {
+    if (!d) return "";
+    const now = Date.now();
+    const diffMs = now - d.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return "hoy";
+    if (diffDays === 1) return "hace 1 día";
+    if (diffDays < 30) return `hace ${diffDays} días`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths === 1) return "hace 1 mes";
+    return `hace ${diffMonths} meses`;
+  }, []);
+
+  const formatLatestSessionDate = useCallback((d: Date | null, fallback: string) => {
+    if (!d) return fallback;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }, []);
+
   useEffect(() => {
     setTrainingExercisePanelMode(null);
     setTrainingExercisePanelTarget(null);
@@ -2507,19 +2736,20 @@ export default function ClientesPage() {
   };
 
   const focusTrainingBlockTitleInput = (weekId: string, dayId: string, blockId: string) => {
-    if (typeof document === "undefined") {
-      setTrainingBlockMenu(null);
-      return;
-    }
-
-    const targetId = `training-block-title-${weekId}-${dayId}-${blockId}`;
-    const input = document.getElementById(targetId) as HTMLInputElement | null;
-    if (input) {
-      input.focus();
-      input.select();
-    }
-
+    setTrainingBlockEditingId(blockId);
     setTrainingBlockMenu(null);
+
+    if (typeof window !== "undefined") {
+      // Wait for the input to mount, then focus + select.
+      setTimeout(() => {
+        const targetId = `training-block-title-${weekId}-${dayId}-${blockId}`;
+        const input = document.getElementById(targetId) as HTMLInputElement | null;
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 30);
+    }
   };
 
   const addTrainingWeek = () => {
@@ -4607,7 +4837,9 @@ export default function ClientesPage() {
           </div>
 
           <div className="space-y-3 rounded-2xl border border-cyan-300/15 bg-slate-950/45 p-3 backdrop-blur-sm">
-            {clientesFiltrados.length === 0 ? (
+            {!alumnosLoaded ? (
+              <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">Cargando clientes...</p>
+            ) : clientesFiltrados.length === 0 ? (
               <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">No hay clientes en este apartado.</p>
             ) : (
               clientesFiltrados.map((cliente) => {
@@ -4642,14 +4874,28 @@ export default function ClientesPage() {
                   >
                     <div className="flex flex-wrap items-center gap-2.5" data-layout-lock="clientes-row-content">
                       <div className="flex shrink-0 items-center justify-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/35 bg-cyan-500/15 text-xs font-black text-cyan-100">
-                          {cliente.nombre
-                            .split(" ")
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((part) => part[0]?.toUpperCase() || "")
-                            .join("") || "CL"}
-                        </div>
+                        {(() => {
+                          const photo = resolveClientePhoto(cliente);
+                          if (photo) {
+                            return (
+                              <img
+                                src={photo}
+                                alt={cliente.nombre}
+                                className="h-10 w-10 rounded-full border border-cyan-300/35 object-cover"
+                              />
+                            );
+                          }
+                          return (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/35 bg-cyan-500/15 text-xs font-black text-cyan-100">
+                              {cliente.nombre
+                                .split(" ")
+                                .filter(Boolean)
+                                .slice(0, 2)
+                                .map((part) => part[0]?.toUpperCase() || "")
+                                .join("") || "CL"}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="min-w-[140px] flex-1">
@@ -5710,21 +5956,37 @@ export default function ClientesPage() {
                                               className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/12 pt-5" : "pt-2"}`}
                                             >
                                             <div className="flex flex-wrap items-start justify-between gap-2">
-                                              <input
-                                                id={`training-block-title-${selectedTrainingWeek.id}-${selectedTrainingDay.id}-${block.id}`}
-                                                value={block.titulo || ""}
-                                                onChange={(event) =>
-                                                  updateTrainingBlockField(
-                                                    selectedTrainingWeek.id,
-                                                    selectedTrainingDay.id,
-                                                    block.id,
-                                                    "titulo",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-white"
-                                                placeholder={`Bloque ${blockIndex + 1}`}
-                                              />
+                                              {trainingBlockEditingId === block.id ? (
+                                                <input
+                                                  id={`training-block-title-${selectedTrainingWeek.id}-${selectedTrainingDay.id}-${block.id}`}
+                                                  value={block.titulo || ""}
+                                                  onChange={(event) =>
+                                                    updateTrainingBlockField(
+                                                      selectedTrainingWeek.id,
+                                                      selectedTrainingDay.id,
+                                                      block.id,
+                                                      "titulo",
+                                                      event.target.value
+                                                    )
+                                                  }
+                                                  onBlur={() => setTrainingBlockEditingId(null)}
+                                                  onKeyDown={(event) => {
+                                                    if (event.key === "Enter" || event.key === "Escape") {
+                                                      (event.target as HTMLInputElement).blur();
+                                                    }
+                                                  }}
+                                                  className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-white"
+                                                  placeholder={`Bloque ${blockIndex + 1}`}
+                                                  autoFocus
+                                                />
+                                              ) : (
+                                                <h3
+                                                  id={`training-block-title-${selectedTrainingWeek.id}-${selectedTrainingDay.id}-${block.id}`}
+                                                  className="min-w-[220px] flex-1 px-1 py-2 text-base font-bold text-white"
+                                                >
+                                                  {block.titulo || `Bloque ${blockIndex + 1}`}
+                                                </h3>
+                                              )}
 
                                               <div className="flex items-center gap-2">
                                                 <ReliableActionButton
@@ -5831,20 +6093,32 @@ export default function ClientesPage() {
                                               </div>
                                             </div>
 
-                                            <input
-                                              value={block.objetivo || ""}
-                                              onChange={(event) =>
-                                                updateTrainingBlockField(
-                                                  selectedTrainingWeek.id,
-                                                  selectedTrainingDay.id,
-                                                  block.id,
-                                                  "objetivo",
-                                                  event.target.value
-                                                )
-                                              }
-                                              className="mt-2 w-full rounded-none border border-white/20 bg-slate-700 px-2 py-1.5 text-sm text-white"
-                                              placeholder="Objetivo bloque"
-                                            />
+                                            {trainingBlockEditingId === block.id ? (
+                                              <input
+                                                value={block.objetivo || ""}
+                                                onChange={(event) =>
+                                                  updateTrainingBlockField(
+                                                    selectedTrainingWeek.id,
+                                                    selectedTrainingDay.id,
+                                                    block.id,
+                                                    "objetivo",
+                                                    event.target.value
+                                                  )
+                                                }
+                                                onBlur={() => setTrainingBlockEditingId(null)}
+                                                onKeyDown={(event) => {
+                                                  if (event.key === "Enter" || event.key === "Escape") {
+                                                    (event.target as HTMLInputElement).blur();
+                                                  }
+                                                }}
+                                                className="mt-2 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-1.5 text-sm text-white"
+                                                placeholder="Objetivo bloque"
+                                              />
+                                            ) : (
+                                              block.objetivo ? (
+                                                <p className="mt-1 px-1 text-sm font-semibold text-cyan-100">{block.objetivo}</p>
+                                              ) : null
+                                            )}
 
                                             {trainingBlockGridConfigOpenId === block.id ? (
                                               <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-2 pl-3 pr-1.5">
@@ -5969,35 +6243,136 @@ export default function ClientesPage() {
                                                   trainingExercisePanelTarget?.exerciseId === actionTarget.exerciseId;
                                                 const exerciseRowGridTemplateColumns = [
                                                   "76px",
-                                                  "minmax(260px, 1.6fr)",
-                                                  "160px",
-                                                  "160px",
-                                                  "160px",
-                                                  "160px",
-                                                  ...blockGridColumns.map(() => "160px"),
+                                                  "minmax(200px, 1.4fr)",
+                                                  "108px",
+                                                  "108px",
+                                                  "108px",
+                                                  "108px",
+                                                  ...blockGridColumns.map(() => "108px"),
                                                 ].join(" ");
+                                                const exerciseRowMinWidth = 76 + 200 + 108 * (4 + blockGridColumns.length);
                                                 const superSerieRows = Array.isArray(exercise.superSerie)
                                                   ? exercise.superSerie
                                                   : [];
 
+                                                const exerciseLatestSummary =
+                                                  (exercise.ejercicioId
+                                                    ? latestSessionByExerciseKey.get(exercise.ejercicioId)
+                                                    : undefined) ||
+                                                  (exerciseMeta?.nombre
+                                                    ? latestSessionByExerciseKey.get(
+                                                        exerciseMeta.nombre.trim().toLowerCase()
+                                                      )
+                                                    : undefined) ||
+                                                  null;
+
+                                                const hasSuperSerieGroup = superSerieRows.length > 0;
                                                 return (
                                                   <div
                                                     key={exercise.id}
-                                                    className="border-t border-white/12 pt-3"
+                                                    className={`border-t border-white/12 pt-3 ${
+                                                      hasSuperSerieGroup ? "pf-a3-routine-exercise-group pf-a3-routine-exercise-group-linked" : ""
+                                                    }`}
                                                   >
+                                                    <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-slate-800/60 px-2 py-1 text-[12px] font-semibold text-slate-200">
+                                                      {exerciseLatestSummary ? (
+                                                        <>
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <span aria-hidden>📅</span>
+                                                            {formatLatestSessionDate(exerciseLatestSummary.fechaDate, exerciseLatestSummary.fecha)}
+                                                            {exerciseLatestSummary.fechaDate ? (
+                                                              <span className="text-slate-400"> ({formatLatestSessionRelative(exerciseLatestSummary.fechaDate)})</span>
+                                                            ) : null}
+                                                          </span>
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <span aria-hidden>📚</span>
+                                                            {exerciseLatestSummary.seriesCount} series
+                                                          </span>
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <span aria-hidden>🔁</span>
+                                                            {exerciseLatestSummary.totalReps} reps
+                                                          </span>
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <span aria-hidden>🏋️</span>
+                                                            {exerciseLatestSummary.topWeight.toLocaleString("es-AR")} kg
+                                                          </span>
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <span aria-hidden>📈</span>
+                                                            {exerciseLatestSummary.volume.toLocaleString("es-AR")} kg·rep
+                                                          </span>
+                                                        </>
+                                                      ) : (
+                                                        <span className="inline-flex items-center gap-1 text-slate-400">
+                                                          <span aria-hidden>📅</span>
+                                                          Sin registros aún
+                                                        </span>
+                                                      )}
+                                                      <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-slate-900/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                        {exerciseLatestSummary ? (
+                                                          <>
+                                                            <p className="font-bold">
+                                                              Última sesión: {formatLatestSessionDate(exerciseLatestSummary.fechaDate, exerciseLatestSummary.fecha)}
+                                                            </p>
+                                                            <p className="mt-2 font-bold">Series</p>
+                                                            <ul className="mt-1 list-disc pl-5">
+                                                              {exerciseLatestSummary.sets.map((set, idx) => (
+                                                                <li key={`${exercise.id}-set-${idx}`}>
+                                                                  S{idx + 1}: <strong>{set.peso.toLocaleString("es-AR")} kg × {set.reps}</strong>
+                                                                </li>
+                                                              ))}
+                                                            </ul>
+                                                            <p className="mt-2">
+                                                              Top: <strong>{exerciseLatestSummary.topWeight.toLocaleString("es-AR")} kg</strong>
+                                                            </p>
+                                                            <p>
+                                                              Volumen: <strong>{exerciseLatestSummary.volume.toLocaleString("es-AR")} kg·rep</strong>
+                                                            </p>
+                                                            <p>
+                                                              Molestia: <strong>{exerciseLatestSummary.molestia ? "Sí" : "No"}</strong>
+                                                            </p>
+                                                            <p className="mt-2 text-[11px] text-slate-300">
+                                                              Volumen total (tonelaje): suma de (peso × reps) de todas las series de ese día. Ej: 20×10 + 25×8 = 400 kg·rep.
+                                                            </p>
+                                                          </>
+                                                        ) : (
+                                                          <p className="text-slate-300">
+                                                            Este ejercicio todavía no tiene registros de carga. Cuando el alumno registre series desde la app, aparecerán acá.
+                                                          </p>
+                                                        )}
+                                                      </div>
+                                                    </div>
                                                     <div className="overflow-x-auto">
                                                       <div
-                                                        className="grid min-w-[980px] gap-2"
-                                                        style={{ gridTemplateColumns: exerciseRowGridTemplateColumns }}
+                                                        className="grid gap-2"
+                                                        style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                       >
                                                       <div className="overflow-hidden rounded-xl border border-white/20 bg-slate-900/70">
-                                                        {previewImage ? (
-                                                          <img
-                                                            src={previewImage}
-                                                            alt={exerciseMeta?.nombre || "Ejercicio"}
-                                                            className="h-[66px] w-full object-cover"
-                                                            loading="lazy"
-                                                          />
+                                                        {exerciseMeta?.videoUrl ? (
+                                                          <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                              window.open(
+                                                                String(exerciseMeta.videoUrl || ""),
+                                                                "_blank",
+                                                                "noopener,noreferrer"
+                                                              )
+                                                            }
+                                                            title="Abrir video"
+                                                            className="block h-[66px] w-full"
+                                                          >
+                                                            {previewImage ? (
+                                                              <img
+                                                                src={previewImage}
+                                                                alt={exerciseMeta.nombre || "Ejercicio"}
+                                                                className="h-[66px] w-full object-cover"
+                                                                loading="lazy"
+                                                              />
+                                                            ) : (
+                                                              <span className="flex h-[66px] w-full items-center justify-center bg-slate-800/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                                ▶ Ver video
+                                                              </span>
+                                                            )}
+                                                          </button>
                                                         ) : (
                                                           <span className="flex h-[66px] w-full items-center justify-center text-xs font-semibold text-slate-200">
                                                             Sin preview
@@ -6006,21 +6381,19 @@ export default function ClientesPage() {
                                                       </div>
 
                                                       <label className="space-y-1">
-                                                        <div className="flex items-center justify-between gap-2">
-                                                          <span className="text-xs font-bold text-slate-100">Ejercicio</span>
-                                                          <ReliableActionButton
-                                                            type="button"
-                                                            onClick={() =>
-                                                              openTrainingExercisePanel("configuracion", actionTarget)
-                                                            }
-                                                            className="rounded-full border border-white/20 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700"
-                                                          >
-                                                            Configuracion
-                                                          </ReliableActionButton>
-                                                        </div>
+                                                        <span className="text-xs font-bold text-slate-100">Ejercicio</span>
                                                         <select
                                                           value={exercise.ejercicioId || ""}
-                                                          onChange={(event) =>
+                                                          onChange={(event) => {
+                                                            if (event.target.value === "__create_new__") {
+                                                              openNewExerciseModal({
+                                                                weekId: selectedTrainingWeek.id,
+                                                                dayId: selectedTrainingDay.id,
+                                                                blockId: block.id,
+                                                                exerciseRowId: exercise.id,
+                                                              });
+                                                              return;
+                                                            }
                                                             updateTrainingExerciseField(
                                                               selectedTrainingWeek.id,
                                                               selectedTrainingDay.id,
@@ -6028,11 +6401,12 @@ export default function ClientesPage() {
                                                               exercise.id,
                                                               "ejercicioId",
                                                               event.target.value
-                                                            )
-                                                          }
+                                                            );
+                                                          }}
                                                             className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
                                                         >
                                                           <option value="">Seleccione ejercicio</option>
+                                                          <option value="__create_new__" className="font-bold text-cyan-200">+ Nuevo ejercicio</option>
                                                           {ejercicios.map((exerciseOption) => (
                                                             <option key={exerciseOption.id} value={exerciseOption.id}>
                                                               {exerciseOption.nombre}
@@ -6161,6 +6535,15 @@ export default function ClientesPage() {
                                                       </ReliableActionButton>
                                                       <ReliableActionButton
                                                         type="button"
+                                                        onClick={() =>
+                                                          openTrainingExercisePanel("configuracion", actionTarget)
+                                                        }
+                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                      >
+                                                        Configuración
+                                                      </ReliableActionButton>
+                                                      <ReliableActionButton
+                                                        type="button"
                                                         onClick={() => openTrainingExercisePanel("ver-pesos", actionTarget)}
                                                         className="text-cyan-200 hover:text-cyan-100"
                                                       >
@@ -6190,148 +6573,286 @@ export default function ClientesPage() {
                                                     </div>
 
                                                     {superSerieRows.length > 0 ? (
-                                                      <div className="mt-3 rounded-xl border border-cyan-300/20 bg-slate-900/60 p-3">
-                                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-cyan-100">
-                                                          Super serie
-                                                        </p>
-                                                        <div className="space-y-2">
-                                                          {superSerieRows.map((superItem, superIndex) => {
-                                                            const superKey =
-                                                              String(superItem.id || "").trim() ||
-                                                              `${exercise.id}-super-${superIndex + 1}`;
+                                                      <div className="mt-3 space-y-3">
+                                                        {superSerieRows.map((superItem, superIndex) => {
+                                                          const superKey =
+                                                            String(superItem.id || "").trim() ||
+                                                            `${exercise.id}-super-${superIndex + 1}`;
+                                                          const superMeta =
+                                                            ejercicios.find((item) => item.id === superItem.ejercicioId) || null;
+                                                          const superPreviewImage = resolveExercisePreviewImage(superMeta?.videoUrl);
+                                                          const superMetricas = (superItem as any)?.metricas || [];
+                                                          const superLatestSummary =
+                                                            (superItem.ejercicioId
+                                                              ? latestSessionByExerciseKey.get(superItem.ejercicioId)
+                                                              : undefined) ||
+                                                            (superMeta?.nombre
+                                                              ? latestSessionByExerciseKey.get(
+                                                                  superMeta.nombre.trim().toLowerCase()
+                                                                )
+                                                              : undefined) ||
+                                                            null;
 
-                                                            return (
-                                                              <div
-                                                                key={superKey}
-                                                                className="grid gap-2 rounded-lg border border-white/12 bg-slate-950/40 p-2 md:grid-cols-[minmax(220px,1.6fr)_120px_120px_120px_120px_auto]"
-                                                              >
-                                                                <label className="space-y-1">
-                                                                  <span className="text-[11px] font-semibold text-slate-100">
-                                                                    Ejercicio super-serie
+                                                          return (
+                                                            <div key={superKey} className="border-t border-cyan-300/20 pt-3">
+                                                              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200">
+                                                                Super serie
+                                                              </p>
+                                                              <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-slate-800/60 px-2 py-1 text-[12px] font-semibold text-slate-200">
+                                                                {superLatestSummary ? (
+                                                                  <>
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                      <span aria-hidden>📅</span>
+                                                                      {formatLatestSessionDate(superLatestSummary.fechaDate, superLatestSummary.fecha)}
+                                                                      {superLatestSummary.fechaDate ? (
+                                                                        <span className="text-slate-400"> ({formatLatestSessionRelative(superLatestSummary.fechaDate)})</span>
+                                                                      ) : null}
+                                                                    </span>
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                      <span aria-hidden>📚</span>
+                                                                      {superLatestSummary.seriesCount} series
+                                                                    </span>
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                      <span aria-hidden>🔁</span>
+                                                                      {superLatestSummary.totalReps} reps
+                                                                    </span>
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                      <span aria-hidden>🏋️</span>
+                                                                      {superLatestSummary.topWeight.toLocaleString("es-AR")} kg
+                                                                    </span>
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                      <span aria-hidden>📈</span>
+                                                                      {superLatestSummary.volume.toLocaleString("es-AR")} kg·rep
+                                                                    </span>
+                                                                  </>
+                                                                ) : (
+                                                                  <span className="inline-flex items-center gap-1 text-slate-400">
+                                                                    <span aria-hidden>📅</span>
+                                                                    Sin registros aún
                                                                   </span>
-                                                                  <select
-                                                                    value={superItem.ejercicioId || ""}
-                                                                    onChange={(event) =>
-                                                                      updateTrainingSuperSerieField(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey,
-                                                                        "ejercicioId",
-                                                                        event.target.value
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                                  >
-                                                                    <option value="">Seleccione ejercicio</option>
-                                                                    {ejercicios.map((exerciseOption) => (
-                                                                      <option key={exerciseOption.id} value={exerciseOption.id}>
-                                                                        {exerciseOption.nombre}
-                                                                      </option>
-                                                                    ))}
-                                                                  </select>
-                                                                </label>
-
-                                                                <label className="space-y-1">
-                                                                  <span className="text-[11px] font-semibold text-slate-100">Series</span>
-                                                                  <input
-                                                                    value={superItem.series || ""}
-                                                                    onChange={(event) =>
-                                                                      updateTrainingSuperSerieField(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey,
-                                                                        "series",
-                                                                        event.target.value
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                                  />
-                                                                </label>
-
-                                                                <label className="space-y-1">
-                                                                  <span className="text-[11px] font-semibold text-slate-100">
-                                                                    Repeticiones
-                                                                  </span>
-                                                                  <input
-                                                                    value={superItem.repeticiones || ""}
-                                                                    onChange={(event) =>
-                                                                      updateTrainingSuperSerieField(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey,
-                                                                        "repeticiones",
-                                                                        event.target.value
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                                  />
-                                                                </label>
-
-                                                                <label className="space-y-1">
-                                                                  <span className="text-[11px] font-semibold text-slate-100">Descanso</span>
-                                                                  <input
-                                                                    value={superItem.descanso || ""}
-                                                                    onChange={(event) =>
-                                                                      updateTrainingSuperSerieField(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey,
-                                                                        "descanso",
-                                                                        event.target.value
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                                  />
-                                                                </label>
-
-                                                                <label className="space-y-1">
-                                                                  <span className="text-[11px] font-semibold text-slate-100">Carga</span>
-                                                                  <input
-                                                                    value={superItem.carga || ""}
-                                                                    onChange={(event) =>
-                                                                      updateTrainingSuperSerieField(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey,
-                                                                        "carga",
-                                                                        event.target.value
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
-                                                                  />
-                                                                </label>
-
-                                                                <div className="flex items-end">
-                                                                  <ReliableActionButton
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                      removeTrainingSuperSerieExercise(
-                                                                        selectedTrainingWeek.id,
-                                                                        selectedTrainingDay.id,
-                                                                        block.id,
-                                                                        exercise.id,
-                                                                        superKey
-                                                                      )
-                                                                    }
-                                                                    className="w-full rounded-md border border-rose-300/35 bg-rose-500/10 px-2.5 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
-                                                                  >
-                                                                    Eliminar
-                                                                  </ReliableActionButton>
+                                                                )}
+                                                                <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-slate-900/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                                  {superLatestSummary ? (
+                                                                    <>
+                                                                      <p className="font-bold">
+                                                                        Última sesión: {formatLatestSessionDate(superLatestSummary.fechaDate, superLatestSummary.fecha)}
+                                                                      </p>
+                                                                      <p className="mt-2 font-bold">Series</p>
+                                                                      <ul className="mt-1 list-disc pl-5">
+                                                                        {superLatestSummary.sets.map((set, idx) => (
+                                                                          <li key={`${superKey}-set-${idx}`}>
+                                                                            S{idx + 1}: <strong>{set.peso.toLocaleString("es-AR")} kg × {set.reps}</strong>
+                                                                          </li>
+                                                                        ))}
+                                                                      </ul>
+                                                                      <p className="mt-2">
+                                                                        Top: <strong>{superLatestSummary.topWeight.toLocaleString("es-AR")} kg</strong>
+                                                                      </p>
+                                                                      <p>
+                                                                        Volumen: <strong>{superLatestSummary.volume.toLocaleString("es-AR")} kg·rep</strong>
+                                                                      </p>
+                                                                      <p>
+                                                                        Molestia: <strong>{superLatestSummary.molestia ? "Sí" : "No"}</strong>
+                                                                      </p>
+                                                                      <p className="mt-2 text-[11px] text-slate-300">
+                                                                        Volumen total (tonelaje): suma de (peso × reps) de todas las series de ese día. Ej: 20×10 + 25×8 = 400 kg·rep.
+                                                                      </p>
+                                                                    </>
+                                                                  ) : (
+                                                                    <p className="text-slate-300">
+                                                                      Este ejercicio todavía no tiene registros de carga. Cuando el alumno registre series desde la app, aparecerán acá.
+                                                                    </p>
+                                                                  )}
                                                                 </div>
                                                               </div>
-                                                            );
-                                                          })}
-                                                        </div>
+                                                              <div className="overflow-x-auto">
+                                                                <div
+                                                                  className="grid gap-2"
+                                                                  style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
+                                                                >
+                                                                  <div className="overflow-hidden rounded-xl border border-white/20 bg-slate-900/70">
+                                                                    {superMeta?.videoUrl ? (
+                                                                      <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                          window.open(
+                                                                            String(superMeta.videoUrl || ""),
+                                                                            "_blank",
+                                                                            "noopener,noreferrer"
+                                                                          )
+                                                                        }
+                                                                        title="Abrir video"
+                                                                        className="block h-[66px] w-full"
+                                                                      >
+                                                                        {superPreviewImage ? (
+                                                                          <img
+                                                                            src={superPreviewImage}
+                                                                            alt={superMeta.nombre || "Ejercicio"}
+                                                                            className="h-[66px] w-full object-cover"
+                                                                            loading="lazy"
+                                                                          />
+                                                                        ) : (
+                                                                          <span className="flex h-[66px] w-full items-center justify-center bg-slate-800/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                                            ▶ Ver video
+                                                                          </span>
+                                                                        )}
+                                                                      </button>
+                                                                    ) : (
+                                                                      <span className="flex h-[66px] w-full items-center justify-center text-xs font-semibold text-slate-200">
+                                                                        Sin preview
+                                                                      </span>
+                                                                    )}
+                                                                  </div>
+
+                                                                  <label className="space-y-1">
+                                                                    <span className="text-xs font-bold text-slate-100">Ejercicio</span>
+                                                                    <select
+                                                                      value={superItem.ejercicioId || ""}
+                                                                      onChange={(event) => {
+                                                                        if (event.target.value === "__create_new__") {
+                                                                          openNewExerciseModal({
+                                                                            weekId: selectedTrainingWeek.id,
+                                                                            dayId: selectedTrainingDay.id,
+                                                                            blockId: block.id,
+                                                                            exerciseRowId: `${exercise.id}::${superKey}`,
+                                                                          });
+                                                                          return;
+                                                                        }
+                                                                        updateTrainingSuperSerieField(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey,
+                                                                          "ejercicioId",
+                                                                          event.target.value
+                                                                        );
+                                                                      }}
+                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                    >
+                                                                      <option value="">Seleccione ejercicio</option>
+                                                                      <option value="__create_new__" className="font-bold text-cyan-200">+ Nuevo ejercicio</option>
+                                                                      {ejercicios.map((exerciseOption) => (
+                                                                        <option key={exerciseOption.id} value={exerciseOption.id}>
+                                                                          {exerciseOption.nombre}
+                                                                        </option>
+                                                                      ))}
+                                                                    </select>
+                                                                  </label>
+
+                                                                  <label className="space-y-1">
+                                                                    <span className="text-xs font-bold text-slate-100">Series</span>
+                                                                    <input
+                                                                      value={superItem.series || ""}
+                                                                      onChange={(event) =>
+                                                                        updateTrainingSuperSerieField(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey,
+                                                                          "series",
+                                                                          event.target.value
+                                                                        )
+                                                                      }
+                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                    />
+                                                                  </label>
+
+                                                                  <label className="space-y-1">
+                                                                    <span className="text-xs font-bold text-slate-100">Repeticiones</span>
+                                                                    <input
+                                                                      value={superItem.repeticiones || ""}
+                                                                      onChange={(event) =>
+                                                                        updateTrainingSuperSerieField(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey,
+                                                                          "repeticiones",
+                                                                          event.target.value
+                                                                        )
+                                                                      }
+                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                    />
+                                                                  </label>
+
+                                                                  <label className="space-y-1">
+                                                                    <span className="text-xs font-bold text-slate-100">Descanso</span>
+                                                                    <input
+                                                                      value={superItem.descanso || ""}
+                                                                      onChange={(event) =>
+                                                                        updateTrainingSuperSerieField(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey,
+                                                                          "descanso",
+                                                                          event.target.value
+                                                                        )
+                                                                      }
+                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                    />
+                                                                  </label>
+
+                                                                  <label className="space-y-1">
+                                                                    <span className="text-xs font-bold text-slate-100">Carga</span>
+                                                                    <input
+                                                                      value={superItem.carga || ""}
+                                                                      onChange={(event) =>
+                                                                        updateTrainingSuperSerieField(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey,
+                                                                          "carga",
+                                                                          event.target.value
+                                                                        )
+                                                                      }
+                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                    />
+                                                                  </label>
+
+                                                                  {blockGridColumns.map((metric, metricIndex) => (
+                                                                    <label
+                                                                      key={`${superKey}-metric-${metricIndex}`}
+                                                                      className="space-y-1"
+                                                                    >
+                                                                      <span className="text-xs font-bold text-slate-100">
+                                                                        {metric.nombre || `Campo ${metricIndex + 1}`}
+                                                                      </span>
+                                                                      <input
+                                                                        value={(superMetricas[metricIndex] as any)?.valor || ""}
+                                                                        readOnly
+                                                                        className="w-full rounded-md border border-white/15 bg-slate-800 px-2.5 py-1.5 text-sm text-white opacity-70"
+                                                                      />
+                                                                    </label>
+                                                                  ))}
+                                                                </div>
+                                                              </div>
+                                                              <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+                                                                <ReliableActionButton
+                                                                  type="button"
+                                                                  onClick={() =>
+                                                                    removeTrainingSuperSerieExercise(
+                                                                      selectedTrainingWeek.id,
+                                                                      selectedTrainingDay.id,
+                                                                      block.id,
+                                                                      exercise.id,
+                                                                      superKey
+                                                                    )
+                                                                  }
+                                                                  className="text-rose-200 hover:text-rose-100"
+                                                                >
+                                                                  Eliminar
+                                                                </ReliableActionButton>
+                                                              </div>
+                                                            </div>
+                                                          );
+                                                        })}
                                                       </div>
                                                     ) : null}
 
@@ -6967,6 +7488,118 @@ export default function ClientesPage() {
       </section>
         </>
       )}
+
+      {newExerciseModalOpen ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border border-cyan-300/30 bg-slate-900/95 p-5 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Nuevo ejercicio</p>
+                <h2 className="mt-1 text-xl font-black text-white">Crear ejercicio personalizado</h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  Se guarda en la biblioteca y queda disponible en el selector para todos los planes.
+                </p>
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={closeNewExerciseModal}
+                className="rounded-full border border-white/20 bg-slate-800 px-2 py-1 text-xs text-slate-200 hover:bg-slate-700"
+              >
+                Cerrar
+              </ReliableActionButton>
+            </div>
+
+            <div className="mt-4 grid gap-3">
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                Nombre del ejercicio
+                <input
+                  type="text"
+                  value={newExerciseNombre}
+                  onChange={(event) => setNewExerciseNombre(event.target.value)}
+                  placeholder="Ej: Sentadilla profunda"
+                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                  autoFocus
+                />
+              </label>
+
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                Video (URL de YouTube, Vimeo, etc.)
+                <input
+                  type="url"
+                  value={newExerciseVideoUrl}
+                  onChange={(event) => setNewExerciseVideoUrl(event.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                />
+              </label>
+
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                Para qué es / objetivo
+                <input
+                  type="text"
+                  value={newExerciseObjetivo}
+                  onChange={(event) => setNewExerciseObjetivo(event.target.value)}
+                  placeholder="Ej: Fortalecimiento de cuádriceps y glúteos"
+                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                />
+              </label>
+
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                Descripción técnica
+                <textarea
+                  value={newExerciseDescripcion}
+                  onChange={(event) => setNewExerciseDescripcion(event.target.value)}
+                  placeholder="Cómo se ejecuta, posición de partida, puntos clave..."
+                  rows={3}
+                  className="resize-y rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                />
+              </label>
+
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                Categoría
+                <select
+                  value={newExerciseCategoria}
+                  onChange={(event) => setNewExerciseCategoria(event.target.value)}
+                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                >
+                  <option value="Fuerza">Fuerza</option>
+                  <option value="Velocidad">Velocidad</option>
+                  <option value="Potencia">Potencia</option>
+                  <option value="Condición">Condición</option>
+                  <option value="Core">Core</option>
+                  <option value="Movilidad">Movilidad</option>
+                  <option value="Técnica">Técnica</option>
+                </select>
+              </label>
+
+              {newExerciseError ? (
+                <p className="rounded-lg border border-rose-300/40 bg-rose-500/10 p-2 text-xs font-bold text-rose-200">
+                  {newExerciseError}
+                </p>
+              ) : null}
+
+              <div className="mt-2 flex flex-wrap justify-end gap-2">
+                <ReliableActionButton
+                  type="button"
+                  onClick={closeNewExerciseModal}
+                  disabled={newExerciseSaving}
+                  className="rounded-lg border border-white/15 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-60"
+                >
+                  Cancelar
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="button"
+                  onClick={saveNewExerciseFromModal}
+                  disabled={newExerciseSaving}
+                  className="rounded-lg bg-cyan-400 px-4 py-2 text-xs font-black text-slate-950 disabled:opacity-70"
+                >
+                  {newExerciseSaving ? "Guardando..." : "Guardar ejercicio"}
+                </ReliableActionButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

@@ -16,7 +16,8 @@
       "checkAutomatically": "NEVER"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.pf-control-mobile"
     },
     "android": {
       "adaptiveIcon": {

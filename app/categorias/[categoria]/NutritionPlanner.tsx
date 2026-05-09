@@ -63,6 +63,18 @@ type PlanMeal = {
   items: PlanFoodItem[];
 };
 
+type PlanDay = {
+  id: string;
+  nombre: string;
+  comidas: PlanMeal[];
+};
+
+type PlanWeek = {
+  id: string;
+  nombre: string;
+  dias: PlanDay[];
+};
+
 type NutritionTargets = {
   calorias: number;
   proteinas: number;
@@ -83,8 +95,82 @@ type NutritionPlan = {
   notas: string;
   targets: NutritionTargets;
   comidas: PlanMeal[];
+  semanas?: PlanWeek[];
   updatedAt: string;
 };
+
+function planHasWeeks(plan: NutritionPlan): boolean {
+  return Array.isArray(plan.semanas) && plan.semanas.length > 0;
+}
+
+function getActiveWeek(plan: NutritionPlan, weekId: string | null): PlanWeek | null {
+  if (!planHasWeeks(plan)) return null;
+  const list = plan.semanas as PlanWeek[];
+  return list.find((week) => week.id === weekId) || list[0] || null;
+}
+
+function getActiveDay(plan: NutritionPlan, weekId: string | null, dayId: string | null): PlanDay | null {
+  const week = getActiveWeek(plan, weekId);
+  if (!week) return null;
+  const list = week.dias || [];
+  return list.find((day) => day.id === dayId) || list[0] || null;
+}
+
+const ADMIN_VIRTUAL_WEEK: PlanWeek = {
+  id: "virtual-week-1",
+  nombre: "Semana 1",
+  dias: [{ id: "virtual-day-1", nombre: "Día 1", comidas: [] }],
+};
+
+function getAdminDisplayWeeks(plan: NutritionPlan): PlanWeek[] {
+  if (planHasWeeks(plan)) return plan.semanas as PlanWeek[];
+  return [
+    {
+      ...ADMIN_VIRTUAL_WEEK,
+      dias: [
+        {
+          ...ADMIN_VIRTUAL_WEEK.dias[0],
+          comidas: Array.isArray(plan.comidas) ? plan.comidas : [],
+        },
+      ],
+    },
+  ];
+}
+
+function getActiveMeals(plan: NutritionPlan, weekId: string | null, dayId: string | null): PlanMeal[] {
+  const day = getActiveDay(plan, weekId, dayId);
+  if (day) return day.comidas || [];
+  return plan.comidas || [];
+}
+
+function applyMealsTransform(
+  plan: NutritionPlan,
+  weekId: string | null,
+  dayId: string | null,
+  transform: (comidas: PlanMeal[]) => PlanMeal[]
+): NutritionPlan {
+  if (!planHasWeeks(plan)) {
+    return { ...plan, comidas: transform(plan.comidas || []) };
+  }
+  const targetWeek = getActiveWeek(plan, weekId);
+  const targetDay = getActiveDay(plan, weekId, dayId);
+  if (!targetWeek || !targetDay) {
+    return { ...plan, comidas: transform(plan.comidas || []) };
+  }
+  return {
+    ...plan,
+    semanas: (plan.semanas as PlanWeek[]).map((week) =>
+      week.id !== targetWeek.id
+        ? week
+        : {
+            ...week,
+            dias: week.dias.map((day) =>
+              day.id !== targetDay.id ? day : { ...day, comidas: transform(day.comidas || []) }
+            ),
+          }
+    ),
+  };
+}
 
 type AlumnoNutritionAssignment = {
   alumnoNombre: string;
@@ -334,6 +420,8 @@ export default function NutritionPlanner() {
   });
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>(plans[0]?.id || "");
+  const [selectedAdminWeekId, setSelectedAdminWeekId] = useState<string | null>(null);
+  const [selectedAdminDayId, setSelectedAdminDayId] = useState<string | null>(null);
   const [foodSearch, setFoodSearch] = useState("");
   const [newFoodName, setNewFoodName] = useState("");
   const [newFoodGroup, setNewFoodGroup] = useState("Personalizado");
@@ -548,7 +636,7 @@ export default function NutritionPlanner() {
 
     const totals = { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0 };
 
-    for (const meal of selectedPlan.comidas) {
+    for (const meal of getActiveMeals(selectedPlan, selectedAdminWeekId, selectedAdminDayId)) {
       for (const item of meal.items) {
         const food = foodsById.get(item.foodId);
         if (!food) continue;
@@ -566,7 +654,7 @@ export default function NutritionPlanner() {
       carbohidratos: roundValue(totals.carbohidratos),
       grasas: roundValue(totals.grasas),
     };
-  }, [selectedPlan, foodsById]);
+  }, [selectedPlan, foodsById, selectedAdminWeekId, selectedAdminDayId]);
 
   const filteredFoods = useMemo(() => {
     const needle = foodSearch.trim().toLowerCase();
@@ -757,7 +845,7 @@ export default function NutritionPlanner() {
     const riskProfile = calculateRiskProfile(aiBrief);
     const generatedAt = new Date().toLocaleString();
 
-    const mealRows = selectedPlan.comidas
+    const mealRows = getActiveMeals(selectedPlan, selectedAdminWeekId, selectedAdminDayId)
       .map((meal) => {
         const items = meal.items
           .map((item) => {
@@ -997,41 +1085,42 @@ export default function NutritionPlanner() {
   };
 
   const addMeal = (planId: string) => {
-    updatePlan(planId, (plan) => ({
-      ...plan,
-      comidas: [
-        ...plan.comidas,
+    updatePlan(planId, (plan) =>
+      applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) => [
+        ...comidas,
         {
           id: `meal-${Date.now()}`,
-          nombre: `Comida ${plan.comidas.length + 1}`,
+          nombre: `Comida ${comidas.length + 1}`,
           items: [],
         },
-      ],
-    }));
+      ])
+    );
   };
 
   const removeMeal = (planId: string, mealId: string) => {
-    updatePlan(planId, (plan) => ({
-      ...plan,
-      comidas: plan.comidas.filter((meal) => meal.id !== mealId),
-    }));
+    updatePlan(planId, (plan) =>
+      applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) =>
+        comidas.filter((meal) => meal.id !== mealId)
+      )
+    );
   };
 
   const addFoodToMeal = (planId: string, mealId: string, foodId: string) => {
-    updatePlan(planId, (plan) => ({
-      ...plan,
-      comidas: plan.comidas.map((meal) =>
-        meal.id !== mealId
-          ? meal
-          : {
-              ...meal,
-              items: [
-                ...meal.items,
-                { id: `item-${Date.now()}-${Math.random()}`, foodId, gramos: 100 },
-              ],
-            }
-      ),
-    }));
+    updatePlan(planId, (plan) =>
+      applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) =>
+        comidas.map((meal) =>
+          meal.id !== mealId
+            ? meal
+            : {
+                ...meal,
+                items: [
+                  ...meal.items,
+                  { id: `item-${Date.now()}-${Math.random()}`, foodId, gramos: 100 },
+                ],
+              }
+        )
+      )
+    );
   };
 
   const updateMealItem = (
@@ -1040,27 +1129,131 @@ export default function NutritionPlanner() {
     itemId: string,
     patch: Partial<PlanFoodItem>
   ) => {
+    updatePlan(planId, (plan) =>
+      applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) =>
+        comidas.map((meal) =>
+          meal.id !== mealId
+            ? meal
+            : {
+                ...meal,
+                items: meal.items.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
+              }
+        )
+      )
+    );
+  };
+
+  const removeMealItem = (planId: string, mealId: string, itemId: string) => {
+    updatePlan(planId, (plan) =>
+      applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) =>
+        comidas.map((meal) =>
+          meal.id !== mealId ? meal : { ...meal, items: meal.items.filter((item) => item.id !== itemId) }
+        )
+      )
+    );
+  };
+
+  const addNutritionWeek = (planId: string) => {
+    updatePlan(planId, (plan) => {
+      const existingWeeks = Array.isArray(plan.semanas) ? plan.semanas : [];
+      let nextWeeks: PlanWeek[];
+      if (existingWeeks.length === 0) {
+        const seedDayComidas =
+          plan.comidas && plan.comidas.length > 0
+            ? plan.comidas
+            : ([] as PlanMeal[]);
+        const dayId = `day-${Date.now()}`;
+        const weekId = `week-${Date.now()}`;
+        nextWeeks = [
+          {
+            id: weekId,
+            nombre: `Semana ${existingWeeks.length + 1}`,
+            dias: [{ id: dayId, nombre: "Día 1", comidas: seedDayComidas }],
+          },
+        ];
+        setSelectedAdminWeekId(weekId);
+        setSelectedAdminDayId(dayId);
+      } else {
+        const newDayId = `day-${Date.now()}`;
+        const newWeekId = `week-${Date.now()}`;
+        nextWeeks = [
+          ...existingWeeks,
+          {
+            id: newWeekId,
+            nombre: `Semana ${existingWeeks.length + 1}`,
+            dias: [{ id: newDayId, nombre: "Día 1", comidas: [] }],
+          },
+        ];
+        setSelectedAdminWeekId(newWeekId);
+        setSelectedAdminDayId(newDayId);
+      }
+      return { ...plan, semanas: nextWeeks };
+    });
+  };
+
+  const removeNutritionWeek = (planId: string, weekId: string) => {
+    updatePlan(planId, (plan) => {
+      const existing = Array.isArray(plan.semanas) ? plan.semanas : [];
+      const next = existing.filter((week) => week.id !== weekId);
+      if (selectedAdminWeekId === weekId) {
+        const fallbackWeek = next[0] || null;
+        setSelectedAdminWeekId(fallbackWeek?.id || null);
+        setSelectedAdminDayId(fallbackWeek?.dias?.[0]?.id || null);
+      }
+      return { ...plan, semanas: next.length === 0 ? undefined : next };
+    });
+  };
+
+  const renameNutritionWeek = (planId: string, weekId: string, nombre: string) => {
     updatePlan(planId, (plan) => ({
       ...plan,
-      comidas: plan.comidas.map((meal) =>
-        meal.id !== mealId
-          ? meal
-          : {
-              ...meal,
-              items: meal.items.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
-            }
+      semanas: (plan.semanas || []).map((week) =>
+        week.id === weekId ? { ...week, nombre } : week
       ),
     }));
   };
 
-  const removeMealItem = (planId: string, mealId: string, itemId: string) => {
+  const addNutritionDay = (planId: string, weekId: string) => {
     updatePlan(planId, (plan) => ({
       ...plan,
-      comidas: plan.comidas.map((meal) =>
-        meal.id !== mealId
-          ? meal
-          : { ...meal, items: meal.items.filter((item) => item.id !== itemId) }
-      ),
+      semanas: (plan.semanas || []).map((week) => {
+        if (week.id !== weekId) return week;
+        const newDay: PlanDay = {
+          id: `day-${Date.now()}`,
+          nombre: `Día ${week.dias.length + 1}`,
+          comidas: [],
+        };
+        setSelectedAdminWeekId(weekId);
+        setSelectedAdminDayId(newDay.id);
+        return { ...week, dias: [...week.dias, newDay] };
+      }),
+    }));
+  };
+
+  const removeNutritionDay = (planId: string, weekId: string, dayId: string) => {
+    updatePlan(planId, (plan) => ({
+      ...plan,
+      semanas: (plan.semanas || []).map((week) => {
+        if (week.id !== weekId) return week;
+        const filtered = week.dias.filter((day) => day.id !== dayId);
+        if (selectedAdminDayId === dayId) {
+          setSelectedAdminDayId(filtered[0]?.id || null);
+        }
+        return { ...week, dias: filtered };
+      }),
+    }));
+  };
+
+  const renameNutritionDay = (planId: string, weekId: string, dayId: string, nombre: string) => {
+    updatePlan(planId, (plan) => ({
+      ...plan,
+      semanas: (plan.semanas || []).map((week) => {
+        if (week.id !== weekId) return week;
+        return {
+          ...week,
+          dias: week.dias.map((day) => (day.id === dayId ? { ...day, nombre } : day)),
+        };
+      }),
     }));
   };
 
@@ -2206,8 +2399,148 @@ export default function NutritionPlanner() {
           </div>
 
           <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-lg font-black">Programación por semana y día</h3>
+              <ReliableActionButton
+                type="button"
+                onClick={() => addNutritionWeek(selectedPlan.id)}
+                className="rounded-lg border border-cyan-300/60 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+              >
+                + Agregar semana
+              </ReliableActionButton>
+            </div>
+            <p className="mt-1 text-xs text-slate-300">
+              Si el plan no tiene semanas cargadas, mostramos "Semana 1 / Día 1" por defecto. Al agregar la primera semana,
+              las comidas existentes se trasladan al "Día 1" automáticamente.
+            </p>
+
+            {(() => {
+              const displayWeeks = getAdminDisplayWeeks(selectedPlan);
+              const isVirtualMode = !planHasWeeks(selectedPlan);
+              const fallbackWeekId = displayWeeks[0]?.id || null;
+              const activeWeekId = isVirtualMode ? fallbackWeekId : selectedAdminWeekId || fallbackWeekId;
+              const activeWeek = displayWeeks.find((w) => w.id === activeWeekId) || displayWeeks[0];
+              const fallbackDayId = activeWeek?.dias?.[0]?.id || null;
+              const activeDayId = isVirtualMode ? fallbackDayId : selectedAdminDayId || fallbackDayId;
+              const activeDay = activeWeek?.dias?.find((d) => d.id === activeDayId) || activeWeek?.dias?.[0];
+
+              return (
+                <div className="mt-3 space-y-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {displayWeeks.map((week) => {
+                      const isActive = activeWeek?.id === week.id;
+                      return (
+                        <ReliableActionButton
+                          key={week.id}
+                          type="button"
+                          onClick={() => {
+                            if (isVirtualMode) return;
+                            setSelectedAdminWeekId(week.id);
+                            setSelectedAdminDayId(week.dias[0]?.id || null);
+                          }}
+                          className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold ${
+                            isActive
+                              ? "border-cyan-300/70 bg-cyan-400/15 text-cyan-100"
+                              : "border-slate-500/60 bg-slate-700/60 text-slate-200"
+                          }`}
+                        >
+                          {week.nombre}
+                        </ReliableActionButton>
+                      );
+                    })}
+                  </div>
+                  {activeWeek ? (
+                    <div className="rounded-xl border border-white/10 bg-slate-900/40 p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          value={activeWeek.nombre}
+                          onChange={(event) => {
+                            if (isVirtualMode) return;
+                            renameNutritionWeek(selectedPlan.id, activeWeek.id, event.target.value);
+                          }}
+                          disabled={isVirtualMode}
+                          className="flex-1 rounded-lg border border-white/20 bg-slate-700 px-2 py-1 text-sm text-slate-100 disabled:opacity-60"
+                        />
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => {
+                            if (isVirtualMode) {
+                              addNutritionWeek(selectedPlan.id);
+                            } else {
+                              addNutritionDay(selectedPlan.id, activeWeek.id);
+                            }
+                          }}
+                          className="rounded-lg border border-violet-300/60 bg-violet-500/10 px-2.5 py-1 text-[11px] font-semibold text-violet-100"
+                        >
+                          + Día
+                        </ReliableActionButton>
+                        {!isVirtualMode ? (
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => removeNutritionWeek(selectedPlan.id, activeWeek.id)}
+                            className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-200"
+                          >
+                            Quitar semana
+                          </ReliableActionButton>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {activeWeek.dias.map((day) => {
+                          const isActiveDay = activeDay?.id === day.id;
+                          return (
+                            <ReliableActionButton
+                              key={day.id}
+                              type="button"
+                              onClick={() => {
+                                if (isVirtualMode) return;
+                                setSelectedAdminDayId(day.id);
+                              }}
+                              className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
+                                isActiveDay
+                                  ? "border-violet-300/70 bg-violet-500/15 text-violet-100"
+                                  : "border-slate-500/60 bg-slate-700/60 text-slate-200"
+                              }`}
+                            >
+                              {day.nombre}
+                            </ReliableActionButton>
+                          );
+                        })}
+                      </div>
+                      {activeDay && !isVirtualMode ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <input
+                            value={activeDay.nombre}
+                            onChange={(event) =>
+                              renameNutritionDay(selectedPlan.id, activeWeek.id, activeDay.id, event.target.value)
+                            }
+                            className="flex-1 rounded-md border border-white/20 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                          />
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => removeNutritionDay(selectedPlan.id, activeWeek.id, activeDay.id)}
+                            className="rounded-md border border-rose-300/60 bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-200"
+                          >
+                            Quitar día
+                          </ReliableActionButton>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black">Comidas del plan</h3>
+              <h3 className="text-lg font-black">
+                Comidas
+                {planHasWeeks(selectedPlan)
+                  ? ` · ${getActiveWeek(selectedPlan, selectedAdminWeekId)?.nombre || ""} / ${
+                      getActiveDay(selectedPlan, selectedAdminWeekId, selectedAdminDayId)?.nombre || ""
+                    }`
+                  : " del plan"}
+              </h3>
               <ReliableActionButton
                 type="button"
                 onClick={() => addMeal(selectedPlan.id)}
@@ -2218,7 +2551,7 @@ export default function NutritionPlanner() {
             </div>
 
             <div className="mt-4 space-y-4">
-              {selectedPlan.comidas.map((meal) => (
+              {getActiveMeals(selectedPlan, selectedAdminWeekId, selectedAdminDayId).map((meal) => (
                 <div key={meal.id} className="rounded-xl border border-white/10 bg-slate-700/55 p-3">
                   {(() => {
                     const mealSearch = (mealFoodSearch[meal.id] || "").trim().toLowerCase();
@@ -2232,12 +2565,13 @@ export default function NutritionPlanner() {
                     <input
                       value={meal.nombre}
                       onChange={(event) =>
-                        updatePlan(selectedPlan.id, (plan) => ({
-                          ...plan,
-                          comidas: plan.comidas.map((row) =>
-                            row.id === meal.id ? { ...row, nombre: event.target.value } : row
-                          ),
-                        }))
+                        updatePlan(selectedPlan.id, (plan) =>
+                          applyMealsTransform(plan, selectedAdminWeekId, selectedAdminDayId, (comidas) =>
+                            comidas.map((row) =>
+                              row.id === meal.id ? { ...row, nombre: event.target.value } : row
+                            )
+                          )
+                        )
                       }
                       className="flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
                     />

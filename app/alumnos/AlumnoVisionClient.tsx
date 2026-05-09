@@ -5,6 +5,7 @@ import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
+import { signOut } from "next-auth/react";
 import type {
   Alumno,
   BloqueEntrenamiento,
@@ -28,7 +29,83 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica";
+type MainCategory = "inicio" | "rutina" | "nutricion" | "progreso" | "musica" | "cuenta";
+
+// Profile image helpers — kept inline so the cuenta tab can resize/optimize uploads
+// without depending on the configuracion page module.
+const PROFILE_IMG_MAX_DATA_URL_LENGTH = 850_000;
+const PROFILE_IMG_MAX_DIMENSION = 720;
+const PROFILE_IMG_MIN_DIMENSION = 220;
+
+function readFileAsDataUrlForProfile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result) {
+        reject(new Error("No se pudo leer la imagen seleccionada"));
+        return;
+      }
+      resolve(result);
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen seleccionada"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImageFromDataUrlForProfile(dataUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("No se pudo procesar la imagen seleccionada"));
+    image.src = dataUrl;
+  });
+}
+
+async function optimizeProfileImageForCuenta(file: File): Promise<string> {
+  const originalDataUrl = await readFileAsDataUrlForProfile(file);
+  if (originalDataUrl.length <= PROFILE_IMG_MAX_DATA_URL_LENGTH) {
+    return originalDataUrl;
+  }
+  const image = await loadImageFromDataUrlForProfile(originalDataUrl);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("No se pudo preparar la imagen para guardar");
+  }
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+  const maxSide = Math.max(width, height);
+  if (maxSide > PROFILE_IMG_MAX_DIMENSION) {
+    const ratio = PROFILE_IMG_MAX_DIMENSION / maxSide;
+    width = Math.max(1, Math.round(width * ratio));
+    height = Math.max(1, Math.round(height * ratio));
+  }
+  let quality = 0.88;
+  let attempts = 0;
+  while (attempts < 12) {
+    canvas.width = width;
+    canvas.height = height;
+    context.clearRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+    const optimized = canvas.toDataURL("image/jpeg", quality);
+    if (optimized.length <= PROFILE_IMG_MAX_DATA_URL_LENGTH) {
+      return optimized;
+    }
+    if (quality > 0.46) {
+      quality = Math.max(0.42, Number((quality - 0.08).toFixed(2)));
+    } else {
+      const nextWidth = Math.max(PROFILE_IMG_MIN_DIMENSION, Math.round(width * 0.85));
+      const nextHeight = Math.max(PROFILE_IMG_MIN_DIMENSION, Math.round(height * 0.85));
+      if (nextWidth === width && nextHeight === height) break;
+      width = nextWidth;
+      height = nextHeight;
+      quality = 0.78;
+    }
+    attempts += 1;
+  }
+  throw new Error("La imagen es demasiado pesada. Probá con una más liviana");
+}
 
 type AlumnoVisionClientProps = {
   currentName: string;
@@ -94,6 +171,18 @@ type NutritionMeal = {
   artworkUrl?: string;
 };
 
+type NutritionPlanDayLite = {
+  id?: string;
+  nombre?: string;
+  comidas?: NutritionMeal[];
+};
+
+type NutritionPlanWeekLite = {
+  id?: string;
+  nombre?: string;
+  dias?: NutritionPlanDayLite[];
+};
+
 type NutritionPlanLite = {
   id: string;
   nombre?: string;
@@ -102,6 +191,7 @@ type NutritionPlanLite = {
   notas?: string;
   targets?: NutritionTargets;
   comidas?: NutritionMeal[];
+  semanas?: NutritionPlanWeekLite[];
   updatedAt?: string;
 };
 
@@ -607,6 +697,12 @@ const CATEGORY_COPY: Record<
     title: "Playlists",
     subtitle: "Musica asignada para entrenar con enfoque.",
     short: "Musica",
+  },
+  cuenta: {
+    badge: "USER",
+    title: "Mi cuenta",
+    subtitle: "Datos personales, credenciales y cierre de sesion.",
+    short: "Cuenta",
   },
 };
 
@@ -2418,6 +2514,8 @@ export default function AlumnoVisionClient({
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
+  const [selectedNutritionWeekId, setSelectedNutritionWeekId] = useState<string | null>(null);
+  const [selectedNutritionDayId, setSelectedNutritionDayId] = useState<string | null>(null);
   const [nutritionVariationMealId, setNutritionVariationMealId] = useState<string>("");
   const [nutritionVariationDraft, setNutritionVariationDraft] = useState<string>("");
   const [nutritionVariationStatus, setNutritionVariationStatus] = useState<string>("");
@@ -2502,6 +2600,39 @@ export default function AlumnoVisionClient({
   const [routineActionScreenLoading, setRoutineActionScreenLoading] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
+  // Cuenta panel (account tab in dock)
+  type AccountPanelData = {
+    id?: string;
+    email?: string;
+    role?: string;
+    nombreCompleto?: string;
+    edad?: number;
+    fechaNacimiento?: string;
+    altura?: number;
+    telefono?: string | null;
+    direccion?: string | null;
+    emailVerified?: boolean;
+  };
+  const [accountPanelData, setAccountPanelData] = useState<AccountPanelData | null>(null);
+  const [accountPanelLoading, setAccountPanelLoading] = useState(false);
+  const [accountPanelSaving, setAccountPanelSaving] = useState(false);
+  const [accountPanelSigningOut, setAccountPanelSigningOut] = useState(false);
+  const [accountPanelMessage, setAccountPanelMessage] = useState<string | null>(null);
+  const [accountPanelError, setAccountPanelError] = useState<string | null>(null);
+  const [accountPanelNombre, setAccountPanelNombre] = useState("");
+  const [accountPanelEdad, setAccountPanelEdad] = useState("");
+  const [accountPanelAltura, setAccountPanelAltura] = useState("");
+  const [accountPanelTelefono, setAccountPanelTelefono] = useState("");
+  const [accountPanelDireccion, setAccountPanelDireccion] = useState("");
+  const [accountPanelEmail, setAccountPanelEmail] = useState("");
+  const [accountPanelCurrentPassword, setAccountPanelCurrentPassword] = useState("");
+  const [accountPanelNewPassword, setAccountPanelNewPassword] = useState("");
+  const [accountPanelLoaded, setAccountPanelLoaded] = useState(false);
+  const [accountPanelSidebarImage, setAccountPanelSidebarImage] = useState<string | null>(null);
+  const [accountPanelSidebarImageDraft, setAccountPanelSidebarImageDraft] = useState<string | null>(null);
+  const [accountPanelPhotoSaving, setAccountPanelPhotoSaving] = useState(false);
+  const [accountPanelPhotoError, setAccountPanelPhotoError] = useState<string | null>(null);
+  const accountPanelFileInputRef = useRef<HTMLInputElement | null>(null);
   const [routineLastSyncAt, setRoutineLastSyncAt] = useState<number | null>(null);
   const nutritionBarcodeCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const nutritionCalIaCaptureInputRef = useRef<HTMLInputElement | null>(null);
@@ -3927,8 +4058,80 @@ export default function AlumnoVisionClient({
     ];
   }, [nutritionTargets?.carbohidratos, nutritionTargets?.grasas, nutritionTargets?.proteinas]);
 
+  const nutritionWeeks = useMemo<NutritionPlanWeekLite[]>(() => {
+    const rawWeeks = Array.isArray(nutritionPlan?.semanas) ? nutritionPlan?.semanas : [];
+    const normalized = (rawWeeks || []).map((week, weekIndex) => {
+      const weekId = String(week?.id || `week-${weekIndex + 1}`).trim() || `week-${weekIndex + 1}`;
+      const weekName = String(week?.nombre || `Semana ${weekIndex + 1}`).trim() || `Semana ${weekIndex + 1}`;
+      const rawDays = Array.isArray(week?.dias) ? week?.dias : [];
+      const dias = (rawDays || []).map((day, dayIndex) => {
+        const dayId = String(day?.id || `${weekId}-day-${dayIndex + 1}`).trim() || `${weekId}-day-${dayIndex + 1}`;
+        const dayName = String(day?.nombre || `Día ${dayIndex + 1}`).trim() || `Día ${dayIndex + 1}`;
+        const comidas = Array.isArray(day?.comidas) ? day?.comidas : [];
+        return { id: dayId, nombre: dayName, comidas: comidas as NutritionMeal[] };
+      });
+      return { id: weekId, nombre: weekName, dias };
+    });
+    return normalized.filter((week) => Array.isArray(week.dias) && week.dias.length > 0);
+  }, [nutritionPlan?.semanas]);
+
+  const hasRealNutritionWeeks = nutritionWeeks.length > 0;
+
+  // Always present at least one virtual "Semana 1 / Día 1" so the navigator
+  // is visible like in training, even for legacy plans without semanas.
+  const nutritionWeeksDisplay = useMemo<NutritionPlanWeekLite[]>(() => {
+    if (hasRealNutritionWeeks) return nutritionWeeks;
+    const legacyComidas = Array.isArray(nutritionPlan?.comidas)
+      ? (nutritionPlan?.comidas as NutritionMeal[])
+      : [];
+    return [
+      {
+        id: "virtual-week-1",
+        nombre: "Semana 1",
+        dias: [{ id: "virtual-day-1", nombre: "Día 1", comidas: legacyComidas }],
+      },
+    ];
+  }, [hasRealNutritionWeeks, nutritionWeeks, nutritionPlan?.comidas]);
+
+  const activeNutritionWeek = useMemo(() => {
+    if (nutritionWeeksDisplay.length === 0) return null;
+    const targetId = selectedNutritionWeekId || nutritionWeeksDisplay[0]?.id || null;
+    return nutritionWeeksDisplay.find((week) => week.id === targetId) || nutritionWeeksDisplay[0] || null;
+  }, [nutritionWeeksDisplay, selectedNutritionWeekId]);
+
+  const activeNutritionDay = useMemo(() => {
+    if (!activeNutritionWeek) return null;
+    const days = Array.isArray(activeNutritionWeek.dias) ? activeNutritionWeek.dias : [];
+    if (days.length === 0) return null;
+    const targetId = selectedNutritionDayId || days[0]?.id || null;
+    return days.find((day) => day?.id === targetId) || days[0] || null;
+  }, [activeNutritionWeek, selectedNutritionDayId]);
+
+  useEffect(() => {
+    if (nutritionWeeksDisplay.length === 0) return;
+    const weekValid = nutritionWeeksDisplay.some((week) => week.id === selectedNutritionWeekId);
+    if (!weekValid) {
+      const fallback = nutritionWeeksDisplay[0];
+      setSelectedNutritionWeekId(fallback?.id || null);
+      setSelectedNutritionDayId(fallback?.dias?.[0]?.id || null);
+      return;
+    }
+    const weekDays = nutritionWeeksDisplay.find((week) => week.id === selectedNutritionWeekId)?.dias || [];
+    const dayValid = weekDays.some((day) => day?.id === selectedNutritionDayId);
+    if (!dayValid) {
+      setSelectedNutritionDayId(weekDays[0]?.id || null);
+    }
+  }, [nutritionWeeksDisplay, selectedNutritionDayId, selectedNutritionWeekId]);
+
+  const nutritionActiveMeals = useMemo<NutritionMeal[]>(() => {
+    if (activeNutritionDay) {
+      return Array.isArray(activeNutritionDay.comidas) ? activeNutritionDay.comidas : [];
+    }
+    return Array.isArray(nutritionPlan?.comidas) ? (nutritionPlan?.comidas as NutritionMeal[]) : [];
+  }, [activeNutritionDay, nutritionPlan?.comidas]);
+
   const nutritionMealsDetailed = useMemo(() => {
-    const meals = Array.isArray(nutritionPlan?.comidas) ? nutritionPlan.comidas : [];
+    const meals = nutritionActiveMeals;
 
     return meals.map((meal, index) => {
       const mealId = String(meal.id || `meal-${index + 1}`).trim() || `meal-${index + 1}`;
@@ -4007,7 +4210,7 @@ export default function AlumnoVisionClient({
         items,
       };
     });
-  }, [nutritionFoodsById, nutritionPlan?.comidas]);
+  }, [nutritionActiveMeals, nutritionFoodsById]);
 
   const nutritionPlanCaloriesFromMeals = useMemo(
     () => roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalKcal, 0)),
@@ -7830,8 +8033,8 @@ export default function AlumnoVisionClient({
       ),
     },
     {
-      key: "progreso",
-      label: "Control",
+      key: "cuenta",
+      label: "Cuenta",
       icon: (
         <svg viewBox="0 0 24 24" className="pf-a2-dock-icon" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
           <path d="M5 17.5c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" strokeLinecap="round" />
@@ -7842,6 +8045,166 @@ export default function AlumnoVisionClient({
   ];
 
   const isRoutineLogPanelOpen = Boolean(routineExerciseLogTarget);
+
+  const loadAccountPanel = useCallback(async () => {
+    setAccountPanelLoading(true);
+    setAccountPanelError(null);
+    try {
+      const response = await fetch("/api/account", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo cargar la cuenta");
+      }
+      setAccountPanelData(data);
+      setAccountPanelNombre(String(data.nombreCompleto || ""));
+      setAccountPanelEdad(data.edad !== undefined && data.edad !== null ? String(data.edad) : "");
+      setAccountPanelAltura(data.altura !== undefined && data.altura !== null ? String(data.altura) : "");
+      setAccountPanelTelefono(String(data.telefono || ""));
+      setAccountPanelDireccion(String(data.direccion || ""));
+      setAccountPanelEmail(String(data.email || ""));
+      const sidebarImg = typeof data.sidebarImage === "string" && data.sidebarImage.trim().length > 0 ? data.sidebarImage : null;
+      setAccountPanelSidebarImage(sidebarImg);
+      setAccountPanelSidebarImageDraft(sidebarImg);
+      setAccountPanelLoaded(true);
+    } catch (loadError) {
+      setAccountPanelError(loadError instanceof Error ? loadError.message : "No se pudo cargar la cuenta");
+    } finally {
+      setAccountPanelLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeCategory === "cuenta" && !accountPanelLoaded && !accountPanelLoading) {
+      loadAccountPanel();
+    }
+  }, [activeCategory, accountPanelLoaded, accountPanelLoading, loadAccountPanel]);
+
+  const saveAccountPanel = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAccountPanelSaving(true);
+    setAccountPanelError(null);
+    setAccountPanelMessage(null);
+    try {
+      const payload: Record<string, unknown> = {
+        nombreCompleto: accountPanelNombre,
+        edad: accountPanelEdad,
+        altura: accountPanelAltura,
+        telefono: accountPanelTelefono,
+        direccion: accountPanelDireccion,
+        email: accountPanelEmail,
+      };
+      if (accountPanelCurrentPassword) {
+        payload.currentPassword = accountPanelCurrentPassword;
+      }
+      if (accountPanelNewPassword) {
+        payload.newPassword = accountPanelNewPassword;
+      }
+
+      const response = await fetch("/api/account", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudieron guardar los cambios");
+      }
+      setAccountPanelMessage("Cambios guardados.");
+      setAccountPanelCurrentPassword("");
+      setAccountPanelNewPassword("");
+      setAccountPanelLoaded(false);
+      loadAccountPanel();
+    } catch (saveError) {
+      setAccountPanelError(saveError instanceof Error ? saveError.message : "No se pudieron guardar los cambios");
+    } finally {
+      setAccountPanelSaving(false);
+    }
+  }, [
+    accountPanelAltura,
+    accountPanelCurrentPassword,
+    accountPanelDireccion,
+    accountPanelEdad,
+    accountPanelEmail,
+    accountPanelNewPassword,
+    accountPanelNombre,
+    accountPanelTelefono,
+    loadAccountPanel,
+  ]);
+
+  const handleAccountPanelPhotoChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setAccountPanelPhotoError("Seleccioná un archivo de imagen válido");
+      return;
+    }
+    setAccountPanelPhotoError(null);
+    void (async () => {
+      try {
+        const optimized = await optimizeProfileImageForCuenta(file);
+        setAccountPanelSidebarImageDraft(optimized);
+      } catch (processError) {
+        setAccountPanelPhotoError(
+          processError instanceof Error ? processError.message : "No se pudo preparar la imagen"
+        );
+      }
+    })();
+  }, []);
+
+  const handleAccountPanelPhotoRemove = useCallback(() => {
+    setAccountPanelSidebarImageDraft(null);
+    setAccountPanelPhotoError(null);
+  }, []);
+
+  const handleAccountPanelPhotoRevert = useCallback(() => {
+    setAccountPanelSidebarImageDraft(accountPanelSidebarImage);
+    setAccountPanelPhotoError(null);
+  }, [accountPanelSidebarImage]);
+
+  const handleAccountPanelPhotoSave = useCallback(async () => {
+    setAccountPanelPhotoSaving(true);
+    setAccountPanelPhotoError(null);
+    try {
+      const response = await fetch("/api/account", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sidebarImage: accountPanelSidebarImageDraft }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "No se pudo guardar la foto de perfil");
+      }
+      const persisted =
+        typeof data?.user?.sidebarImage === "string" && data.user.sidebarImage.trim().length > 0
+          ? data.user.sidebarImage
+          : null;
+      setAccountPanelSidebarImage(persisted);
+      setAccountPanelSidebarImageDraft(persisted);
+      try {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("pf-sidebar-image-updated", { detail: { forceClear: !persisted } }));
+        }
+      } catch {
+        // ignore
+      }
+    } catch (saveError) {
+      setAccountPanelPhotoError(
+        saveError instanceof Error ? saveError.message : "No se pudo guardar la foto de perfil"
+      );
+    } finally {
+      setAccountPanelPhotoSaving(false);
+    }
+  }, [accountPanelSidebarImageDraft]);
+
+  const handleSignOutPanel = useCallback(async () => {
+    setAccountPanelSigningOut(true);
+    try {
+      await signOut({ redirect: true, callbackUrl: "/auth/login" });
+    } catch {
+      setAccountPanelSigningOut(false);
+    }
+  }, []);
 
   return (
     <main className="pf-alumno-main pf-alumno-v2" data-pf-alumno-category={activeCategory}>
@@ -8539,8 +8902,8 @@ export default function AlumnoVisionClient({
                   <div className="pf-a3-routine-block-stack">
                     {routineVisibleBlocks.map((block, blockIndex) => {
                       const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
-                      const isExpanded = !isUltraMobile || Boolean(expandedRoutineBlocks[blockKey]);
-                      const visibleExercises = isExpanded ? block.ejercicios : [];
+                      const isExpanded = true;
+                      const visibleExercises = block.ejercicios;
                       const hasSupersetFlag =
                         normalizePersonKey(`${block.titulo || ""} ${block.objetivo || ""}`).includes("superserie") ||
                         block.ejercicios.some(
@@ -8801,15 +9164,6 @@ export default function AlumnoVisionClient({
                             </div>
                           ) : null}
 
-                          {isUltraMobile && block.ejercicios.length > 0 ? (
-                            <ReliableActionButton
-                              type="button"
-                              onClick={() => toggleRoutineBlock(blockKey)}
-                              className="pf-a3-routine-toggle"
-                            >
-                              {isExpanded ? "Ocultar ejercicios" : `Ver ejercicios (${block.ejercicios.length})`}
-                            </ReliableActionButton>
-                          ) : null}
                         </section>
                       );
                     })}
@@ -9742,7 +10096,7 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "nutricion" ? (
-            <div className="space-y-4">
+            <div className="pf-a4-nutrition-screen space-y-4">
               <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                 <p className="pf-a2-eyebrow">Plan nutricional</p>
                 <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
@@ -9931,6 +10285,76 @@ export default function AlumnoVisionClient({
                       </div>
                     </div>
                   </article>
+
+                  {(() => {
+                    const currentIdx = Math.max(
+                      0,
+                      nutritionWeeksDisplay.findIndex((week) => week.id === activeNutritionWeek?.id)
+                    );
+                    const canGoPrev = currentIdx > 0;
+                    const canGoNext = currentIdx < nutritionWeeksDisplay.length - 1;
+                    const stepWeek = (step: -1 | 1) => {
+                      const nextIdx = Math.max(0, Math.min(nutritionWeeksDisplay.length - 1, currentIdx + step));
+                      const nextWeek = nutritionWeeksDisplay[nextIdx];
+                      if (!nextWeek) return;
+                      setSelectedNutritionWeekId(nextWeek.id ?? null);
+                      setSelectedNutritionDayId(nextWeek.dias?.[0]?.id || null);
+                    };
+                    const dayList = activeNutritionWeek?.dias || [];
+                    return (
+                      <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
+                        <div className="pf-a3-routine-week-nav" aria-label="Control de semanas de nutrición">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => stepWeek(-1)}
+                            disabled={!canGoPrev}
+                            className="pf-a3-routine-week-arrow"
+                            aria-label="Semana anterior"
+                            title={canGoPrev ? "Semana anterior" : "No hay semana anterior"}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </ReliableActionButton>
+                          <p className="pf-a3-routine-week-label">{activeNutritionWeek?.nombre || "Semana 1"}</p>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => stepWeek(1)}
+                            disabled={!canGoNext}
+                            className="pf-a3-routine-week-arrow"
+                            aria-label="Semana siguiente"
+                            title={canGoNext ? "Semana siguiente" : "No hay semana siguiente"}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                              <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </ReliableActionButton>
+                        </div>
+
+                        <div className="pf-a3-routine-session-scroll" aria-label="Días de la semana">
+                          {dayList.map((day, dayIndex) => {
+                            if (!day) return null;
+                            const isSelected = day.id === activeNutritionDay?.id;
+                            const dayLabel = String(day.nombre || `Día ${dayIndex + 1}`).trim() || `Día ${dayIndex + 1}`;
+                            return (
+                              <ReliableActionButton
+                                key={`nutrition-day-${day.id}`}
+                                type="button"
+                                onClick={() => setSelectedNutritionDayId(day.id ?? null)}
+                                className={`pf-a3-routine-session-chip ${
+                                  isSelected ? "pf-a3-routine-session-chip-active" : ""
+                                }`}
+                                aria-label={`Abrir ${dayLabel}`}
+                                title={dayLabel}
+                              >
+                                {dayLabel}
+                              </ReliableActionButton>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    );
+                  })()}
 
                   <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                     <p className="pf-a2-eyebrow">Distribucion</p>
@@ -10843,6 +11267,240 @@ export default function AlumnoVisionClient({
                     ))}
                   </div>
                 )}
+              </article>
+            </div>
+          ) : null}
+
+          {activeCategory === "cuenta" ? (
+            <div className="space-y-4">
+              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                <p className="pf-a2-eyebrow">Mi cuenta</p>
+                <h2 className="mt-1 text-xl font-black text-white">{accountPanelData?.nombreCompleto || "Cuenta"}</h2>
+                <p className="mt-2 text-sm text-slate-300">
+                  {accountPanelData?.email || "Cargando..."}
+                </p>
+                {accountPanelData?.role ? (
+                  <p className="mt-1 text-xs text-slate-400">Rol: {accountPanelData.role}</p>
+                ) : null}
+                {accountPanelData && accountPanelData.emailVerified === false ? (
+                  <p className="mt-1 text-xs text-amber-300">Email no verificado.</p>
+                ) : null}
+              </article>
+
+              {accountPanelError ? (
+                <article className="rounded-[1rem] border border-rose-300/60 bg-rose-500/10 p-3 text-sm font-bold text-rose-200">
+                  {accountPanelError}
+                </article>
+              ) : null}
+
+              {accountPanelMessage ? (
+                <article className="rounded-[1rem] border border-emerald-300/60 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-200">
+                  {accountPanelMessage}
+                </article>
+              ) : null}
+
+              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                <p className="pf-a2-eyebrow">Datos personales</p>
+                <h3 className="mt-1 text-lg font-black text-white">Editar cuenta</h3>
+                <p className="mt-1 text-xs text-slate-400">
+                  Para cambiar email o contraseña te pedimos la contraseña actual.
+                </p>
+
+                <form onSubmit={saveAccountPanel} className="mt-4 grid gap-3">
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Nombre completo
+                    <input
+                      type="text"
+                      value={accountPanelNombre}
+                      onChange={(event) => setAccountPanelNombre(event.target.value)}
+                      placeholder="Nombre y apellido"
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                      required
+                    />
+                  </label>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                      Edad
+                      <input
+                        type="number"
+                        min={0}
+                        max={120}
+                        value={accountPanelEdad}
+                        onChange={(event) => setAccountPanelEdad(event.target.value)}
+                        className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                      Altura (cm)
+                      <input
+                        type="number"
+                        min={0}
+                        max={250}
+                        step={0.1}
+                        value={accountPanelAltura}
+                        onChange={(event) => setAccountPanelAltura(event.target.value)}
+                        className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Teléfono
+                    <input
+                      type="tel"
+                      value={accountPanelTelefono}
+                      onChange={(event) => setAccountPanelTelefono(event.target.value)}
+                      placeholder="+54 ..."
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                    />
+                  </label>
+
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Dirección
+                    <input
+                      type="text"
+                      value={accountPanelDireccion}
+                      onChange={(event) => setAccountPanelDireccion(event.target.value)}
+                      placeholder="Calle y número"
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                    />
+                  </label>
+
+                  <div className="mt-2 border-t border-white/10 pt-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Credenciales</p>
+                  </div>
+
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Email
+                    <input
+                      type="email"
+                      value={accountPanelEmail}
+                      onChange={(event) => setAccountPanelEmail(event.target.value)}
+                      placeholder="tuemail@dominio.com"
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                    />
+                  </label>
+
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Contraseña actual
+                    <input
+                      type="password"
+                      value={accountPanelCurrentPassword}
+                      onChange={(event) => setAccountPanelCurrentPassword(event.target.value)}
+                      placeholder="Obligatoria para cambiar email o contraseña"
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                    />
+                  </label>
+
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                    Nueva contraseña
+                    <input
+                      type="password"
+                      value={accountPanelNewPassword}
+                      onChange={(event) => setAccountPanelNewPassword(event.target.value)}
+                      placeholder="Opcional"
+                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
+                    />
+                  </label>
+
+                  <ReliableActionButton
+                    type="submit"
+                    disabled={accountPanelSaving || accountPanelLoading}
+                    className="mt-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-70"
+                  >
+                    {accountPanelSaving ? "Guardando..." : "Guardar cambios"}
+                  </ReliableActionButton>
+                </form>
+              </article>
+
+              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                <p className="pf-a2-eyebrow">Foto de perfil</p>
+                <h3 className="mt-1 text-lg font-black text-white">Imagen de cuenta</h3>
+                <p className="mt-2 text-xs text-slate-300">
+                  Elegí una imagen desde tu dispositivo. Se sincroniza con tu ficha en admin.
+                </p>
+
+                <div className="mt-3 flex items-center gap-3">
+                  {accountPanelSidebarImageDraft ? (
+                    <img
+                      src={accountPanelSidebarImageDraft}
+                      alt="Foto de perfil"
+                      className="h-16 w-16 rounded-full border border-cyan-300/40 object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-16 w-16 place-items-center rounded-full border border-slate-600/60 bg-slate-900/60 text-xs font-bold text-slate-400">
+                      Sin foto
+                    </div>
+                  )}
+                  <div className="flex flex-1 flex-wrap gap-2">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => accountPanelFileInputRef.current?.click()}
+                      className="rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-100"
+                    >
+                      Seleccionar imagen
+                    </ReliableActionButton>
+                    {accountPanelSidebarImageDraft ? (
+                      <ReliableActionButton
+                        type="button"
+                        onClick={handleAccountPanelPhotoRemove}
+                        className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-100"
+                      >
+                        Quitar
+                      </ReliableActionButton>
+                    ) : null}
+                  </div>
+                </div>
+
+                <input
+                  ref={accountPanelFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAccountPanelPhotoChange}
+                />
+
+                {accountPanelSidebarImageDraft !== accountPanelSidebarImage ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={handleAccountPanelPhotoSave}
+                      disabled={accountPanelPhotoSaving}
+                      className="rounded-lg bg-cyan-400 px-3 py-2 text-xs font-black text-slate-950 disabled:opacity-70"
+                    >
+                      {accountPanelPhotoSaving ? "Guardando..." : "Guardar foto"}
+                    </ReliableActionButton>
+                    <ReliableActionButton
+                      type="button"
+                      onClick={handleAccountPanelPhotoRevert}
+                      disabled={accountPanelPhotoSaving}
+                      className="rounded-lg border border-slate-500/60 bg-slate-800/60 px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-70"
+                    >
+                      Cancelar
+                    </ReliableActionButton>
+                  </div>
+                ) : null}
+
+                {accountPanelPhotoError ? (
+                  <p className="mt-2 text-xs font-bold text-rose-300">{accountPanelPhotoError}</p>
+                ) : null}
+              </article>
+
+              <article className="rounded-[1.2rem] border border-rose-300/40 bg-rose-500/10 p-4 sm:p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-rose-200">Sesión</p>
+                <h3 className="mt-1 text-lg font-black text-rose-100">Cerrar sesión</h3>
+                <p className="mt-1 text-xs text-rose-100/80">
+                  Si terminaste de usar la app, cerrá tu sesión desde acá.
+                </p>
+                <ReliableActionButton
+                  type="button"
+                  onClick={handleSignOutPanel}
+                  disabled={accountPanelSigningOut}
+                  className="mt-3 w-full rounded-xl border border-rose-200/60 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 disabled:opacity-70"
+                >
+                  {accountPanelSigningOut ? "Cerrando sesión..." : "Cerrar sesión"}
+                </ReliableActionButton>
               </article>
             </div>
           ) : null}

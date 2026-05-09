@@ -23,7 +23,8 @@ const MAX_PERFORMANCE_QUERY_FLAGS: Record<string, string> = {
 
 const MAX_PERFORMANCE_FLAG_KEYS = Object.keys(MAX_PERFORMANCE_QUERY_FLAGS);
 const WEBVIEW_CACHE_QUERY_KEYS = ["pfv", "pfrefresh", ...MAX_PERFORMANCE_FLAG_KEYS];
-const WEBVIEW_MIN_BRANDED_LOADING_MS = 2000;
+const WEBVIEW_MIN_BRANDED_LOADING_MS = 1800;
+const WEBVIEW_MAX_BRANDED_LOADING_MS = 6000;
 const PRODUCTION_HOSTNAME = (() => {
   try {
     return new URL(PRODUCTION_URL).hostname;
@@ -50,6 +51,37 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
     root.classList.add("pf-mobile-webview");
     root.classList.add("pf-mobile-fluid");
     root.classList.add("pf-mobile-maxperf");
+
+    const killHardReloadSplash = () => {
+      try {
+        const splash = document.getElementById("pf-hard-reload-splash");
+        if (splash && splash.parentNode) {
+          splash.parentNode.removeChild(splash);
+        }
+      } catch (_error) {
+        true;
+      }
+    };
+    killHardReloadSplash();
+    setTimeout(killHardReloadSplash, 0);
+    setTimeout(killHardReloadSplash, 200);
+    setTimeout(killHardReloadSplash, 800);
+    setTimeout(killHardReloadSplash, 1800);
+    if (typeof MutationObserver === "function") {
+      try {
+        const observer = new MutationObserver(killHardReloadSplash);
+        observer.observe(document, { childList: true, subtree: true });
+        setTimeout(() => {
+          try {
+            observer.disconnect();
+          } catch (_error) {
+            true;
+          }
+        }, 4000);
+      } catch (_error) {
+        true;
+      }
+    }
 
     const postCurrentRoute = () => {
       try {
@@ -109,9 +141,10 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
       style.id = styleId;
       style.textContent = [
         "html.pf-mobile-maxperf, html.pf-mobile-maxperf body { scroll-behavior: auto !important; }",
-        "html.pf-mobile-maxperf *, html.pf-mobile-maxperf *::before, html.pf-mobile-maxperf *::after { transition: none !important; animation: none !important; }",
+        "html.pf-mobile-maxperf *:not(#pf-hard-reload-splash), html.pf-mobile-maxperf *::before, html.pf-mobile-maxperf *::after { transition: none !important; animation: none !important; }",
+        "html.pf-mobile-maxperf #pf-hard-reload-splash { display: none !important; }",
         "html.pf-mobile-maxperf :where([class*=\\\"shadow\\\"], [style*=\\\"box-shadow\\\"], [class*=\\\"backdrop-blur\\\"]) { box-shadow: none !important; backdrop-filter: none !important; }",
-        "html.pf-mobile-maxperf.pf-mobile-webview, html.pf-mobile-maxperf.pf-mobile-webview body, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-stage, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-dock { background-color: #081a2d !important; background-image: none !important; }",
+        "html.pf-mobile-maxperf.pf-mobile-webview, html.pf-mobile-maxperf.pf-mobile-webview body, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-training-shell main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-stage, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-shell, html.pf-mobile-maxperf.pf-mobile-webview .pf-a2-dock { background-color: #0d1219 !important; background-image: none !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-quick-row { display: grid !important; grid-template-columns: 1fr !important; gap: 0.48rem !important; margin-top: 0.75rem !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-action-btn-quick { width: 100% !important; min-height: 38px !important; opacity: 1 !important; visibility: visible !important; }",
@@ -228,6 +261,7 @@ export default function App() {
   const [showBrandedLoading, setShowBrandedLoading] = useState(true);
   const loadingStartedAtRef = useRef<number>(Date.now());
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingHardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewRef = useRef<any>(null);
   const isWeb = Platform.OS === "web";
 
@@ -238,17 +272,31 @@ export default function App() {
     }
   }, []);
 
+  const clearHardLoadingTimer = useCallback(() => {
+    if (loadingHardTimerRef.current !== null) {
+      clearTimeout(loadingHardTimerRef.current);
+      loadingHardTimerRef.current = null;
+    }
+  }, []);
+
   const beginBrandedLoading = useCallback(() => {
     clearLoadingTimer();
+    clearHardLoadingTimer();
     loadingStartedAtRef.current = Date.now();
     setShowBrandedLoading(true);
-  }, [clearLoadingTimer]);
+    loadingHardTimerRef.current = setTimeout(() => {
+      loadingHardTimerRef.current = null;
+      clearLoadingTimer();
+      setShowBrandedLoading(false);
+    }, WEBVIEW_MAX_BRANDED_LOADING_MS);
+  }, [clearHardLoadingTimer, clearLoadingTimer]);
 
   const endBrandedLoading = useCallback(() => {
     const elapsedMs = Date.now() - loadingStartedAtRef.current;
     const remainingMs = Math.max(0, WEBVIEW_MIN_BRANDED_LOADING_MS - elapsedMs);
 
     clearLoadingTimer();
+    clearHardLoadingTimer();
 
     if (remainingMs === 0) {
       setShowBrandedLoading(false);
@@ -259,13 +307,19 @@ export default function App() {
       loadingTimerRef.current = null;
       setShowBrandedLoading(false);
     }, remainingMs);
-  }, [clearLoadingTimer]);
+  }, [clearHardLoadingTimer, clearLoadingTimer]);
 
   useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      setShowBrandedLoading(false);
+    }, WEBVIEW_MAX_BRANDED_LOADING_MS);
+
     return () => {
+      clearTimeout(safetyTimer);
       clearLoadingTimer();
+      clearHardLoadingTimer();
     };
-  }, [clearLoadingTimer]);
+  }, [clearHardLoadingTimer, clearLoadingTimer]);
 
   const forceRefresh = () => {
     const nextRefreshSeed = Date.now();
@@ -370,11 +424,10 @@ export default function App() {
               key={`${webViewKey}`}
               source={{ uri: activeUrl }}
               style={[styles.webview, showBrandedLoading ? styles.webviewMasked : null]}
-              cacheEnabled={false}
+              cacheEnabled={true}
               incognito={false}
               onLoadStart={() => {
                 setWebError("");
-                beginBrandedLoading();
               }}
               onLoadEnd={endBrandedLoading}
               onNavigationStateChange={(navigationState) => {
@@ -395,7 +448,7 @@ export default function App() {
               javaScriptEnabled
               domStorageEnabled
               nestedScrollEnabled
-              cacheMode="LOAD_NO_CACHE"
+              cacheMode="LOAD_DEFAULT"
               setBuiltInZoomControls={false}
               setDisplayZoomControls={false}
               showsHorizontalScrollIndicator={false}
@@ -433,14 +486,14 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#05070a",
+    backgroundColor: "#0d1219",
   },
   header: {
     paddingHorizontal: 10,
     paddingTop: 1,
     paddingBottom: 1,
     borderBottomWidth: 0,
-    backgroundColor: "#05070a",
+    backgroundColor: "#0d1219",
   },
   headerTopRow: {
     flexDirection: "row",
@@ -489,14 +542,14 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
-    backgroundColor: "#05070a",
+    backgroundColor: "#0d1219",
   },
   webviewMasked: {
     opacity: 0,
   },
   webviewContainer: {
     flex: 1,
-    backgroundColor: "#05070a",
+    backgroundColor: "#0d1219",
   },
   webHintBar: {
     position: "absolute",
@@ -534,7 +587,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#05070a",
+    backgroundColor: "#0d1219",
     gap: 8,
     zIndex: 5,
   },

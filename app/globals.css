@@ -3517,12 +3517,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   isolation: isolate;
   overflow: hidden;
   width: 100%;
-  min-height: 52px;
-  border-radius: 1.12rem;
+  min-height: 42px;
+  border-radius: 0.85rem;
   border: 1px solid rgba(198, 173, 255, 0.74);
   background: linear-gradient(180deg, rgba(151, 83, 255, 0.97), rgba(108, 58, 236, 0.95));
   color: #ffffff;
-  padding: 0.72rem 0.92rem;
+  padding: 0.46rem 0.7rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3556,7 +3556,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: relative;
   z-index: 1;
   color: #ffffff;
-  font-size: clamp(0.88rem, 3.2vw, 1.04rem);
+  font-size: clamp(0.78rem, 2.8vw, 0.92rem);
   line-height: 1.14;
   font-weight: 800;
   letter-spacing: 0.018em;
@@ -3715,7 +3715,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-preset span {
   color: #9eb0cd;
-  font-size: 0.52rem;
+  font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
   text-transform: uppercase;
@@ -3723,8 +3723,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-preset strong {
   color: #eff5ff;
-  font-size: 0.66rem;
-  line-height: 1.1;
+  font-size: 0.88rem;
+  line-height: 1.15;
   font-weight: 800;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -6301,12 +6301,12 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main,
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2 {
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
   }
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 {
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
   }
 
@@ -6338,7 +6338,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-alumno-v2 {
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
   }
 
@@ -6373,7 +6373,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
@@ -6384,7 +6384,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 .pf-alumno-stage,
   html.pf-mobile-fluid .pf-alumno-v2 .pf-alumno-stage {
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
   }
 
@@ -6398,7 +6398,7 @@ video.pf-a3-routine-log-video-frame {
     padding-inline: 0.24rem;
     gap: 0.34rem;
     padding-bottom: 0.08rem;
-    background-color: #081a2d !important;
+    background-color: #05070a !important;
     background-image: none !important;
   }
 
@@ -6864,13 +6864,13 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-routine-finalize-cta {
-    min-height: 48px;
-    border-radius: 0.94rem;
-    padding: 0.64rem 0.72rem;
+    min-height: 38px;
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.6rem;
   }
 
   .pf-a3-routine-finalize-cta-label {
-    font-size: clamp(0.82rem, 4.4vw, 0.96rem);
+    font-size: clamp(0.74rem, 3.4vw, 0.86rem);
   }
 
   .pf-a3-routine-action-panel {
@@ -7290,7 +7290,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-a2-dock {
     border-color: transparent !important;
-    background: #081a2d !important;
+    background: #05070a !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
   }
@@ -7323,5 +7323,156 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-a2-dock-label {
     font-size: 0.52rem;
+  }
+
+  /* Compact mobile-webview nutrition layout: scoped to .pf-a4-nutrition-screen
+     so other tabs keep their original sizes. */
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-card {
+    padding: 0.62rem !important;
+    border-radius: 0.85rem !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-card h2 {
+    font-size: 0.92rem !important;
+    line-height: 1.18 !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-card h3 {
+    font-size: 0.84rem !important;
+    line-height: 1.18 !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-card p {
+    font-size: 0.72rem !important;
+    line-height: 1.32 !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-eyebrow {
+    font-size: 0.56rem !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-kpi {
+    padding: 0.42rem 0.5rem !important;
+    border-radius: 0.62rem !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-kpi p {
+    font-size: 0.7rem !important;
+    line-height: 1.18 !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-kpi p:first-child {
+    font-size: 0.54rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a4-nutrition-plan-action-btn {
+    min-height: 28px !important;
+    font-size: 0.62rem !important;
+    padding: 0.22rem 0.56rem !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a4-nutrition-plan-quick-row {
+    gap: 0.36rem !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Prevent horizontal overflow caused by the day-chip scroll bleeding
+     into the grid. Grid items need min-width: 0 to shrink below content. */
+  html.pf-mobile-webview .pf-a4-nutrition-screen,
+  html.pf-mobile-webview .pf-a4-nutrition-screen > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a2-card,
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a3-routine-session-strip,
+  html.pf-mobile-webview .pf-a4-nutrition-screen article,
+  html.pf-mobile-webview .pf-a4-nutrition-screen section {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+
+  html.pf-mobile-webview .pf-a4-nutrition-screen .pf-a3-routine-session-scroll {
+    max-width: 100% !important;
+  }
+
+  /* DEEP scroll-flicker fix for iOS WebView.
+     Root cause: cards used rgba blue gradients (rgba(11,26,48,0.92)). During fast
+     scroll, iOS drops/repaints tiles and the gradient/transparency makes the
+     re-paint visible as a blue flash. Fix: solid opaque dark backgrounds,
+     contain: paint to isolate cards, no backdrop-filter. */
+  html.pf-mobile-webview .pf-a2-card,
+  html.pf-mobile-webview .pf-a2-kpi,
+  html.pf-mobile-webview .pf-a2-hero,
+  html.pf-mobile-fluid .pf-a2-card,
+  html.pf-mobile-fluid .pf-a2-kpi,
+  html.pf-mobile-fluid .pf-a2-hero {
+    background: #0d1219 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html.pf-mobile-webview .pf-a2-kpi,
+  html.pf-mobile-fluid .pf-a2-kpi {
+    background: #11161e !important;
+  }
+
+  html.pf-mobile-webview .pf-a2-card::before,
+  html.pf-mobile-webview .pf-a2-card::after,
+  html.pf-mobile-webview .pf-a2-hero::before,
+  html.pf-mobile-webview .pf-a2-hero::after,
+  html.pf-mobile-fluid .pf-a2-card::before,
+  html.pf-mobile-fluid .pf-a2-card::after,
+  html.pf-mobile-fluid .pf-a2-hero::before,
+  html.pf-mobile-fluid .pf-a2-hero::after {
+    display: none !important;
+  }
+
+  html.pf-mobile-webview .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]),
+  html.pf-mobile-fluid .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]) {
+    background-color: #131820 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html.pf-mobile-webview,
+  html.pf-mobile-webview body,
+  html.pf-mobile-webview .pf-training-shell,
+  html.pf-mobile-webview .pf-training-shell main,
+  html.pf-mobile-webview .pf-alumno-main,
+  html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2,
+  html.pf-mobile-webview .pf-alumno-v2,
+  html.pf-mobile-webview .pf-alumno-stage,
+  html.pf-mobile-webview .pf-a2-shell,
+  html.pf-mobile-fluid,
+  html.pf-mobile-fluid body,
+  html.pf-mobile-fluid .pf-training-shell,
+  html.pf-mobile-fluid .pf-training-shell main,
+  html.pf-mobile-fluid .pf-alumno-main {
+    background: #0d1219 !important;
+    background-image: none !important;
+  }
+
+  html.pf-mobile-webview body::before,
+  html.pf-mobile-webview body::after,
+  html.pf-mobile-webview .pf-alumno-v2::before,
+  html.pf-mobile-webview .pf-alumno-v2::after,
+  html.pf-mobile-webview .pf-shell-bg-layer,
+  html.pf-mobile-webview .pf-root-atmosphere::before,
+  html.pf-mobile-webview .pf-root-atmosphere::after,
+  html.pf-mobile-fluid .pf-alumno-v2::before,
+  html.pf-mobile-fluid .pf-alumno-v2::after,
+  html.pf-mobile-fluid .pf-shell-bg-layer {
+    display: none !important;
+  }
+
+  html.pf-mobile-webview *,
+  html.pf-mobile-fluid * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }

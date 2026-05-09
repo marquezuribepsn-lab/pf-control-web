@@ -6,6 +6,7 @@ import { markManualSaveIntent, useSharedState } from "./useSharedState";
 
 type AlumnosContextType = {
   alumnos: Alumno[];
+  alumnosLoaded: boolean;
   agregarAlumno: (alumno: Alumno) => void;
   editarAlumno: (nombreActual: string, alumnoActualizado: Partial<Alumno>) => void;
   eliminarAlumno: (nombre: string) => void;
@@ -16,7 +17,7 @@ const AlumnosContext = createContext<AlumnosContextType | undefined>(undefined);
 const STORAGE_KEY = "pf-control-alumnos";
 
 export default function AlumnosProvider({ children }: { children: React.ReactNode }) {
-  const [alumnos, setAlumnos] = useSharedState<Alumno[]>(alumnosIniciales, {
+  const [alumnos, setAlumnos, alumnosLoaded] = useSharedState<Alumno[]>(alumnosIniciales, {
     key: STORAGE_KEY,
     legacyLocalStorageKey: STORAGE_KEY,
   });
@@ -44,8 +45,8 @@ export default function AlumnosProvider({ children }: { children: React.ReactNod
   }
 
   const value = useMemo(
-    () => ({ alumnos, agregarAlumno, editarAlumno, eliminarAlumno }),
-    [alumnos]
+    () => ({ alumnos, alumnosLoaded, agregarAlumno, editarAlumno, eliminarAlumno }),
+    [alumnos, alumnosLoaded]
   );
 
   return <AlumnosContext.Provider value={value}>{children}</AlumnosContext.Provider>;
