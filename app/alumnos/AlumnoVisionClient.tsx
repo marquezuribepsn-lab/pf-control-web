@@ -9897,9 +9897,6 @@ export default function AlumnoVisionClient({
                           };
                           const autoAdvance = (callback: () => void) => {
                             callback();
-                            if (!isLastStep) {
-                              setTimeout(() => setRoutineFinalizeSurveyStep((s) => Math.min(s + 1, totalSteps - 1)), 180);
-                            }
                           };
 
                           if (totalSteps === 0 || !step) {
