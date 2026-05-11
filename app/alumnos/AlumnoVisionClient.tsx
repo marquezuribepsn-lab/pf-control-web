@@ -610,6 +610,11 @@ type RoutineExerciseLogDraft = {
   videoMimeType: string;
 };
 
+type RoutineTrainingProgressSnapshot = {
+  pausedExerciseKey?: string;
+  draftsByExerciseKey?: Record<string, Partial<RoutineExerciseLogDraft>>;
+};
+
 type RoutineStopwatchFloatPosition = {
   x: number;
   y: number;
@@ -716,6 +721,7 @@ const NUTRITION_DAILY_LOGS_KEY = "pf-control-nutricion-diario-v1";
 const NUTRITION_VARIATION_REQUESTS_KEY = "pf-control-nutricion-variaciones-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
+const ROUTINE_TRAINING_PROGRESS_KEY = "pf-control-routine-training-progress-v1";
 const ROUTINE_CHANGE_REQUESTS_KEY = "pf-control-routine-change-requests-v1";
 const SESSION_FEEDBACK_RECORDS_KEY = "pf-control-session-feedback-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
@@ -1651,6 +1657,23 @@ function createRoutineExerciseLogDraft(seed?: Partial<RoutineExerciseLogDraft>):
   };
 }
 
+function sanitizeRoutineExerciseLogDraftForStorage(
+  draft: RoutineExerciseLogDraft
+): Partial<RoutineExerciseLogDraft> {
+  return {
+    fecha: String(draft.fecha || "").trim(),
+    series: String(draft.series || "").trim(),
+    repeticiones: String(draft.repeticiones || "").trim(),
+    pesoKg: String(draft.pesoKg || "").trim(),
+    comentarios: String(draft.comentarios || "").trim(),
+    molestia: Boolean(draft.molestia),
+    dolorUbicacion: String(draft.dolorUbicacion || "").trim(),
+    dolorMomento: String(draft.dolorMomento || "").trim(),
+    dolorSensacion: String(draft.dolorSensacion || "").trim(),
+    videoUrl: String(draft.videoUrl || "").trim(),
+  };
+}
+
 function resolveRoutinePainTrainingRecommendation(input: {
   dolorUbicacion?: string;
   dolorMomento?: string;
@@ -2580,6 +2603,10 @@ export default function AlumnoVisionClient({
   const [routineExerciseLogDraft, setRoutineExerciseLogDraft] = useState<RoutineExerciseLogDraft>(
     createRoutineExerciseLogDraft()
   );
+  const [routineExerciseDraftsByExerciseKey, setRoutineExerciseDraftsByExerciseKey] = useState<
+    Record<string, RoutineExerciseLogDraft>
+  >({});
+  const [routinePausedExerciseKey, setRoutinePausedExerciseKey] = useState<string | null>(null);
   const [routineExerciseLogEditingId, setRoutineExerciseLogEditingId] = useState<string | null>(null);
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
   const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
@@ -6883,6 +6910,163 @@ export default function AlumnoVisionClient({
 
   const selectedRoutineEntry = routineEntries[0] || null;
 
+  const routineTrainingProgressStorageKey = useMemo(() => {
+    if (!selectedRoutineEntry) {
+      return "";
+    }
+
+    return [
+      ROUTINE_TRAINING_PROGRESS_KEY,
+      String(profileEmail || profileName || "").trim().toLowerCase(),
+      String(selectedRoutineEntry.sesion.id || "").trim(),
+      String(selectedRoutineEntry.weekId || "").trim(),
+      String(selectedRoutineEntry.dayId || "").trim(),
+    ].join("::");
+  }, [profileEmail, profileName, selectedRoutineEntry]);
+
+  const routineExerciseTargets = useMemo<RoutineExerciseLogTarget[]>(() => {
+    if (!selectedRoutineEntry) {
+      return [];
+    }
+
+    const targets: RoutineExerciseLogTarget[] = [];
+
+    selectedRoutineEntry.blocks.forEach((block, blockIndex) => {
+      const visibleExercises = Array.isArray(block.ejercicios) ? block.ejercicios : [];
+
+      visibleExercises.forEach((exercise, index) => {
+        const baseExerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
+        const baseExerciseDetail = exercise.ejercicioId
+          ? ejerciciosById.get(exercise.ejercicioId) || null
+          : null;
+        const baseExerciseName = baseExerciseDetail?.nombre || `Ejercicio ${index + 1}`;
+        const superSerieRows = Array.isArray(exercise.superSerie) ? exercise.superSerie : [];
+
+        const rows = [
+          {
+            rowId: baseExerciseId,
+            rowName: baseExerciseName,
+            detail: baseExerciseDetail,
+            series: exercise.series,
+            repeticiones: exercise.repeticiones,
+            descanso: exercise.descanso,
+            carga: exercise.carga,
+            metricas: Array.isArray(exercise.metricas) ? exercise.metricas : [],
+            isSuperSerie: false,
+            rowOrderIndex: index,
+          },
+          ...superSerieRows.map((superItem, superIndex) => {
+            const superDetail = superItem.ejercicioId
+              ? ejerciciosById.get(superItem.ejercicioId) || null
+              : null;
+            const superName = superDetail?.nombre || `Ejercicio combinado ${superIndex + 1}`;
+
+            return {
+              rowId: String(
+                superItem.ejercicioId ||
+                  superItem.id ||
+                  `${baseExerciseId}-super-${superIndex + 1}`
+              ),
+              rowName: `[${baseExerciseName}] ${superName}`,
+              detail: superDetail,
+              series: superItem.series,
+              repeticiones: superItem.repeticiones,
+              descanso: superItem.descanso,
+              carga: superItem.carga,
+              metricas: [],
+              isSuperSerie: true,
+              rowOrderIndex: index * 100 + superIndex + 1,
+            };
+          }),
+        ];
+
+        rows.forEach((row) => {
+          const rowMetricas = Array.isArray(row.metricas)
+            ? (row.metricas as Array<{ nombre?: string; valor?: string }>)
+            : [];
+          const rirMetric = rowMetricas.find((metric) =>
+            normalizePersonKey(metric.nombre || "").includes("rir")
+          );
+          const rowVideoUrl = String(row.detail?.videoUrl || "").trim();
+          const rowDescription =
+            String(row.detail?.objetivo || "").trim() ||
+            (row.isSuperSerie
+              ? `Superserie asignada con ${baseExerciseName}`
+              : "Ejecuta con tecnica y control");
+          const rowTags = Array.from(
+            new Set(
+              [
+                ...(Array.isArray(row.detail?.gruposMusculares)
+                  ? row.detail.gruposMusculares
+                  : []),
+                String(row.detail?.categoria || "").trim(),
+                row.isSuperSerie ? "Superserie" : "",
+              ].filter(Boolean)
+            )
+          ).slice(0, 6);
+          const exerciseKey = buildRoutineExerciseKey(
+            selectedRoutineEntry.sesion.id,
+            selectedRoutineEntry.weekId,
+            selectedRoutineEntry.dayId,
+            block.id,
+            row.rowId,
+            row.rowOrderIndex
+          );
+
+          targets.push({
+            sessionId: selectedRoutineEntry.sesion.id,
+            sessionTitle: selectedRoutineEntry.sesion.titulo,
+            weekId: selectedRoutineEntry.weekId,
+            weekName: selectedRoutineEntry.weekName,
+            dayId: selectedRoutineEntry.dayId,
+            dayName: selectedRoutineEntry.dayName,
+            blockId: block.id,
+            blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+            exerciseId: row.rowId,
+            exerciseName: row.rowName,
+            exerciseKey,
+            prescribedSeries: String(row.series || "").trim(),
+            prescribedRepeticiones: String(row.repeticiones || "").trim(),
+            prescribedCarga: String(row.carga || "").trim(),
+            prescribedDescanso: String(row.descanso || "").trim(),
+            prescribedRir: String(rirMetric?.valor || "").trim(),
+            suggestedVideoUrl: rowVideoUrl,
+            exerciseDescription: rowDescription,
+            exerciseTags: rowTags,
+          });
+        });
+      });
+    });
+
+    return targets;
+  }, [ejerciciosById, selectedRoutineEntry]);
+
+  const routineCurrentExerciseIndex = useMemo(() => {
+    if (!routineExerciseLogTarget) {
+      return -1;
+    }
+
+    return routineExerciseTargets.findIndex(
+      (target) => target.exerciseKey === routineExerciseLogTarget.exerciseKey
+    );
+  }, [routineExerciseLogTarget, routineExerciseTargets]);
+
+  const routineHasPrevExercise = routineCurrentExerciseIndex > 0;
+  const routineHasNextExercise =
+    routineCurrentExerciseIndex >= 0 &&
+    routineCurrentExerciseIndex < routineExerciseTargets.length - 1;
+
+  const routinePausedExerciseTarget = useMemo(() => {
+    if (!routinePausedExerciseKey) {
+      return null;
+    }
+
+    return (
+      routineExerciseTargets.find((target) => target.exerciseKey === routinePausedExerciseKey) ||
+      null
+    );
+  }, [routineExerciseTargets, routinePausedExerciseKey]);
+
   const currentRoutineFeedbackIdentityKey = useMemo(() => {
     if (!selectedRoutineEntry) {
       return "";
@@ -7142,15 +7326,20 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogTarget(target);
+    setRoutinePausedExerciseKey((previous) =>
+      previous === target.exerciseKey ? null : previous
+    );
+    const persistedDraft = routineExerciseDraftsByExerciseKey[target.exerciseKey];
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
         series: String(target.prescribedSeries || "").trim(),
         repeticiones: String(target.prescribedRepeticiones || "").trim(),
         pesoKg: String(target.prescribedCarga || "").trim(),
         videoUrl: String(target.suggestedVideoUrl || "").trim(),
+        ...persistedDraft,
       })
     );
-  }, [clearRoutineExerciseLogStatusTimer]);
+  }, [clearRoutineExerciseLogStatusTimer, routineExerciseDraftsByExerciseKey]);
 
   const closeRoutineExerciseLogPanel = useCallback(() => {
     clearRoutineExerciseLogStatusTimer();
@@ -7160,6 +7349,33 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
   }, [clearRoutineExerciseLogStatusTimer]);
+
+  const pauseRoutineExerciseTraining = useCallback(() => {
+    if (!routineExerciseLogTarget) {
+      return;
+    }
+
+    setRoutinePausedExerciseKey(routineExerciseLogTarget.exerciseKey);
+    closeRoutineExerciseLogPanel();
+  }, [closeRoutineExerciseLogPanel, routineExerciseLogTarget]);
+
+  const goToPreviousRoutineExercise = useCallback(() => {
+    if (!routineHasPrevExercise || routineCurrentExerciseIndex <= 0) {
+      return;
+    }
+
+    const previousTarget = routineExerciseTargets[routineCurrentExerciseIndex - 1];
+    if (!previousTarget) {
+      return;
+    }
+
+    openRoutineExerciseLogPanel(previousTarget);
+  }, [
+    openRoutineExerciseLogPanel,
+    routineCurrentExerciseIndex,
+    routineExerciseTargets,
+    routineHasPrevExercise,
+  ]);
 
   const routineSelectionSnapshotRef = useRef<string | null>(null);
 
@@ -7216,6 +7432,94 @@ export default function AlumnoVisionClient({
       clearRoutineExerciseLogStatusTimer();
     };
   }, [clearRoutineExerciseLogStatusTimer]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!routineTrainingProgressStorageKey) {
+      setRoutineExerciseDraftsByExerciseKey({});
+      setRoutinePausedExerciseKey(null);
+      return;
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(routineTrainingProgressStorageKey);
+      if (!raw) {
+        setRoutineExerciseDraftsByExerciseKey({});
+        setRoutinePausedExerciseKey(null);
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as RoutineTrainingProgressSnapshot;
+      const rawDrafts = parsed && typeof parsed === "object" && parsed.draftsByExerciseKey
+        ? parsed.draftsByExerciseKey
+        : {};
+      const hydratedDrafts: Record<string, RoutineExerciseLogDraft> = {};
+
+      Object.entries(rawDrafts || {}).forEach(([exerciseKey, draft]) => {
+        if (!exerciseKey || !draft || typeof draft !== "object") {
+          return;
+        }
+        hydratedDrafts[exerciseKey] = createRoutineExerciseLogDraft(draft);
+      });
+
+      setRoutineExerciseDraftsByExerciseKey(hydratedDrafts);
+      setRoutinePausedExerciseKey(String(parsed?.pausedExerciseKey || "").trim() || null);
+    } catch {
+      setRoutineExerciseDraftsByExerciseKey({});
+      setRoutinePausedExerciseKey(null);
+    }
+  }, [routineTrainingProgressStorageKey]);
+
+  useEffect(() => {
+    if (!routineExerciseLogTarget?.exerciseKey) {
+      return;
+    }
+
+    setRoutineExerciseDraftsByExerciseKey((previous) => {
+      const draftKey = routineExerciseLogTarget.exerciseKey;
+      const nextDraft = createRoutineExerciseLogDraft(routineExerciseLogDraft);
+      const currentDraft = previous[draftKey];
+      if (currentDraft && JSON.stringify(currentDraft) === JSON.stringify(nextDraft)) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [draftKey]: nextDraft,
+      };
+    });
+  }, [routineExerciseLogDraft, routineExerciseLogTarget]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !routineTrainingProgressStorageKey) {
+      return;
+    }
+
+    const draftsByExerciseKey: Record<string, Partial<RoutineExerciseLogDraft>> = {};
+    Object.entries(routineExerciseDraftsByExerciseKey).forEach(([exerciseKey, draft]) => {
+      if (!exerciseKey || !draft) {
+        return;
+      }
+      draftsByExerciseKey[exerciseKey] = sanitizeRoutineExerciseLogDraftForStorage(draft);
+    });
+
+    const payload: RoutineTrainingProgressSnapshot = {
+      pausedExerciseKey: routinePausedExerciseKey || undefined,
+      draftsByExerciseKey,
+    };
+
+    try {
+      window.sessionStorage.setItem(routineTrainingProgressStorageKey, JSON.stringify(payload));
+    } catch {
+      // Ignore storage restrictions.
+    }
+  }, [
+    routineExerciseDraftsByExerciseKey,
+    routinePausedExerciseKey,
+    routineTrainingProgressStorageKey,
+  ]);
 
   const handleRoutineSessionSelect = useCallback(
     (sessionId: string) => {
@@ -7499,6 +7803,9 @@ export default function AlumnoVisionClient({
       return [payload, ...normalized];
     });
     setRoutineExerciseLogEditingId(null);
+    setRoutinePausedExerciseKey((previous) =>
+      previous === routineExerciseLogTarget.exerciseKey ? null : previous
+    );
     clearRoutineExerciseLogStatusTimer();
     setRoutineExerciseLogStatus(editingLogId ? "Registro actualizado correctamente." : "Registro guardado correctamente.");
     scheduleRoutineExerciseLogStatusReset();
@@ -7911,23 +8218,37 @@ export default function AlumnoVisionClient({
       setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
       return;
     }
-
-    if (existingRoutineSessionFeedback?.answers?.length) {
-      const mappedAnswers: Record<string, string> = {};
-      existingRoutineSessionFeedback.answers.forEach((answer) => {
-        if (answer.questionId && answer.optionId) {
-          mappedAnswers[answer.questionId] = answer.optionId;
-        }
-      });
-      setRoutineFinalizeAnswerByQuestionId(mappedAnswers);
-    } else {
-      setRoutineFinalizeAnswerByQuestionId({});
-    }
+    setRoutineFinalizeAnswerByQuestionId({});
 
     setRoutineFinalizeStatus("");
     setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(true);
-  }, [existingRoutineSessionFeedback, selectedRoutineEntry]);
+  }, [selectedRoutineEntry]);
+
+  const goToNextRoutineExerciseOrFinalize = useCallback(() => {
+    if (routineCurrentExerciseIndex < 0) {
+      return;
+    }
+
+    if (routineHasNextExercise) {
+      const nextTarget = routineExerciseTargets[routineCurrentExerciseIndex + 1];
+      if (!nextTarget) {
+        return;
+      }
+      openRoutineExerciseLogPanel(nextTarget);
+      return;
+    }
+
+    closeRoutineExerciseLogPanel();
+    openRoutineFinalizePanel();
+  }, [
+    closeRoutineExerciseLogPanel,
+    openRoutineExerciseLogPanel,
+    openRoutineFinalizePanel,
+    routineCurrentExerciseIndex,
+    routineExerciseTargets,
+    routineHasNextExercise,
+  ]);
 
   const submitRoutineFinalize = useCallback(() => {
     if (!selectedRoutineEntry) {
@@ -8703,6 +9024,18 @@ export default function AlumnoVisionClient({
                   </div>
 
                   <div className="pf-a3-routine-overview-actions">
+                    {routinePausedExerciseTarget ? (
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => openRoutineExerciseLogPanel(routinePausedExerciseTarget)}
+                        className="pf-a3-routine-resume-btn"
+                        aria-label="Reanudar entrenamiento pausado"
+                        title="Reanudar entrenamiento"
+                      >
+                        Reanudar
+                      </ReliableActionButton>
+                    ) : null}
+
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("change")}
@@ -9586,6 +9919,7 @@ export default function AlumnoVisionClient({
                   aria-modal="true"
                 >
                   <article
+                    key={routineExerciseLogTarget.exerciseKey}
                     className={`pf-a3-routine-log-panel ${
                       isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
                     } ${
@@ -9671,6 +10005,39 @@ export default function AlumnoVisionClient({
                       >
                         Registros
                       </ReliableActionButton>
+                    </div>
+
+                    <div className="pf-a3-routine-log-progress">
+                      <p className="pf-a3-routine-log-progress-label">
+                        Ejercicio{" "}
+                        {routineCurrentExerciseIndex >= 0
+                          ? `${routineCurrentExerciseIndex + 1} de ${routineExerciseTargets.length}`
+                          : `1 de ${Math.max(1, routineExerciseTargets.length)}`}
+                      </p>
+                      <div className="pf-a3-routine-log-progress-actions">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={goToPreviousRoutineExercise}
+                          className="pf-a3-routine-log-progress-btn"
+                          disabled={!routineHasPrevExercise}
+                        >
+                          Anterior
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={pauseRoutineExerciseTraining}
+                          className="pf-a3-routine-log-progress-btn pf-a3-routine-log-progress-btn-pause"
+                        >
+                          Pausar entrenamiento
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={goToNextRoutineExerciseOrFinalize}
+                          className="pf-a3-routine-log-progress-btn pf-a3-routine-log-progress-btn-next"
+                        >
+                          {routineHasNextExercise ? "Siguiente" : "Finalizar"}
+                        </ReliableActionButton>
+                      </div>
                     </div>
 
                     {routineExerciseVideoSource.kind !== "none" ? (
@@ -11740,4 +12107,3 @@ export default function AlumnoVisionClient({
     </main>
   );
 }
-

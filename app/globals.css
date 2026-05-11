@@ -2584,6 +2584,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.34rem;
 }
 
+.pf-a3-routine-resume-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(152, 221, 255, 0.68);
+  background: linear-gradient(155deg, rgba(39, 125, 170, 0.9), rgba(31, 88, 150, 0.88));
+  color: #e9f7ff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 0.42rem 0.74rem;
+}
+
 .pf-a3-routine-icon-btn {
   width: 44px;
   min-width: 44px;
@@ -3590,6 +3601,26 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   transform: translateY(1px) scale(0.996);
 }
 
+@keyframes pf-a3-routine-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pf-a3-routine-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .pf-a3-routine-log-overlay {
   position: fixed;
   inset: 0;
@@ -3599,13 +3630,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     max(0.9rem, calc(env(safe-area-inset-right) + 0.52rem))
     max(0.84rem, env(safe-area-inset-bottom))
     max(0.9rem, calc(env(safe-area-inset-left) + 0.52rem));
-  background: radial-gradient(circle at top, rgba(38, 56, 90, 0.34), transparent 52%), rgba(4, 8, 15, 0.84);
+  background: radial-gradient(circle at top, rgba(69, 113, 183, 0.24), transparent 58%), rgba(4, 8, 15, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  animation: pf-a3-routine-overlay-enter 0.26s ease both;
 }
 
 .pf-a3-routine-log-panel {
@@ -3616,23 +3648,26 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overflow: visible;
   overscroll-behavior: contain;
   box-sizing: border-box;
-  border-radius: 1.04rem;
-  border: 1.5px solid rgba(132, 164, 214, 0.76);
-  background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
+  border-radius: 1.28rem;
+  border: 1px solid rgba(126, 162, 225, 0.52);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(97, 163, 255, 0.16), transparent 48%),
+    linear-gradient(162deg, rgba(8, 16, 30, 0.98), rgba(11, 21, 39, 0.97));
   background-clip: padding-box;
   box-shadow:
-    inset 0 0 0 1px rgba(191, 220, 255, 0.14),
-    0 14px 34px rgba(2, 7, 14, 0.38);
-  padding: 0.82rem 0.8rem 0.9rem;
+    inset 0 0 0 1px rgba(204, 227, 255, 0.1),
+    0 18px 46px rgba(2, 8, 18, 0.42);
+  padding: 1rem 0.96rem 1.04rem;
   margin: auto;
+  animation: pf-a3-routine-panel-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .pf-a3-routine-log-panel::before {
   content: "";
   position: absolute;
   inset: 1px;
-  border-radius: calc(1.04rem - 1px);
-  border: 1px solid rgba(221, 236, 255, 0.26);
+  border-radius: calc(1.28rem - 1px);
+  border: 1px solid rgba(211, 233, 255, 0.16);
   pointer-events: none;
   z-index: 0;
 }
@@ -3704,10 +3739,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-preset {
   min-width: 0;
-  border-radius: 0.64rem;
-  border: 1px solid rgba(95, 115, 149, 0.56);
-  background: rgba(17, 24, 38, 0.9);
-  padding: 0.3rem 0.34rem;
+  border-radius: 0.82rem;
+  border: 1px solid rgba(129, 156, 203, 0.48);
+  background: rgba(18, 28, 45, 0.84);
+  padding: 0.44rem 0.46rem;
   display: flex;
   flex-direction: column;
   gap: 0.14rem;
@@ -3741,9 +3776,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-log-tab {
   justify-content: center;
   min-width: 0;
-  border-radius: 0.72rem;
-  border: 1.5px solid rgba(111, 138, 179, 0.72);
-  background: rgba(23, 31, 47, 0.88);
+  border-radius: 0.84rem;
+  border: 1px solid rgba(130, 159, 202, 0.62);
+  background: rgba(28, 39, 58, 0.84);
   background-clip: padding-box;
   color: #cfdbf2;
   font-size: 0.62rem;
@@ -3751,13 +3786,66 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 700;
   letter-spacing: 0.03em;
   white-space: normal;
-  padding: 0.5rem 0.42rem;
+  padding: 0.58rem 0.46rem;
 }
 
 .pf-a3-routine-log-tab-active {
-  border-color: rgba(171, 132, 255, 0.82);
-  background: linear-gradient(160deg, rgba(145, 86, 255, 0.96), rgba(116, 60, 238, 0.93));
+  border-color: rgba(178, 143, 255, 0.88);
+  background: linear-gradient(160deg, rgba(152, 91, 255, 0.96), rgba(111, 68, 228, 0.92));
   color: #fff;
+}
+
+.pf-a3-routine-log-progress {
+  margin-top: 0.62rem;
+  border-radius: 0.96rem;
+  border: 1px solid rgba(139, 175, 228, 0.42);
+  background: rgba(14, 24, 40, 0.82);
+  padding: 0.56rem 0.6rem;
+  display: grid;
+  gap: 0.44rem;
+}
+
+.pf-a3-routine-log-progress-label {
+  margin: 0;
+  color: #d5e7ff;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-a3-routine-log-progress-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.38rem;
+}
+
+.pf-a3-routine-log-progress-btn {
+  justify-content: center;
+  border-radius: 0.74rem;
+  border: 1px solid rgba(155, 188, 234, 0.44);
+  background: rgba(33, 46, 69, 0.82);
+  color: #e8f2ff;
+  font-size: 0.68rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.48rem 0.4rem;
+}
+
+.pf-a3-routine-log-progress-btn:disabled {
+  opacity: 0.5;
+}
+
+.pf-a3-routine-log-progress-btn-pause {
+  border-color: rgba(132, 214, 255, 0.58);
+  background: rgba(34, 88, 123, 0.52);
+}
+
+.pf-a3-routine-log-progress-btn-next {
+  border-color: rgba(188, 156, 255, 0.66);
+  background: linear-gradient(160deg, rgba(141, 84, 250, 0.94), rgba(107, 64, 224, 0.9));
 }
 
 .pf-a3-routine-action-overlay {
@@ -4155,11 +4243,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-video-wrap {
-  margin-top: 0.56rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(96, 116, 151, 0.6);
-  background: rgba(13, 20, 33, 0.94);
-  padding: 0.44rem;
+  margin-top: 0.62rem;
+  border-radius: 1.02rem;
+  border: 1px solid rgba(122, 150, 193, 0.48);
+  background: rgba(14, 24, 40, 0.9);
+  padding: 0.54rem;
   overflow: hidden;
 }
 
@@ -4208,15 +4296,15 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-pane {
-  margin-top: 0.58rem;
+  margin-top: 0.66rem;
   box-sizing: border-box;
   overflow: visible;
-  border-radius: 0.84rem;
-  border: 1.5px solid rgba(123, 154, 202, 0.66);
-  background: rgba(12, 19, 31, 0.9);
+  border-radius: 1rem;
+  border: 1px solid rgba(129, 164, 219, 0.56);
+  background: rgba(15, 25, 41, 0.86);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px rgba(186, 218, 255, 0.1);
-  padding: 0.52rem;
+  box-shadow: inset 0 0 0 1px rgba(198, 224, 255, 0.08);
+  padding: 0.64rem;
 }
 
 .pf-a3-routine-log-pane-registro {
