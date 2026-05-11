@@ -7330,16 +7330,34 @@ export default function AlumnoVisionClient({
       previous === target.exerciseKey ? null : previous
     );
     const persistedDraft = routineExerciseDraftsByExerciseKey[target.exerciseKey];
+    const shouldRestorePerformanceFields = routinePausedExerciseKey === target.exerciseKey;
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
-        series: String(target.prescribedSeries || "").trim(),
-        repeticiones: String(target.prescribedRepeticiones || "").trim(),
-        pesoKg: String(target.prescribedCarga || "").trim(),
-        videoUrl: String(target.suggestedVideoUrl || "").trim(),
-        ...persistedDraft,
+        fecha: String(persistedDraft?.fecha || "").trim() || getTodayDateInputValue(),
+        series: shouldRestorePerformanceFields
+          ? String(persistedDraft?.series || "").trim() || String(target.prescribedSeries || "").trim()
+          : String(target.prescribedSeries || "").trim(),
+        repeticiones: shouldRestorePerformanceFields
+          ? String(persistedDraft?.repeticiones || "").trim() || String(target.prescribedRepeticiones || "").trim()
+          : String(target.prescribedRepeticiones || "").trim(),
+        pesoKg: shouldRestorePerformanceFields
+          ? String(persistedDraft?.pesoKg || "").trim() || String(target.prescribedCarga || "").trim()
+          : String(target.prescribedCarga || "").trim(),
+        comentarios: String(persistedDraft?.comentarios || ""),
+        molestia: Boolean(persistedDraft?.molestia),
+        dolorUbicacion: String(persistedDraft?.dolorUbicacion || ""),
+        dolorMomento: String(persistedDraft?.dolorMomento || ""),
+        dolorSensacion: String(persistedDraft?.dolorSensacion || ""),
+        videoUrl: shouldRestorePerformanceFields
+          ? String(persistedDraft?.videoUrl || "").trim() || String(target.suggestedVideoUrl || "").trim()
+          : String(target.suggestedVideoUrl || "").trim(),
       })
     );
-  }, [clearRoutineExerciseLogStatusTimer, routineExerciseDraftsByExerciseKey]);
+  }, [
+    clearRoutineExerciseLogStatusTimer,
+    routineExerciseDraftsByExerciseKey,
+    routinePausedExerciseKey,
+  ]);
 
   const closeRoutineExerciseLogPanel = useCallback(() => {
     clearRoutineExerciseLogStatusTimer();
@@ -7453,9 +7471,16 @@ export default function AlumnoVisionClient({
       }
 
       const parsed = JSON.parse(raw) as RoutineTrainingProgressSnapshot;
-      const rawDrafts = parsed && typeof parsed === "object" && parsed.draftsByExerciseKey
-        ? parsed.draftsByExerciseKey
-        : {};
+      const rawDraftsCandidate =
+        parsed && typeof parsed === "object"
+          ? parsed.draftsByExerciseKey
+          : null;
+      const rawDrafts =
+        rawDraftsCandidate &&
+        typeof rawDraftsCandidate === "object" &&
+        !Array.isArray(rawDraftsCandidate)
+          ? rawDraftsCandidate
+          : {};
       const hydratedDrafts: Record<string, RoutineExerciseLogDraft> = {};
 
       Object.entries(rawDrafts || {}).forEach(([exerciseKey, draft]) => {
@@ -8218,12 +8243,34 @@ export default function AlumnoVisionClient({
       setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
       return;
     }
-    setRoutineFinalizeAnswerByQuestionId({});
+    if (existingRoutineSessionFeedback?.answers?.length && selectedRoutineDayFeedbackQuestions.length > 0) {
+      const mappedAnswers: Record<string, string> = {};
+      selectedRoutineDayFeedbackQuestions.forEach((question) => {
+        const existingAnswer = existingRoutineSessionFeedback.answers.find(
+          (answer) => answer.questionId === question.id
+        );
+        if (!existingAnswer?.optionId) {
+          return;
+        }
+
+        const optionStillAvailable = question.options.some(
+          (option) => option.id === existingAnswer.optionId
+        );
+        if (!optionStillAvailable) {
+          return;
+        }
+
+        mappedAnswers[question.id] = existingAnswer.optionId;
+      });
+      setRoutineFinalizeAnswerByQuestionId(mappedAnswers);
+    } else {
+      setRoutineFinalizeAnswerByQuestionId({});
+    }
 
     setRoutineFinalizeStatus("");
     setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(true);
-  }, [selectedRoutineEntry]);
+  }, [existingRoutineSessionFeedback, selectedRoutineDayFeedbackQuestions, selectedRoutineEntry]);
 
   const goToNextRoutineExerciseOrFinalize = useCallback(() => {
     if (routineCurrentExerciseIndex < 0) {
