@@ -7357,9 +7357,7 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogTarget(target);
-    setRoutinePausedExerciseKey((previous) =>
-      previous === target.exerciseKey ? null : previous
-    );
+    setRoutinePausedExerciseKey(null);
     const persistedDraft = routineExerciseDraftsByExerciseKey[target.exerciseKey];
     const shouldRestorePerformanceFields = routinePausedExerciseKey === target.exerciseKey;
     setRoutineExerciseLogDraft(
@@ -8282,7 +8280,7 @@ export default function AlumnoVisionClient({
       setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
       return;
     }
-    if (existingRoutineSessionFeedback?.answers?.length && selectedRoutineDayFeedbackQuestions.length > 0) {
+    if (existingRoutineSessionFeedback?.answers?.length) {
       const mappedAnswers: Record<string, string> = {};
       selectedRoutineDayFeedbackQuestions.forEach((question) => {
         const existingAnswer = existingRoutineSessionFeedback.answers.find(
