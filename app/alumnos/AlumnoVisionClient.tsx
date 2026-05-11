@@ -1674,6 +1674,37 @@ function sanitizeRoutineExerciseLogDraftForStorage(
   };
 }
 
+function resolveRoutineDraftRestoreValue(
+  shouldRestore: boolean,
+  draftValue: string | undefined,
+  targetValue: string | undefined
+): string {
+  const cleanDraft = String(draftValue || "").trim();
+  const cleanTarget = String(targetValue || "").trim();
+  return shouldRestore ? cleanDraft || cleanTarget : cleanTarget;
+}
+
+function areRoutineExerciseLogDraftsEqual(
+  left: RoutineExerciseLogDraft,
+  right: RoutineExerciseLogDraft
+): boolean {
+  return (
+    left.fecha === right.fecha &&
+    left.series === right.series &&
+    left.repeticiones === right.repeticiones &&
+    left.pesoKg === right.pesoKg &&
+    left.comentarios === right.comentarios &&
+    left.molestia === right.molestia &&
+    left.dolorUbicacion === right.dolorUbicacion &&
+    left.dolorMomento === right.dolorMomento &&
+    left.dolorSensacion === right.dolorSensacion &&
+    left.videoUrl === right.videoUrl &&
+    left.videoDataUrl === right.videoDataUrl &&
+    left.videoFileName === right.videoFileName &&
+    left.videoMimeType === right.videoMimeType
+  );
+}
+
 function resolveRoutinePainTrainingRecommendation(input: {
   dolorUbicacion?: string;
   dolorMomento?: string;
@@ -7334,23 +7365,31 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
         fecha: String(persistedDraft?.fecha || "").trim() || getTodayDateInputValue(),
-        series: shouldRestorePerformanceFields
-          ? String(persistedDraft?.series || "").trim() || String(target.prescribedSeries || "").trim()
-          : String(target.prescribedSeries || "").trim(),
-        repeticiones: shouldRestorePerformanceFields
-          ? String(persistedDraft?.repeticiones || "").trim() || String(target.prescribedRepeticiones || "").trim()
-          : String(target.prescribedRepeticiones || "").trim(),
-        pesoKg: shouldRestorePerformanceFields
-          ? String(persistedDraft?.pesoKg || "").trim() || String(target.prescribedCarga || "").trim()
-          : String(target.prescribedCarga || "").trim(),
+        series: resolveRoutineDraftRestoreValue(
+          shouldRestorePerformanceFields,
+          persistedDraft?.series,
+          target.prescribedSeries
+        ),
+        repeticiones: resolveRoutineDraftRestoreValue(
+          shouldRestorePerformanceFields,
+          persistedDraft?.repeticiones,
+          target.prescribedRepeticiones
+        ),
+        pesoKg: resolveRoutineDraftRestoreValue(
+          shouldRestorePerformanceFields,
+          persistedDraft?.pesoKg,
+          target.prescribedCarga
+        ),
         comentarios: String(persistedDraft?.comentarios || ""),
         molestia: Boolean(persistedDraft?.molestia),
         dolorUbicacion: String(persistedDraft?.dolorUbicacion || ""),
         dolorMomento: String(persistedDraft?.dolorMomento || ""),
         dolorSensacion: String(persistedDraft?.dolorSensacion || ""),
-        videoUrl: shouldRestorePerformanceFields
-          ? String(persistedDraft?.videoUrl || "").trim() || String(target.suggestedVideoUrl || "").trim()
-          : String(target.suggestedVideoUrl || "").trim(),
+        videoUrl: resolveRoutineDraftRestoreValue(
+          shouldRestorePerformanceFields,
+          persistedDraft?.videoUrl,
+          target.suggestedVideoUrl
+        ),
       })
     );
   }, [
@@ -7507,7 +7546,7 @@ export default function AlumnoVisionClient({
       const draftKey = routineExerciseLogTarget.exerciseKey;
       const nextDraft = createRoutineExerciseLogDraft(routineExerciseLogDraft);
       const currentDraft = previous[draftKey];
-      if (currentDraft && JSON.stringify(currentDraft) === JSON.stringify(nextDraft)) {
+      if (currentDraft && areRoutineExerciseLogDraftsEqual(currentDraft, nextDraft)) {
         return previous;
       }
       return {
