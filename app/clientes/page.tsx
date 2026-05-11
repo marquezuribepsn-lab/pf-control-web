@@ -246,11 +246,84 @@ type PostSessionFeedbackQuestionLite = {
   options: PostSessionFeedbackOptionLite[];
 };
 
+type PostSessionMeasurementId =
+  | "rpe"
+  | "fatiga"
+  | "sensacion"
+  | "congestion"
+  | "rendimiento"
+  | "cumplimiento"
+  | "observaciones"
+  | "duracion";
+
+type PostSessionMeasurementLite = {
+  id: PostSessionMeasurementId;
+  visible: boolean;
+  obligatoria: boolean;
+};
+
 type PostSessionFeedbackConfigLite = {
   enabled: boolean;
   title?: string;
   questions: PostSessionFeedbackQuestionLite[];
+  measurements?: PostSessionMeasurementLite[];
+  maxPerDay?: number;
 };
+
+const POST_SESSION_MEASUREMENT_CATALOG: Array<{
+  id: PostSessionMeasurementId;
+  nombre: string;
+  descripcion: string;
+}> = [
+  {
+    id: "rpe",
+    nombre: "RPE final",
+    descripcion:
+      "Esfuerzo percibido por el cliente al finalizar la sesión. Se mide en una escala del 1 al 10: 1 = Muy fácil, 10 = Máximo esfuerzo. Útil para ajustar cargas y detectar sobreesfuerzo.",
+  },
+  {
+    id: "fatiga",
+    nombre: "Fatiga percibida",
+    descripcion:
+      "Nivel de fatiga general al terminar la sesión, también en escala del 1 al 10. 1 = Sin fatiga, 10 = Totalmente agotado. Sirve para identificar acumulación de cansancio.",
+  },
+  {
+    id: "sensacion",
+    nombre: "Sensación general",
+    descripcion:
+      "Describe cómo se sintió el cliente emocional y físicamente al terminar. Opciones: Motivado, Satisfecho, Cansado, Frustrado, Desmotivado, Dolorido, etc. Ayuda a detectar desmotivación o signos de sobreentrenamiento.",
+  },
+  {
+    id: "congestion",
+    nombre: "Congestión muscular",
+    descripcion:
+      "Sensación de hinchazón muscular (\"pump\") post entrenamiento. Se mide del 0 al 10, siendo 0 nada de congestión y 10 congestión máxima. Comúnmente usado en planes de hipertrofia.",
+  },
+  {
+    id: "rendimiento",
+    nombre: "Rendimiento percibido",
+    descripcion:
+      "Comparación subjetiva con sesiones anteriores similares. Opciones: Mejor, Igual, Peor. Permite detectar estancamientos o mejoras de rendimiento.",
+  },
+  {
+    id: "cumplimiento",
+    nombre: "Cumplimiento de objetivo",
+    descripcion:
+      "Evalúa si el cliente siente que logró el objetivo del día. Opciones: Cumplido, Parcial, No cumplido. Puede usarse para ajustar la planificación.",
+  },
+  {
+    id: "observaciones",
+    nombre: "Observaciones",
+    descripcion:
+      "Espacio libre para que el cliente deje comentarios sobre la sesión. Ej: molestias, puntos destacados, ejercicios que no pudo hacer.",
+  },
+  {
+    id: "duracion",
+    nombre: "Duración (minutos)",
+    descripcion:
+      "Duración total de la sesión medida en minutos. Permite cruzar con la carga percibida y detectar sesiones muy cortas o extensas.",
+  },
+];
 
 type WeekDayPlanLite = {
   id: string;
@@ -468,7 +541,25 @@ function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedb
   const title = String(row.title || "").trim() || undefined;
   const enabled = row.enabled === true;
 
-  if (!enabled && questions.length === 0 && !title) {
+  const rawMeasurements = Array.isArray(row.measurements) ? row.measurements : [];
+  const validIds = new Set(POST_SESSION_MEASUREMENT_CATALOG.map((entry) => entry.id));
+  const measurements: PostSessionMeasurementLite[] = rawMeasurements
+    .filter((measurement) => measurement && typeof measurement === "object")
+    .map((measurement) => {
+      const measurementRow = measurement as Record<string, unknown>;
+      const id = String(measurementRow.id || "").trim() as PostSessionMeasurementId;
+      return {
+        id,
+        visible: measurementRow.visible === true,
+        obligatoria: measurementRow.obligatoria === true,
+      };
+    })
+    .filter((measurement) => validIds.has(measurement.id));
+
+  const rawMaxPerDay = Number(row.maxPerDay);
+  const maxPerDay = Number.isFinite(rawMaxPerDay) && rawMaxPerDay > 0 ? Math.floor(rawMaxPerDay) : undefined;
+
+  if (!enabled && questions.length === 0 && !title && measurements.length === 0 && !maxPerDay) {
     return undefined;
   }
 
@@ -476,6 +567,8 @@ function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedb
     enabled,
     title,
     questions,
+    measurements: measurements.length > 0 ? measurements : undefined,
+    maxPerDay,
   };
 }
 
@@ -720,19 +813,32 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
                       };
                     });
 
+                  // Empty strings are valid edit states; only fall back when the
+                  // field is genuinely missing (undefined/null).
+                  const blockTituloMissing =
+                    blockRow.titulo === undefined || blockRow.titulo === null;
+                  const blockObjetivoMissing =
+                    blockRow.objetivo === undefined || blockRow.objetivo === null;
+
                   return {
                     id: String(blockRow.id || `block-${blockIndex}`),
-                    titulo: String(blockRow.titulo || `Bloque ${blockIndex + 1}`),
-                    objetivo: String(blockRow.objetivo || ""),
+                    titulo: blockTituloMissing ? `Bloque ${blockIndex + 1}` : String(blockRow.titulo),
+                    objetivo: blockObjetivoMissing ? "" : String(blockRow.objetivo),
                     ejercicios,
                   };
                 });
 
+              const dayDiaMissing = dayRow.dia === undefined || dayRow.dia === null;
+              const dayPlanificacionMissing =
+                dayRow.planificacion === undefined || dayRow.planificacion === null;
+              const dayObjetivoMissing =
+                dayRow.objetivo === undefined || dayRow.objetivo === null;
+
               return {
                 id: String(dayRow.id || `day-${dayIndex}`),
-                dia: String(dayRow.dia || `Dia ${dayIndex + 1}`),
-                planificacion: String(dayRow.planificacion || ""),
-                objetivo: String(dayRow.objetivo || ""),
+                dia: dayDiaMissing ? `Dia ${dayIndex + 1}` : String(dayRow.dia),
+                planificacion: dayPlanificacionMissing ? "" : String(dayRow.planificacion),
+                objetivo: dayObjetivoMissing ? "" : String(dayRow.objetivo),
                 sesionId: String(dayRow.sesionId || ""),
                 oculto: dayRow.oculto === true ? true : undefined,
                 entrenamiento: entrenamientoRaw
@@ -1283,7 +1389,7 @@ export default function ClientesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [clientesSection, setClientesSection] = useState<ClientesSection>("clientes");
   const [isDetailMode, setIsDetailMode] = useState(false);
   const [userPhotos, setUserPhotos] = useState<{ byEmail: Record<string, string>; byName: Record<string, string> }>({ byEmail: {}, byName: {} });
@@ -1528,6 +1634,72 @@ export default function ClientesPage() {
     useState<TrainingStructureMenuState>(null);
   const [trainingBlockMenu, setTrainingBlockMenu] = useState<TrainingBlockMenuState>(null);
   const [trainingBlockEditingId, setTrainingBlockEditingId] = useState<string | null>(null);
+  const [feedbackModalTarget, setFeedbackModalTarget] = useState<{ weekId: string; dayId: string } | null>(null);
+  const [feedbackModalMeasurements, setFeedbackModalMeasurements] = useState<PostSessionMeasurementLite[]>([]);
+  const [feedbackModalMaxPerDay, setFeedbackModalMaxPerDay] = useState<string>("1");
+  const [feedbackModalTitle, setFeedbackModalTitle] = useState<string>("");
+
+  const openFeedbackModal = (
+    weekId: string,
+    dayId: string,
+    existingConfig?: PostSessionFeedbackConfigLite | null
+  ) => {
+    const config = existingConfig;
+    const baseMap = new Map<PostSessionMeasurementId, PostSessionMeasurementLite>();
+    if (Array.isArray(config?.measurements)) {
+      for (const measurement of config.measurements!) {
+        baseMap.set(measurement.id, measurement);
+      }
+    }
+    const measurements: PostSessionMeasurementLite[] = POST_SESSION_MEASUREMENT_CATALOG.map((entry) => {
+      const existing = baseMap.get(entry.id);
+      return existing
+        ? { id: entry.id, visible: existing.visible, obligatoria: existing.obligatoria }
+        : { id: entry.id, visible: false, obligatoria: false };
+    });
+    setFeedbackModalMeasurements(measurements);
+    setFeedbackModalMaxPerDay(config?.maxPerDay !== undefined ? String(config.maxPerDay) : "1");
+    setFeedbackModalTitle(config?.title || "");
+    setFeedbackModalTarget({ weekId, dayId });
+  };
+
+  const closeFeedbackModal = () => {
+    setFeedbackModalTarget(null);
+  };
+
+  const saveFeedbackModal = () => {
+    if (!feedbackModalTarget) return;
+    const parsedMax = parseInt(feedbackModalMaxPerDay, 10);
+    const maxPerDay = Number.isFinite(parsedMax) && parsedMax > 0 ? parsedMax : undefined;
+    applyTrainingDayPostSessionFeedbackMeasurements(
+      feedbackModalTarget.weekId,
+      feedbackModalTarget.dayId,
+      feedbackModalMeasurements,
+      maxPerDay,
+      feedbackModalTitle
+    );
+    setFeedbackModalTarget(null);
+  };
+
+  const toggleFeedbackModalMeasurement = (
+    id: PostSessionMeasurementId,
+    field: "visible" | "obligatoria",
+    value: boolean
+  ) => {
+    setFeedbackModalMeasurements((prev) =>
+      prev.map((measurement) => {
+        if (measurement.id !== id) return measurement;
+        if (field === "obligatoria" && value && !measurement.visible) {
+          // Forcing visible when obligatoria is enabled
+          return { ...measurement, visible: true, obligatoria: true };
+        }
+        if (field === "visible" && !value && measurement.obligatoria) {
+          return { ...measurement, visible: false, obligatoria: false };
+        }
+        return { ...measurement, [field]: value };
+      })
+    );
+  };
   const [trainingBlockGridConfigOpenId, setTrainingBlockGridConfigOpenId] =
     useState<string | null>(null);
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
@@ -1535,7 +1707,10 @@ export default function ClientesPage() {
   const trainingBlockMenuRef = useRef<HTMLDivElement | null>(null);
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
-  const isAdmin = userRole === 'ADMIN';
+  // While the session is still loading, assume admin so the editor view shows
+  // immediately on refresh instead of flashing the read-only "Vista cliente".
+  // Once the session resolves, the real role takes over.
+  const isAdmin = userRole === 'ADMIN' || sessionStatus === 'loading';
 
   useEffect(() => {
     const safeDecodeParam = (value: string | null) => {
@@ -2553,6 +2728,7 @@ export default function ClientesPage() {
 
     const selectedTipo = toPlanPersonaTipo(selectedClient.tipo);
     const selectedOwnerKey = buildTrainingOwnerKey(selectedTipo, selectedClient.nombre);
+    markManualSaveIntent(WEEK_PLAN_KEY);
     setWeekStoreRaw((prev) => {
       const base = normalizeWeekStore(prev);
       const planes = [...base.planes];
@@ -2860,6 +3036,23 @@ export default function ClientesPage() {
     updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
       ...feedback,
       title: value,
+    }));
+  };
+
+  const applyTrainingDayPostSessionFeedbackMeasurements = (
+    weekId: string,
+    dayId: string,
+    measurements: PostSessionMeasurementLite[],
+    maxPerDay: number | undefined,
+    title: string | undefined
+  ) => {
+    markManualSaveIntent(WEEK_PLAN_KEY);
+    updateTrainingDayPostSessionFeedback(weekId, dayId, (feedback) => ({
+      ...feedback,
+      enabled: true,
+      title: title?.trim() || feedback.title || "Feedback post sesion",
+      measurements,
+      maxPerDay,
     }));
   };
 
@@ -5763,152 +5956,57 @@ export default function ClientesPage() {
                                         </p>
                                         <p className="mt-1 text-xs text-emerald-50/90">
                                           Este cuestionario se muestra al alumno al finalizar el dia.
+                                          {selectedTrainingDayFeedbackConfig?.enabled
+                                            ? " · Activo."
+                                            : " · Inactivo."}
                                         </p>
                                       </div>
 
-                                      <label className="inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-100">
-                                        <input
-                                          type="checkbox"
-                                          checked={Boolean(selectedTrainingDayFeedbackConfig?.enabled)}
-                                          onChange={(event) =>
-                                            toggleTrainingDayPostSessionFeedbackEnabled(
-                                              selectedTrainingWeek.id,
-                                              selectedTrainingDay.id,
-                                              event.target.checked
-                                            )
-                                          }
-                                          className="h-3.5 w-3.5 accent-emerald-400"
-                                        />
-                                        Activar feedback
-                                      </label>
-                                    </div>
-
-                                    <label className="mt-3 block space-y-1">
-                                      <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-200">
-                                        Titulo opcional
-                                      </span>
-                                      <input
-                                        value={selectedTrainingDayFeedbackConfig?.title || ""}
-                                        onChange={(event) =>
-                                          updateTrainingDayPostSessionFeedbackTitle(
+                                      <ReliableActionButton
+                                        type="button"
+                                        onClick={() =>
+                                          openFeedbackModal(
                                             selectedTrainingWeek.id,
                                             selectedTrainingDay.id,
-                                            event.target.value
+                                            selectedTrainingDayFeedbackConfig
                                           )
                                         }
-                                        className="w-full rounded-lg border border-white/20 bg-slate-900/75 px-3 py-2 text-sm text-white"
-                                        placeholder="Ej: Como te sentiste al cerrar la sesion"
-                                      />
-                                    </label>
+                                        className="rounded-full border border-emerald-300/45 bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-50 hover:bg-emerald-500/30"
+                                      >
+                                        {selectedTrainingDayFeedbackConfig?.enabled
+                                          ? "Editar feedback"
+                                          : "Activar feedback"}
+                                      </ReliableActionButton>
+                                    </div>
 
-                                    {selectedTrainingDayFeedbackConfig?.enabled ? (
-                                      <div className="mt-3 space-y-3">
-                                        {selectedTrainingDayFeedbackQuestions.map((question, questionIndex) => (
-                                          <article
-                                            key={question.id}
-                                            className="rounded-xl border border-white/15 bg-slate-900/60 p-3"
-                                          >
-                                            <div className="flex flex-wrap items-center gap-2">
-                                              <input
-                                                value={question.prompt || ""}
-                                                onChange={(event) =>
-                                                  updateTrainingDayPostSessionFeedbackQuestionPrompt(
-                                                    selectedTrainingWeek.id,
-                                                    selectedTrainingDay.id,
-                                                    question.id,
-                                                    event.target.value
-                                                  )
-                                                }
-                                                className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm text-white"
-                                                placeholder={`Pregunta ${questionIndex + 1}`}
-                                              />
-                                              <ReliableActionButton
-                                                type="button"
-                                                onClick={() =>
-                                                  removeTrainingDayPostSessionFeedbackQuestion(
-                                                    selectedTrainingWeek.id,
-                                                    selectedTrainingDay.id,
-                                                    question.id
-                                                  )
-                                                }
-                                                className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-2.5 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
+                                    {selectedTrainingDayFeedbackConfig?.enabled && Array.isArray(selectedTrainingDayFeedbackConfig?.measurements) && selectedTrainingDayFeedbackConfig.measurements.length > 0 ? (
+                                      <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {selectedTrainingDayFeedbackConfig.measurements
+                                          .filter((m) => m.visible)
+                                          .map((m) => {
+                                            const catalog = POST_SESSION_MEASUREMENT_CATALOG.find((entry) => entry.id === m.id);
+                                            if (!catalog) return null;
+                                            return (
+                                              <span
+                                                key={m.id}
+                                                className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                                                  m.obligatoria
+                                                    ? "border-amber-300/60 bg-amber-500/15 text-amber-100"
+                                                    : "border-emerald-300/40 bg-emerald-500/12 text-emerald-100"
+                                                }`}
                                               >
-                                                Eliminar
-                                              </ReliableActionButton>
-                                            </div>
-
-                                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                                              {question.options.map((option, optionIndex) => (
-                                                <div key={option.id} className="flex items-center gap-2">
-                                                  <input
-                                                    value={option.label || ""}
-                                                    onChange={(event) =>
-                                                      updateTrainingDayPostSessionFeedbackOptionLabel(
-                                                        selectedTrainingWeek.id,
-                                                        selectedTrainingDay.id,
-                                                        question.id,
-                                                        option.id,
-                                                        event.target.value
-                                                      )
-                                                    }
-                                                    className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs text-white"
-                                                    placeholder={`Opcion ${optionIndex + 1}`}
-                                                  />
-                                                  <ReliableActionButton
-                                                    type="button"
-                                                    onClick={() =>
-                                                      removeTrainingDayPostSessionFeedbackOption(
-                                                        selectedTrainingWeek.id,
-                                                        selectedTrainingDay.id,
-                                                        question.id,
-                                                        option.id
-                                                      )
-                                                    }
-                                                    disabled={question.options.length <= 2}
-                                                    className="rounded-md border border-rose-300/30 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100 disabled:opacity-45"
-                                                  >
-                                                    x
-                                                  </ReliableActionButton>
-                                                </div>
-                                              ))}
-                                            </div>
-
-                                            <div className="mt-2 flex justify-end">
-                                              <ReliableActionButton
-                                                type="button"
-                                                onClick={() =>
-                                                  addTrainingDayPostSessionFeedbackOption(
-                                                    selectedTrainingWeek.id,
-                                                    selectedTrainingDay.id,
-                                                    question.id
-                                                  )
-                                                }
-                                                className="rounded-full border border-emerald-300/35 bg-emerald-500/12 px-2.5 py-1 text-[11px] font-semibold text-emerald-100"
-                                              >
-                                                Agregar opcion
-                                              </ReliableActionButton>
-                                            </div>
-                                          </article>
-                                        ))}
-
-                                        <ReliableActionButton
-                                          type="button"
-                                          onClick={() =>
-                                            addTrainingDayPostSessionFeedbackQuestion(
-                                              selectedTrainingWeek.id,
-                                              selectedTrainingDay.id
-                                            )
-                                          }
-                                          className="rounded-full border border-emerald-300/40 bg-emerald-500/14 px-3 py-1.5 text-xs font-semibold text-emerald-100"
-                                        >
-                                          Agregar pregunta
-                                        </ReliableActionButton>
+                                                {catalog.nombre}
+                                                {m.obligatoria ? " *" : ""}
+                                              </span>
+                                            );
+                                          })}
+                                        {selectedTrainingDayFeedbackConfig.maxPerDay ? (
+                                          <span className="rounded-full border border-cyan-300/40 bg-cyan-500/12 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-100">
+                                            Máx/día: {selectedTrainingDayFeedbackConfig.maxPerDay}
+                                          </span>
+                                        ) : null}
                                       </div>
-                                    ) : (
-                                      <p className="mt-3 text-xs text-slate-300">
-                                        Activa el feedback para asignar preguntas multiples al cierre del dia.
-                                      </p>
-                                    )}
+                                    ) : null}
                                   </section>
 
                                   <div className="mt-1 border-t border-cyan-300/18 pt-4">
@@ -6093,32 +6191,6 @@ export default function ClientesPage() {
                                               </div>
                                             </div>
 
-                                            {trainingBlockEditingId === block.id ? (
-                                              <input
-                                                value={block.objetivo || ""}
-                                                onChange={(event) =>
-                                                  updateTrainingBlockField(
-                                                    selectedTrainingWeek.id,
-                                                    selectedTrainingDay.id,
-                                                    block.id,
-                                                    "objetivo",
-                                                    event.target.value
-                                                  )
-                                                }
-                                                onBlur={() => setTrainingBlockEditingId(null)}
-                                                onKeyDown={(event) => {
-                                                  if (event.key === "Enter" || event.key === "Escape") {
-                                                    (event.target as HTMLInputElement).blur();
-                                                  }
-                                                }}
-                                                className="mt-2 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-1.5 text-sm text-white"
-                                                placeholder="Objetivo bloque"
-                                              />
-                                            ) : (
-                                              block.objetivo ? (
-                                                <p className="mt-1 px-1 text-sm font-semibold text-cyan-100">{block.objetivo}</p>
-                                              ) : null
-                                            )}
 
                                             {trainingBlockGridConfigOpenId === block.id ? (
                                               <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-2 pl-3 pr-1.5">
@@ -6833,23 +6905,69 @@ export default function ClientesPage() {
                                                                   ))}
                                                                 </div>
                                                               </div>
-                                                              <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                                                                <ReliableActionButton
-                                                                  type="button"
-                                                                  onClick={() =>
-                                                                    removeTrainingSuperSerieExercise(
-                                                                      selectedTrainingWeek.id,
-                                                                      selectedTrainingDay.id,
-                                                                      block.id,
-                                                                      exercise.id,
-                                                                      superKey
-                                                                    )
-                                                                  }
-                                                                  className="text-rose-200 hover:text-rose-100"
-                                                                >
-                                                                  Eliminar
-                                                                </ReliableActionButton>
-                                                              </div>
+                                                              {(() => {
+                                                                const superActionTarget: TrainingExercisePanelTarget = {
+                                                                  weekId: selectedTrainingWeek.id,
+                                                                  weekName: selectedTrainingWeek.nombre || "Semana",
+                                                                  dayId: selectedTrainingDay.id,
+                                                                  dayName: selectedTrainingDay.dia || "Dia",
+                                                                  blockId: block.id,
+                                                                  blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+                                                                  exerciseId: `${exercise.id}::${superKey}`,
+                                                                  exerciseName: superMeta?.nombre || "Ejercicio",
+                                                                  sessionId: `plan-${selectedClient?.id || "cliente"}`,
+                                                                  sessionTitle:
+                                                                    selectedTrainingDay.planificacion ||
+                                                                    selectedTrainingDay.dia ||
+                                                                    "Plan de entrenamiento",
+                                                                  currentSeries: superItem.series || "",
+                                                                  currentRepeticiones: superItem.repeticiones || "",
+                                                                  currentCarga: superItem.carga || "",
+                                                                };
+                                                                return (
+                                                                  <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+                                                                    <span className="text-cyan-200">Desglosar serie</span>
+                                                                    <ReliableActionButton
+                                                                      type="button"
+                                                                      onClick={() =>
+                                                                        openTrainingExercisePanel("configuracion", superActionTarget)
+                                                                      }
+                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                    >
+                                                                      Configuración
+                                                                    </ReliableActionButton>
+                                                                    <ReliableActionButton
+                                                                      type="button"
+                                                                      onClick={() => openTrainingExercisePanel("ver-pesos", superActionTarget)}
+                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                    >
+                                                                      Ver pesos
+                                                                    </ReliableActionButton>
+                                                                    <ReliableActionButton
+                                                                      type="button"
+                                                                      onClick={() => openTrainingExercisePanel("registrar-peso", superActionTarget)}
+                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                    >
+                                                                      Registrar peso
+                                                                    </ReliableActionButton>
+                                                                    <ReliableActionButton
+                                                                      type="button"
+                                                                      onClick={() =>
+                                                                        removeTrainingSuperSerieExercise(
+                                                                          selectedTrainingWeek.id,
+                                                                          selectedTrainingDay.id,
+                                                                          block.id,
+                                                                          exercise.id,
+                                                                          superKey
+                                                                        )
+                                                                      }
+                                                                      className="text-rose-200 hover:text-rose-100"
+                                                                    >
+                                                                      Eliminar
+                                                                    </ReliableActionButton>
+                                                                  </div>
+                                                                );
+                                                              })()}
                                                             </div>
                                                           );
                                                         })}
@@ -7488,6 +7606,151 @@ export default function ClientesPage() {
       </section>
         </>
       )}
+
+      {feedbackModalTarget ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/85 px-3 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-3xl border border-emerald-300/30 bg-slate-900/95 p-5 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Feedback post sesión</p>
+                <h2 className="mt-1 text-xl font-black text-white">Mediciones para el cierre del día</h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  Elegí qué mediciones le mostramos al alumno cuando finaliza la sesión. Las marcadas como obligatorias deben completarse antes de guardar.
+                </p>
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={closeFeedbackModal}
+                aria-label="Cerrar"
+                className="rounded-full border border-white/15 bg-slate-800 px-2 py-1 text-sm text-slate-200 hover:bg-slate-700"
+              >
+                ✕
+              </ReliableActionButton>
+            </div>
+
+            <label className="mt-4 grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+              Título del cuestionario (opcional)
+              <input
+                value={feedbackModalTitle}
+                onChange={(event) => setFeedbackModalTitle(event.target.value)}
+                placeholder="Ej: ¿Cómo te sentiste al cerrar la sesión?"
+                className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+              />
+            </label>
+
+            <div className="mt-4 max-h-[55vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/40">
+              <div className="grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] gap-2 border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                <span>Medición</span>
+                <span>Descripción</span>
+                <span className="text-center">Visible</span>
+                <span className="text-center">Obligatoria</span>
+              </div>
+              {POST_SESSION_MEASUREMENT_CATALOG.map((entry, index) => {
+                const state =
+                  feedbackModalMeasurements.find((m) => m.id === entry.id) || {
+                    id: entry.id,
+                    visible: false,
+                    obligatoria: false,
+                  };
+                return (
+                  <div
+                    key={entry.id}
+                    className={`grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] items-center gap-2 px-3 py-3 text-xs ${
+                      index % 2 === 1 ? "bg-slate-900/40" : ""
+                    } border-b border-white/5`}
+                  >
+                    <p className="font-bold text-slate-100">{entry.nombre}</p>
+                    <p className="text-slate-300">{entry.descripcion}</p>
+                    <div className="flex justify-center gap-1">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => toggleFeedbackModalMeasurement(entry.id, "visible", true)}
+                        className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
+                          state.visible
+                            ? "border-cyan-300/70 bg-cyan-400/30 text-cyan-50"
+                            : "border-white/15 bg-slate-800/60 text-slate-300"
+                        }`}
+                      >
+                        SÍ
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => toggleFeedbackModalMeasurement(entry.id, "visible", false)}
+                        className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
+                          !state.visible
+                            ? "border-cyan-300/70 bg-cyan-400/30 text-cyan-50"
+                            : "border-white/15 bg-slate-800/60 text-slate-300"
+                        }`}
+                      >
+                        NO
+                      </ReliableActionButton>
+                    </div>
+                    <div className="flex justify-center gap-1">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => toggleFeedbackModalMeasurement(entry.id, "obligatoria", true)}
+                        className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
+                          state.obligatoria
+                            ? "border-amber-300/70 bg-amber-400/25 text-amber-50"
+                            : "border-white/15 bg-slate-800/60 text-slate-300"
+                        }`}
+                      >
+                        SÍ
+                      </ReliableActionButton>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => toggleFeedbackModalMeasurement(entry.id, "obligatoria", false)}
+                        className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
+                          !state.obligatoria
+                            ? "border-amber-300/70 bg-amber-400/25 text-amber-50"
+                            : "border-white/15 bg-slate-800/60 text-slate-300"
+                        }`}
+                      >
+                        NO
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+                <span className="inline-flex items-center gap-1">
+                  Cantidad máxima por día
+                  <span title="Cuántas veces puede el alumno enviar este feedback por día (mínimo 1)." className="cursor-help text-slate-400">
+                    ⓘ
+                  </span>
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  value={feedbackModalMaxPerDay}
+                  onChange={(event) => setFeedbackModalMaxPerDay(event.target.value)}
+                  className="w-24 rounded-lg border border-white/15 bg-slate-700 px-3 py-1.5 text-sm text-white"
+                />
+              </label>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <ReliableActionButton
+                  type="button"
+                  onClick={closeFeedbackModal}
+                  className="rounded-lg border border-white/20 bg-slate-800 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
+                >
+                  Cancelar
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="button"
+                  onClick={saveFeedbackModal}
+                  className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 hover:bg-emerald-300"
+                >
+                  Asignar / Guardar
+                </ReliableActionButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {newExerciseModalOpen ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-sm">

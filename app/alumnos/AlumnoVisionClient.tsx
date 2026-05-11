@@ -389,6 +389,7 @@ type SessionFeedbackRecordLite = {
   dayName?: string;
   feedbackTitle?: string;
   answers: SessionFeedbackAnswerLite[];
+  measurements?: Record<string, string>;
   totalWorkoutLogs?: number;
   logsWithPain?: number;
   createdAt?: string;
@@ -535,11 +536,49 @@ type PostSessionFeedbackQuestionLite = {
   options: PostSessionFeedbackOptionLite[];
 };
 
+type PostSessionMeasurementId =
+  | "rpe"
+  | "fatiga"
+  | "sensacion"
+  | "congestion"
+  | "rendimiento"
+  | "cumplimiento"
+  | "observaciones"
+  | "duracion";
+
+type PostSessionMeasurementLite = {
+  id: PostSessionMeasurementId;
+  visible: boolean;
+  obligatoria: boolean;
+};
+
 type PostSessionFeedbackConfigLite = {
   enabled: boolean;
   title?: string;
   questions: PostSessionFeedbackQuestionLite[];
+  measurements?: PostSessionMeasurementLite[];
+  maxPerDay?: number;
 };
+
+const POST_SESSION_MEASUREMENT_CATALOG: Array<{
+  id: PostSessionMeasurementId;
+  nombre: string;
+  tipo: "scale" | "select" | "text" | "number";
+  min?: number;
+  max?: number;
+  opciones?: string[];
+}> = [
+  { id: "rpe", nombre: "RPE percibido", tipo: "scale", min: 1, max: 10 },
+  { id: "fatiga", nombre: "Fatiga percibida", tipo: "scale", min: 1, max: 10 },
+  { id: "sensacion", nombre: "Sensación general", tipo: "select", opciones: ["Motivado", "Satisfecho", "Cansado", "Frustrado", "Dolorido", "Otro"] },
+  { id: "congestion", nombre: "Congestión muscular", tipo: "scale", min: 0, max: 10 },
+  { id: "rendimiento", nombre: "Rendimiento percibido", tipo: "select", opciones: ["Mejor que siempre", "Normal", "Por debajo"] },
+  { id: "cumplimiento", nombre: "Cumplimiento del objetivo", tipo: "select", opciones: ["Cumplido", "Parcial", "No cumplido"] },
+  { id: "observaciones", nombre: "Observaciones", tipo: "text" },
+  { id: "duracion", nombre: "Duración (min)", tipo: "number", min: 1, max: 300 },
+];
+
+const DEFAULT_VISIBLE_MEASUREMENTS: PostSessionMeasurementId[] = ["rpe", "fatiga", "sensacion", "observaciones"];
 
 type WeekDayPlanLite = {
   id: string;
@@ -716,6 +755,7 @@ const NUTRITION_DAILY_LOGS_KEY = "pf-control-nutricion-diario-v1";
 const NUTRITION_VARIATION_REQUESTS_KEY = "pf-control-nutricion-variaciones-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
+const TRAINING_COMPLETIONS_KEY = "pf-control-alumno-entrenamiento-completados-v1";
 const ROUTINE_CHANGE_REQUESTS_KEY = "pf-control-routine-change-requests-v1";
 const SESSION_FEEDBACK_RECORDS_KEY = "pf-control-session-feedback-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
@@ -1812,8 +1852,21 @@ function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedb
 
   const title = String(row.title || "").trim() || undefined;
   const enabled = row.enabled === true;
+  const maxPerDay = typeof row.maxPerDay === "number" ? row.maxPerDay : undefined;
 
-  if (!enabled && questions.length === 0 && !title) {
+  const rawMeasurements = Array.isArray(row.measurements) ? row.measurements : [];
+  const validMeasurementIds = new Set(POST_SESSION_MEASUREMENT_CATALOG.map((m) => m.id));
+  const measurements: PostSessionMeasurementLite[] = rawMeasurements
+    .filter((m) => m && typeof m === "object")
+    .map((m) => {
+      const mr = m as Record<string, unknown>;
+      const id = String(mr.id || "").trim() as PostSessionMeasurementId;
+      if (!validMeasurementIds.has(id)) return null;
+      return { id, visible: mr.visible !== false, obligatoria: mr.obligatoria === true };
+    })
+    .filter((m): m is PostSessionMeasurementLite => m !== null);
+
+  if (!enabled && questions.length === 0 && !title && measurements.length === 0) {
     return undefined;
   }
 
@@ -1821,6 +1874,8 @@ function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedb
     enabled,
     title,
     questions,
+    measurements: measurements.length > 0 ? measurements : undefined,
+    maxPerDay,
   };
 }
 
@@ -1920,12 +1975,16 @@ function normalizeSessionFeedbackRows(rawValue: unknown): SessionFeedbackRecordL
         dayName: String(item.dayName || item.dia || "").trim() || undefined,
         feedbackTitle: String(item.feedbackTitle || "").trim() || undefined,
         answers,
+        measurements:
+          item.measurements && typeof item.measurements === "object" && !Array.isArray(item.measurements)
+            ? (item.measurements as Record<string, string>)
+            : undefined,
         totalWorkoutLogs: Math.max(0, Math.round(Number(toSafeNumeric(item.totalWorkoutLogs) || 0))),
         logsWithPain: Math.max(0, Math.round(Number(toSafeNumeric(item.logsWithPain) || 0))),
         createdAt: String(item.createdAt || "").trim() || new Date().toISOString(),
       };
     })
-    .filter((item) => Boolean(item.sessionId || item.dayId || item.answers.length > 0))
+    .filter((item) => Boolean(item.sessionId || item.dayId || item.answers.length > 0 || (item.measurements && Object.keys(item.measurements).length > 0)))
     .sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
 }
 
@@ -2577,6 +2636,13 @@ export default function AlumnoVisionClient({
   const [routinePullRefreshing, setRoutinePullRefreshing] = useState(false);
   const [routineDayWeekLoading, setRoutineDayWeekLoading] = useState(false);
   const [routineExerciseLogTarget, setRoutineExerciseLogTarget] = useState<RoutineExerciseLogTarget | null>(null);
+  const [guidedTrainingMode, setGuidedTrainingMode] = useState(false);
+  const [guidedTrainingIndex, setGuidedTrainingIndex] = useState(0);
+  // Refs to panel handlers defined later in the file; used to break the
+  // cyclic declaration order between guided-flow helpers and log/finalize panels.
+  const openLogPanelRef = useRef<((target: RoutineExerciseLogTarget) => void) | null>(null);
+  const closeLogPanelRef = useRef<(() => void) | null>(null);
+  const openFinalizePanelRef = useRef<(() => void) | null>(null);
   const [routineExerciseLogDraft, setRoutineExerciseLogDraft] = useState<RoutineExerciseLogDraft>(
     createRoutineExerciseLogDraft()
   );
@@ -2597,6 +2663,10 @@ export default function AlumnoVisionClient({
   const [routineFinalizeAnswerByQuestionId, setRoutineFinalizeAnswerByQuestionId] = useState<
     Record<string, string>
   >({});
+  const [routineFinalizeMeasurements, setRoutineFinalizeMeasurements] = useState<Record<string, string>>({});
+  type GuidedPausedState = { index: number; draft: RoutineExerciseLogDraft };
+  const [guidedPausedState, setGuidedPausedState] = useState<GuidedPausedState | null>(null);
+  const [guidedStepKey, setGuidedStepKey] = useState(0);
   const [routineActionScreenLoading, setRoutineActionScreenLoading] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
@@ -2696,6 +2766,19 @@ export default function AlumnoVisionClient({
   const [workoutLogsShared, setWorkoutLogsShared, workoutLogsSyncLoaded] = useSharedState<unknown[]>([], {
     key: WORKOUT_LOGS_KEY,
     legacyLocalStorageKey: WORKOUT_LOGS_KEY,
+    pollMs: isUltraMobile ? 15000 : 12000,
+  });
+
+  type TrainingCompletionLite = {
+    weekId: string;
+    dayId: string;
+    sessionId?: string;
+    fecha: string;
+    completedAt: string;
+  };
+  const [trainingCompletions, setTrainingCompletions] = useSharedState<TrainingCompletionLite[]>([], {
+    key: TRAINING_COMPLETIONS_KEY,
+    legacyLocalStorageKey: TRAINING_COMPLETIONS_KEY,
     pollMs: isUltraMobile ? 15000 : 12000,
   });
 
@@ -6963,6 +7046,288 @@ export default function AlumnoVisionClient({
     return `${formatDateTime(new Date(nowTs))} hs`;
   }, [nowTs, selectedRoutineEntry]);
 
+  // Flatten the visible blocks/exercises into a guided-flow sequence.
+  type GuidedExerciseStep = {
+    blockId: string;
+    blockTitle: string;
+    blockIndex: number;
+    rowId: string;
+    rowName: string;
+    isSuperSerie: boolean;
+    detail: ReturnType<typeof ejerciciosById.get> | null;
+    series: string;
+    repeticiones: string;
+    descanso: string;
+    carga: string;
+    rir: string;
+    videoUrl: string;
+    description: string;
+    tags: string[];
+  };
+
+  const guidedRoutineSteps = useMemo<GuidedExerciseStep[]>(() => {
+    if (!selectedRoutineEntry) return [];
+    const steps: GuidedExerciseStep[] = [];
+
+    selectedRoutineEntry.blocks.forEach((block, blockIndex) => {
+      block.ejercicios.forEach((exercise, exerciseIndex) => {
+        const exerciseRow = exercise as Record<string, unknown>;
+        const exerciseRowId = String(
+          exerciseRow.id || exercise.ejercicioId || `${block.id}-ex-${exerciseIndex}`
+        );
+        const baseDetail = exercise.ejercicioId ? ejerciciosById.get(exercise.ejercicioId) || null : null;
+        const baseTags = Array.from(
+          new Set([
+            ...(Array.isArray(baseDetail?.gruposMusculares) ? baseDetail.gruposMusculares : []),
+            String(baseDetail?.categoria || "").trim(),
+          ].filter(Boolean))
+        ).slice(0, 6);
+        const baseMetricas = Array.isArray(exercise.metricas) ? exercise.metricas : [];
+        const baseRir = baseMetricas.find((metric: any) =>
+          normalizePersonKey(String(metric?.nombre || "")).includes("rir")
+        );
+        steps.push({
+          blockId: block.id,
+          blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+          blockIndex,
+          rowId: exerciseRowId,
+          rowName: String(baseDetail?.nombre || `Ejercicio ${exerciseIndex + 1}`),
+          isSuperSerie: false,
+          detail: baseDetail,
+          series: String(exercise.series || ""),
+          repeticiones: String(exercise.repeticiones || ""),
+          descanso: String(exercise.descanso || ""),
+          carga: String(exercise.carga || ""),
+          rir: String((baseRir as any)?.valor || ""),
+          videoUrl: String(baseDetail?.videoUrl || ""),
+          description: String(baseDetail?.objetivo || baseDetail?.descripcion || "").trim() || "Ejecuta con tecnica y control",
+          tags: baseTags,
+        });
+
+        if (Array.isArray(exercise.superSerie)) {
+          exercise.superSerie.forEach((superItem: any, superIndex: number) => {
+            const superDetail = superItem?.ejercicioId
+              ? ejerciciosById.get(superItem.ejercicioId) || null
+              : null;
+            const superTags = Array.from(
+              new Set([
+                ...(Array.isArray(superDetail?.gruposMusculares) ? superDetail.gruposMusculares : []),
+                String(superDetail?.categoria || "").trim(),
+                "Superserie",
+              ].filter(Boolean))
+            ).slice(0, 6);
+            steps.push({
+              blockId: block.id,
+              blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
+              blockIndex,
+              rowId: `${exerciseRowId}::${superItem?.id || `super-${superIndex}`}`,
+              rowName: String(superDetail?.nombre || `Superserie ${superIndex + 1}`),
+              isSuperSerie: true,
+              detail: superDetail,
+              series: String(superItem?.series || ""),
+              repeticiones: String(superItem?.repeticiones || ""),
+              descanso: String(superItem?.descanso || ""),
+              carga: String(superItem?.carga || ""),
+              rir: "",
+              videoUrl: String(superDetail?.videoUrl || ""),
+              description:
+                String(superDetail?.objetivo || superDetail?.descripcion || "").trim() ||
+                `Superserie vinculada a ${baseDetail?.nombre || "ejercicio principal"}`,
+              tags: superTags,
+            });
+          });
+        }
+      });
+    });
+
+    return steps;
+  }, [ejerciciosById, selectedRoutineEntry]);
+
+  const todayDateKey = useMemo(() => {
+    const d = new Date(nowTs);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }, [nowTs]);
+
+  const todayRoutineCompletion = useMemo<TrainingCompletionLite | null>(() => {
+    if (!selectedRoutineEntry) return null;
+    const weekId = String(selectedRoutineEntry.weekId || "");
+    const dayId = String(selectedRoutineEntry.dayId || "");
+    return (
+      trainingCompletions.find(
+        (entry) =>
+          entry.weekId === weekId &&
+          entry.dayId === dayId &&
+          entry.fecha === todayDateKey
+      ) || null
+    );
+  }, [selectedRoutineEntry, todayDateKey, trainingCompletions]);
+
+  const markRoutineCompletedToday = useCallback(() => {
+    if (!selectedRoutineEntry) return;
+    const weekId = String(selectedRoutineEntry.weekId || "");
+    const dayId = String(selectedRoutineEntry.dayId || "");
+    markManualSaveIntent(TRAINING_COMPLETIONS_KEY);
+    setTrainingCompletions((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const filtered = base.filter(
+        (entry) =>
+          !(
+            entry.weekId === weekId &&
+            entry.dayId === dayId &&
+            entry.fecha === todayDateKey
+          )
+      );
+      const next: TrainingCompletionLite = {
+        weekId,
+        dayId,
+        sessionId: selectedRoutineEntry.sesion.id,
+        fecha: todayDateKey,
+        completedAt: new Date().toISOString(),
+      };
+      return [...filtered, next];
+    });
+  }, [selectedRoutineEntry, setTrainingCompletions, todayDateKey]);
+
+  const clearRoutineCompletionToday = useCallback(() => {
+    if (!selectedRoutineEntry) return;
+    const weekId = String(selectedRoutineEntry.weekId || "");
+    const dayId = String(selectedRoutineEntry.dayId || "");
+    markManualSaveIntent(TRAINING_COMPLETIONS_KEY);
+    setTrainingCompletions((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.filter(
+        (entry) =>
+          !(
+            entry.weekId === weekId &&
+            entry.dayId === dayId &&
+            entry.fecha === todayDateKey
+          )
+      );
+    });
+  }, [selectedRoutineEntry, setTrainingCompletions, todayDateKey]);
+
+  const buildGuidedExerciseTarget = useCallback(
+    (step: GuidedExerciseStep): RoutineExerciseLogTarget | null => {
+      if (!selectedRoutineEntry) return null;
+      const exerciseKey = buildRoutineExerciseKey(
+        selectedRoutineEntry.sesion.id,
+        selectedRoutineEntry.weekId,
+        selectedRoutineEntry.dayId,
+        step.blockId,
+        step.rowId,
+        step.blockIndex * 100
+      );
+      return {
+        sessionId: selectedRoutineEntry.sesion.id,
+        sessionTitle: selectedRoutineEntry.sesion.titulo,
+        weekId: selectedRoutineEntry.weekId,
+        weekName: selectedRoutineEntry.weekName,
+        dayId: selectedRoutineEntry.dayId,
+        dayName: selectedRoutineEntry.dayName,
+        blockId: step.blockId,
+        blockTitle: step.blockTitle,
+        exerciseId: step.rowId,
+        exerciseName: step.rowName,
+        exerciseKey,
+        prescribedSeries: step.series,
+        prescribedRepeticiones: step.repeticiones,
+        prescribedCarga: step.carga,
+        prescribedDescanso: step.descanso,
+        prescribedRir: step.rir,
+        suggestedVideoUrl: step.videoUrl,
+        exerciseDescription: step.description,
+        exerciseTags: step.tags,
+      };
+    },
+    [selectedRoutineEntry]
+  );
+
+  const startGuidedTraining = useCallback(() => {
+    if (guidedRoutineSteps.length === 0) return;
+    if (guidedPausedState) {
+      // Resume from paused position, restoring the saved draft
+      const resumeIndex = Math.min(guidedPausedState.index, guidedRoutineSteps.length - 1);
+      const resumeStep = guidedRoutineSteps[resumeIndex];
+      const target = buildGuidedExerciseTarget(resumeStep);
+      setGuidedTrainingIndex(resumeIndex);
+      setGuidedTrainingMode(true);
+      setGuidedStepKey((k) => k + 1);
+      if (target) {
+        // Open panel but preserve the saved draft
+        clearRoutineExerciseLogStatusTimer();
+        setRoutineExerciseLogStatus("");
+        setRoutineExerciseLogEditingId(null);
+        setRoutineExerciseLogView("registro");
+        setRoutineExerciseLogTarget(target);
+        setRoutineExerciseLogDraft(guidedPausedState.draft);
+      }
+      setGuidedPausedState(null);
+      return;
+    }
+    const firstStep = guidedRoutineSteps[0];
+    const target = buildGuidedExerciseTarget(firstStep);
+    setGuidedTrainingIndex(0);
+    setGuidedTrainingMode(true);
+    setGuidedStepKey((k) => k + 1);
+    setGuidedPausedState(null);
+    if (target) {
+      openLogPanelRef.current?.(target);
+    }
+  }, [
+    buildGuidedExerciseTarget,
+    clearRoutineExerciseLogStatusTimer,
+    guidedPausedState,
+    guidedRoutineSteps,
+    setRoutineExerciseLogDraft,
+    setRoutineExerciseLogEditingId,
+    setRoutineExerciseLogStatus,
+    setRoutineExerciseLogTarget,
+    setRoutineExerciseLogView,
+  ]);
+
+  const advanceGuidedTraining = useCallback(() => {
+    if (!guidedTrainingMode) return;
+    const nextIndex = guidedTrainingIndex + 1;
+    if (nextIndex >= guidedRoutineSteps.length) {
+      markRoutineCompletedToday();
+      setGuidedTrainingMode(false);
+      closeLogPanelRef.current?.();
+      openFinalizePanelRef.current?.();
+      return;
+    }
+    const nextStep = guidedRoutineSteps[nextIndex];
+    const target = buildGuidedExerciseTarget(nextStep);
+    setGuidedTrainingIndex(nextIndex);
+    setGuidedStepKey((k) => k + 1);
+    if (target) {
+      openLogPanelRef.current?.(target);
+    }
+  }, [
+    buildGuidedExerciseTarget,
+    guidedRoutineSteps,
+    guidedTrainingIndex,
+    guidedTrainingMode,
+    markRoutineCompletedToday,
+  ]);
+
+  const goBackGuidedTraining = useCallback(() => {
+    if (!guidedTrainingMode || guidedTrainingIndex <= 0) return;
+    const prevIndex = guidedTrainingIndex - 1;
+    const prevStep = guidedRoutineSteps[prevIndex];
+    const target = buildGuidedExerciseTarget(prevStep);
+    setGuidedTrainingIndex(prevIndex);
+    setGuidedStepKey((k) => k + 1);
+    if (target) {
+      openLogPanelRef.current?.(target);
+    }
+  }, [buildGuidedExerciseTarget, guidedRoutineSteps, guidedTrainingIndex, guidedTrainingMode]);
+
+  const exitGuidedTraining = useCallback(() => {
+    setGuidedPausedState({ index: guidedTrainingIndex, draft: routineExerciseLogDraft });
+    setGuidedTrainingMode(false);
+    closeLogPanelRef.current?.();
+  }, [guidedTrainingIndex, routineExerciseLogDraft]);
+
   const routineLastSyncLabel = useMemo(() => {
     if (!routineLastSyncAt) {
       return "Ultima sincronizacion: pendiente";
@@ -7160,6 +7525,11 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogView("registro");
     setRoutineExerciseLogDraft(createRoutineExerciseLogDraft());
   }, [clearRoutineExerciseLogStatusTimer]);
+
+  useEffect(() => {
+    openLogPanelRef.current = openRoutineExerciseLogPanel;
+    closeLogPanelRef.current = closeRoutineExerciseLogPanel;
+  }, [openRoutineExerciseLogPanel, closeRoutineExerciseLogPanel]);
 
   const routineSelectionSnapshotRef = useRef<string | null>(null);
 
@@ -7912,9 +8282,10 @@ export default function AlumnoVisionClient({
       return;
     }
 
-    if (existingRoutineSessionFeedback?.answers?.length) {
+    const previousFeedback = existingRoutineSessionFeedback;
+    if (previousFeedback?.answers?.length) {
       const mappedAnswers: Record<string, string> = {};
-      existingRoutineSessionFeedback.answers.forEach((answer) => {
+      previousFeedback.answers.forEach((answer) => {
         if (answer.questionId && answer.optionId) {
           mappedAnswers[answer.questionId] = answer.optionId;
         }
@@ -7924,14 +8295,44 @@ export default function AlumnoVisionClient({
       setRoutineFinalizeAnswerByQuestionId({});
     }
 
+    if (previousFeedback?.measurements) {
+      setRoutineFinalizeMeasurements(previousFeedback.measurements);
+    } else {
+      setRoutineFinalizeMeasurements({});
+    }
+
     setRoutineFinalizeStatus("");
     setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(true);
   }, [existingRoutineSessionFeedback, selectedRoutineEntry]);
 
+  useEffect(() => {
+    openFinalizePanelRef.current = openRoutineFinalizePanel;
+  }, [openRoutineFinalizePanel]);
+
   const submitRoutineFinalize = useCallback(() => {
     if (!selectedRoutineEntry) {
       setRoutineFinalizeStatus("Selecciona una sesión para finalizar.");
+      return;
+    }
+
+    // Determine which measurements to show/require
+    const configMeasurements = selectedRoutineDayFeedbackConfig?.measurements;
+    const activeMeasurementIds: PostSessionMeasurementId[] =
+      configMeasurements && configMeasurements.length > 0
+        ? configMeasurements.filter((m) => m.visible).map((m) => m.id)
+        : DEFAULT_VISIBLE_MEASUREMENTS;
+    const requiredMeasurementIds: PostSessionMeasurementId[] =
+      configMeasurements && configMeasurements.length > 0
+        ? configMeasurements.filter((m) => m.visible && m.obligatoria).map((m) => m.id)
+        : (["rpe"] as PostSessionMeasurementId[]);
+
+    const missingRequired = requiredMeasurementIds.find(
+      (id) => !String(routineFinalizeMeasurements[id] || "").trim()
+    );
+    if (missingRequired) {
+      const catalog = POST_SESSION_MEASUREMENT_CATALOG.find((m) => m.id === missingRequired);
+      setRoutineFinalizeStatus(`Completá "${catalog?.nombre || missingRequired}" antes de finalizar.`);
       return;
     }
 
@@ -7967,6 +8368,13 @@ export default function AlumnoVisionClient({
       })
       .filter((answer): answer is SessionFeedbackAnswerLite => Boolean(answer));
 
+    // Only persist measurements that are active and have a value
+    const measurementsToSave: Record<string, string> = {};
+    activeMeasurementIds.forEach((id) => {
+      const val = String(routineFinalizeMeasurements[id] || "").trim();
+      if (val) measurementsToSave[id] = val;
+    });
+
     const payload: SessionFeedbackRecordLite = {
       id: `feedback-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       alumnoNombre: profileName,
@@ -7979,6 +8387,7 @@ export default function AlumnoVisionClient({
       dayName: selectedRoutineEntry.dayName,
       feedbackTitle: selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión",
       answers,
+      measurements: Object.keys(measurementsToSave).length > 0 ? measurementsToSave : undefined,
       totalWorkoutLogs: selectedRoutineDayLogSummary.total,
       logsWithPain: selectedRoutineDayLogSummary.withPain,
       createdAt: new Date().toISOString(),
@@ -8003,6 +8412,8 @@ export default function AlumnoVisionClient({
     profileEmail,
     profileName,
     routineFinalizeAnswerByQuestionId,
+    routineFinalizeMeasurements,
+    selectedRoutineDayFeedbackConfig?.measurements,
     selectedRoutineDayFeedbackConfig?.title,
     selectedRoutineDayFeedbackQuestions,
     selectedRoutineDayLogSummary.total,
@@ -8899,6 +9310,78 @@ export default function AlumnoVisionClient({
                 </section>
               ) : (
                 <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
+                  {(() => {
+                    if (todayRoutineCompletion) {
+                      const completedDate = new Date(todayRoutineCompletion.completedAt);
+                      const completedLabel = `${String(completedDate.getDate()).padStart(2, "0")}/${String(
+                        completedDate.getMonth() + 1
+                      ).padStart(2, "0")}/${completedDate.getFullYear()}`;
+                      return (
+                        <div className="pf-a3-routine-flow-card pf-a3-routine-exercise-group-linked">
+                          <div className="pf-a3-routine-flow-icon-ok" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                              <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                          <p className="pf-a3-routine-flow-title">Entrenamiento del {completedLabel} completado</p>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => {
+                              clearRoutineCompletionToday();
+                              startGuidedTraining();
+                            }}
+                            className="pf-a3-routine-flow-cta"
+                          >
+                            Repetir entrenamiento
+                          </ReliableActionButton>
+                          <p className="pf-a3-routine-flow-subtitle">Ver registros de hoy</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="pf-a3-routine-flow-card pf-a3-routine-exercise-group-linked">
+                        {guidedPausedState ? (
+                          <>
+                            <p className="pf-a3-routine-flow-title">Entrenamiento en pausa</p>
+                            <p className="pf-a3-routine-flow-subtitle">
+                              Ejercicio {guidedPausedState.index + 1} de {guidedRoutineSteps.length} — retomás desde donde lo dejaste
+                            </p>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={startGuidedTraining}
+                              disabled={guidedRoutineSteps.length === 0}
+                              className="pf-a3-routine-flow-cta pf-a3-routine-flow-cta-resume"
+                            >
+                              Reanudar entrenamiento
+                            </ReliableActionButton>
+                            <button
+                              type="button"
+                              onClick={() => { setGuidedPausedState(null); }}
+                              className="pf-a3-routine-flow-discard-btn"
+                            >
+                              Descartar y empezar de cero
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="pf-a3-routine-flow-title">Estás listo para entrenar</p>
+                            <p className="pf-a3-routine-flow-subtitle">
+                              {guidedRoutineSteps.length} ejercicio{guidedRoutineSteps.length === 1 ? "" : "s"} en esta sesión
+                            </p>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={startGuidedTraining}
+                              disabled={guidedRoutineSteps.length === 0}
+                              className="pf-a3-routine-flow-cta"
+                            >
+                              Comenzar a entrenar
+                            </ReliableActionButton>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {false ? (
                   <div className="pf-a3-routine-block-stack">
                     {routineVisibleBlocks.map((block, blockIndex) => {
                       const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
@@ -9168,8 +9651,9 @@ export default function AlumnoVisionClient({
                       );
                     })}
                   </div>
+                  ) : null}
 
-                  {isUltraMobile && routineRemainingBlocks > 0 ? (
+                  {false && isUltraMobile && routineRemainingBlocks > 0 ? (
                     <ReliableActionButton
                       type="button"
                       onClick={() =>
@@ -9183,27 +9667,6 @@ export default function AlumnoVisionClient({
                     </ReliableActionButton>
                   ) : null}
 
-                  <section className="mt-4 text-slate-100">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={openRoutineFinalizePanel}
-                      className="pf-a3-routine-finalize-cta"
-                    >
-                      <span className="pf-a3-routine-finalize-cta-wave" aria-hidden="true" />
-                      <span className="pf-a3-routine-finalize-cta-wave pf-a3-routine-finalize-cta-wave-delay" aria-hidden="true" />
-                      <span className="pf-a3-routine-finalize-cta-label">Finalizar Sesión</span>
-                    </ReliableActionButton>
-
-                    {existingRoutineSessionFeedback ? (
-                      <p className="mt-2 text-[11px] text-violet-100/80">
-                        Último cierre: {formatDateTime(existingRoutineSessionFeedback.createdAt)} hs
-                      </p>
-                    ) : null}
-
-                    {routineFinalizeStatus ? (
-                      <p className="mt-2 text-xs font-semibold text-violet-100">{routineFinalizeStatus}</p>
-                    ) : null}
-                  </section>
                 </article>
               )}
 
@@ -9399,56 +9862,127 @@ export default function AlumnoVisionClient({
                           </ReliableActionButton>
                         </div>
 
-                        {selectedRoutineDayFeedbackQuestions.length > 0 ? (
-                          <div className="pf-a3-routine-action-question-list">
-                            {(selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión") ? (
-                              <p className="pf-a3-routine-action-title">
-                                {selectedRoutineDayFeedbackConfig?.title || "Feedback post sesión"}
-                              </p>
-                            ) : null}
-
-                            {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
-                              <article
-                                key={question.id}
-                                className="pf-a3-routine-action-card"
-                              >
-                                <p className="pf-a3-routine-action-question-label">
-                                  {question.prompt || `Pregunta ${questionIndex + 1}`}
-                                </p>
-                                <div className="pf-a3-routine-action-options-row">
-                                  {question.options.map((option) => {
-                                    const isSelected =
-                                      routineFinalizeAnswerByQuestionId[question.id] === option.id;
-
-                                    return (
-                                      <ReliableActionButton
-                                        key={`${question.id}-${option.id}`}
-                                        type="button"
-                                        onClick={() =>
-                                          setRoutineFinalizeAnswerByQuestionId((previous) => ({
-                                            ...previous,
-                                            [question.id]: option.id,
-                                          }))
+                        {(() => {
+                          const configMeasurements = selectedRoutineDayFeedbackConfig?.measurements;
+                          const activeMeasurementIds: PostSessionMeasurementId[] =
+                            configMeasurements && configMeasurements.length > 0
+                              ? configMeasurements.filter((m) => m.visible).map((m) => m.id)
+                              : DEFAULT_VISIBLE_MEASUREMENTS;
+                          const requiredIds = new Set(
+                            configMeasurements && configMeasurements.length > 0
+                              ? configMeasurements.filter((m) => m.visible && m.obligatoria).map((m) => m.id)
+                              : (["rpe"] as PostSessionMeasurementId[])
+                          );
+                          const activeCatalog = POST_SESSION_MEASUREMENT_CATALOG.filter((m) =>
+                            activeMeasurementIds.includes(m.id)
+                          );
+                          return (
+                            <div className="pf-a3-finalize-measurements">
+                              {selectedRoutineDayFeedbackConfig?.title ? (
+                                <p className="pf-a3-finalize-title">{selectedRoutineDayFeedbackConfig.title}</p>
+                              ) : null}
+                              {activeCatalog.map((m) => {
+                                const val = String(routineFinalizeMeasurements[m.id] || "");
+                                const isRequired = requiredIds.has(m.id);
+                                return (
+                                  <div key={m.id} className="pf-a3-finalize-measurement-row">
+                                    <label className="pf-a3-finalize-measurement-label">
+                                      {m.nombre}
+                                      {isRequired && <span className="pf-a3-finalize-required">*</span>}
+                                    </label>
+                                    {m.tipo === "scale" ? (
+                                      <div className="pf-a3-finalize-scale-row">
+                                        {Array.from({ length: (m.max ?? 10) - (m.min ?? 1) + 1 }, (_, i) => {
+                                          const v = String((m.min ?? 1) + i);
+                                          return (
+                                            <button
+                                              key={v}
+                                              type="button"
+                                              className={`pf-a3-finalize-scale-btn ${val === v ? "pf-a3-finalize-scale-btn-active" : ""}`}
+                                              onClick={() =>
+                                                setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: v }))
+                                              }
+                                            >
+                                              {v}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    ) : m.tipo === "select" ? (
+                                      <div className="pf-a3-finalize-options-row">
+                                        {(m.opciones ?? []).map((opt) => (
+                                          <button
+                                            key={opt}
+                                            type="button"
+                                            className={`pf-a3-finalize-option-btn ${val === opt ? "pf-a3-finalize-option-btn-active" : ""}`}
+                                            onClick={() =>
+                                              setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: opt }))
+                                            }
+                                          >
+                                            {opt}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    ) : m.tipo === "text" ? (
+                                      <textarea
+                                        className="pf-a3-finalize-textarea"
+                                        rows={2}
+                                        placeholder="Opcional..."
+                                        value={val}
+                                        onChange={(e) =>
+                                          setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: e.target.value }))
                                         }
-                                        className={`pf-a3-routine-action-option-btn ${
-                                          isSelected
-                                            ? "pf-a3-routine-action-option-btn-active"
-                                            : ""
-                                        }`}
-                                      >
-                                        {option.label}
-                                      </ReliableActionButton>
-                                    );
-                                  })}
+                                      />
+                                    ) : (
+                                      <input
+                                        type="number"
+                                        className="pf-a3-finalize-number"
+                                        placeholder={`${m.min ?? 1}–${m.max ?? 999}`}
+                                        min={m.min}
+                                        max={m.max}
+                                        value={val}
+                                        onChange={(e) =>
+                                          setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: e.target.value }))
+                                        }
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                              {selectedRoutineDayFeedbackQuestions.length > 0 && (
+                                <div className="pf-a3-finalize-legacy-questions">
+                                  {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
+                                    <article key={question.id} className="pf-a3-routine-action-card">
+                                      <p className="pf-a3-routine-action-question-label">
+                                        {question.prompt || `Pregunta ${questionIndex + 1}`}
+                                      </p>
+                                      <div className="pf-a3-routine-action-options-row">
+                                        {question.options.map((option) => {
+                                          const isSelected = routineFinalizeAnswerByQuestionId[question.id] === option.id;
+                                          return (
+                                            <ReliableActionButton
+                                              key={`${question.id}-${option.id}`}
+                                              type="button"
+                                              onClick={() =>
+                                                setRoutineFinalizeAnswerByQuestionId((previous) => ({
+                                                  ...previous,
+                                                  [question.id]: option.id,
+                                                }))
+                                              }
+                                              className={`pf-a3-routine-action-option-btn ${isSelected ? "pf-a3-routine-action-option-btn-active" : ""}`}
+                                            >
+                                              {option.label}
+                                            </ReliableActionButton>
+                                          );
+                                        })}
+                                      </div>
+                                    </article>
+                                  ))}
                                 </div>
-                              </article>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="pf-a3-routine-action-empty">
-                            El profesor aún no asignó un cuestionario para este día. Puedes finalizar igual.
-                          </p>
-                        )}
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         <div className="pf-a3-routine-action-actions">
                           <ReliableActionButton
@@ -9586,17 +10120,27 @@ export default function AlumnoVisionClient({
                   aria-modal="true"
                 >
                   <article
+                    key={guidedTrainingMode ? guidedStepKey : undefined}
                     className={`pf-a3-routine-log-panel ${
                       isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
                     } ${
                       routineExerciseVideoSource.kind !== "none" ? "pf-a3-routine-log-panel-has-video" : ""
+                    } ${
+                      guidedTrainingMode ? "pf-a3-guided-step-enter" : ""
                     }`}
                   >
                     <div className="pf-a3-routine-log-head">
                       <div className="min-w-0">
-                        <p className="pf-a3-routine-log-kicker">Registrar carga</p>
+                        <p className="pf-a3-routine-log-kicker">
+                          {guidedTrainingMode
+                            ? `Ejercicio ${guidedTrainingIndex + 1} de ${guidedRoutineSteps.length}`
+                            : "Registrar carga"}
+                        </p>
                         <h3 className="pf-a3-routine-log-title">{routineExerciseLogTarget.exerciseName}</h3>
                         <p className="pf-a3-routine-log-meta">
+                          {routineExerciseLogTarget.blockTitle
+                            ? `${routineExerciseLogTarget.blockTitle} · `
+                            : ""}
                           {routineExerciseLogTarget.weekName || routineWeekLabel}
                           {routineExerciseLogTarget.dayName ? ` · ${routineExerciseLogTarget.dayName}` : ""}
                         </p>
@@ -10086,6 +10630,70 @@ export default function AlumnoVisionClient({
                           <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
                         ) : null}
                       </>
+                    ) : null}
+
+                    {guidedTrainingMode ? (
+                      <div className="pf-a3-guided-actions-bar">
+                        <div className="pf-a3-guided-progress">
+                          {guidedRoutineSteps.map((_, i) => (
+                            <span
+                              key={i}
+                              className={`pf-a3-guided-pip ${i < guidedTrainingIndex ? "pf-a3-guided-pip-done" : i === guidedTrainingIndex ? "pf-a3-guided-pip-active" : "pf-a3-guided-pip-pending"}`}
+                            />
+                          ))}
+                        </div>
+                        <div className="pf-a3-guided-btns">
+                          <ReliableActionButton
+                            type="button"
+                            onClick={exitGuidedTraining}
+                            className="pf-a3-guided-btn-pause"
+                            aria-label="Pausar entrenamiento"
+                            title="Pausar"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" width="16" height="16">
+                              <path d="M9 7v10M15 7v10" strokeLinecap="round" />
+                            </svg>
+                            Pausar
+                          </ReliableActionButton>
+                          {guidedTrainingIndex > 0 && (
+                            <ReliableActionButton
+                              type="button"
+                              onClick={goBackGuidedTraining}
+                              className="pf-a3-guided-btn-back"
+                              aria-label="Ejercicio anterior"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" width="16" height="16">
+                                <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              Atrás
+                            </ReliableActionButton>
+                          )}
+                          <ReliableActionButton
+                            type="button"
+                            onClick={advanceGuidedTraining}
+                            className={`pf-a3-guided-btn-next ${guidedTrainingIndex >= guidedRoutineSteps.length - 1 ? "pf-a3-guided-btn-finish" : ""}`}
+                          >
+                            {guidedTrainingIndex >= guidedRoutineSteps.length - 1 ? (
+                              <>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" width="16" height="16">
+                                  <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Finalizar sesión
+                              </>
+                            ) : (
+                              <>
+                                Siguiente
+                                <span className="pf-a3-guided-btn-counter">
+                                  {guidedTrainingIndex + 1}/{guidedRoutineSteps.length}
+                                </span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" width="14" height="14">
+                                  <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </>
+                            )}
+                          </ReliableActionButton>
+                        </div>
+                      </div>
                     ) : null}
                   </article>
                 </div>,
