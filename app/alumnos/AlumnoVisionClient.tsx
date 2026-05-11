@@ -7254,7 +7254,10 @@ export default function AlumnoVisionClient({
       setGuidedStepKey((k) => k + 1);
       if (target) {
         // Open panel but preserve the saved draft
-        clearRoutineExerciseLogStatusTimer();
+        if (routineExerciseLogStatusTimerRef.current !== null && typeof window !== "undefined") {
+          window.clearTimeout(routineExerciseLogStatusTimerRef.current);
+          routineExerciseLogStatusTimerRef.current = null;
+        }
         setRoutineExerciseLogStatus("");
         setRoutineExerciseLogEditingId(null);
         setRoutineExerciseLogView("registro");
@@ -7275,9 +7278,9 @@ export default function AlumnoVisionClient({
     }
   }, [
     buildGuidedExerciseTarget,
-    clearRoutineExerciseLogStatusTimer,
     guidedPausedState,
     guidedRoutineSteps,
+    routineExerciseLogStatusTimerRef,
     setRoutineExerciseLogDraft,
     setRoutineExerciseLogEditingId,
     setRoutineExerciseLogStatus,
