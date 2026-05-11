@@ -7799,3 +7799,209 @@ video.pf-a3-routine-log-video-frame {
   margin-top: 0.2rem;
 }
 
+/* ── Step-by-step survey flow ───────────────────────────── */
+@keyframes pf-survey-step-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.pf-a3-survey-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  animation: pf-survey-step-in 220ms cubic-bezier(0.22, 0.8, 0.44, 1) both;
+}
+
+.pf-a3-survey-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.26rem;
+}
+
+.pf-a3-survey-pip {
+  height: 3px;
+  flex: 1 1 0;
+  border-radius: 99px;
+  transition: background 200ms ease;
+}
+.pf-a3-survey-pip-done    { background: rgba(80, 200, 130, 0.7); }
+.pf-a3-survey-pip-active  { background: rgba(160, 110, 255, 0.95); }
+.pf-a3-survey-pip-pending { background: rgba(60, 76, 108, 0.45); }
+
+.pf-a3-survey-counter {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a84aa;
+}
+
+.pf-a3-survey-label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ddeeff;
+  line-height: 1.25;
+}
+
+/* Scale (1–10) */
+.pf-a3-survey-scale-row {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.1rem;
+}
+.pf-a3-survey-scale-row::-webkit-scrollbar { display: none; }
+
+.pf-a3-survey-scale-btn {
+  flex: 1 1 0;
+  min-width: 2rem;
+  height: 2.6rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid rgba(70, 90, 128, 0.5);
+  background: rgba(12, 18, 32, 0.88);
+  color: #9ab0d0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
+}
+.pf-a3-survey-scale-btn:active { transform: scale(0.93); }
+.pf-a3-survey-scale-btn:hover  { border-color: rgba(160, 110, 255, 0.55); color: #c8b0f8; }
+.pf-a3-survey-scale-btn-active {
+  border-color: rgba(160, 110, 255, 0.9);
+  background: rgba(110, 60, 210, 0.94);
+  color: #fff;
+  transform: scale(1.06);
+}
+
+/* Select options (chips) */
+.pf-a3-survey-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.pf-a3-survey-option-btn {
+  padding: 0.52rem 1rem;
+  border-radius: 99px;
+  border: 1.5px solid rgba(70, 90, 128, 0.5);
+  background: rgba(12, 18, 32, 0.88);
+  color: #9ab0d0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
+}
+.pf-a3-survey-option-btn:active { transform: scale(0.95); }
+.pf-a3-survey-option-btn:hover  { border-color: rgba(160, 110, 255, 0.55); color: #c8b0f8; }
+.pf-a3-survey-option-btn-active {
+  border-color: rgba(160, 110, 255, 0.9);
+  background: rgba(110, 60, 210, 0.94);
+  color: #fff;
+}
+
+/* Textarea & number */
+.pf-a3-survey-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.68rem;
+  border: 1.5px solid rgba(70, 90, 128, 0.5);
+  background: rgba(10, 16, 28, 0.9);
+  color: #c8d8f0;
+  font-size: 0.84rem;
+  font-weight: 500;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+.pf-a3-survey-textarea:focus { border-color: rgba(140, 100, 240, 0.7); }
+
+.pf-a3-survey-number {
+  width: 100%;
+  max-width: 7rem;
+  padding: 0.52rem 0.7rem;
+  border-radius: 0.68rem;
+  border: 1.5px solid rgba(70, 90, 128, 0.5);
+  background: rgba(10, 16, 28, 0.9);
+  color: #c8d8f0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  outline: none;
+}
+.pf-a3-survey-number:focus { border-color: rgba(140, 100, 240, 0.7); }
+
+/* Nav row */
+.pf-a3-survey-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.pf-a3-survey-nav-back {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid rgba(70, 90, 128, 0.45);
+  background: rgba(12, 18, 32, 0.88);
+  color: #7a96bc;
+  display: grid;
+  place-items: center;
+  transition: opacity 120ms;
+}
+.pf-a3-survey-nav-back:disabled { opacity: 0.28; cursor: default; }
+.pf-a3-survey-nav-back:not(:disabled):hover { border-color: rgba(120, 150, 200, 0.6); color: #b0c8e8; }
+
+.pf-a3-survey-nav-next {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.62rem 1rem;
+  border-radius: 0.7rem;
+  border: 1.5px solid rgba(90, 110, 150, 0.5);
+  background: rgba(20, 28, 44, 0.9);
+  color: #b0c4e0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.pf-a3-survey-nav-next:hover { border-color: rgba(140, 160, 210, 0.6); color: #d0e0ff; }
+
+.pf-a3-survey-finish-btn {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.72rem 1rem;
+  border-radius: 0.8rem;
+  border: 1.5px solid rgba(90, 210, 140, 0.75);
+  background: linear-gradient(155deg, rgba(50, 180, 110, 0.98), rgba(30, 140, 80, 0.96));
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 20px -12px rgba(50, 180, 100, 0.6);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.pf-a3-survey-finish-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(60, 200, 120, 0.8); }
+
+.pf-a3-survey-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+  color: #8aa4c8;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pf-a3-survey-empty .pf-a3-survey-finish-btn { flex: 0 0 auto; }
+

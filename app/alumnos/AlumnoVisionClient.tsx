@@ -2664,6 +2664,7 @@ export default function AlumnoVisionClient({
     Record<string, string>
   >({});
   const [routineFinalizeMeasurements, setRoutineFinalizeMeasurements] = useState<Record<string, string>>({});
+  const [routineFinalizeSurveyStep, setRoutineFinalizeSurveyStep] = useState(0);
   type GuidedPausedState = { index: number; draft: RoutineExerciseLogDraft };
   const [guidedPausedState, setGuidedPausedState] = useState<GuidedPausedState | null>(null);
   const [guidedStepKey, setGuidedStepKey] = useState(0);
@@ -8305,6 +8306,7 @@ export default function AlumnoVisionClient({
     }
 
     setRoutineFinalizeStatus("");
+    setRoutineFinalizeSurveyStep(0);
     setRoutineQuickPanel("none");
     setRoutineFinalizePanelOpen(true);
   }, [existingRoutineSessionFeedback, selectedRoutineEntry]);
@@ -9866,147 +9868,228 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {(() => {
+                          // Build ordered survey steps: measurements + legacy questions
                           const configMeasurements = selectedRoutineDayFeedbackConfig?.measurements;
                           const activeMeasurementIds: PostSessionMeasurementId[] =
                             configMeasurements && configMeasurements.length > 0
                               ? configMeasurements.filter((m) => m.visible).map((m) => m.id)
                               : DEFAULT_VISIBLE_MEASUREMENTS;
-                          const requiredIds = new Set(
-                            configMeasurements && configMeasurements.length > 0
-                              ? configMeasurements.filter((m) => m.visible && m.obligatoria).map((m) => m.id)
-                              : (["rpe"] as PostSessionMeasurementId[])
-                          );
                           const activeCatalog = POST_SESSION_MEASUREMENT_CATALOG.filter((m) =>
                             activeMeasurementIds.includes(m.id)
                           );
+                          type SurveyStep =
+                            | { kind: "measurement"; catalog: (typeof POST_SESSION_MEASUREMENT_CATALOG)[number] }
+                            | { kind: "question"; question: (typeof selectedRoutineDayFeedbackQuestions)[number] };
+                          const allSteps: SurveyStep[] = [
+                            ...activeCatalog.map((c) => ({ kind: "measurement" as const, catalog: c })),
+                            ...selectedRoutineDayFeedbackQuestions.map((q) => ({ kind: "question" as const, question: q })),
+                          ];
+                          const totalSteps = allSteps.length;
+                          const currentStep = Math.min(routineFinalizeSurveyStep, totalSteps - 1);
+                          const isLastStep = currentStep >= totalSteps - 1;
+                          const step = totalSteps > 0 ? allSteps[currentStep] : null;
+
+                          const goNext = () => {
+                            if (!isLastStep) setRoutineFinalizeSurveyStep((s) => s + 1);
+                          };
+                          const goPrev = () => {
+                            if (currentStep > 0) setRoutineFinalizeSurveyStep((s) => s - 1);
+                          };
+                          const autoAdvance = (callback: () => void) => {
+                            callback();
+                            if (!isLastStep) {
+                              setTimeout(() => setRoutineFinalizeSurveyStep((s) => Math.min(s + 1, totalSteps - 1)), 180);
+                            }
+                          };
+
+                          if (totalSteps === 0 || !step) {
+                            return (
+                              <div className="pf-a3-survey-empty">
+                                <p>Sesión lista para cerrar.</p>
+                                <ReliableActionButton
+                                  type="button"
+                                  onClick={submitRoutineFinalize}
+                                  className="pf-a3-survey-finish-btn"
+                                >
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="16" height="16" aria-hidden="true">
+                                    <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  Guardar cierre
+                                </ReliableActionButton>
+                              </div>
+                            );
+                          }
+
                           return (
-                            <div className="pf-a3-finalize-measurements">
-                              {selectedRoutineDayFeedbackConfig?.title ? (
-                                <p className="pf-a3-finalize-title">{selectedRoutineDayFeedbackConfig.title}</p>
-                              ) : null}
-                              {activeCatalog.map((m) => {
-                                const val = String(routineFinalizeMeasurements[m.id] || "");
-                                const isRequired = requiredIds.has(m.id);
-                                return (
-                                  <div key={m.id} className="pf-a3-finalize-measurement-row">
-                                    <label className="pf-a3-finalize-measurement-label">
-                                      {m.nombre}
-                                      {isRequired && <span className="pf-a3-finalize-required">*</span>}
-                                    </label>
-                                    {m.tipo === "scale" ? (
-                                      <div className="pf-a3-finalize-scale-row">
-                                        {Array.from({ length: (m.max ?? 10) - (m.min ?? 1) + 1 }, (_, i) => {
-                                          const v = String((m.min ?? 1) + i);
+                            <div key={currentStep} className="pf-a3-survey-step">
+                              {/* progress pips */}
+                              <div className="pf-a3-survey-progress">
+                                {allSteps.map((_, i) => (
+                                  <span
+                                    key={i}
+                                    className={`pf-a3-survey-pip ${
+                                      i < currentStep
+                                        ? "pf-a3-survey-pip-done"
+                                        : i === currentStep
+                                          ? "pf-a3-survey-pip-active"
+                                          : "pf-a3-survey-pip-pending"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+
+                              <p className="pf-a3-survey-counter">
+                                {currentStep + 1} / {totalSteps}
+                              </p>
+
+                              {step.kind === "measurement" ? (
+                                <>
+                                  <p className="pf-a3-survey-label">{step.catalog.nombre}</p>
+                                  {step.catalog.tipo === "scale" ? (
+                                    <div className="pf-a3-survey-scale-row">
+                                      {Array.from(
+                                        { length: (step.catalog.max ?? 10) - (step.catalog.min ?? 1) + 1 },
+                                        (_, i) => {
+                                          const v = String((step.catalog.min ?? 1) + i);
+                                          const isActive = String(routineFinalizeMeasurements[step.catalog.id] || "") === v;
                                           return (
                                             <button
                                               key={v}
                                               type="button"
-                                              className={`pf-a3-finalize-scale-btn ${val === v ? "pf-a3-finalize-scale-btn-active" : ""}`}
+                                              className={`pf-a3-survey-scale-btn ${isActive ? "pf-a3-survey-scale-btn-active" : ""}`}
                                               onClick={() =>
-                                                setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: v }))
+                                                autoAdvance(() =>
+                                                  setRoutineFinalizeMeasurements((prev) => ({ ...prev, [step.catalog.id]: v }))
+                                                )
                                               }
                                             >
                                               {v}
                                             </button>
                                           );
-                                        })}
-                                      </div>
-                                    ) : m.tipo === "select" ? (
-                                      <div className="pf-a3-finalize-options-row">
-                                        {(m.opciones ?? []).map((opt) => (
+                                        }
+                                      )}
+                                    </div>
+                                  ) : step.catalog.tipo === "select" ? (
+                                    <div className="pf-a3-survey-options-row">
+                                      {(step.catalog.opciones ?? []).map((opt) => {
+                                        const isActive = String(routineFinalizeMeasurements[step.catalog.id] || "") === opt;
+                                        return (
                                           <button
                                             key={opt}
                                             type="button"
-                                            className={`pf-a3-finalize-option-btn ${val === opt ? "pf-a3-finalize-option-btn-active" : ""}`}
+                                            className={`pf-a3-survey-option-btn ${isActive ? "pf-a3-survey-option-btn-active" : ""}`}
                                             onClick={() =>
-                                              setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: opt }))
+                                              autoAdvance(() =>
+                                                setRoutineFinalizeMeasurements((prev) => ({ ...prev, [step.catalog.id]: opt }))
+                                              )
                                             }
                                           >
                                             {opt}
                                           </button>
-                                        ))}
-                                      </div>
-                                    ) : m.tipo === "text" ? (
-                                      <textarea
-                                        className="pf-a3-finalize-textarea"
-                                        rows={2}
-                                        placeholder="Opcional..."
-                                        value={val}
-                                        onChange={(e) =>
-                                          setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: e.target.value }))
-                                        }
-                                      />
-                                    ) : (
-                                      <input
-                                        type="number"
-                                        className="pf-a3-finalize-number"
-                                        placeholder={`${m.min ?? 1}–${m.max ?? 999}`}
-                                        min={m.min}
-                                        max={m.max}
-                                        value={val}
-                                        onChange={(e) =>
-                                          setRoutineFinalizeMeasurements((prev) => ({ ...prev, [m.id]: e.target.value }))
-                                        }
-                                      />
-                                    )}
+                                        );
+                                      })}
+                                    </div>
+                                  ) : step.catalog.tipo === "text" ? (
+                                    <textarea
+                                      className="pf-a3-survey-textarea"
+                                      rows={3}
+                                      placeholder="Opcional..."
+                                      value={String(routineFinalizeMeasurements[step.catalog.id] || "")}
+                                      onChange={(e) =>
+                                        setRoutineFinalizeMeasurements((prev) => ({
+                                          ...prev,
+                                          [step.catalog.id]: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      className="pf-a3-survey-number"
+                                      placeholder={`${step.catalog.min ?? 1}–${step.catalog.max ?? 999}`}
+                                      min={step.catalog.min}
+                                      max={step.catalog.max}
+                                      value={String(routineFinalizeMeasurements[step.catalog.id] || "")}
+                                      onChange={(e) =>
+                                        setRoutineFinalizeMeasurements((prev) => ({
+                                          ...prev,
+                                          [step.catalog.id]: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <p className="pf-a3-survey-label">{step.question.prompt}</p>
+                                  <div className="pf-a3-survey-options-row">
+                                    {step.question.options.map((option) => {
+                                      const isActive = routineFinalizeAnswerByQuestionId[step.question.id] === option.id;
+                                      return (
+                                        <button
+                                          key={option.id}
+                                          type="button"
+                                          className={`pf-a3-survey-option-btn ${isActive ? "pf-a3-survey-option-btn-active" : ""}`}
+                                          onClick={() =>
+                                            autoAdvance(() =>
+                                              setRoutineFinalizeAnswerByQuestionId((prev) => ({
+                                                ...prev,
+                                                [step.question.id]: option.id,
+                                              }))
+                                            )
+                                          }
+                                        >
+                                          {option.label}
+                                        </button>
+                                      );
+                                    })}
                                   </div>
-                                );
-                              })}
-                              {selectedRoutineDayFeedbackQuestions.length > 0 && (
-                                <div className="pf-a3-finalize-legacy-questions">
-                                  {selectedRoutineDayFeedbackQuestions.map((question, questionIndex) => (
-                                    <article key={question.id} className="pf-a3-routine-action-card">
-                                      <p className="pf-a3-routine-action-question-label">
-                                        {question.prompt || `Pregunta ${questionIndex + 1}`}
-                                      </p>
-                                      <div className="pf-a3-routine-action-options-row">
-                                        {question.options.map((option) => {
-                                          const isSelected = routineFinalizeAnswerByQuestionId[question.id] === option.id;
-                                          return (
-                                            <ReliableActionButton
-                                              key={`${question.id}-${option.id}`}
-                                              type="button"
-                                              onClick={() =>
-                                                setRoutineFinalizeAnswerByQuestionId((previous) => ({
-                                                  ...previous,
-                                                  [question.id]: option.id,
-                                                }))
-                                              }
-                                              className={`pf-a3-routine-action-option-btn ${isSelected ? "pf-a3-routine-action-option-btn-active" : ""}`}
-                                            >
-                                              {option.label}
-                                            </ReliableActionButton>
-                                          );
-                                        })}
-                                      </div>
-                                    </article>
-                                  ))}
-                                </div>
+                                </>
                               )}
+
+                              <div className="pf-a3-survey-nav">
+                                <button
+                                  type="button"
+                                  onClick={goPrev}
+                                  disabled={currentStep === 0}
+                                  className="pf-a3-survey-nav-back"
+                                  aria-label="Pregunta anterior"
+                                >
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" aria-hidden="true">
+                                    <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </button>
+                                {isLastStep ? (
+                                  <ReliableActionButton
+                                    type="button"
+                                    onClick={submitRoutineFinalize}
+                                    className="pf-a3-survey-finish-btn"
+                                  >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="16" height="16" aria-hidden="true">
+                                      <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    Guardar cierre
+                                  </ReliableActionButton>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={goNext}
+                                    className="pf-a3-survey-nav-next"
+                                  >
+                                    Siguiente
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" aria-hidden="true">
+                                      <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+
+                              {routineFinalizeStatus ? (
+                                <p className="pf-a3-routine-action-status">{routineFinalizeStatus}</p>
+                              ) : null}
                             </div>
                           );
                         })()}
-
-                        <div className="pf-a3-routine-action-actions">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-action-secondary"
-                          >
-                            Cancelar
-                          </ReliableActionButton>
-                          <ReliableActionButton
-                            type="button"
-                            onClick={submitRoutineFinalize}
-                            className="pf-a3-routine-action-primary pf-a3-routine-action-primary-finalize"
-                          >
-                            Guardar cierre
-                          </ReliableActionButton>
-                        </div>
-
-                        {routineFinalizeStatus ? (
-                          <p className="pf-a3-routine-action-status">{routineFinalizeStatus}</p>
-                        ) : null}
                       </>
                     )}
                   </article>
