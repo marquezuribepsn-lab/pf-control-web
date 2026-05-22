@@ -684,6 +684,74 @@ button[disabled] {
   filter: saturate(0.82);
 }
 
+/* ══ Global page & section entrance animations ══════════════════════════════
+   Plays once when a page component mounts (i.e. on every navigation).
+   No JS needed — Next.js App Router unmounts the old page and mounts the new
+   one, so CSS animations replay naturally on every route change.
+   ════════════════════════════════════════════════════════════════════════ */
+
+@keyframes pf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pf-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Page <main> element — quick fade-up on mount */
+.pf-training-shell main > div > main {
+  animation: pf-fade-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Direct <section> children — stagger in after the page fades */
+.pf-training-shell main > div > main > section {
+  animation: pf-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* base delay; overridden per-child below */
+  animation-delay: 20ms;
+}
+
+.pf-training-shell main > div > main > section:nth-of-type(1)  { animation-delay: 20ms;  }
+.pf-training-shell main > div > main > section:nth-of-type(2)  { animation-delay: 70ms;  }
+.pf-training-shell main > div > main > section:nth-of-type(3)  { animation-delay: 115ms; }
+.pf-training-shell main > div > main > section:nth-of-type(4)  { animation-delay: 155ms; }
+.pf-training-shell main > div > main > section:nth-of-type(5)  { animation-delay: 190ms; }
+.pf-training-shell main > div > main > section:nth-of-type(6)  { animation-delay: 220ms; }
+.pf-training-shell main > div > main > section:nth-of-type(7)  { animation-delay: 245ms; }
+.pf-training-shell main > div > main > section:nth-of-type(n+8){ animation-delay: 265ms; }
+
+/* Top-level <div> cards inside pages (e.g. grid containers) */
+.pf-training-shell main > div > main > div:not([aria-hidden="true"]):not(.pf-expand-wrap) {
+  animation: pf-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 30ms;
+}
+
+/* Subtle hover lift on top-level sections (only non-nested) */
+.pf-training-shell main > div > main > section {
+  transition: transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.pf-training-shell main > div > main > section:hover {
+  transform: translateY(-2px);
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .pf-training-shell main > div > main,
+  .pf-training-shell main > div > main > section,
+  .pf-training-shell main > div > main > div {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /* ── Expand/collapse animated section ───────────────────────────────────── */
 .pf-expand-wrap {
   display: grid;
