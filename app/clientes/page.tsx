@@ -1592,6 +1592,26 @@ export default function ClientesPage() {
   const [filtroDeporte, setFiltroDeporte] = useState("todos");
   const [filtroClub, setFiltroClub] = useState("");
   const [crearOpen, setCrearOpen] = useState(false);
+  const [crearStep, setCrearStep] = useState(1);
+  const [crearMeta, setCrearMeta] = useState({
+    apellido: "",
+    segundoApellido: "",
+    email: "",
+    sexo: "femenino" as "masculino" | "femenino",
+    codigoPais: "",
+    telefono: "",
+    pais: "",
+    provincia: "",
+    calle: "",
+    numero: "",
+    piso: "",
+    depto: "",
+    categoriaPlan: "",
+    startDate: "",
+    endDate: "",
+    tipoAsesoria: "entrenamiento" as ClienteMeta["tipoAsesoria"],
+    modalidad: "presencial" as ClienteMeta["modalidad"],
+  });
   const [form, setForm] = useState<ClienteForm>(INITIAL_FORM);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClienteTab>("datos");
@@ -4362,15 +4382,35 @@ export default function ClientesPage() {
       deporte: deportesOptions[0] || "Fútbol",
       categoria: categoriasOptions[0] || "",
     });
+    setCrearStep(1);
+    setCrearMeta({
+      apellido: "",
+      segundoApellido: "",
+      email: "",
+      sexo: "femenino",
+      codigoPais: "",
+      telefono: "",
+      pais: "",
+      provincia: "",
+      calle: "",
+      numero: "",
+      piso: "",
+      depto: "",
+      categoriaPlan: "",
+      startDate: "",
+      endDate: "",
+      tipoAsesoria: "entrenamiento",
+      modalidad: "presencial",
+    });
   };
 
-  const submitCliente = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitCliente = () => {
     markManualSaveIntent("pf-control-alumnos");
     markManualSaveIntent("pf-control-jugadoras");
     const nombre = form.nombre.trim();
     if (!nombre) return;
 
+    let newClientId: string;
     if (form.practicaDeporte === "si") {
       agregarJugadora({
         nombre,
@@ -4387,7 +4427,8 @@ export default function ClientesPage() {
         objetivo: form.objetivo.trim() || undefined,
         observaciones: form.observaciones.trim() || undefined,
       });
-      setSelectedClientId(`jugadora:${nombre}`);
+      newClientId = `jugadora:${nombre}`;
+      setSelectedClientId(newClientId);
     } else {
       agregarAlumno({
         nombre,
@@ -4400,8 +4441,30 @@ export default function ClientesPage() {
         observaciones: form.observaciones.trim() || undefined,
         practicaDeporte: false,
       });
-      setSelectedClientId(`alumno:${nombre}`);
+      newClientId = `alumno:${nombre}`;
+      setSelectedClientId(newClientId);
     }
+
+    // Persist extended meta from wizard
+    setMetaPatch(newClientId, {
+      apellido: crearMeta.apellido,
+      segundoApellido: crearMeta.segundoApellido,
+      email: crearMeta.email,
+      sexo: crearMeta.sexo,
+      codigoPais: crearMeta.codigoPais,
+      telefono: crearMeta.telefono,
+      pais: crearMeta.pais,
+      provincia: crearMeta.provincia,
+      calle: crearMeta.calle,
+      numero: crearMeta.numero,
+      piso: crearMeta.piso,
+      depto: crearMeta.depto,
+      categoriaPlan: crearMeta.categoriaPlan,
+      startDate: crearMeta.startDate,
+      endDate: crearMeta.endDate,
+      tipoAsesoria: crearMeta.tipoAsesoria,
+      modalidad: crearMeta.modalidad,
+    });
 
     setCrearOpen(false);
     setActiveTab("datos");
@@ -4697,153 +4760,444 @@ export default function ClientesPage() {
       </section>
       ) : null}
 
-      {/* ── Modal: Crear cliente ────────────────────────────────────────────── */}
+      {/* ── Modal wizard: Nuevo cliente ─────────────────────────────────────── */}
       <div
-        className="pf-modal-overlay fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto p-4 pt-[72px] md:pt-[80px]"
+        className="pf-modal-overlay fixed inset-0 z-[150] overflow-y-auto"
         data-open={String(crearOpen)}
         role="dialog"
         aria-modal="true"
-        aria-label="Crear nuevo cliente"
-        onClick={(e) => { if (e.target === e.currentTarget) setCrearOpen(false); }}
+        aria-label="Nuevo cliente"
       >
-        <div className="pf-modal-panel w-full max-w-xl pb-8">
-          {/* Card */}
-          <div
-            className="overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
-            style={{
-              background: "linear-gradient(160deg,rgba(9,12,28,0.98) 0%,rgba(6,10,22,0.99) 100%)",
-              borderColor: `hsla(var(--hue,142),50%,50%,0.18)`,
-            }}
-          >
-            {/* Header */}
-            <div
-              className="flex items-center justify-between px-6 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-xl text-base"
-                  style={{ background: `hsla(var(--hue,142),60%,40%,0.25)`, color: `hsl(var(--hue,142),70%,65%)` }}
-                >
-                  👤
-                </span>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: `hsl(var(--hue,142),65%,60%)` }}>Nuevo registro</p>
-                  <h2 className="text-lg font-black leading-tight text-white">Crear cliente</h2>
-                </div>
+        {/* Backdrop click */}
+        <div className="absolute inset-0" onClick={() => { setCrearOpen(false); resetForm(); }} />
+
+        {/* Wizard panel — centrado, ancho generoso */}
+        <div className="pf-modal-panel relative mx-auto w-full max-w-3xl min-h-screen flex flex-col justify-start px-6 pt-10 pb-16 sm:min-h-0 sm:my-12 sm:rounded-2xl sm:shadow-[0_40px_100px_rgba(0,0,0,0.7)]"
+          style={{ background: "#0a0c14" }}
+        >
+
+          {/* ── Título ── */}
+          {(crearStep === 1 || crearStep === 3) && (
+            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest text-white sm:text-4xl">
+              NUEVO CLIENTE
+            </h1>
+          )}
+          {crearStep === 2 && <div className="mb-8 h-px" />}
+          {crearStep === 4 && (
+            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest text-white sm:text-4xl">
+              NUEVO CLIENTE
+            </h1>
+          )}
+
+          {/* ── Stepper ── */}
+          {(() => {
+            const STEPS = [
+              { label: "Email",     desc: "Verificar email cliente" },
+              { label: "Cliente",   desc: "Información del cliente" },
+              { label: "Membresía", desc: "Información de la membresía adquirida" },
+              { label: "Opcionales",desc: "Reservas de clases" },
+            ];
+            return (
+              <div className="mb-8 flex items-start justify-between gap-0">
+                {STEPS.map((s, i) => {
+                  const num = i + 1;
+                  const done = crearStep > num;
+                  const active = crearStep === num;
+                  const circleStyle: React.CSSProperties = done
+                    ? { background: "hsl(142,60%,40%)", color: "#fff" }
+                    : active
+                    ? { background: "#06b6d4", color: "#fff" }
+                    : { background: "#374151", color: "#9ca3af" };
+                  return (
+                    <div key={num} className="flex flex-1 flex-col items-center">
+                      <div className="flex w-full items-center">
+                        {/* Left connector */}
+                        {i > 0 && (
+                          <div className="h-px flex-1" style={{ background: crearStep > num ? "hsl(142,60%,40%)" : "#374151" }} />
+                        )}
+                        {/* Circle */}
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black transition-all duration-300"
+                          style={circleStyle}
+                        >
+                          {done ? (
+                            <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+                              <path d="M13.5 3.5L6 11 2.5 7.5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          ) : num}
+                        </div>
+                        {/* Right connector */}
+                        {i < STEPS.length - 1 && (
+                          <div className="h-px flex-1" style={{ background: crearStep > num ? "hsl(142,60%,40%)" : "#374151" }} />
+                        )}
+                      </div>
+                      {/* Label */}
+                      <p className="mt-2 text-center text-xs font-bold text-white">{s.label}</p>
+                      <p className="mt-0.5 hidden text-center text-[10px] text-slate-500 sm:block">{s.desc}</p>
+                    </div>
+                  );
+                })}
               </div>
-              <button
-                type="button"
-                onClick={() => setCrearOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
-                aria-label="Cerrar"
-              >
-                ✕
-              </button>
+            );
+          })()}
+
+          {/* ── Paso 1: Email ── */}
+          {crearStep === 1 && (
+            <div className="space-y-6">
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">
+                  EMAIL <span className="text-cyan-400">(*)</span>
+                </label>
+                <input
+                  type="email"
+                  autoFocus
+                  value={crearMeta.email}
+                  onChange={(e) => setCrearMeta((p) => ({ ...p, email: e.target.value }))}
+                  className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  placeholder="Ingrese el email"
+                />
+              </div>
             </div>
+          )}
 
-            {/* Form */}
-            <form onSubmit={submitCliente}>
-              <div className="space-y-5 px-6 py-5">
-
-                {/* Sección 1: Identificación */}
-                <div>
-                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Identificación</p>
-                  <div className="space-y-2.5">
-                    <input
-                      required
-                      value={form.nombre}
-                      onChange={(e) => setForm((prev) => ({ ...prev, nombre: e.target.value }))}
-                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/10"
-                      placeholder="Nombre completo *"
-                      autoFocus={crearOpen}
-                    />
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <select
-                        value={form.practicaDeporte}
-                        onChange={(e) => setForm((prev) => ({ ...prev, practicaDeporte: e.target.value as "si" | "no" }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-[#0d1117] px-4 py-3 text-sm text-slate-100 focus:outline-none"
-                      >
-                        <option value="si">Jugadora / deportista</option>
-                        <option value="no">Alumno/a general</option>
-                      </select>
-                      <select
-                        value={form.estado}
-                        onChange={(e) => setForm((prev) => ({ ...prev, estado: e.target.value as ClienteEstado }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-[#0d1117] px-4 py-3 text-sm text-slate-100 focus:outline-none"
-                      >
-                        <option value="activo">Activo</option>
-                        <option value="finalizado">Finalizado</option>
-                      </select>
+          {/* ── Paso 2: Cliente ── */}
+          {crearStep === 2 && (
+            <div className="space-y-8">
+              {/* Datos personales */}
+              <div>
+                <h3 className="mb-4 text-base font-bold text-white">Datos personales</h3>
+                <div className="space-y-4">
+                  {/* Nombre / Primer apellido / Segundo apellido */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        NOMBRE <span className="text-cyan-400">(*)</span>
+                      </label>
+                      <input
+                        autoFocus
+                        required
+                        value={form.nombre}
+                        onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Ingrese el nombre"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        PRIMER APELLIDO <span className="text-cyan-400">(*)</span>
+                      </label>
+                      <input
+                        required
+                        value={crearMeta.apellido}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, apellido: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Ingrese el apellido paterno"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">SEGUNDO APELLIDO</label>
+                      <input
+                        value={crearMeta.segundoApellido}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, segundoApellido: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Ingrese el apellido materno"
+                      />
                     </div>
                   </div>
-                </div>
 
-                {/* Sección 2: Datos físicos */}
-                <div>
-                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Datos físicos</p>
-                  <div className="grid grid-cols-3 gap-2.5">
-                    <div className="col-span-3 sm:col-span-1">
-                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Nacimiento</label>
+                  {/* Email (readonly) / Nacimiento / Sexo */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        EMAIL <span className="text-cyan-400">(*)</span>
+                      </label>
+                      <input
+                        readOnly
+                        value={crearMeta.email}
+                        className="w-full rounded-lg border border-white/[0.06] bg-[#141720] px-3 py-2.5 text-sm text-slate-400 focus:outline-none cursor-default"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        FECHA NACIMIENTO <span className="text-cyan-400">(*)</span>
+                      </label>
                       <input
                         type="date"
                         value={form.fechaNacimiento}
-                        onChange={(e) => setForm((prev) => ({ ...prev, fechaNacimiento: e.target.value }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 focus:outline-none"
+                        onChange={(e) => setForm((p) => ({ ...p, fechaNacimiento: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                        placeholder="dd-mm-aaaa"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Altura (cm)</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        SEXO <span className="text-cyan-400">(*)</span>
+                      </label>
+                      <div className="flex rounded-lg border border-white/10 overflow-hidden text-sm font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setCrearMeta((p) => ({ ...p, sexo: "masculino" }))}
+                          className="flex-1 py-2.5 transition"
+                          style={crearMeta.sexo === "masculino" ? { background: "#06b6d4", color: "#0a0c14" } : { background: "#1a1f2e", color: "#6b7280" }}
+                        >
+                          MASCULINO
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCrearMeta((p) => ({ ...p, sexo: "femenino" }))}
+                          className="flex-1 py-2.5 transition"
+                          style={crearMeta.sexo === "femenino" ? { background: "#06b6d4", color: "#0a0c14" } : { background: "#1a1f2e", color: "#6b7280" }}
+                        >
+                          FEMENINO
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Altura / Cod. país / Teléfono */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">ALTURA</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          value={form.altura}
+                          onChange={(e) => setForm((p) => ({ ...p, altura: e.target.value }))}
+                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                          placeholder="Ingrese la altura"
+                        />
+                        <span className="text-xs text-slate-500 shrink-0">cm</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">COD. TELÉFONO PAÍS</label>
                       <input
-                        value={form.altura}
-                        onChange={(e) => setForm((prev) => ({ ...prev, altura: e.target.value }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                        placeholder="ej. 175"
+                        value={crearMeta.codigoPais}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, codigoPais: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="+54"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Peso (kg)</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TELÉFONO</label>
                       <input
-                        value={form.peso}
-                        onChange={(e) => setForm((prev) => ({ ...prev, peso: e.target.value }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                        placeholder="ej. 70"
+                        value={crearMeta.telefono}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, telefono: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Ingrese el Nro. de contacto"
                       />
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Sección 3: Deporte (condicional) */}
-                {form.practicaDeporte === "si" ? (
-                  <div>
-                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Deporte y club</p>
-                    <div className="space-y-2.5">
+              {/* Domicilio */}
+              <div>
+                <h3 className="mb-4 text-base font-bold text-white">Domicilio</h3>
+                <div className="space-y-4">
+                  {/* País / Provincia */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PAÍS</label>
                       <input
-                        value={form.club}
-                        onChange={(e) => setForm((prev) => ({ ...prev, club: e.target.value }))}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                        placeholder="Club o institución"
+                        value={crearMeta.pais}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, pais: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="País"
                       />
-                      <div className="grid grid-cols-3 gap-2.5">
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PROV. / ESTADO / DISTRITO</label>
+                      <input
+                        value={crearMeta.provincia}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, provincia: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Provincia / Estado"
+                      />
+                    </div>
+                  </div>
+                  {/* Calle / Número / Piso / Depto */}
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="col-span-2">
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">CALLE</label>
+                      <input
+                        value={crearMeta.calle}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, calle: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Calle"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">NÚMERO</label>
+                      <input
+                        value={crearMeta.numero}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, numero: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Número"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PISO</label>
+                      <input
+                        value={crearMeta.piso}
+                        onChange={(e) => setCrearMeta((p) => ({ ...p, piso: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        placeholder="Piso"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Paso 3: Membresía ── */}
+          {crearStep === 3 && (
+            <div className="space-y-6">
+              {/* Tipo de cliente */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TIPO DE CLIENTE</label>
+                  <select
+                    value={form.practicaDeporte}
+                    onChange={(e) => setForm((p) => ({ ...p, practicaDeporte: e.target.value as "si" | "no" }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="si">Jugadora / deportista</option>
+                    <option value="no">Alumno/a general</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">ESTADO</label>
+                  <select
+                    value={form.estado}
+                    onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as ClienteEstado }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="activo">Activo</option>
+                    <option value="finalizado">Finalizado</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Categoría / Plan */}
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  CATEGORÍA <span className="text-cyan-400">(*)</span>
+                </label>
+                {planesDisponibles.filter((p) => p.activo).length > 0 ? (
+                  <select
+                    value={crearMeta.categoriaPlan}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="">Seleccione</option>
+                    {planesDisponibles.filter((p) => p.activo).map((p) => (
+                      <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={crearMeta.categoriaPlan}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    placeholder="Ej: Plan mensual, Plan semanal..."
+                  />
+                )}
+              </div>
+
+              {/* Fechas inicio / fin */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">FECHA INICIO</label>
+                  <input
+                    type="date"
+                    value={crearMeta.startDate}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, startDate: e.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">FECHA FIN</label>
+                  <input
+                    type="date"
+                    value={crearMeta.endDate}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, endDate: e.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                  />
+                </div>
+              </div>
+
+              {/* Tipo asesoría / Modalidad */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TIPO ASESORÍA</label>
+                  <select
+                    value={crearMeta.tipoAsesoria}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="entrenamiento">Entrenamiento</option>
+                    <option value="nutricion">Nutrición</option>
+                    <option value="completa">Completa</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">MODALIDAD</label>
+                  <select
+                    value={crearMeta.modalidad}
+                    onChange={(e) => setCrearMeta((p) => ({ ...p, modalidad: e.target.value as ClienteMeta["modalidad"] }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="presencial">Presencial</option>
+                    <option value="virtual">Virtual</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Paso 4: Opcionales ── */}
+          {crearStep === 4 && (
+            <div className="space-y-6">
+              {/* Deporte (si aplica) */}
+              {form.practicaDeporte === "si" && (
+                <div>
+                  <h3 className="mb-4 text-base font-bold text-white">Deporte y club</h3>
+                  <div className="space-y-3">
+                    <input
+                      value={form.club}
+                      onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
+                      className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                      placeholder="Club o institución"
+                    />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">DEPORTE</label>
                         <select
                           value={form.deporte}
-                          onChange={(e) => setForm((prev) => ({ ...prev, deporte: e.target.value, posicion: "" }))}
-                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                          onChange={(e) => setForm((p) => ({ ...p, deporte: e.target.value, posicion: "" }))}
+                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">CATEGORÍA</label>
                         <select
                           value={form.categoria}
-                          onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))}
-                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                          onChange={(e) => setForm((p) => ({ ...p, categoria: e.target.value }))}
+                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           <option value="">Categoría</option>
                           {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">POSICIÓN</label>
                         <select
                           value={form.posicion}
-                          onChange={(e) => setForm((prev) => ({ ...prev, posicion: e.target.value }))}
-                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                          onChange={(e) => setForm((p) => ({ ...p, posicion: e.target.value }))}
+                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           <option value="">Posición</option>
                           {posicionesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -4851,63 +5205,103 @@ export default function ClientesPage() {
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Lugar</p>
-                    <input
-                      value={form.club}
-                      onChange={(e) => setForm((prev) => ({ ...prev, club: e.target.value }))}
-                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                      placeholder="Club, gimnasio o institución (opcional)"
-                    />
-                  </div>
-                )}
-
-                {/* Sección 4: Objetivos */}
-                <div>
-                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Objetivos y notas</p>
-                  <div className="space-y-2.5">
-                    <textarea
-                      value={form.objetivo}
-                      onChange={(e) => setForm((prev) => ({ ...prev, objetivo: e.target.value }))}
-                      rows={2}
-                      className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                      placeholder="Objetivo principal del cliente..."
-                    />
-                    <textarea
-                      value={form.observaciones}
-                      onChange={(e) => setForm((prev) => ({ ...prev, observaciones: e.target.value }))}
-                      rows={2}
-                      className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                      placeholder="Observaciones, notas internas..."
-                    />
-                  </div>
                 </div>
+              )}
+              {form.practicaDeporte === "no" && (
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">LUGAR (gimnasio / institución)</label>
+                  <input
+                    value={form.club}
+                    onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
+                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    placeholder="Club, gimnasio o institución (opcional)"
+                  />
+                </div>
+              )}
 
+              {/* Objetivo / Observaciones */}
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">OBJETIVO</label>
+                <textarea
+                  value={form.objetivo}
+                  onChange={(e) => setForm((p) => ({ ...p, objetivo: e.target.value }))}
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  placeholder="Objetivo principal del cliente..."
+                />
               </div>
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">OBSERVACIONES</label>
+                <textarea
+                  value={form.observaciones}
+                  onChange={(e) => setForm((p) => ({ ...p, observaciones: e.target.value }))}
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  placeholder="Observaciones, notas internas..."
+                />
+              </div>
+            </div>
+          )}
 
-              {/* Footer */}
-              <div
-                className="flex items-center justify-end gap-3 px-6 py-4"
-                style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+          {/* ── Barra de acciones ── */}
+          <div className="mt-10 flex flex-wrap items-center justify-end gap-3">
+            {/* Cancelar */}
+            <ReliableActionButton
+              type="button"
+              onClick={() => { setCrearOpen(false); resetForm(); }}
+              className="rounded-lg border border-red-500/70 px-5 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+            >
+              Cancelar
+            </ReliableActionButton>
+
+            {/* Atrás */}
+            {crearStep > 1 && (
+              <ReliableActionButton
+                type="button"
+                onClick={() => setCrearStep((s) => s - 1)}
+                className="rounded-lg border border-cyan-500/60 px-5 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/10"
               >
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => setCrearOpen(false)}
-                  className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
-                >
-                  Cancelar
-                </ReliableActionButton>
-                <ReliableActionButton
-                  type="submit"
-                  className="rounded-xl px-6 py-2.5 text-sm font-black text-slate-950 transition hover:brightness-110 active:scale-[0.97]"
-                  style={{ background: `hsl(var(--hue,142),65%,48%)` }}
-                >
-                  Crear cliente
-                </ReliableActionButton>
-              </div>
-            </form>
+                Atrás
+              </ReliableActionButton>
+            )}
+
+            {/* Guardar desde paso 3 (saltear opcionales) */}
+            {crearStep === 3 && (
+              <ReliableActionButton
+                type="button"
+                onClick={() => { if (!form.nombre.trim()) { setCrearStep(2); return; } submitCliente(); }}
+                className="rounded-lg px-5 py-2.5 text-sm font-black text-white transition hover:brightness-110"
+                style={{ background: "hsl(142,60%,40%)" }}
+              >
+                Guardar
+              </ReliableActionButton>
+            )}
+
+            {/* Siguiente / Guardar final */}
+            {crearStep < 4 ? (
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  if (crearStep === 1 && !crearMeta.email.trim()) return;
+                  if (crearStep === 2 && (!form.nombre.trim() || !crearMeta.apellido.trim())) return;
+                  setCrearStep((s) => s + 1);
+                }}
+                className="rounded-lg border border-cyan-500/60 px-6 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/10"
+              >
+                Siguiente
+              </ReliableActionButton>
+            ) : (
+              <ReliableActionButton
+                type="button"
+                onClick={() => { if (!form.nombre.trim()) { setCrearStep(2); return; } submitCliente(); }}
+                className="rounded-lg px-6 py-2.5 text-sm font-black text-white transition hover:brightness-110"
+                style={{ background: "hsl(142,60%,40%)" }}
+              >
+                Guardar
+              </ReliableActionButton>
+            )}
           </div>
+
         </div>
       </div>
 
