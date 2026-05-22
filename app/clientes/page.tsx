@@ -4663,23 +4663,10 @@ export default function ClientesPage() {
               <>
                 <ReliableActionButton
                   type="button"
-                  onClick={() => {
-                    const opening = !crearOpen;
-                    setCrearOpen(opening);
-                    if (opening) {
-                      resetForm();
-                      requestAnimationFrame(() => {
-                        document.getElementById("crear-cliente-form-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      });
-                    }
-                  }}
-                  className={`rounded-xl border px-4 py-2 text-sm font-black transition hover:-translate-y-0.5 ${
-                    crearOpen
-                      ? "border-rose-300/50 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30"
-                      : "border-cyan-100/40 bg-cyan-300 text-slate-950 hover:bg-cyan-200"
-                  }`}
+                  onClick={() => { setCrearOpen(true); resetForm(); }}
+                  className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
                 >
-                  {crearOpen ? "✕ Cancelar" : "+ Crear cliente"}
+                  + Crear cliente
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="button"
@@ -4710,102 +4697,219 @@ export default function ClientesPage() {
       </section>
       ) : null}
 
-      {!isDetailMode ? (
+      {/* ── Modal: Crear cliente ────────────────────────────────────────────── */}
       <div
-        id="crear-cliente-form-section"
-        className="pf-expand-wrap"
+        className="pf-modal-overlay fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto p-4 pt-[72px] md:pt-[80px]"
         data-open={String(crearOpen)}
-        aria-hidden={!crearOpen}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Crear nuevo cliente"
+        onClick={(e) => { if (e.target === e.currentTarget) setCrearOpen(false); }}
       >
-        <div className="pf-expand-inner">
-        <section
-          className="mb-1 rounded-2xl border border-emerald-300/25 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.13),rgba(5,8,18,0.97)_60%)] p-5 shadow-[0_8px_32px_rgba(16,185,129,0.1)]"
-          style={{ borderColor: `hsla(var(--hue,142),55%,50%,0.2)` }}
-        >
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-black text-white">Nuevo cliente</h2>
-            <ReliableActionButton
-              type="button"
-              onClick={() => setCrearOpen(false)}
-              className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10"
+        <div className="pf-modal-panel w-full max-w-xl pb-8">
+          {/* Card */}
+          <div
+            className="overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
+            style={{
+              background: "linear-gradient(160deg,rgba(9,12,28,0.98) 0%,rgba(6,10,22,0.99) 100%)",
+              borderColor: `hsla(var(--hue,142),50%,50%,0.18)`,
+            }}
+          >
+            {/* Header */}
+            <div
+              className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
             >
-              ✕ Cerrar
-            </ReliableActionButton>
-          </div>
-          <form onSubmit={submitCliente} className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <input
-                required
-                value={form.nombre}
-                onChange={(e) => setForm((prev) => ({ ...prev, nombre: e.target.value }))}
-                className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500"
-                placeholder="Nombre *"
-              />
-              <select
-                value={form.practicaDeporte}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, practicaDeporte: e.target.value as "si" | "no" }))
-                }
-                className="rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100"
-              >
-                <option value="si">Practica deporte (jugadora)</option>
-                <option value="no">No practica deporte (alumno/a)</option>
-              </select>
-              <select
-                value={form.estado}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, estado: e.target.value as ClienteEstado }))
-                }
-                className="rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100"
-              >
-                <option value="activo">Activo</option>
-                <option value="finalizado">Finalizado</option>
-              </select>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-4">
-              <input type="date" value={form.fechaNacimiento} onChange={(e) => setForm((prev) => ({ ...prev, fechaNacimiento: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm" />
-              <input value={form.altura} onChange={(e) => setForm((prev) => ({ ...prev, altura: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500" placeholder="Altura" />
-              <input value={form.peso} onChange={(e) => setForm((prev) => ({ ...prev, peso: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500" placeholder="Peso" />
-              <input value={form.club} onChange={(e) => setForm((prev) => ({ ...prev, club: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500" placeholder="Club" />
-            </div>
-
-            {form.practicaDeporte === "si" ? (
-              <div className="grid gap-3 md:grid-cols-3">
-                <select value={form.deporte} onChange={(e) => setForm((prev) => ({ ...prev, deporte: e.target.value, posicion: "" }))} className="rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100">
-                  {deportesOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
-                  ))}
-                </select>
-                <select value={form.categoria} onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))} className="rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100">
-                  <option value="">Categoria</option>
-                  {categoriasOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
-                  ))}
-                </select>
-                <select value={form.posicion} onChange={(e) => setForm((prev) => ({ ...prev, posicion: e.target.value }))} className="rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100">
-                  <option value="">Posicion</option>
-                  {posicionesOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-xl text-base"
+                  style={{ background: `hsla(var(--hue,142),60%,40%,0.25)`, color: `hsl(var(--hue,142),70%,65%)` }}
+                >
+                  👤
+                </span>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: `hsl(var(--hue,142),65%,60%)` }}>Nuevo registro</p>
+                  <h2 className="text-lg font-black leading-tight text-white">Crear cliente</h2>
+                </div>
               </div>
-            ) : null}
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <input value={form.objetivo} onChange={(e) => setForm((prev) => ({ ...prev, objetivo: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500" placeholder="Objetivo" />
-              <input value={form.observaciones} onChange={(e) => setForm((prev) => ({ ...prev, observaciones: e.target.value }))} className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm placeholder:text-slate-500" placeholder="Observaciones" />
+              <button
+                type="button"
+                onClick={() => setCrearOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <ReliableActionButton type="button" onClick={() => setCrearOpen(false)} className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10">Cancelar</ReliableActionButton>
-              <ReliableActionButton type="submit" className="rounded-xl bg-emerald-400 px-5 py-2 text-sm font-black text-slate-950 hover:bg-emerald-300 active:scale-95">Guardar cliente</ReliableActionButton>
-            </div>
-          </form>
-        </section>
+            {/* Form */}
+            <form onSubmit={submitCliente}>
+              <div className="space-y-5 px-6 py-5">
+
+                {/* Sección 1: Identificación */}
+                <div>
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Identificación</p>
+                  <div className="space-y-2.5">
+                    <input
+                      required
+                      value={form.nombre}
+                      onChange={(e) => setForm((prev) => ({ ...prev, nombre: e.target.value }))}
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/10"
+                      placeholder="Nombre completo *"
+                      autoFocus={crearOpen}
+                    />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <select
+                        value={form.practicaDeporte}
+                        onChange={(e) => setForm((prev) => ({ ...prev, practicaDeporte: e.target.value as "si" | "no" }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-[#0d1117] px-4 py-3 text-sm text-slate-100 focus:outline-none"
+                      >
+                        <option value="si">Jugadora / deportista</option>
+                        <option value="no">Alumno/a general</option>
+                      </select>
+                      <select
+                        value={form.estado}
+                        onChange={(e) => setForm((prev) => ({ ...prev, estado: e.target.value as ClienteEstado }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-[#0d1117] px-4 py-3 text-sm text-slate-100 focus:outline-none"
+                      >
+                        <option value="activo">Activo</option>
+                        <option value="finalizado">Finalizado</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sección 2: Datos físicos */}
+                <div>
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Datos físicos</p>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    <div className="col-span-3 sm:col-span-1">
+                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Nacimiento</label>
+                      <input
+                        type="date"
+                        value={form.fechaNacimiento}
+                        onChange={(e) => setForm((prev) => ({ ...prev, fechaNacimiento: e.target.value }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Altura (cm)</label>
+                      <input
+                        value={form.altura}
+                        onChange={(e) => setForm((prev) => ({ ...prev, altura: e.target.value }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                        placeholder="ej. 175"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-semibold text-slate-500">Peso (kg)</label>
+                      <input
+                        value={form.peso}
+                        onChange={(e) => setForm((prev) => ({ ...prev, peso: e.target.value }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                        placeholder="ej. 70"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sección 3: Deporte (condicional) */}
+                {form.practicaDeporte === "si" ? (
+                  <div>
+                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Deporte y club</p>
+                    <div className="space-y-2.5">
+                      <input
+                        value={form.club}
+                        onChange={(e) => setForm((prev) => ({ ...prev, club: e.target.value }))}
+                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                        placeholder="Club o institución"
+                      />
+                      <div className="grid grid-cols-3 gap-2.5">
+                        <select
+                          value={form.deporte}
+                          onChange={(e) => setForm((prev) => ({ ...prev, deporte: e.target.value, posicion: "" }))}
+                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                        >
+                          {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                        </select>
+                        <select
+                          value={form.categoria}
+                          onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))}
+                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                        >
+                          <option value="">Categoría</option>
+                          {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                        </select>
+                        <select
+                          value={form.posicion}
+                          onChange={(e) => setForm((prev) => ({ ...prev, posicion: e.target.value }))}
+                          className="rounded-xl border border-white/[0.08] bg-[#0d1117] px-3 py-3 text-sm text-slate-100 focus:outline-none"
+                        >
+                          <option value="">Posición</option>
+                          {posicionesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Lugar</p>
+                    <input
+                      value={form.club}
+                      onChange={(e) => setForm((prev) => ({ ...prev, club: e.target.value }))}
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                      placeholder="Club, gimnasio o institución (opcional)"
+                    />
+                  </div>
+                )}
+
+                {/* Sección 4: Objetivos */}
+                <div>
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Objetivos y notas</p>
+                  <div className="space-y-2.5">
+                    <textarea
+                      value={form.objetivo}
+                      onChange={(e) => setForm((prev) => ({ ...prev, objetivo: e.target.value }))}
+                      rows={2}
+                      className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                      placeholder="Objetivo principal del cliente..."
+                    />
+                    <textarea
+                      value={form.observaciones}
+                      onChange={(e) => setForm((prev) => ({ ...prev, observaciones: e.target.value }))}
+                      rows={2}
+                      className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none"
+                      placeholder="Observaciones, notas internas..."
+                    />
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Footer */}
+              <div
+                className="flex items-center justify-end gap-3 px-6 py-4"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setCrearOpen(false)}
+                  className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
+                >
+                  Cancelar
+                </ReliableActionButton>
+                <ReliableActionButton
+                  type="submit"
+                  className="rounded-xl px-6 py-2.5 text-sm font-black text-slate-950 transition hover:brightness-110 active:scale-[0.97]"
+                  style={{ background: `hsl(var(--hue,142),65%,48%)` }}
+                >
+                  Crear cliente
+                </ReliableActionButton>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-      ) : null}
 
       {!isDetailMode && isAdmin ? (
       <section className="mb-6 rounded-2xl border border-cyan-300/25 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_50%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_20px_60px_rgba(2,10,26,0.45)]">
