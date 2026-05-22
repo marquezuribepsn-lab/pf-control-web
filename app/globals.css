@@ -684,6 +684,34 @@ button[disabled] {
   filter: saturate(0.82);
 }
 
+/* ── Expand/collapse animated section ───────────────────────────────────── */
+.pf-expand-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 220ms ease;
+}
+.pf-expand-wrap[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.pf-expand-wrap > .pf-expand-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+/* inner section slides up slightly as it enters */
+.pf-expand-wrap > .pf-expand-inner > section,
+.pf-expand-wrap > .pf-expand-inner > div {
+  transform: translateY(-8px);
+  transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pf-expand-wrap[data-open="true"] > .pf-expand-inner > section,
+.pf-expand-wrap[data-open="true"] > .pf-expand-inner > div {
+  transform: translateY(0);
+}
+
 .pf-reliable-link {
   transition:
     transform 160ms cubic-bezier(0.22, 0.9, 0.24, 1),
@@ -6245,6 +6273,29 @@ video.pf-a3-routine-log-video-frame {
     top: calc(100% - 0.7rem);
     opacity: 0.45;
   }
+}
+
+/* Prevent horizontal overflow in the nutrition screen on all viewports.
+   Content is wide by nature (grids, scrollable strips) — constrain at the
+   screen boundary so nothing bleeds outside the visual frame. */
+.pf-a4-nutrition-screen {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.pf-a4-nutrition-screen > *,
+.pf-a4-nutrition-screen .pf-a2-card,
+.pf-a4-nutrition-screen .pf-a3-routine-session-strip,
+.pf-a4-nutrition-screen article,
+.pf-a4-nutrition-screen section {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.pf-a4-nutrition-screen .pf-a3-routine-session-scroll {
+  max-width: 100%;
 }
 
 @keyframes pf-a2-orbit-right {

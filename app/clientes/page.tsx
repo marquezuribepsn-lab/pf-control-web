@@ -4710,10 +4710,16 @@ export default function ClientesPage() {
       </section>
       ) : null}
 
-      {!isDetailMode && crearOpen ? (
+      {!isDetailMode ? (
+      <div
+        id="crear-cliente-form-section"
+        className="pf-expand-wrap"
+        data-open={String(crearOpen)}
+        aria-hidden={!crearOpen}
+      >
+        <div className="pf-expand-inner">
         <section
-          id="crear-cliente-form-section"
-          className="rounded-2xl border border-emerald-300/25 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.13),rgba(5,8,18,0.97)_60%)] p-5 shadow-[0_8px_32px_rgba(16,185,129,0.1)]"
+          className="mb-1 rounded-2xl border border-emerald-300/25 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.13),rgba(5,8,18,0.97)_60%)] p-5 shadow-[0_8px_32px_rgba(16,185,129,0.1)]"
           style={{ borderColor: `hsla(var(--hue,142),55%,50%,0.2)` }}
         >
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -4797,6 +4803,8 @@ export default function ClientesPage() {
             </div>
           </form>
         </section>
+        </div>
+      </div>
       ) : null}
 
       {!isDetailMode && isAdmin ? (
