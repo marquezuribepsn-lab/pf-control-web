@@ -152,54 +152,48 @@ h6 {
 }
 
 .pf-training-shell {
-  /* Panel base */
-  --pf-panel-bg:     #07090e;
-  --pf-panel-border: rgba(255, 255, 255, 0.07);
-
   /* Grid paper vars */
-  --pf-grid-size:    24px;
-  --pf-grid-line:    rgba(255, 255, 255, 0.046);
-  --pf-grid-dot:     rgba(255, 255, 255, 0.13);
+  --pf-grid-size: 24px;
+  --pf-grid-line: rgba(255, 255, 255, 0.05);
+  --pf-grid-dot:  rgba(255, 255, 255, 0.14);
 }
 
 html[data-pf-theme="light"] .pf-training-shell {
-  --pf-panel-bg: #f4fffb;
-  --pf-panel-border: rgba(44, 162, 143, 0.35);
-  --pf-grid-line: rgba(0, 0, 0, 0.055);
-  --pf-grid-dot:  rgba(0, 0, 0, 0.14);
+  --pf-grid-line: rgba(0, 0, 0, 0.06);
+  --pf-grid-dot:  rgba(0, 0, 0, 0.15);
   color: #173847;
 }
 
-/* ── Graph-paper texture on main section cards ─────────────────────────── */
-.pf-training-shell main :where(section, article):where([class*="rounded-2xl"], [class*="rounded-3xl"]) {
-  border-color: var(--pf-panel-border) !important;
-  background-color: var(--pf-panel-bg) !important;
-  /* Grid: dots at intersections + horizontal + vertical lines */
+/* ── Graph-paper texture: ::before overlay on every section/article ─────── */
+/* Preserva el fondo original (teal, gradiente, etc.) y superpone la grilla  */
+.pf-training-shell main section,
+.pf-training-shell main article {
+  position: relative;
+  isolation: isolate;   /* contiene z-index de hijos sin romper fixed/portals */
+}
+
+.pf-training-shell main section::before,
+.pf-training-shell main article::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;          /* detrás del contenido, encima del bg del padre */
   background-image:
-    radial-gradient(
-      circle,
-      var(--pf-grid-dot) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      var(--pf-grid-line) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      var(--pf-grid-line) 1px,
-      transparent 1px
-    ) !important;
-  background-size:
-    var(--pf-grid-size) var(--pf-grid-size),
-    var(--pf-grid-size) var(--pf-grid-size),
-    var(--pf-grid-size) var(--pf-grid-size) !important;
-  background-position: 0 0, 0 0, 0 0 !important;
+    radial-gradient(circle, var(--pf-grid-dot) 1px, transparent 1px),
+    linear-gradient(var(--pf-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pf-grid-line) 1px, transparent 1px);
+  background-size: var(--pf-grid-size) var(--pf-grid-size);
+  background-position: 0 0;
+}
+
+/* Bordes uniformes — sin sobrescribir background */
+.pf-training-shell main :where(section, article) {
   box-shadow: none !important;
 }
 
 .pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-  border-color: rgba(255, 255, 255, 0.06) !important;
   box-shadow: none !important;
 }
 
