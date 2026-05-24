@@ -5800,7 +5800,7 @@ export default function ClientesPage() {
                         setDetailTabId(tab.id);
                         pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
-                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-[#0e1012] text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-[rgba(97,206,112,0.55)] bg-[rgba(97,206,112,0.10)] text-white shadow-[0_0_0_1px_rgba(97,206,112,0.15)]" : "border-white/[0.09] bg-[#0e1012] text-white/70 hover:border-white/[0.18] hover:bg-white/[0.03]"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
                     >
                       {activeTab === tab.id ? (
@@ -5891,14 +5891,14 @@ export default function ClientesPage() {
                     <div className="space-y-3">
 
                       {/* PERFIL HEADER */}
-                      <div className="relative overflow-hidden rounded-2xl border border-cyan-400/25 bg-[#0e1012] p-4 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.07),transparent_60%)]" />
+                      <div className="relative overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0e1012] p-4 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(97,206,112,0.05),transparent_60%)]" />
                         <div className="relative flex items-center gap-3.5">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-lg font-black text-white shadow-[0_0_16px_rgba(34,211,238,0.45)]">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#61ce70] to-[#38a169] text-lg font-black text-white shadow-[0_0_16px_rgba(97,206,112,0.35)]">
                             {(datosDraft.nombre?.[0] || "?").toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-400/70">
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/40">
                               {selectedClient.tipo === "jugadora" ? "Jugadora" : "Alumno"}
                             </p>
                             <h3 className="truncate text-base font-black leading-tight text-white">

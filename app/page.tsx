@@ -601,7 +601,7 @@ export default function Home() {
 
         {/* ── Config toolbar ───────────────────────────────────── */}
         {configMode && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-3">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.09] bg-[#111417] p-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
               Configuración de inicio
             </p>
@@ -926,7 +926,7 @@ export default function Home() {
                   <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    className="group rounded-xl border border-white/10 bg-white/[0.06] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
+                    className="group pf-card rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5"
                   >
                     <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${accent}`} />
                     <p className="font-semibold" style={{ color: "#ffffff" }}>{categoria.nombre}</p>
@@ -976,7 +976,7 @@ export default function Home() {
                 { label: "Duración", value: config.duracion, onChange: (v: string) => setConfig({ ...config, duracion: v }) },
                 { label: "Bloques",  value: config.bloques,  onChange: (v: string) => setConfig({ ...config, bloques: v }) },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
+                <div key={item.label} className="rounded-xl border border-white/[0.09] bg-[#111417] p-3">
                   <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">{item.label}</p>
                   {editando ? (
                     <input value={item.value} onChange={(e) => item.onChange(e.target.value)}
@@ -987,7 +987,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.06] p-3">
+            <div className="mt-2 rounded-xl border border-white/[0.09] bg-[#111417] p-3">
               <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">Objetivo</p>
               {editando ? (
                 <textarea value={config.objetivo} onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
@@ -999,7 +999,7 @@ export default function Home() {
           </div>
 
           {/* Alertas */}
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.05] p-6">
+          <div className="pf-card rounded-2xl border p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="mb-2 h-[2px] w-8 rounded-full bg-amber-400 opacity-80" />
@@ -1014,7 +1014,7 @@ export default function Home() {
             </div>
             <div className="space-y-2">
               {config.alertas.map((alerta, index) => (
-                <div key={index} className="rounded-xl border border-amber-500/15 bg-black/20 p-3 transition-all duration-200 hover:border-amber-500/25">
+                <div key={index} className="rounded-xl border border-white/[0.08] bg-[#111417] p-3 transition-all duration-200 hover:border-white/[0.14]">
                   {editando ? (
                     <>
                       <input value={alerta.nombre} onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
@@ -1060,7 +1060,7 @@ export default function Home() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) =>
               editando ? (
-                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
+                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/[0.09] bg-[#111417] p-4">
                   <input value={item.label} onChange={(e) => updateModulo(index, { label: e.target.value })}
                     className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-bold text-white" />
                   <input value={item.href} onChange={(e) => updateModulo(index, { href: e.target.value })}
@@ -1079,7 +1079,7 @@ export default function Home() {
                 <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  className="group rounded-xl border border-white/10 bg-white/[0.06] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
+                  className="group pf-card rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(99,102,241,0.12)";
                   }}
