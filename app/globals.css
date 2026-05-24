@@ -42,22 +42,43 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background-color: #040a12;
+  background-color: #080808;
   background:
-    /* ── Grilla: puntos en intersecciones ── */
-    radial-gradient(circle, rgba(255,255,255,0.09) 1px, transparent 1px) 0 0 / 28px 28px,
-    /* ── Grilla: líneas horizontales ── */
-    linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px) 0 0 / 28px 28px,
-    /* ── Grilla: líneas verticales ── */
-    linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px) 0 0 / 28px 28px,
-    /* ── Brillo ambiental esquina sup-izq (verde) ── */
-    radial-gradient(ellipse 900px 600px at -8% -18%, rgba(34,197,94,0.18) 0%, transparent 55%),
-    /* ── Brillo ambiental esquina sup-der (cyan) ── */
-    radial-gradient(ellipse 780px 520px at 108% -12%, rgba(34,211,238,0.16) 0%, transparent 50%),
-    /* ── Brillo diagonal tenue central ── */
-    linear-gradient(118deg, transparent 0%, rgba(34,197,94,0.07) 34%, transparent 56%, rgba(34,211,238,0.08) 80%, transparent 100%),
-    /* ── Base oscura ── */
-    linear-gradient(156deg, #040a12 0%, #061422 48%, #04101e 100%);
+    /* ── GRILLA: puntos brillantes en cada intersección ── */
+    radial-gradient(circle, rgba(255,255,255,0.20) 1px, transparent 1px) 0 0 / 30px 30px,
+    /* ── GRILLA: líneas horizontales ── */
+    linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
+    /* ── GRILLA: líneas verticales ── */
+    linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
+    /* ── SCRATCH: arañazo diagonal principal ── */
+    linear-gradient(
+      -34deg,
+      transparent 0%, transparent 38%,
+      rgba(255,255,255,0.022) 38.15%, rgba(255,255,255,0.008) 38.45%,
+      transparent 38.6%, transparent 100%
+    ),
+    /* ── SCRATCH: arañazo diagonal secundario ── */
+    linear-gradient(
+      -18deg,
+      transparent 0%, transparent 62%,
+      rgba(255,255,255,0.015) 62.1%, rgba(255,255,255,0.005) 62.3%,
+      transparent 62.45%, transparent 100%
+    ),
+    /* ── SCRATCH: arañazo diagonal terciario ── */
+    linear-gradient(
+      -48deg,
+      transparent 0%, transparent 72%,
+      rgba(255,255,255,0.018) 72.1%, rgba(255,255,255,0.006) 72.35%,
+      transparent 72.5%, transparent 100%
+    ),
+    /* ── VIGNETTE: oscurecimiento perimetral ── */
+    radial-gradient(ellipse 120% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.55) 100%),
+    /* ── COLOR AMBIENT: acento verde esquina sup-izq ── */
+    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(34,197,94,0.10) 0%, transparent 60%),
+    /* ── COLOR AMBIENT: acento cyan esquina sup-der ── */
+    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(34,211,238,0.09) 0%, transparent 55%),
+    /* ── BASE PURA ── */
+    #080808;
 }
 
 html {
@@ -67,14 +88,14 @@ html {
 
 html[data-pf-theme="light"],
 html[data-pf-theme="light"] body {
-  background-color: #e7f7f3;
+  background-color: #f0f8f5;
   background-image:
-    radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px) 0 0 / 28px 28px,
-    linear-gradient(rgba(0,0,0,0.028) 1px, transparent 1px) 0 0 / 28px 28px,
-    linear-gradient(90deg, rgba(0,0,0,0.028) 1px, transparent 1px) 0 0 / 28px 28px,
-    radial-gradient(1050px 680px at -8% -22%, rgba(44,200,171,0.22), transparent 58%),
-    radial-gradient(880px 580px at 110% -14%, rgba(157,216,115,0.2), transparent 54%),
-    linear-gradient(150deg, #effbf8 0%, #e3f5ef 54%, #d6ece5 100%);
+    radial-gradient(circle, rgba(0,0,0,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
+    linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px) 0 0 / 30px 30px,
+    linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px) 0 0 / 30px 30px,
+    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(44,200,171,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(157,216,115,0.12) 0%, transparent 55%),
+    #f0f8f5;
 }
 
 body {
@@ -164,26 +185,36 @@ h6 {
   letter-spacing: -0.012em;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   GYM PANEL DESIGN SYSTEM
+   Estética: industrial · oscuro · definido · alto contraste
+   ════════════════════════════════════════════════════════════════════════════ */
+
 .pf-training-shell {
-  /* Grid paper vars */
+  /* Grilla interior de paneles — más densa que el fondo */
   --pf-grid-size: 22px;
-  --pf-grid-line: rgba(255, 255, 255, 0.055);
-  --pf-grid-dot:  rgba(255, 255, 255, 0.16);
+  --pf-grid-line: rgba(255, 255, 255, 0.065);
+  --pf-grid-dot:  rgba(255, 255, 255, 0.18);
+
+  /* Color del acento temático (se sobreescribe por página via --hue) */
+  --pf-accent-h: var(--hue, 160);
 }
 
 html[data-pf-theme="light"] .pf-training-shell {
-  --pf-grid-line: rgba(0, 0, 0, 0.065);
-  --pf-grid-dot:  rgba(0, 0, 0, 0.16);
+  --pf-grid-line: rgba(0, 0, 0, 0.07);
+  --pf-grid-dot:  rgba(0, 0, 0, 0.18);
   color: #173847;
 }
 
-/* ── Graph-paper texture: ::before overlay on every section/article ─────── */
+/* ── Stacking context para ::before y ::after ─────────────────────────────── */
 .pf-training-shell main section,
 .pf-training-shell main article {
   position: relative;
   isolation: isolate;
+  overflow: hidden;   /* clip pseudo-elements al border-radius del panel */
 }
 
+/* ── CAPA 1: textura cuadriculada (idéntica al fondo pero más densa) ──────── */
 .pf-training-shell main section::before,
 .pf-training-shell main article::before {
   content: '';
@@ -200,40 +231,48 @@ html[data-pf-theme="light"] .pf-training-shell {
   background-position: 0 0;
 }
 
-/* ── Panel design: borde con micro-glow, sombra elevada ─────────────────── */
-.pf-training-shell main section {
-  border-color: rgba(255,255,255,0.07) !important;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04),
-    0 8px 32px -8px rgba(0,0,0,0.55),
-    0 2px 8px -2px rgba(0,0,0,0.4) !important;
-}
-
-/* Glow del color temático en el borde superior del panel */
-.pf-training-shell main section::after {
+/* ── CAPA 2: línea de acento luminosa en el borde superior ────────────────── */
+/* → identidad visual gym: cada panel tiene su "banda de color" en el tope   */
+.pf-training-shell main section::after,
+.pf-training-shell main article::after {
   content: '';
   position: absolute;
-  inset-inline: 10%;
   top: 0;
-  height: 1px;
-  border-radius: 9999px;
+  left: 0;
+  right: 0;
+  height: 2px;
   pointer-events: none;
+  z-index: 2;
   background: linear-gradient(
     90deg,
-    transparent,
-    hsla(var(--hue, 160), 70%, 60%, 0.35) 30%,
-    hsla(var(--hue, 160), 70%, 60%, 0.55) 50%,
-    hsla(var(--hue, 160), 70%, 60%, 0.35) 70%,
-    transparent
+    transparent 0%,
+    hsla(var(--pf-accent-h), 65%, 55%, 0.0) 5%,
+    hsla(var(--pf-accent-h), 65%, 55%, 0.5) 25%,
+    hsla(var(--pf-accent-h), 70%, 62%, 0.85) 50%,
+    hsla(var(--pf-accent-h), 65%, 55%, 0.5) 75%,
+    hsla(var(--pf-accent-h), 65%, 55%, 0.0) 95%,
+    transparent 100%
   );
-  z-index: 1;
 }
 
+/* ── ESTILO BASE del panel: oscuro, elevado, borde nítido ─────────────────── */
+.pf-training-shell main section {
+  /* Borde lateral sutil + borde superior ligeramente más visible */
+  border-color: rgba(255, 255, 255, 0.08) !important;
+
+  /* Sombra en 3 capas: elevación + halo de acento + ambient */
+  box-shadow:
+    /* 1. Borde interior superior (glass edge) */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    /* 2. Sombra de elevación profunda */
+    0 20px 60px -20px rgba(0, 0, 0, 0.8),
+    0  8px 24px -8px  rgba(0, 0, 0, 0.6),
+    /* 3. Halo ambiental del color temático */
+    0 0 40px -15px hsla(var(--pf-accent-h), 60%, 50%, 0.18) !important;
+}
+
+/* ── Sub-contenedores internos: sin sombras (el panel las gestiona) ───────── */
 .pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-  box-shadow: none !important;
-}
-
-.pf-training-shell :where([class*="shadow"], [style*="box-shadow"]) {
   box-shadow: none !important;
 }
 
