@@ -152,25 +152,54 @@ h6 {
 }
 
 .pf-training-shell {
-  --pf-panel-bg: #0b1a2a;
-  --pf-panel-border: rgba(125, 211, 252, 0.26);
+  /* Panel base */
+  --pf-panel-bg:     #07090e;
+  --pf-panel-border: rgba(255, 255, 255, 0.07);
+
+  /* Grid paper vars */
+  --pf-grid-size:    24px;
+  --pf-grid-line:    rgba(255, 255, 255, 0.046);
+  --pf-grid-dot:     rgba(255, 255, 255, 0.13);
 }
 
 html[data-pf-theme="light"] .pf-training-shell {
   --pf-panel-bg: #f4fffb;
   --pf-panel-border: rgba(44, 162, 143, 0.35);
+  --pf-grid-line: rgba(0, 0, 0, 0.055);
+  --pf-grid-dot:  rgba(0, 0, 0, 0.14);
   color: #173847;
 }
 
+/* ── Graph-paper texture on main section cards ─────────────────────────── */
 .pf-training-shell main :where(section, article):where([class*="rounded-2xl"], [class*="rounded-3xl"]) {
   border-color: var(--pf-panel-border) !important;
-  background-image: none !important;
   background-color: var(--pf-panel-bg) !important;
+  /* Grid: dots at intersections + horizontal + vertical lines */
+  background-image:
+    radial-gradient(
+      circle,
+      var(--pf-grid-dot) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      var(--pf-grid-line) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      var(--pf-grid-line) 1px,
+      transparent 1px
+    ) !important;
+  background-size:
+    var(--pf-grid-size) var(--pf-grid-size),
+    var(--pf-grid-size) var(--pf-grid-size),
+    var(--pf-grid-size) var(--pf-grid-size) !important;
+  background-position: 0 0, 0 0, 0 0 !important;
   box-shadow: none !important;
 }
 
 .pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-  border-color: rgba(148, 197, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
   box-shadow: none !important;
 }
 
