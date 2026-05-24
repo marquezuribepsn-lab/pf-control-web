@@ -491,31 +491,131 @@ export default function Home() {
     }));
   };
 
-  return (
-    <main
-      className="relative -mx-4 min-h-screen overflow-x-clip text-slate-100"
-      style={{ fontFamily: '"Trebuchet MS", "Segoe UI", sans-serif' }}
-    >
-      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
-        <div className="absolute inset-0 bg-[#061026]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(56,189,248,0.24),transparent_28%),radial-gradient(circle_at_86%_8%,rgba(16,185,129,0.22),transparent_30%),radial-gradient(circle_at_70%_85%,rgba(249,115,22,0.16),transparent_26%)]" />
-        <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(148,163,184,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:62px_62px]" />
-        <div className="absolute -left-16 top-14 h-72 w-72 rounded-full border border-cyan-300/25 bg-cyan-400/18 blur-3xl" />
-        <div className="absolute right-0 top-0 h-80 w-80 rounded-full border border-indigo-300/20 bg-indigo-500/18 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full border border-emerald-300/20 bg-emerald-500/15 blur-3xl" />
-      </div>
+  // ── Interactive color system — zero re-renders ────────────
+  useEffect(() => {
+    const root = document.documentElement;
+    const onMove = (e: MouseEvent) => {
+      root.style.setProperty("--mx", `${e.clientX}px`);
+      root.style.setProperty("--my", `${e.clientY}px`);
+      // Hue: mouse X maps 0→360 across viewport width
+      const hue = Math.round((e.clientX / window.innerWidth) * 360);
+      root.style.setProperty("--hue", `${hue}`);
+      // Brightness: mouse Y maps subtle variation (0.85–1.1)
+      const bright = 85 + Math.round((e.clientY / window.innerHeight) * 25);
+      root.style.setProperty("--bright", `${bright}%`);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
-      <div className="relative mx-auto max-w-7xl px-5 py-6 md:px-7 md:py-8 lg:px-8">
+  return (
+    <main className="relative -mx-4 min-h-screen overflow-x-clip text-white">
+      {/* Keyframes + global scoped styles */}
+      <style>{`
+        /* ── Defaults ────────────────────────────────────────── */
+        :root { --hue: 135; --bright: 100%; }
+
+        @keyframes pf-fade-up {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pf-dot-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.35; transform: scale(0.65); }
+        }
+        .pf-au   { animation: pf-fade-up 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+        .pf-d1   { animation-delay: 0.04s; }
+        .pf-d2   { animation-delay: 0.09s; }
+        .pf-d3   { animation-delay: 0.14s; }
+        .pf-d4   { animation-delay: 0.19s; }
+        .pf-d5   { animation-delay: 0.24s; }
+        .pf-dot-live { animation: pf-dot-pulse 2s ease-in-out infinite; }
+
+        /* ── Hue-reactive tokens ─────────────────────────────── */
+        .pf-accent       { color: hsl(var(--hue) 80% 72%); }
+        .pf-accent-bg    { background: hsl(var(--hue) 70% 55%); }
+        .pf-accent-glow  { box-shadow: 0 0 28px hsla(var(--hue), 70%, 60%, 0.45); }
+        .pf-accent-border{ border-color: hsla(var(--hue), 70%, 65%, 0.3) !important; }
+
+        /* Badge / pill */
+        .pf-badge {
+          border-color: hsla(var(--hue), 70%, 65%, 0.35);
+          background: hsla(var(--hue), 70%, 60%, 0.12);
+          color: hsl(var(--hue) 85% 78%);
+        }
+        .pf-badge-dot { background: hsl(var(--hue) 85% 72%); }
+
+        /* Section label */
+        .pf-label { color: hsl(var(--hue) 75% 72%); }
+
+        /* Primary button */
+        .pf-btn {
+          background: hsl(var(--hue) 65% 52%);
+          box-shadow: 0 0 28px hsla(var(--hue), 65%, 55%, 0.45);
+          color: #fff;
+          transition: all 0.3s ease;
+        }
+        .pf-btn:hover {
+          background: hsl(var(--hue) 65% 58%);
+          box-shadow: 0 0 44px hsla(var(--hue), 65%, 58%, 0.6);
+          transform: translateY(-2px);
+        }
+        .pf-btn:active { transform: scale(0.97); }
+
+        /* Stat card lines — offset hue per card */
+        .pf-s0 .pf-line { background: hsl(var(--hue) 80% 68%); }
+        .pf-s1 .pf-line { background: hsl(calc(var(--hue) + 90) 75% 65%); }
+        .pf-s2 .pf-line { background: hsl(calc(var(--hue) + 180) 75% 65%); }
+        .pf-s3 .pf-line { background: hsl(calc(var(--hue) + 270) 75% 65%); }
+
+        .pf-s0:hover { box-shadow: 0 20px 60px hsla(var(--hue), 70%, 60%, 0.22) !important; border-color: hsla(var(--hue), 70%, 70%, 0.45) !important; }
+        .pf-s1:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 90), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 90), 70%, 70%, 0.4) !important; }
+        .pf-s2:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 180), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 180), 70%, 70%, 0.4) !important; }
+        .pf-s3:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 270), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 270), 70%, 70%, 0.4) !important; }
+
+        /* KPI mini-cards */
+        .pf-k0 { background: hsla(calc(var(--hue) + 120), 60%, 50%, 0.09); border-color: hsla(calc(var(--hue) + 120), 60%, 60%, 0.22) !important; }
+        .pf-k0 .pf-kval { color: hsl(calc(var(--hue) + 120) 75% 72%); }
+        .pf-k1 { background: hsla(var(--hue), 65%, 55%, 0.09); border-color: hsla(var(--hue), 65%, 65%, 0.22) !important; }
+        .pf-k1 .pf-kval { color: hsl(var(--hue) 80% 75%); }
+        .pf-k2 { background: hsla(0, 70%, 55%, 0.09); border-color: hsla(0, 70%, 65%, 0.22) !important; }
+        .pf-k2 .pf-kval { color: hsl(0 80% 72%); }
+        .pf-k3 { background: hsla(calc(var(--hue) + 60), 65%, 55%, 0.09); border-color: hsla(calc(var(--hue) + 60), 65%, 65%, 0.22) !important; }
+        .pf-k3 .pf-kval { color: hsl(calc(var(--hue) + 60) 80% 75%); }
+
+        /* ── Por-card hover glow (mint gym) ─────────────────── */
+        .pf-led { position: relative; overflow: hidden; }
+        .pf-led::after {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          background: radial-gradient(
+            380px circle at var(--cx, 50%) var(--cy, 50%),
+            rgba(97, 206, 112, 0.12) 0%,
+            rgba(97, 206, 112, 0.05) 40%,
+            transparent 65%
+          );
+          opacity: 0;
+          transition: opacity 0.22s ease;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .pf-led:hover::after { opacity: 1; }
+        .pf-led:hover { border-color: rgba(97, 206, 112, 0.30) !important; }
+      `}</style>
+
+      <div className="relative mx-auto max-w-7xl px-5 py-8 md:px-7 lg:px-8">
+
+        {/* ── Config toolbar ───────────────────────────────────── */}
         {configMode && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-200">
-              Configuracion de inicio
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
+              Configuración de inicio
             </p>
             <div className="flex flex-wrap gap-2">
               {!editando ? (
                 <ReliableActionButton
                   onClick={() => setEditando(true)}
-                  className="rounded-lg bg-cyan-400 px-3 py-1.5 text-sm font-bold text-slate-900"
+                  className="rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-indigo-500 active:scale-95"
                 >
                   Editar inicio
                 </ReliableActionButton>
@@ -523,13 +623,13 @@ export default function Home() {
                 <>
                   <ReliableActionButton
                     onClick={guardarConfig}
-                    className="rounded-lg bg-emerald-400 px-3 py-1.5 text-sm font-bold text-slate-900"
+                    className="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-500 active:scale-95"
                   >
                     Guardar cambios
                   </ReliableActionButton>
                   <ReliableActionButton
                     onClick={() => setEditando(false)}
-                    className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
+                    className="rounded-xl border border-white/[0.12] px-3 py-1.5 text-sm font-medium text-zinc-300 transition-all duration-200 hover:bg-white/[0.06]"
                   >
                     Cancelar
                   </ReliableActionButton>
@@ -537,269 +637,238 @@ export default function Home() {
               )}
               <ReliableActionButton
                 onClick={resetConfig}
-                className="rounded-lg border border-rose-300/50 px-3 py-1.5 text-sm font-semibold text-rose-100"
+                className="rounded-xl border border-rose-500/25 px-3 py-1.5 text-sm font-medium text-rose-400 transition-all duration-200 hover:bg-rose-500/10"
               >
                 Reset
               </ReliableActionButton>
               <Link
                 href="/"
                 onClick={closeHomeEditMode}
-                className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-semibold text-white"
+                className="rounded-xl border border-white/[0.10] px-3 py-1.5 text-sm font-medium text-zinc-400 transition-all duration-200 hover:bg-white/[0.05]"
               >
-                Cerrar configuracion
+                Cerrar
               </Link>
             </div>
           </div>
         )}
 
-        <header className="relative mb-7 overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-[linear-gradient(120deg,rgba(14,30,56,0.94),rgba(23,45,80,0.9)_52%,rgba(15,23,42,0.7)_100%)] p-6 shadow-[0_35px_95px_rgba(2,8,24,0.5)] md:p-8">
-          <div className="absolute right-[-3rem] top-[-3rem] h-44 w-44 rounded-full bg-cyan-300/25 blur-3xl" />
-          <div className="absolute bottom-[-2.25rem] right-14 h-40 w-40 rounded-full bg-emerald-300/20 blur-3xl" />
-          <div className="absolute inset-y-0 right-0 w-[42%] bg-[linear-gradient(145deg,rgba(6,182,212,0.2),rgba(129,140,248,0.14),rgba(16,185,129,0.2))]" />
-          <div className="relative">
-            {editando ? (
-              <input
-                value={config.badge}
-                onChange={(e) => setConfig({ ...config, badge: e.target.value })}
-                className="w-full max-w-sm rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-xs font-bold tracking-wide text-cyan-100"
-              />
-            ) : (
-              <p className="inline-flex rounded-full border border-cyan-200/45 bg-cyan-300/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-100">
-                {config.badge}
-              </p>
-            )}
+        {/* ── HERO ─────────────────────────────────────────────── */}
+        <header className="pf-au mb-10">
+          {/* Badge vivo */}
+          {editando ? (
+            <input
+              value={config.badge}
+              onChange={(e) => setConfig({ ...config, badge: e.target.value })}
+              className="mb-4 w-56 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-300"
+            />
+          ) : (
+            <span className="pf-badge mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wider">
+              <span className="pf-badge-dot pf-dot-live h-1.5 w-1.5 rounded-full" />
+              {config.badge}
+            </span>
+          )}
 
-            {editando ? (
-              <input
-                value={config.titulo}
-                onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
-                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-3xl font-black text-white"
-              />
-            ) : (
-              <h1 className="mt-4 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-[3.4rem]">
-                {config.titulo}
-              </h1>
-            )}
+          {/* Título con gradient text */}
+          {editando ? (
+            <input
+              value={config.titulo}
+              onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
+              className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-4xl font-bold text-white"
+            />
+          ) : (
+            <h1
+              className="mt-2 text-5xl font-bold tracking-tight leading-[1.06] text-white md:text-[3.6rem]"
+              style={{
+                background: "linear-gradient(140deg, #ffffff 25%, #c7d2fe 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                color: "white",
+              }}
+            >
+              {config.titulo}
+            </h1>
+          )}
 
-            {editando ? (
-              <textarea
-                value={config.subtitulo}
-                onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
-                className="mt-3 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-sm text-slate-200"
-                rows={3}
-              />
-            ) : (
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
-                {config.subtitulo}
-              </p>
-            )}
+          {editando ? (
+            <textarea
+              value={config.subtitulo}
+              onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
+              className="mt-4 w-full max-w-xl rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-zinc-400"
+              rows={2}
+            />
+          ) : (
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
+              {config.subtitulo}
+            </p>
+          )}
 
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {editando ? (
-                <>
-                  <div className="rounded-xl border border-white/20 bg-slate-900/50 p-3">
-                    <p className="mb-2 text-xs text-slate-300">Boton primario</p>
-                    <input
-                      value={config.botonPrimarioLabel}
-                      onChange={(e) =>
-                        setConfig({ ...config, botonPrimarioLabel: e.target.value })
-                      }
-                      className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    />
-                    <input
-                      value={config.botonPrimarioHref}
-                      onChange={(e) =>
-                        setConfig({ ...config, botonPrimarioHref: e.target.value })
-                      }
-                      className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div className="rounded-xl border border-white/20 bg-slate-900/50 p-3">
-                    <p className="mb-2 text-xs text-slate-300">Boton secundario</p>
-                    <input
-                      value={config.botonSecundarioLabel}
-                      onChange={(e) =>
-                        setConfig({ ...config, botonSecundarioLabel: e.target.value })
-                      }
-                      className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    />
-                    <input
-                      value={config.botonSecundarioHref}
-                      onChange={(e) =>
-                        setConfig({ ...config, botonSecundarioHref: e.target.value })
-                      }
-                      className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-wrap gap-3 md:col-span-2">
-                  <Link
-                    href={primaryActionHref}
-                    className="rounded-xl border border-cyan-200/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_14px_30px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px] hover:from-cyan-200 hover:to-sky-300"
-                  >
-                    {config.botonPrimarioLabel}
-                  </Link>
-                  <Link
-                    href={secondaryActionHref}
-                    className="rounded-xl border border-cyan-100/30 bg-slate-900/35 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-200/55 hover:bg-slate-800/55"
-                  >
-                    {config.botonSecundarioLabel}
-                  </Link>
+          {editando ? (
+            <div className="mt-5 grid max-w-lg gap-3 sm:grid-cols-2">
+              {[
+                { label: "Botón primario", labelKey: "botonPrimarioLabel", hrefKey: "botonPrimarioHref" },
+                { label: "Botón secundario", labelKey: "botonSecundarioLabel", hrefKey: "botonSecundarioHref" },
+              ].map((btn) => (
+                <div key={btn.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="mb-2 text-xs text-zinc-500">{btn.label}</p>
+                  <input
+                    value={(config as any)[btn.labelKey]}
+                    onChange={(e) => setConfig({ ...config, [btn.labelKey]: e.target.value })}
+                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white"
+                  />
+                  <input
+                    value={(config as any)[btn.hrefKey]}
+                    onChange={(e) => setConfig({ ...config, [btn.hrefKey]: e.target.value })}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white"
+                  />
                 </div>
-              )}
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href={primaryActionHref}
+                className="pf-btn rounded-xl px-5 py-2.5 text-sm font-semibold active:scale-[0.97]"
+              >
+                {config.botonPrimarioLabel}
+              </Link>
+              <Link
+                href={secondaryActionHref}
+                className="rounded-xl border border-white/[0.12] bg-white/[0.05] px-5 py-2.5 text-sm font-medium text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.22] hover:bg-white/[0.09] active:scale-[0.97]"
+              >
+                {config.botonSecundarioLabel}
+              </Link>
+            </div>
+          )}
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {/* ── STATS ROW ─────────────────────────────────────────── */}
+        <section className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {dashboardStats.map((stat, index) => {
-            const tones = [
-              "from-cyan-500 to-blue-600",
-              "from-emerald-500 to-green-600",
-              "from-fuchsia-500 to-pink-600",
-              "from-orange-500 to-red-600",
-            ];
-            const tone = tones[index % tones.length];
-            const statHref = resolveDashboardStatHref(stat.title, index);
-            const statHint = resolveDashboardStatHint(stat.title, index);
-
+            const sClass = `pf-s${index}`;
+            const delayClass = ["pf-d1","pf-d2","pf-d3","pf-d4"][index] ?? "";
             return (
               <Link
                 key={stat.title}
-                href={statHref}
-                className={`group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/55 p-4 shadow-[0_15px_40px_rgba(2,8,20,0.4)] transition hover:-translate-y-1 hover:border-cyan-200/45`}
+                href={resolveDashboardStatHref(stat.title, index)}
+                className={`pf-au pf-led ${sClass} ${delayClass} group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 transition-all duration-300 hover:-translate-y-1`}
+                onMouseMove={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
+                  e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+                }}
               >
-                <div className={`mb-3 mr-12 h-1.5 rounded-full bg-gradient-to-r ${tone}`} />
-                <p className="text-xs font-bold uppercase tracking-[0.17em] text-slate-300">{stat.title}</p>
-                <p className="mt-2 text-4xl font-black tracking-tight text-white">{stat.value}</p>
-                <p className="mt-2 text-xs text-slate-300">{statHint}</p>
-                <span className="absolute right-4 top-3 text-xs font-black text-cyan-200/85 transition group-hover:translate-x-0.5">
-                  ir &gt;
-                </span>
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-cyan-200/10" />
-                </div>
+                {/* Top accent line — color sigue el hue via CSS */}
+                <div className="pf-line absolute inset-x-0 top-0 h-[2px] rounded-t-2xl opacity-80" />
+                <p className="mt-2 text-[2.6rem] font-bold leading-none tracking-tight text-white">
+                  {stat.value}
+                </p>
+                <p className="mt-2 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+                  {stat.title}
+                </p>
+                <p className="pf-accent mt-2 text-xs opacity-40 transition-opacity duration-300 group-hover:opacity-100">
+                  {resolveDashboardStatHint(stat.title, index)} →
+                </p>
               </Link>
             );
           })}
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-cyan-300/25 bg-[linear-gradient(145deg,rgba(4,16,36,0.95),rgba(6,26,58,0.92),rgba(5,18,40,0.96))] p-6 shadow-[0_32px_80px_rgba(2,8,24,0.5)]">
+        {/* ── MESA OPERATIVA ────────────────────────────────────── */}
+        <section className="pf-au pf-led pf-d2 mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
+            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+          }}>
           <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-200/90">
-                Mesa operativa
-              </p>
-              <h3 className="mt-1 text-3xl font-black leading-none text-white">Alumnos y planes activos</h3>
-              <p className="mt-2 text-sm text-slate-300">
-                Vista rapida con foco de trabajo diario, al estilo CRM operativo.
-              </p>
+              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Mesa operativa</p>
+              <h2 className="text-2xl font-bold text-white">Alumnos y planes activos</h2>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/clientes"
-                className="rounded-xl border border-cyan-100/35 bg-gradient-to-r from-cyan-300 to-sky-400 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] text-[#04243a] shadow-[0_12px_24px_rgba(34,211,238,0.35)] transition hover:translate-y-[-1px]"
-              >
+            <div className="flex gap-2">
+              <Link href="/clientes" className="pf-btn rounded-xl px-4 py-2 text-xs font-semibold active:scale-95">
                 Crear cliente
               </Link>
               <Link
                 href="/clientes"
-                className="rounded-xl border border-slate-300/35 bg-slate-900/35 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-slate-100 transition hover:translate-y-[-1px] hover:border-cyan-100/40"
+                className="rounded-xl border border-white/[0.10] bg-white/[0.04] px-4 py-2 text-xs font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.08]"
               >
                 Asignar entrenamiento
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
-            <div className="rounded-2xl border border-emerald-300/35 bg-gradient-to-br from-emerald-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-emerald-100">Clientes activos</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalAlumnos}</p>
-            </div>
-            <div className="rounded-2xl border border-blue-300/35 bg-gradient-to-br from-blue-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-blue-100">Con plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.conPlan}</p>
-            </div>
-            <div className="rounded-2xl border border-rose-300/35 bg-gradient-to-br from-rose-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-rose-100">Sin plan</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.sinPlan}</p>
-            </div>
-            <div className="rounded-2xl border border-violet-300/35 bg-gradient-to-br from-violet-500/20 to-transparent p-4">
-              <p className="text-xs uppercase tracking-wide text-violet-100">Prescripciones</p>
-              <p className="mt-1 text-3xl font-black text-white">{operativoKpis.totalPrescripciones}</p>
-            </div>
+          {/* KPIs */}
+          <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { label: "Clientes activos", val: operativoKpis.totalAlumnos,        ki: 0 },
+              { label: "Con plan",         val: operativoKpis.conPlan,             ki: 1 },
+              { label: "Sin plan",         val: operativoKpis.sinPlan,             ki: 2 },
+              { label: "Prescripciones",   val: operativoKpis.totalPrescripciones, ki: 3 },
+            ].map((k) => (
+              <div key={k.label} className={`pf-k${k.ki} rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5`}>
+                <p className="text-3xl font-bold text-white">{k.val}</p>
+                <p className={`pf-kval mt-1 text-xs font-semibold`}>{k.label}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-white/15 bg-slate-950/55 p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          {/* Table */}
+          <div className="rounded-xl border border-white/[0.06] bg-black/[0.18] p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <input
                 value={operativoFiltro}
                 onChange={(e) => setOperativoFiltro(e.target.value)}
-                placeholder="Buscar alumno por nombre"
-                className="w-full max-w-sm rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white"
+                placeholder="Buscar alumno..."
+                className="w-full max-w-xs rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 transition-colors duration-200 focus:border-indigo-500/50 focus:outline-none"
               />
-              <Link
-                href="/clientes"
-                className="rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/10"
-              >
-                Ver modulo clientes
+              <Link href="/clientes" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
+                Ver módulo clientes →
               </Link>
             </div>
-
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/15 text-xs uppercase tracking-wide text-slate-300">
-                    <th className="px-3 py-2">Alumno</th>
-                    <th className="px-3 py-2">Estado</th>
-                    <th className="px-3 py-2">Objetivo</th>
-                    <th className="px-3 py-2">Sesiones</th>
-                    <th className="px-3 py-2">Ult. actualizacion</th>
-                    <th className="px-3 py-2 text-right">Acciones</th>
+                  <tr className="border-b border-white/[0.06]">
+                    {["Alumno", "Estado", "Objetivo", "Sesiones", "Últ. act.", ""].map((h) => (
+                      <th key={h} className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-zinc-600">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {alumnosOperativos.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-300">
-                        No hay alumnos para mostrar con el filtro actual.
+                      <td colSpan={6} className="px-3 py-8 text-center text-sm text-zinc-600">
+                        No hay alumnos con el filtro actual.
                       </td>
                     </tr>
                   ) : (
                     alumnosOperativos.slice(0, 8).map((alumno) => (
-                      <tr key={alumno.nombre} className="border-b border-white/10 text-slate-100">
-                        <td className="px-3 py-3 font-semibold">{alumno.nombre}</td>
+                      <tr key={alumno.nombre} className="border-b border-white/[0.04] transition-colors duration-150 hover:bg-indigo-500/[0.04]">
+                        <td className="px-3 py-3 font-medium text-white">{alumno.nombre}</td>
                         <td className="px-3 py-3">
-                          <span
-                            className={`rounded-full px-2 py-1 text-xs font-bold ${
-                              alumno.estado === "Con plan"
-                                ? "bg-emerald-500/20 text-emerald-100"
-                                : "bg-rose-500/20 text-rose-100"
-                            }`}
-                          >
+                          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                            alumno.estado === "Con plan"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}>
                             {alumno.estado}
                           </span>
                         </td>
-                        <td className="px-3 py-3 text-slate-200">{alumno.objetivo}</td>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-3 text-zinc-400">{alumno.objetivo}</td>
+                        <td className="px-3 py-3 text-zinc-400">
                           {alumno.sesiones}
-                          <span className="ml-1 text-xs text-violet-200">
-                            ({alumno.prescripciones} presc.)
-                          </span>
+                          <span className="ml-1 text-zinc-600">({alumno.prescripciones})</span>
                         </td>
-                        <td className="px-3 py-3 text-slate-300">
+                        <td className="px-3 py-3 text-zinc-500">
                           {alumno.ultimaActualizacion
                             ? new Date(alumno.ultimaActualizacion).toLocaleDateString("es-AR")
-                            : "Sin movimientos"}
+                            : "—"}
                         </td>
                         <td className="px-3 py-3 text-right">
-                          <Link
-                            href="/semana"
-                            className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
-                          >
-                            Abrir templates
+                          <Link href="/semana" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
+                            Templates →
                           </Link>
                         </td>
                       </tr>
@@ -811,39 +880,39 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(33,48,74,0.92),rgba(41,56,82,0.88))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-2xl font-black text-white">Acceso rapido por categorias</h3>
-            <Link
-              href="/categorias"
-              className="rounded-lg border border-white/25 bg-slate-900/35 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/10"
-            >
-              Ver todas
+        {/* ── CATEGORÍAS ────────────────────────────────────────── */}
+        <section className="pf-au pf-led pf-d3 mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
+            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+          }}>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Acceso rápido</p>
+              <h2 className="text-2xl font-bold text-white">Categorías</h2>
+            </div>
+            <Link href="/categorias" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
+              Ver todas →
             </Link>
           </div>
-
           {categoriasActivas.length === 0 ? (
-            <p className="text-sm text-slate-300">
-              No hay categorias habilitadas. Activa o crea categorias para ver accesos directos.
-            </p>
+            <p className="text-sm text-zinc-600">No hay categorías habilitadas.</p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {categoriasActivas.map((categoria, index) => {
-                const tone = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
-                const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
-
+                const accent = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
                 return (
                   <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
+                    className="group rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
                   >
-                    <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
-                    <p className="text-2xl font-black text-white">
-                      <span className="mr-2">{icon}</span>
-                      {categoria.nombre}
+                    <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${accent}`} />
+                    <p className="font-semibold" style={{ color: "#ffffff" }}>{categoria.nombre}</p>
+                    <p className="mt-0.5 text-xs transition-colors duration-200 group-hover:text-indigo-400" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      Abrir →
                     </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-200">Abrir categoria</p>
                   </Link>
                 );
               })}
@@ -851,202 +920,162 @@ export default function Home() {
           )}
         </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <div className="rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(34,50,79,0.95),rgba(44,61,89,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                {editando ? (
-                  <input
-                    value={config.radarTitulo}
-                    onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
-                    className="w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-xl font-black text-white"
-                  />
-                ) : (
-                  <h3 className="text-xl font-black">{config.radarTitulo}</h3>
-                )}
-
-                {editando ? (
-                  <input
-                    value={config.diaLabel}
-                    onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
-                    className="rounded-lg border border-white/30 bg-slate-900/60 px-3 py-1 text-xs font-bold text-white"
-                  />
-                ) : (
-                  <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white">
-                    {config.diaLabel}
-                  </span>
-                )}
-              </div>
-
+        {/* ── RADAR + ALERTAS ───────────────────────────────────── */}
+        <section className="pf-au pf-d4 mb-5 grid gap-4 lg:grid-cols-3">
+          <div className="pf-led rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 lg:col-span-2"
+            onMouseMove={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
+              e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+            }}>
+            <div className="mb-4 flex items-center justify-between gap-3">
               {editando ? (
-                <textarea
-                  value={config.radarDetalle}
-                  onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
-                  className="mt-2 w-full rounded-lg border border-white/30 bg-slate-900/60 px-3 py-2 text-sm"
-                  rows={2}
-                />
+                <input value={config.radarTitulo} onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xl font-bold text-white" />
               ) : (
-                <p className="mt-2 text-sm text-slate-200">{config.radarDetalle}</p>
+                <h2 className="text-xl font-bold text-white">{config.radarTitulo}</h2>
               )}
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {[
-                  {
-                    label: "Equipo",
-                    value: config.equipo,
-                    onChange: (value: string) => setConfig({ ...config, equipo: value }),
-                  },
-                  {
-                    label: "Duracion",
-                    value: config.duracion,
-                    onChange: (value: string) => setConfig({ ...config, duracion: value }),
-                  },
-                  {
-                    label: "Bloques",
-                    value: config.bloques,
-                    onChange: (value: string) => setConfig({ ...config, bloques: value }),
-                  },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-xl bg-slate-900/40 p-3">
-                    <p className="text-xs text-slate-300">{item.label}</p>
-                    {editando ? (
-                      <input
-                        value={item.value}
-                        onChange={(e) => item.onChange(e.target.value)}
-                        className="mt-1 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                    ) : (
-                      <p className="font-semibold text-white">{item.value}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-xl bg-slate-900/40 p-3">
-                <p className="text-xs text-slate-300">Objetivo</p>
-                {editando ? (
-                  <textarea
-                    value={config.objetivo}
-                    onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
-                    className="mt-1 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                    rows={2}
-                  />
-                ) : (
-                  <p className="font-medium text-white">{config.objetivo}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-amber-300/35 bg-[linear-gradient(170deg,rgba(89,52,13,0.58),rgba(42,18,12,0.6))] p-6 shadow-[0_24px_70px_rgba(45,23,7,0.42)]">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="text-lg font-black text-amber-100">Alertas</h3>
-              {editando && (
-                <ReliableActionButton
-                  onClick={addAlerta}
-                  className="rounded-md bg-amber-300 px-2 py-1 text-xs font-bold text-slate-900"
-                >
-                  + Alerta
-                </ReliableActionButton>
+              {editando ? (
+                <input value={config.diaLabel} onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
+                  className="w-16 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-zinc-300" />
+              ) : (
+                <span className="pf-badge rounded-full border px-3 py-1 text-xs font-medium">
+                  {config.diaLabel}
+                </span>
               )}
             </div>
-            <div className="space-y-3">
-              {config.alertas.map((alerta, index) => (
-                <div key={index} className="rounded-xl border border-amber-200/30 bg-slate-900/30 p-3">
+            {editando ? (
+              <textarea value={config.radarDetalle} onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
+                className="mb-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-zinc-400" rows={2} />
+            ) : (
+              <p className="mb-4 text-sm leading-relaxed text-zinc-400">{config.radarDetalle}</p>
+            )}
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                { label: "Equipo",   value: config.equipo,   onChange: (v: string) => setConfig({ ...config, equipo: v }) },
+                { label: "Duración", value: config.duracion, onChange: (v: string) => setConfig({ ...config, duracion: v }) },
+                { label: "Bloques",  value: config.bloques,  onChange: (v: string) => setConfig({ ...config, bloques: v }) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+                  <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">{item.label}</p>
                   {editando ? (
-                    <>
-                      <input
-                        value={alerta.nombre}
-                        onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
-                        className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                      <input
-                        value={alerta.detalle}
-                        onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
-                        className="w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm"
-                      />
-                      <ReliableActionButton
-                        onClick={() => removeAlerta(index)}
-                        className="mt-2 text-xs font-semibold text-rose-300"
-                      >
-                        Eliminar alerta
-                      </ReliableActionButton>
-                    </>
+                    <input value={item.value} onChange={(e) => item.onChange(e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
                   ) : (
-                    <>
-                      <p className="font-semibold text-white">{alerta.nombre}</p>
-                      <p className="text-sm text-slate-200">{alerta.detalle}</p>
-                    </>
+                    <p className="font-semibold text-white">{item.value}</p>
                   )}
                 </div>
               ))}
             </div>
+            <div className="mt-2 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+              <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">Objetivo</p>
+              {editando ? (
+                <textarea value={config.objetivo} onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
+                  className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" rows={2} />
+              ) : (
+                <p className="text-sm font-medium text-zinc-300">{config.objetivo}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Alertas */}
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.05] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <div className="mb-2 h-[2px] w-8 rounded-full bg-amber-400 opacity-80" />
+                <h2 className="text-xl font-bold text-white">Alertas</h2>
+              </div>
+              {editando && (
+                <ReliableActionButton onClick={addAlerta}
+                  className="rounded-xl bg-amber-500 px-2.5 py-1 text-xs font-bold text-black transition-all duration-200 hover:bg-amber-400">
+                  + Alerta
+                </ReliableActionButton>
+              )}
+            </div>
+            <div className="space-y-2">
+              {config.alertas.map((alerta, index) => (
+                <div key={index} className="rounded-xl border border-amber-500/15 bg-black/20 p-3 transition-all duration-200 hover:border-amber-500/25">
+                  {editando ? (
+                    <>
+                      <input value={alerta.nombre} onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
+                        className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
+                      <input value={alerta.detalle} onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
+                        className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
+                      <ReliableActionButton onClick={() => removeAlerta(index)}
+                        className="mt-2 text-xs text-rose-400 hover:text-rose-300">
+                        Eliminar
+                      </ReliableActionButton>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-white">{alerta.nombre}</p>
+                      <p className="text-xs text-zinc-400">{alerta.detalle}</p>
+                    </>
+                  )}
+                </div>
+              ))}
+              {config.alertas.length === 0 && <p className="text-sm text-zinc-600">Sin alertas activas.</p>}
+            </div>
           </div>
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-slate-300/20 bg-[linear-gradient(160deg,rgba(35,50,75,0.95),rgba(49,63,90,0.9))] p-6 shadow-[0_24px_70px_rgba(2,8,24,0.45)] backdrop-blur-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-2xl font-black">Modulos y accesos</h3>
+        {/* ── MÓDULOS ───────────────────────────────────────────── */}
+        <section className="pf-au pf-led pf-d5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
+            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+          }}>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Accesos</p>
+              <h2 className="text-2xl font-bold text-white">Módulos</h2>
+            </div>
             {editando && (
-              <ReliableActionButton
-                onClick={addModulo}
-                className="rounded-md bg-cyan-300 px-2 py-1 text-xs font-bold text-slate-900"
-              >
-                + Modulo
+              <ReliableActionButton onClick={addModulo} className="pf-btn rounded-xl px-3 py-1.5 text-xs font-semibold">
+                + Módulo
               </ReliableActionButton>
             )}
           </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) =>
               editando ? (
-                <div
-                  key={`${item.label}-${index}`}
-                  className="rounded-2xl border border-white/20 bg-slate-900/40 p-4"
-                >
-                  <input
-                    value={item.label}
-                    onChange={(e) => updateModulo(index, { label: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-sm font-bold"
-                  />
-                  <input
-                    value={item.href}
-                    onChange={(e) => updateModulo(index, { href: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
-                  />
-                  <textarea
-                    value={item.desc}
-                    onChange={(e) => updateModulo(index, { desc: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
-                    rows={2}
-                  />
-                  <input
-                    value={item.tone}
-                    onChange={(e) => updateModulo(index, { tone: e.target.value })}
-                    className="mb-2 w-full rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs"
+                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                  <input value={item.label} onChange={(e) => updateModulo(index, { label: e.target.value })}
+                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-bold text-white" />
+                  <input value={item.href} onChange={(e) => updateModulo(index, { href: e.target.value })}
+                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white" />
+                  <textarea value={item.desc} onChange={(e) => updateModulo(index, { desc: e.target.value })}
+                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white" rows={2} />
+                  <input value={item.tone} onChange={(e) => updateModulo(index, { tone: e.target.value })}
                     placeholder="from-cyan-500 to-sky-600"
-                  />
-                  <ReliableActionButton
-                    onClick={() => removeModulo(index)}
-                    className="text-xs font-semibold text-rose-300"
-                  >
-                    Eliminar modulo
+                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-zinc-400" />
+                  <ReliableActionButton onClick={() => removeModulo(index)}
+                    className="text-xs text-rose-400 hover:text-rose-300">
+                    Eliminar
                   </ReliableActionButton>
                 </div>
               ) : (
                 <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  className="group rounded-2xl border border-white/20 bg-slate-900/35 p-4 transition hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900/65"
+                  className="group rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(99,102,241,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow = "";
+                  }}
                 >
-                  <div className={`mb-2 h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
-                  <p className="text-lg font-black text-white">{item.label}</p>
-                  <p className="mt-1 text-sm text-slate-200">{item.desc}</p>
+                  <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${item.tone}`} />
+                  <p className="font-semibold" style={{ color: "#ffffff" }}>{item.label}</p>
+                  <p className="mt-1 text-xs transition-colors duration-200 group-hover:text-indigo-400" style={{ color: "rgba(255,255,255,0.38)" }}>{item.desc}</p>
                 </Link>
               )
             )}
           </div>
         </section>
+
       </div>
     </main>
   );
