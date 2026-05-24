@@ -4853,7 +4853,7 @@ export default function ClientesPage() {
                   autoFocus
                   value={crearMeta.email}
                   onChange={(e) => setCrearMeta((p) => ({ ...p, email: e.target.value }))}
-                  className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
                   placeholder="Ingrese el email"
                 />
               </div>
@@ -4878,7 +4878,7 @@ export default function ClientesPage() {
                         required
                         value={form.nombre}
                         onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Ingrese el nombre"
                       />
                     </div>
@@ -4890,7 +4890,7 @@ export default function ClientesPage() {
                         required
                         value={crearMeta.apellido}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, apellido: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Ingrese el apellido paterno"
                       />
                     </div>
@@ -4899,7 +4899,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.segundoApellido}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, segundoApellido: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Ingrese el apellido materno"
                       />
                     </div>
@@ -4914,7 +4914,7 @@ export default function ClientesPage() {
                       <input
                         readOnly
                         value={crearMeta.email}
-                        className="w-full rounded-lg border border-white/[0.06] bg-[#141720] px-3 py-2.5 text-sm text-slate-400 focus:outline-none cursor-default"
+                        className="w-full rounded-lg border border-white/[0.06] bg-[#0e1012] px-3 py-2.5 text-sm text-slate-400 focus:outline-none cursor-default"
                       />
                     </div>
                     <div>
@@ -4925,7 +4925,7 @@ export default function ClientesPage() {
                         type="date"
                         value={form.fechaNacimiento}
                         onChange={(e) => setForm((p) => ({ ...p, fechaNacimiento: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
                         placeholder="dd-mm-aaaa"
                       />
                     </div>
@@ -4962,7 +4962,7 @@ export default function ClientesPage() {
                         <input
                           value={form.altura}
                           onChange={(e) => setForm((p) => ({ ...p, altura: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                           placeholder="Ingrese la altura"
                         />
                         <span className="text-xs text-slate-500 shrink-0">cm</span>
@@ -4973,7 +4973,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.codigoPais}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, codigoPais: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="+54"
                       />
                     </div>
@@ -4982,7 +4982,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.telefono}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, telefono: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Ingrese el Nro. de contacto"
                       />
                     </div>
@@ -5001,7 +5001,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.pais}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, pais: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="País"
                       />
                     </div>
@@ -5010,7 +5010,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.provincia}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, provincia: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Provincia / Estado"
                       />
                     </div>
@@ -5022,7 +5022,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.calle}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, calle: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Calle"
                       />
                     </div>
@@ -5031,7 +5031,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.numero}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, numero: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Número"
                       />
                     </div>
@@ -5040,7 +5040,7 @@ export default function ClientesPage() {
                       <input
                         value={crearMeta.piso}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, piso: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                         placeholder="Piso"
                       />
                     </div>
@@ -5060,7 +5060,7 @@ export default function ClientesPage() {
                   <select
                     value={form.practicaDeporte}
                     onChange={(e) => setForm((p) => ({ ...p, practicaDeporte: e.target.value as "si" | "no" }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
                   >
                     <option value="si">Jugadora / deportista</option>
                     <option value="no">Alumno/a general</option>
@@ -5071,7 +5071,7 @@ export default function ClientesPage() {
                   <select
                     value={form.estado}
                     onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as ClienteEstado }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
                   >
                     <option value="activo">Activo</option>
                     <option value="finalizado">Finalizado</option>
@@ -5088,7 +5088,7 @@ export default function ClientesPage() {
                   <select
                     value={crearMeta.categoriaPlan}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
                   >
                     <option value="">Seleccione</option>
                     {planesDisponibles.filter((p) => p.activo).map((p) => (
@@ -5099,7 +5099,7 @@ export default function ClientesPage() {
                   <input
                     value={crearMeta.categoriaPlan}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                     placeholder="Ej: Plan mensual, Plan semanal..."
                   />
                 )}
@@ -5113,7 +5113,7 @@ export default function ClientesPage() {
                     type="date"
                     value={crearMeta.startDate}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, startDate: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -5122,7 +5122,7 @@ export default function ClientesPage() {
                     type="date"
                     value={crearMeta.endDate}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, endDate: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -5134,7 +5134,7 @@ export default function ClientesPage() {
                   <select
                     value={crearMeta.tipoAsesoria}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
                   >
                     <option value="entrenamiento">Entrenamiento</option>
                     <option value="nutricion">Nutrición</option>
@@ -5146,7 +5146,7 @@ export default function ClientesPage() {
                   <select
                     value={crearMeta.modalidad}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, modalidad: e.target.value as ClienteMeta["modalidad"] }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
                   >
                     <option value="presencial">Presencial</option>
                     <option value="virtual">Virtual</option>
@@ -5167,7 +5167,7 @@ export default function ClientesPage() {
                     <input
                       value={form.club}
                       onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
-                      className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                       placeholder="Club o institución"
                     />
                     <div className="grid grid-cols-3 gap-3">
@@ -5176,7 +5176,7 @@ export default function ClientesPage() {
                         <select
                           value={form.deporte}
                           onChange={(e) => setForm((p) => ({ ...p, deporte: e.target.value, posicion: "" }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
@@ -5186,7 +5186,7 @@ export default function ClientesPage() {
                         <select
                           value={form.categoria}
                           onChange={(e) => setForm((p) => ({ ...p, categoria: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           <option value="">Categoría</option>
                           {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -5197,7 +5197,7 @@ export default function ClientesPage() {
                         <select
                           value={form.posicion}
                           onChange={(e) => setForm((p) => ({ ...p, posicion: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
                         >
                           <option value="">Posición</option>
                           {posicionesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -5213,7 +5213,7 @@ export default function ClientesPage() {
                   <input
                     value={form.club}
                     onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                     placeholder="Club, gimnasio o institución (opcional)"
                   />
                 </div>
@@ -5226,7 +5226,7 @@ export default function ClientesPage() {
                   value={form.objetivo}
                   onChange={(e) => setForm((p) => ({ ...p, objetivo: e.target.value }))}
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                   placeholder="Objetivo principal del cliente..."
                 />
               </div>
@@ -5236,7 +5236,7 @@ export default function ClientesPage() {
                   value={form.observaciones}
                   onChange={(e) => setForm((p) => ({ ...p, observaciones: e.target.value }))}
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-white/10 bg-[#1a1f2e] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                   placeholder="Observaciones, notas internas..."
                 />
               </div>
@@ -5389,7 +5389,7 @@ export default function ClientesPage() {
             required
             value={pagoForm.clientId}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, clientId: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm"
+            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
           >
             <option value="">Cliente</option>
             {clientes
@@ -5407,7 +5407,7 @@ export default function ClientesPage() {
             type="date"
             value={pagoForm.fecha}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, fecha: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm"
+            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
           />
 
           <input
@@ -5417,14 +5417,14 @@ export default function ClientesPage() {
             step="0.01"
             value={pagoForm.importe}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, importe: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm"
+            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
             placeholder="Importe"
           />
 
           <select
             value={pagoForm.moneda}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, moneda: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-sm"
+            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
           >
             <option value="ARS">ARS</option>
             <option value="USD">USD</option>
@@ -5476,29 +5476,29 @@ export default function ClientesPage() {
               <ReliableActionButton type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "bg-emerald-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Activos</ReliableActionButton>
               <ReliableActionButton type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "bg-rose-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Finalizados</ReliableActionButton>
             </div>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="w-full max-w-sm rounded-xl border border-cyan-300/30 bg-white/[0.03]/85 px-3 py-2 text-sm shadow-inner shadow-cyan-500/5" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="w-full max-w-sm rounded-xl border border-cyan-300/30 bg-[#0e1012]/85 px-3 py-2 text-sm shadow-inner shadow-cyan-500/5" />
           </div>
 
           <div className="mb-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as "todos" | ClienteTipo)} className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-2 text-xs">
+            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as "todos" | ClienteTipo)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
               <option value="todos">Tipo: Todos</option>
               <option value="jugadora">Tipo: Jugadoras</option>
               <option value="alumno">Tipo: Alumnos</option>
             </select>
-            <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-2 text-xs">
+            <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
               <option value="todas">Categoria: Todas</option>
               {categoriasOptions.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
-            <select value={filtroDeporte} onChange={(e) => setFiltroDeporte(e.target.value)} className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-2 text-xs">
+            <select value={filtroDeporte} onChange={(e) => setFiltroDeporte(e.target.value)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
               <option value="todos">Deporte: Todos</option>
               {deportesOptions.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
-            <input value={filtroClub} onChange={(e) => setFiltroClub(e.target.value)} placeholder="Club" className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-2 text-xs" />
-            <select value={filtroPlan} onChange={(e) => setPlanFilter(e.target.value as PlanFilterType)} className="rounded-lg border border-white/20 bg-white/[0.04] px-2 py-2 text-xs">
+            <input value={filtroClub} onChange={(e) => setFiltroClub(e.target.value)} placeholder="Club" className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs" />
+            <select value={filtroPlan} onChange={(e) => setPlanFilter(e.target.value as PlanFilterType)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
               <option value="todos">Plan: Todos</option>
               <option value="con-plan">Con cualquier plan</option>
               <option value="sin-plan">Sin ningun plan</option>
@@ -5613,7 +5613,7 @@ export default function ClientesPage() {
                 return (
                   <article
                     key={cliente.id}
-                    className={`w-full overflow-hidden rounded-2xl border p-2.5 transition ${active ? "border-cyan-300/45 bg-cyan-500/10" : "border-white/10 bg-white/[0.03] hover:border-cyan-300/30 hover:bg-white/[0.03]/80"}`}
+                    className={`w-full overflow-hidden rounded-2xl border p-2.5 transition ${active ? "border-cyan-300/45 bg-cyan-500/10" : "border-white/10 bg-[#0e1012] hover:border-cyan-300/30 hover:bg-[#0e1012]/80"}`}
                     data-layout-lock="clientes-row-card"
                   >
                     <div className="flex flex-wrap items-center gap-2.5" data-layout-lock="clientes-row-content">
@@ -5685,7 +5685,7 @@ export default function ClientesPage() {
 
                       <div className="min-w-[220px] max-w-[320px]">
                         {etiquetasCliente.length === 0 ? (
-                          <span className="inline-flex rounded-full border border-slate-500/50 bg-white/[0.04]/70 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                          <span className="inline-flex rounded-full border border-slate-500/50 bg-[#0e1012]/70 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
                             Sin etiquetas
                           </span>
                         ) : (
@@ -5800,7 +5800,7 @@ export default function ClientesPage() {
                         setDetailTabId(tab.id);
                         pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
-                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-white/[0.03] text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
+                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-cyan-300/70 bg-cyan-500/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.24)]" : "border-cyan-300/35 bg-[#0e1012] text-white hover:border-cyan-300/60 hover:bg-cyan-500/10"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
                     >
                       {activeTab === tab.id ? (
@@ -5856,7 +5856,7 @@ export default function ClientesPage() {
                       value={etiquetaCrear.texto}
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, texto: e.target.value }))}
                       placeholder="Nueva etiqueta"
-                      className="rounded border border-white/20 bg-white/[0.04] px-2 py-1 text-xs"
+                      className="rounded border border-white/20 bg-[#0e1012] px-2 py-1 text-xs"
                     />
                     <input
                       type="color"
@@ -5871,7 +5871,7 @@ export default function ClientesPage() {
                     value={etiquetaSearch}
                     onChange={(e) => setEtiquetaSearch(e.target.value)}
                     placeholder="Buscar por etiqueta"
-                    className="rounded border border-white/20 bg-white/[0.04] px-2 py-1 text-xs"
+                    className="rounded border border-white/20 bg-[#0e1012] px-2 py-1 text-xs"
                   />
                 </div>
               </div>
@@ -5891,7 +5891,7 @@ export default function ClientesPage() {
                     <div className="space-y-3">
 
                       {/* PERFIL HEADER */}
-                      <div className="relative overflow-hidden rounded-2xl border border-cyan-400/25 bg-[#070c14] p-4 shadow-[0_0_0_1px_rgba(34,211,238,0.06),0_0_28px_rgba(34,211,238,0.13)]">
+                      <div className="relative overflow-hidden rounded-2xl border border-cyan-400/25 bg-[#0e1012] p-4 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.07),transparent_60%)]" />
                         <div className="relative flex items-center gap-3.5">
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-lg font-black text-white shadow-[0_0_16px_rgba(34,211,238,0.45)]">
@@ -5913,21 +5913,21 @@ export default function ClientesPage() {
                       </div>
 
                       {/* IDENTIDAD Y CONTACTO */}
-                      <div className="overflow-hidden rounded-2xl border border-indigo-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(99,102,241,0.07),0_0_22px_rgba(99,102,241,0.11)]">
+                      <div className="overflow-hidden rounded-2xl border border-indigo-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                           <span className="h-3 w-[3px] rounded-full bg-indigo-400 shadow-[0_0_7px_rgba(99,102,241,1)]" />
                           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-indigo-300/75">Identidad y contacto</p>
                         </div>
                         <div className="space-y-0 px-3 py-2">
                           {[
-                            { label: "Nombre", node: <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Email", node: <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Nacimiento", node: <input type="date" value={datosDraft.fechaNacimiento} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: e.target.value } : prev)} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" /> },
-                            { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Pais", node: <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} placeholder="Argentina" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Nombre", node: <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Email", node: <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Nacimiento", node: <input type="date" value={datosDraft.fechaNacimiento} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" /> },
+                            { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Pais", node: <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} placeholder="Argentina" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                           ].map(({ label, node }) => (
                             <div key={label} className="py-1.5">
                               <p className="mb-1 text-[10px] font-medium text-slate-500">{label}</p>
@@ -5938,21 +5938,21 @@ export default function ClientesPage() {
                       </div>
 
                       {/* UBICACION Y PERFIL FISICO */}
-                      <div className="overflow-hidden rounded-2xl border border-violet-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(139,92,246,0.07),0_0_22px_rgba(139,92,246,0.11)]">
+                      <div className="overflow-hidden rounded-2xl border border-violet-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                           <span className="h-3 w-[3px] rounded-full bg-violet-400 shadow-[0_0_7px_rgba(139,92,246,1)]" />
                           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300/75">Ubicacion y perfil fisico</p>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           {[
-                            { label: "Provincia", node: <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Calle", node: <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Numero", node: <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Piso", node: <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Depto", node: <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Sexo", node: <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none"><option value="masculino" className="bg-white/[0.03]">Masculino</option><option value="femenino" className="bg-white/[0.03]">Femenino</option></select> },
-                            { label: "Altura (cm)", node: <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Peso (kg)", node: <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Provincia", node: <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Calle", node: <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Numero", node: <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Piso", node: <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Depto", node: <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Sexo", node: <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none"><option value="masculino" className="bg-[#0e1012]">Masculino</option><option value="femenino" className="bg-[#0e1012]">Femenino</option></select> },
+                            { label: "Altura (cm)", node: <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Peso (kg)", node: <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
                           ].map(({ label, node }) => (
                             <div key={label} className="py-1.5">
                               <p className="mb-1 text-[10px] font-medium text-slate-500">{label}</p>
@@ -5968,7 +5968,7 @@ export default function ClientesPage() {
                     <div className="space-y-3">
 
                       {/* VIGENCIA DEL PLAN */}
-                      <div className="overflow-hidden rounded-2xl border border-fuchsia-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(217,70,239,0.07),0_0_26px_rgba(217,70,239,0.13)]">
+                      <div className="overflow-hidden rounded-2xl border border-fuchsia-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                           <span className="h-3 w-[3px] rounded-full bg-fuchsia-400 shadow-[0_0_7px_rgba(217,70,239,1)]" />
                           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-300/75">Vigencia del plan</p>
@@ -5977,21 +5977,21 @@ export default function ClientesPage() {
                         <div className="grid grid-cols-3 gap-2 p-3">
                           <div>
                             <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Inicio</p>
-                            <input type="date" value={selectedMeta.startDate} onChange={(e) => setMetaPatch(selectedClient.id, { startDate: e.target.value })} className="w-full rounded-lg bg-white/[0.06] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
+                            <input type="date" value={selectedMeta.startDate} onChange={(e) => setMetaPatch(selectedClient.id, { startDate: e.target.value })} className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
                           </div>
                           <div>
                             <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Fin</p>
-                            <input type="date" value={selectedMeta.endDate} onChange={(e) => setMetaPatch(selectedClient.id, { endDate: e.target.value })} className="w-full rounded-lg bg-white/[0.06] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
+                            <input type="date" value={selectedMeta.endDate} onChange={(e) => setMetaPatch(selectedClient.id, { endDate: e.target.value })} className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
                           </div>
                           <div>
                             <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Categoria</p>
-                            <input value={selectedMeta.categoriaPlan} onChange={(e) => setMetaPatch(selectedClient.id, { categoriaPlan: e.target.value })} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-2 py-2 text-xs font-bold text-fuchsia-200 placeholder:text-slate-700 focus:bg-white/[0.09] focus:outline-none" />
+                            <input value={selectedMeta.categoriaPlan} onChange={(e) => setMetaPatch(selectedClient.id, { categoriaPlan: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 placeholder:text-slate-700 focus:bg-white/[0.09] focus:outline-none" />
                           </div>
                         </div>
                       </div>
 
                       {/* RENOVACION AUTOMATICA */}
-                      <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(245,158,11,0.07),0_0_22px_rgba(245,158,11,0.11)]">
+                      <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                           <span className="h-3 w-[3px] rounded-full bg-amber-400 shadow-[0_0_7px_rgba(245,158,11,1)]" />
                           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300/75">Renovacion automatica</p>
@@ -6000,19 +6000,19 @@ export default function ClientesPage() {
                           <p className="text-[11px] text-slate-400">Extiende la fecha de fin al registrar pago.</p>
                           <label className="flex cursor-pointer items-center">
                             <input type="checkbox" checked={selectedMeta.autoRenewPlan} onChange={(e) => setMetaPatch(selectedClient.id, { autoRenewPlan: e.target.checked })} className="sr-only" />
-                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.45)]" : "bg-white/[0.04]"}`}>
+                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.45)]" : "bg-[#0e1012]"}`}>
                               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${selectedMeta.autoRenewPlan ? "translate-x-5" : "translate-x-0.5"}`} />
                             </div>
                           </label>
                         </div>
                         <div className="px-3 pb-3">
                           <p className="mb-1 text-[10px] font-medium text-slate-500">Plazo (dias)</p>
-                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-bold text-white focus:bg-white/[0.09] focus:outline-none" />
+                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white focus:bg-white/[0.09] focus:outline-none" />
                         </div>
                       </div>
 
                       {/* TIPO DE ASESORIA */}
-                      <div className="overflow-hidden rounded-2xl border border-sky-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(14,165,233,0.07),0_0_22px_rgba(14,165,233,0.11)]">
+                      <div className="overflow-hidden rounded-2xl border border-sky-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                           <span className="h-3 w-[3px] rounded-full bg-sky-400 shadow-[0_0_7px_rgba(14,165,233,1)]" />
                           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300/75">Tipo de asesoria</p>
@@ -6020,28 +6020,28 @@ export default function ClientesPage() {
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Tipo</p>
-                            <select value={selectedMeta.tipoAsesoria} onChange={(e) => setMetaPatch(selectedClient.id, { tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="entrenamiento" className="bg-white/[0.03]">Entrenamiento</option>
-                              <option value="nutricion" className="bg-white/[0.03]">Nutricion</option>
-                              <option value="completa" className="bg-white/[0.03]">Completa</option>
+                            <select value={selectedMeta.tipoAsesoria} onChange={(e) => setMetaPatch(selectedClient.id, { tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="entrenamiento" className="bg-[#0e1012]">Entrenamiento</option>
+                              <option value="nutricion" className="bg-[#0e1012]">Nutricion</option>
+                              <option value="completa" className="bg-[#0e1012]">Completa</option>
                             </select>
                           </div>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Modalidad</p>
-                            <select value={selectedMeta.modalidad} onChange={(e) => setMetaPatch(selectedClient.id, { modalidad: e.target.value as ClienteMeta["modalidad"] })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="virtual" className="bg-white/[0.03]">Virtual</option>
-                              <option value="presencial" className="bg-white/[0.03]">Presencial</option>
+                            <select value={selectedMeta.modalidad} onChange={(e) => setMetaPatch(selectedClient.id, { modalidad: e.target.value as ClienteMeta["modalidad"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="virtual" className="bg-[#0e1012]">Virtual</option>
+                              <option value="presencial" className="bg-[#0e1012]">Presencial</option>
                             </select>
                           </div>
                           <div className="col-span-2 py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Colaboradores</p>
-                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0b1218] px-3 py-2.5">
+                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0e1012] px-3 py-2.5">
                               <textarea value={selectedMeta.colaboradores} onChange={(e) => setMetaPatch(selectedClient.id, { colaboradores: e.target.value })} placeholder="Colaboradores asignados..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
                             </div>
                           </div>
                           <div className="col-span-2 py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Chats / Notas internas</p>
-                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0b1218] px-3 py-2.5">
+                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0e1012] px-3 py-2.5">
                               <textarea value={selectedMeta.chats} onChange={(e) => setMetaPatch(selectedClient.id, { chats: e.target.value })} placeholder="Notas de seguimiento..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
                             </div>
                           </div>
@@ -6050,16 +6050,16 @@ export default function ClientesPage() {
 
                       {/* ASIGNAR PLAN */}
                       {isAdmin && planesDisponibles.filter((p) => p.activo).length > 0 && (
-                        <div className="overflow-hidden rounded-2xl border border-rose-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(239,68,68,0.07),0_0_22px_rgba(239,68,68,0.11)]">
+                        <div className="overflow-hidden rounded-2xl border border-rose-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                           <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                             <span className="h-3 w-[3px] rounded-full bg-rose-400 shadow-[0_0_7px_rgba(239,68,68,1)]" />
                             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-rose-300/75">Asignar plan</p>
                           </div>
                           <div className="space-y-3 p-3">
-                            <select value={planSeleccionado} onChange={(e) => setPlanSeleccionado(e.target.value)} className="w-full rounded-lg bg-white/[0.06] px-3 py-2.5 text-sm text-white focus:outline-none">
+                            <select value={planSeleccionado} onChange={(e) => setPlanSeleccionado(e.target.value)} className="w-full rounded-lg bg-[#111417] px-3 py-2.5 text-sm text-white focus:outline-none">
                               <option value="">Seleccionar plan...</option>
                               {planesDisponibles.filter((p) => p.activo).map((p) => (
-                                <option key={p.id} value={p.id} className="bg-white/[0.03]">
+                                <option key={p.id} value={p.id} className="bg-[#0e1012]">
                                   {p.nombre} — {p.moneda} {p.precio.toLocaleString("es-AR")} / {p.duracionDias} días
                                 </option>
                               ))}
@@ -6113,7 +6113,7 @@ export default function ClientesPage() {
                       )}
 
                       {/* DETALLE DE PAGOS */}
-                      <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(234,179,8,0.07),0_0_22px_rgba(234,179,8,0.11)]">
+                      <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-2.5">
                           <div className="flex items-center gap-2.5">
                             <span className="h-3 w-[3px] rounded-full bg-yellow-400 shadow-[0_0_7px_rgba(234,179,8,1)]" />
@@ -6126,29 +6126,29 @@ export default function ClientesPage() {
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Moneda</p>
-                            <select value={selectedMeta.moneda} onChange={(e) => setMetaPatch(selectedClient.id, { moneda: e.target.value })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="ARS" className="bg-white/[0.03]">ARS</option>
-                              <option value="USD" className="bg-white/[0.03]">USD</option>
+                            <select value={selectedMeta.moneda} onChange={(e) => setMetaPatch(selectedClient.id, { moneda: e.target.value })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="ARS" className="bg-[#0e1012]">ARS</option>
+                              <option value="USD" className="bg-[#0e1012]">USD</option>
                             </select>
                           </div>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Estado</p>
-                            <select value={selectedMeta.pagoEstado} onChange={(e) => setMetaPatch(selectedClient.id, { pagoEstado: e.target.value as ClienteMeta["pagoEstado"] })} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="confirmado" className="bg-white/[0.03]">Pago confirmado</option>
-                              <option value="pendiente" className="bg-white/[0.03]">Pago pendiente</option>
+                            <select value={selectedMeta.pagoEstado} onChange={(e) => setMetaPatch(selectedClient.id, { pagoEstado: e.target.value as ClienteMeta["pagoEstado"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="confirmado" className="bg-[#0e1012]">Pago confirmado</option>
+                              <option value="pendiente" className="bg-[#0e1012]">Pago pendiente</option>
                             </select>
                           </div>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Importe</p>
-                            <input value={selectedMeta.importe} onChange={(e) => setMetaPatch(selectedClient.id, { importe: e.target.value })} placeholder="0" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                            <input value={selectedMeta.importe} onChange={(e) => setMetaPatch(selectedClient.id, { importe: e.target.value })} placeholder="0" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
                           </div>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Saldo</p>
-                            <input value={selectedMeta.saldo} onChange={(e) => setMetaPatch(selectedClient.id, { saldo: e.target.value })} placeholder="0" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                            <input value={selectedMeta.saldo} onChange={(e) => setMetaPatch(selectedClient.id, { saldo: e.target.value })} placeholder="0" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
                           </div>
                           <div className="col-span-2 py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Email pagador</p>
-                            <input value={selectedMeta.emailPagador} onChange={(e) => setMetaPatch(selectedClient.id, { emailPagador: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" />
+                            <input value={selectedMeta.emailPagador} onChange={(e) => setMetaPatch(selectedClient.id, { emailPagador: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" />
                           </div>
                         </div>
                       </div>
@@ -6157,7 +6157,7 @@ export default function ClientesPage() {
                   </div>{/* fin grid 2 cols */}
 
                   {/* ── CONTEXTO DEPORTIVO — full width ── */}
-                  <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#070c14] shadow-[0_0_0_1px_rgba(16,185,129,0.07),0_0_22px_rgba(16,185,129,0.11)]">
+                  <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                     <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
                       <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
                       <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Contexto deportivo</p>
@@ -6165,32 +6165,32 @@ export default function ClientesPage() {
                     <div className="grid gap-x-4 gap-y-0 px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
                       <div className="py-1.5">
                         <p className="mb-1 text-[10px] font-medium text-slate-500">Club</p>
-                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
                       </div>
                       <div className="py-1.5">
                         <p className="mb-1 text-[10px] font-medium text-slate-500">Objetivo</p>
-                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
                       </div>
                       {selectedClient.tipo === "jugadora" ? (
                         <>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Deporte</p>
-                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              {deportesOptions.map((item) => <option key={item} value={item} className="bg-white/[0.03]">{item}</option>)}
+                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              {deportesOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
                             </select>
                           </div>
                           <div className="py-1.5">
                             <p className="mb-1 text-[10px] font-medium text-slate-500">Posicion</p>
-                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="" className="bg-white/[0.03]">Sin posicion</option>
-                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="bg-white/[0.03]">{item}</option>)}
+                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="" className="bg-[#0e1012]">Sin posicion</option>
+                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
                             </select>
                           </div>
                         </>
                       ) : (
                         <div className="py-1.5 sm:col-span-2">
                           <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0b1218] px-3 py-2.5">
+                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
                             <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales sobre el contexto del cliente..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
                           </div>
                         </div>
@@ -6200,13 +6200,13 @@ export default function ClientesPage() {
                       <div className="grid gap-x-4 gap-y-0 border-t border-white/[0.04] px-4 py-3 sm:grid-cols-2">
                         <div className="py-1.5">
                           <p className="mb-1 text-[10px] font-medium text-slate-500">Categoria</p>
-                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                            {categoriasOptions.map((item) => <option key={item} value={item} className="bg-white/[0.03]">{item}</option>)}
+                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                            {categoriasOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
                           </select>
                         </div>
                         <div className="py-1.5">
                           <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0b1218] px-3 py-2.5">
+                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
                             <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
                           </div>
                         </div>
@@ -6273,7 +6273,7 @@ export default function ClientesPage() {
                     </div>
 
                     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full border border-white/15 bg-white/[0.03] px-3 py-1 text-slate-100">
+                      <span className="rounded-full border border-white/15 bg-[#0e1012] px-3 py-1 text-slate-100">
                         Semanas: <span className="font-bold text-white">{trainingPreviewStats.totalSemanas}</span>
                       </span>
                       <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-cyan-100">
@@ -6344,7 +6344,7 @@ export default function ClientesPage() {
                                           setTrainingWeekInlineEdit(null);
                                         }
                                       }}
-                                      className="h-10 min-w-[138px] rounded-2xl border border-cyan-200/70 bg-white/[0.03]/85 px-3.5 py-1.5 text-sm font-bold text-cyan-100 outline-none focus:border-cyan-100"
+                                      className="h-10 min-w-[138px] rounded-2xl border border-cyan-200/70 bg-[#0e1012]/85 px-3.5 py-1.5 text-sm font-bold text-cyan-100 outline-none focus:border-cyan-100"
                                     />
                                   );
                                 }
@@ -6367,10 +6367,10 @@ export default function ClientesPage() {
                                       title="Doble click para editar"
                                       className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                         isWeekHidden
-                                          ? "border-slate-600/55 bg-white/[0.03]/90 text-slate-300 hover:border-slate-500/70"
+                                          ? "border-slate-600/55 bg-[#0e1012]/90 text-slate-300 hover:border-slate-500/70"
                                           : trainingPreviewWeekId === week.id
                                           ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(34,211,238,0.95)]"
-                                          : "border-slate-500/45 bg-white/[0.03] text-slate-100 hover:border-cyan-300/55 hover:bg-white/[0.04]/80"
+                                          : "border-slate-500/45 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:bg-[#0e1012]/80"
                                       }`}
                                     >
                                       <span className="inline-flex items-center gap-1.5">
@@ -6384,7 +6384,7 @@ export default function ClientesPage() {
                                       className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                         weekMenuOpen
                                           ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
-                                          : "border-white/20 bg-white/[0.04] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
+                                          : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
                                       }`}
                                       aria-label={`Opciones de ${weekLabel}`}
                                     >
@@ -6393,7 +6393,7 @@ export default function ClientesPage() {
 
                                     <div
                                       aria-hidden={!weekMenuOpen}
-                                      className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-white/[0.03]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                      className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
                                         weekMenuOpen
                                           ? "translate-y-0 scale-y-100 opacity-100"
                                           : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -6527,7 +6527,7 @@ export default function ClientesPage() {
                                             setTrainingDayInlineEdit(null);
                                           }
                                         }}
-                                        className="h-10 min-w-[128px] rounded-2xl border border-emerald-200/70 bg-white/[0.03]/85 px-3.5 py-1.5 text-sm font-bold text-emerald-100 outline-none focus:border-emerald-100"
+                                        className="h-10 min-w-[128px] rounded-2xl border border-emerald-200/70 bg-[#0e1012]/85 px-3.5 py-1.5 text-sm font-bold text-emerald-100 outline-none focus:border-emerald-100"
                                       />
                                     );
                                   }
@@ -6556,10 +6556,10 @@ export default function ClientesPage() {
                                         title="Doble click para editar"
                                         className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                           isDayHidden
-                                            ? "border-slate-600/55 bg-white/[0.03]/90 text-slate-300 hover:border-slate-500/70"
+                                            ? "border-slate-600/55 bg-[#0e1012]/90 text-slate-300 hover:border-slate-500/70"
                                             : trainingPreviewDayId === day.id
                                             ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(16,185,129,0.95)]"
-                                            : "border-slate-500/45 bg-white/[0.03] text-slate-100 hover:border-emerald-300/55 hover:bg-white/[0.04]/80"
+                                            : "border-slate-500/45 bg-[#0e1012] text-slate-100 hover:border-emerald-300/55 hover:bg-[#0e1012]/80"
                                         }`}
                                       >
                                         <span className="inline-flex items-center gap-1.5">
@@ -6573,7 +6573,7 @@ export default function ClientesPage() {
                                         className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                           dayMenuOpen
                                             ? "border-emerald-300/70 bg-slate-700/95 text-emerald-100"
-                                            : "border-white/20 bg-white/[0.04] text-slate-100 hover:border-emerald-300/55 hover:text-emerald-100"
+                                            : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-emerald-300/55 hover:text-emerald-100"
                                         }`}
                                         aria-label={`Opciones de ${dayLabel}`}
                                       >
@@ -6582,7 +6582,7 @@ export default function ClientesPage() {
 
                                       <div
                                         aria-hidden={!dayMenuOpen}
-                                        className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-white/[0.03]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                        className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
                                           dayMenuOpen
                                             ? "translate-y-0 scale-y-100 opacity-100"
                                             : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -6855,7 +6855,7 @@ export default function ClientesPage() {
                                                     className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                                       blockMenuOpen
                                                         ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
-                                                        : "border-white/20 bg-white/[0.04] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
+                                                        : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
                                                     }`}
                                                     aria-label={`Opciones de ${block.titulo || `Bloque ${blockIndex + 1}`}`}
                                                   >
@@ -6864,7 +6864,7 @@ export default function ClientesPage() {
 
                                                   <div
                                                     aria-hidden={!blockMenuOpen}
-                                                    className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-white/[0.03]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                                    className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
                                                       blockMenuOpen
                                                         ? "translate-y-0 scale-y-100 opacity-100"
                                                         : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -7115,7 +7115,7 @@ export default function ClientesPage() {
                                                           Sin registros aún
                                                         </span>
                                                       )}
-                                                      <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-white/[0.03]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                      <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-[#0e1012]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
                                                         {exerciseLatestSummary ? (
                                                           <>
                                                             <p className="font-bold">
@@ -7154,7 +7154,7 @@ export default function ClientesPage() {
                                                         className="grid gap-2"
                                                         style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                       >
-                                                      <div className="overflow-hidden rounded-xl border border-white/20 bg-white/[0.03]">
+                                                      <div className="overflow-hidden rounded-xl border border-white/20 bg-[#0e1012]">
                                                         {exerciseMeta?.videoUrl ? (
                                                           <button
                                                             type="button"
@@ -7176,7 +7176,7 @@ export default function ClientesPage() {
                                                                 loading="lazy"
                                                               />
                                                             ) : (
-                                                              <span className="flex h-[66px] w-full items-center justify-center bg-white/[0.04]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                              <span className="flex h-[66px] w-full items-center justify-center bg-[#0e1012]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
                                                                 ▶ Ver video
                                                               </span>
                                                             )}
@@ -7439,7 +7439,7 @@ export default function ClientesPage() {
                                                                     Sin registros aún
                                                                   </span>
                                                                 )}
-                                                                <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-white/[0.03]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                                <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-[#0e1012]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
                                                                   {superLatestSummary ? (
                                                                     <>
                                                                       <p className="font-bold">
@@ -7478,7 +7478,7 @@ export default function ClientesPage() {
                                                                   className="grid gap-2"
                                                                   style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                                 >
-                                                                  <div className="overflow-hidden rounded-xl border border-white/20 bg-white/[0.03]">
+                                                                  <div className="overflow-hidden rounded-xl border border-white/20 bg-[#0e1012]">
                                                                     {superMeta?.videoUrl ? (
                                                                       <button
                                                                         type="button"
@@ -7500,7 +7500,7 @@ export default function ClientesPage() {
                                                                             loading="lazy"
                                                                           />
                                                                         ) : (
-                                                                          <span className="flex h-[66px] w-full items-center justify-center bg-white/[0.04]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                                          <span className="flex h-[66px] w-full items-center justify-center bg-[#0e1012]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
                                                                             ▶ Ver video
                                                                           </span>
                                                                         )}
@@ -7635,7 +7635,7 @@ export default function ClientesPage() {
                                                                       <input
                                                                         value={(superMetricas[metricIndex] as any)?.valor || ""}
                                                                         readOnly
-                                                                        className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-sm text-white opacity-70"
+                                                                        className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2.5 py-1.5 text-sm text-white opacity-70"
                                                                       />
                                                                     </label>
                                                                   ))}
@@ -7711,7 +7711,7 @@ export default function ClientesPage() {
                                                     ) : null}
 
                                                     {panelOpenForExercise ? (
-                                                      <div className="mt-3 rounded-xl border border-cyan-300/25 bg-white/[0.03] p-3">
+                                                      <div className="mt-3 rounded-xl border border-cyan-300/25 bg-[#0e1012] p-3">
                                                         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                                                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-100">
                                                             {trainingExercisePanelMode === "configuracion"
@@ -7934,7 +7934,7 @@ export default function ClientesPage() {
                                                                       fecha: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
@@ -7947,7 +7947,7 @@ export default function ClientesPage() {
                                                                       series: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
@@ -7960,7 +7960,7 @@ export default function ClientesPage() {
                                                                       repeticiones: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
@@ -7973,7 +7973,7 @@ export default function ClientesPage() {
                                                                       pesoKg: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
                                                                 />
                                                               </label>
                                                             </div>
@@ -7988,7 +7988,7 @@ export default function ClientesPage() {
                                                                     comentarios: event.target.value,
                                                                   }))
                                                                 }
-                                                                className="w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-xs text-white"
+                                                                className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
                                                                 placeholder="Sensaciones, tecnica, observaciones"
                                                               />
                                                             </label>
@@ -8204,21 +8204,21 @@ export default function ClientesPage() {
                           </div>
 
                           <div className="mt-3 grid gap-3 md:grid-cols-4">
-                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
                               <p className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo</p>
                               <p className="font-bold text-cyan-100">{nutritionGoalLabel(selectedNutritionPlan.objetivo)}</p>
                             </div>
-                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
                               <p className="text-[11px] uppercase tracking-wide text-slate-300">Kcal objetivo</p>
                               <p className="font-bold text-white">{selectedNutritionPlan.targets.calorias}</p>
                             </div>
-                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
                               <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G objetivo</p>
                               <p className="font-bold text-white">
                                 {selectedNutritionPlan.targets.proteinas} / {selectedNutritionPlan.targets.carbohidratos} / {selectedNutritionPlan.targets.grasas} g
                               </p>
                             </div>
-                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
                               <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G del plan</p>
                               <p className="font-bold text-emerald-100">
                                 {selectedNutritionIntake.proteinas} / {selectedNutritionIntake.carbohidratos} / {selectedNutritionIntake.grasas} g
@@ -8229,12 +8229,12 @@ export default function ClientesPage() {
 
                         <div className="mt-4 space-y-3">
                           {selectedNutritionPlan.comidas.length === 0 ? (
-                            <p className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300">
+                            <p className="rounded-xl border border-white/10 bg-[#0e1012] p-4 text-sm text-slate-300">
                               El plan no tiene comidas cargadas todavia.
                             </p>
                           ) : (
                             selectedNutritionPlan.comidas.map((meal) => (
-                              <article key={meal.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                              <article key={meal.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
                                 <p className="font-semibold text-white">{meal.nombre}</p>
                                 {meal.items.length === 0 ? (
                                   <p className="mt-1 text-xs text-slate-400">Sin alimentos cargados.</p>
@@ -8272,15 +8272,15 @@ export default function ClientesPage() {
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
-                    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
                       <p className="text-xs text-slate-300">Wellness</p>
                       <p className="text-3xl font-black text-cyan-100">{selectedClient.wellness ?? "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
                       <p className="text-xs text-slate-300">Carga</p>
                       <p className="text-3xl font-black text-emerald-100">{selectedClient.carga ?? "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
                       <p className="text-xs text-slate-300">Peso actual</p>
                       <p className="text-3xl font-black text-violet-100">{selectedClient.peso || "-"}</p>
                     </div>
@@ -8329,7 +8329,7 @@ export default function ClientesPage() {
                       value={selectedMeta.tabNotas[activeTab] || ""}
                       onChange={(e) => updateTabNote(activeTab, e.target.value)}
                       rows={10}
-                      className="w-full rounded-2xl border border-white/20 bg-white/[0.03]/80 px-4 py-3 text-sm leading-relaxed shadow-inner shadow-cyan-500/5"
+                      className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed shadow-inner shadow-cyan-500/5"
                       placeholder="Escribe aqui observaciones accionables, acuerdos y pendientes..."
                     />
                   </div>
@@ -8358,7 +8358,7 @@ export default function ClientesPage() {
                 type="button"
                 onClick={closeFeedbackModal}
                 aria-label="Cerrar"
-                className="rounded-full border border-white/15 bg-white/[0.04] px-2 py-1 text-sm text-slate-200 hover:bg-slate-700"
+                className="rounded-full border border-white/15 bg-[#0e1012] px-2 py-1 text-sm text-slate-200 hover:bg-slate-700"
               >
                 ✕
               </ReliableActionButton>
@@ -8392,7 +8392,7 @@ export default function ClientesPage() {
                   <div
                     key={entry.id}
                     className={`grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] items-center gap-2 px-3 py-3 text-xs ${
-                      index % 2 === 1 ? "bg-white/[0.03]/40" : ""
+                      index % 2 === 1 ? "bg-[#0e1012]/40" : ""
                     } border-b border-white/5`}
                   >
                     <p className="font-bold text-slate-100">{entry.nombre}</p>
@@ -8471,7 +8471,7 @@ export default function ClientesPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={closeFeedbackModal}
-                  className="rounded-lg border border-white/20 bg-white/[0.04] px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
+                  className="rounded-lg border border-white/20 bg-[#0e1012] px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
                 >
                   Cancelar
                 </ReliableActionButton>
@@ -8502,7 +8502,7 @@ export default function ClientesPage() {
               <ReliableActionButton
                 type="button"
                 onClick={closeNewExerciseModal}
-                className="rounded-full border border-white/20 bg-white/[0.04] px-2 py-1 text-xs text-slate-200 hover:bg-slate-700"
+                className="rounded-full border border-white/20 bg-[#0e1012] px-2 py-1 text-xs text-slate-200 hover:bg-slate-700"
               >
                 Cerrar
               </ReliableActionButton>
@@ -8582,7 +8582,7 @@ export default function ClientesPage() {
                   type="button"
                   onClick={closeNewExerciseModal}
                   disabled={newExerciseSaving}
-                  className="rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-60"
+                  className="rounded-lg border border-white/15 bg-[#0e1012] px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-60"
                 >
                   Cancelar
                 </ReliableActionButton>

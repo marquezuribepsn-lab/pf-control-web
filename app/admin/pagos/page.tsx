@@ -1153,7 +1153,7 @@ export default function AdminPagosManualPage() {
                   value={planForm.nombre}
                   onChange={(e) => setPlanForm((p) => ({ ...p, nombre: e.target.value }))}
                   placeholder="Plan Mensual"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1165,7 +1165,7 @@ export default function AdminPagosManualPage() {
                   onChange={(e) => setPlanForm((p) => ({ ...p, precio: e.target.value }))}
                   placeholder="15000"
                   min={1}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1174,7 +1174,7 @@ export default function AdminPagosManualPage() {
                 <select
                   value={planForm.moneda}
                   onChange={(e) => setPlanForm((p) => ({ ...p, moneda: e.target.value }))}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 >
                   <option value="ARS">ARS</option>
                   <option value="USD">USD</option>
@@ -1190,7 +1190,7 @@ export default function AdminPagosManualPage() {
                   placeholder="30"
                   min={1}
                   max={365}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1200,7 +1200,7 @@ export default function AdminPagosManualPage() {
                   value={planForm.descripcion}
                   onChange={(e) => setPlanForm((p) => ({ ...p, descripcion: e.target.value }))}
                   placeholder="Acceso completo por 30 dias"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
             </div>
@@ -1248,7 +1248,7 @@ export default function AdminPagosManualPage() {
             ) : (
               <div className="mt-3 space-y-3">
                 {planes.map((plan) => (
-                  <div key={plan.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <div key={plan.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-bold text-white">{plan.nombre}</p>
@@ -1263,7 +1263,7 @@ export default function AdminPagosManualPage() {
                         className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
                           plan.activo
                             ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
-                            : "border-white/[0.08] bg-white/[0.04] text-slate-200"
+                            : "border-white/[0.08] bg-[#0e1012] text-slate-200"
                         }`}
                       >
                         {plan.activo ? "Activo" : "Inactivo"}
@@ -1404,7 +1404,7 @@ export default function AdminPagosManualPage() {
                 value={incomeMonth}
                 onChange={(event) => setIncomeMonth(event.target.value)}
                 disabled={incomeBusy}
-                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
               />
             </label>
           ) : (
@@ -1419,7 +1419,7 @@ export default function AdminPagosManualPage() {
                 disabled={incomeBusy}
                 min={2000}
                 max={3000}
-                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
               />
             </label>
           )}
@@ -1618,7 +1618,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Cuenta principal"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1633,7 +1633,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Banco Galicia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1648,7 +1648,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Caja de ahorro"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1663,7 +1663,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Nombre del titular"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1678,7 +1678,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="20-12345678-9"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1693,7 +1693,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="000123456789"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1708,7 +1708,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="0000003100000000000000"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1723,7 +1723,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="mi.alias.pagos"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1739,7 +1739,7 @@ export default function AdminPagosManualPage() {
                   }
                   rows={2}
                   placeholder="Ejemplo: enviar comprobante por WhatsApp al finalizar la transferencia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
             </div>
@@ -1792,7 +1792,7 @@ export default function AdminPagosManualPage() {
             ) : (
               <div className="mt-3 space-y-3">
                 {transferAccounts.map((account) => (
-                  <div key={account.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <div key={account.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-bold text-white">{account.label}</p>
@@ -1805,7 +1805,7 @@ export default function AdminPagosManualPage() {
                         className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
                           account.isVisible
                             ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
-                            : "border-white/[0.08] bg-white/[0.04] text-slate-200"
+                            : "border-white/[0.08] bg-[#0e1012] text-slate-200"
                         }`}
                       >
                         {account.isVisible ? "Visible" : "Oculta"}
@@ -1947,7 +1947,7 @@ export default function AdminPagosManualPage() {
                       }
                       rows={2}
                       placeholder="Nota opcional para el alumno"
-                      className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                      className="w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                     />
 
                     <div className="flex flex-wrap gap-3">

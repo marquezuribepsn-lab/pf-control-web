@@ -164,7 +164,7 @@ export default function DeportesPage() {
               }
             }}
             placeholder="Nombre del deporte"
-            className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+            className="flex-1 rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
           />
           <ReliableActionButton
             onClick={handleAgregarDeporte}
@@ -193,7 +193,7 @@ export default function DeportesPage() {
           value={busqueda}
           onChange={(event) => setBusqueda(event.target.value)}
           placeholder="Filtrar deportes o posiciones..."
-          className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+          className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
         />
       </section>
 
@@ -262,7 +262,7 @@ export default function DeportesPage() {
                         {deporte.posiciones.map((posicion, positionIndex) => (
                           <li
                             key={`${deporte.nombre}-${posicion}-${positionIndex}`}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-sm text-white/85"
+                            className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.08] bg-[#0e1012] px-2.5 py-1.5 text-sm text-white/85"
                           >
                             <span className="truncate">{posicion}</span>
                             <ReliableActionButton
@@ -290,7 +290,7 @@ export default function DeportesPage() {
                             }
                           }}
                           placeholder="Nueva posición"
-                          className="flex-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+                          className="flex-1 rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
                         />
                         <ReliableActionButton
                           onClick={() => handleAgregarPosicion(deporte.nombre)}

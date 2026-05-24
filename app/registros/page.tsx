@@ -68,7 +68,7 @@ function StatCard({
     rose: { border: "border-rose-300/35 bg-rose-500/10", value: "text-rose-100" },
     violet: { border: "border-violet-300/35 bg-violet-500/10", value: "text-violet-100" },
     amber: { border: "border-amber-300/35 bg-amber-500/10", value: "text-amber-100" },
-    slate: { border: "border-white/[0.08] bg-white/[0.03]", value: "text-white/85" },
+    slate: { border: "border-white/[0.08] bg-[#0e1012]", value: "text-white/85" },
   };
 
   return (
@@ -382,7 +382,7 @@ export default function RegistrosPage() {
         ) : (
           <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-white/[0.04] text-white/75">
+              <thead className="bg-[#0e1012] text-white/75">
                 <tr>
                   <th className="px-3 py-2">Mes</th>
                   <th className="px-3 py-2">Pagos</th>

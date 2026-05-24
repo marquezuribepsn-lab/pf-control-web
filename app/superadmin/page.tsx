@@ -103,7 +103,7 @@ function PlanPill({ plan }: { plan: string }) {
 // ─── Loading screen ───────────────────────────────────────────────────────────
 function LoadingScreen() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#060b14]">
+    <div className="flex h-screen w-full items-center justify-center bg-[#0e1012]">
       <div className="flex flex-col items-center gap-5">
         <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/20 border border-violet-500/20">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 opacity-20 blur-xl" />
@@ -162,7 +162,7 @@ function ModalCrear({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-violet-500/20 bg-[#0c1220]">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-violet-500/20 bg-[#0e1012]">
         <div className="flex items-center justify-between border-b border-white/[0.05] px-6 py-4">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.25em] text-violet-400/60">Nuevo acceso</p>
@@ -477,7 +477,7 @@ function ModalGestionar({ profesor, onClose, onSaved, onToast }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-fuchsia-500/20 bg-[#0c1220]" style={{ maxHeight: "92vh" }}>
+      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-fuchsia-500/20 bg-[#0e1012]" style={{ maxHeight: "92vh" }}>
         {/* Header */}
         <div className="flex shrink-0 items-center gap-3 border-b border-white/[0.05] px-6 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/15 text-sm font-black text-fuchsia-300">{ini(profesor.nombreCompleto, profesor.email)}</div>
@@ -719,7 +719,7 @@ function ModalGestionar({ profesor, onClose, onSaved, onToast }: {
               {/* Modal editar pago */}
               {editPago && editPagoForm && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-                  <div className="w-full max-w-sm rounded-2xl border border-amber-500/20 bg-[#0c1220] p-6 shadow-2xl">
+                  <div className="w-full max-w-sm rounded-2xl border border-amber-500/20 bg-[#0e1012] p-6 shadow-2xl">
                     <p className="mb-1 text-sm font-black text-white">✏️ Editar cobro</p>
                     <p className="mb-4 text-[10px] text-slate-600">{fmtMoney(editPago.monto, editPago.moneda)} · {fmtDate(editPago.fechaPago)}</p>
                     <form onSubmit={saveEditPago} className="space-y-3">
@@ -1020,7 +1020,7 @@ function AlertasWidget() {
   const criticos = alertas.filter(a => a.nivel === "critico").length;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0a0f18]">
+    <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0e1012]">
       <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 text-sm">⚠️</span>
@@ -1119,7 +1119,7 @@ function Dashboard({ data, onToast, onManage, onSection, lastSync, onRefresh }: 
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Por vencer */}
-        <div className="overflow-hidden rounded-2xl border border-amber-500/15 bg-[#0c1008]">
+        <div className="overflow-hidden rounded-2xl border border-amber-500/15 bg-[#0e1012]">
           <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3.5">
             <div className="flex items-center gap-2">
               <span className="h-3 w-0.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)]" />
@@ -1175,7 +1175,7 @@ function Dashboard({ data, onToast, onManage, onSection, lastSync, onRefresh }: 
         </div>
 
         {/* Últimos registros */}
-        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0f18]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e1012]">
           <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3.5">
             <div className="flex items-center gap-2">
               <span className="h-3 w-0.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,1)]" />
@@ -1218,7 +1218,7 @@ function Dashboard({ data, onToast, onManage, onSection, lastSync, onRefresh }: 
 
         if (trials.length === 0) return null;
         return (
-          <div className="overflow-hidden rounded-2xl border border-sky-500/15 bg-[#08101a]">
+          <div className="overflow-hidden rounded-2xl border border-sky-500/15 bg-[#0e1012]">
             <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3.5">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-0.5 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,1)]" />
@@ -1441,7 +1441,7 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar..."
-          className="h-10 w-48 shrink-0 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors" />
+          className="h-10 w-48 shrink-0 rounded-xl border border-white/[0.06] bg-[#0e1012] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors" />
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map(f => (
             <button key={f.id} type="button" onClick={() => setFilter(f.id)}
@@ -1451,7 +1451,7 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
           ))}
         </div>
         <select value={plan} onChange={e => setPlan(e.target.value)}
-          className="h-10 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-3 text-[11px] font-semibold text-slate-400 focus:outline-none focus:border-violet-500/30 transition-colors">
+          className="h-10 rounded-xl border border-white/[0.06] bg-[#0e1012] px-3 text-[11px] font-semibold text-slate-400 focus:outline-none focus:border-violet-500/30 transition-colors">
           <option value="todos">Plan: todos</option>
           <option value="basico">Básico</option>
           <option value="pro">Pro</option>
@@ -1492,7 +1492,7 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
       {showImport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowImport(false)} />
-          <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1117] shadow-2xl">
+          <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e1012] shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
               <div>
@@ -1522,7 +1522,7 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
                   value={importText} onChange={e => setImportText(e.target.value)}
                   placeholder={IMPORT_TEMPLATE}
                   rows={10}
-                  className="w-full rounded-xl border border-white/[0.06] bg-[#0a0f18] p-4 font-mono text-[11px] text-slate-300 placeholder:text-slate-700 focus:border-violet-500/30 focus:outline-none resize-none"
+                  className="w-full rounded-xl border border-white/[0.06] bg-[#0e1012] p-4 font-mono text-[11px] text-slate-300 placeholder:text-slate-700 focus:border-violet-500/30 focus:outline-none resize-none"
                 />
                 <div className="flex justify-end gap-3">
                   <button type="button" onClick={() => setShowImport(false)}
@@ -1538,9 +1538,9 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
 
               {/* STEP 2: Preview */}
               {importStep === "preview" && (<>
-                <div className="max-h-72 overflow-y-auto rounded-xl border border-white/[0.05] bg-[#0a0f18]">
+                <div className="max-h-72 overflow-y-auto rounded-xl border border-white/[0.05] bg-[#0e1012]">
                   <table className="w-full text-[11px]">
-                    <thead className="sticky top-0 bg-[#0d1117]">
+                    <thead className="sticky top-0 bg-[#0e1012]">
                       <tr className="border-b border-white/[0.05]">
                         {["Email","Nombre","Teléfono","Plan","MaxAlumnos"].map(h => (
                           <th key={h} className="px-3 py-2.5 text-left text-[9px] font-black uppercase tracking-widest text-slate-600">{h}</th>
@@ -1623,7 +1623,7 @@ function Profesores({ data, onManage, onToggle, onCrear, onToast }: {
       {filtered.length === 0 ? (
         <div className="flex h-40 items-center justify-center rounded-2xl border border-white/[0.05] text-slate-600">Sin resultados</div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0f18]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e1012]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
               <thead>
@@ -1786,7 +1786,7 @@ function Cobros({ data, onManage }: { data: Profesor[]; onManage: (p: Profesor) 
           { label:"Transacciones", val:String(rows.length),       color:"text-white"       },
           { label:"Profesores",    val:String(new Set(rows.map(r => r.email)).size), color:"text-violet-400" },
         ].map(s => (
-          <div key={s.label} className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-5">
+          <div key={s.label} className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-5">
             <p className={`text-2xl font-black ${s.color}`}>{s.val}</p>
             <p className="mt-1 text-[9px] uppercase tracking-[0.18em] text-slate-600">{s.label}{hasFilter ? " (filtrado)" : ""}</p>
           </div>
@@ -1796,7 +1796,7 @@ function Cobros({ data, onManage }: { data: Profesor[]; onManage: (p: Profesor) 
       {/* Filtros */}
       <div className="flex flex-wrap items-center gap-3">
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar profesor..."
-          className="h-9 w-44 shrink-0 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors" />
+          className="h-9 w-44 shrink-0 rounded-xl border border-white/[0.06] bg-[#0e1012] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors" />
         <div className="flex flex-wrap gap-1.5">
           {METODOS.map(m => (
             <button key={m} type="button" onClick={() => setMetodo(m)}
@@ -1825,10 +1825,10 @@ function Cobros({ data, onManage }: { data: Profesor[]; onManage: (p: Profesor) 
         {fechaFilter === "custom" && (
           <div className="flex items-center gap-2">
             <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
-              className="h-9 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-3 text-sm text-white focus:border-violet-500/30 focus:outline-none transition-colors" />
+              className="h-9 rounded-xl border border-white/[0.06] bg-[#0e1012] px-3 text-sm text-white focus:border-violet-500/30 focus:outline-none transition-colors" />
             <span className="text-slate-600 text-xs">→</span>
             <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)}
-              className="h-9 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-3 text-sm text-white focus:border-violet-500/30 focus:outline-none transition-colors" />
+              className="h-9 rounded-xl border border-white/[0.06] bg-[#0e1012] px-3 text-sm text-white focus:border-violet-500/30 focus:outline-none transition-colors" />
           </div>
         )}
         {hasFilter && (
@@ -1838,7 +1838,7 @@ function Cobros({ data, onManage }: { data: Profesor[]; onManage: (p: Profesor) 
       </div>
 
       {/* Tabla */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0f18]">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e1012]">
         <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3.5">
           <div className="flex items-center gap-2">
             <span className="h-3 w-0.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,1)]" />
@@ -2051,7 +2051,7 @@ function Automatizacion({ onToast }: { onToast: (m: string, t: "ok" | "err") => 
     <div className="space-y-5">
 
       {/* Config + trigger */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-lg">🤖</span>
           <div className="flex-1 min-w-0">
@@ -2136,7 +2136,7 @@ function Automatizacion({ onToast }: { onToast: (m: string, t: "ok" | "err") => 
       </div>
 
       {/* Last run */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-4 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-lg">📋</span>
           <div>
@@ -2193,7 +2193,7 @@ function Automatizacion({ onToast }: { onToast: (m: string, t: "ok" | "err") => 
 
       {/* Historial de ejecuciones */}
       {history.length > 0 && (
-        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
           <div className="mb-4 flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fuchsia-500/15 text-lg">📅</span>
             <div>
@@ -2225,7 +2225,7 @@ function Automatizacion({ onToast }: { onToast: (m: string, t: "ok" | "err") => 
       )}
 
       {/* Cron setup info */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-4 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fuchsia-500/15 text-lg">⏰</span>
           <div>
@@ -2330,7 +2330,7 @@ function Actividad({ onToast, onManage }: { onToast: (m: string, t: "ok" | "err"
         ] as const).map(s => (
           <button key={s.key} type="button"
             onClick={() => setFilter(filter === s.key ? "all" : s.key)}
-            className={`rounded-2xl border p-5 text-left transition-all ${filter === s.key ? "border-white/[0.12] bg-white/[0.06]" : "border-white/[0.05] bg-[#0a0f18] hover:bg-white/[0.03]"}`}>
+            className={`rounded-2xl border p-5 text-left transition-all ${filter === s.key ? "border-white/[0.12] bg-white/[0.06]" : "border-white/[0.05] bg-[#0e1012] hover:bg-white/[0.03]"}`}>
             <div className="mb-2 text-xl">{s.icon}</div>
             <p className={`text-2xl font-black ${s.color}`}>{counts[s.key]}</p>
             <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-slate-600">{s.label}</p>
@@ -2380,7 +2380,7 @@ function Actividad({ onToast, onManage }: { onToast: (m: string, t: "ok" | "err"
       </div>
 
       {/* Tabla */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0f18]">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e1012]">
         {loading ? (
           <div className="flex h-32 items-center justify-center">
             <svg className="h-5 w-5 animate-spin text-violet-400" fill="none" viewBox="0 0 24 24">
@@ -2481,7 +2481,7 @@ function Actividad({ onToast, onManage }: { onToast: (m: string, t: "ok" | "err"
       {/* Modal notas */}
       {editNotas && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border border-white/[0.07] bg-[#0c1220] p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-2xl border border-white/[0.07] bg-[#0e1012] p-6 shadow-2xl">
             <p className="mb-1 text-sm font-black text-white">📝 Nota interna</p>
             <p className="mb-4 text-[10px] text-slate-600">Solo visible para SUPERADMIN</p>
             <textarea
@@ -2530,7 +2530,7 @@ type ForecastItem = {
 
 function Kpi({ label, value, sub, color, icon }: { label: string; value: string; sub: string; color: string; icon: string }) {
   return (
-    <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-5">
+    <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-5">
       <div className="mb-3 flex items-center justify-between">
         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">{label}</p>
         <span className="text-base">{icon}</span>
@@ -2632,7 +2632,7 @@ function Finanzas() {
 
       {/* Conversión trial → activo */}
       {data.conversion && (
-        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
           <div className="mb-5 flex items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/15 text-lg">🎯</span>
             <div className="flex-1 min-w-0">
@@ -2711,7 +2711,7 @@ function Finanzas() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
 
         {/* Tendencia mensual */}
-        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
           <div className="mb-5 flex items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-lg">📊</span>
             <div className="flex-1 min-w-0">
@@ -2759,7 +2759,7 @@ function Finanzas() {
         </div>
 
         {/* Forecast */}
-        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
           <div className="mb-4 flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-lg">🔮</span>
             <div className="flex-1 min-w-0">
@@ -2827,7 +2827,7 @@ function Finanzas() {
 
       {/* Gráfico de crecimiento */}
       {data.growth && data.growth.length > 0 && (
-        <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+        <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
           <div className="mb-5 flex items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-lg">🌱</span>
             <div className="flex-1 min-w-0">
@@ -2961,7 +2961,7 @@ function Historial() {
           { label: "Fallidos",        val: String(fallido), color: "text-red-400"      },
           { label: "Hoy",             val: String(hoy),     color: "text-sky-400"      },
         ].map(s => (
-          <div key={s.label} className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-5">
+          <div key={s.label} className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-5">
             <p className={`text-2xl font-black ${s.color}`}>{s.val}</p>
             <p className="mt-1 text-[9px] uppercase tracking-[0.18em] text-slate-600">{s.label}</p>
           </div>
@@ -2972,7 +2972,7 @@ function Historial() {
       <div className="flex flex-wrap items-center gap-3">
         {/* Tipo */}
         <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)}
-          className="rounded-xl border border-white/[0.07] bg-[#0a0f18] px-3 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-violet-500/50 cursor-pointer">
+          className="rounded-xl border border-white/[0.07] bg-[#0e1012] px-3 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-violet-500/50 cursor-pointer">
           <option value="all">Todos los tipos</option>
           {Object.entries(TIPO_META).map(([k, v]) => (
             <option key={k} value={k}>{v.emoji} {v.label}</option>
@@ -2981,7 +2981,7 @@ function Historial() {
 
         {/* Resultado */}
         <select value={filterResult} onChange={e => setFilterResult(e.target.value)}
-          className="rounded-xl border border-white/[0.07] bg-[#0a0f18] px-3 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-violet-500/50 cursor-pointer">
+          className="rounded-xl border border-white/[0.07] bg-[#0e1012] px-3 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-violet-500/50 cursor-pointer">
           <option value="all">Todos los resultados</option>
           <option value="ok">Solo exitosos</option>
           <option value="err">Solo fallidos</option>
@@ -3001,7 +3001,7 @@ function Historial() {
       {/* Purge modal */}
       {showPurge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border border-white/[0.07] bg-[#0c1220] p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-2xl border border-white/[0.07] bg-[#0e1012] p-6 shadow-2xl">
             <p className="text-sm font-black text-white mb-2">🗑 Purgar registros antiguos</p>
             <p className="text-xs text-slate-400 mb-5">Elimina logs más viejos de X días. Esta acción no se puede deshacer.</p>
             <div className="flex gap-3">
@@ -3021,7 +3021,7 @@ function Historial() {
       )}
 
       {/* Tabla */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0f18]">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e1012]">
         <div className="flex items-center gap-2 border-b border-white/[0.04] px-5 py-3.5">
           <span className="mr-1 h-3 w-0.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,1)]" />
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-400/70">
@@ -3124,7 +3124,7 @@ function AuditMini({ onSection }: { onSection: (s: Section) => void }) {
   }, []);
   if (rows.length === 0) return null;
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0a0f18]">
+    <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0e1012]">
       <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="h-3 w-0.5 rounded-full bg-fuchsia-400 shadow-[0_0_8px_rgba(217,70,239,1)]" />
@@ -3183,7 +3183,7 @@ function Auditoria() {
         <input
           value={q} onChange={e => setQ(e.target.value)}
           placeholder="Buscar por email o detalle…"
-          className="h-9 w-52 shrink-0 rounded-xl border border-white/[0.06] bg-[#0a0f18] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors"
+          className="h-9 w-52 shrink-0 rounded-xl border border-white/[0.06] bg-[#0e1012] px-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500/30 focus:outline-none transition-colors"
         />
         {q && (
           <button type="button" onClick={() => setQ("")}
@@ -3200,7 +3200,7 @@ function Auditoria() {
       </div>
 
       {/* Lista */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0a0f18]">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0e1012]">
         <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Registro de acciones</p>
           <div className="flex items-center gap-2">
@@ -3367,7 +3367,7 @@ function Configuracion({ onToast }: { onToast: (m: string, t: "ok" | "err") => v
           },
         ];
         return (
-          <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+          <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-lg">🔌</span>
               <div>
@@ -3444,7 +3444,7 @@ function Configuracion({ onToast }: { onToast: (m: string, t: "ok" | "err") => v
       })()}
 
       {/* Parámetros del cron */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-lg">⚙️</span>
           <div>
@@ -3496,7 +3496,7 @@ function Configuracion({ onToast }: { onToast: (m: string, t: "ok" | "err") => v
       </div>
 
       {/* Mensaje del cron */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fuchsia-500/15 text-lg">✉️</span>
           <div>
@@ -3604,7 +3604,7 @@ function Herramientas({ onToast, data }: { onToast: (m: string, t: "ok" | "err")
     <div className="space-y-5">
 
       {/* Broadcast */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fuchsia-500/15 text-lg">📣</span>
           <div>
@@ -3680,7 +3680,7 @@ function Herramientas({ onToast, data }: { onToast: (m: string, t: "ok" | "err")
       </div>
 
       {/* Exportar */}
-      <div className="rounded-2xl border border-white/[0.05] bg-[#0a0f18] p-6">
+      <div className="rounded-2xl border border-white/[0.05] bg-[#0e1012] p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-lg">📥</span>
           <div>
@@ -3783,7 +3783,7 @@ function CommandPalette({ data, onClose, onSection, onManage }: {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[14vh]">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0d1117] shadow-[0_24px_80px_rgba(0,0,0,0.8)]">
+      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0e1012] shadow-[0_24px_80px_rgba(0,0,0,0.8)]">
         {/* Input */}
         <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3.5">
           <svg className="h-4 w-4 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -3926,7 +3926,7 @@ export default function SuperAdminPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#060b14] text-white">
+    <div className="flex min-h-screen bg-[#0e1012] text-white">
 
       {/* Backdrop mobile */}
       {sidebarOpen && (
@@ -3935,7 +3935,7 @@ export default function SuperAdminPage() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed bottom-0 left-0 top-0 z-40 flex w-56 flex-col border-r border-white/[0.04] bg-[#050a12] transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <aside className={`fixed bottom-0 left-0 top-0 z-40 flex w-56 flex-col border-r border-white/[0.04] bg-[#0e1012] transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="flex items-center gap-3 border-b border-white/[0.04] px-5 py-5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm shadow-[0_0_16px_rgba(139,92,246,0.5)]">⚡</div>
           <div className="min-w-0 flex-1">
@@ -3982,7 +3982,7 @@ export default function SuperAdminPage() {
 
       {/* Main */}
       <div className="flex min-h-screen flex-1 flex-col lg:ml-56">
-        <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between border-b border-white/[0.04] bg-[#060b14]/95 px-4 py-4 lg:px-8 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between border-b border-white/[0.04] bg-[#0e1012]/95 px-4 py-4 lg:px-8 backdrop-blur-xl">
           <div className="flex items-center gap-3 min-w-0">
             <button type="button" onClick={() => setSidebarOpen(true)}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-slate-400 transition-colors hover:text-white lg:hidden">

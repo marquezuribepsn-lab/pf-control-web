@@ -584,7 +584,7 @@ export default function ConfiguracionPage() {
             {sidebarImageDraft ? (
               <img src={sidebarImageDraft} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-xs text-white/65">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/[0.08] bg-[#0e1012] text-xs text-white/65">
                 Sin foto
               </div>
             )}
@@ -645,7 +645,7 @@ export default function ConfiguracionPage() {
               id="dock-label-mode"
               value={dockLabelMode}
               onChange={(event) => cambiarModoEtiquetasDock(event.target.value as DockLabelMode)}
-              className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/85"
+              className="rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-1.5 text-xs font-semibold text-white/85"
             >
               <option value="compact">Compactas</option>
               <option value="full">Completas</option>
@@ -675,7 +675,7 @@ export default function ConfiguracionPage() {
                 className="mt-2 w-full"
               />
             </div>
-            <div className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-xs text-white/65">
+            <div className="rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/65">
               {widgetSelectedCards.length} seleccionados
             </div>
           </div>
@@ -686,7 +686,7 @@ export default function ConfiguracionPage() {
               return (
                 <label
                   key={option.id}
-                  className="flex items-start gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs"
+                  className="flex items-start gap-2 rounded-lg border border-white/[0.08] bg-[#0e1012] px-3 py-2 text-xs"
                 >
                   <input
                     type="checkbox"

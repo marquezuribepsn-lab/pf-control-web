@@ -344,7 +344,7 @@ export default function AsistenciasPage() {
                   sesionId: "",
                 }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             >
               <option value="">Seleccionar categoria</option>
               {categoriasOptions.map((categoria) => (
@@ -365,7 +365,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, fecha: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             />
           </div>
 
@@ -379,7 +379,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, hora: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             />
           </div>
 
@@ -392,7 +392,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, sesionId: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
               disabled={!nuevaJornada.categoria}
             >
               <option value="">Sin sesion vinculada</option>
@@ -414,7 +414,7 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, titulo: e.target.value }))
               }
               placeholder="Ej: Jornada tecnica"
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             />
           </div>
 
@@ -428,7 +428,7 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, ubicacion: e.target.value }))
               }
               placeholder="Cancha 1"
-              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             />
           </div>
         </div>
@@ -443,7 +443,7 @@ export default function AsistenciasPage() {
               setNuevaJornada((prev) => ({ ...prev, notas: e.target.value }))
             }
             rows={2}
-            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+            className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
             placeholder="Objetivo de la jornada, indicaciones..."
           />
         </div>
@@ -469,7 +469,7 @@ export default function AsistenciasPage() {
               <select
                 value={selectedCategoria}
                 onChange={(e) => setSelectedCategoria(e.target.value)}
-                className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+                className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
               >
                 <option value="todas">Todas</option>
                 {categoriasOptions.map((categoria) => (
@@ -487,7 +487,7 @@ export default function AsistenciasPage() {
                 type="date"
                 value={filtroFecha}
                 onChange={(e) => setFiltroFecha(e.target.value)}
-                className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+                className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
               />
             </div>
           </div>
@@ -609,7 +609,7 @@ export default function AsistenciasPage() {
                   <span className="rounded-full bg-rose-500/20 px-2 py-1 text-rose-100">
                     Ausentes: {resumen.ausentes}
                   </span>
-                  <span className="rounded-full bg-white/[0.04] px-2 py-1 text-slate-100">
+                  <span className="rounded-full bg-[#0e1012] px-2 py-1 text-slate-100">
                     Sin cargar: {resumen.sinCargar}
                   </span>
                 </div>
@@ -688,7 +688,7 @@ export default function AsistenciasPage() {
                             }
                             disabled={Boolean(selectedJornada.suspendida)}
                             placeholder="Ej: lesion, estudio, viaje..."
-                            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-45"
+                            className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417] disabled:cursor-not-allowed disabled:opacity-45"
                           />
                         </div>
                       </div>
@@ -736,7 +736,7 @@ export default function AsistenciasPage() {
                   if (suspensionError) setSuspensionError("");
                 }}
                 rows={3}
-                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+                className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
                 placeholder="Ej: lluvia intensa, cancha cerrada, protocolo medico..."
               />
               {suspensionError ? (

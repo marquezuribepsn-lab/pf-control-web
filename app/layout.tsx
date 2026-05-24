@@ -181,7 +181,7 @@ export default async function RootLayout({
   if (initialRole === "SUPERADMIN") {
     return (
       <html lang="es">
-        <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-[#080810] text-white`}>
+        <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-[#080a0b] text-white`}>
           <AuthSessionProvider>
             {children}
           </AuthSessionProvider>

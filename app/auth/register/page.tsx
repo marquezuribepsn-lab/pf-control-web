@@ -209,7 +209,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#040a17] text-white">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(34,211,238,0.24),transparent_25%),radial-gradient(circle_at_86%_18%,rgba(56,189,248,0.2),transparent_28%),radial-gradient(circle_at_24%_82%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(150deg,#040a17_0%,#0b1d3c_44%,#1e3a8a_100%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:46px_46px]" />
 

@@ -347,7 +347,7 @@ function LoginPageContent() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#09111f] text-white">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
 
@@ -500,7 +500,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="relative isolate min-h-screen overflow-hidden bg-[#09111f] text-white">
+        <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
           <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6 py-10">
             <div className="rounded-2xl border border-white/12 bg-slate-950/55 px-6 py-4 text-sm text-slate-200 backdrop-blur-2xl">

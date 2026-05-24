@@ -1941,7 +1941,7 @@ export default function AdminUsuariosPermisosPage() {
           aria-modal="true"
           aria-label="Confirmacion de alta"
         >
-          <div className="w-full max-w-lg rounded-2xl border border-amber-200/35 bg-[#0b1220] p-6 text-center shadow-[0_28px_80px_rgba(2,6,20,0.7)]">
+          <div className="w-full max-w-lg rounded-2xl border border-amber-200/35 bg-[#0e1012] p-6 text-center shadow-[0_28px_80px_rgba(2,6,20,0.7)]">
             <p className="text-5xl font-black text-amber-200">!</p>
             <h3 className="mt-2 text-4xl font-black text-white">Atencion</h3>
             <p className="mt-2 text-lg text-white/85">Se creara una membresia:</p>

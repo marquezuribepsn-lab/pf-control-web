@@ -97,7 +97,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#08111d] text-white">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
       <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
         <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
@@ -169,7 +169,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#08111d]" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[#080a0b]" />}>
       <ResetPasswordContent />
     </Suspense>
   );
