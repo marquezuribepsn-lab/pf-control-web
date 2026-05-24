@@ -198,12 +198,63 @@ h6 {
 
   /* Color del acento temático (se sobreescribe por página via --hue) */
   --pf-accent-h: var(--hue, 160);
+
+  /* ── FONDO GLOBAL: sobreescribe bg-[#070810] de Tailwind ──────────────── */
+  /* El div .pf-training-shell cubre todo el viewport; la grilla va aquí    */
+  background-color: #080808 !important;
+  background-image:
+    /* Grilla: puntos en intersecciones */
+    radial-gradient(circle, rgba(255,255,255,0.20) 1px, transparent 1px),
+    /* Grilla: líneas horizontales */
+    linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px),
+    /* Grilla: líneas verticales */
+    linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px),
+    /* Scratch diagonal 1 */
+    linear-gradient(-34deg,
+      transparent 38%, rgba(255,255,255,0.022) 38.15%,
+      rgba(255,255,255,0.008) 38.45%, transparent 38.6%),
+    /* Scratch diagonal 2 */
+    linear-gradient(-18deg,
+      transparent 62%, rgba(255,255,255,0.015) 62.1%,
+      rgba(255,255,255,0.005) 62.3%, transparent 62.45%),
+    /* Scratch diagonal 3 */
+    linear-gradient(-48deg,
+      transparent 72%, rgba(255,255,255,0.018) 72.1%,
+      rgba(255,255,255,0.006) 72.35%, transparent 72.5%),
+    /* Vignette perimetral */
+    radial-gradient(ellipse 120% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.55) 100%),
+    /* Ambient verde esquina sup-izq */
+    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(34,197,94,0.10) 0%, transparent 60%),
+    /* Ambient cyan esquina sup-der */
+    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(34,211,238,0.09) 0%, transparent 55%) !important;
+  background-size:
+    30px 30px,
+    30px 30px,
+    30px 30px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100% !important;
+  background-attachment: fixed !important;
 }
 
 html[data-pf-theme="light"] .pf-training-shell {
   --pf-grid-line: rgba(0, 0, 0, 0.07);
   --pf-grid-dot:  rgba(0, 0, 0, 0.18);
   color: #173847;
+  background-color: #f0f8f5 !important;
+  background-image:
+    radial-gradient(circle, rgba(0,0,0,0.10) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px),
+    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(44,200,171,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(157,216,115,0.12) 0%, transparent 55%) !important;
+  background-size:
+    30px 30px, 30px 30px, 30px 30px,
+    100% 100%, 100% 100% !important;
+  background-attachment: fixed !important;
 }
 
 /* ── Stacking context para ::before y ::after ─────────────────────────────── */
