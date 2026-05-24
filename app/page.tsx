@@ -737,7 +737,7 @@ export default function Home() {
         </header>
 
         {/* ── STATS ROW ─────────────────────────────────────────── */}
-        <section className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {(
             [
               { color: "#61ce70", rgb: "97,206,112"  },   // mint  — categoría
@@ -798,7 +798,7 @@ export default function Home() {
               </Link>
             );
           })}
-        </section>
+        </div>
 
         {/* ── MESA OPERATIVA ────────────────────────────────────── */}
         <section className="pf-au pf-led pf-d2 mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
