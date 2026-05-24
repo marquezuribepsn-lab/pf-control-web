@@ -760,12 +760,6 @@ export default function Home() {
                   boxShadow: `inset 0 1px 0 rgba(${card.rgb}, 0.08), 0 24px 64px -16px rgba(0,0,0,0.9)`,
                 }}
               >
-                {/* Corner ambient glow */}
-                <div
-                  className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-3xl transition-opacity duration-300 group-hover:opacity-70"
-                  style={{ background: `rgba(${card.rgb}, 0.6)` }}
-                  aria-hidden
-                />
                 {/* Bottom accent line */}
                 <div
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px]"
