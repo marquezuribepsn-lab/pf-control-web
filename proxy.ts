@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { rateLimit, getIP } from '@/lib/rateLimit';
 
 const CLIENTE_ALLOWED_PREFIXES = ['/alumnos', '/cuenta'];
 const CLIENTE_PAYMENT_ALLOWED_PREFIXES = ['/alumnos/pagos', '/cuenta'];
@@ -49,8 +50,37 @@ function canClienteAccessWhilePaymentPending(pathname: string): boolean {
 }
 
 export default auth((req) => {
+  const { pathname: rawPath } = req.nextUrl;
+  const ip = getIP(req);
+
+  // ── Rate limiting en rutas API (antes de cualquier lógica de sesión) ──
+  if (rawPath.startsWith('/api/auth/')) {
+    if (!rateLimit(ip, 'api-auth', { max: 30, windowMs: 60_000 })) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return NextResponse.next();
+  }
+  if (rawPath.startsWith('/api/superadmin/')) {
+    if (!rateLimit(ip, 'superadmin-api', { max: 120, windowMs: 60_000 })) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return NextResponse.next();
+  }
+  if (rawPath.startsWith('/api/')) {
+    if (!rateLimit(ip, 'api-global', { max: 200, windowMs: 60_000 })) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return NextResponse.next();
+  }
+
   const session = req.auth;
-  const pathname = normalizePath(req.nextUrl.pathname);
+  const pathname = normalizePath(rawPath);
 
   if (!session?.user?.id) {
     return createLoginRedirect(req);
@@ -64,7 +94,24 @@ export default auth((req) => {
     return createLoginRedirect(req);
   }
 
+  if (role === 'SUPERADMIN') {
+    // SUPERADMIN solo puede estar en /superadmin — todo lo demás redirige ahí
+    if (!pathname.startsWith('/superadmin')) {
+      return NextResponse.redirect(new URL('/superadmin', req.url));
+    }
+    return NextResponse.next();
+  }
+
   if (role === 'ADMIN') {
+    // Block suspended/expired admins
+    if (pathname.startsWith('/superadmin')) {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
+    const subscriptionActive =
+      (session.user as { subscriptionActive?: boolean | null } | undefined)?.subscriptionActive !== false;
+    if (!subscriptionActive && !pathname.startsWith('/suscripcion-suspendida') && !pathname.startsWith('/cuenta')) {
+      return NextResponse.redirect(new URL('/suscripcion-suspendida', req.url));
+    }
     return NextResponse.next();
   }
 
@@ -93,6 +140,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Non-superadmin roles cannot access superadmin pages.
+  if (pathname.startsWith('/superadmin')) {
+    return NextResponse.redirect(new URL('/auth/login', req.url));
+  }
+
   // Non-admin roles cannot access admin pages.
   if (pathname.startsWith('/admin')) {
     return NextResponse.redirect(new URL('/', req.url));
@@ -103,6 +155,6 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|auth).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

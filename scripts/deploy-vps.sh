@@ -25,10 +25,8 @@ INCLUDE_PATHS=(
   "app"
   "components"
   "lib"
+  "prisma"
   "scripts"
-  "prisma/schema.prisma"
-  "prisma/migrations"
-  "prisma/seed.ts"
   "data"
   "public"
   "proxy.ts"
@@ -43,6 +41,7 @@ INCLUDE_PATHS=(
 )
 
 FILES_TO_DELETE="package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs ecosystem.config.cjs proxy.ts next-auth.d.ts"
+# Note: prisma dir is synced in full so we delete it first (db file is preserved separately)
 DIRS_TO_DELETE="app components lib scripts data public"
 
 PRUNE_FROM=$((BACKUP_RETENTION + 1))
@@ -63,6 +62,8 @@ mkdir -p "$REMOTE_DIR"
 cd "$REMOTE_DIR"
 rm -rf $DIRS_TO_DELETE
 rm -f $FILES_TO_DELETE
+# Remove prisma code (schema + migrations) but keep the database file
+rm -rf prisma/migrations prisma/schema.prisma prisma/seed.ts 2>/dev/null || true
 EOF
 
 echo "[2/4] Subiendo archivos al VPS..."

@@ -57,28 +57,34 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
   );
 
   return (
-    <main className="mx-auto max-w-7xl p-6">
+    <main className="relative mx-auto max-w-7xl p-6">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,142),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl font-black text-white/90">
           <span className="mr-2">{visual.icon}</span>
           Categoría: {categoria}
         </h1>
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-white/45">
           Jugadoras en esta categoría.
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="pf-card rounded-2xl border p-6">
         <div className={`mb-4 h-2 rounded-full bg-gradient-to-r ${visual.tone}`} />
-        <h2 className="text-xl font-semibold mb-4">Jugadoras ({jugadorasEnCategoria.length})</h2>
+        <h2 className="text-xl font-semibold text-white/85 mb-4" style={{ color: `hsl(var(--hue,142),65%,65%)` }}>Jugadoras ({jugadorasEnCategoria.length})</h2>
         {jugadorasEnCategoria.length === 0 ? (
-          <p>No hay jugadoras en esta categoría.</p>
+          <p className="text-white/75">No hay jugadoras en esta categoría.</p>
         ) : (
           <div className="space-y-4">
             {jugadorasEnCategoria.map((jugadora: Jugadora, index: number) => (
-              <div key={index} className="border-b border-neutral-200 pb-4 last:border-b-0">
-                <h3 className="text-lg font-medium">{jugadora.nombre}</h3>
-                <div className="mt-2 grid gap-2 text-sm text-neutral-600 md:grid-cols-2">
+              <div key={index} className="border-b border-white/[0.06] pb-4 last:border-b-0">
+                <h3 className="text-lg font-medium text-white/85">{jugadora.nombre}</h3>
+                <div className="mt-2 grid gap-2 text-sm text-white/55 md:grid-cols-2">
                   <p><strong>Posición:</strong> {jugadora.posicion}</p>
                   <p><strong>Wellness:</strong> {jugadora.wellness}/10</p>
                   <p><strong>Carga:</strong> {jugadora.carga}</p>

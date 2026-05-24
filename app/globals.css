@@ -208,24 +208,38 @@ html[data-pf-theme="light"] .pf-training-shell {
   color: #0c1a35;
 }
 
-/* ── Paneles: stacking context ───────────────────────────────────────────── */
-.pf-training-shell main section,
-.pf-training-shell main article {
+/* ══════════════════════════════════════════════════════════════════════════
+   PANELES GYM — solo se activa en elements con clase rounded-* (cards reales)
+   Los section/div de layout (grids, wrappers) quedan sin tocar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Clase utilitaria: aplicar en cualquier elemento que sea "card visual" ── */
+/* La clase .pf-card activa todo el sistema de diseño gym */
+.pf-card,
+.pf-training-shell main section:where([class*="rounded"]),
+.pf-training-shell main article:where([class*="rounded"]) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  background-color: var(--gym-panel) !important;
+  border-color: var(--gym-panel-border) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.02),
+    0 16px 48px -12px rgba(0, 0, 0, 0.9),
+    0 3px 10px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* ── CAPA 1: textura industrial sutil en paneles ─────────────────────────── */
-.pf-training-shell main section::before,
-.pf-training-shell main article::before {
+/* ── CAPA 1: textura brushed metal sutil ─────────────────────────────────── */
+.pf-card::before,
+.pf-training-shell main section:where([class*="rounded"])::before,
+.pf-training-shell main article:where([class*="rounded"])::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
   z-index: -1;
-  /* Diagonal "brushed metal" — microrayas a 135° muy sutiles */
   background-image:
     repeating-linear-gradient(
       135deg,
@@ -234,13 +248,13 @@ html[data-pf-theme="light"] .pf-training-shell {
       rgba(255, 255, 255, 0.007) 2px,
       rgba(255, 255, 255, 0.007) 3px
     ),
-    /* Shimmer superior */
     linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, transparent 45%);
 }
 
-/* ── CAPA 2: acento verde lateral (gym stripe) — reemplaza el LED ─────────── */
-.pf-training-shell main section::after,
-.pf-training-shell main article::after {
+/* ── CAPA 2: acento verde lateral ────────────────────────────────────────── */
+.pf-card::after,
+.pf-training-shell main section:where([class*="rounded"])::after,
+.pf-training-shell main article:where([class*="rounded"])::after {
   content: '';
   position: absolute;
   left: 0;
@@ -260,21 +274,7 @@ html[data-pf-theme="light"] .pf-training-shell {
   );
 }
 
-/* ── Panel base: negro gym, borde plateado, sombra profunda ──────────────── */
-.pf-training-shell main section {
-  background-color: var(--gym-panel) !important;
-  border-color: var(--gym-panel-border) !important;
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-    inset 1px 0 0 0 rgba(255, 255, 255, 0.02),
-    0 16px 48px -12px rgba(0, 0, 0, 0.9),
-    0 3px 10px rgba(0, 0, 0, 0.6) !important;
-}
-
-/* ── Sub-contenedores: sin sombras extra ─────────────────────────────────── */
-.pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
-  box-shadow: none !important;
-}
+/* ── Sin sombras en sub-contenedores ─────────────────────────────────────── */
 .pf-training-shell :where(h1, h2, h3, h4, h5, h6, p, span) {
   text-shadow: none !important;
 }

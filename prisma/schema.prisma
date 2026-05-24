@@ -27,6 +27,7 @@ model SyncEntry {
 }
 
 enum UserRole {
+  SUPERADMIN
   ADMIN
   COLABORADOR
   CLIENTE
@@ -57,10 +58,15 @@ model User {
   permisosGranulares     Json? // Permisos específicos por colaborador
 
   estado                 String @default("activo") // activo, suspendido, baja
+  lastLoginAt            DateTime?
+  notasInternas          String?  // solo visible para SUPERADMIN
 
   // Relación con alumnos
   colaboraciones         AlumnoAsignado[] @relation("ColaboradorAsignado")
   asignaciones           AlumnoAsignado[] @relation("AlumnoAsignado")
+
+  // Suscripción del profesor (solo ADMIN)
+  subscription           ProfesorSubscription? @relation("ProfesorSuscripcion")
 
   verificationTokens VerificationToken[]
   passwordResetTokens PasswordResetToken[]
@@ -103,4 +109,68 @@ model PasswordResetToken {
   userId String?
 
   @@map("password_reset_tokens")
+}
+
+model ProfesorSubscription {
+  id               String    @id @default(cuid())
+  profesorId       String    @unique
+  profesor         User      @relation("ProfesorSuscripcion", fields: [profesorId], references: [id], onDelete: Cascade)
+  planTipo         String    @default("basico")   // basico, pro, elite
+  maxAlumnos       Int       @default(30)
+  maxPlanes        Int       @default(5)
+  estado           String    @default("trial")    // trial, activo, suspendido, vencido, cancelado
+  fechaInicio      DateTime  @default(now())
+  fechaVencimiento DateTime?
+  moneda           String    @default("USD")
+  importe          Float     @default(0)
+  periodoDias      Int       @default(30)
+  notas            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  pagos            ProfesorPago[]
+
+  @@map("profesor_subscriptions")
+}
+
+model ProfesorPago {
+  id               String    @id @default(cuid())
+  subscriptionId   String
+  subscription     ProfesorSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  monto            Float
+  moneda           String    @default("USD")
+  metodoPago       String    @default("efectivo") // efectivo, transferencia, tarjeta, otro
+  fechaPago        DateTime  @default(now())
+  periodoDesde     DateTime
+  periodoHasta     DateTime
+  comprobante      String?
+  notas            String?
+  createdAt        DateTime  @default(now())
+
+  @@map("profesor_pagos")
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  accion        String
+  detalle       String
+  profesorEmail String?
+  createdAt     DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model NotificacionLog {
+  id             String   @id @default(cuid())
+  profesorEmail  String
+  profesorNombre String
+  tipo           String   // NotifType
+  canales        String   // "email" | "whatsapp" | "email,whatsapp"
+  emailEnviado   Boolean  @default(false)
+  emailError     String?
+  waEnviado      Boolean  @default(false)
+  waError        String?
+  createdAt      DateTime @default(now())
+
+  @@map("notificacion_logs")
 }

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { verifyPasswordResetToken } from '@/lib/email';
 import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
+import { rateLimit, getIP } from '@/lib/rateLimit';
 
 const db = prisma as any;
 
@@ -15,6 +16,9 @@ function normalizePasswordForStorage(raw: unknown): string {
 }
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(getIP(req), "reset-password", { max: 10, windowMs: 15 * 60 * 1000 })) {
+    return NextResponse.json({ message: "Demasiados intentos. Esperá 15 minutos." }, { status: 429 });
+  }
   try {
     const payload = await req.json().catch(() => ({}));
     const { token, password } = payload || {};

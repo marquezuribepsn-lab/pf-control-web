@@ -295,7 +295,13 @@ export default function AsistenciasPage() {
   }, [jugadorasDisponibles, registros, selectedJornada]);
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-slate-100">
+    <main className="relative mx-auto max-w-7xl p-6 text-slate-100">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,172),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
@@ -322,8 +328,8 @@ export default function AsistenciasPage() {
         </div>
       </div>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-lg font-bold text-white">Nueva jornada</h2>
+      <section className="pf-card rounded-2xl border p-5">
+        <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,172),65%,65%)` }}>Nueva jornada</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
@@ -338,7 +344,7 @@ export default function AsistenciasPage() {
                   sesionId: "",
                 }))
               }
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             >
               <option value="">Seleccionar categoria</option>
               {categoriasOptions.map((categoria) => (
@@ -359,7 +365,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, fecha: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             />
           </div>
 
@@ -373,7 +379,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, hora: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             />
           </div>
 
@@ -386,7 +392,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, sesionId: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
               disabled={!nuevaJornada.categoria}
             >
               <option value="">Sin sesion vinculada</option>
@@ -408,7 +414,7 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, titulo: e.target.value }))
               }
               placeholder="Ej: Jornada tecnica"
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             />
           </div>
 
@@ -422,7 +428,7 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, ubicacion: e.target.value }))
               }
               placeholder="Cancha 1"
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             />
           </div>
         </div>
@@ -437,7 +443,7 @@ export default function AsistenciasPage() {
               setNuevaJornada((prev) => ({ ...prev, notas: e.target.value }))
             }
             rows={2}
-            className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
             placeholder="Objetivo de la jornada, indicaciones..."
           />
         </div>
@@ -454,7 +460,7 @@ export default function AsistenciasPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_1.8fr]">
-        <div className="rounded-3xl border border-white/15 bg-slate-900/70 p-5">
+        <div className="pf-card rounded-2xl border p-5">
           <div className="mb-3 flex flex-wrap items-end gap-3">
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
@@ -463,7 +469,7 @@ export default function AsistenciasPage() {
               <select
                 value={selectedCategoria}
                 onChange={(e) => setSelectedCategoria(e.target.value)}
-                className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
               >
                 <option value="todas">Todas</option>
                 {categoriasOptions.map((categoria) => (
@@ -481,7 +487,7 @@ export default function AsistenciasPage() {
                 type="date"
                 value={filtroFecha}
                 onChange={(e) => setFiltroFecha(e.target.value)}
-                className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
               />
             </div>
           </div>
@@ -489,7 +495,7 @@ export default function AsistenciasPage() {
           <h3 className="text-lg font-bold text-white">Jornadas</h3>
           <div className="mt-3 space-y-2">
             {jornadasFiltradas.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-4 text-sm text-slate-300">
+              <p className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-4 text-sm text-white/65">
                 No hay jornadas cargadas para este filtro.
               </p>
             ) : (
@@ -500,14 +506,18 @@ export default function AsistenciasPage() {
                     key={jornada.id}
                     className={`rounded-xl border px-3 py-3 transition ${
                       active
-                        ? "border-cyan-300/40 bg-cyan-500/10"
-                        : "border-white/10 bg-slate-950/45"
+                        ? "border-indigo-400/30 bg-indigo-500/10"
+                        : "border-white/[0.07] bg-white/[0.025]"
                     }`}
+                    style={active ? {
+                      backgroundColor: `hsla(var(--hue,172),60%,50%,0.1)`,
+                      borderColor: `hsla(var(--hue,172),60%,55%,0.25)`
+                    } : undefined}
                   >
                     <ReliableActionButton
                       type="button"
                       onClick={() => setSelectedJornadaId(jornada.id)}
-                      className="w-full text-left"
+                      className="w-full text-left text-white/85"
                     >
                       <p className="font-semibold text-white">{jornada.titulo}</p>
                       <p className="text-xs text-slate-300">
@@ -556,9 +566,9 @@ export default function AsistenciasPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/15 bg-slate-900/70 p-5">
+        <div className="pf-card rounded-2xl border p-5">
           {!selectedJornada ? (
-            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5 text-sm text-slate-300">
+            <div className="pf-card rounded-2xl border p-5 text-sm text-white/65">
               Selecciona una jornada para cargar asistencia.
             </div>
           ) : (
@@ -599,7 +609,7 @@ export default function AsistenciasPage() {
                   <span className="rounded-full bg-rose-500/20 px-2 py-1 text-rose-100">
                     Ausentes: {resumen.ausentes}
                   </span>
-                  <span className="rounded-full bg-slate-700/60 px-2 py-1 text-slate-100">
+                  <span className="rounded-full bg-white/[0.04] px-2 py-1 text-slate-100">
                     Sin cargar: {resumen.sinCargar}
                   </span>
                 </div>
@@ -617,7 +627,7 @@ export default function AsistenciasPage() {
                     return (
                       <div
                         key={`${selectedJornada.id}-${jugadora.nombre}`}
-                        className="rounded-xl border border-white/10 bg-slate-950/50 p-3"
+                        className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
@@ -678,7 +688,7 @@ export default function AsistenciasPage() {
                             }
                             disabled={Boolean(selectedJornada.suspendida)}
                             placeholder="Ej: lesion, estudio, viaje..."
-                            className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-45"
+                            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-45"
                           />
                         </div>
                       </div>
@@ -693,11 +703,11 @@ export default function AsistenciasPage() {
 
       {suspensionModalJornadaId ? (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/80 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"
           onClick={cerrarModalSuspension}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-amber-300/30 bg-slate-900 p-5 shadow-2xl"
+            className="w-full max-w-lg pf-card rounded-2xl border border-amber-300/30 p-5 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -705,7 +715,7 @@ export default function AsistenciasPage() {
               <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
-                className="rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-slate-200"
+                className="rounded-lg border border-white/[0.1] px-3 py-1 text-xs font-semibold text-slate-200"
               >
                 Cerrar
               </ReliableActionButton>
@@ -726,7 +736,7 @@ export default function AsistenciasPage() {
                   if (suspensionError) setSuspensionError("");
                 }}
                 rows={3}
-                className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
                 placeholder="Ej: lluvia intensa, cancha cerrada, protocolo medico..."
               />
               {suspensionError ? (
@@ -738,7 +748,7 @@ export default function AsistenciasPage() {
               <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
-                className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200"
+                className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-200"
               >
                 Cancelar
               </ReliableActionButton>

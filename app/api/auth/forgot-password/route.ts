@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generatePasswordResetToken, sendPasswordResetEmail } from '@/lib/email';
+import { rateLimit, getIP } from '@/lib/rateLimit';
 
 const db = prisma as any;
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(getIP(req), "forgot-password", { max: 5, windowMs: 15 * 60 * 1000 })) {
+    return NextResponse.json({ message: "Demasiados intentos. Esperá 15 minutos." }, { status: 429 });
+  }
   try {
     let payload: any;
     try {

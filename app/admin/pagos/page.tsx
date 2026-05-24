@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import AdminRunningLoaderOverlay, {
   AdminRunningLoaderCard,
 } from "@/components/admin/AdminRunningLoader";
@@ -43,6 +42,7 @@ type ManualOrdersResponse = {
 };
 
 type ClienteMetaSnapshot = {
+  email?: string;
   pagoEstado?: "confirmado" | "pendiente" | string;
   importe?: string | number | null;
 };
@@ -115,30 +115,6 @@ type TransferAccountFormState = {
   isVisible: boolean;
 };
 
-type MercadoPagoQrStoreConfig = {
-  enabled: boolean;
-  label: string;
-  paymentLink: string;
-  qrPayload: string;
-  qrImageDataUrl: string | null;
-  notes: string;
-  updatedAt: string | null;
-};
-
-type MercadoPagoQrStoreFormState = {
-  enabled: boolean;
-  label: string;
-  paymentLink: string;
-  qrPayload: string;
-  notes: string;
-};
-
-type MercadoPagoQrStoreResponse = {
-  ok?: boolean;
-  config?: MercadoPagoQrStoreConfig;
-  message?: string;
-};
-
 type MercadoPagoConnectAccount = {
   userId: string | null;
   nickname: string | null;
@@ -161,6 +137,35 @@ type MercadoPagoConnectStatusResponse = {
   message?: string;
 };
 
+type PlanPrecio = {
+  id: string;
+  nombre: string;
+  precio: number;
+  moneda: string;
+  duracionDias: number;
+  descripcion: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type PlanPreciosResponse = {
+  ok?: boolean;
+  planes?: PlanPrecio[];
+  plan?: PlanPrecio;
+  message?: string;
+};
+
+type PlanPrecioForm = {
+  id: string;
+  nombre: string;
+  precio: string;
+  moneda: string;
+  duracionDias: string;
+  descripcion: string;
+  activo: boolean;
+};
+
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 
 const EMPTY_TRANSFER_ACCOUNT_FORM: TransferAccountFormState = {
@@ -177,14 +182,6 @@ const EMPTY_TRANSFER_ACCOUNT_FORM: TransferAccountFormState = {
   isVisible: true,
 };
 
-const EMPTY_MERCADO_PAGO_QR_FORM: MercadoPagoQrStoreFormState = {
-  enabled: false,
-  label: "",
-  paymentLink: "",
-  qrPayload: "",
-  notes: "",
-};
-
 const EMPTY_MERCADO_PAGO_CONNECT_STATUS: MercadoPagoConnectStatusResponse = {
   ok: true,
   oauthEnabled: false,
@@ -193,6 +190,16 @@ const EMPTY_MERCADO_PAGO_CONNECT_STATUS: MercadoPagoConnectStatusResponse = {
   accountLabel: null,
   connected: false,
   linkedAccount: null,
+};
+
+const EMPTY_PLAN_FORM: PlanPrecioForm = {
+  id: "",
+  nombre: "",
+  precio: "",
+  moneda: "ARS",
+  duracionDias: "30",
+  descripcion: "",
+  activo: true,
 };
 
 const INCOME_MIN_LOADING_MS = 2000;
@@ -370,13 +377,6 @@ export default function AdminPagosManualPage() {
   const [accountSaving, setAccountSaving] = useState(false);
   const [accountError, setAccountError] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
-  const [qrStoreForm, setQrStoreForm] = useState<MercadoPagoQrStoreFormState>(EMPTY_MERCADO_PAGO_QR_FORM);
-  const [qrStorePreview, setQrStorePreview] = useState<string | null>(null);
-  const [qrStoreUpdatedAt, setQrStoreUpdatedAt] = useState<string | null>(null);
-  const [qrStoreLoading, setQrStoreLoading] = useState(true);
-  const [qrStoreSaving, setQrStoreSaving] = useState(false);
-  const [qrStoreError, setQrStoreError] = useState("");
-  const [qrStoreMessage, setQrStoreMessage] = useState("");
   const [mpConnectStatus, setMpConnectStatus] = useState<MercadoPagoConnectStatusResponse>(
     EMPTY_MERCADO_PAGO_CONNECT_STATUS
   );
@@ -396,16 +396,22 @@ export default function AdminPagosManualPage() {
   const incomeRequestIdRef = useRef(0);
   const incomeHasSnapshotRef = useRef(false);
   const incomeBusy = incomeLoading || incomeRefreshing || incomeResetting;
+  const [planes, setPlanes] = useState<PlanPrecio[]>([]);
+  const [planesLoading, setPlanesLoading] = useState(true);
+  const [planesSaving, setPlanesSaving] = useState(false);
+  const [planesError, setPlanesError] = useState("");
+  const [planesMessage, setPlanesMessage] = useState("");
+  const [planForm, setPlanForm] = useState<PlanPrecioForm>(EMPTY_PLAN_FORM);
   const adminBusyRaw =
     loading ||
     accountLoading ||
     accountSaving ||
     Boolean(actionLoadingId) ||
-    qrStoreLoading ||
-    qrStoreSaving ||
     mpConnectLoading ||
     mpConnectActionLoading ||
-    incomeBusy;
+    incomeBusy ||
+    planesLoading ||
+    planesSaving;
   const adminBusy = useMinimumLoading(adminBusyRaw, INCOME_MIN_LOADING_MS);
 
   const loadOrders = useCallback(async () => {
@@ -626,46 +632,6 @@ export default function AdminPagosManualPage() {
 
     void loadMercadoPagoConnectStatus();
   }, [loadMercadoPagoConnectStatus]);
-
-  const loadQrStoreConfig = useCallback(async () => {
-    setQrStoreLoading(true);
-    setQrStoreError("");
-
-    try {
-      const response = await fetch("/api/admin/payments/mercadopago-qr", { cache: "no-store" });
-      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
-
-      if (!response.ok || !data?.config) {
-        throw new Error(resolvePayloadMessage(data, "No se pudo cargar configuracion QR de Mercado Pago."));
-      }
-
-      setQrStoreForm({
-        enabled: Boolean(data.config.enabled),
-        label: String(data.config.label || ""),
-        paymentLink: String(data.config.paymentLink || ""),
-        qrPayload: String(data.config.qrPayload || ""),
-        notes: String(data.config.notes || ""),
-      });
-      setQrStorePreview(data.config.qrImageDataUrl || null);
-      setQrStoreUpdatedAt(data.config.updatedAt || null);
-    } catch (err) {
-      setQrStoreError(
-        err instanceof Error ? err.message : "No se pudo cargar configuracion QR de Mercado Pago."
-      );
-      setQrStoreForm(EMPTY_MERCADO_PAGO_QR_FORM);
-      setQrStorePreview(null);
-      setQrStoreUpdatedAt(null);
-    } finally {
-      setQrStoreLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (sessionStatus !== "authenticated" || role !== "ADMIN") {
-      return;
-    }
-    void loadQrStoreConfig();
-  }, [loadQrStoreConfig, role, sessionStatus]);
 
   const pendingCount = useMemo(
     () =>
@@ -892,70 +858,6 @@ export default function AdminPagosManualPage() {
     }
   };
 
-  const saveQrStoreConfig = async () => {
-    setQrStoreSaving(true);
-    setQrStoreError("");
-    setQrStoreMessage("");
-
-    try {
-      const response = await fetch("/api/admin/payments/mercadopago-qr", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(qrStoreForm),
-      });
-
-      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
-
-      if (!response.ok || !data?.config) {
-        throw new Error(resolvePayloadMessage(data, "No se pudo guardar QR de Mercado Pago."));
-      }
-
-      setQrStoreMessage(resolvePayloadMessage(data, "QR guardado."));
-      setQrStoreForm({
-        enabled: Boolean(data.config.enabled),
-        label: String(data.config.label || ""),
-        paymentLink: String(data.config.paymentLink || ""),
-        qrPayload: String(data.config.qrPayload || ""),
-        notes: String(data.config.notes || ""),
-      });
-      setQrStorePreview(data.config.qrImageDataUrl || null);
-      setQrStoreUpdatedAt(data.config.updatedAt || null);
-    } catch (err) {
-      setQrStoreError(err instanceof Error ? err.message : "No se pudo guardar QR de Mercado Pago.");
-    } finally {
-      setQrStoreSaving(false);
-    }
-  };
-
-  const resetQrStoreConfig = async () => {
-    setQrStoreSaving(true);
-    setQrStoreError("");
-    setQrStoreMessage("");
-
-    try {
-      const response = await fetch("/api/admin/payments/mercadopago-qr", {
-        method: "DELETE",
-      });
-
-      const data = await parseResponsePayload<MercadoPagoQrStoreResponse>(response);
-
-      if (!response.ok || !data?.config) {
-        throw new Error(resolvePayloadMessage(data, "No se pudo reiniciar QR de Mercado Pago."));
-      }
-
-      setQrStoreMessage(resolvePayloadMessage(data, "Configuracion QR reiniciada."));
-      setQrStoreForm(EMPTY_MERCADO_PAGO_QR_FORM);
-      setQrStorePreview(null);
-      setQrStoreUpdatedAt(data.config.updatedAt || null);
-    } catch (err) {
-      setQrStoreError(err instanceof Error ? err.message : "No se pudo reiniciar QR de Mercado Pago.");
-    } finally {
-      setQrStoreSaving(false);
-    }
-  };
-
   const resetIncomeSummary = async () => {
     setIncomeResetting(true);
     setIncomeError("");
@@ -1013,6 +915,96 @@ export default function AdminPagosManualPage() {
     }
   };
 
+  const loadPlanes = useCallback(async () => {
+    setPlanesLoading(true);
+    setPlanesError("");
+
+    try {
+      const response = await fetch("/api/admin/payments/plan-precios", { cache: "no-store" });
+      const data = await parseResponsePayload<PlanPreciosResponse>(response);
+
+      if (!response.ok) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo cargar planes."));
+      }
+
+      setPlanes(Array.isArray(data?.planes) ? data.planes : []);
+    } catch (err) {
+      setPlanes([]);
+      setPlanesError(err instanceof Error ? err.message : "No se pudo cargar planes.");
+    } finally {
+      setPlanesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== "authenticated" || role !== "ADMIN") return;
+    void loadPlanes();
+  }, [loadPlanes, role, sessionStatus]);
+
+  const savePlan = async () => {
+    setPlanesSaving(true);
+    setPlanesError("");
+    setPlanesMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/plan-precios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: planForm.id || undefined,
+          nombre: planForm.nombre,
+          precio: Number(planForm.precio),
+          moneda: planForm.moneda || "ARS",
+          duracionDias: Number(planForm.duracionDias) || 30,
+          descripcion: planForm.descripcion,
+          activo: planForm.activo,
+        }),
+      });
+
+      const data = await parseResponsePayload<PlanPreciosResponse>(response);
+
+      if (!response.ok) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo guardar el plan."));
+      }
+
+      setPlanesMessage(planForm.id ? "Plan actualizado." : "Plan creado.");
+      setPlanForm(EMPTY_PLAN_FORM);
+      await loadPlanes();
+    } catch (err) {
+      setPlanesError(err instanceof Error ? err.message : "No se pudo guardar el plan.");
+    } finally {
+      setPlanesSaving(false);
+    }
+  };
+
+  const deletePlan = async (id: string) => {
+    setPlanesSaving(true);
+    setPlanesError("");
+    setPlanesMessage("");
+
+    try {
+      const response = await fetch("/api/admin/payments/plan-precios", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      const data = await parseResponsePayload<PlanPreciosResponse>(response);
+
+      if (!response.ok) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo eliminar el plan."));
+      }
+
+      setPlanesMessage("Plan eliminado.");
+      if (planForm.id === id) setPlanForm(EMPTY_PLAN_FORM);
+      await loadPlanes();
+    } catch (err) {
+      setPlanesError(err instanceof Error ? err.message : "No se pudo eliminar el plan.");
+    } finally {
+      setPlanesSaving(false);
+    }
+  };
+
   if (sessionStatus === "loading") {
     return (
       <main className={ADMIN_PAGE_CONTAINER}>
@@ -1039,15 +1031,21 @@ export default function AdminPagosManualPage() {
   }
 
   return (
-    <main className={ADMIN_PAGE_CONTAINER_STACK}>
+    <main className={`relative ${ADMIN_PAGE_CONTAINER_STACK}`}>
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,38),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <AdminRunningLoaderOverlay
         active={adminBusy}
         message="Cargando..."
         detail="Sincronizando panel de pagos..."
       />
 
-      <section className="rounded-3xl border border-amber-300/30 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_20px_80px_rgba(245,158,11,0.16)]">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/90">Admin pagos</p>
+      <section className="pf-card rounded-2xl border p-6">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/90" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Admin pagos</p>
         <h1 className="mt-2 text-3xl font-black text-white">Pagos mensuales</h1>
         <p className="mt-2 text-sm text-slate-300">
           Vista consolidada de ingresos mensuales y confirmaciones manuales para renovar pases de alumnos.
@@ -1100,18 +1098,6 @@ export default function AdminPagosManualPage() {
         </section>
       ) : null}
 
-      {qrStoreMessage ? (
-        <section className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-          {qrStoreMessage}
-        </section>
-      ) : null}
-
-      {qrStoreError ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {qrStoreError}
-        </section>
-      ) : null}
-
       {mpConnectMessage ? (
         <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
           {mpConnectMessage}
@@ -1136,8 +1122,193 @@ export default function AdminPagosManualPage() {
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
-        <h2 className="text-xl font-black text-white">Estado general de pagos</h2>
+      {planesMessage ? (
+        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {planesMessage}
+        </section>
+      ) : null}
+
+      {planesError ? (
+        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {planesError}
+        </section>
+      ) : null}
+
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Planes de precios</h2>
+        <p className="mt-1 text-sm text-slate-300">
+          Define los planes disponibles con nombre, precio y duracion. Al asignar un plan, el precio se usa automaticamente en Mercado Pago.
+        </p>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+              {planForm.id ? "Editar plan" : "Nuevo plan"}
+            </h3>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="text-xs text-slate-300 sm:col-span-2">
+                Nombre del plan
+                <input
+                  value={planForm.nombre}
+                  onChange={(e) => setPlanForm((p) => ({ ...p, nombre: e.target.value }))}
+                  placeholder="Plan Mensual"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Precio
+                <input
+                  type="number"
+                  value={planForm.precio}
+                  onChange={(e) => setPlanForm((p) => ({ ...p, precio: e.target.value }))}
+                  placeholder="15000"
+                  min={1}
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Moneda
+                <select
+                  value={planForm.moneda}
+                  onChange={(e) => setPlanForm((p) => ({ ...p, moneda: e.target.value }))}
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                >
+                  <option value="ARS">ARS</option>
+                  <option value="USD">USD</option>
+                </select>
+              </label>
+
+              <label className="text-xs text-slate-300">
+                Duracion (dias)
+                <input
+                  type="number"
+                  value={planForm.duracionDias}
+                  onChange={(e) => setPlanForm((p) => ({ ...p, duracionDias: e.target.value }))}
+                  placeholder="30"
+                  min={1}
+                  max={365}
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                />
+              </label>
+
+              <label className="text-xs text-slate-300 sm:col-span-2">
+                Descripcion (opcional)
+                <input
+                  value={planForm.descripcion}
+                  onChange={(e) => setPlanForm((p) => ({ ...p, descripcion: e.target.value }))}
+                  placeholder="Acceso completo por 30 dias"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                />
+              </label>
+            </div>
+
+            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={planForm.activo}
+                onChange={(e) => setPlanForm((p) => ({ ...p, activo: e.target.checked }))}
+                className="h-4 w-4 rounded border-white/20 bg-slate-900"
+              />
+              Plan activo
+            </label>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => void savePlan()}
+                disabled={planesSaving || planesLoading}
+                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {planesSaving ? "Guardando..." : planForm.id ? "Actualizar plan" : "Crear plan"}
+              </ReliableActionButton>
+
+              {planForm.id ? (
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setPlanForm(EMPTY_PLAN_FORM)}
+                  disabled={planesSaving}
+                  className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Cancelar edicion
+                </ReliableActionButton>
+              ) : null}
+            </div>
+          </article>
+
+          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Planes cargados</h3>
+
+            {planesLoading ? (
+              <p className="mt-3 text-sm text-slate-300">Cargando planes...</p>
+            ) : planes.length === 0 ? (
+              <p className="mt-3 text-sm text-slate-400">Todavia no hay planes creados.</p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {planes.map((plan) => (
+                  <div key={plan.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold text-white">{plan.nombre}</p>
+                        <p className="text-xs text-slate-400">
+                          {formatMoney(plan.precio, plan.moneda)} &middot; {plan.duracionDias} dias
+                        </p>
+                        {plan.descripcion ? (
+                          <p className="mt-1 text-xs text-slate-400">{plan.descripcion}</p>
+                        ) : null}
+                      </div>
+                      <span
+                        className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
+                          plan.activo
+                            ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
+                            : "border-white/[0.08] bg-white/[0.04] text-slate-200"
+                        }`}
+                      >
+                        {plan.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() =>
+                          setPlanForm({
+                            id: plan.id,
+                            nombre: plan.nombre,
+                            precio: String(plan.precio),
+                            moneda: plan.moneda,
+                            duracionDias: String(plan.duracionDias),
+                            descripcion: plan.descripcion,
+                            activo: plan.activo,
+                          })
+                        }
+                        disabled={planesSaving}
+                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/12 px-3 py-1.5 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        Editar
+                      </ReliableActionButton>
+
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => void deletePlan(plan.id)}
+                        disabled={planesSaving}
+                        className="rounded-lg border border-rose-300/40 bg-rose-500/12 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        Eliminar
+                      </ReliableActionButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Estado general de pagos</h2>
         <p className="mt-1 text-sm text-slate-300">Resumen en vivo desde la ficha de clientes.</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1163,10 +1334,10 @@ export default function AdminPagosManualPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
+      <section className="rounded-2xl border p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black text-white">Resumen de ingresos</h2>
+            <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Resumen de ingresos</h2>
             <p className="mt-1 text-sm text-slate-300">
               Filtra ingresos por periodo mensual o anual. Puedes reiniciar acumulados sin borrar historiales.
             </p>
@@ -1233,7 +1404,7 @@ export default function AdminPagosManualPage() {
                 value={incomeMonth}
                 onChange={(event) => setIncomeMonth(event.target.value)}
                 disabled={incomeBusy}
-                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
               />
             </label>
           ) : (
@@ -1248,7 +1419,7 @@ export default function AdminPagosManualPage() {
                 disabled={incomeBusy}
                 min={2000}
                 max={3000}
-                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
               />
             </label>
           )}
@@ -1262,7 +1433,7 @@ export default function AdminPagosManualPage() {
           <div className="relative mt-4">
             {incomeRefreshing ? (
               <div
-                className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-950/60 backdrop-blur-sm"
+                className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/[0.025] backdrop-blur-sm"
                 aria-live="polite"
               >
                 <IncomeLoadingIndicator />
@@ -1348,14 +1519,14 @@ export default function AdminPagosManualPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
-        <h2 className="text-xl font-black text-white">Cuenta Mercado Pago conectada</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Cuenta Mercado Pago conectada</h2>
         <p className="mt-1 text-sm text-slate-300">
           Vincula una cuenta real por OAuth. El sistema usara esa cuenta para checkout y webhooks sin
           copiar access tokens por usuario.
         </p>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/45 p-4 text-sm text-slate-200">
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-200">
           {mpConnectLoading ? (
             <p className="text-slate-300">Cargando estado de conexion...</p>
           ) : (
@@ -1421,182 +1592,16 @@ export default function AdminPagosManualPage() {
         ) : null}
       </section>
 
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
-        <h2 className="text-xl font-black text-white">Mercado Pago QR de tienda</h2>
-        <p className="mt-1 text-sm text-slate-300">
-          Configura un QR de cobro tipo tienda para que el alumno pueda pagar escaneando, sin cargar credenciales
-          developer por cada cuenta.
-        </p>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Configuracion QR</h3>
 
-            <div className="mt-3 grid gap-3">
-              <label className="text-xs text-slate-300">
-                Nombre visible para alumnos
-                <input
-                  value={qrStoreForm.label}
-                  onChange={(event) =>
-                    setQrStoreForm((prev) => ({
-                      ...prev,
-                      label: event.target.value,
-                    }))
-                  }
-                  placeholder="Tienda PF Control"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
-                />
-              </label>
-
-              <label className="text-xs text-slate-300">
-                Link de pago Mercado Pago (opcional)
-                <input
-                  value={qrStoreForm.paymentLink}
-                  onChange={(event) =>
-                    setQrStoreForm((prev) => ({
-                      ...prev,
-                      paymentLink: event.target.value,
-                    }))
-                  }
-                  placeholder="https://mpago.la/..."
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
-                />
-              </label>
-
-              <label className="text-xs text-slate-300">
-                Texto o payload del QR
-                <textarea
-                  value={qrStoreForm.qrPayload}
-                  onChange={(event) =>
-                    setQrStoreForm((prev) => ({
-                      ...prev,
-                      qrPayload: event.target.value,
-                    }))
-                  }
-                  rows={3}
-                  placeholder="Si lo dejas vacio, se usa automaticamente el link de pago"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
-                />
-              </label>
-
-              <label className="text-xs text-slate-300">
-                Nota para el alumno (opcional)
-                <textarea
-                  value={qrStoreForm.notes}
-                  onChange={(event) =>
-                    setQrStoreForm((prev) => ({
-                      ...prev,
-                      notes: event.target.value,
-                    }))
-                  }
-                  rows={2}
-                  placeholder="Ejemplo: luego envia el comprobante desde Informar pago QR"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
-                />
-              </label>
-            </div>
-
-            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
-              <input
-                type="checkbox"
-                checked={qrStoreForm.enabled}
-                onChange={(event) =>
-                  setQrStoreForm((prev) => ({
-                    ...prev,
-                    enabled: event.target.checked,
-                  }))
-                }
-                className="h-4 w-4 rounded border-white/20 bg-slate-900"
-              />
-              Habilitar QR para alumnos
-            </label>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <ReliableActionButton
-                type="button"
-                onClick={() => void saveQrStoreConfig()}
-                disabled={qrStoreSaving || qrStoreLoading}
-                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {qrStoreSaving ? "Guardando..." : "Guardar QR"}
-              </ReliableActionButton>
-
-              <ReliableActionButton
-                type="button"
-                onClick={() => void resetQrStoreConfig()}
-                disabled={qrStoreSaving || qrStoreLoading}
-                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                Reiniciar
-              </ReliableActionButton>
-
-              <ReliableActionButton
-                type="button"
-                onClick={() => void loadQrStoreConfig()}
-                disabled={qrStoreSaving || qrStoreLoading}
-                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {qrStoreLoading ? "Cargando..." : "Recargar"}
-              </ReliableActionButton>
-            </div>
-          </article>
-
-          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Vista previa del QR</h3>
-
-            {qrStoreLoading ? (
-              <p className="mt-3 text-sm text-slate-300">Cargando configuracion QR...</p>
-            ) : qrStorePreview ? (
-              <div className="mt-3 space-y-3">
-                <div className="inline-flex rounded-xl border border-white/15 bg-white/95 p-2">
-                  <Image
-                    src={qrStorePreview}
-                    alt="QR Mercado Pago"
-                    width={220}
-                    height={220}
-                    unoptimized
-                    className="h-[220px] w-[220px] rounded-lg"
-                  />
-                </div>
-
-                <div className="space-y-1 text-xs text-slate-300">
-                  <p>
-                    Estado: {qrStoreForm.enabled ? "Visible para alumnos" : "Oculto"}
-                  </p>
-                  <p>
-                    Etiqueta: {qrStoreForm.label || "Mercado Pago QR"}
-                  </p>
-                  {qrStoreUpdatedAt ? <p>Actualizado: {formatDate(qrStoreUpdatedAt)}</p> : null}
-                </div>
-
-                {qrStoreForm.paymentLink ? (
-                  <a
-                    href={qrStoreForm.paymentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex rounded-lg border border-cyan-300/45 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
-                  >
-                    Abrir link de pago
-                  </a>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-slate-400">
-                Aun no hay QR generado. Guarda un link o payload para crear la vista previa.
-              </p>
-            )}
-          </article>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-5">
-        <h2 className="text-xl font-black text-white">Cuentas destino para transferencia</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Cuentas destino para transferencia</h2>
         <p className="mt-1 text-sm text-slate-300">
           Carga aca las cuentas bancarias/corrientes que se mostraran a los alumnos al informar pagos por transferencia.
         </p>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
             <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
               {accountForm.id ? "Editar cuenta" : "Nueva cuenta"}
             </h3>
@@ -1613,7 +1618,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Cuenta principal"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1628,7 +1633,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Banco Galicia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1643,7 +1648,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Caja de ahorro"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1658,7 +1663,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Nombre del titular"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1673,7 +1678,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="20-12345678-9"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1688,7 +1693,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="000123456789"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1703,7 +1708,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="0000003100000000000000"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1718,7 +1723,7 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="mi.alias.pagos"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
 
@@ -1734,7 +1739,7 @@ export default function AdminPagosManualPage() {
                   }
                   rows={2}
                   placeholder="Ejemplo: enviar comprobante por WhatsApp al finalizar la transferencia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-slate-900/65 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                 />
               </label>
             </div>
@@ -1775,7 +1780,7 @@ export default function AdminPagosManualPage() {
             </div>
           </article>
 
-          <article className="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
             <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
               Cuentas cargadas
             </h3>
@@ -1787,7 +1792,7 @@ export default function AdminPagosManualPage() {
             ) : (
               <div className="mt-3 space-y-3">
                 {transferAccounts.map((account) => (
-                  <div key={account.id} className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
+                  <div key={account.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-bold text-white">{account.label}</p>
@@ -1800,7 +1805,7 @@ export default function AdminPagosManualPage() {
                         className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
                           account.isVisible
                             ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
-                            : "border-slate-400/40 bg-slate-700/30 text-slate-200"
+                            : "border-white/[0.08] bg-white/[0.04] text-slate-200"
                         }`}
                       >
                         {account.isVisible ? "Visible" : "Oculta"}
@@ -1854,7 +1859,7 @@ export default function AdminPagosManualPage() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-xl font-black text-white">Confirmaciones manuales</h2>
+          <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Confirmaciones manuales</h2>
           <p className="mt-1 text-sm text-slate-300">
             Aprobacion o rechazo de pagos informados por transferencia, efectivo o QR de Mercado Pago.
           </p>
@@ -1863,7 +1868,7 @@ export default function AdminPagosManualPage() {
         {loading ? (
           <p className="text-sm text-slate-300">Cargando pagos manuales...</p>
         ) : orders.length === 0 ? (
-          <p className="rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-300">
+          <p className="rounded-2xl border p-4 text-sm text-slate-300">
             No hay solicitudes manuales para mostrar.
           </p>
         ) : (
@@ -1877,7 +1882,7 @@ export default function AdminPagosManualPage() {
               (status === "in_process" && !order.reviewedAt);
 
             return (
-              <article key={order.id} className="rounded-2xl border border-white/15 bg-slate-900/75 p-4">
+              <article key={order.id} className="rounded-2xl border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-black text-white">{order.email}</p>
@@ -1891,22 +1896,22 @@ export default function AdminPagosManualPage() {
                 </div>
 
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
                     <p className="text-[11px] uppercase tracking-wide text-slate-400">Metodo</p>
                     <p className="mt-1 font-semibold text-white">{resolveMethodLabel(order.paymentMethod)}</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
                     <p className="text-[11px] uppercase tracking-wide text-slate-400">Importe</p>
                     <p className="mt-1 font-semibold text-white">{formatMoney(order.amount, order.currency)}</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
                     <p className="text-[11px] uppercase tracking-wide text-slate-400">Periodo</p>
                     <p className="mt-1 font-semibold text-white">{order.periodDays} dias</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
                     <p className="text-[11px] uppercase tracking-wide text-slate-400">Creado</p>
                     <p className="mt-1 font-semibold text-white">{formatDate(order.createdAt)}</p>
                   </div>
@@ -1942,7 +1947,7 @@ export default function AdminPagosManualPage() {
                       }
                       rows={2}
                       placeholder="Nota opcional para el alumno"
-                      className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/45"
+                      className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
                     />
 
                     <div className="flex flex-wrap gap-3">

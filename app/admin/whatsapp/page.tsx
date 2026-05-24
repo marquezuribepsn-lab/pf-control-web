@@ -314,7 +314,7 @@ function getWebSessionStatusTone(status: WebSessionStatus | undefined) {
       return "border-rose-300/40 bg-rose-500/15 text-rose-100";
     case "disconnected":
     default:
-      return "border-slate-300/20 bg-slate-500/10 text-slate-200";
+      return "border-white/[0.1] bg-white/[0.04] text-white/75";
   }
 }
 
@@ -1321,7 +1321,7 @@ export default function AdminWhatsAppPage() {
   if (sessionStatus === "loading") {
     return (
       <main className={ADMIN_PAGE_CONTAINER}>
-        <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center">
+        <div className="pf-card rounded-2xl border p-6 text-center">
           <div className="flex justify-center">
             <AdminRunningLoaderCard
               message="Cargando..."
@@ -1344,26 +1344,32 @@ export default function AdminWhatsAppPage() {
   }
 
   return (
-    <main className={ADMIN_PAGE_CONTAINER_STACK}>
+    <main className={`relative ${ADMIN_PAGE_CONTAINER_STACK}`}>
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,152),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <AdminRunningLoaderOverlay
         active={adminBusy}
         message="Cargando..."
         detail="Sincronizando panel de WhatsApp..."
       />
 
-      <header className="relative overflow-hidden rounded-[30px] border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 shadow-[0_24px_70px_-34px_rgba(6,182,212,0.7)]">
+      <header className="relative overflow-hidden pf-card rounded-2xl border p-6">
         <div className="pointer-events-none absolute -left-8 top-1 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-6 top-8 h-40 w-40 rounded-full bg-emerald-400/15 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100/85">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100/85" style={{ color: `hsl(var(--hue,152),65%,65%)` }}>
               Centro de mensajeria
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">
               Hub de WhatsApp
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-200/90">
+            <p className="mt-2 max-w-3xl text-sm text-white/75/90">
               Automatizaciones, envios manuales e historial operativo en una vista unificada.
             </p>
           </div>
@@ -1389,41 +1395,41 @@ export default function AdminWhatsAppPage() {
         </div>
 
         <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Conexion
             <p className="mt-1 text-base font-black text-white">
               {config.connection.enabled ? "Activa" : "Desactivada"}
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Proveedor
             <p className="mt-1 text-base font-black text-white">{providerLabel}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Modo
             <p className="mt-1 text-base font-black text-white">{config.connection.mode}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Destinatarios
             <p className="mt-1 text-base font-black text-white">{recipients.length}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Alumnos sin numero
             <p className="mt-1 text-base font-black text-white">{missingPhoneRows.length}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
             Runner
             <p className="mt-1 text-base font-black text-white">
               cada {config.automationRunner.intervalMinutes} min
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-white/40">
               Proxima: {runnerState.nextRunAt ? formatDateTime(runnerState.nextRunAt) : "-"}
             </p>
           </div>
         </div>
       </header>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/65 p-3 shadow-[0_14px_40px_-30px_rgba(148,163,184,0.6)]">
+      <section className="rounded-2xl border p-3 shadow-[0_14px_40px_-30px_rgba(148,163,184,0.6)]">
         <div className="flex flex-wrap gap-2">
           {TAB_ITEMS.map((tab) => (
             <ReliableActionButton
@@ -1433,7 +1439,7 @@ export default function AdminWhatsAppPage() {
               className={`rounded-2xl px-4 py-2 text-xs font-bold tracking-wide transition ${
                 activeTab === tab.id
                   ? "bg-gradient-to-r from-cyan-300 to-emerald-300 text-slate-950 shadow-[0_10px_24px_-16px_rgba(45,212,191,0.9)]"
-                  : "bg-slate-800/70 text-slate-300 hover:bg-slate-700"
+                  : "bg-white/[0.04] text-white/65 hover:bg-white/[0.07]"
               }`}
             >
               {tab.label}
@@ -1472,19 +1478,19 @@ export default function AdminWhatsAppPage() {
 
       {activeTab === "envio_manual" ? (
         <section className="space-y-4">
-          <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+          <div className="rounded-2xl border p-4">
             <h2 className="text-lg font-bold">Envio manual</h2>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-white/40">
               Seleccion multiple de alumnos/colaboradores, subcategoria y envio inmediato.
             </p>
 
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <label className="text-sm text-slate-300">
+              <label className="text-sm text-white/65">
                 Categoria
                 <select
                   value={manualCategoryKey}
                   onChange={(event) => setManualCategoryKey(event.target.value)}
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm"
                 >
                   {WHATSAPP_CATEGORY_ORDER.map((categoryKey) => {
                     const category = config.categories[categoryKey];
@@ -1498,12 +1504,12 @@ export default function AdminWhatsAppPage() {
                 </select>
               </label>
 
-              <label className="text-sm text-slate-300">
+              <label className="text-sm text-white/65">
                 Subcategoria
                 <select
                   value={manualSubcategoryKey}
                   onChange={(event) => setManualSubcategoryKey(event.target.value)}
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm"
                 >
                   {manualSubcategories.map((row) => (
                     <option key={row.subcategoryKey} value={row.subcategoryKey}>
@@ -1515,18 +1521,18 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <label className="text-sm text-slate-300 md:col-span-2">
+              <label className="text-sm text-white/65 md:col-span-2">
                 Buscar alumno/contacto
                 <input
                   type="text"
                   value={manualRecipientSearch}
                   onChange={(event) => setManualRecipientSearch(event.target.value)}
                   placeholder="nombre, telefono, estado o actividad"
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm"
                 />
               </label>
 
-              <label className="text-sm text-slate-300">
+              <label className="text-sm text-white/65">
                 Tipo
                 <select
                   value={manualRecipientTypeFilter}
@@ -1537,7 +1543,7 @@ export default function AdminWhatsAppPage() {
                         : "all"
                     )
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm"
                 >
                   <option value="all">Todos</option>
                   <option value="alumno">Solo alumnos</option>
@@ -1571,7 +1577,7 @@ export default function AdminWhatsAppPage() {
               >
                 Auto-seleccionar por ficha
               </ReliableActionButton>
-              <span className="text-xs text-slate-300">
+              <span className="text-xs text-white/65">
                 Seleccionados: <strong>{manualRecipientIds.length}</strong> / {recipients.length}
               </span>
             </div>
@@ -1585,7 +1591,7 @@ export default function AdminWhatsAppPage() {
                     className={`rounded-lg border p-2 text-left text-xs ${
                       selected
                         ? "border-emerald-300/50 bg-emerald-500/15 text-emerald-100"
-                        : "border-white/15 bg-slate-800/70 text-slate-200"
+                        : "border-white/[0.08] bg-white/[0.04]/70 text-white/75"
                     }`}
                   >
                     <input
@@ -1613,7 +1619,7 @@ export default function AdminWhatsAppPage() {
                 );
               })}
               {filteredManualRecipients.length === 0 ? (
-                <div className="col-span-full rounded-lg border border-white/15 bg-slate-800/60 p-3 text-xs text-slate-300">
+                <div className="col-span-full rounded-lg border border-white/[0.08] bg-white/[0.04]/60 p-3 text-xs text-white/65">
                   No hay destinatarios para el filtro actual.
                 </div>
               ) : null}
@@ -1654,14 +1660,14 @@ export default function AdminWhatsAppPage() {
 
       {activeTab === "historial" ? (
         <section className="space-y-4">
-          <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+          <div className="rounded-2xl border p-4">
             <h2 className="text-lg font-bold">Historial de envios</h2>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-white/40">
               Filtros avanzados por fecha, estado, tipo, regla y usuario.
             </p>
 
             <div className="mt-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Desde
                 <input
                   type="date"
@@ -1669,11 +1675,11 @@ export default function AdminWhatsAppPage() {
                   onChange={(event) =>
                     setHistoryFilters((prev) => ({ ...prev, from: event.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Hasta
                 <input
                   type="date"
@@ -1681,11 +1687,11 @@ export default function AdminWhatsAppPage() {
                   onChange={(event) =>
                     setHistoryFilters((prev) => ({ ...prev, to: event.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Estado
                 <select
                   value={historyFilters.status}
@@ -1695,7 +1701,7 @@ export default function AdminWhatsAppPage() {
                       status: event.target.value as HistoryFilters["status"],
                     }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 >
                   <option value="all">all</option>
                   <option value="ok">ok</option>
@@ -1704,14 +1710,14 @@ export default function AdminWhatsAppPage() {
                 </select>
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Tipo
                 <select
                   value={historyFilters.type}
                   onChange={(event) =>
                     setHistoryFilters((prev) => ({ ...prev, type: event.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 >
                   <option value="all">all</option>
                   {historyTypeOptions.map((tipo) => (
@@ -1722,14 +1728,14 @@ export default function AdminWhatsAppPage() {
                 </select>
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Regla
                 <select
                   value={historyFilters.rule}
                   onChange={(event) =>
                     setHistoryFilters((prev) => ({ ...prev, rule: event.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 >
                   <option value="all">all</option>
                   {subcategoryOptions.map((row) => (
@@ -1740,7 +1746,7 @@ export default function AdminWhatsAppPage() {
                 </select>
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs text-white/65">
                 Usuario
                 <input
                   type="text"
@@ -1749,7 +1755,7 @@ export default function AdminWhatsAppPage() {
                   onChange={(event) =>
                     setHistoryFilters((prev) => ({ ...prev, user: event.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-2 py-1.5"
+                  className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5"
                 />
               </label>
             </div>
@@ -1767,7 +1773,7 @@ export default function AdminWhatsAppPage() {
                     rule: "all",
                   })
                 }
-                className="rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-600"
+                className="rounded-lg bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white hover:bg-white/[0.07]"
               >
                 Limpiar filtros
               </ReliableActionButton>
@@ -1797,14 +1803,14 @@ export default function AdminWhatsAppPage() {
               </ReliableActionButton>
             </div>
 
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 text-xs text-white/40">
               Mostrando {filteredHistory.length} registro(s) de {history.length}.
             </p>
 
             <div className="mt-3 overflow-x-auto">
-              <table className="min-w-full text-left text-xs text-slate-300">
+              <table className="min-w-full text-left text-xs text-white/65">
                 <thead>
-                  <tr className="border-b border-white/15 text-slate-200">
+                  <tr className="border-b border-white/[0.08] text-white/75">
                     <th className="px-2 py-2">Fecha</th>
                     <th className="px-2 py-2">Estado</th>
                     <th className="px-2 py-2">Tipo</th>
@@ -1821,7 +1827,7 @@ export default function AdminWhatsAppPage() {
                 <tbody>
                   {filteredHistory.length === 0 ? (
                     <tr>
-                      <td colSpan={11} className="px-2 py-3 text-center text-slate-400">
+                      <td colSpan={11} className="px-2 py-3 text-center text-white/40">
                         Sin historial
                       </td>
                     </tr>
@@ -1835,7 +1841,7 @@ export default function AdminWhatsAppPage() {
                     return (
                       <Fragment key={rowKey}>
                         <tr key={`${rowKey}-summary`} className="border-b border-white/5">
-                          <td className="px-2 py-2 font-semibold text-slate-100">{formatDateTime(row.createdAt)}</td>
+                          <td className="px-2 py-2 font-semibold text-white/85">{formatDateTime(row.createdAt)}</td>
                           <td className="px-2 py-2">{statusValue}</td>
                           <td className="px-2 py-2">{row.tipo || "-"}</td>
                           <td className="px-2 py-2">{row.subcategoryKey || row.subcategoria || "-"}</td>
@@ -1857,18 +1863,18 @@ export default function AdminWhatsAppPage() {
                                 {expanded ? "Ocultar" : `Ver (${details.length})`}
                               </ReliableActionButton>
                             ) : (
-                              <span className="text-slate-500">-</span>
+                              <span className="text-white/35">-</span>
                             )}
                           </td>
                         </tr>
 
                         {expanded ? (
-                          <tr key={`${rowKey}-details`} className="border-b border-white/10 bg-slate-950/35">
+                          <tr key={`${rowKey}-details`} className="border-b border-white/[0.07] bg-white/[0.02]/35">
                             <td colSpan={11} className="px-2 py-3">
-                              <div className="max-h-64 overflow-auto rounded-lg border border-white/10">
-                                <table className="min-w-full text-left text-[11px] text-slate-300">
+                              <div className="max-h-64 overflow-auto rounded-lg border border-white/[0.07]">
+                                <table className="min-w-full text-left text-[11px] text-white/65">
                                   <thead>
-                                    <tr className="border-b border-white/10 text-slate-200">
+                                    <tr className="border-b border-white/[0.07] text-white/75">
                                       <th className="px-2 py-1">Destinatario</th>
                                       <th className="px-2 py-1">Telefono</th>
                                       <th className="px-2 py-1">Estado</th>
@@ -1905,12 +1911,12 @@ export default function AdminWhatsAppPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
-            <h3 className="text-sm font-bold text-slate-100">Detalle por regla (exportable)</h3>
+          <div className="rounded-2xl border p-4">
+            <h3 className="text-sm font-bold text-white/85">Detalle por regla (exportable)</h3>
             <div className="mt-3 overflow-x-auto">
-              <table className="min-w-full text-left text-xs text-slate-300">
+              <table className="min-w-full text-left text-xs text-white/65">
                 <thead>
-                  <tr className="border-b border-white/10 text-slate-200">
+                  <tr className="border-b border-white/[0.07] text-white/75">
                     <th className="px-2 py-2">Categoria</th>
                     <th className="px-2 py-2">Regla</th>
                     <th className="px-2 py-2">Matched</th>
@@ -1923,7 +1929,7 @@ export default function AdminWhatsAppPage() {
                 <tbody>
                   {detailByRuleRows.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-2 py-3 text-center text-slate-400">
+                      <td colSpan={7} className="px-2 py-3 text-center text-white/40">
                         Sin datos por regla para el filtro actual.
                       </td>
                     </tr>
@@ -1944,9 +1950,9 @@ export default function AdminWhatsAppPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
-            <h3 className="text-sm font-bold text-slate-100">Ultimas ejecuciones automaticas</h3>
-            <div className="mt-2 rounded-lg border border-white/10 bg-slate-800/50 p-3 text-xs text-slate-300">
+          <div className="rounded-2xl border p-4">
+            <h3 className="text-sm font-bold text-white/85">Ultimas ejecuciones automaticas</h3>
+            <div className="mt-2 rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-xs text-white/65">
               <p>Ultimo intento: {formatDateTime(runnerState.lastAttemptAt)}</p>
               <p>Ultimo exito: {formatDateTime(runnerState.lastSuccessAt)}</p>
               <p>Ultimo error: {runnerState.lastError || "-"}</p>
@@ -1955,13 +1961,13 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-3 space-y-2">
-              {runs.length === 0 ? <p className="text-sm text-slate-400">Sin ejecuciones.</p> : null}
+              {runs.length === 0 ? <p className="text-sm text-white/40">Sin ejecuciones.</p> : null}
               {runs.map((run) => (
                 <article
                   key={run.runId}
-                  className="rounded-lg border border-white/10 bg-slate-800/60 p-3 text-xs text-slate-300"
+                  className="rounded-lg border border-white/[0.07] bg-white/[0.04]/60 p-3 text-xs text-white/65"
                 >
-                  <p className="font-semibold text-slate-100">{run.runId}</p>
+                  <p className="font-semibold text-white/85">{run.runId}</p>
                   <p>{formatDateTime(String(run.updatedAt || ""))}</p>
                   <p>
                     {run.categoryKey || "general"} - {run.ruleKey || "all"} - {run.dryRun ? "dry" : "real"}
@@ -1974,12 +1980,12 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-4">
-              <h4 className="text-xs font-bold uppercase tracking-wide text-slate-200">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-white/75">
                 Alertas de fallo del runner
               </h4>
               <div className="mt-2 space-y-2">
                 {runnerAlerts.length === 0 ? (
-                  <p className="text-xs text-slate-400">Sin alertas registradas.</p>
+                  <p className="text-xs text-white/40">Sin alertas registradas.</p>
                 ) : null}
                 {runnerAlerts.map((alert) => (
                   <article
@@ -2024,11 +2030,11 @@ export default function AdminWhatsAppPage() {
       ) : null}
 
       {activeTab === "configuracion" ? (
-        <section className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+        <section className="rounded-2xl border p-4">
           <h2 className="text-lg font-bold">Configuracion general</h2>
 
           <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm">
+            <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-sm">
               <input
                 type="checkbox"
                 checked={config.connection.enabled !== false}
@@ -2046,7 +2052,7 @@ export default function AdminWhatsAppPage() {
               Conexion habilitada
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-white/65">
               Modo de envio por defecto
               <select
                 value={config.connection.mode}
@@ -2059,14 +2065,14 @@ export default function AdminWhatsAppPage() {
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               >
                 <option value="test">test</option>
                 <option value="prod">prod</option>
               </select>
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-white/65">
               Proveedor de envio
               <select
                 value={config.connection.provider || "meta_cloud"}
@@ -2080,19 +2086,19 @@ export default function AdminWhatsAppPage() {
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               >
                 <option value="meta_cloud">Meta Cloud API</option>
                 <option value="whatsapp_web">WhatsApp Web (QR)</option>
               </select>
             </label>
 
-            <label className="text-sm text-slate-300 md:col-span-2">
+            <label className="text-sm text-white/65 md:col-span-2">
               Destinatario para pruebas rapidas
               <select
                 value={testRecipientId}
                 onChange={(event) => setTestRecipientId(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               >
                 {recipients.map((recipient) => (
                   <option key={recipient.id} value={recipient.id}>
@@ -2108,7 +2114,7 @@ export default function AdminWhatsAppPage() {
               </div>
             ) : null}
 
-            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm md:col-span-2">
+            <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-sm md:col-span-2">
               <input
                 type="checkbox"
                 checked={config.automationRunner.enabled !== false}
@@ -2126,7 +2132,7 @@ export default function AdminWhatsAppPage() {
               Runner automatico habilitado
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-white/65">
               Frecuencia runner (minutos)
               <input
                 type="number"
@@ -2142,11 +2148,11 @@ export default function AdminWhatsAppPage() {
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               />
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-white/65">
               Reintentos transitorios
               <input
                 type="number"
@@ -2162,11 +2168,11 @@ export default function AdminWhatsAppPage() {
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               />
             </label>
 
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-white/65">
               Backoff entre reintentos (seg)
               <input
                 type="number"
@@ -2185,11 +2191,11 @@ export default function AdminWhatsAppPage() {
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
               />
             </label>
 
-            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm">
+            <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-sm">
               <input
                 type="checkbox"
                 checked={config.automationRunner.alertEmailOnFailure !== false}
@@ -2207,7 +2213,7 @@ export default function AdminWhatsAppPage() {
               Alerta por email ante fallo
             </label>
 
-            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm">
+            <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-sm">
               <input
                 type="checkbox"
                 checked={config.automationRunner.alertWhatsAppOnFailure !== false}
@@ -2225,7 +2231,7 @@ export default function AdminWhatsAppPage() {
               Alerta por WhatsApp interno
             </label>
 
-            <label className="rounded-lg border border-white/10 bg-slate-800/50 p-3 text-sm md:col-span-2">
+            <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/50 p-3 text-sm md:col-span-2">
               <input
                 type="checkbox"
                 checked={config.automationRunner.alertMissingPhonePush !== false}
@@ -2276,14 +2282,14 @@ export default function AdminWhatsAppPage() {
             )}
           </div>
 
-          <div className="mt-6 rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-slate-900/90 to-slate-950 p-5 shadow-[0_24px_70px_-36px_rgba(45,212,191,0.65)]">
+          <div className="mt-6 pf-card rounded-2xl border p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/85">
                   Vinculacion WhatsApp Web
                 </p>
                 <h3 className="mt-2 text-xl font-black text-white">QR y control de sesion</h3>
-                <p className="mt-1 text-sm text-slate-300">
+                <p className="mt-1 text-sm text-white/65">
                   Esta sesion se mantiene activa con reconexion automatica y almacenamiento local.
                 </p>
               </div>
@@ -2297,31 +2303,31 @@ export default function AdminWhatsAppPage() {
                   {getWebSessionStatusLabel(webSession?.status)}
                 </span>
               ) : (
-                <span className="inline-flex rounded-full border border-slate-300/20 bg-slate-500/10 px-3 py-1 text-xs font-semibold text-slate-200">
+                <span className="inline-flex rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1 text-xs font-semibold text-white/75">
                   Inactivo (proveedor actual: Meta Cloud API)
                 </span>
               )}
             </div>
 
             {config.connection.provider !== "whatsapp_web" ? (
-              <div className="mt-4 rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-200">
+              <div className="mt-4 rounded-2xl border p-4 text-sm text-white/75">
                 Activa el proveedor <span className="font-semibold text-white">WhatsApp Web (QR)</span> para
                 habilitar la vinculacion por QR.
               </div>
             ) : (
               <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                <div className="rounded-2xl border p-4">
                   <p className="text-sm font-semibold text-white">Estado de la sesion</p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300">
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.04]/60 px-3 py-2 text-xs text-white/65">
                       Numero
                       <p className="mt-1 text-sm font-bold text-white">{webSession?.phone || "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300">
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.04]/60 px-3 py-2 text-xs text-white/65">
                       Perfil
                       <p className="mt-1 text-sm font-bold text-white">{webSession?.pushname || "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-slate-800/60 px-3 py-2 text-xs text-slate-300 sm:col-span-2">
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.04]/60 px-3 py-2 text-xs text-white/65 sm:col-span-2">
                       Ultimo evento
                       <p className="mt-1 text-sm font-bold text-white">
                         {webSession?.lastEventAt ? formatDateTime(webSession.lastEventAt) : "-"}
@@ -2378,10 +2384,10 @@ export default function AdminWhatsAppPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
+                <div className="rounded-2xl border p-4">
                   <p className="text-sm font-semibold text-white">QR de vinculacion</p>
                   {webSession?.qrImageDataUrl ? (
-                    <div className="mt-3 inline-flex rounded-2xl border border-white/20 bg-white p-2">
+                    <div className="mt-3 inline-flex rounded-2xl border border-white/[0.1] bg-white p-2">
                       <img
                         src={webSession.qrImageDataUrl}
                         alt="QR de vinculacion de WhatsApp Web"
@@ -2389,7 +2395,7 @@ export default function AdminWhatsAppPage() {
                       />
                     </div>
                   ) : (
-                    <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-slate-800/60 p-4 text-xs text-slate-300">
+                    <div className="mt-3 rounded-xl border border-dashed border-white/[0.1] bg-white/[0.04]/60 p-4 text-xs text-white/65">
                       {webSession?.connected
                         ? "Sesion conectada y persistida. La automatizacion seguira usando esta vinculacion."
                         : "No hay QR visible todavia. Usa Iniciar / Generar QR para vincular el telefono."}
@@ -2410,7 +2416,7 @@ export default function AdminWhatsAppPage() {
             const category = config.categories[activeTab];
             if (!category) {
               return (
-                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-300">
+                <div className="rounded-2xl border p-4 text-sm text-white/65">
                   Categoria no disponible.
                 </div>
               );
@@ -2420,8 +2426,8 @@ export default function AdminWhatsAppPage() {
 
             return (
               <>
-                <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4">
-                  <label className="text-sm font-semibold text-slate-200">
+                <div className="rounded-2xl border p-4">
+                  <label className="text-sm font-semibold text-white/75">
                     <input
                       type="checkbox"
                       checked={category.enabled !== false}
@@ -2433,7 +2439,7 @@ export default function AdminWhatsAppPage() {
                 </div>
 
                 {subEntries.length === 0 ? (
-                  <div className="rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-400">
+                  <div className="rounded-2xl border p-4 text-sm text-white/40">
                     Esta categoria no tiene subcategorias cargadas.
                   </div>
                 ) : null}
@@ -2444,15 +2450,15 @@ export default function AdminWhatsAppPage() {
                   return (
                     <article
                       key={`${activeTab}-${subcategoryKey}`}
-                      className="rounded-2xl border border-emerald-500/35 bg-slate-900/75 p-4"
+                      className="pf-card rounded-2xl border border-emerald-500/35 p-4"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <h3 className="text-xl font-black text-emerald-300">{sub.label}</h3>
-                          <p className="text-xs text-slate-300">{sub.description}</p>
+                          <p className="text-xs text-white/65">{sub.description}</p>
                         </div>
 
-                        <label className="rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm">
+                        <label className="rounded-lg border border-white/[0.07] bg-white/[0.04]/60 px-3 py-2 text-sm">
                           <input
                             type="checkbox"
                             checked={sub.enabled !== false}
@@ -2467,7 +2473,7 @@ export default function AdminWhatsAppPage() {
 
                       <div className="mt-3 grid gap-3 md:grid-cols-3">
                         {sub.triggerType === "days_before" ? (
-                          <label className="text-sm text-slate-300">
+                          <label className="text-sm text-white/65">
                             Dias antes
                             <input
                               type="number"
@@ -2479,16 +2485,16 @@ export default function AdminWhatsAppPage() {
                                   daysOffset: Math.max(0, Math.min(365, Number(event.target.value || 0))),
                                 })
                               }
-                              className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
                             />
                           </label>
                         ) : (
-                          <div className="text-sm text-slate-400">
-                            Trigger: <span className="font-semibold text-slate-200">{sub.triggerType}</span>
+                          <div className="text-sm text-white/40">
+                            Trigger: <span className="font-semibold text-white/75">{sub.triggerType}</span>
                           </div>
                         )}
 
-                        <label className="text-sm text-slate-300">
+                        <label className="text-sm text-white/65">
                           Enviar desde
                           <input
                             type="time"
@@ -2496,11 +2502,11 @@ export default function AdminWhatsAppPage() {
                             onChange={(event) =>
                               updateRule(activeTab, subcategoryKey, { sendFrom: event.target.value })
                             }
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                            className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
                           />
                         </label>
 
-                        <label className="text-sm text-slate-300">
+                        <label className="text-sm text-white/65">
                           Enviar hasta
                           <input
                             type="time"
@@ -2508,7 +2514,7 @@ export default function AdminWhatsAppPage() {
                             onChange={(event) =>
                               updateRule(activeTab, subcategoryKey, { sendTo: event.target.value })
                             }
-                            className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2"
+                            className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2"
                           />
                         </label>
                       </div>
@@ -2529,7 +2535,7 @@ export default function AdminWhatsAppPage() {
                           type="button"
                           onClick={() => resetRuleMessage(activeTab, subcategoryKey)}
                           disabled={actionLoading}
-                          className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg bg-white/[0.04] px-3 py-2 text-sm font-semibold text-white hover:bg-white/[0.07] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Mensaje por defecto
                         </ReliableActionButton>

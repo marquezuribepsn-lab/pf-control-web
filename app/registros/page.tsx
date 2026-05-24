@@ -68,14 +68,14 @@ function StatCard({
     rose: { border: "border-rose-300/35 bg-rose-500/10", value: "text-rose-100" },
     violet: { border: "border-violet-300/35 bg-violet-500/10", value: "text-violet-100" },
     amber: { border: "border-amber-300/35 bg-amber-500/10", value: "text-amber-100" },
-    slate: { border: "border-white/15 bg-white/[0.03]", value: "text-slate-100" },
+    slate: { border: "border-white/[0.08] bg-white/[0.03]", value: "text-white/85" },
   };
 
   return (
     <article className={`rounded-2xl border p-4 ${palette[tone].border}`}>
-      <p className="text-xs uppercase tracking-wide text-slate-300">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-white/65">{label}</p>
       <p className={`mt-2 text-3xl font-black ${palette[tone].value}`}>{value}</p>
-      {sub ? <p className="mt-1 text-xs text-slate-400">{sub}</p> : null}
+      {sub ? <p className="mt-1 text-xs text-white/40">{sub}</p> : null}
     </article>
   );
 }
@@ -299,30 +299,36 @@ export default function RegistrosPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
-        <p className="text-sm text-slate-300">Cargando registros...</p>
+      <main className="mx-auto max-w-[1500px] p-6 text-white/85">
+        <p className="text-sm text-white/65">Cargando registros...</p>
       </main>
     );
   }
 
   if (role === "ADMIN") {
     return (
-      <main className="mx-auto max-w-[1500px] p-6 text-slate-100">
-        <p className="text-sm text-slate-300">Redirigiendo a Pagos mensuales...</p>
+      <main className="mx-auto max-w-[1500px] p-6 text-white/85">
+        <p className="text-sm text-white/65">Redirigiendo a Pagos mensuales...</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] space-y-6 p-6 text-slate-100">
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/45 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
+    <main className="relative mx-auto max-w-[1500px] space-y-6 p-6 text-white/85">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,42),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
+      <section className="relative overflow-hidden rounded-2xl border p-6">
         <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
 
         <div className="relative">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">Hub de analitica operativa</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Hub de analitica operativa</p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Registros</h1>
-          <p className="mt-2 text-sm text-slate-200/90">
+          <p className="mt-2 text-sm text-white/75/90">
             Vista consolidada de clientes, pagos y asistencia con la misma linea visual del modulo Clientes.
           </p>
         </div>
@@ -334,9 +340,9 @@ export default function RegistrosPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Asistencia</h2>
-        <p className="mt-1 text-sm text-slate-300">Estado actual de jornadas y presentismo.</p>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Asistencia</h2>
+        <p className="mt-1 text-sm text-white/65">Estado actual de jornadas y presentismo.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
           <StatCard label="Jornadas activas" value={stats.jornadasActivas} tone="cyan" />
           <StatCard label="Categorias activas" value={stats.categoriasConJornadas} tone="amber" />
@@ -346,8 +352,8 @@ export default function RegistrosPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Clientes</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Clientes</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
           <StatCard label="Activos" value={stats.activos} tone="emerald" />
@@ -356,11 +362,11 @@ export default function RegistrosPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      <section className="rounded-2xl border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold">Resumen mensual de ingresos</h2>
-            <p className="mt-1 text-sm text-slate-300">Consolidado por mes en base a pagos registrados en Clientes.</p>
+            <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Resumen mensual de ingresos</h2>
+            <p className="mt-1 text-sm text-white/65">Consolidado por mes en base a pagos registrados en Clientes.</p>
           </div>
           <ReliableActionButton
             type="button"
@@ -372,11 +378,11 @@ export default function RegistrosPage() {
         </div>
 
         {resumenMensualIngresos.length === 0 ? (
-          <p className="text-sm text-slate-400">No hay pagos suficientes para resumir por mes.</p>
+          <p className="text-sm text-white/40">No hay pagos suficientes para resumir por mes.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-800 text-slate-200">
+              <thead className="bg-white/[0.04] text-white/75">
                 <tr>
                   <th className="px-3 py-2">Mes</th>
                   <th className="px-3 py-2">Pagos</th>
@@ -386,10 +392,10 @@ export default function RegistrosPage() {
               </thead>
               <tbody>
                 {resumenMensualIngresos.map((row) => (
-                  <tr key={row.mes} className="border-t border-white/10">
-                    <td className="px-3 py-2 font-medium text-slate-100">{row.mes}</td>
-                    <td className="px-3 py-2 text-slate-300">{row.cantidadPagos}</td>
-                    <td className="px-3 py-2 text-slate-300">{row.clientesUnicos}</td>
+                  <tr key={row.mes} className="border-t border-white/[0.07]">
+                    <td className="px-3 py-2 font-medium text-white/85">{row.mes}</td>
+                    <td className="px-3 py-2 text-white/65">{row.cantidadPagos}</td>
+                    <td className="px-3 py-2 text-white/65">{row.clientesUnicos}</td>
                     <td className="px-3 py-2 font-semibold text-emerald-200">
                       {row.moneda} {row.total.toLocaleString("es-AR")}
                     </td>
@@ -401,8 +407,8 @@ export default function RegistrosPage() {
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Pagos</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Pagos</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Pagos confirmados" value={stats.pagosConfirmados} tone="emerald" />
           <StatCard label="Pagos pendientes" value={stats.pagosPendientes} tone={stats.pagosPendientes > 0 ? "rose" : "emerald"} />
@@ -411,50 +417,50 @@ export default function RegistrosPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Sesiones y asesoria</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Sesiones y asesoria</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           <StatCard label="Sesiones creadas" value={stats.sesionesTotales} tone="cyan" />
 
-          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-            <p className="text-sm font-semibold text-slate-300">Tipo de asesoria</p>
+          <div className="pf-card rounded-2xl border p-4">
+            <p className="text-sm font-semibold text-white/65">Tipo de asesoria</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Completa</span>
-                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.completa ?? 0}</span>
+                <span className="text-white/65">Completa</span>
+                <span className="font-semibold text-white/85">{stats.tipoAsesoria.completa ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Entrenamiento</span>
-                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.entrenamiento ?? 0}</span>
+                <span className="text-white/65">Entrenamiento</span>
+                <span className="font-semibold text-white/85">{stats.tipoAsesoria.entrenamiento ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Nutricion</span>
-                <span className="font-semibold text-slate-100">{stats.tipoAsesoria.nutricion ?? 0}</span>
+                <span className="text-white/65">Nutricion</span>
+                <span className="font-semibold text-white/85">{stats.tipoAsesoria.nutricion ?? 0}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-            <p className="text-sm font-semibold text-slate-300">Modalidad</p>
+          <div className="pf-card rounded-2xl border p-4">
+            <p className="text-sm font-semibold text-white/65">Modalidad</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Presencial</span>
-                <span className="font-semibold text-slate-100">{stats.modalidades.presencial ?? 0}</span>
+                <span className="text-white/65">Presencial</span>
+                <span className="font-semibold text-white/85">{stats.modalidades.presencial ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Virtual</span>
-                <span className="font-semibold text-slate-100">{stats.modalidades.virtual ?? 0}</span>
+                <span className="text-white/65">Virtual</span>
+                <span className="font-semibold text-white/85">{stats.modalidades.virtual ?? 0}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="mb-3 text-xl font-bold">Todos los clientes ({allClientes.length})</h2>
+      <section className="rounded-2xl border p-5">
+        <h2 className="mb-3 text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Todos los clientes ({allClientes.length})</h2>
         <div className="grid gap-3">
           {allClientes.length === 0 ? (
-            <p className="text-sm text-slate-400">No hay clientes registrados aun.</p>
+            <p className="text-sm text-white/40">No hay clientes registrados aun.</p>
           ) : null}
 
           {allClientes.map((cliente) => {
@@ -462,7 +468,7 @@ export default function RegistrosPage() {
             const estadoClienteClass =
               cliente.estado === "activo"
                 ? "bg-emerald-500/10 text-emerald-200 border-emerald-300/35"
-                : "bg-slate-500/10 text-slate-200 border-slate-300/35";
+                : "bg-slate-500/10 text-white/75 border-slate-300/35";
 
             const estadoPagoClass =
               meta?.pagoEstado === "confirmado"
@@ -472,11 +478,11 @@ export default function RegistrosPage() {
             return (
               <article
                 key={cliente.id}
-                className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 pf-card rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-semibold text-slate-100">{cliente.nombre}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="font-semibold text-white/85">{cliente.nombre}</p>
+                  <p className="text-xs text-white/40">
                     {cliente.tipo}
                     {cliente.categoria ? ` · ${cliente.categoria}` : ""}
                     {cliente.club ? ` · ${cliente.club}` : ""}
@@ -485,7 +491,7 @@ export default function RegistrosPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   {meta?.startDate ? (
-                    <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                    <span className="rounded-full border border-white/[0.08] bg-white/5 px-3 py-1 text-xs text-white/75">
                       Desde {new Date(meta.startDate).toLocaleDateString("es-AR")}
                     </span>
                   ) : null}

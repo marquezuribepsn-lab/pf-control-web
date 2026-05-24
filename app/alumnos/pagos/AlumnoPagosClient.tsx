@@ -192,12 +192,13 @@ function resolveStatusTone(isActive: boolean, reason: PaymentStatusResponse["rea
   return "neutral";
 }
 
-const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 2000;
+const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 0;
 
 export default function AlumnoPagosClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentQueryStatus = String(searchParams.get("payment") || "").trim().toLowerCase();
+  const payFromApp = searchParams.get("pay") === "1";
 
   const [status, setStatus] = useState<PaymentStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -290,12 +291,24 @@ export default function AlumnoPagosClient() {
   }, []);
 
   useEffect(() => {
-    void loadStatus({ withBrandedLoader: true });
+    void loadStatus();
   }, [loadStatus]);
 
   useEffect(() => {
     router.prefetch("/alumnos/inicio");
   }, [router]);
+
+  // If the user lands here without ?pay=1 or ?payment=..., send them back to inicio.
+  // This prevents a server-side redirect loop: the server no longer redirects pagos→inicio,
+  // so this client-side guard replaces that behaviour safely.
+  useEffect(() => {
+    if (!payFromApp && !paymentQueryStatus) {
+      router.replace("/alumnos/inicio");
+    }
+    // intentionally omitting deps: payFromApp and paymentQueryStatus are URL-derived
+    // constants that won't change during the component's lifetime
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!paymentQueryStatus) return;
@@ -334,6 +347,7 @@ export default function AlumnoPagosClient() {
 
     setMessage((previous) => previous || "Tu pase esta activo. Puedes revisar tu estado cuando quieras.");
   }, [status?.active]);
+
 
   const startCheckout = async () => {
     if (!status) return;
@@ -457,11 +471,13 @@ export default function AlumnoPagosClient() {
         <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
-              <ReliableLink
-                href="/alumnos/inicio"
+              <button
+                type="button"
+                onClick={() => { window.location.assign("/alumnos/inicio"); }}
                 className="pf-a2-back-btn mt-0.5"
                 aria-label="Volver al inicio"
                 title="Volver al inicio"
+                style={{ position: "relative", zIndex: 9999 }}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -474,7 +490,7 @@ export default function AlumnoPagosClient() {
                   <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span className="sr-only">Volver al inicio</span>
-              </ReliableLink>
+              </button>
 
               <div className="min-w-0">
                 <p className="pf-a2-eyebrow">BILLING</p>

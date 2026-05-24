@@ -2635,6 +2635,7 @@ export default function AlumnoVisionClient({
   const [routinePullDistance, setRoutinePullDistance] = useState(0);
   const [routinePullRefreshing, setRoutinePullRefreshing] = useState(false);
   const [routineDayWeekLoading, setRoutineDayWeekLoading] = useState(false);
+  const [nutritionInitialLoading, setNutritionInitialLoading] = useState(false);
   const [routineExerciseLogTarget, setRoutineExerciseLogTarget] = useState<RoutineExerciseLogTarget | null>(null);
   const [guidedTrainingMode, setGuidedTrainingMode] = useState(false);
   const [guidedTrainingIndex, setGuidedTrainingIndex] = useState(0);
@@ -2671,6 +2672,14 @@ export default function AlumnoVisionClient({
   const [routineActionScreenLoading, setRoutineActionScreenLoading] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
+  type BillingStatusLite = {
+    active: boolean;
+    reason: "active" | "no-meta" | "pending-payment" | "expired-pass";
+    paymentSummary: { latestPaymentAt: string | null };
+    billing: { amount: number; currency: string; periodDays: number };
+  };
+  const [billingStatus, setBillingStatus] = useState<BillingStatusLite | null>(null);
+  const [billingStatusLoaded, setBillingStatusLoaded] = useState(false);
   // Cuenta panel (account tab in dock)
   type AccountPanelData = {
     id?: string;
@@ -2723,6 +2732,7 @@ export default function AlumnoVisionClient({
   const routinePullActiveRef = useRef(false);
   const routinePullDistanceRef = useRef(0);
   const routineDayWeekLoadingTimerRef = useRef<number | null>(null);
+  const nutritionInitialLoadingTimerRef = useRef<number | null>(null);
   const routineExerciseLogStatusTimerRef = useRef<number | null>(null);
   const routineActionScreenLoadingTimerRef = useRef<number | null>(null);
   const routineStopwatchStartedAtRef = useRef<number | null>(null);
@@ -2973,10 +2983,32 @@ export default function AlumnoVisionClient({
   }, [activeCategory]);
 
   useEffect(() => {
+    if (activeCategory !== "nutricion") {
+      if (nutritionInitialLoadingTimerRef.current !== null) {
+        window.clearTimeout(nutritionInitialLoadingTimerRef.current);
+        nutritionInitialLoadingTimerRef.current = null;
+      }
+      setNutritionInitialLoading(false);
+      return;
+    }
+
+    setNutritionInitialLoading(true);
+    nutritionInitialLoadingTimerRef.current = window.setTimeout(() => {
+      nutritionInitialLoadingTimerRef.current = null;
+      setNutritionInitialLoading(false);
+    }, 2000);
+  }, [activeCategory]);
+
+  useEffect(() => {
     return () => {
       if (routineDayWeekLoadingTimerRef.current !== null) {
         window.clearTimeout(routineDayWeekLoadingTimerRef.current);
         routineDayWeekLoadingTimerRef.current = null;
+      }
+
+      if (nutritionInitialLoadingTimerRef.current !== null) {
+        window.clearTimeout(nutritionInitialLoadingTimerRef.current);
+        nutritionInitialLoadingTimerRef.current = null;
       }
 
       if (routineStopwatchIntervalRef.current !== null) {
@@ -3062,12 +3094,16 @@ export default function AlumnoVisionClient({
     let mounted = true;
 
     const loadHomeHeaderContext = async () => {
-      const [accountResult, coachResult] = await Promise.allSettled([
+      const [accountResult, coachResult, billingResult] = await Promise.allSettled([
         fetch("/api/account", {
           cache: "no-store",
           signal: abortController.signal,
         }),
         fetch("/api/alumnos/profesor-contacto", {
+          cache: "no-store",
+          signal: abortController.signal,
+        }),
+        fetch("/api/payments/status", {
           cache: "no-store",
           signal: abortController.signal,
         }),
@@ -3106,6 +3142,20 @@ export default function AlumnoVisionClient({
         } catch {
           // Keep UI resilient; coach contact is optional.
         }
+      }
+
+      if (mounted) {
+        if (billingResult.status === "fulfilled") {
+          try {
+            if (billingResult.value.ok) {
+              const payload = (await billingResult.value.json()) as BillingStatusLite;
+              if (mounted) setBillingStatus(payload);
+            }
+          } catch {
+            // billing gate is optional
+          }
+        }
+        setBillingStatusLoaded(true);
       }
     };
 
@@ -6831,6 +6881,10 @@ export default function AlumnoVisionClient({
 
   const goToCategory = useCallback(
     (nextCategory: MainCategory, options?: { trackHistory?: boolean }) => {
+      if (billingStatusLoaded && billingStatus && !billingStatus.active) {
+        if (nextCategory !== "inicio" && nextCategory !== "cuenta") return;
+      }
+
       const currentCategory = activeCategoryRef.current;
       if (nextCategory === currentCategory) return;
 
@@ -6858,7 +6912,7 @@ export default function AlumnoVisionClient({
 
       router.replace(targetHref, { scroll: false });
     },
-    [router]
+    [router, billingStatus, billingStatusLoaded]
   );
 
   const goToPreviousCategory = useCallback(() => {
@@ -6898,7 +6952,7 @@ export default function AlumnoVisionClient({
   }, [goToCategory, isUltraMobile, router]);
 
   const openPayments = useCallback(() => {
-    const targetHref = "/alumnos/pagos";
+    const targetHref = "/alumnos/pagos?pay=1";
 
     if (typeof window === "undefined") {
       router.push(targetHref);
@@ -6913,7 +6967,7 @@ export default function AlumnoVisionClient({
     router.push(targetHref);
 
     window.setTimeout(() => {
-      if (window.location.pathname !== targetHref) {
+      if (!window.location.pathname.includes("/alumnos/pagos")) {
         window.location.assign(targetHref);
       }
     }, 180);
@@ -8622,6 +8676,13 @@ export default function AlumnoVisionClient({
     }
   }, []);
 
+  const isBlocked = billingStatusLoaded && !!billingStatus && !billingStatus.active;
+  const blockedGateMessage = isBlocked
+    ? (!billingStatus!.paymentSummary.latestPaymentAt
+        ? "Abona para comenzar a entrenar"
+        : "Abona tu deuda para retomar tu entrenamiento")
+    : "";
+
   return (
     <main className="pf-alumno-main pf-alumno-v2" data-pf-alumno-category={activeCategory}>
       <div className="pf-a2-shell">
@@ -8688,7 +8749,7 @@ export default function AlumnoVisionClient({
             </div>
 
             <div className="pf-a2-tab-rail mt-4 hidden flex-nowrap gap-2 overflow-x-auto pb-1 md:flex">
-              {CATEGORIES.map((category) => {
+              {CATEGORIES.filter((c) => !isBlocked || c === "inicio").map((category) => {
                 const isActive = category === activeCategory;
 
                 return (
@@ -8716,6 +8777,18 @@ export default function AlumnoVisionClient({
         <section className="pf-alumno-stage pb-2 md:pb-6">
           {activeCategory === "inicio" ? (
             <div className="pf-a3-home-stack">
+              {isBlocked && (
+                <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-4">
+                  <p className="text-sm font-bold text-amber-200">{blockedGateMessage}</p>
+                  <a
+                    href="/alumnos/pagos?pay=1"
+                    className="mt-3 flex items-center justify-center rounded-xl bg-cyan-500 py-2.5 text-sm font-black text-white active:opacity-80"
+                  >
+                    Ver opciones de pago
+                  </a>
+                </div>
+              )}
+
               <article className="pf-a3-coach-card">
                 <div className="pf-a3-coach-top">
                   <div className="pf-a3-coach-identity">
@@ -8748,24 +8821,26 @@ export default function AlumnoVisionClient({
                 </div>
               </article>
 
-              <div className="pf-a3-main-actions">
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => goToCategory("progreso")}
-                  className="pf-a3-main-action-btn"
-                >
-                  Cuestionarios
-                </ReliableActionButton>
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => goToCategory("rutina")}
-                  className="pf-a3-main-action-btn"
-                >
-                  Reservas
-                </ReliableActionButton>
-              </div>
+              {!isBlocked && (
+                <div className="pf-a3-main-actions">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("progreso")}
+                    className="pf-a3-main-action-btn"
+                  >
+                    Cuestionarios
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("rutina")}
+                    className="pf-a3-main-action-btn"
+                  >
+                    Reservas
+                  </ReliableActionButton>
+                </div>
+              )}
 
-              <section className="pf-a3-panel-block">
+              {!isBlocked && <><section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
                   <div>
                     <h2 className="pf-a3-section-title">Musica</h2>
@@ -9042,6 +9117,7 @@ export default function AlumnoVisionClient({
                   </div>
                 </div>
               </section>
+              </>}
 
             </div>
           ) : null}
@@ -10788,6 +10864,18 @@ export default function AlumnoVisionClient({
 
           {activeCategory === "nutricion" ? (
             <div className="pf-a4-nutrition-screen space-y-4">
+              {nutritionInitialLoading ? (
+                <section className="pf-a3-routine-empty pf-a3-routine-loading" aria-live="polite">
+                  <div className="pf-a3-routine-loading-visual" aria-hidden="true">
+                    <span className="pf-a3-routine-loading-ring" />
+                    <span className="pf-a3-routine-loading-core">PF</span>
+                  </div>
+                  <p className="pf-a3-routine-loading-brand">PF Control</p>
+                  <h2>Cargando nutrición...</h2>
+                  <p>Preparando tu plan nutricional.</p>
+                </section>
+              ) : (
+              <>
               <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                 <p className="pf-a2-eyebrow">Plan nutricional</p>
                 <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
@@ -11839,6 +11927,8 @@ export default function AlumnoVisionClient({
                   ) : null}
                 </article>
               ) : null}
+              </>
+              )}
             </div>
           ) : null}
 
@@ -12406,7 +12496,7 @@ export default function AlumnoVisionClient({
 
       {isRootCategory ? (
         <nav className="pf-a2-dock md:hidden" aria-label="Navegacion principal del alumno">
-          {homeDockItems.map((item) => {
+          {homeDockItems.filter((item) => !isBlocked || item.key === "inicio" || item.key === "cuenta").map((item) => {
             const isActive = item.key === activeCategory;
             return (
               <ReliableActionButton

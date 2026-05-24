@@ -3,6 +3,7 @@ import { getSyncValue, setSyncValue } from "@/lib/syncStore";
 export const CLIENTES_META_KEY = "pf-control-clientes-meta-v1";
 export const PAYMENT_ORDERS_KEY = "pf-control-payment-orders-v1";
 export const PAYMENT_INCOME_RESET_KEY = "pf-control-payment-income-reset-v1";
+export const PLAN_PRECIOS_KEY = "pf-control-plan-precios-v1";
 
 const DEFAULT_RENEWAL_DAYS = 30;
 const DEFAULT_AMOUNT_ARS = Number(process.env.PF_PAYMENT_DEFAULT_AMOUNT_ARS || 0) || 15000;
@@ -760,6 +761,28 @@ export function getBillingDefaults(meta: ClienteMetaBilling | null | undefined) 
 
 export function mapMercadoPagoStatus(status: unknown): PaymentOrderStatus {
   return normalizePaymentStatus(status);
+}
+
+export type PlanPrecio = {
+  id: string;
+  nombre: string;
+  precio: number;
+  moneda: string;
+  duracionDias: number;
+  descripcion: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getPlanPrecios(): Promise<PlanPrecio[]> {
+  const raw = await getSyncValue(PLAN_PRECIOS_KEY);
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((item): item is PlanPrecio => Boolean(item) && typeof item === "object");
+}
+
+export async function savePlanPrecios(planes: PlanPrecio[]): Promise<void> {
+  await setSyncValue(PLAN_PRECIOS_KEY, planes);
 }
 
 export async function getIncomeResetAt(): Promise<string | null> {

@@ -795,7 +795,7 @@ export default function Home() {
         </div>
 
         {/* ── MESA OPERATIVA ────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d2 mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+        <section className="pf-au pf-led pf-d2 mb-5 pf-card rounded-2xl border p-6"
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
@@ -901,7 +901,7 @@ export default function Home() {
         </section>
 
         {/* ── CATEGORÍAS ────────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d3 mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+        <section className="pf-au pf-led pf-d3 mb-5 pf-card rounded-2xl border p-6"
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
@@ -926,7 +926,7 @@ export default function Home() {
                   <Link
                     key={categoria.nombre}
                     href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    className="group rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
+                    className="group rounded-xl border border-white/10 bg-white/[0.06] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
                   >
                     <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${accent}`} />
                     <p className="font-semibold" style={{ color: "#ffffff" }}>{categoria.nombre}</p>
@@ -942,7 +942,7 @@ export default function Home() {
 
         {/* ── RADAR + ALERTAS ───────────────────────────────────── */}
         <section className="pf-au pf-d4 mb-5 grid gap-4 lg:grid-cols-3">
-          <div className="pf-led rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 lg:col-span-2"
+          <div className="pf-led pf-card rounded-2xl border p-6 lg:col-span-2"
             onMouseMove={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
               e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
@@ -976,7 +976,7 @@ export default function Home() {
                 { label: "Duración", value: config.duracion, onChange: (v: string) => setConfig({ ...config, duracion: v }) },
                 { label: "Bloques",  value: config.bloques,  onChange: (v: string) => setConfig({ ...config, bloques: v }) },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+                <div key={item.label} className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
                   <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">{item.label}</p>
                   {editando ? (
                     <input value={item.value} onChange={(e) => item.onChange(e.target.value)}
@@ -987,7 +987,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div className="mt-2 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+            <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.06] p-3">
               <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">Objetivo</p>
               {editando ? (
                 <textarea value={config.objetivo} onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
@@ -1040,7 +1040,7 @@ export default function Home() {
         </section>
 
         {/* ── MÓDULOS ───────────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d5 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6"
+        <section className="pf-au pf-led pf-d5 pf-card rounded-2xl border p-6"
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
@@ -1060,7 +1060,7 @@ export default function Home() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) =>
               editando ? (
-                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
                   <input value={item.label} onChange={(e) => updateModulo(index, { label: e.target.value })}
                     className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-bold text-white" />
                   <input value={item.href} onChange={(e) => updateModulo(index, { href: e.target.value })}
@@ -1079,7 +1079,7 @@ export default function Home() {
                 <Link
                   key={`${item.label}-${index}`}
                   href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  className="group rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
+                  className="group rounded-xl border border-white/10 bg-white/[0.06] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/25 hover:bg-white/[0.07]"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(99,102,241,0.12)";
                   }}

@@ -1106,7 +1106,13 @@ export default function AdminUsuariosPermisosPage() {
   }
 
   return (
-    <main className={ADMIN_PAGE_CONTAINER_STACK}>
+    <main className={`relative ${ADMIN_PAGE_CONTAINER_STACK}`}>
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,24),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <AdminRunningLoaderOverlay
         active={adminBusy && !loading}
         message="Cargando..."
@@ -1115,8 +1121,8 @@ export default function AdminUsuariosPermisosPage() {
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight">Usuarios y permisos</h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: `hsl(var(--hue,24),65%,65%)` }}>Usuarios y permisos</h1>
+          <p className="mt-1 text-sm text-white/65">
             Gestion centralizada de usuarios colaboradores, permisos y accesos.
           </p>
         </div>
@@ -1140,9 +1146,9 @@ export default function AdminUsuariosPermisosPage() {
       </div>
 
       {showCreateForm ? (
-        <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <h2 className="text-xl font-black text-white">Alta de colaborador</h2>
-          <p className="mt-1 text-xs text-slate-300">Se crea la cuenta y se envia credencial por mail.</p>
+        <section className="mb-6 pf-card rounded-2xl border p-5">
+          <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,24),65%,65%)` }}>Alta de colaborador</h2>
+          <p className="mt-1 text-xs text-white/65">Se crea la cuenta y se envia credencial por mail.</p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="Email">
@@ -1150,7 +1156,7 @@ export default function AdminUsuariosPermisosPage() {
                 value={createForm.email}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
                 type="email"
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                 placeholder="email@dominio.com"
               />
             </Field>
@@ -1158,7 +1164,7 @@ export default function AdminUsuariosPermisosPage() {
               <input
                 value={createForm.nombreCompleto}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, nombreCompleto: e.target.value }))}
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                 placeholder="Nombre y apellido"
               />
             </Field>
@@ -1167,7 +1173,7 @@ export default function AdminUsuariosPermisosPage() {
                 value={createForm.edad}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, edad: e.target.value }))}
                 type="number"
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
               />
             </Field>
             <Field label="Fecha de nacimiento">
@@ -1175,7 +1181,7 @@ export default function AdminUsuariosPermisosPage() {
                 value={createForm.fechaNacimiento}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, fechaNacimiento: e.target.value }))}
                 type="date"
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
               />
             </Field>
             <Field label="Altura (cm)">
@@ -1184,14 +1190,14 @@ export default function AdminUsuariosPermisosPage() {
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, altura: e.target.value }))}
                 type="number"
                 step="0.01"
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
               />
             </Field>
             <Field label="Telefono">
               <input
                 value={createForm.telefono}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, telefono: e.target.value }))}
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
               />
             </Field>
           </div>
@@ -1201,14 +1207,14 @@ export default function AdminUsuariosPermisosPage() {
               <input
                 value={createForm.direccion}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, direccion: e.target.value }))}
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
               />
             </Field>
             <Field label="IDs de alumnos asignados (coma)">
               <input
                 value={createForm.asignaciones}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, asignaciones: e.target.value }))}
-                className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                 placeholder="id1, id2"
               />
             </Field>
@@ -1245,10 +1251,10 @@ export default function AdminUsuariosPermisosPage() {
         </section>
       ) : null}
 
-      <section className="mb-6 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+      <section className="mb-6 pf-card rounded-2xl border p-5">
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-white/10 bg-slate-900/75 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Total colaboradores</p>
+          <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/65">Total colaboradores</p>
             <p className="mt-1 text-2xl font-black text-white">{colaboradoresStats.total}</p>
           </div>
           <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3">
@@ -1266,7 +1272,7 @@ export default function AdminUsuariosPermisosPage() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/80">Onboarding</p>
               <p className="text-lg font-black text-white">Nuevo ingresante</p>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-white/65">
                 Revisa la ficha inicial, valida anamnesis y aplica Dar de Alta.
               </p>
             </div>
@@ -1277,7 +1283,7 @@ export default function AdminUsuariosPermisosPage() {
           </div>
 
           {clientesPendientesAlta.length === 0 ? (
-            <p className="mt-3 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-3 text-sm text-slate-300">
+            <p className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3 text-sm text-white/65">
               No hay nuevos ingresantes pendientes de alta.
             </p>
           ) : (
@@ -1287,20 +1293,20 @@ export default function AdminUsuariosPermisosPage() {
                 return (
                   <article
                     key={`cliente-pendiente-${cliente.id}`}
-                    className="rounded-xl border border-cyan-200/20 bg-slate-900/70 p-3"
+                    className="rounded-xl border border-cyan-200/20 bg-white/[0.03] p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
                         <p className="text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
-                        <p className="text-xs text-slate-300">{cliente.email}</p>
+                        <p className="text-xs text-white/65">{cliente.email}</p>
                       </div>
                       <span className="rounded-full border border-amber-200/40 bg-amber-500/15 px-2 py-1 text-[10px] font-bold text-amber-100">
                         Pendiente
                       </span>
                     </div>
 
-                    <div className="mt-3 grid gap-2 text-[11px] text-slate-300 sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2 text-[11px] text-white/65 sm:grid-cols-2">
                       <p>Telefono: {String(cliente.signupProfile?.telefono || cliente.telefono || 'Sin dato')}</p>
                       <p>Nacimiento: {String(cliente.signupProfile?.fechaNacimiento || cliente.fechaNacimiento || 'Sin dato')}</p>
                     </div>
@@ -1325,7 +1331,7 @@ export default function AdminUsuariosPermisosPage() {
 
                       <ReliableLink
                         href={buildClienteFichaHref(cliente)}
-                        className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
+                        className="rounded-lg border border-white/[0.1] bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
                       >
                         Ver ficha en Clientes
                       </ReliableLink>
@@ -1355,14 +1361,14 @@ export default function AdminUsuariosPermisosPage() {
                 value={clientPasswordSearch}
                 onChange={(e) => setClientPasswordSearch(e.target.value)}
                 placeholder="Nombre o email"
-                className="w-full rounded-xl border border-amber-200/30 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-200/60"
+                className="w-full rounded-xl border border-amber-200/30 bg-white/[0.03] px-3 py-2 text-sm text-white/85 outline-none focus:border-amber-200/60"
               />
             </div>
           </div>
 
-          <div className="mt-3 max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/50 p-3">
+          <div className="mt-3 max-h-[360px] space-y-3 overflow-y-auto rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
             {clientesSoportePassword.length === 0 ? (
-              <p className="rounded-lg border border-white/10 bg-slate-900/70 px-3 py-3 text-sm text-slate-300">
+              <p className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-3 text-sm text-white/65">
                 No hay clientes para mostrar en soporte de contrasenas.
               </p>
             ) : (
@@ -1372,33 +1378,33 @@ export default function AdminUsuariosPermisosPage() {
                 return (
                   <article
                     key={`cliente-password-${cliente.id}`}
-                    className="rounded-xl border border-white/10 bg-slate-900/75 p-3"
+                    className="rounded-xl border border-white/10 bg-white/[0.06] p-3"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-black text-white">{String(nombre)}</p>
-                        <p className="text-xs text-slate-300">{cliente.email}</p>
+                        <p className="text-xs text-white/65">{cliente.email}</p>
                       </div>
-                      <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[10px] font-bold text-slate-100">
+                      <span className="rounded-full border border-white/[0.1] bg-white/10 px-2 py-1 text-[10px] font-bold text-white/85">
                         {String(cliente.estado || 'activo')}
                       </span>
                     </div>
 
-                    <div className="mt-2 grid gap-2 text-xs text-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mt-2 grid gap-2 text-xs text-white/75 sm:grid-cols-2 lg:grid-cols-4">
                       <p>
-                        <span className="text-slate-400">Clave visible:</span>{' '}
+                        <span className="text-white/40">Clave visible:</span>{' '}
                         <span className="font-mono font-bold text-amber-100">
                           {snapshot?.visiblePassword || 'Sin registro'}
                         </span>
                       </p>
                       <p>
-                        <span className="text-slate-400">Fuente:</span> {resolvePasswordSourceLabel(snapshot?.source)}
+                        <span className="text-white/40">Fuente:</span> {resolvePasswordSourceLabel(snapshot?.source)}
                       </p>
                       <p>
-                        <span className="text-slate-400">Actualizado:</span> {formatDateTime(snapshot?.updatedAt || null)}
+                        <span className="text-white/40">Actualizado:</span> {formatDateTime(snapshot?.updatedAt || null)}
                       </p>
                       <p>
-                        <span className="text-slate-400">Por:</span>{' '}
+                        <span className="text-white/40">Por:</span>{' '}
                         {snapshot?.updatedByEmail || snapshot?.updatedByRole || 'Sin dato'}
                       </p>
                     </div>
@@ -1422,7 +1428,7 @@ export default function AdminUsuariosPermisosPage() {
                           }))
                         }
                         placeholder="Contrasena personalizada"
-                        className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs text-white outline-none focus:border-amber-200/65"
+                        className="min-w-[220px] flex-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs text-white outline-none focus:border-amber-200/65"
                       />
 
                       <ReliableActionButton
@@ -1443,9 +1449,9 @@ export default function AdminUsuariosPermisosPage() {
 
         {showColaboradoresPanel ? (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-slate-100">Ver colaboradores</p>
+            <p className="text-sm font-semibold text-white/85">Ver colaboradores</p>
             {items.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-slate-900/80 p-4 text-sm text-slate-300">
+              <div className="rounded-xl border border-white/10 bg-white/[0.06]/80 p-4 text-sm text-white/65">
                 Aun no hay colaboradores creados.
               </div>
             ) : (
@@ -1463,11 +1469,11 @@ export default function AdminUsuariosPermisosPage() {
                   );
 
                   return (
-                    <div key={`panel-${item.id}`} className="rounded-xl border border-white/10 bg-slate-900/75 p-4">
+                    <div key={`panel-${item.id}`} className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <p className="text-sm font-black text-white">{item.nombreCompleto}</p>
-                          <p className="text-xs text-slate-300">{item.email}</p>
+                          <p className="text-xs text-white/65">{item.email}</p>
                         </div>
                         <span
                           className={`rounded-full px-2 py-1 text-[10px] font-bold ${
@@ -1498,21 +1504,21 @@ export default function AdminUsuariosPermisosPage() {
                               .getElementById(`permisos-${item.id}`)
                               ?.scrollIntoView({ behavior: "smooth", block: "start" });
                           }}
-                          className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-100 transition hover:bg-white/10"
+                          className="rounded-lg border border-white/[0.1] bg-white/5 px-3 py-1.5 text-xs font-bold text-white/85 transition hover:bg-white/10"
                         >
                           Ir a permisos rapidos
                         </ReliableActionButton>
                       </div>
 
                       {expandedColaboradorId === item.id ? (
-                        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-4">
+                        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
                           {detailLoadingId === item.id || !detailDraft ? (
-                            <p className="text-sm text-slate-300">Cargando detalle...</p>
+                            <p className="text-sm text-white/65">Cargando detalle...</p>
                           ) : (
                             <div className="space-y-4">
                               <div>
                                 <p className="text-sm font-black text-white">Panel completo de colaborador</p>
-                                <p className="text-xs text-slate-300">Incluye datos, estado, asignaciones y acciones.</p>
+                                <p className="text-xs text-white/65">Incluye datos, estado, asignaciones y acciones.</p>
                               </div>
 
                               <div className="grid gap-3 sm:grid-cols-2">
@@ -1520,14 +1526,14 @@ export default function AdminUsuariosPermisosPage() {
                                   <input
                                     value={detailDraft.email}
                                     onChange={(e) => updateDetailDraft(item.id, { email: e.target.value })}
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                                 <Field label="Nombre completo">
                                   <input
                                     value={detailDraft.nombreCompleto}
                                     onChange={(e) => updateDetailDraft(item.id, { nombreCompleto: e.target.value })}
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                                 <Field label="Edad">
@@ -1535,7 +1541,7 @@ export default function AdminUsuariosPermisosPage() {
                                     value={detailDraft.edad}
                                     onChange={(e) => updateDetailDraft(item.id, { edad: e.target.value })}
                                     type="number"
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                                 <Field label="Fecha de nacimiento">
@@ -1543,7 +1549,7 @@ export default function AdminUsuariosPermisosPage() {
                                     value={detailDraft.fechaNacimiento}
                                     onChange={(e) => updateDetailDraft(item.id, { fechaNacimiento: e.target.value })}
                                     type="date"
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                                 <Field label="Altura (cm)">
@@ -1552,14 +1558,14 @@ export default function AdminUsuariosPermisosPage() {
                                     onChange={(e) => updateDetailDraft(item.id, { altura: e.target.value })}
                                     type="number"
                                     step="0.01"
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                                 <Field label="Telefono">
                                   <input
                                     value={detailDraft.telefono}
                                     onChange={(e) => updateDetailDraft(item.id, { telefono: e.target.value })}
-                                    className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                   />
                                 </Field>
                               </div>
@@ -1568,7 +1574,7 @@ export default function AdminUsuariosPermisosPage() {
                                 <input
                                   value={detailDraft.direccion}
                                   onChange={(e) => updateDetailDraft(item.id, { direccion: e.target.value })}
-                                  className="w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                 />
                               </Field>
 
@@ -1621,9 +1627,9 @@ export default function AdminUsuariosPermisosPage() {
                                 </ReliableActionButton>
                               </div>
 
-                              <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
+                              <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
                                 <p className="text-sm font-black text-white">Asignaciones</p>
-                                <p className="mt-1 text-xs text-slate-300">Selecciona clientes y define si puede editar.</p>
+                                <p className="mt-1 text-xs text-white/65">Selecciona clientes y define si puede editar.</p>
 
                                 <input
                                   value={detailSearch}
@@ -1631,20 +1637,20 @@ export default function AdminUsuariosPermisosPage() {
                                     setDetailClientSearchById((prev) => ({ ...prev, [item.id]: e.target.value }))
                                   }
                                   placeholder="Buscar cliente por email"
-                                  className="mt-3 w-full rounded-xl border border-white/15 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
+                                  className="mt-3 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-cyan-300/50"
                                 />
 
-                                <div className="mt-3 max-h-64 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/40 p-3">
+                                <div className="mt-3 max-h-64 space-y-2 overflow-y-auto rounded-xl border border-white/[0.07] bg-white/[0.02]/40 p-3">
                                   {clientesFiltrados.length === 0 ? (
-                                    <p className="text-sm text-slate-300">No hay clientes para asignar.</p>
+                                    <p className="text-sm text-white/65">No hay clientes para asignar.</p>
                                   ) : (
                                     clientesFiltrados.map((cliente) => {
                                       const checked = asignacionesSet.has(cliente.id);
                                       const asignacion = detailAsignaciones.find((entry) => entry.alumnoId === cliente.id);
 
                                       return (
-                                        <div key={`${item.id}-${cliente.id}`} className="rounded-lg border border-white/10 bg-slate-900/60 p-2">
-                                          <label className="flex items-center gap-2 text-sm text-slate-100">
+                                        <div key={`${item.id}-${cliente.id}`} className="rounded-lg border border-white/[0.07] bg-white/[0.03] p-2">
+                                          <label className="flex items-center gap-2 text-sm text-white/85">
                                             <input
                                               type="checkbox"
                                               checked={checked}
@@ -1655,7 +1661,7 @@ export default function AdminUsuariosPermisosPage() {
                                           </label>
 
                                           {checked ? (
-                                            <label className="mt-2 flex items-center gap-2 text-xs text-slate-300">
+                                            <label className="mt-2 flex items-center gap-2 text-xs text-white/65">
                                               <input
                                                 type="checkbox"
                                                 checked={Boolean(asignacion?.puedeEditar)}
@@ -1683,16 +1689,16 @@ export default function AdminUsuariosPermisosPage() {
                                 </ReliableActionButton>
                               </div>
 
-                              <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
+                              <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
                                 <p className="text-sm font-black text-white">Historial</p>
                                 {detailHistorial.length === 0 ? (
-                                  <p className="mt-2 text-sm text-slate-300">Sin acciones registradas.</p>
+                                  <p className="mt-2 text-sm text-white/65">Sin acciones registradas.</p>
                                 ) : (
                                   <div className="mt-2 space-y-2">
                                     {detailHistorial.slice(0, 8).map((entry, index) => (
-                                      <div key={`${item.id}-hist-${index}`} className="rounded-lg border border-white/10 bg-slate-800/60 p-2">
-                                        <p className="text-xs font-semibold text-slate-100">{entry.value?.accion || "accion"}</p>
-                                        <p className="text-[11px] text-slate-400">{entry.value?.fecha || ""}</p>
+                                      <div key={`${item.id}-hist-${index}`} className="rounded-lg border border-white/[0.07] bg-white/[0.04]/60 p-2">
+                                        <p className="text-xs font-semibold text-white/85">{entry.value?.accion || "accion"}</p>
+                                        <p className="text-[11px] text-white/40">{entry.value?.fecha || ""}</p>
                                       </div>
                                     ))}
                                   </div>
@@ -1714,15 +1720,15 @@ export default function AdminUsuariosPermisosPage() {
       <section className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-white">Permisos rapidos</h2>
-          <p className="text-xs text-slate-300">Edita accesos por apartado sin salir de esta pantalla.</p>
+          <p className="text-xs text-white/65">Edita accesos por apartado sin salir de esta pantalla.</p>
         </div>
         <div className="w-full max-w-sm">
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">Buscar colaborador</label>
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/65">Buscar colaborador</label>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Nombre o email"
-            className="w-full rounded-xl border border-white/15 bg-slate-900 px-4 py-2 text-sm text-slate-100 outline-none focus:border-cyan-300/60"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2]"
           />
         </div>
       </section>
@@ -1741,11 +1747,11 @@ export default function AdminUsuariosPermisosPage() {
 
       <div className="space-y-4">
         {filtered.map((item) => (
-          <section id={`permisos-${item.id}`} key={item.id} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+          <section id={`permisos-${item.id}`} key={item.id} className="pf-card rounded-2xl border p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black text-white">{item.nombreCompleto}</h2>
-                <p className="text-sm text-slate-300">{item.email}</p>
+                <p className="text-sm text-white/65">{item.email}</p>
               </div>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-bold ${
@@ -1776,9 +1782,9 @@ export default function AdminUsuariosPermisosPage() {
               />
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-bold text-slate-100">Acceso a categorias y apartados</p>
+                <p className="text-sm font-bold text-white/85">Acceso a categorias y apartados</p>
                 <div className="flex gap-2">
                   <ReliableActionButton
                     type="button"
@@ -1801,11 +1807,11 @@ export default function AdminUsuariosPermisosPage() {
                 {ACCESS_OPTIONS.map((option) => (
                   <label
                     key={option.href}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2"
+                    className="flex items-center justify-between rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">{option.label}</p>
-                      <p className="text-[11px] text-slate-400">{option.category}</p>
+                      <p className="text-sm font-semibold text-white/85">{option.label}</p>
+                      <p className="text-[11px] text-white/40">{option.category}</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1838,26 +1844,26 @@ export default function AdminUsuariosPermisosPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
+        <div className="pf-card rounded-2xl border p-6 text-sm text-white/65">
           No se encontraron colaboradores para mostrar.
         </div>
       ) : null}
 
       {ingresanteModal ? (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-40 flex items-center justify-center bg-white/[0.025] p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="Detalle de nuevo ingresante"
         >
-          <div className="w-full max-w-4xl rounded-2xl border border-cyan-200/30 bg-slate-950/95 p-5 shadow-[0_35px_90px_rgba(2,8,24,0.65)]">
+          <div className="w-full max-w-4xl rounded-2xl border border-cyan-200/30 bg-white/[0.02]/95 p-5 shadow-[0_35px_90px_rgba(2,8,24,0.65)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/80">Nuevo ingresante</p>
                 <h2 className="mt-1 text-2xl font-black text-white">
                   {resolveIngresanteNombre(ingresanteModal).nombreCompleto || 'Sin nombre'}
                 </h2>
-                <p className="text-sm text-slate-300">{ingresanteModal.email}</p>
+                <p className="text-sm text-white/65">{ingresanteModal.email}</p>
               </div>
 
               <ReliableActionButton
@@ -1866,7 +1872,7 @@ export default function AdminUsuariosPermisosPage() {
                   setIngresanteModalId(null);
                   setConfirmAltaId(null);
                 }}
-                className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
+                className="rounded-lg border border-white/[0.1] bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20"
               >
                 Cerrar
               </ReliableActionButton>
@@ -1883,25 +1889,25 @@ export default function AdminUsuariosPermisosPage() {
               <InfoTile label="Registrado" value={formatDateTime(ingresanteModal.createdAt)} />
             </div>
 
-            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-3">
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.06] p-3">
               <p className="text-sm font-black text-white">Observaciones iniciales</p>
-              <p className="mt-1 text-sm text-slate-200">
+              <p className="mt-1 text-sm text-white/75">
                 {String(ingresanteModal.signupProfile?.observaciones || 'Sin observaciones')}
               </p>
             </div>
 
-            <details className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-3" open>
+            <details className="mt-4 rounded-xl border border-white/10 bg-white/[0.06] p-3" open>
               <summary className="cursor-pointer text-sm font-black text-cyan-100">Anamnesis de ingreso</summary>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {buildAnamnesisRows(ingresanteModal.signupProfile?.anamnesis).length === 0 ? (
-                  <p className="rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2 text-sm text-slate-300 sm:col-span-2">
+                  <p className="rounded-lg border border-white/[0.07] bg-white/[0.02]/70 px-3 py-2 text-sm text-white/65 sm:col-span-2">
                     Sin respuestas de anamnesis disponibles.
                   </p>
                 ) : (
                   buildAnamnesisRows(ingresanteModal.signupProfile?.anamnesis).map((entry) => (
-                    <div key={`${entry.pregunta}-${entry.respuesta}`} className="rounded-lg border border-white/10 bg-slate-950/70 p-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{entry.pregunta}</p>
-                      <p className="mt-1 text-sm text-slate-100">{entry.respuesta}</p>
+                    <div key={`${entry.pregunta}-${entry.respuesta}`} className="rounded-lg border border-white/[0.07] bg-white/[0.02]/70 p-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/65">{entry.pregunta}</p>
+                      <p className="mt-1 text-sm text-white/85">{entry.respuesta}</p>
                     </div>
                   ))
                 )}
@@ -1930,7 +1936,7 @@ export default function AdminUsuariosPermisosPage() {
 
       {confirmAltaCliente ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-white/[0.02]/70 p-4 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-label="Confirmacion de alta"
@@ -1938,9 +1944,9 @@ export default function AdminUsuariosPermisosPage() {
           <div className="w-full max-w-lg rounded-2xl border border-amber-200/35 bg-[#0b1220] p-6 text-center shadow-[0_28px_80px_rgba(2,6,20,0.7)]">
             <p className="text-5xl font-black text-amber-200">!</p>
             <h3 className="mt-2 text-4xl font-black text-white">Atencion</h3>
-            <p className="mt-2 text-lg text-slate-100">Se creara una membresia:</p>
+            <p className="mt-2 text-lg text-white/85">Se creara una membresia:</p>
 
-            <div className="mt-4 rounded-xl border border-white/10 bg-slate-900/70 p-4 text-left text-sm text-slate-100">
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.06] p-4 text-left text-sm text-white/85">
               <p>
                 Titular: <strong>{resolveIngresanteNombre(confirmAltaCliente).nombreCompleto || 'Sin nombre'}</strong>
               </p>
@@ -1980,8 +1986,8 @@ export default function AdminUsuariosPermisosPage() {
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-slate-900/70 p-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">{label}</p>
+    <div className="rounded-lg border border-white/[0.07] bg-white/[0.03] p-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/65">{label}</p>
       <p className="mt-1 text-sm font-bold text-white">{value || 'Sin dato'}</p>
     </div>
   );
@@ -1989,7 +1995,7 @@ function InfoTile({ label, value }: { label: string; value: string }) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="grid gap-1.5 text-sm font-semibold text-slate-200">
+    <label className="grid gap-1.5 text-sm font-semibold text-white/75">
       <span>{label}</span>
       {children}
     </label>
@@ -2006,7 +2012,7 @@ function ToggleChip({
   onToggle: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-800/70 px-3 py-2 text-sm text-slate-100">
+    <label className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.04]/70 px-3 py-2 text-sm text-white/85">
       <input type="checkbox" checked={checked} onChange={(e) => onToggle(e.target.checked)} className="h-4 w-4" />
       <span>{label}</span>
     </label>

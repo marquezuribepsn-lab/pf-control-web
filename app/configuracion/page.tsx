@@ -523,25 +523,31 @@ export default function ConfiguracionPage() {
   if (!loaded) {
     return (
       <main className="mx-auto max-w-4xl p-6">
-        <div className="rounded-2xl border border-white/15 bg-slate-900/75 p-6">
-          <p className="text-sm text-slate-300">Cargando configuracion...</p>
+        <div className="pf-card rounded-2xl border p-6">
+          <p className="text-sm text-white/65">Cargando configuracion...</p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6 text-slate-100">
+    <main className="relative mx-auto max-w-4xl p-6 text-white/85">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,217),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
       <div className="mb-6">
-        <h1 className="text-3xl font-black">Configuracion</h1>
-        <p className="mt-1 text-sm text-slate-300">
+        <h1 className="text-3xl font-black" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Configuracion</h1>
+        <p className="mt-1 text-sm text-white/65">
           Ajusta el tamano visual de toda la app y activa notificaciones tipo push del navegador.
         </p>
       </div>
 
-      <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Panel general</h2>
-        <p className="mt-1 text-sm text-slate-300">
+      <section className="mb-6 pf-card rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Panel general</h2>
+        <p className="mt-1 text-sm text-white/65">
           Opciones generales que antes estaban en la configuracion inferior del sidebar.
         </p>
 
@@ -557,7 +563,7 @@ export default function ConfiguracionPage() {
           <ReliableActionButton
             type="button"
             onClick={resetearMenu}
-            className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white"
+            className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-white"
           >
             Reset menu lateral
           </ReliableActionButton>
@@ -573,12 +579,12 @@ export default function ConfiguracionPage() {
           </label>
         </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
           <div className="flex items-center gap-3">
             {sidebarImageDraft ? (
               <img src={sidebarImageDraft} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/15 bg-slate-800 text-xs text-slate-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-xs text-white/65">
                 Sin foto
               </div>
             )}
@@ -604,7 +610,7 @@ export default function ConfiguracionPage() {
                   type="button"
                   onClick={revertSidebarImageDraft}
                   disabled={savingSidebarImage}
-                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold text-white"
+                  className="rounded-lg border border-white/[0.1] px-3 py-1.5 text-xs font-semibold text-white"
                 >
                   Revertir
                 </ReliableActionButton>
@@ -613,7 +619,7 @@ export default function ConfiguracionPage() {
           </div>
 
           {!sidebarImageDraft ? (
-            <p className="mt-2 text-xs text-slate-300">Todavia no tienes foto de perfil cargada.</p>
+            <p className="mt-2 text-xs text-white/65">Todavia no tienes foto de perfil cargada.</p>
           ) : null}
         </div>
 
@@ -625,21 +631,21 @@ export default function ConfiguracionPage() {
           <p className="mt-2 text-xs text-rose-200">{sidebarImageError}</p>
         ) : null}
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-3">
-          <p className="text-sm font-semibold text-slate-100">Dock inferior</p>
-          <p className="mt-1 text-xs text-slate-400">
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+          <p className="text-sm font-semibold text-white/85">Dock inferior</p>
+          <p className="mt-1 text-xs text-white/40">
             Controla como se muestran los nombres de los botones para evitar que el dock quede demasiado ancho.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <label htmlFor="dock-label-mode" className="text-xs font-semibold text-slate-200">
+            <label htmlFor="dock-label-mode" className="text-xs font-semibold text-white/75">
               Etiquetas del dock
             </label>
             <select
               id="dock-label-mode"
               value={dockLabelMode}
               onChange={(event) => cambiarModoEtiquetasDock(event.target.value as DockLabelMode)}
-              className="rounded-lg border border-white/25 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-100"
+              className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/85"
             >
               <option value="compact">Compactas</option>
               <option value="full">Completas</option>
@@ -648,15 +654,15 @@ export default function ConfiguracionPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-slate-950/65 p-3">
+        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-white/[0.02]/65 p-3">
           <p className="text-sm font-semibold text-cyan-100">Widget rotativo del sidebar</p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-white/40">
             Configura el carrusel de indicadores operativos que aparece abajo del menu lateral.
           </p>
 
           <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
             <div>
-              <label className="text-xs font-semibold text-slate-200">
+              <label className="text-xs font-semibold text-white/75">
                 Tiempo de transicion: {widgetTransitionSeconds}s
               </label>
               <input
@@ -669,7 +675,7 @@ export default function ConfiguracionPage() {
                 className="mt-2 w-full"
               />
             </div>
-            <div className="rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-xs text-slate-300">
+            <div className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-xs text-white/65">
               {widgetSelectedCards.length} seleccionados
             </div>
           </div>
@@ -680,7 +686,7 @@ export default function ConfiguracionPage() {
               return (
                 <label
                   key={option.id}
-                  className="flex items-start gap-2 rounded-lg border border-white/15 bg-slate-900/70 px-3 py-2 text-xs"
+                  className="flex items-start gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs"
                 >
                   <input
                     type="checkbox"
@@ -689,30 +695,30 @@ export default function ConfiguracionPage() {
                     className="mt-0.5"
                   />
                   <span className="min-w-0">
-                    <span className="font-semibold text-slate-100">
+                    <span className="font-semibold text-white/85">
                       {option.icon} {option.label}
                     </span>
-                    <span className="mt-0.5 block text-[11px] text-slate-400">{option.hint}</span>
+                    <span className="mt-0.5 block text-[11px] text-white/40">{option.hint}</span>
                   </span>
                 </label>
               );
             })}
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-[11px] text-white/35">
             Debe quedar al menos una opcion marcada.
           </p>
         </div>
       </section>
 
-      <section className="mb-6 rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Pantalla</h2>
-        <p className="mt-1 text-sm text-slate-300">
+      <section className="mb-6 pf-card rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Pantalla</h2>
+        <p className="mt-1 text-sm text-white/65">
           Solo puedes cambiar el tamano cuando activas &quot;Modificar pantalla&quot;.
         </p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-200">
+            <label className="mb-2 block text-sm font-semibold text-white/75">
               Escala global: {scalePercent}%
             </label>
             <input
@@ -732,7 +738,7 @@ export default function ConfiguracionPage() {
               }}
               className="w-full"
             />
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-white/40">
               Valor guardado: {Math.round(savedScale * 100)}%
             </p>
           </div>
@@ -758,7 +764,7 @@ export default function ConfiguracionPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={cancelarModificacion}
-                  className="rounded-xl border border-white/25 px-4 py-2 text-sm font-semibold text-white"
+                  className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Cancelar
                 </ReliableActionButton>
@@ -775,9 +781,9 @@ export default function ConfiguracionPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-        <h2 className="text-xl font-bold">Notificaciones</h2>
-        <p className="mt-1 text-sm text-slate-300">
+      <section className="pf-card rounded-2xl border p-5">
+        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Notificaciones</h2>
+        <p className="mt-1 text-sm text-white/65">
           Al activarlas, cada cambio guardado en la app dispara una notificacion del sistema.
         </p>
 
@@ -800,13 +806,13 @@ export default function ConfiguracionPage() {
           </ReliableActionButton>
         </div>
 
-        <p className="mt-3 text-xs text-slate-400">
+        <p className="mt-3 text-xs text-white/40">
           Estado del permiso: {permission === "unsupported" ? "No soportado" : permission}
         </p>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 p-4">
-          <p className="text-sm font-semibold text-slate-100">Push remoto (tipo sistema)</p>
-          <p className="mt-1 text-xs text-slate-400">
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
+          <p className="text-sm font-semibold text-white/85">Push remoto (tipo sistema)</p>
+          <p className="mt-1 text-xs text-white/40">
             Requiere HTTPS y VAPID configurado. Si lo activas, recibes aviso cuando se guarda cualquier cambio.
           </p>
 
@@ -837,7 +843,7 @@ export default function ConfiguracionPage() {
             </ReliableActionButton>
           </div>
 
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-white/40">
             Estado push: {pushSupported ? (pushSubscribed ? "Suscripto" : "No suscripto") : "No soportado"}
           </p>
           {!VAPID_PUBLIC_KEY ? (

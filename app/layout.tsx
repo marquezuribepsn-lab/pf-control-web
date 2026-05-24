@@ -39,8 +39,6 @@ export const viewport: Viewport = {
 
 const db = prisma as any;
 const SIDEBAR_IMAGE_SYNC_KEY_PREFIX = "pf-control-user-sidebar-image:";
-const HARD_RELOAD_SPLASH_VISIBLE_MS = 2000;
-const HARD_RELOAD_SPLASH_FADE_MS = 240;
 
 function resolveInitialProfileName(user?: { name?: string | null; email?: string | null } | null): string | null {
   const fromName = typeof user?.name === "string" ? user.name.trim() : "";
@@ -179,107 +177,22 @@ export default async function RootLayout({
     { href: "/configuracion", label: "Configuracion", icon: "\u2699\uFE0F", tone: "from-slate-500 to-gray-600" },
   ];
 
+  // SUPERADMIN tiene su propio shell completo — no usa AppShell ni providers de alumnos
+  if (initialRole === "SUPERADMIN") {
+    return (
+      <html lang="es">
+        <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-[#080810] text-white`}>
+          <AuthSessionProvider>
+            {children}
+          </AuthSessionProvider>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es">
       <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
-        <style>{`
-          @keyframes pfHardReloadSplashFade {
-            from {
-              opacity: 1;
-              visibility: visible;
-            }
-
-            to {
-              opacity: 0;
-              visibility: hidden;
-            }
-          }
-
-          @media (prefers-reduced-motion: reduce) {
-            #pf-hard-reload-splash {
-              animation-duration: 1ms !important;
-            }
-          }
-        `}</style>
-        <div
-          id="pf-hard-reload-splash"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "#05070a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-            pointerEvents: "none",
-            opacity: 1,
-            visibility: "visible",
-            animation: `pfHardReloadSplashFade ${HARD_RELOAD_SPLASH_FADE_MS}ms ease ${HARD_RELOAD_SPLASH_VISIBLE_MS}ms forwards`,
-            WebkitAnimation: `pfHardReloadSplashFade ${HARD_RELOAD_SPLASH_FADE_MS}ms ease ${HARD_RELOAD_SPLASH_VISIBLE_MS}ms forwards`,
-          }}
-          aria-live="polite"
-        >
-          <div
-            style={{
-              width: "min(420px, 92vw)",
-              borderRadius: "24px",
-              border: "1px solid rgba(115,226,191,0.25)",
-              background: "rgba(8,16,28,0.95)",
-              boxShadow: "0 18px 54px rgba(0,0,0,0.35)",
-              padding: "24px 20px",
-              display: "grid",
-              placeItems: "center",
-              rowGap: "10px",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "62px",
-                height: "62px",
-                borderRadius: "31px",
-                border: "2px solid rgba(115,226,191,0.4)",
-                display: "grid",
-                placeItems: "center",
-              }}
-              aria-hidden="true"
-            >
-              <div
-                style={{
-                  width: "46px",
-                  height: "46px",
-                  borderRadius: "23px",
-                  border: "1px solid rgba(146,190,255,0.58)",
-                  background: "rgba(9,16,26,0.92)",
-                  color: "#ecfff7",
-                  fontWeight: 900,
-                  fontSize: "14px",
-                  letterSpacing: "1.2px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                PF
-              </div>
-            </div>
-            <p
-              style={{
-                margin: 0,
-                color: "#9db4cd",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.9px",
-                textTransform: "uppercase",
-              }}
-            >
-              PF Control
-            </p>
-            <p style={{ margin: 0, color: "#d9e8f8", fontSize: "13px", fontWeight: 700 }}>
-              Cargando plataforma...
-            </p>
-          </div>
-        </div>
         <AuthSessionProvider>
           <PresenceBeacon />
           <div className="pf-root-atmosphere">

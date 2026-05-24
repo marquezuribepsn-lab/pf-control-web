@@ -4661,7 +4661,7 @@ export default function ClientesPage() {
         style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,142),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
-      <section className="rounded-2xl border border-cyan-300/20 bg-white/[0.03] p-3" style={{ borderColor: `hsla(var(--hue,142),60%,55%,0.13)` }}>
+      <section className="pf-card rounded-2xl border p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex rounded-xl border border-white/15 bg-white/[0.025] p-1">
             <ReliableActionButton
@@ -5341,7 +5341,7 @@ export default function ClientesPage() {
             {ingresantesPendientes.map((ingresante) => {
               const nombre = resolveIngresanteDisplayName(ingresante);
               return (
-                <article key={`ingresante-${ingresante.id}`} className="rounded-2xl border border-cyan-200/20 bg-white/[0.03] p-3">
+                <article key={`ingresante-${ingresante.id}`} className="pf-card rounded-2xl border p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
                   <p className="mt-1 text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
                   <p className="text-xs text-slate-300">{ingresante.email}</p>
@@ -5378,7 +5378,7 @@ export default function ClientesPage() {
       ) : null}
 
       {!isDetailMode ? (
-      <section className="mb-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5 ">
+      <section className="mb-6 pf-card rounded-2xl border p-5 ">
         <h2 className="text-xl font-bold">Registrar pago</h2>
         <p className="mt-1 text-sm text-slate-300">
           Al registrar un pago, se renueva automaticamente la asesoria por 30 dias (configurable por cliente).
@@ -5727,7 +5727,7 @@ export default function ClientesPage() {
         ) : null}
 
         {isDetailMode ? (
-        <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-5  xl:p-6">
+        <div className="pf-card rounded-2xl border p-5  xl:p-6">
           {!selectedClient || !selectedMeta || !datosDraft ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 text-sm text-slate-300">Selecciona un cliente para abrir su ficha.</div>
           ) : (
@@ -6285,7 +6285,7 @@ export default function ClientesPage() {
                     </div>
 
                     {!selectedClientTrainingPlan ? (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300">
+                      <div className="pf-card rounded-2xl border p-4 text-sm text-slate-300">
                         <p>No hay un plan semanal vinculado para este cliente todavia.</p>
                         {canEditTrainingPlan ? (
                           <ReliableActionButton
@@ -8187,7 +8187,7 @@ export default function ClientesPage() {
                     )}
                   </div>
                 ) : activeTab === "plan-nutricional" ? (
-                  <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-4">
+                  <div className="pf-card rounded-2xl border p-4">
                     <h3 className="text-lg font-black text-white">Plan nutricional</h3>
 
                     {selectedNutritionPlan ? (
@@ -8345,7 +8345,7 @@ export default function ClientesPage() {
 
       {feedbackModalTarget ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/[0.02]/85 px-3 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-2xl border border-emerald-300/30 bg-white/[0.03]/95 p-5 text-slate-100 shadow-2xl">
+          <div className="w-full max-w-3xl pf-card rounded-2xl border border-emerald-300/30 p-5 text-slate-100 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Feedback post sesión</p>
@@ -8490,7 +8490,7 @@ export default function ClientesPage() {
 
       {newExerciseModalOpen ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-cyan-300/30 bg-white/[0.03]/95 p-5 text-slate-100 shadow-2xl">
+          <div className="w-full max-w-lg pf-card rounded-2xl border border-cyan-300/30 p-5 text-slate-100 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Nuevo ejercicio</p>

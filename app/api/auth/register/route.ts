@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 import { getSyncValue, setSyncValue } from '@/lib/syncStore';
 import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
+import { rateLimit, getIP } from '@/lib/rateLimit';
 
 const db = prisma as any;
 const SIGNUP_PROFILES_KEY = 'pf-control-signup-profiles-v1';
@@ -211,6 +212,9 @@ async function saveSignupProfile(email: string, profile: SignupProfile) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(getIP(req), "register", { max: 5, windowMs: 60 * 60 * 1000 })) {
+    return NextResponse.json({ message: "Demasiados registros desde esta IP. Intentá más tarde." }, { status: 429 });
+  }
   try {
     let payload: any;
     try {

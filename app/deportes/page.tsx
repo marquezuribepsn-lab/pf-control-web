@@ -106,8 +106,14 @@ export default function DeportesPage() {
   };
 
   return (
-    <main className="mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950/45 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.15)]">
+    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
+        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,197),65%,55%,0.1) 0%, transparent 70%)` }}
+        aria-hidden="true"
+      />
+      <section className="relative overflow-hidden pf-card rounded-3xl border p-6">
         <div className="pointer-events-none absolute -left-14 -top-16 h-48 w-48 rounded-full bg-cyan-400/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-10 bottom-0 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl" />
 
@@ -120,7 +126,7 @@ export default function DeportesPage() {
             </p>
           </div>
 
-          <div className="grid min-w-[220px] gap-2 rounded-2xl border border-white/12 bg-slate-900/55 p-3 text-right">
+          <div className="grid min-w-[220px] gap-2 pf-card rounded-2xl border p-3 text-right">
             <p className="text-xs uppercase tracking-[0.16em] text-slate-300">Snapshot</p>
             <p className="text-2xl font-black text-cyan-100">{stats.total}</p>
             <p className="text-xs text-slate-400">deportes cargados</p>
@@ -135,13 +141,13 @@ export default function DeportesPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      <section className="pf-card rounded-2xl border p-5">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-white">Agregar nuevo deporte</h2>
-            <p className="mt-1 text-xs text-slate-400">Se crea como habilitado con lista de posiciones vacía.</p>
+            <h2 className="text-xl font-bold text-white/90" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Agregar nuevo deporte</h2>
+            <p className="mt-1 text-xs text-white/40">Se crea como habilitado con lista de posiciones vacía.</p>
           </div>
-          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/12 px-3 py-1 text-[11px] font-semibold text-cyan-100">
+          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
             Total actual: {stats.total}
           </span>
         </div>
@@ -158,26 +164,26 @@ export default function DeportesPage() {
               }
             }}
             placeholder="Nombre del deporte"
-            className="flex-1 rounded-xl border border-white/15 bg-slate-950/65 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+            className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
           />
           <ReliableActionButton
             onClick={handleAgregarDeporte}
-            className="rounded-xl border border-cyan-300/35 bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-300"
+            className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-400"
           >
             Agregar
           </ReliableActionButton>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
+      <section className="pf-card rounded-2xl border p-5">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white">Buscador inteligente</h2>
-            <p className="mt-1 text-xs text-slate-400">
+            <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Buscador inteligente</h2>
+            <p className="mt-1 text-xs text-white/40">
               Busca por nombre de deporte o por cualquier posición (por ejemplo &quot;delantero&quot; o &quot;base&quot;).
             </p>
           </div>
-          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/12 px-3 py-1 text-[11px] font-semibold text-cyan-100">
+          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
             {deportesFiltrados.length} resultados
           </span>
         </div>
@@ -187,17 +193,17 @@ export default function DeportesPage() {
           value={busqueda}
           onChange={(event) => setBusqueda(event.target.value)}
           placeholder="Filtrar deportes o posiciones..."
-          className="w-full rounded-xl border border-white/15 bg-slate-950/65 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+          className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
         />
       </section>
 
       <section>
         {deportesFiltrados.length === 0 ? (
-          <div className="rounded-3xl border border-white/12 bg-slate-900/70 p-8 text-center">
-            <p className="text-lg font-bold text-slate-100">
+          <div className="pf-card rounded-2xl border p-8 text-center">
+            <p className="text-lg font-bold text-white/90">
               {sortedDeportes.length === 0 ? "No hay deportes cargados todavía." : "No encontramos coincidencias para tu búsqueda."}
             </p>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-white/40">
               {sortedDeportes.length === 0
                 ? "Empieza creando el primero desde el bloque superior."
                 : "Prueba con otro término o limpia el filtro para ver todos los deportes."}
@@ -211,7 +217,7 @@ export default function DeportesPage() {
               return (
                 <article
                   key={deporte.nombre}
-                  className={`relative overflow-hidden rounded-3xl border bg-slate-900/80 p-5 shadow-[0_14px_36px_rgba(2,8,23,0.42)] ${tone.border}`}
+                  className={`pf-card relative overflow-hidden rounded-2xl border p-5`}
                 >
                   <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone.glow}`} />
 
@@ -241,7 +247,7 @@ export default function DeportesPage() {
                     </div>
                   </div>
 
-                  <div className="relative mt-4 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
+                  <div className="relative mt-4 pf-card rounded-2xl border p-3">
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Posiciones</h3>
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone.badge}`}>
@@ -256,7 +262,7 @@ export default function DeportesPage() {
                         {deporte.posiciones.map((posicion, positionIndex) => (
                           <li
                             key={`${deporte.nombre}-${posicion}-${positionIndex}`}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-white/8 bg-slate-900/70 px-2.5 py-1.5 text-sm text-slate-100"
+                            className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-sm text-white/85"
                           >
                             <span className="truncate">{posicion}</span>
                             <ReliableActionButton
@@ -284,7 +290,7 @@ export default function DeportesPage() {
                             }
                           }}
                           placeholder="Nueva posición"
-                          className="flex-1 rounded-lg border border-white/14 bg-slate-900/70 px-3 py-2 text-xs text-slate-100 outline-none focus:border-cyan-300/60"
+                          className="flex-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
                         />
                         <ReliableActionButton
                           onClick={() => handleAgregarPosicion(deporte.nombre)}
@@ -331,10 +337,10 @@ function StatTile({
   };
 
   return (
-    <article className={`rounded-2xl border p-3 shadow-sm ${palette[tone]}`}>
-      <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300">{label}</p>
+    <article className={`rounded-2xl border p-3 ${palette[tone]}`}>
+      <p className="text-[11px] uppercase tracking-[0.16em] text-white/35">{label}</p>
       <p className="mt-1 text-2xl font-black text-white">{value}</p>
-      {suffix ? <p className="text-[10px] text-slate-300">{suffix}</p> : null}
+      {suffix ? <p className="text-[10px] text-white/45">{suffix}</p> : null}
     </article>
   );
 }

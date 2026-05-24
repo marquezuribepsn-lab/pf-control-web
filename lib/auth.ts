@@ -14,7 +14,7 @@ type AuthUserRecord = {
   id: string;
   email: string;
   password: string;
-  role: 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
+  role: 'SUPERADMIN' | 'ADMIN' | 'COLABORADOR' | 'CLIENTE';
   estado: string;
   emailVerified: boolean;
 };
@@ -79,6 +79,82 @@ async function findUserByEmail(email: string): Promise<AuthUserRecord | null> {
     : null;
 }
 
+class ForceSignOutError extends Error {
+  code = 'FORCE_SIGN_OUT';
+  constructor() { super('Session invalidated by admin'); }
+}
+
+async function refreshAdminSubscriptionClaims(token: Record<string, unknown>, force = false) {
+  const email = normalizeEmailInput(token.email);
+  if (!email) {
+    token.subscriptionActive = true;
+    token.subscriptionReason = 'no-meta';
+    token.subscriptionCheckedAt = Date.now();
+    return;
+  }
+
+  const now = Date.now();
+  const checkedAt = Number(token.subscriptionCheckedAt || 0);
+  const recentlyChecked = Number.isFinite(checkedAt) && now - checkedAt < BILLING_REFRESH_WINDOW_MS;
+
+  if (!force && recentlyChecked) {
+    return;
+  }
+
+  // Check for forced sign-out
+  const userRecord = await findUserByEmail(email);
+  if (userRecord && String(userRecord.estado || '').trim().toLowerCase() === 'force-logout') {
+    await db.user.update({ where: { email }, data: { estado: 'activo' } }).catch(() => {});
+    throw new ForceSignOutError();
+  }
+
+  // Check profesor subscription
+  try {
+    const userId = String(token.id || '');
+    if (!userId) {
+      token.subscriptionActive = true;
+      token.subscriptionReason = 'no-id';
+      token.subscriptionCheckedAt = now;
+      return;
+    }
+
+    const sub = await db.profesorSubscription.findUnique({
+      where: { profesorId: userId },
+      select: { estado: true, fechaVencimiento: true, planTipo: true, maxAlumnos: true, maxPlanes: true },
+    });
+
+    if (!sub) {
+      // No subscription record yet — allow access (first time setup)
+      token.subscriptionActive = true;
+      token.subscriptionReason = 'no-sub';
+      token.subscriptionCheckedAt = now;
+      return;
+    }
+
+    const estado = String(sub.estado || '').toLowerCase();
+    const vencimiento = sub.fechaVencimiento ? new Date(sub.fechaVencimiento) : null;
+    const expired = vencimiento && vencimiento < new Date();
+
+    if (estado === 'suspendido' || estado === 'cancelado' || (estado === 'vencido') || (estado === 'activo' && expired)) {
+      token.subscriptionActive = false;
+      token.subscriptionReason = expired ? 'expired' : estado;
+    } else {
+      token.subscriptionActive = true;
+      token.subscriptionReason = estado;
+    }
+
+    token.subscriptionEndDate = vencimiento ? vencimiento.toISOString() : null;
+    token.subscriptionPlan = sub.planTipo;
+    token.maxAlumnos = sub.maxAlumnos;
+    token.maxPlanes = sub.maxPlanes;
+    token.subscriptionCheckedAt = now;
+  } catch {
+    token.subscriptionActive = true;
+    token.subscriptionReason = 'db-error';
+    token.subscriptionCheckedAt = now;
+  }
+}
+
 async function refreshClienteBillingClaims(token: Record<string, unknown>, force = false) {
   const email = normalizeEmailInput(token.email);
   if (!email) {
@@ -95,6 +171,14 @@ async function refreshClienteBillingClaims(token: Record<string, unknown>, force
 
   if (!force && recentlyChecked) {
     return;
+  }
+
+  // Check for forced sign-out flag
+  const userRecord = await findUserByEmail(email);
+  if (userRecord && String(userRecord.estado || '').trim().toLowerCase() === 'force-logout') {
+    // Reset so user can sign in again after being kicked out
+    await db.user.update({ where: { email }, data: { estado: 'activo' } }).catch(() => {});
+    throw new ForceSignOutError();
   }
 
   const access = await resolveBillingAccessByEmail(email);
@@ -213,14 +297,38 @@ export const authConfig = {
         token.estado = (user as any).estado;
         token.rememberMe = Boolean((user as any).rememberMe);
         token.email = String((user as any).email || token.email || '').trim().toLowerCase();
+        // Registrar último login (fire-and-forget, no bloquea la autenticación)
+        if (user.id) {
+          db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
+        }
       }
 
       const role = String(token.role || '').trim().toUpperCase();
-      if (role === 'CLIENTE') {
+      if (role === 'SUPERADMIN') {
+        // God mode — always active, no billing checks
+        token.subscriptionActive = true;
+        token.subscriptionReason = 'superadmin';
+        token.subscriptionEndDate = null;
+      } else if (role === 'ADMIN') {
+        try {
+          await refreshAdminSubscriptionClaims(token as Record<string, unknown>, Boolean(user));
+        } catch (err) {
+          if (err instanceof ForceSignOutError) {
+            throw err;
+          }
+          if (typeof token.subscriptionActive !== 'boolean') {
+            token.subscriptionActive = true;
+            token.subscriptionReason = 'db-error';
+          }
+        }
+      } else if (role === 'CLIENTE') {
         try {
           await refreshClienteBillingClaims(token as Record<string, unknown>, Boolean(user));
-        } catch {
-          // Keep auth resilient if billing state cannot be resolved.
+        } catch (err) {
+          if (err instanceof ForceSignOutError) {
+            throw err; // Invalidates session immediately
+          }
+          // Keep auth resilient for other billing errors
           if (typeof token.subscriptionActive !== 'boolean') {
             token.subscriptionActive = true;
             token.subscriptionReason = 'no-meta';
@@ -244,6 +352,9 @@ export const authConfig = {
         (session.user as any).subscriptionEndDate = token.subscriptionEndDate
           ? String(token.subscriptionEndDate)
           : null;
+        (session.user as any).subscriptionPlan = token.subscriptionPlan ? String(token.subscriptionPlan) : null;
+        (session.user as any).maxAlumnos = token.maxAlumnos != null ? Number(token.maxAlumnos) : null;
+        (session.user as any).maxPlanes = token.maxPlanes != null ? Number(token.maxPlanes) : null;
       }
       return session;
     },
