@@ -42,43 +42,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background-color: #080808;
-  background:
-    /* ── GRILLA: puntos brillantes en cada intersección ── */
-    radial-gradient(circle, rgba(255,255,255,0.20) 1px, transparent 1px) 0 0 / 30px 30px,
-    /* ── GRILLA: líneas horizontales ── */
-    linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
-    /* ── GRILLA: líneas verticales ── */
-    linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
-    /* ── SCRATCH: arañazo diagonal principal ── */
-    linear-gradient(
-      -34deg,
-      transparent 0%, transparent 38%,
-      rgba(255,255,255,0.022) 38.15%, rgba(255,255,255,0.008) 38.45%,
-      transparent 38.6%, transparent 100%
-    ),
-    /* ── SCRATCH: arañazo diagonal secundario ── */
-    linear-gradient(
-      -18deg,
-      transparent 0%, transparent 62%,
-      rgba(255,255,255,0.015) 62.1%, rgba(255,255,255,0.005) 62.3%,
-      transparent 62.45%, transparent 100%
-    ),
-    /* ── SCRATCH: arañazo diagonal terciario ── */
-    linear-gradient(
-      -48deg,
-      transparent 0%, transparent 72%,
-      rgba(255,255,255,0.018) 72.1%, rgba(255,255,255,0.006) 72.35%,
-      transparent 72.5%, transparent 100%
-    ),
-    /* ── VIGNETTE: oscurecimiento perimetral ── */
-    radial-gradient(ellipse 120% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.55) 100%),
-    /* ── COLOR AMBIENT: acento verde esquina sup-izq ── */
-    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(34,197,94,0.10) 0%, transparent 60%),
-    /* ── COLOR AMBIENT: acento cyan esquina sup-der ── */
-    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(34,211,238,0.09) 0%, transparent 55%),
-    /* ── BASE PURA ── */
-    #080808;
+  background-color: #07101f;
 }
 
 html {
@@ -88,14 +52,7 @@ html {
 
 html[data-pf-theme="light"],
 html[data-pf-theme="light"] body {
-  background-color: #f0f8f5;
-  background-image:
-    radial-gradient(circle, rgba(0,0,0,0.10) 1px, transparent 1px) 0 0 / 30px 30px,
-    linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px) 0 0 / 30px 30px,
-    linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px) 0 0 / 30px 30px,
-    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(44,200,171,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(157,216,115,0.12) 0%, transparent 55%),
-    #f0f8f5;
+  background-color: #f5f8ff;
 }
 
 body {
@@ -186,86 +143,74 @@ h6 {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   GYM PANEL DESIGN SYSTEM
-   Estética: industrial · oscuro · definido · alto contraste
+   MYNTER-INSPIRED DESIGN SYSTEM
+   Paleta: Navy #0C1A35 · Mint #61CE70 · Clean · Profesional
    ════════════════════════════════════════════════════════════════════════════ */
 
+/* MYNTER color tokens */
+:root {
+  --mynter-navy-950: #04090f;
+  --mynter-navy-900: #07101f;
+  --mynter-navy-800: #0c1a35;
+  --mynter-navy-700: #112040;
+  --mynter-navy-600: #162850;
+  --mynter-mint:     #61ce70;
+  --mynter-mint-dim: rgba(97, 206, 112, 0.12);
+  --mynter-border:   rgba(97, 206, 112, 0.10);
+  --mynter-border-bright: rgba(97, 206, 112, 0.22);
+  --mynter-grid-dot: rgba(97, 206, 112, 0.14);
+  --mynter-grid-line:rgba(97, 206, 112, 0.055);
+  --mynter-grid-size:28px;
+}
+
+/* ── FONDO GLOBAL: sobreescribe bg-[#070810] de Tailwind ─────────────────── */
 .pf-training-shell {
-  /* Grilla interior de paneles — más densa que el fondo */
-  --pf-grid-size: 22px;
-  --pf-grid-line: rgba(255, 255, 255, 0.065);
-  --pf-grid-dot:  rgba(255, 255, 255, 0.18);
-
-  /* Color del acento temático (se sobreescribe por página via --hue) */
-  --pf-accent-h: var(--hue, 160);
-
-  /* ── FONDO GLOBAL: sobreescribe bg-[#070810] de Tailwind ──────────────── */
-  /* El div .pf-training-shell cubre todo el viewport; la grilla va aquí    */
-  background-color: #080808 !important;
+  background-color: var(--mynter-navy-900) !important;
   background-image:
-    /* Grilla: puntos en intersecciones */
-    radial-gradient(circle, rgba(255,255,255,0.20) 1px, transparent 1px),
-    /* Grilla: líneas horizontales */
-    linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px),
-    /* Grilla: líneas verticales */
-    linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px),
-    /* Scratch diagonal 1 */
+    /* Grilla con tinte MYNTER mint */
+    radial-gradient(circle, var(--mynter-grid-dot) 1px, transparent 1px),
+    linear-gradient(var(--mynter-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mynter-grid-line) 1px, transparent 1px),
+    /* Arañazo diagonal sutil */
     linear-gradient(-34deg,
-      transparent 38%, rgba(255,255,255,0.022) 38.15%,
-      rgba(255,255,255,0.008) 38.45%, transparent 38.6%),
-    /* Scratch diagonal 2 */
-    linear-gradient(-18deg,
-      transparent 62%, rgba(255,255,255,0.015) 62.1%,
-      rgba(255,255,255,0.005) 62.3%, transparent 62.45%),
-    /* Scratch diagonal 3 */
-    linear-gradient(-48deg,
-      transparent 72%, rgba(255,255,255,0.018) 72.1%,
-      rgba(255,255,255,0.006) 72.35%, transparent 72.5%),
-    /* Vignette perimetral */
-    radial-gradient(ellipse 120% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.55) 100%),
-    /* Ambient verde esquina sup-izq */
-    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(34,197,94,0.10) 0%, transparent 60%),
-    /* Ambient cyan esquina sup-der */
-    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(34,211,238,0.09) 0%, transparent 55%) !important;
+      transparent 38%, rgba(255,255,255,0.012) 38.15%,
+      transparent 38.5%),
+    linear-gradient(-52deg,
+      transparent 65%, rgba(255,255,255,0.008) 65.1%,
+      transparent 65.4%),
+    /* Ambient mint tenue esquina sup-izq */
+    radial-gradient(ellipse 700px 450px at -3% -6%,
+      rgba(97,206,112,0.08) 0%, transparent 60%),
+    /* Base navy */
+    var(--mynter-navy-900) !important;
   background-size:
-    30px 30px,
-    30px 30px,
-    30px 30px,
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    100% 100% !important;
-  background-attachment: fixed !important;
+    var(--mynter-grid-size) var(--mynter-grid-size),
+    var(--mynter-grid-size) var(--mynter-grid-size),
+    var(--mynter-grid-size) var(--mynter-grid-size),
+    100% 100%, 100% 100%, 100% 100%, 100% 100% !important;
 }
 
 html[data-pf-theme="light"] .pf-training-shell {
-  --pf-grid-line: rgba(0, 0, 0, 0.07);
-  --pf-grid-dot:  rgba(0, 0, 0, 0.18);
-  color: #173847;
-  background-color: #f0f8f5 !important;
+  background-color: #f5f8ff !important;
   background-image:
-    radial-gradient(circle, rgba(0,0,0,0.10) 1px, transparent 1px),
-    linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px),
-    radial-gradient(ellipse 600px 400px at -5% -8%, rgba(44,200,171,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 500px 350px at 105% -5%, rgba(157,216,115,0.12) 0%, transparent 55%) !important;
+    radial-gradient(circle, rgba(12,26,53,0.08) 1px, transparent 1px),
+    linear-gradient(rgba(12,26,53,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,26,53,0.04) 1px, transparent 1px),
+    #f5f8ff !important;
   background-size:
-    30px 30px, 30px 30px, 30px 30px,
-    100% 100%, 100% 100% !important;
-  background-attachment: fixed !important;
+    28px 28px, 28px 28px, 28px 28px, 100% 100% !important;
+  color: #0c1a35;
 }
 
-/* ── Stacking context para ::before y ::after ─────────────────────────────── */
+/* ── Paneles: stacking context ───────────────────────────────────────────── */
 .pf-training-shell main section,
 .pf-training-shell main article {
   position: relative;
   isolation: isolate;
-  overflow: hidden;   /* clip pseudo-elements al border-radius del panel */
+  overflow: hidden;
 }
 
-/* ── CAPA 1: textura cuadriculada (idéntica al fondo pero más densa) ──────── */
+/* ── CAPA 1: grilla mint dentro del panel ────────────────────────────────── */
 .pf-training-shell main section::before,
 .pf-training-shell main article::before {
   content: '';
@@ -275,62 +220,47 @@ html[data-pf-theme="light"] .pf-training-shell {
   pointer-events: none;
   z-index: -1;
   background-image:
-    radial-gradient(circle, var(--pf-grid-dot) 1px, transparent 1px),
-    linear-gradient(var(--pf-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pf-grid-line) 1px, transparent 1px);
-  background-size: var(--pf-grid-size) var(--pf-grid-size);
-  background-position: 0 0;
+    radial-gradient(circle, var(--mynter-grid-dot) 1px, transparent 1px),
+    linear-gradient(var(--mynter-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mynter-grid-line) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
-/* ── CAPA 2: línea de acento luminosa en el borde superior ────────────────── */
-/* → identidad visual gym: cada panel tiene su "banda de color" en el tope   */
+/* ── CAPA 2: línea mint fina en el borde superior (sin LED) ──────────────── */
 .pf-training-shell main section::after,
 .pf-training-shell main article::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
+  top: 0; left: 0; right: 0;
+  height: 1px;
   pointer-events: none;
   z-index: 2;
   background: linear-gradient(
     90deg,
-    transparent 0%,
-    hsla(var(--pf-accent-h), 65%, 55%, 0.0) 5%,
-    hsla(var(--pf-accent-h), 65%, 55%, 0.5) 25%,
-    hsla(var(--pf-accent-h), 70%, 62%, 0.85) 50%,
-    hsla(var(--pf-accent-h), 65%, 55%, 0.5) 75%,
-    hsla(var(--pf-accent-h), 65%, 55%, 0.0) 95%,
-    transparent 100%
+    transparent,
+    var(--mynter-border-bright) 30%,
+    rgba(97,206,112,0.35) 50%,
+    var(--mynter-border-bright) 70%,
+    transparent
   );
 }
 
-/* ── ESTILO BASE del panel: oscuro, elevado, borde nítido ─────────────────── */
+/* ── Estilo base del panel: navy oscuro, borde mint, sombra limpia ────────── */
 .pf-training-shell main section {
-  /* Borde lateral sutil + borde superior ligeramente más visible */
-  border-color: rgba(255, 255, 255, 0.08) !important;
-
-  /* Sombra en 3 capas: elevación + halo de acento + ambient */
+  border-color: var(--mynter-border) !important;
   box-shadow:
-    /* 1. Borde interior superior (glass edge) */
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-    /* 2. Sombra de elevación profunda */
-    0 20px 60px -20px rgba(0, 0, 0, 0.8),
-    0  8px 24px -8px  rgba(0, 0, 0, 0.6),
-    /* 3. Halo ambiental del color temático */
-    0 0 40px -15px hsla(var(--pf-accent-h), 60%, 50%, 0.18) !important;
+    inset 0 1px 0 0 rgba(97,206,112,0.06),
+    0 4px 24px -8px rgba(0,0,0,0.5),
+    0 1px 4px rgba(0,0,0,0.3) !important;
 }
 
-/* ── Sub-contenedores internos: sin sombras (el panel las gestiona) ───────── */
+/* ── Sub-contenedores: sin sombras extra ─────────────────────────────────── */
 .pf-training-shell main :where(section, article, div):where([class*="rounded-xl"]) {
   box-shadow: none !important;
 }
-
 .pf-training-shell :where(h1, h2, h3, h4, h5, h6, p, span) {
   text-shadow: none !important;
 }
-
 .pf-training-shell main :where([class*="backdrop-blur"]) {
   backdrop-filter: none !important;
 }
@@ -855,39 +785,36 @@ button[disabled] {
   to   { opacity: 1; }
 }
 
-/* Page <main> element — quick fade-up on mount */
+/* Page <main> element — fade-up rápido al montar */
 .pf-training-shell main > div > main {
-  animation: pf-fade-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pf-fade-up 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Direct <section> children — stagger in after the page fades */
+/* Sections hijas — stagger reducido para mayor fluidez */
 .pf-training-shell main > div > main > section {
-  animation: pf-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  /* base delay; overridden per-child below */
+  animation: pf-fade-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 10ms;
+}
+
+.pf-training-shell main > div > main > section:nth-of-type(1)  { animation-delay: 10ms; }
+.pf-training-shell main > div > main > section:nth-of-type(2)  { animation-delay: 40ms; }
+.pf-training-shell main > div > main > section:nth-of-type(3)  { animation-delay: 70ms; }
+.pf-training-shell main > div > main > section:nth-of-type(4)  { animation-delay: 95ms; }
+.pf-training-shell main > div > main > section:nth-of-type(5)  { animation-delay: 115ms;}
+.pf-training-shell main > div > main > section:nth-of-type(n+6){ animation-delay: 130ms;}
+
+/* Div containers (grids, etc.) */
+.pf-training-shell main > div > main > div:not([aria-hidden="true"]):not(.pf-expand-wrap) {
+  animation: pf-fade-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 20ms;
 }
 
-.pf-training-shell main > div > main > section:nth-of-type(1)  { animation-delay: 20ms;  }
-.pf-training-shell main > div > main > section:nth-of-type(2)  { animation-delay: 70ms;  }
-.pf-training-shell main > div > main > section:nth-of-type(3)  { animation-delay: 115ms; }
-.pf-training-shell main > div > main > section:nth-of-type(4)  { animation-delay: 155ms; }
-.pf-training-shell main > div > main > section:nth-of-type(5)  { animation-delay: 190ms; }
-.pf-training-shell main > div > main > section:nth-of-type(6)  { animation-delay: 220ms; }
-.pf-training-shell main > div > main > section:nth-of-type(7)  { animation-delay: 245ms; }
-.pf-training-shell main > div > main > section:nth-of-type(n+8){ animation-delay: 265ms; }
-
-/* Top-level <div> cards inside pages (e.g. grid containers) */
-.pf-training-shell main > div > main > div:not([aria-hidden="true"]):not(.pf-expand-wrap) {
-  animation: pf-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 30ms;
-}
-
-/* Subtle hover lift on top-level sections (only non-nested) */
+/* Hover lift sutil */
 .pf-training-shell main > div > main > section {
-  transition: transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  transition: transform 160ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 .pf-training-shell main > div > main > section:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 /* Respect reduced-motion preference */

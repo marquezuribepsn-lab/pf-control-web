@@ -102,7 +102,7 @@ const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
 const SIDEBAR_WIDGET_FADE_MS = 260;
 const ACCOUNT_SNAPSHOT_SYNC_MS = 120000;
-const APP_TRANSITION_MIN_MS = 2000;
+const APP_TRANSITION_MIN_MS = 350;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
@@ -472,6 +472,8 @@ export default function AppShell({
   );
   const [sidebarWidgetIndex, setSidebarWidgetIndex] = useState(0);
   const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [clockNow, setClockNow] = useState<Date | null>(null);
   const stableSidebarImageRef = useRef<string | null>(
     normalizeSidebarImageValue(sidebarImage || initialSidebarImage)
   );
@@ -787,6 +789,26 @@ export default function AppShell({
     if (!mounted || typeof window === "undefined") return;
     syncSidebarImageFromStorage();
   }, [mounted]);
+
+  // Reloj en tiempo real para el top bar
+  useEffect(() => {
+    setClockNow(new Date());
+    const id = window.setInterval(() => setClockNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Mouse tracking global — alimenta --hue, --mx, --my en todas las páginas
+  useEffect(() => {
+    const root = document.documentElement;
+    const onMove = (e: MouseEvent) => {
+      root.style.setProperty("--mx", `${e.clientX}px`);
+      root.style.setProperty("--my", `${e.clientY}px`);
+      const hue = Math.round((e.clientX / window.innerWidth) * 360);
+      root.style.setProperty("--hue", `${hue}`);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
@@ -1641,20 +1663,13 @@ export default function AppShell({
   }
 
   return (
-    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#081e2d] bg-[radial-gradient(94%_62%_at_12%_-14%,rgba(34,197,94,0.14),transparent_58%),radial-gradient(90%_58%_at_92%_-16%,rgba(34,211,238,0.16),transparent_62%),linear-gradient(158deg,#05101a_0%,#0a2030_52%,#0b2a3b_100%)] text-slate-100">
-      <div
-        className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-[0.46] [background-image:linear-gradient(118deg,transparent_0%,rgba(34,197,94,0.14)_34%,transparent_56%,rgba(34,211,238,0.14)_78%,transparent_100%)] max-md:hidden"
-        aria-hidden="true"
-      />
-      <div
-        className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-[0.12] [background-image:repeating-linear-gradient(116deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1px,transparent_1px,transparent_74px)] max-md:hidden"
-        aria-hidden="true"
-      />
+    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#070810] text-slate-100">
+      <div className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(ellipse_80%_45%_at_50%_-5%,hsla(220,70%,40%,0.18),transparent_65%)] max-md:hidden" aria-hidden="true" />
       <AdminRunningLoaderOverlay
         active={appRouteTransitionLoading}
         message="Cargando..."
         detail="Abriendo pantalla..."
-        className="pointer-events-none md:left-[clamp(132px,14vw,170px)]"
+        className="pointer-events-none md:left-[52px]"
       />
       {alumnosBootLoading ? (
         <div
@@ -1685,12 +1700,30 @@ export default function AppShell({
         <ReliableActionButton
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="fixed left-3 top-3 z-[97] inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/40 bg-slate-900/92 text-base text-cyan-100 md:hidden"
+          className="fixed left-2 top-2 z-[97] inline-flex h-9 w-9 items-center justify-center rounded-xl text-base text-white/70 md:hidden"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
           aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
         >
-          {mobileOpen ? "x" : "☰"}
+          {mobileOpen ? "✕" : "☰"}
         </ReliableActionButton>
       ) : null}
+
+      {/* Cursor LED global — sutil, aplica en todas las páginas */}
+      <div
+        className="pf-cursor-light pointer-events-none fixed z-[9] rounded-full max-md:hidden"
+        aria-hidden="true"
+        style={{
+          width: "700px",
+          height: "700px",
+          transform: "translate(var(--mx,-9999px), var(--my,-9999px)) translate(-50%,-50%)",
+          background: "radial-gradient(circle, hsla(var(--hue,220),70%,60%,0.055) 0%, transparent 65%)",
+          willChange: "transform",
+          pointerEvents: "none",
+        }}
+      />
 
       {mobileOpen && !isClienteRole ? (
         <div
@@ -1700,73 +1733,152 @@ export default function AppShell({
         />
       ) : null}
 
+      {/* ── Top bar — profile at top-right like Instagram ── */}
       {shouldRenderSidebar ? (
-      <aside
-        className={`pf-sidebar-static pointer-events-auto fixed inset-y-0 left-0 z-[90] w-[clamp(122px,12vw,156px)] overflow-visible bg-[linear-gradient(180deg,rgba(5,16,34,0.62),rgba(5,16,34,0.4))] translate-x-0 transition-transform duration-200 ${
-          mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
-        }`}
-      >
-        <div
-          className="pf-sidebar-led-strip absolute inset-y-2 left-0 z-[1] w-[3px] rounded-r-full"
+        <header
+          className="fixed top-0 right-0 z-[85] flex h-[52px] items-center justify-between gap-2 pr-3"
           style={{
-            background: `linear-gradient(180deg, ${sidebarLedColors.start} 0%, ${sidebarLedColors.end} 100%)`,
-            boxShadow: `0 0 12px ${sidebarLedColors.start}, 0 0 24px ${sidebarLedColors.end}`,
+            left: isMobileViewport ? "0" : "52px",
+            background: "linear-gradient(180deg,rgba(5,5,10,0.92) 0%,rgba(5,5,10,0.0) 100%)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
           }}
-          aria-hidden="true"
-        />
-        <div
-          className="pf-sidebar-led-strip absolute inset-y-2 right-0 z-[1] w-[3px] rounded-l-full"
-          style={{
-            background: `linear-gradient(180deg, ${sidebarLedColors.start} 0%, ${sidebarLedColors.end} 100%)`,
-            boxShadow: `0 0 12px ${sidebarLedColors.start}, 0 0 24px ${sidebarLedColors.end}`,
-          }}
-          aria-hidden="true"
-        />
-        <div className="pointer-events-auto relative z-[2] m-1.5 flex h-[calc(100%-0.75rem)] flex-col rounded-[1.45rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(2,10,24,0.62),rgba(4,18,40,0.45))]">
+        >
+          {/* ── LEFT: reloj + fecha + página ── */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 pl-4 overflow-hidden">
+            {/* Reloj */}
+            {clockNow && (
+              <div className="flex shrink-0 items-baseline gap-1.5">
+                <span className="tabular-nums text-[22px] font-black leading-none tracking-tight text-white/88">
+                  {clockNow.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                </span>
+                <span
+                  className="tabular-nums text-[13px] font-semibold leading-none"
+                  style={{ color: `hsl(var(--hue,220),65%,68%)` }}
+                >
+                  {String(clockNow.getSeconds()).padStart(2, "0")}
+                </span>
+              </div>
+            )}
+
+            {/* Separador */}
+            <span className="h-[20px] w-px shrink-0 bg-white/[0.08]" aria-hidden="true" />
+
+            {/* Fecha */}
+            {clockNow && (
+              <div className="hidden flex-col leading-none sm:flex">
+                <span className="text-[11px] font-semibold capitalize text-white/60">
+                  {clockNow.toLocaleDateString("es-AR", { weekday: "long" })}
+                </span>
+                <span className="mt-[3px] text-[10px] font-medium capitalize text-white/35">
+                  {clockNow.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+              </div>
+            )}
+
+            {/* Pendientes de guardado — siempre visible si los hay */}
+            {pendingSaveKeys.length > 0 && (
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/28 bg-amber-500/10 px-2 py-[3px]">
+                <span className="text-[10px] leading-none">⚠️</span>
+                <span className="text-[10px] font-bold text-amber-200/80 whitespace-nowrap">
+                  {pendingSaveKeys.length} sin guardar
+                </span>
+              </span>
+            )}
+          </div>
+
+          {/* ── RIGHT: perfil fusionado ── */}
           <Link
             href="/cuenta"
             reliabilityMode="hard"
-            className="pf-profile-link mx-auto mt-2 flex w-full max-w-[130px] flex-col items-center gap-1.5 rounded-2xl border border-cyan-300/35 bg-cyan-400/10 px-2 py-2 text-center shadow-[0_10px_24px_rgba(8,47,73,0.35)]"
+            className="flex shrink-0 items-center gap-2.5 px-3 transition-opacity duration-200 hover:opacity-80 active:scale-95"
             onClick={(event) => {
-              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
-                return;
-              }
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
               handleSidebarLinkClick("/cuenta");
             }}
             title="Ir a cuenta"
             aria-label="Ir a cuenta"
           >
-            <span className="pf-sidebar-avatar-shell relative h-11 w-11 rounded-full border border-cyan-100/45">
+            <span className="hidden flex-col items-end leading-none sm:flex">
+              <span className="text-[11px] font-semibold text-white/70">{displayName}</span>
+              <span
+                className="mt-[3px] text-[9px] font-bold uppercase tracking-[0.12em]"
+                style={{ color: `hsl(var(--hue,220),60%,60%)` }}
+              >
+                {roleLabel}
+              </span>
+            </span>
+            <span
+              className="relative h-8 w-8 shrink-0 rounded-full"
+              style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.08),0 0 12px hsla(var(--hue,220),72%,62%,0.28)` }}
+            >
               <img
                 src={avatarImageSrc}
                 alt="Cuenta"
                 loading="eager"
                 decoding="sync"
                 fetchPriority="high"
-                className={`h-full w-full object-cover transition-opacity duration-150 ${
-                  hasSidebarImage ? "opacity-100" : "opacity-0"
-                }`}
+                className={`h-full w-full rounded-full object-cover transition-opacity duration-200 ${hasSidebarImage ? "opacity-100" : "opacity-0"}`}
               />
               <span
-                className={`pf-sidebar-avatar-fallback absolute inset-0 flex items-center justify-center rounded-full border border-cyan-100/50 bg-cyan-500/25 text-sm font-black text-cyan-50 transition-opacity duration-150 ${
-                  hasSidebarImage ? "opacity-0" : "opacity-100"
-                }`}
+                className={`absolute inset-0 flex items-center justify-center rounded-full text-[11px] font-black transition-opacity duration-200 ${hasSidebarImage ? "opacity-0" : "opacity-100"}`}
+                style={{
+                  background: `linear-gradient(135deg,hsla(var(--hue,220),60%,25%,0.65),hsla(var(--hue,220),50%,16%,0.85))`,
+                  color: `hsl(var(--hue,220),70%,78%)`,
+                }}
                 aria-hidden={hasSidebarImage}
               >
                 {profileInitials}
               </span>
-              <span className="pf-sidebar-avatar-dot" aria-hidden="true" />
-            </span>
-            <span className="w-full truncate text-[10px] font-black uppercase tracking-[0.05em] text-cyan-50">
-              {displayName}
-            </span>
-            <span className="rounded-full border border-cyan-200/40 bg-slate-900/65 px-2 py-0.5 text-[8px] font-bold tracking-[0.08em] text-cyan-100">
-              {roleLabel}
+              <span
+                className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-[1.5px] border-[#080810] bg-emerald-400"
+                style={{ boxShadow: "0 0 5px rgba(52,211,153,0.8)" }}
+                aria-hidden="true"
+              />
             </span>
           </Link>
+        </header>
+      ) : null}
 
-          <nav className="mt-2 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-2">
-            <div className="flex w-full flex-col gap-1">
+      {shouldRenderSidebar ? (
+      <aside
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+        className={`pf-sidebar-mac pointer-events-auto fixed inset-y-0 left-0 z-[90] overflow-hidden translate-x-0 ${
+          mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
+        }`}
+        style={{
+          width: sidebarExpanded || mobileOpen ? "clamp(160px,14vw,178px)" : "52px",
+          transition: "width 320ms cubic-bezier(0.32,1,0.36,1)",
+          background: "linear-gradient(180deg,rgba(6,7,14,0.97) 0%,rgba(5,6,12,0.99) 100%)",
+          borderRight: "1px solid rgba(255,255,255,0.05)",
+          backdropFilter: "blur(40px) saturate(160%)",
+          WebkitBackdropFilter: "blur(40px) saturate(160%)",
+        }}
+      >
+        {/* Top ambient glow */}
+        <div
+          className="pointer-events-none absolute left-0 top-0 h-48 w-full"
+          style={{ background: "radial-gradient(ellipse 100% 50% at 50% -5%, hsla(var(--hue,220),72%,58%,0.12) 0%, transparent 70%)" }}
+          aria-hidden="true"
+        />
+
+        {/* Left LED strip */}
+        <div
+          className="pf-sidebar-led-strip absolute inset-y-4 left-0 z-[1] w-[2px] rounded-r-full"
+          style={{
+            background: `linear-gradient(180deg,transparent 0%,${sidebarLedColors.start} 28%,${sidebarLedColors.end} 72%,transparent 100%)`,
+            boxShadow: `0 0 8px ${sidebarLedColors.start},0 0 18px ${sidebarLedColors.end}`,
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Nav + widget — full height */}
+        <div className="flex h-full flex-col pt-[52px] overflow-hidden">
+          {/* Nav */}
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-1.5">
+            <div className="flex w-full flex-col gap-[2px]">
               {visibleLinks.map((link) => {
                 const normalizedHref = normalizePath(link.href);
                 const hasChildLink = allVisibleHrefs.some(
@@ -1784,29 +1896,67 @@ export default function AppShell({
                     key={link.href}
                     href={link.href}
                     reliabilityMode="hard"
-                    className={`pf-shell-nav-link group flex w-full max-w-[130px] items-center justify-start gap-2 rounded-xl border px-2 transition-colors duration-150 ${
-                      isCurrent
-                        ? "border-cyan-200/70 bg-cyan-400/18 text-cyan-50 shadow-[0_10px_22px_rgba(8,47,73,0.45)]"
-                        : "border-cyan-300/20 bg-slate-900/52 text-slate-200 hover:border-cyan-200/45 hover:bg-cyan-400/10"
-                    }`}
+                    className="pf-shell-nav-link group relative flex w-full items-center rounded-[10px] overflow-hidden transition-all duration-150"
                     onClick={(event) => {
-                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
-                        return;
-                      }
+                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
                       handleSidebarLinkClick(link.href);
                     }}
                     style={{
                       height: `${sidebarItemHeight}px`,
                       minHeight: `${sidebarItemHeight}px`,
+                      background: isCurrent
+                        ? `linear-gradient(90deg,hsla(var(--hue,220),65%,55%,0.22) 0%,hsla(var(--hue,220),50%,45%,0.07) 100%)`
+                        : "transparent",
+                      boxShadow: isCurrent
+                        ? `inset 0 0 0 1px hsla(var(--hue,220),60%,65%,0.14)`
+                        : undefined,
                     }}
                     aria-current={isCurrent ? "page" : undefined}
                     title={link.label}
                     aria-label={link.label}
                   >
-                    <span className="w-5 shrink-0 text-center leading-none" style={{ fontSize: sidebarIconSize }}>
+                    {/* Hover fill */}
+                    <span
+                      className="pointer-events-none absolute inset-0 rounded-[10px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      style={{ background: "rgba(255,255,255,0.048)" }}
+                      aria-hidden="true"
+                    />
+                    {/* Active accent bar */}
+                    <span
+                      className="absolute inset-y-[7px] left-0 w-[3px] rounded-r-full transition-all duration-300"
+                      style={{
+                        background: isCurrent
+                          ? `linear-gradient(180deg,${sidebarLedColors.start},${sidebarLedColors.end})`
+                          : "transparent",
+                        boxShadow: isCurrent ? `0 0 7px ${sidebarLedColors.start}` : "none",
+                        opacity: isCurrent ? 1 : 0,
+                      }}
+                      aria-hidden="true"
+                    />
+                    {/* Icon — always centered in the 52px zone */}
+                    <span
+                      className="relative z-[1] shrink-0 text-center leading-none transition-all duration-300"
+                      style={{
+                        fontSize: sidebarIconSize,
+                        width: "52px",
+                        textAlign: "center",
+                      }}
+                    >
                       {link.icon}
                     </span>
-                    <span className="w-full truncate text-left font-semibold leading-tight" style={{ fontSize: sidebarLabelSize }}>
+                    {/* Label — slides in when expanded */}
+                    <span
+                      className="relative z-[1] truncate text-left font-semibold leading-tight transition-all duration-300"
+                      style={{
+                        fontSize: sidebarLabelSize,
+                        color: isCurrent ? `hsl(var(--hue,220),75%,88%)` : "rgba(255,255,255,0.5)",
+                        maxWidth: sidebarExpanded || mobileOpen ? "110px" : "0px",
+                        opacity: sidebarExpanded || mobileOpen ? 1 : 0,
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        transitionDelay: sidebarExpanded || mobileOpen ? "40ms" : "0ms",
+                      }}
+                    >
                       {compactSidebarLabel(link.label)}
                     </span>
                   </Link>
@@ -1815,18 +1965,30 @@ export default function AppShell({
             </div>
           </nav>
 
-          {activeSidebarWidgetItem ? (
-            <div className="px-2 pb-2">
+          {/* Widget — only show when expanded */}
+          {activeSidebarWidgetItem && (sidebarExpanded || mobileOpen) ? (
+            <div
+              className="px-1.5 pb-2"
+              style={{ opacity: sidebarExpanded || mobileOpen ? 1 : 0, transition: "opacity 200ms 80ms" }}
+            >
+              <div
+                className="mb-2 h-px w-full"
+                style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.055),transparent)" }}
+                aria-hidden="true"
+              />
               <Link
                 href={activeSidebarWidgetItem.href}
                 reliabilityMode="hard"
                 onClick={(event) => {
-                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
-                    return;
-                  }
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
                   handleSidebarLinkClick(activeSidebarWidgetItem.href);
                 }}
-                className={`mx-auto block w-full max-w-[130px] min-h-[116px] rounded-2xl border px-2.5 py-2.5 shadow-[0_10px_22px_rgba(8,47,73,0.42)] ${activeSidebarWidgetItem.toneClass}`}
+                className="block w-full min-h-[100px] rounded-xl px-3 py-2.5 transition-all duration-200 hover:brightness-110"
+                style={{
+                  background: "linear-gradient(145deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.015) 100%)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05),0 8px 24px rgba(0,0,0,0.4)",
+                }}
                 title={`Widget: ${activeSidebarWidgetItem.label}`}
                 aria-label={`Widget: ${activeSidebarWidgetItem.label}`}
               >
@@ -1835,30 +1997,37 @@ export default function AppShell({
                     sidebarWidgetPhase === "enter" ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
                   }`}
                 >
-                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-200/85">Resumen</p>
-                  <p className="mt-1 truncate text-[10px] font-black text-slate-100">{activeSidebarWidgetItem.label}</p>
-                  <div className="mt-2 flex items-end justify-between gap-2">
-                    <p className="text-[24px] font-black leading-none text-white">{activeSidebarWidgetItem.value}</p>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-sm">
+                  <p className="text-[7px] font-black uppercase tracking-[0.22em] text-white/28">Resumen</p>
+                  <p className="mt-0.5 truncate text-[10px] font-bold text-white/65">{activeSidebarWidgetItem.label}</p>
+                  <div className="mt-2 flex items-end justify-between gap-1">
+                    <p className="text-[22px] font-black leading-none text-white">{activeSidebarWidgetItem.value}</p>
+                    <span
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] text-xs"
+                      style={{
+                        background: `hsla(var(--hue,220),60%,50%,0.14)`,
+                        border: `1px solid hsla(var(--hue,220),65%,65%,0.16)`,
+                      }}
+                    >
                       {activeSidebarWidgetItem.icon}
                     </span>
                   </div>
-                  <p className="mt-1.5 line-clamp-3 text-[9px] leading-tight text-slate-300">
+                  <p className="mt-1 line-clamp-2 text-[9px] leading-tight text-white/35">
                     {activeSidebarWidgetItem.detail}
                   </p>
                 </div>
               </Link>
-
               {sidebarWidgetItems.length > 1 ? (
-                <div className="mx-auto mt-1 flex w-full max-w-[130px] items-center justify-center gap-1.5">
+                <div className="mt-1.5 flex items-center justify-center gap-1">
                   {sidebarWidgetItems.slice(0, 5).map((item, idx) => {
                     const isActive = sidebarWidgetItems[sidebarWidgetIndex]?.id === item.id;
                     return (
                       <span
                         key={`${item.id}-${idx}`}
-                        className={`h-1.5 rounded-full transition-all ${
-                          isActive ? "w-4 bg-cyan-200" : "w-1.5 bg-slate-500"
-                        }`}
+                        className="h-[3px] rounded-full transition-all duration-300"
+                        style={{
+                          width: isActive ? "14px" : "4px",
+                          background: isActive ? `hsl(var(--hue,220),70%,72%)` : "rgba(255,255,255,0.18)",
+                        }}
                       />
                     );
                   })}
@@ -1867,15 +2036,34 @@ export default function AppShell({
             </div>
           ) : null}
 
+          {/* Pending saves */}
           {!isClienteRole && pendingSaveKeys.length > 0 ? (
-            <div className="px-2 pb-2">
+            <div className="px-1.5 pb-2 shrink-0">
               <ReliableActionButton
                 type="button"
                 onClick={() => setPendingPanelOpen((prev) => !prev)}
-                className="mx-auto w-full max-w-[130px] rounded-xl border border-amber-300/45 bg-amber-500/18 px-2 py-1.5 text-[10px] font-bold text-amber-100"
                 title="Cambios pendientes"
+                className="w-full overflow-hidden rounded-[9px] border border-amber-300/38 bg-amber-500/12 transition-all duration-150 hover:border-amber-300/55 hover:bg-amber-500/20"
+                style={{
+                  minHeight: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: sidebarExpanded || mobileOpen ? "flex-start" : "center",
+                  padding: sidebarExpanded || mobileOpen ? "0 10px" : "0",
+                }}
               >
-                Pendientes ({pendingSaveKeys.length})
+                <span style={{ fontSize: "13px" }}>⚠️</span>
+                <span
+                  className="ml-1.5 truncate text-[10px] font-bold text-amber-100 transition-all duration-300"
+                  style={{
+                    maxWidth: sidebarExpanded || mobileOpen ? "100px" : "0px",
+                    opacity: sidebarExpanded || mobileOpen ? 1 : 0,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Pendientes ({pendingSaveKeys.length})
+                </span>
               </ReliableActionButton>
             </div>
           ) : null}
@@ -1884,7 +2072,7 @@ export default function AppShell({
       ) : null}
 
       {!isClienteRole && pendingSaveKeys.length > 0 && pendingPanelOpen ? (
-        <div className="fixed left-[138px] top-4 z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
+        <div className="fixed left-[60px] top-[56px] z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">
             Modulos pendientes
           </p>
@@ -1995,8 +2183,8 @@ export default function AppShell({
 
       <main
         className={`relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 ${
-          shouldRenderSidebar ? "md:pl-[clamp(132px,14vw,170px)]" : "md:pl-0"
-        } md:pt-4 ${
+          shouldRenderSidebar ? "md:pl-[52px]" : "md:pl-0"
+        } md:pt-[52px] ${
           isAlumnosRoute ? "pt-0" : "pt-14"
         }`}
       >
