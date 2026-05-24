@@ -562,16 +562,10 @@ export default function Home() {
         }
         .pf-btn:active { transform: scale(0.97); }
 
-        /* Stat card lines — offset hue per card */
-        .pf-s0 .pf-line { background: hsl(var(--hue) 80% 68%); }
-        .pf-s1 .pf-line { background: hsl(calc(var(--hue) + 90) 75% 65%); }
-        .pf-s2 .pf-line { background: hsl(calc(var(--hue) + 180) 75% 65%); }
-        .pf-s3 .pf-line { background: hsl(calc(var(--hue) + 270) 75% 65%); }
-
-        .pf-s0:hover { box-shadow: 0 20px 60px hsla(var(--hue), 70%, 60%, 0.22) !important; border-color: hsla(var(--hue), 70%, 70%, 0.45) !important; }
-        .pf-s1:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 90), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 90), 70%, 70%, 0.4) !important; }
-        .pf-s2:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 180), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 180), 70%, 70%, 0.4) !important; }
-        .pf-s3:hover { box-shadow: 0 20px 60px hsla(calc(var(--hue) + 270), 65%, 60%, 0.20) !important; border-color: hsla(calc(var(--hue) + 270), 70%, 70%, 0.4) !important; }
+        /* Stat cards — new gym design */
+        .pf-stat-card { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s ease; }
+        .pf-stat-card:hover { transform: translateY(-3px) scale(1.015); }
+        .pf-stat-card:active { transform: scale(0.98); }
 
         /* KPI mini-cards */
         .pf-k0 { background: hsla(calc(var(--hue) + 120), 60%, 50%, 0.09); border-color: hsla(calc(var(--hue) + 120), 60%, 60%, 0.22) !important; }
@@ -744,29 +738,61 @@ export default function Home() {
 
         {/* ── STATS ROW ─────────────────────────────────────────── */}
         <section className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {dashboardStats.map((stat, index) => {
-            const sClass = `pf-s${index}`;
+          {(
+            [
+              { color: "#61ce70", rgb: "97,206,112"  },   // mint  — categoría
+              { color: "#38bdf8", rgb: "56,189,248"  },   // sky   — jugadoras
+              { color: "#fb923c", rgb: "251,146,60"  },   // orange — carga
+              { color: "#c084fc", rgb: "192,132,252" },   // purple — wellness
+            ] as { color: string; rgb: string }[]
+          ).map((card, index) => {
+            const stat = dashboardStats[index];
+            if (!stat) return null;
             const delayClass = ["pf-d1","pf-d2","pf-d3","pf-d4"][index] ?? "";
             return (
               <Link
                 key={stat.title}
                 href={resolveDashboardStatHref(stat.title, index)}
-                className={`pf-au pf-led ${sClass} ${delayClass} group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 transition-all duration-300 hover:-translate-y-1`}
-                onMouseMove={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
-                  e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
+                className={`pf-au pf-stat-card ${delayClass} group relative overflow-hidden rounded-2xl p-5`}
+                style={{
+                  background: `linear-gradient(145deg, #0d0e10 0%, #121417 100%)`,
+                  border: `1px solid rgba(${card.rgb}, 0.20)`,
+                  boxShadow: `inset 0 1px 0 rgba(${card.rgb}, 0.08), 0 24px 64px -16px rgba(0,0,0,0.9)`,
                 }}
               >
-                {/* Top accent line — color sigue el hue via CSS */}
-                <div className="pf-line absolute inset-x-0 top-0 h-[2px] rounded-t-2xl opacity-80" />
-                <p className="mt-2 text-[2.6rem] font-bold leading-none tracking-tight text-white">
+                {/* Corner ambient glow */}
+                <div
+                  className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-3xl transition-opacity duration-300 group-hover:opacity-70"
+                  style={{ background: `rgba(${card.rgb}, 0.6)` }}
+                  aria-hidden
+                />
+                {/* Bottom accent line */}
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px]"
+                  style={{ background: `linear-gradient(90deg, transparent, rgba(${card.rgb},0.55) 30%, rgba(${card.rgb},0.9) 55%, rgba(${card.rgb},0.55) 75%, transparent)` }}
+                  aria-hidden
+                />
+                {/* Value — gradient text */}
+                <p
+                  className="mt-2 text-[2.75rem] font-black leading-none tracking-tight"
+                  style={{
+                    background: `linear-gradient(120deg, ${card.color} 0%, #ffffff 60%)`,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
                   {stat.value}
                 </p>
-                <p className="mt-2 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+                {/* Label */}
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">
                   {stat.title}
                 </p>
-                <p className="pf-accent mt-2 text-xs opacity-40 transition-opacity duration-300 group-hover:opacity-100">
+                {/* CTA link */}
+                <p
+                  className="mt-2 text-xs font-semibold opacity-30 transition-opacity duration-300 group-hover:opacity-90"
+                  style={{ color: card.color }}
+                >
                   {resolveDashboardStatHint(stat.title, index)} →
                 </p>
               </Link>
