@@ -798,13 +798,14 @@ button[disabled] {
   background: rgba(3, 5, 14, 0.96);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
   transition: opacity 240ms ease;
+  animation: none !important;
 }
 .pf-modal-overlay[data-open="true"] {
-  opacity: 1;
-  pointer-events: auto;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .pf-modal-panel {
