@@ -4761,9 +4761,10 @@ export default function ClientesPage() {
       ) : null}
 
       {/* ── Modal wizard: Nuevo cliente ─────────────────────────────────────── */}
+      {crearOpen && (
       <div
         className="pf-modal-overlay fixed inset-0 z-[150] overflow-y-auto"
-        data-open={String(crearOpen)}
+        data-open="true"
         role="dialog"
         aria-modal="true"
         aria-label="Nuevo cliente"
@@ -5304,6 +5305,7 @@ export default function ClientesPage() {
 
         </div>
       </div>
+      )}
 
       {!isDetailMode && isAdmin ? (
       <section className="mb-6 rounded-2xl border border-cyan-300/25 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_50%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_20px_60px_rgba(2,10,26,0.45)]">

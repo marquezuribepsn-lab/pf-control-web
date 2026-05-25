@@ -808,23 +808,33 @@ button[disabled] {
   pointer-events: auto !important;
 }
 
+@keyframes pf-modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .pf-modal-panel {
-  transform: translateY(36px);
-  opacity: 0;
-  transition:
-    transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 280ms ease;
+  /* Panel always animates in via keyframe when the modal mounts */
+  animation: pf-modal-panel-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 30ms;
 }
 .pf-modal-overlay[data-open="true"] .pf-modal-panel {
-  transform: translateY(0);
-  opacity: 1;
+  /* no-op: keyframe handles the entry */
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pf-modal-overlay,
   .pf-modal-panel {
+    animation: none !important;
     transition: opacity 100ms ease !important;
     transform: none !important;
+    opacity: 1 !important;
   }
 }
 
