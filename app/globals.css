@@ -152,9 +152,9 @@ h6 {
 /* Tokens del sistema */
 :root {
   --gym-bg:            #080a0b;
-  --gym-panel:         #0e1012;
-  --gym-panel-border:  rgba(255, 255, 255, 0.09);
-  --gym-panel-border-hi: rgba(255, 255, 255, 0.17);
+  --gym-panel:         #161a20;
+  --gym-panel-border:  rgba(255, 255, 255, 0.13);
+  --gym-panel-border-hi: rgba(255, 255, 255, 0.22);
   --gym-grid-dot:      rgba(255, 255, 255, 0.09);
   --gym-grid-line:     rgba(255, 255, 255, 0.048);
   --gym-grid-size:     30px;
@@ -163,8 +163,8 @@ h6 {
   /* mantener MYNTER como alias para otros componentes */
   --mynter-mint:       #61ce70;
   --mynter-navy-900:   #07101f;
-  --mynter-border:     rgba(255, 255, 255, 0.09);
-  --mynter-border-bright: rgba(255, 255, 255, 0.17);
+  --mynter-border:     rgba(255, 255, 255, 0.13);
+  --mynter-border-bright: rgba(255, 255, 255, 0.22);
 }
 
 /* ── FONDO GLOBAL: papel de grafo oscuro ─────────────────────────────────── */
@@ -225,10 +225,10 @@ html[data-pf-theme="light"] .pf-training-shell {
   background-color: var(--gym-panel) !important;
   border-color: var(--gym-panel-border) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-    inset 1px 0 0 0 rgba(255, 255, 255, 0.02),
-    0 16px 48px -12px rgba(0, 0, 0, 0.9),
-    0 3px 10px rgba(0, 0, 0, 0.6) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.07),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.03),
+    0 8px 24px -4px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.35) !important;
 }
 
 /* ── CAPA 1: textura brushed metal sutil ─────────────────────────────────── */
@@ -625,6 +625,28 @@ html:not([data-pf-theme="light"]) :where([class*="bg-neutral-50"], [class*="bg-n
 
 html:not([data-pf-theme="light"]) :where([class*="border-neutral-"]) {
   border-color: var(--gym-panel-border) !important;
+}
+
+/* ── Legibilidad en modo oscuro — normaliza slate/neutral medios-oscuros ── */
+/* text-slate-500..900 y text-neutral-500..900 son demasiado oscuros sobre
+   el fondo casi negro. Los elevamos a gris medio-claro para que sean legibles. */
+html:not([data-pf-theme="light"]) :where(
+  [class*="text-slate-5"],
+  [class*="text-slate-6"],
+  [class*="text-slate-7"],
+  [class*="text-slate-8"],
+  [class*="text-slate-9"]
+) {
+  color: rgba(255, 255, 255, 0.50) !important;
+}
+html:not([data-pf-theme="light"]) :where(
+  [class*="text-neutral-5"],
+  [class*="text-neutral-6"],
+  [class*="text-neutral-7"],
+  [class*="text-neutral-8"],
+  [class*="text-neutral-9"]
+) {
+  color: rgba(255, 255, 255, 0.50) !important;
 }
 
 .pf-account-form {
