@@ -767,8 +767,8 @@ button[disabled] {
 .pf-training-shell main > div > main > section:nth-of-type(5)  { animation-delay: 115ms;}
 .pf-training-shell main > div > main > section:nth-of-type(n+6){ animation-delay: 130ms;}
 
-/* Div containers (grids, etc.) */
-.pf-training-shell main > div > main > div:not([aria-hidden="true"]):not(.pf-expand-wrap) {
+/* Div containers (grids, etc.) — excluye overlays/modales fijos */
+.pf-training-shell main > div > main > div:not([aria-hidden="true"]):not(.pf-expand-wrap):not(.pf-modal-overlay):not([data-modal]):not([role="dialog"]) {
   animation: pf-fade-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 20ms;
 }
