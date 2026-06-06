@@ -1,6 +1,7 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import ProgressionPanel from "@/components/semana/ProgressionPanel";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useEjercicios } from "../../components/EjerciciosProvider";
@@ -718,7 +719,7 @@ export default function SemanaPage() {
   const [selectedOwnerKey, setSelectedOwnerKey] = useState<string>(GENERAL_OWNER_KEY);
   const [nuevoDiaPorSemana, setNuevoDiaPorSemana] = useState<Record<string, string>>({});
   const [nuevaPlanPorSemana, setNuevaPlanPorSemana] = useState<Record<string, string>>({});
-  const [templatesTab, setTemplatesTab] = useState<"nuevo" | "mis" | "buscar">("mis");
+  const [templatesTab, setTemplatesTab] = useState<"nuevo" | "mis" | "buscar" | "motor">("mis");
   const [alumnoSearch, setAlumnoSearch] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templatePreviewWeekId, setTemplatePreviewWeekId] = useState("");
@@ -3451,6 +3452,17 @@ export default function SemanaPage() {
               >
                 Buscar alumno
               </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setTemplatesTab("motor")}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                  templatesTab === "motor"
+                    ? "bg-violet-400 text-slate-950 shadow-[0_8px_20px_-10px_rgba(167,139,250,0.8)]"
+                    : "text-violet-300/70 hover:bg-violet-500/10 hover:text-violet-200"
+                }`}
+              >
+                ⚡ Motor IA
+              </ReliableActionButton>
             </div>
           </div>
 
@@ -3765,6 +3777,20 @@ export default function SemanaPage() {
               </div>
             )}
           </div>
+        ) : templatesTab === "motor" ? (
+          /* ── Motor de Progresión IA ────────────────────────────────────── */
+          <ProgressionPanel
+            store={store}
+            setStore={(updater) => {
+              setStore((prev) => updater(prev) as SemanaStoreV3 | SemanaStoreV2 | SemanaPlan[] | LegacySemanaItem[]);
+            }}
+            ejercicios={ejercicios}
+            onNotify={(msg, kind = "success") => {
+              if (kind === "success") notifySuccess(msg);
+              else if (kind === "warning") notifyWarning(msg);
+              else notifyError(msg);
+            }}
+          />
         ) : (
           <div className="mt-5 space-y-7 rounded-[28px] bg-white/[0.02]/8 px-2 py-3 sm:px-3 sm:py-4">
             <div className="rounded-[18px] border-b border-cyan-300/25 pb-5">
