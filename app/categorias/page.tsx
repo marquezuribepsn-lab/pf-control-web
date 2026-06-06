@@ -42,18 +42,15 @@ export default function CategoriasPage() {
 
   return (
     <main className="relative mx-auto max-w-7xl p-6">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,346),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-white/90">Categorías</h1>
-        <p className="text-sm text-white/45">
-          Organización por categoría y resumen general.
-        </p>
-      </div>
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
+        <div className="relative">
+          <p className="pf-page-hero-badge">⚡ Gestión del club</p>
+          <h1 className="pf-page-hero-title">Categorías</h1>
+          <p className="pf-page-hero-sub">Organización por categoría y resumen general.</p>
+        </div>
+      </section>
 
       <div className="pf-card mb-6 rounded-2xl border p-6">
         <h2 className="text-xl font-semibold text-white/85 mb-4" style={{ color: `hsl(var(--hue,346),65%,65%)` }}>Agregar nueva categoría</h2>

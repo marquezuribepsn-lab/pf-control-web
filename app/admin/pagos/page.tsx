@@ -384,6 +384,11 @@ export default function AdminPagosManualPage() {
   const [mpConnectActionLoading, setMpConnectActionLoading] = useState(false);
   const [mpConnectError, setMpConnectError] = useState("");
   const [mpConnectMessage, setMpConnectMessage] = useState("");
+  const [mpTokenInput, setMpTokenInput] = useState("");
+  const [mpTokenLoading, setMpTokenLoading] = useState(false);
+  const [mpTokenError, setMpTokenError] = useState("");
+  const [mpTokenMessage, setMpTokenMessage] = useState("");
+  const [mpTokenVisible, setMpTokenVisible] = useState(false);
   const [incomeScope, setIncomeScope] = useState<IncomeScope>("monthly");
   const [incomeMonth, setIncomeMonth] = useState<string>(getCurrentMonthValue());
   const [incomeYear, setIncomeYear] = useState<string>(getCurrentYearValue());
@@ -912,6 +917,35 @@ export default function AdminPagosManualPage() {
       );
     } finally {
       setMpConnectActionLoading(false);
+    }
+  };
+
+  const saveDirectToken = async () => {
+    const token = mpTokenInput.trim();
+    if (!token) {
+      setMpTokenError("Pegá tu Access Token de Mercado Pago antes de guardar.");
+      return;
+    }
+    setMpTokenLoading(true);
+    setMpTokenError("");
+    setMpTokenMessage("");
+    try {
+      const response = await fetch("/api/admin/payments/mercadopago/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: token }),
+      });
+      const data = await parseResponsePayload<{ ok?: boolean; message?: string }>(response);
+      if (!response.ok) {
+        throw new Error(resolvePayloadMessage(data, "No se pudo guardar el token."));
+      }
+      setMpTokenMessage(resolvePayloadMessage(data, "Token guardado correctamente."));
+      setMpTokenInput("");
+      await loadMercadoPagoConnectStatus();
+    } catch (err) {
+      setMpTokenError(err instanceof Error ? err.message : "Error al guardar el token.");
+    } finally {
+      setMpTokenLoading(false);
     }
   };
 
@@ -1590,6 +1624,60 @@ export default function AdminPagosManualPage() {
             MERCADOPAGO_APP_CLIENT_SECRET en el entorno.
           </p>
         ) : null}
+
+        {/* ── Configurar token directo (sin OAuth) ── */}
+        <div className="mt-5 rounded-xl border border-cyan-400/25 bg-cyan-500/[0.07] p-4">
+          <p className="text-sm font-bold text-cyan-200">Configurar token de acceso directo</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Si no podés usar OAuth, pegá tu <strong className="text-slate-200">Access Token de producción</strong> de Mercado Pago.
+            Se guarda en la base de datos del servidor y reemplaza al token de entorno.
+            Obtené el tuyo en{" "}
+            <a
+              href="https://www.mercadopago.com.ar/developers/panel/app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-cyan-300"
+            >
+              Panel de Desarrolladores MP
+            </a>.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-start gap-2">
+            <div className="relative min-w-0 flex-1">
+              <input
+                type={mpTokenVisible ? "text" : "password"}
+                value={mpTokenInput}
+                onChange={(e) => { setMpTokenInput(e.target.value); setMpTokenError(""); setMpTokenMessage(""); }}
+                placeholder="APP_USR-..."
+                autoComplete="off"
+                className="w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-400/50"
+              />
+              <button
+                type="button"
+                onClick={() => setMpTokenVisible((v) => !v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-200"
+                aria-label={mpTokenVisible ? "Ocultar token" : "Mostrar token"}
+              >
+                {mpTokenVisible ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
+            <ReliableActionButton
+              type="button"
+              disabled={mpTokenLoading || !mpTokenInput.trim()}
+              onClick={() => void saveDirectToken()}
+              className="rounded-xl bg-cyan-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {mpTokenLoading ? "Guardando..." : "Guardar token"}
+            </ReliableActionButton>
+          </div>
+
+          {mpTokenError ? (
+            <p className="mt-2 text-xs text-rose-300">{mpTokenError}</p>
+          ) : null}
+          {mpTokenMessage ? (
+            <p className="mt-2 text-xs text-emerald-300">✓ {mpTokenMessage}</p>
+          ) : null}
+        </div>
       </section>
 
 

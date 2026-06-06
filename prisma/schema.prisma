@@ -48,8 +48,9 @@ model User {
   edad           Int @default(0)
   fechaNacimiento DateTime @default("2000-01-01T00:00:00.000Z")
   altura         Float @default(0.0)
-  telefono       String?
-  direccion      String?
+  telefono           String?
+  telefonoVerificado Boolean @default(false)
+  direccion          String?
 
   // Permisos
   puedeEditarRegistros   Boolean @default(false)

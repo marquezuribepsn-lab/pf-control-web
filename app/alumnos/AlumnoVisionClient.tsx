@@ -12188,7 +12188,7 @@ export default function AlumnoVisionClient({
                   <ReliableActionButton
                     type="submit"
                     disabled={accountPanelSaving || accountPanelLoading}
-                    className="mt-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-70"
+                    className="pf-btn pf-btn--primary mt-2 disabled:opacity-70"
                   >
                     {accountPanelSaving ? "Guardando..." : "Guardar cambios"}
                   </ReliableActionButton>
@@ -12248,7 +12248,7 @@ export default function AlumnoVisionClient({
                       type="button"
                       onClick={handleAccountPanelPhotoSave}
                       disabled={accountPanelPhotoSaving}
-                      className="rounded-lg bg-cyan-400 px-3 py-2 text-xs font-black text-slate-950 disabled:opacity-70"
+                      className="pf-btn pf-btn--primary !px-3 !py-2 !text-xs disabled:opacity-70"
                     >
                       {accountPanelPhotoSaving ? "Guardando..." : "Guardar foto"}
                     </ReliableActionButton>

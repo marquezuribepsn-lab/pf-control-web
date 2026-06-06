@@ -296,37 +296,25 @@ export default function AsistenciasPage() {
 
   return (
     <main className="relative mx-auto max-w-7xl p-6 text-slate-100">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,172),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Categoria operativa
-          </p>
-          <h1 className="text-3xl font-black">Asistencias</h1>
-          <p className="mt-1 text-sm text-slate-300">
-            Jornadas por dia y hora, con control de presentes y ausentes por categoria.
-          </p>
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
+        <div className="relative flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="pf-page-hero-badge">📋 Categoría operativa</p>
+            <h1 className="pf-page-hero-title">Asistencias</h1>
+            <p className="pf-page-hero-sub">Jornadas por día y hora, con control de presentes y ausentes por categoría.</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/sesiones" className="pf-btn pf-btn--ghost">
+              Ver sesiones
+            </Link>
+            <Link href="/clientes?seccion=plantel" className="pf-btn pf-btn--primary">
+              Ir a plantel
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href="/sesiones"
-            className="rounded-xl border border-white/25 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10"
-          >
-            Ver sesiones
-          </Link>
-          <Link
-            href="/clientes?seccion=plantel"
-            className="rounded-xl bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
-          >
-            Ir a plantel
-          </Link>
-        </div>
-      </div>
+      </section>
 
       <section className="pf-card rounded-2xl border p-5">
         <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,172),65%,65%)` }}>Nueva jornada</h2>

@@ -97,6 +97,16 @@ const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
 const THEME_MODE_KEY = "pf-control-theme-mode-v1";
 const THEME_MODE_EVENT = "pf-theme-mode-updated";
+const ACCENT_COLOR_KEY = "pf-control-accent-color-v1";
+const ACCENT_COLOR_EVENT = "pf-accent-color-updated";
+const DEFAULT_ACCENT_COLOR = "#2563eb"; // Harbiz royal blue
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
+const applyAccentColorToRoot = (color: string | null | undefined) => {
+  if (typeof document === "undefined") return;
+  const target = (color && HEX_RE.test(color)) ? color : DEFAULT_ACCENT_COLOR;
+  document.documentElement.style.setProperty("--gym-accent", target);
+};
 const CLIENTE_META_KEY = "pf-control-clientes-meta-v1";
 const ASISTENCIAS_REGISTROS_KEY = "pf-control-asistencias-registros-v1";
 const SIDEBAR_NAV_OPTIMISTIC_MS = 1400;
@@ -336,7 +346,13 @@ const clampScreenScale = (value: number): number => {
 
 const normalizeThemeMode = (value: unknown): ThemeMode => {
   const normalized = String(value || "").trim().toLowerCase();
-  return normalized === "light" ? "light" : "dark";
+  if (normalized === "light") return "light";
+  if (normalized === "dark") return "dark";
+  // No explicit stored preference → respect OS/browser setting
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: light)").matches) {
+    return "light";
+  }
+  return "dark";
 };
 
 const isMobileLikeViewport = (): boolean => {
@@ -397,8 +413,8 @@ const resolveToneEndpointColor = (tone: string | undefined, endpoint: "from" | "
 
 const resolveSidebarLedColors = (tone: string | undefined) => {
   const fallback = {
-    start: "rgba(56,189,248,0.96)",
-    end: "rgba(59,130,246,0.96)",
+    start: "rgba(232,154,127,0.96)",
+    end: "rgba(204,120,92,0.96)",
   };
 
   const start = resolveToneEndpointColor(tone, "from") || fallback.start;
@@ -474,6 +490,10 @@ export default function AppShell({
   const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [clockNow, setClockNow] = useState<Date | null>(null);
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "dark";
+    return normalizeThemeMode(window.localStorage.getItem(THEME_MODE_KEY));
+  });
   const stableSidebarImageRef = useRef<string | null>(
     normalizeSidebarImageValue(sidebarImage || initialSidebarImage)
   );
@@ -797,17 +817,9 @@ export default function AppShell({
     return () => window.clearInterval(id);
   }, []);
 
-  // Mouse tracking global — alimenta --hue, --mx, --my en todas las páginas
+  // --hue fijo: 265 (violet), sin tracking de mouse
   useEffect(() => {
-    const root = document.documentElement;
-    const onMove = (e: MouseEvent) => {
-      root.style.setProperty("--mx", `${e.clientX}px`);
-      root.style.setProperty("--my", `${e.clientY}px`);
-      const hue = Math.round((e.clientX / window.innerWidth) * 360);
-      root.style.setProperty("--hue", `${hue}`);
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
+    document.documentElement.style.setProperty("--hue", "265");
   }, []);
 
   useEffect(() => {
@@ -850,16 +862,39 @@ export default function AppShell({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const syncAccentFromStorage = () => {
+      applyAccentColorToRoot(window.localStorage.getItem(ACCENT_COLOR_KEY));
+    };
+    syncAccentFromStorage();
+    window.addEventListener(ACCENT_COLOR_EVENT, syncAccentFromStorage);
+    const onAccentStorage = (event: StorageEvent) => {
+      if (event.key === ACCENT_COLOR_KEY) syncAccentFromStorage();
+    };
+    window.addEventListener("storage", onAccentStorage);
+
     const syncThemeFromStorage = () => {
       const stored = window.localStorage.getItem(THEME_MODE_KEY);
-      applyThemeMode(normalizeThemeMode(stored));
+      const resolved = normalizeThemeMode(stored);
+      applyThemeMode(resolved);
+      setThemeMode(resolved);
     };
 
     syncThemeFromStorage();
     window.addEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
 
+    // Re-apply when OS preference changes (only matters when no stored override)
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
+    const onSystemChange = () => {
+      const stored = window.localStorage.getItem(THEME_MODE_KEY);
+      if (!stored) syncThemeFromStorage();
+    };
+    mediaQuery.addEventListener("change", onSystemChange);
+
     return () => {
       window.removeEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
+      window.removeEventListener(ACCENT_COLOR_EVENT, syncAccentFromStorage);
+      window.removeEventListener("storage", onAccentStorage);
+      mediaQuery.removeEventListener("change", onSystemChange);
     };
   }, []);
 
@@ -1663,7 +1698,7 @@ export default function AppShell({
   }
 
   return (
-    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#070810] text-slate-100">
+    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#09090f] text-slate-100">
       <div className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(ellipse_80%_45%_at_50%_-5%,hsla(220,70%,40%,0.18),transparent_65%)] max-md:hidden" aria-hidden="true" />
       <AdminRunningLoaderOverlay
         active={appRouteTransitionLoading}
@@ -1711,19 +1746,6 @@ export default function AppShell({
         </ReliableActionButton>
       ) : null}
 
-      {/* Cursor LED global — sutil, aplica en todas las páginas */}
-      <div
-        className="pf-cursor-light pointer-events-none fixed z-[9] rounded-full max-md:hidden"
-        aria-hidden="true"
-        style={{
-          width: "700px",
-          height: "700px",
-          transform: "translate(var(--mx,-9999px), var(--my,-9999px)) translate(-50%,-50%)",
-          background: "radial-gradient(circle, hsla(var(--hue,220),70%,60%,0.055) 0%, transparent 65%)",
-          willChange: "transform",
-          pointerEvents: "none",
-        }}
-      />
 
       {mobileOpen && !isClienteRole ? (
         <div
@@ -1851,8 +1873,9 @@ export default function AppShell({
         style={{
           width: sidebarExpanded || mobileOpen ? "clamp(160px,14vw,178px)" : "52px",
           transition: "width 320ms cubic-bezier(0.32,1,0.36,1)",
-          background: "linear-gradient(180deg,rgba(6,7,14,0.97) 0%,rgba(5,6,12,0.99) 100%)",
-          borderRight: "1px solid rgba(255,255,255,0.05)",
+          /* Sidebar SIEMPRE oscura en ambos temas (Harbiz Dark Nav) */
+          background: "linear-gradient(180deg,#0b1220 0%,#0a1020 100%)",
+          borderRight: "1px solid rgba(148, 163, 184, 0.14)",
           backdropFilter: "blur(40px) saturate(160%)",
           WebkitBackdropFilter: "blur(40px) saturate(160%)",
         }}
@@ -1918,7 +1941,7 @@ export default function AppShell({
                     {/* Hover fill */}
                     <span
                       className="pointer-events-none absolute inset-0 rounded-[10px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-                      style={{ background: "rgba(255,255,255,0.048)" }}
+                      style={{ background: "color-mix(in srgb, var(--gym-accent) 18%, transparent)" }}
                       aria-hidden="true"
                     />
                     {/* Active accent bar */}

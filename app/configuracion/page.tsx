@@ -19,6 +19,28 @@ const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const HOME_EDIT_MODE_KEY = "pf-control-home-edit-mode-v1";
 const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
+const THEME_MODE_KEY = "pf-control-theme-mode-v1";
+const THEME_MODE_EVENT = "pf-theme-mode-updated";
+const ACCENT_COLOR_KEY = "pf-control-accent-color-v1";
+const ACCENT_COLOR_EVENT = "pf-accent-color-updated";
+const DEFAULT_ACCENT = "#2563eb"; // Harbiz royal blue (default)
+
+const ACCENT_PRESETS = [
+  { name: "Harbiz Blue", value: "#2563eb" }, // default — Harbiz
+  { name: "Sky",         value: "#0ea5e9" },
+  { name: "Indigo",      value: "#4f46e5" },
+  { name: "Violet",      value: "#7c3aed" },
+  { name: "Fucsia",      value: "#c026d3" },
+  { name: "Rosa",        value: "#e11d48" },
+  { name: "Naranja",     value: "#ea580c" },
+  { name: "Ámbar",       value: "#d97706" },
+  { name: "Verde",       value: "#16a34a" },
+  { name: "Esmeralda",   value: "#059669" },
+  { name: "Teal",        value: "#0d9488" },
+  { name: "Slate",       value: "#475569" },
+];
+
+type ThemeChoice = "light" | "dark" | "system";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 const MAX_PROFILE_IMAGE_DATA_URL_LENGTH = 850_000;
 const PROFILE_IMAGE_MAX_DIMENSION = 720;
@@ -161,6 +183,8 @@ export default function ConfiguracionPage() {
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
+  const [accentColor, setAccentColor] = useState<string>(DEFAULT_ACCENT);
   const [savedScale, setSavedScale] = useState(1);
   const [draftScale, setDraftScale] = useState(1);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -184,6 +208,12 @@ export default function ConfiguracionPage() {
     const nextNotifications = localStorage.getItem(NOTIFICATIONS_ENABLED_KEY) === "1";
     const nextSidebarImage = localStorage.getItem(SIDEBAR_IMAGE_KEY);
     const nextDockLabelMode = normalizeDockLabelMode(localStorage.getItem(DOCK_LABEL_MODE_KEY));
+    const storedTheme = localStorage.getItem(THEME_MODE_KEY);
+    setThemeChoice(storedTheme === "light" ? "light" : storedTheme === "dark" ? "dark" : "system");
+    const storedAccent = localStorage.getItem(ACCENT_COLOR_KEY);
+    if (storedAccent && /^#[0-9a-fA-F]{6}$/.test(storedAccent)) {
+      setAccentColor(storedAccent);
+    }
 
     setSavedScale(nextScale);
     setDraftScale(nextScale);
@@ -334,6 +364,30 @@ export default function ConfiguracionPage() {
       });
     }
   };
+
+  const applyTheme = (choice: ThemeChoice) => {
+    setThemeChoice(choice);
+    if (choice === "system") {
+      localStorage.removeItem(THEME_MODE_KEY);
+    } else {
+      localStorage.setItem(THEME_MODE_KEY, choice);
+    }
+    window.dispatchEvent(new Event(THEME_MODE_EVENT));
+  };
+
+  const applyAccentColor = (hex: string) => {
+    const clean = hex.trim();
+    if (!/^#[0-9a-fA-F]{6}$/.test(clean)) return;
+    setAccentColor(clean);
+    if (clean.toLowerCase() === DEFAULT_ACCENT.toLowerCase()) {
+      localStorage.removeItem(ACCENT_COLOR_KEY);
+    } else {
+      localStorage.setItem(ACCENT_COLOR_KEY, clean);
+    }
+    window.dispatchEvent(new Event(ACCENT_COLOR_EVENT));
+  };
+
+  const resetAccentColor = () => applyAccentColor(DEFAULT_ACCENT);
 
   const abrirEditorInicio = () => {
     localStorage.setItem(HOME_EDIT_MODE_KEY, "1");
@@ -532,18 +586,120 @@ export default function ConfiguracionPage() {
 
   return (
     <main className="relative mx-auto max-w-4xl p-6 text-white/85">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,217),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <div className="mb-6">
-        <h1 className="text-3xl font-black" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Configuracion</h1>
-        <p className="mt-1 text-sm text-white/65">
-          Ajusta el tamano visual de toda la app y activa notificaciones tipo push del navegador.
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
+        <div className="relative">
+          <p className="pf-page-hero-badge">⚙️ Preferencias</p>
+          <h1 className="pf-page-hero-title">Configuración</h1>
+          <p className="pf-page-hero-sub">Ajusta el tamaño visual de toda la app y activa notificaciones tipo push del navegador.</p>
+        </div>
+      </section>
+
+      {/* ── Color de acento (LEDs) ──────────────────────────────────────── */}
+      <section className="mb-6 pf-card rounded-2xl border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: "var(--gym-accent)" }}>Color de acento</h2>
+            <p className="mt-0.5 text-sm text-white/55">
+              Color de los LEDs, botones primarios, glows y bordes activos en toda la plataforma.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.04] shadow-inner"
+              style={{ boxShadow: `inset 0 0 0 3px ${accentColor}, 0 0 12px color-mix(in srgb, ${accentColor} 38%, transparent)` }}
+              title="Elegir color personalizado"
+            >
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => applyAccentColor(e.target.value)}
+                className="h-full w-full cursor-pointer rounded-xl opacity-0"
+                aria-label="Color personalizado"
+              />
+            </label>
+            <ReliableActionButton
+              type="button"
+              onClick={resetAccentColor}
+              className="pf-btn pf-btn--ghost !px-3 !py-2 !text-xs"
+              title="Restablecer al color por defecto"
+            >
+              Restablecer
+            </ReliableActionButton>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+          {ACCENT_PRESETS.map((preset) => {
+            const active = preset.value.toLowerCase() === accentColor.toLowerCase();
+            return (
+              <ReliableActionButton
+                key={preset.value}
+                type="button"
+                onClick={() => applyAccentColor(preset.value)}
+                className="group relative flex aspect-square items-center justify-center rounded-xl border transition-all"
+                style={{
+                  background: preset.value,
+                  borderColor: active ? "#ffffff" : "color-mix(in srgb, " + preset.value + " 60%, transparent)",
+                  boxShadow: active
+                    ? `0 0 0 2px ${preset.value}, 0 0 18px color-mix(in srgb, ${preset.value} 60%, transparent)`
+                    : `0 0 8px color-mix(in srgb, ${preset.value} 28%, transparent)`,
+                  transform: active ? "scale(1.05)" : "scale(1)",
+                }}
+                title={preset.name}
+              >
+                {active && (
+                  <span className="text-base font-bold" style={{ color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}>✓</span>
+                )}
+              </ReliableActionButton>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-[11px] text-white/40">
+          Color actual: <span className="font-mono" style={{ color: accentColor }}>{accentColor.toUpperCase()}</span>
         </p>
-      </div>
+      </section>
+
+      {/* ── Modo visual ─────────────────────────────────────────────────── */}
+      <section className="mb-6 pf-card rounded-2xl border p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: "var(--gym-accent)" }}>Modo visual</h2>
+            <p className="mt-0.5 text-sm text-white/55">
+              {themeChoice === "system"
+                ? "Siguiendo la configuración del sistema operativo"
+                : themeChoice === "light"
+                ? "Modo claro activado manualmente"
+                : "Modo oscuro activado manualmente"}
+            </p>
+          </div>
+          {/* Segmented control */}
+          <div className="flex items-center gap-1 rounded-2xl border border-white/[0.09] bg-white/[0.04] p-1">
+            {(
+              [
+                { value: "light",  icon: "☀️", label: "Claro"   },
+                { value: "system", icon: "💻", label: "Sistema" },
+                { value: "dark",   icon: "🌙", label: "Oscuro"  },
+              ] as { value: ThemeChoice; icon: string; label: string }[]
+            ).map(({ value, icon, label }) => (
+              <ReliableActionButton
+                key={value}
+                type="button"
+                onClick={() => applyTheme(value)}
+                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                  themeChoice === value
+                    ? "bg-[--gym-accent] text-white shadow-md shadow-violet-900/30"
+                    : "text-white/55 hover:text-white/80 hover:bg-white/[0.06]"
+                }`}
+                style={themeChoice === value ? { background: "var(--gym-accent)" } : {}}
+              >
+                <span>{icon}</span>
+                <span className="hidden sm:inline">{label}</span>
+              </ReliableActionButton>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mb-6 pf-card rounded-2xl border p-5">
         <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Panel general</h2>
@@ -601,7 +757,7 @@ export default function ConfiguracionPage() {
                 type="button"
                 onClick={guardarSidebarImage}
                 disabled={!sidebarImageDirty || savingSidebarImage}
-                className="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pf-btn pf-btn--primary !px-3 !py-1.5 !text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {savingSidebarImage ? "Guardando..." : "Guardar cambios"}
               </ReliableActionButton>
@@ -748,7 +904,7 @@ export default function ConfiguracionPage() {
               <ReliableActionButton
                 type="button"
                 onClick={activarModificacion}
-                className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300"
+                className="pf-btn pf-btn--primary"
               >
                 Modificar pantalla
               </ReliableActionButton>

@@ -68,15 +68,9 @@ export async function POST(req: NextRequest) {
   }
 
   const access = await resolveBillingAccessByEmail(email);
-  if (!access.clientKey) {
-    return NextResponse.json(
-      {
-        message:
-          "No encontramos tu ficha de alumno para asociar el pago. Contacta al profesor para vincular tu cuenta.",
-      },
-      { status: 400 }
-    );
-  }
+  // No requerimos clientKey para pago manual: el alumno puede informar el pago
+  // aunque todavía no tenga ficha de billing vinculada. El admin lo revisa
+  // y puede aprobar/rechazar desde el panel de pagos.
 
   const payload = await req.json().catch(() => ({}));
   const method = resolveManualMethod(payload?.method);

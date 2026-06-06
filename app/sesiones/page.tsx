@@ -1078,19 +1078,15 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
 
   return (
     <ContainerTag className={containerClassName}>
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/55 to-slate-900 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] md:p-7">
-        <div className="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-100/85">
-              Centro de operaciones
-            </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">
-              Entrenamiento
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
+            <p className="pf-page-hero-badge">⚡ Centro de operaciones</p>
+            <h1 className="pf-page-hero-title">Entrenamiento</h1>
+            <p className="pf-page-hero-sub">
               Unifica sesiones y ejercicios en un mismo modulo para planificar, ajustar y ejecutar sin salir de contexto.
             </p>
           </div>
@@ -1100,14 +1096,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               <ReliableActionButton
                 type="button"
                 onClick={() => openQuickExerciseEditor(null, "")}
-                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                className="pf-btn pf-btn--primary"
               >
                 + Nuevo ejercicio
               </ReliableActionButton>
             ) : (
               <Link
                 href={nuevaSesionHref}
-                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                className="pf-btn pf-btn--primary"
               >
                 + Nueva sesion
               </Link>
@@ -1990,7 +1986,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
           <ReliableActionButton
             type="button"
             onClick={() => openQuickExerciseEditor(null, "")}
-            className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+            className="pf-btn pf-btn--primary"
           >
             + Nuevo ejercicio
           </ReliableActionButton>
@@ -2324,7 +2320,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="submit"
-                  className="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
+                  className="pf-btn pf-btn--primary"
                 >
                   {quickExerciseEditId ? "Guardar cambios" : "Guardar ejercicio"}
                 </ReliableActionButton>

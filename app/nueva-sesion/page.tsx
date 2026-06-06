@@ -43,12 +43,7 @@ export default function NuevaSesionPage() {
   });
 
   const jugadorasFiltradas = useMemo(
-    () =>
-      jugadoras.filter(
-        (jugadora) =>
-          jugadora.categoria === form.categoriaAsignada &&
-          (jugadora.deporte || "").trim().length > 0
-      ),
+    () => jugadoras.filter((jugadora) => jugadora.categoria === form.categoriaAsignada),
     [form.categoriaAsignada, jugadoras]
   );
 

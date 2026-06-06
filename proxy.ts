@@ -53,6 +53,13 @@ export default auth((req) => {
   const { pathname: rawPath } = req.nextUrl;
   const ip = getIP(req);
 
+  // ── Rutas públicas — nunca requieren sesión ──
+  // Sin este bloque, un usuario sin sesión que visite /auth/login
+  // queda atrapado en un loop infinito de callbackUrls anidadas.
+  if (rawPath.startsWith('/auth/')) {
+    return NextResponse.next();
+  }
+
   // ── Rate limiting en rutas API (antes de cualquier lógica de sesión) ──
   if (rawPath.startsWith('/api/auth/')) {
     if (!rateLimit(ip, 'api-auth', { max: 30, windowMs: 60_000 })) {
@@ -122,7 +129,9 @@ export default auth((req) => {
 
     if (!subscriptionActive) {
       if (!canClienteAccessWhilePaymentPending(pathname)) {
-        return NextResponse.redirect(new URL('/alumnos/pagos', req.url));
+        // Incluir ?pay=1 para que AlumnoPagosClient no redirija de vuelta a /alumnos/inicio
+        // (lo que generaría un loop: middleware→pagos, client→inicio, middleware→pagos…)
+        return NextResponse.redirect(new URL('/alumnos/pagos?pay=1', req.url));
       }
 
       return NextResponse.next();

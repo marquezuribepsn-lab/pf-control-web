@@ -165,33 +165,19 @@ export default function EquiposPage() {
 
   return (
     <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,243),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <section className="relative overflow-hidden pf-card rounded-2xl border p-6">
-        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/24 blur-3xl" />
-        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
-
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">Planificación Estructural</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Equipos</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
-              Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.
-            </p>
+            <p className="pf-page-hero-badge">🏆 Planificación Estructural</p>
+            <h1 className="pf-page-hero-title">Equipos</h1>
+            <p className="pf-page-hero-sub">Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.</p>
           </div>
-
-          <ReliableActionButton
-            onClick={handleCreateMode}
-            className="rounded-xl border border-cyan-300/35 bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300"
-          >
+          <ReliableActionButton onClick={handleCreateMode} className="pf-btn pf-btn--primary">
             Nuevo equipo
           </ReliableActionButton>
         </div>
-
         <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatTile label="Equipos" value={stats.totalEquipos} tone="cyan" />
           <StatTile label="Jugadoras" value={stats.totalJugadoras} tone="emerald" />

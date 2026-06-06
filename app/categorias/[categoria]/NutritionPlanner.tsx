@@ -1426,9 +1426,6 @@ export default function NutritionPlanner() {
     updatePlan(planId, (plan) => ({ ...plan, alumnoAsignado: resolvedAlumnoNombre }));
   };
 
-  const selectedAlumnoForPlan =
-    assignmentSelectionByPlanId[selectedPlan.id] ?? selectedPlan.alumnoAsignado ?? "";
-
   const saveNutritionChanges = () => {
     if (nutritionAutoSyncTimerRef.current !== null) {
       window.clearTimeout(nutritionAutoSyncTimerRef.current);
@@ -1492,6 +1489,8 @@ export default function NutritionPlanner() {
   const caloriasDiff = roundValue(planIntake.calorias - selectedPlan.targets.calorias);
   const officialFoodsCount = argentineFoodsBase.length;
   const visibleFoodsCount = filteredFoods.length;
+  const selectedAlumnoForPlan =
+    assignmentSelectionByPlanId[selectedPlan.id] ?? selectedPlan.alumnoAsignado ?? "";
 
   if (isClientDetailMode) {
     if (!detailPlan) {

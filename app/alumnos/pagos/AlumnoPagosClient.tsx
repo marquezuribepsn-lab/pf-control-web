@@ -437,8 +437,14 @@ export default function AlumnoPagosClient() {
   };
 
   const isActive = Boolean(status?.active);
+  // MP checkout requiere que el alumno tenga ficha de billing (clientKey) para que
+  // el webhook pueda activar automáticamente el pase. Si aún no está vinculado,
+  // se muestra un aviso en lugar de deshabilitar sin explicación.
   const canPay = Boolean(status?.mercadoPago?.configured && status?.reason !== "no-meta");
-  const canRequestManual = Boolean(status?.manualMethodsEnabled && status?.reason !== "no-meta");
+  const noMetaBlocksMP = Boolean(status?.mercadoPago?.configured && status?.reason === "no-meta");
+  // Los botones manuales (transferencia/efectivo/QR MP) siempre están habilitados:
+  // el admin puede revisar y aprobar el pago aunque no haya ficha de billing todavía.
+  const canRequestManual = Boolean(status?.manualMethodsEnabled);
   const canUseQrStore = Boolean(status?.mercadoPago?.qrStore?.enabled);
 
   const statusTone = useMemo(
@@ -659,6 +665,12 @@ export default function AlumnoPagosClient() {
                 Ir a inicio
               </ReliableLink>
             </div>
+
+            {noMetaBlocksMP ? (
+              <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
+              </p>
+            ) : null}
           </article>
 
           <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">

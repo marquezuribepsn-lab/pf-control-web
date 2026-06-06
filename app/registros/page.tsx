@@ -315,24 +315,16 @@ export default function RegistrosPage() {
 
   return (
     <main className="relative mx-auto max-w-[1500px] space-y-6 p-6 text-white/85">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,42),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <section className="relative overflow-hidden rounded-2xl border p-6">
-        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
-
-        <div className="relative">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Hub de analitica operativa</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Registros</h1>
-          <p className="mt-2 text-sm text-white/75/90">
-            Vista consolidada de clientes, pagos y asistencia con la misma linea visual del modulo Clientes.
-          </p>
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="pf-page-hero-badge">📊 Hub de analítica operativa</p>
+            <h1 className="pf-page-hero-title">Registros</h1>
+            <p className="pf-page-hero-sub">Vista consolidada de clientes, pagos y asistencia en un solo lugar.</p>
+          </div>
         </div>
-
         <div className="relative mt-5 grid gap-3 md:grid-cols-3">
           <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
           <StatCard label="Ingresos confirmados" value={formatCurrency(stats.ingresosBrutos)} tone="emerald" />

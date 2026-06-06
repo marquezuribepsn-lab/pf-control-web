@@ -718,7 +718,8 @@ export default function SemanaPage() {
   const [selectedOwnerKey, setSelectedOwnerKey] = useState<string>(GENERAL_OWNER_KEY);
   const [nuevoDiaPorSemana, setNuevoDiaPorSemana] = useState<Record<string, string>>({});
   const [nuevaPlanPorSemana, setNuevaPlanPorSemana] = useState<Record<string, string>>({});
-  const [templatesTab, setTemplatesTab] = useState<"nuevo" | "mis">("mis");
+  const [templatesTab, setTemplatesTab] = useState<"nuevo" | "mis" | "buscar">("mis");
+  const [alumnoSearch, setAlumnoSearch] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templatePreviewWeekId, setTemplatePreviewWeekId] = useState("");
   const [templatePreviewDayId, setTemplatePreviewDayId] = useState("");
@@ -1361,6 +1362,14 @@ export default function SemanaPage() {
       return base.includes(query);
     });
   }, [templateSearch, templatesOrdenados]);
+
+  const alumnosFiltrados = useMemo(() => {
+    const query = alumnoSearch.trim().toLowerCase();
+    if (!query) return [];
+    return (alumnos || []).filter((a) =>
+      (a.nombre || "").toLowerCase().includes(query)
+    );
+  }, [alumnoSearch, alumnos]);
 
   const selectedTemplate = useMemo(
     () => storeV3.templates.find((template) => template.id === selectedTemplateId) || null,
@@ -3384,142 +3393,14 @@ export default function SemanaPage() {
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: `hsl(var(--hue,258),65%,65%)` }}>Templates de entrenamiento</h1>
-          <p className="text-sm text-white/65">
-            Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
-          </p>
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-          <div className="flex flex-wrap gap-2">
-            <ReliableActionButton
-              type="button"
-              onClick={iniciarNuevoTemplate}
-              className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Nuevo template
-            </ReliableActionButton>
-            <ReliableActionButton
-              type="button"
-              onClick={() => setTemplatesTab("mis")}
-              className="rounded-xl border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100"
-            >
-              Mis templates
-            </ReliableActionButton>
-          </div>
-
-          <ReliableActionButton
-            type="button"
-            onClick={guardarTemplateActual}
-            className="w-full rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 sm:w-auto"
-          >
-            Guardar template
-          </ReliableActionButton>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold" style={{ color: `hsl(var(--hue,258),65%,65%)` }}>Templates de entrenamiento</h1>
+        <p className="mt-1 text-sm text-white/65">
+          Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
+        </p>
       </div>
 
-      <section className="mb-6 rounded-[30px] border border-cyan-300/20 bg-gradient-to-b from-slate-900/88 via-slate-900/64 to-slate-950/80 px-5 py-6 shadow-[0_26px_72px_-42px_rgba(34,211,238,0.52)] sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200/90" style={{ color: `hsl(var(--hue,258),65%,65%)` }}>
-              Panel integral
-            </p>
-            <p className="mt-1 text-sm text-white/75">
-              Un solo apartado con sectorizacion clara: templates, entrenamiento y plan semanal activo.
-            </p>
-          </div>
-          <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
-            {alumnoDestinoActivo
-              ? `Alumno destino: ${alumnoDestinoActivo.nombre}`
-              : "Alumno destino: no seleccionado"}
-          </span>
-        </div>
 
-        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <div className="border-b border-white/[0.07] pb-4 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-5">
-            <label className="mb-1 block text-xs uppercase tracking-wide text-white/40">
-              Persona activa
-            </label>
-            <select
-              value={selectedOwnerKey}
-              onChange={(event) => {
-                const nextOwnerKey = event.target.value;
-
-                if (nextOwnerKey === GENERAL_OWNER_KEY) {
-                  setSelectedOwnerKey(GENERAL_OWNER_KEY);
-                  return;
-                }
-
-                const persona = todasLasPersonas.find(
-                  (item) => toOwnerKey(item) === nextOwnerKey
-                );
-
-                if (persona) {
-                  setTipoFiltro(persona.tipo);
-                  seleccionarPersona(persona);
-                  return;
-                }
-
-                setSelectedOwnerKey(nextOwnerKey);
-              }}
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm"
-            >
-              {ownerOptions.map((option) => (
-                <option key={option.ownerKey} value={option.ownerKey}>
-                  {option.label} - {option.detail}
-                </option>
-              ))}
-            </select>
-            <div className="mt-3 border-l-2 border-cyan-300/40 bg-cyan-500/[0.07] px-3 py-2 text-xs text-cyan-100">
-              <p className="font-semibold uppercase tracking-wide">Plan activo</p>
-              <p className="mt-1 text-sm text-white">
-                {planSeleccionado?.nombre || "Sin plan seleccionado"}
-              </p>
-              {personaSeleccionada?.categoria ? (
-                <p className="mt-1 text-[11px] text-cyan-200">Categoria: {personaSeleccionada.categoria}</p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="xl:pl-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="text-sm font-semibold text-amber-100">Alertas de alumnos</h2>
-                <p className="text-[11px] text-white/65">Cambios recientes para acceso rapido.</p>
-              </div>
-              <ReliableActionButton
-                type="button"
-                onClick={() => setAlumnoNotifications([])}
-                disabled={alumnoNotifications.length === 0}
-                className="rounded-lg border border-white/[0.08] px-2.5 py-1 text-[11px] font-semibold text-white/75 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Limpiar
-              </ReliableActionButton>
-            </div>
-
-            {alumnoNotifications.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                {alumnoNotifications.slice(0, 4).map((notification) => (
-                  <ReliableActionButton
-                    key={notification.id}
-                    type="button"
-                    onClick={() => {
-                      setTipoFiltro("alumnos");
-                      setSelectedOwnerKey(notification.ownerKey);
-                    }}
-                    className="w-full border-l-2 border-amber-300/35 bg-[#0e1012] px-3 py-2 text-left transition hover:border-amber-200"
-                  >
-                    <p className="text-xs font-semibold text-white">{notification.alumnoNombre}</p>
-                    <p className="mt-1 text-[11px] text-white/65">{notification.summary}</p>
-                  </ReliableActionButton>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-xs text-white/40">Sin alertas activas por ahora.</p>
-            )}
-          </div>
-        </div>
 
       <section className="mt-6 rounded-[28px] border border-cyan-300/18 bg-white/[0.02]/24 p-5 shadow-[0_24px_56px_-46px_rgba(8,47,73,0.9)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -3532,9 +3413,7 @@ export default function SemanaPage() {
                 Crea planes base con su entrenamiento integrado y reutilizable.
               </p>
               <p className="mt-2 text-[11px] text-cyan-100/90">
-                {alumnoDestinoActivo
-                  ? `Alumno destino activo: ${alumnoDestinoActivo.nombre}`
-                  : "Selecciona un alumno en Persona activa para habilitar Asignar desde la biblioteca."}
+                Usá "Buscar alumno" para ir a la ficha de entrenamiento de cualquier alumno.
               </p>
             </div>
 
@@ -3561,6 +3440,17 @@ export default function SemanaPage() {
               >
                 Mis templates
               </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setTemplatesTab("buscar")}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                  templatesTab === "buscar"
+                    ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(103,232,249,0.8)]"
+                    : "text-white/65 hover:bg-cyan-500/10 hover:text-cyan-100"
+                }`}
+              >
+                Buscar alumno
+              </ReliableActionButton>
             </div>
           </div>
 
@@ -3569,6 +3459,14 @@ export default function SemanaPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Buscar template..."
+              className="w-full max-w-xs rounded-xl border border-cyan-300/20 bg-white/[0.025] px-3 py-2 text-sm text-white/85 placeholder:text-white/40"
+            />
+          ) : templatesTab === "buscar" ? (
+            <input
+              value={alumnoSearch}
+              onChange={(e) => setAlumnoSearch(e.target.value)}
+              placeholder="Escribí el nombre del alumno..."
+              autoFocus
               className="w-full max-w-xs rounded-xl border border-cyan-300/20 bg-white/[0.025] px-3 py-2 text-sm text-white/85 placeholder:text-white/40"
             />
           ) : null}
@@ -3820,6 +3718,51 @@ export default function SemanaPage() {
                 </section>
               ) : null}
               </>
+            )}
+          </div>
+        ) : templatesTab === "buscar" ? (
+          /* ── Buscar por alumno ───────────────────────────────────────── */
+          <div className="mt-5 border-t border-white/[0.07] pt-5">
+            <h3 className="text-base font-semibold text-white">Buscar alumno</h3>
+            <p className="mt-1 text-xs text-white/65">
+              Escribí el nombre para ir directo a la ficha del alumno.
+            </p>
+
+            {alumnoSearch.trim() === "" ? (
+              <div className="mt-4 rounded-xl border border-dashed border-white/[0.08] bg-[#0e1012] p-5 text-center text-sm text-white/40">
+                Empezá a escribir para buscar un alumno.
+              </div>
+            ) : alumnosFiltrados.length === 0 ? (
+              <div className="mt-4 rounded-xl border border-dashed border-white/[0.08] bg-[#0e1012] p-5 text-center text-sm text-white/40">
+                No se encontró ningún alumno con ese nombre.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-2">
+                {alumnosFiltrados.map((alumno) => {
+                  const ownerKey = `alumnos:${alumno.nombre.trim().toLowerCase()}`;
+                  const plan = (storeV3.planes || []).find((p) => p.ownerKey === ownerKey);
+                  const href = `/clientes/ficha/${encodeURIComponent(`alumno:${alumno.nombre}`)}/datos`;
+                  return (
+                    <a
+                      key={alumno.nombre}
+                      href={href}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#0e1012]/35 px-4 py-3 transition hover:border-cyan-300/40 hover:bg-cyan-500/[0.06]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-white">{alumno.nombre}</p>
+                        <p className="mt-0.5 text-xs text-white/50">
+                          {plan
+                            ? `Plan activo · ${plan.semanas?.length ?? 0} semana${(plan.semanas?.length ?? 0) !== 1 ? "s" : ""}`
+                            : "Sin plan cargado"}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
+                        Ver ficha →
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
             )}
           </div>
         ) : (
@@ -4987,7 +4930,7 @@ export default function SemanaPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-3 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02]/70 px-2.5 py-1.5 backdrop-blur-md">
+            <div className="sticky bottom-3 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02]/70 px-2.5 py-1.5 backdrop-blur-md relative">
               <ReliableActionButton
                 type="button"
                 onClick={guardarTemplateActual}
@@ -5005,7 +4948,7 @@ export default function SemanaPage() {
               </ReliableActionButton>
 
               {templateMenuOpen ? (
-                <div className="absolute left-0 top-14 z-20 min-w-[260px] rounded-xl border border-white/10 bg-[#111417]/95 p-2 shadow-2xl">
+                <div className="absolute bottom-full left-0 z-20 mb-2 min-w-[260px] rounded-xl border border-white/10 bg-[#111417]/95 p-2 shadow-2xl">
                   <ReliableActionButton
                     type="button"
                     onClick={() => {
@@ -5093,8 +5036,6 @@ export default function SemanaPage() {
             ) : null}
           </div>
         )}
-      </section>
-
       </section>
 
       {weightViewer ? (

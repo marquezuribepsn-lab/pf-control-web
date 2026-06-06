@@ -6,7 +6,8 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
 import { useSessions } from "../components/SessionsProvider";
-import { dashboardStats } from "../data/mockData";
+import { usePlayers } from "../components/PlayersProvider";
+import { useWellness } from "../components/WellnessProvider";
 
 type Alerta = {
   nombre: string;
@@ -250,6 +251,8 @@ const defaultConfig: HomeConfig = {
 export default function Home() {
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
+  const { jugadoras } = usePlayers();
+  const { wellness } = useWellness();
   const [configMode, setConfigMode] = useState(false);
   const [editando, setEditando] = useState(false);
   const [operativoFiltro, setOperativoFiltro] = useState("");
@@ -670,16 +673,7 @@ export default function Home() {
               className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-4xl font-bold text-white"
             />
           ) : (
-            <h1
-              className="mt-2 text-5xl font-bold tracking-tight leading-[1.06] text-white md:text-[3.6rem]"
-              style={{
-                background: "linear-gradient(140deg, #ffffff 25%, #c7d2fe 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                color: "white",
-              }}
-            >
+            <h1 className="pf-page-hero-title mt-2 text-5xl md:text-[3.6rem]">
               {config.titulo}
             </h1>
           )}
@@ -722,13 +716,13 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href={primaryActionHref}
-                className="pf-btn rounded-xl px-5 py-2.5 text-sm font-semibold active:scale-[0.97]"
+                className="pf-btn pf-btn--primary !px-5 !py-2.5 !text-sm"
               >
                 {config.botonPrimarioLabel}
               </Link>
               <Link
                 href={secondaryActionHref}
-                className="rounded-xl border border-white/[0.12] bg-white/[0.05] px-5 py-2.5 text-sm font-medium text-zinc-200 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.22] hover:bg-white/[0.09] active:scale-[0.97]"
+                className="pf-btn pf-btn--ghost !px-5 !py-2.5 !text-sm"
               >
                 {config.botonSecundarioLabel}
               </Link>
@@ -737,57 +731,33 @@ export default function Home() {
         </header>
 
         {/* ── STATS ROW ─────────────────────────────────────────── */}
-        <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {(
-            [
-              { color: "#61ce70", rgb: "97,206,112"  },   // mint  — categoría
-              { color: "#38bdf8", rgb: "56,189,248"  },   // sky   — jugadoras
-              { color: "#fb923c", rgb: "251,146,60"  },   // orange — carga
-              { color: "#c084fc", rgb: "192,132,252" },   // purple — wellness
-            ] as { color: string; rgb: string }[]
-          ).map((card, index) => {
-            const stat = dashboardStats[index];
-            if (!stat) return null;
+        <div className="pf-kpi-grid mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {useMemo(() => {
+            const totalPersonas = jugadoras.length + alumnos.length;
+            const wellnessList = Array.isArray(wellness) ? wellness : [];
+            const wPromedio = wellnessList.length > 0
+              ? (wellnessList.reduce((a, i) => a + i.bienestar, 0) / wellnessList.length).toFixed(1)
+              : "—";
+            const categoriasActivas = (categoriesContext?.categorias || []).filter((c) => c.habilitada && c.nombre.toLowerCase() !== "wellness").length;
+            return [
+              { title: "Categorías activas", value: String(categoriasActivas), href: "/categorias", hint: "Abrir mapa de categorías" },
+              { title: "Jugadoras / Alumnos", value: String(totalPersonas), href: "/clientes?seccion=plantel", hint: "Ver plantilla operativa" },
+              { title: "Sesiones creadas", value: String(sesiones.length), href: "/sesiones", hint: "Ir a sesiones" },
+              { title: "Wellness promedio", value: String(wPromedio), href: "/wellness", hint: "Revisar balance de carga" },
+            ];
+          }, [jugadoras.length, alumnos.length, sesiones.length, wellness, categoriesContext]).map((stat, index) => {
+            const variant = (["pf-kpi--emerald","pf-kpi--violet","pf-kpi--amber","pf-kpi--rose"] as const)[index];
             const delayClass = ["pf-d1","pf-d2","pf-d3","pf-d4"][index] ?? "";
             return (
               <Link
                 key={stat.title}
-                href={resolveDashboardStatHref(stat.title, index)}
-                className={`pf-au pf-stat-card ${delayClass} group relative overflow-hidden rounded-2xl p-5`}
-                style={{
-                  background: `linear-gradient(145deg, #0d0e10 0%, #121417 100%)`,
-                  border: `1px solid rgba(${card.rgb}, 0.20)`,
-                  boxShadow: `inset 0 1px 0 rgba(${card.rgb}, 0.08), 0 24px 64px -16px rgba(0,0,0,0.9)`,
-                }}
+                href={stat.href}
+                className={`pf-au pf-kpi ${variant} ${delayClass} group block !p-5`}
               >
-                {/* Bottom accent line */}
-                <div
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px]"
-                  style={{ background: `linear-gradient(90deg, transparent, rgba(${card.rgb},0.55) 30%, rgba(${card.rgb},0.9) 55%, rgba(${card.rgb},0.55) 75%, transparent)` }}
-                  aria-hidden
-                />
-                {/* Value — gradient text */}
-                <p
-                  className="mt-2 text-[2.75rem] font-black leading-none tracking-tight"
-                  style={{
-                    background: `linear-gradient(120deg, ${card.color} 0%, #ffffff 60%)`,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  {stat.value}
-                </p>
-                {/* Label */}
-                <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">
-                  {stat.title}
-                </p>
-                {/* CTA link */}
-                <p
-                  className="mt-2 text-xs font-semibold opacity-30 transition-opacity duration-300 group-hover:opacity-90"
-                  style={{ color: card.color }}
-                >
-                  {resolveDashboardStatHint(stat.title, index)} →
+                <p className="pf-kpi__value !text-[2.5rem]">{stat.value}</p>
+                <p className="pf-kpi__label mt-2">{stat.title}</p>
+                <p className="pf-kpi__sub mt-2 group-hover:opacity-100" style={{ color: "var(--gym-accent-light)" }}>
+                  {stat.hint} →
                 </p>
               </Link>
             );
@@ -807,13 +777,10 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-white">Alumnos y planes activos</h2>
             </div>
             <div className="flex gap-2">
-              <Link href="/clientes" className="pf-btn rounded-xl px-4 py-2 text-xs font-semibold active:scale-95">
+              <Link href="/clientes" className="pf-btn pf-btn--primary !px-4 !py-2 !text-xs">
                 Crear cliente
               </Link>
-              <Link
-                href="/clientes"
-                className="rounded-xl border border-white/[0.10] bg-white/[0.04] px-4 py-2 text-xs font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.08]"
-              >
+              <Link href="/clientes" className="pf-btn pf-btn--ghost !px-4 !py-2 !text-xs">
                 Asignar entrenamiento
               </Link>
             </div>
@@ -828,8 +795,8 @@ export default function Home() {
               { label: "Prescripciones",   val: operativoKpis.totalPrescripciones, ki: 3 },
             ].map((k) => (
               <div key={k.label} className={`pf-k${k.ki} rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5`}>
-                <p className="text-3xl font-bold text-white">{k.val}</p>
-                <p className={`pf-kval mt-1 text-xs font-semibold`}>{k.label}</p>
+                <p className={`pf-kval text-3xl font-bold`}>{k.val}</p>
+                <p className="mt-1 text-xs font-semibold text-white/60">{k.label}</p>
               </div>
             ))}
           </div>

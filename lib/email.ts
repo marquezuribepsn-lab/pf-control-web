@@ -473,6 +473,35 @@ export async function sendVerificationEmail(email: string, token: string) {
   });
 }
 
+export async function sendPhoneVerificationCode(toEmail: string, phone: string, code: string) {
+  ensureMailConfigured();
+
+  const normalizedEmail = String(toEmail || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    throw new Error('Email requerido para enviar codigo de verificacion de telefono.');
+  }
+
+  await sendMail({
+    to: normalizedEmail,
+    subject: 'Código de verificación de teléfono - PF Control',
+    html: renderEmailLayout({
+      preheader: `Tu codigo para verificar el numero ${phone}`,
+      title: 'Verificá tu número de teléfono',
+      intro: `Ingresá este código en PF Control para confirmar el número ${escapeHtml(phone)}.`,
+      bodyHtml: `
+        <p style="margin:0 0 12px;color:#cbd5e1;">Tu código de verificación es:</p>
+        <div style="margin:0 0 14px;padding:16px 24px;border-radius:12px;border:1px solid rgba(148,163,184,0.25);background:#020617;display:inline-block;">
+          <span style="font-size:36px;letter-spacing:0.3em;font-weight:900;color:#f8fafc;">${escapeHtml(code)}</span>
+        </div>
+        <p style="margin:0 0 8px;color:#cbd5e1;">Ingresá este código en la sección <strong>Cuenta → Teléfono</strong>.</p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;">El código expira en 10 minutos. Si no lo solicitaste, ignorá este mensaje.</p>
+      `,
+      ctaLabel: 'Ir a mi cuenta',
+      ctaUrl: `${mailAppUrl}/cuenta`,
+    }),
+  });
+}
+
 export async function verifyToken(token: string) {
   const verificationToken = await db.verificationToken.findUnique({
     where: { token },

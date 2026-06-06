@@ -19,6 +19,7 @@ const ACCOUNT_SELECT = {
   fechaNacimiento: true,
   altura: true,
   telefono: true,
+  telefonoVerificado: true,
   direccion: true,
   puedeEditarRegistros: true,
   puedeEditarPlanes: true,
@@ -87,19 +88,28 @@ function parseBoundedFloat(raw: unknown, min: number, max: number): number | nul
 }
 
 function parseDateInput(raw: unknown): Date | null {
-  if (typeof raw !== 'string') {
-    return null;
+  if (raw === null || raw === undefined) return null;
+
+  // Handle numeric timestamps (e.g. stored as integer in SQLite)
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? null : d;
   }
 
+  if (typeof raw !== 'string') return null;
+
   const normalized = raw.trim();
-  if (!normalized) {
-    return null;
+  if (!normalized) return null;
+
+  // Try as numeric string first (e.g. "946684800000")
+  const asNum = Number(normalized);
+  if (Number.isFinite(asNum) && /^\d+$/.test(normalized)) {
+    const d = new Date(asNum);
+    if (!Number.isNaN(d.getTime())) return d;
   }
 
   const date = new Date(normalized);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
+  if (Number.isNaN(date.getTime())) return null;
 
   return date;
 }
@@ -311,7 +321,9 @@ export async function PATCH(req: NextRequest) {
     normalizedEdad = parsedEdad;
   }
 
-  const currentBirthDate = user.fechaNacimiento instanceof Date ? user.fechaNacimiento : new Date(user.fechaNacimiento);
+  const currentBirthDate = user.fechaNacimiento instanceof Date
+    ? user.fechaNacimiento
+    : parseDateInput(user.fechaNacimiento) ?? new Date('2000-01-01T00:00:00.000Z');
   let normalizedFechaNacimiento = currentBirthDate;
   if (fechaNacimiento !== undefined) {
     const parsedFechaNacimiento = parseDateInput(fechaNacimiento);
@@ -401,13 +413,26 @@ export async function PATCH(req: NextRequest) {
     data.altura = normalizedAltura;
     data.telefono = normalizedTelefono;
     data.direccion = normalizedDireccion;
+    // Si el teléfono cambió, resetear la verificación
+    if (normalizedTelefono !== user.telefono) {
+      data.telefonoVerificado = false;
+    }
   }
 
   if (Object.keys(data).length > 0) {
-    await db.user.update({
-      where: { id: user.id },
-      data,
-    });
+    try {
+      await db.user.update({
+        where: { id: user.id },
+        data,
+      });
+    } catch (dbErr) {
+      const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+      console.error('[account PATCH] db.user.update error:', msg);
+      return NextResponse.json(
+        { message: 'No se pudieron guardar los cambios. Intentá de nuevo.' },
+        { status: 500 }
+      );
+    }
   }
 
   if (passwordChanged && String(user.role || '').trim().toUpperCase() === 'CLIENTE') {

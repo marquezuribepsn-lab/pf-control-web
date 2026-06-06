@@ -107,32 +107,21 @@ export default function DeportesPage() {
 
   return (
     <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,197),65%,55%,0.1) 0%, transparent 70%)` }}
-        aria-hidden="true"
-      />
-      <section className="relative overflow-hidden pf-card rounded-3xl border p-6">
-        <div className="pointer-events-none absolute -left-14 -top-16 h-48 w-48 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 bottom-0 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl" />
-
+      <section className="pf-page-hero mb-6">
+        <div className="pf-blob pf-blob--tl" />
+        <div className="pf-blob pf-blob--br" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">Centro Operativo</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Deportes</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
-              Gestiona disciplinas y posiciones con una vista moderna enfocada en operación diaria.
-            </p>
+            <p className="pf-page-hero-badge">🏅 Centro Operativo</p>
+            <h1 className="pf-page-hero-title">Deportes</h1>
+            <p className="pf-page-hero-sub">Gestiona disciplinas y posiciones con una vista moderna enfocada en operación diaria.</p>
           </div>
-
-          <div className="grid min-w-[220px] gap-2 pf-card rounded-2xl border p-3 text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-300">Snapshot</p>
-            <p className="text-2xl font-black text-cyan-100">{stats.total}</p>
-            <p className="text-xs text-slate-400">deportes cargados</p>
+          <div className="pf-kpi pf-kpi--violet min-w-[180px] text-right">
+            <p className="pf-kpi__label">Total actual</p>
+            <p className="pf-kpi__value">{stats.total}</p>
+            <p className="pf-kpi__sub">deportes cargados</p>
           </div>
         </div>
-
         <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatTile label="Habilitados" value={stats.habilitados} tone="emerald" />
           <StatTile label="Deshabilitados" value={stats.deshabilitados} tone="rose" />
@@ -294,7 +283,7 @@ export default function DeportesPage() {
                         />
                         <ReliableActionButton
                           onClick={() => handleAgregarPosicion(deporte.nombre)}
-                          className="rounded-lg border border-cyan-300/40 bg-cyan-400 px-3 py-2 text-xs font-black text-slate-950 hover:bg-cyan-300"
+                          className="pf-btn pf-btn--primary !px-3 !py-2 !text-xs"
                         >
                           Agregar
                         </ReliableActionButton>

@@ -44,3 +44,8 @@ pf-control-web-workspace-completo-*.zip
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Datos persistentes en tiempo de ejecucion — nunca commitear ni deployar
+data/sync-store.json
+storage/sync-store.json
+/storage/*.json

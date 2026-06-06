@@ -3,6 +3,7 @@
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import PlantelPanel from "@/components/PlantelPanel";
+import DateInput from "@/components/DateInput";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import { useSessions } from "../../components/SessionsProvider";
 import { markManualSaveIntent, useSharedState } from "../../components/useSharedState";
 import { argentineFoodsBase } from "../../data/argentineFoods";
 import { EtiquetasChips, Etiqueta } from "../../components/EtiquetasChips";
+import { calcNutritionTargets } from "../../lib/nutritionPlanAI";
 
 type ClienteTipo = "jugadora" | "alumno";
 type ClienteEstado = "activo" | "finalizado";
@@ -176,6 +178,36 @@ type NutritionPlan = {
     }>;
   }>;
   updatedAt: string;
+  // Perfil completo para compatibilidad con módulo de Nutrición
+  perfil?: {
+    sexo: "masculino" | "femenino";
+    pesoKg: number;
+    alturaCm: number;
+    edad: number;
+    actividad: string;
+    comidasDia: number;
+    diasEntrenamiento: number;
+    restricciones?: string;
+    condicionesMedicas?: string;
+  };
+};
+
+type NutritionWizardData = {
+  step: 1 | 2 | 3;
+  // Datos físicos del alumno (pre-cargados, editables)
+  pesoKg: string;
+  alturaCm: string;
+  edad: string;
+  sexo: "masculino" | "femenino";
+  // Parámetros del plan
+  objetivo: NutritionGoal;
+  diasEntrenamiento: string;
+  comidasDia: string;
+  horarioEntrenamiento: string;
+  restricciones: string;
+  condicionesMedicas: string;
+  // Para modo adapt (asignar plan existente)
+  basePlanId?: string;
 };
 
 type NutritionPlanStatus = {
@@ -352,9 +384,46 @@ type WeekPersonPlanLite = {
   semanas: WeekPlanLite[];
 };
 
+type WeekPlanTemplate = {
+  id: string;
+  nombre: string;
+  tipo: PersonaTipoPlan;
+  categoria?: string;
+  semanas: WeekPlanLite[];
+};
+
+type StoredAITrainingPlanLite = {
+  id: string;
+  nombre: string;
+  createdAt: string;
+  updatedAt: string;
+  plan: {
+    sport?: string;
+    category?: string;
+    level?: string;
+    totalWeeks?: number;
+    sessionsPerWeek?: number;
+    sessionDurationMin?: number;
+    weeks: Array<{
+      weekNumber: number;
+      focus?: string;
+      rationale?: string;
+      sessions: Array<{
+        id: string;
+        title: string;
+        goal: string;
+        date: string;
+        sessionNumber: number;
+        blocks: unknown[];
+      }>;
+    }>;
+  };
+};
+
 type WeekStoreLite = {
   version: number;
   planes: WeekPersonPlanLite[];
+  templates: WeekPlanTemplate[];
 };
 
 type WorkoutLogRecord = {
@@ -473,6 +542,7 @@ const NUTRITION_PLANS_KEY = "pf-control-nutricion-planes-v1";
 const NUTRITION_ASSIGNMENTS_KEY = "pf-control-nutricion-asignaciones-v1";
 const NUTRITION_CUSTOM_FOODS_KEY = "pf-control-nutricion-alimentos-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
+const AI_TRAINING_PLANS_KEY = "pf-control-ai-training-plans-v1";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const PRESENCE_REFRESH_MS = 30_000;
 const TRAINING_WEEK_DAY_NAMES = [
@@ -488,6 +558,7 @@ const TRAINING_STRUCTURE_ACTION_COOLDOWN_MS = 320;
 
 const createTrainingEntityId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 
 function normalizePostSessionFeedbackConfig(rawValue: unknown): PostSessionFeedbackConfigLite | undefined {
   if (!rawValue || typeof rawValue !== "object") {
@@ -868,9 +939,72 @@ function normalizeWeekStore(rawValue: unknown): WeekStoreLite {
       };
     });
 
+  const rawTemplates = Array.isArray(source.templates) ? source.templates : [];
+  const templates: WeekPlanTemplate[] = rawTemplates
+    .filter((row) => row && typeof row === "object")
+    .map((row, rowIndex) => {
+      const item = row as Record<string, unknown>;
+      const tipo: PersonaTipoPlan = item.tipo === "jugadoras" ? "jugadoras" : "alumnos";
+      const nombre = String(item.nombre || `Template ${rowIndex + 1}`).trim() || `Template ${rowIndex + 1}`;
+      const semanasRaw = Array.isArray(item.semanas) ? item.semanas : [];
+
+      const semanas: WeekPlanLite[] = semanasRaw
+        .filter((week) => week && typeof week === "object")
+        .map((week, weekIndex) => {
+          const weekRow = week as Record<string, unknown>;
+          const diasRaw = Array.isArray(weekRow.dias) ? weekRow.dias : [];
+
+          const dias: WeekDayPlanLite[] = diasRaw
+            .filter((day) => day && typeof day === "object")
+            .map((day, dayIndex) => {
+              const dayRow = day as Record<string, unknown>;
+              return {
+                id: String(dayRow.id || createTrainingEntityId("dia")),
+                dia: String(dayRow.dia || TRAINING_WEEK_DAY_NAMES[dayIndex] || `Dia ${dayIndex + 1}`),
+                planificacion: String(dayRow.planificacion || "").trim(),
+                objetivo: String(dayRow.objetivo || "").trim(),
+                sesionId: String(dayRow.sesionId || "").trim(),
+              };
+            });
+
+          return {
+            id: String(weekRow.id || createTrainingEntityId("semana")),
+            nombre: String(weekRow.nombre || `Semana ${weekIndex + 1}`),
+            objetivo: String(weekRow.objetivo || "").trim(),
+            dias: dias.length > 0 ? dias : [{
+              id: createTrainingEntityId("dia"),
+              dia: "Lunes",
+              planificacion: "",
+              objetivo: "",
+              sesionId: "",
+            }],
+          };
+        });
+
+      return {
+        id: String(item.id || createTrainingEntityId("template")),
+        nombre,
+        tipo,
+        categoria: String(item.categoria || "").trim() || undefined,
+        semanas: semanas.length > 0 ? semanas : [{
+          id: createTrainingEntityId("semana"),
+          nombre: "Semana 1",
+          objetivo: "",
+          dias: [{
+            id: createTrainingEntityId("dia"),
+            dia: "Lunes",
+            planificacion: "",
+            objetivo: "",
+            sesionId: "",
+          }],
+        }],
+      };
+    });
+
   return {
     version: Number(source.version) || 3,
     planes,
+    templates,
   };
 }
 
@@ -1520,7 +1654,7 @@ export default function ClientesPage() {
       setNewExerciseSaving(false);
     }
   };
-  const { sesiones } = useSessions();
+  const { sesiones, agregarSesion } = useSessions();
 
   const sessionScope = useMemo(() => {
     const raw = String(session?.user?.id || session?.user?.email || "anon");
@@ -1558,11 +1692,11 @@ export default function ClientesPage() {
     key: PAGOS_KEY,
     legacyLocalStorageKey: PAGOS_KEY,
   });
-  const [nutritionPlans] = useSharedState<NutritionPlan[]>([], {
+  const [nutritionPlans, setNutritionPlans] = useSharedState<NutritionPlan[]>([], {
     key: NUTRITION_PLANS_KEY,
     legacyLocalStorageKey: NUTRITION_PLANS_KEY,
   });
-  const [nutritionAssignments] = useSharedState<AlumnoNutritionAssignment[]>([], {
+  const [nutritionAssignments, setNutritionAssignments] = useSharedState<AlumnoNutritionAssignment[]>([], {
     key: NUTRITION_ASSIGNMENTS_KEY,
     legacyLocalStorageKey: NUTRITION_ASSIGNMENTS_KEY,
   });
@@ -1574,12 +1708,17 @@ export default function ClientesPage() {
     {
       version: 3,
       planes: [],
+      templates: [],
     },
     {
       key: WEEK_PLAN_KEY,
       legacyLocalStorageKey: WEEK_PLAN_KEY,
     }
   );
+  const [aiTrainingPlansRaw] = useSharedState<StoredAITrainingPlanLite[]>([], {
+    key: AI_TRAINING_PLANS_KEY,
+    legacyLocalStorageKey: AI_TRAINING_PLANS_KEY,
+  });
   const [workoutLogsRaw, setWorkoutLogsRaw] = useSharedState<unknown[]>([], {
     key: WORKOUT_LOGS_KEY,
     legacyLocalStorageKey: WORKOUT_LOGS_KEY,
@@ -1626,6 +1765,10 @@ export default function ClientesPage() {
     id: string; nombre: string; precio: number; moneda: string; duracionDias: number; activo: boolean;
   }>>([]);
   const [planSeleccionado, setPlanSeleccionado] = useState("");
+  const [mpPlanSeleccionado, setMpPlanSeleccionado] = useState("");
+  const [mpCheckoutLoading, setMpCheckoutLoading] = useState(false);
+  const [mpCheckoutUrl, setMpCheckoutUrl] = useState<string | null>(null);
+  const [mpCheckoutError, setMpCheckoutError] = useState("");
   const [presenceByEmail, setPresenceByEmail] = useState<Record<string, PresenceSnapshot>>({});
   const [ingresantesPendientes, setIngresantesPendientes] = useState<PendingIngresante[]>([]);
   const [ingresantesLoading, setIngresantesLoading] = useState(false);
@@ -1646,6 +1789,21 @@ export default function ClientesPage() {
   const [trainingRecordStatus, setTrainingRecordStatus] = useState("");
   const [trainingPlanReloading, setTrainingPlanReloading] = useState(false);
   const [hasUnsavedTrainingChanges, setHasUnsavedTrainingChanges] = useState(false);
+  const [showAssignPlanModal, setShowAssignPlanModal] = useState(false);
+  const [assignPlanSearch, setAssignPlanSearch] = useState("");
+  const [assignPlanFilter, setAssignPlanFilter] = useState<"todos" | "template" | "ia">("todos");
+
+  // ── Wizard plan nutricional ────────────────────────────────────────────────
+  const [nutritionWizard, setNutritionWizard] = useState<NutritionWizardData | null>(null);
+  const [nutritionAssigning, setNutritionAssigning] = useState(false);
+  const [nutritionAssignSearch, setNutritionAssignSearch] = useState("");
+  // Inline editing del plan activo
+  const [nutritionEditMode, setNutritionEditMode] = useState(false);
+  const [nutritionGramEdit, setNutritionGramEdit] = useState<{ mealId: string; itemId: string; value: string } | null>(null);
+  const [nutritionAddFoodMealId, setNutritionAddFoodMealId] = useState<string | null>(null);
+  const [nutritionFoodSearch, setNutritionFoodSearch] = useState("");
+  const [hasUnsavedNutritionChanges, setHasUnsavedNutritionChanges] = useState(false);
+  const [nutritionSyncing, setNutritionSyncing] = useState(false);
   const [trainingWeekInlineEdit, setTrainingWeekInlineEdit] = useState<{
     weekId: string;
     value: string;
@@ -1658,11 +1816,14 @@ export default function ClientesPage() {
   const [trainingStructureMenu, setTrainingStructureMenu] =
     useState<TrainingStructureMenuState>(null);
   const [trainingBlockMenu, setTrainingBlockMenu] = useState<TrainingBlockMenuState>(null);
+  const [menuAnchorRect, setMenuAnchorRect] = useState<{ top: number; left?: number; right?: number } | null>(null);
   const [trainingBlockEditingId, setTrainingBlockEditingId] = useState<string | null>(null);
   const [feedbackModalTarget, setFeedbackModalTarget] = useState<{ weekId: string; dayId: string } | null>(null);
   const [feedbackModalMeasurements, setFeedbackModalMeasurements] = useState<PostSessionMeasurementLite[]>([]);
   const [feedbackModalMaxPerDay, setFeedbackModalMaxPerDay] = useState<string>("1");
   const [feedbackModalTitle, setFeedbackModalTitle] = useState<string>("");
+  // ── Guardar plan como template ─────────────────────────────────────────────
+  const [saveAsTemplateModal, setSaveAsTemplateModal] = useState<{ name: string } | null>(null);
 
   const openFeedbackModal = (
     weekId: string,
@@ -2096,6 +2257,285 @@ export default function ClientesPage() {
     };
   }, [nutritionFoodsById, selectedNutritionPlan]);
 
+  // ── Abre el wizard pre-cargando los datos del cliente ──────────────────────
+  const openNutritionWizard = (basePlanId?: string) => {
+    if (!selectedClient) return;
+
+    // Calcular edad desde fechaNacimiento
+    let edadCalc = 25;
+    if (selectedClient.fechaNacimiento) {
+      const dob = new Date(selectedClient.fechaNacimiento);
+      if (!isNaN(dob.getTime())) {
+        const today = new Date();
+        edadCalc = today.getFullYear() - dob.getFullYear();
+        if (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())) edadCalc--;
+      }
+    }
+
+    // Inferir sexo
+    const sexoInferido: "masculino" | "femenino" =
+      selectedClient.tipo === "jugadora" ? "femenino" :
+      (selectedMeta?.sexo === "femenino" ? "femenino" : "masculino");
+
+    // Inferir objetivo nutricional
+    const objRaw = String(selectedMeta?.objNutricional || selectedClient.objetivo || "").toLowerCase();
+    const objetivoInferido: NutritionGoal =
+      /deficit|bajo|bajar|perder|cut/.test(objRaw)  ? "deficit"       :
+      /masa|subir|ganar|volumen|bulk/.test(objRaw)  ? "masa"          :
+      /recomp|defin|tono|lean/.test(objRaw)         ? "recomposicion" :
+                                                       "mantenimiento";
+
+    setNutritionWizard({
+      step: 1,
+      pesoKg:    String(parseFloat(String(selectedClient.peso || "")) || ""),
+      alturaCm:  String(parseFloat(String(selectedClient.altura || "")) || ""),
+      edad:      edadCalc > 0 ? String(edadCalc) : "",
+      sexo:      sexoInferido,
+      objetivo:  objetivoInferido,
+      diasEntrenamiento: "",
+      comidasDia: "5",
+      horarioEntrenamiento: "",
+      restricciones: "",
+      condicionesMedicas: "",
+      basePlanId,
+    });
+  };
+
+  // ── Función que llama al endpoint de adaptación y guarda el plan ────────────
+  const applyNutritionPlan = async (wizard: NutritionWizardData) => {
+    if (!selectedClient) return;
+    setNutritionAssigning(true);
+    setNutritionWizard(null);
+
+    try {
+      const pesoKg   = parseFloat(wizard.pesoKg)   || 70;
+      const alturaCm = parseFloat(wizard.alturaCm)  || 170;
+      const edad     = parseInt(wizard.edad, 10)    || 25;
+      const comidasDia = parseInt(wizard.comidasDia, 10) || 5;
+      const diasEntrenamiento = parseInt(wizard.diasEntrenamiento, 10) || 0;
+
+      // Determinar nivel de actividad según días de entrenamiento
+      const actividad =
+        diasEntrenamiento >= 6 ? "muy-alto" :
+        diasEntrenamiento >= 4 ? "alto"     :
+        diasEntrenamiento >= 2 ? "moderado" :
+        diasEntrenamiento === 1 ? "ligero"  : "sedentario";
+
+      const profile = {
+        nombre:            selectedClient.nombre,
+        sexo:              wizard.sexo,
+        pesoKg,
+        alturaCm,
+        edad,
+        actividad,
+        objetivo:          wizard.objetivo,
+        comidasDia,
+        diasEntrenamiento,
+        restricciones:     wizard.restricciones || undefined,
+        condicionesMedicas: wizard.condicionesMedicas || undefined,
+      };
+
+      const basePlan = wizard.basePlanId
+        ? nutritionPlans.find((p) => p.id === wizard.basePlanId)
+        : undefined;
+
+      const mode = basePlan ? "adapt" : "create";
+
+      const res = await fetch("/api/nutrition/adapt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          profile,
+          basePlan: basePlan
+            ? { targets: basePlan.targets, comidas: basePlan.comidas }
+            : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Error desconocido");
+
+      // Crear nuevo plan en el store
+      const newPlanId = `nplan-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+      const baseName  = basePlan ? basePlan.nombre : "Plan nutricional";
+      const newPlan: NutritionPlan = {
+        id:             newPlanId,
+        nombre:         `${baseName} — ${selectedClient.nombre}`,
+        alumnoAsignado: selectedClient.nombre,
+        objetivo:       wizard.objetivo,
+        notas:          [
+          wizard.restricciones     ? `Restricciones: ${wizard.restricciones}`      : "",
+          wizard.condicionesMedicas ? `Condiciones: ${wizard.condicionesMedicas}`  : "",
+          wizard.horarioEntrenamiento ? `Entrenamiento: ${wizard.horarioEntrenamiento}` : "",
+        ].filter(Boolean).join(" · "),
+        targets:   data.targets,
+        comidas:   data.comidas,
+        updatedAt: new Date().toISOString(),
+        perfil: {
+          sexo: wizard.sexo,
+          pesoKg,
+          alturaCm,
+          edad,
+          actividad,
+          comidasDia,
+          diasEntrenamiento,
+          restricciones:      wizard.restricciones || undefined,
+          condicionesMedicas: wizard.condicionesMedicas || undefined,
+        },
+      };
+
+      setNutritionPlans((prev) => [...(prev || []), newPlan]);
+
+      // Crear asignación
+      const newAssignment: AlumnoNutritionAssignment = {
+        alumnoNombre: selectedClient.nombre,
+        planId:       newPlanId,
+        assignedAt:   new Date().toISOString(),
+      };
+      setNutritionAssignments((prev) => [
+        ...(prev || []).filter((a) => a.alumnoNombre !== selectedClient.nombre),
+        newAssignment,
+      ]);
+
+      // Resetear edición inline
+      setNutritionEditMode(false);
+      setHasUnsavedNutritionChanges(false);
+    } catch (err) {
+      console.error("[applyNutritionPlan]", err);
+    } finally {
+      setNutritionAssigning(false);
+    }
+  };
+
+  // ── Inline edit del plan de nutrición ─────────────────────────────────────
+  const saveNutritionInlineEdit = () => {
+    if (!selectedNutritionPlan || !nutritionGramEdit) return;
+    const newGramos = Math.max(1, parseInt(nutritionGramEdit.value, 10) || 1);
+    const updated: NutritionPlan = {
+      ...selectedNutritionPlan,
+      updatedAt: new Date().toISOString(),
+      comidas: selectedNutritionPlan.comidas.map((meal) =>
+        meal.id !== nutritionGramEdit.mealId ? meal : {
+          ...meal,
+          items: meal.items.map((item) =>
+            item.id !== nutritionGramEdit.itemId ? item : { ...item, gramos: newGramos }
+          ),
+        }
+      ),
+    };
+    setNutritionPlans((prev) =>
+      (prev || []).map((p) => (p.id === updated.id ? updated : p))
+    );
+    setNutritionGramEdit(null);
+    setHasUnsavedNutritionChanges(true);
+  };
+
+  const removeNutritionItem = (mealId: string, itemId: string) => {
+    if (!selectedNutritionPlan) return;
+    const updated: NutritionPlan = {
+      ...selectedNutritionPlan,
+      updatedAt: new Date().toISOString(),
+      comidas: selectedNutritionPlan.comidas.map((meal) =>
+        meal.id !== mealId ? meal : {
+          ...meal,
+          items: meal.items.filter((item) => item.id !== itemId),
+        }
+      ),
+    };
+    setNutritionPlans((prev) =>
+      (prev || []).map((p) => (p.id === updated.id ? updated : p))
+    );
+    setHasUnsavedNutritionChanges(true);
+  };
+
+  const addNutritionItem = (mealId: string, foodId: string) => {
+    if (!selectedNutritionPlan) return;
+    const newItem = {
+      id:     `ni-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      foodId,
+      gramos: 100,
+    };
+    const updated: NutritionPlan = {
+      ...selectedNutritionPlan,
+      updatedAt: new Date().toISOString(),
+      comidas: selectedNutritionPlan.comidas.map((meal) =>
+        meal.id !== mealId ? meal : { ...meal, items: [...meal.items, newItem] }
+      ),
+    };
+    setNutritionPlans((prev) =>
+      (prev || []).map((p) => (p.id === updated.id ? updated : p))
+    );
+    setNutritionAddFoodMealId(null);
+    setNutritionFoodSearch("");
+    setHasUnsavedNutritionChanges(true);
+  };
+
+  // ── Fuerza sync del plan nutricional al servidor ───────────────────────────
+  const syncNutritionPlan = async () => {
+    if (!selectedNutritionPlan || nutritionSyncing) return;
+    setNutritionSyncing(true);
+    markManualSaveIntent(NUTRITION_PLANS_KEY);
+    // Breve delay para que el flush de useSharedState dispare
+    await new Promise((r) => setTimeout(r, 400));
+    setHasUnsavedNutritionChanges(false);
+    setNutritionSyncing(false);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("pf-inline-toast", {
+        detail: { type: "success", message: "Plan nutricional actualizado en el perfil del alumno." },
+      }));
+    }
+  };
+
+  // ── Generar link de pago Mercado Pago para el alumno seleccionado ──────────
+  const generarLinkMP = async () => {
+    if (!selectedClient || !selectedMeta) return;
+    const email = String(selectedMeta.email || "").trim();
+    if (!email) {
+      setMpCheckoutError("Configurá el email del alumno en la pestaña Datos primero.");
+      return;
+    }
+    if (!mpPlanSeleccionado) {
+      setMpCheckoutError("Seleccioná un plan antes de generar el link.");
+      return;
+    }
+    setMpCheckoutLoading(true);
+    setMpCheckoutError("");
+    setMpCheckoutUrl(null);
+    try {
+      const res = await fetch("/api/admin/payments/asignar-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: mpPlanSeleccionado,
+          alumnoEmail: email,
+          modo: "con_pago_mp",
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; checkoutUrl?: string; message?: string };
+      if (!res.ok || !data.checkoutUrl) {
+        throw new Error(data.message || "No se pudo generar el link de pago MP.");
+      }
+      setMpCheckoutUrl(data.checkoutUrl);
+    } catch (err) {
+      setMpCheckoutError(err instanceof Error ? err.message : "Error al generar link de pago MP.");
+    } finally {
+      setMpCheckoutLoading(false);
+    }
+  };
+
+  // Resetear estado de edición de nutrición al cambiar de cliente
+  useEffect(() => {
+    setNutritionEditMode(false);
+    setNutritionGramEdit(null);
+    setNutritionAddFoodMealId(null);
+    setHasUnsavedNutritionChanges(false);
+    setNutritionWizard(null);
+    setMpCheckoutUrl(null);
+    setMpCheckoutError("");
+    setMpPlanSeleccionado("");
+  }, [selectedClientId]);
+
   useEffect(() => {
     if (!selectedClient) return;
     fetch(`/api/etiquetas?userId=${selectedClient.id.split(":")[1]}`)
@@ -2403,6 +2843,61 @@ export default function ClientesPage() {
 
   const weekStore = useMemo(() => normalizeWeekStore(weekStoreRaw), [weekStoreRaw]);
 
+  const aiTrainingPlans = useMemo<StoredAITrainingPlanLite[]>(() => {
+    const rows = Array.isArray(aiTrainingPlansRaw) ? aiTrainingPlansRaw : [];
+    return rows
+      .filter((item) => item && item.id && item.plan)
+      .slice()
+      .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+  }, [aiTrainingPlansRaw]);
+
+  const templatesAlumnos = useMemo<WeekPlanTemplate[]>(
+    () => (weekStore.templates || []).filter((t) => t.tipo === "alumnos"),
+    [weekStore.templates]
+  );
+
+  const normalizeAssignText = (value: string) =>
+    (value || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+  const assignPlanItems = useMemo(() => {
+    const q = normalizeAssignText(assignPlanSearch);
+
+    type AssignItem = {
+      optionId: string;
+      source: "template" | "ia";
+      nombre: string;
+      categoria?: string;
+      deporte?: string;
+      totalSemanas: number;
+      searchText: string;
+    };
+
+    const templateItems: AssignItem[] = templatesAlumnos.map((t) => ({
+      optionId: `template:${t.id}`,
+      source: "template" as const,
+      nombre: t.nombre,
+      categoria: t.categoria,
+      totalSemanas: (t.semanas || []).length,
+      searchText: normalizeAssignText(`${t.nombre} ${t.categoria || ""}`),
+    }));
+
+    const aiItems: AssignItem[] = aiTrainingPlans.map((p) => ({
+      optionId: `ai:${p.id}`,
+      source: "ia" as const,
+      nombre: p.nombre,
+      categoria: p.plan?.category,
+      deporte: p.plan?.sport,
+      totalSemanas: Array.isArray(p.plan?.weeks) ? p.plan.weeks.length : 0,
+      searchText: normalizeAssignText(`${p.nombre} ${p.plan?.category || ""} ${p.plan?.sport || ""}`),
+    }));
+
+    return [...templateItems, ...aiItems].filter((item) => {
+      if (assignPlanFilter !== "todos" && item.source !== assignPlanFilter) return false;
+      if (q) return item.searchText.includes(q);
+      return true;
+    });
+  }, [templatesAlumnos, aiTrainingPlans, assignPlanSearch, assignPlanFilter]);
+
   const selectedClientTrainingPlan = useMemo(() => {
     if (!selectedClient) return null;
 
@@ -2472,6 +2967,47 @@ export default function ClientesPage() {
           },
         })
       );
+    }
+  };
+
+  // ── Guardar plan del alumno como template reutilizable ────────────────────
+  const saveTrainingPlanAsTemplate = (templateName: string) => {
+    if (!selectedClient || !selectedClientTrainingPlan) return;
+    const trimmedName = templateName.trim();
+    if (!trimmedName) return;
+
+    const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+
+    const newTemplate: WeekPlanTemplate = {
+      id:       `tmpl-${uid()}`,
+      nombre:   trimmedName,
+      tipo:     selectedClientTrainingPlan.tipo || "alumnos",
+      categoria: selectedClientTrainingPlan.categoria,
+      semanas:  selectedClientTrainingPlan.semanas.map((sem) => ({
+        ...sem,
+        id: `s-${uid()}`,
+        dias: (sem.dias || []).map((dia) => ({
+          ...dia,
+          id: `d-${uid()}`,
+        })),
+      })),
+    };
+
+    setWeekStoreRaw((prev) => {
+      const base = normalizeWeekStore(prev);
+      return {
+        ...base,
+        version: 3,
+        templates: [...(base.templates || []), newTemplate],
+      };
+    });
+
+    setSaveAsTemplateModal(null);
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("pf-inline-toast", {
+        detail: { type: "success", message: `Template "${trimmedName}" guardado en la categoría de templates.` },
+      }));
     }
   };
 
@@ -2909,41 +3445,50 @@ export default function ClientesPage() {
     );
   };
 
-  const toggleTrainingWeekMenu = (weekId: string) => {
+  // Calcula la posicion fija del menu contextual relativa al boton que lo abre.
+  // Prefiere alinear el borde derecho del menu con el del boton; si eso lo
+  // dejaria fuera de la pantalla por la izquierda, lo alinea por la izquierda.
+  const calcMenuAnchor = (el: HTMLElement): { top: number; left?: number; right?: number } => {
+    const rect = el.getBoundingClientRect();
+    const MENU_W = 232; // min-w-[220px] + bordes + padding
+    const GAP    = 8;
+    const PAD    = 6;
+    const top    = rect.bottom + GAP;
+    // ¿Cabe alineado a la derecha (borde der del menu = borde der del boton)?
+    if (rect.right - MENU_W >= PAD) {
+      return { top, right: window.innerWidth - rect.right };
+    }
+    // Si no cabe a la derecha, alinear a la izquierda clampeado
+    return { top, left: Math.max(PAD, Math.min(rect.left, window.innerWidth - MENU_W - PAD)) };
+  };
+
+  const toggleTrainingWeekMenu = (weekId: string, e?: React.MouseEvent) => {
+    if (e) setMenuAnchorRect(calcMenuAnchor(e.currentTarget as HTMLElement));
     setTrainingBlockMenu(null);
     setTrainingStructureMenu((prev) =>
       prev?.type === "week" && prev.weekId === weekId
         ? null
-        : {
-            type: "week",
-            weekId,
-          }
+        : { type: "week", weekId }
     );
   };
 
-  const toggleTrainingDayMenu = (weekId: string, dayId: string) => {
+  const toggleTrainingDayMenu = (weekId: string, dayId: string, e?: React.MouseEvent) => {
+    if (e) setMenuAnchorRect(calcMenuAnchor(e.currentTarget as HTMLElement));
     setTrainingBlockMenu(null);
     setTrainingStructureMenu((prev) =>
       prev?.type === "day" && prev.weekId === weekId && prev.dayId === dayId
         ? null
-        : {
-            type: "day",
-            weekId,
-            dayId,
-          }
+        : { type: "day", weekId, dayId }
     );
   };
 
-  const toggleTrainingBlockMenu = (weekId: string, dayId: string, blockId: string) => {
+  const toggleTrainingBlockMenu = (weekId: string, dayId: string, blockId: string, e?: React.MouseEvent) => {
+    if (e) setMenuAnchorRect(calcMenuAnchor(e.currentTarget as HTMLElement));
     setTrainingStructureMenu(null);
     setTrainingBlockMenu((prev) =>
       prev?.weekId === weekId && prev.dayId === dayId && prev.blockId === blockId
         ? null
-        : {
-            weekId,
-            dayId,
-            blockId,
-          }
+        : { weekId, dayId, blockId }
     );
   };
 
@@ -4020,6 +4565,103 @@ export default function ClientesPage() {
     }
   };
 
+  const assignPlanFromModal = (optionId: string) => {
+    if (!selectedClient) return;
+
+    if (optionId.startsWith("template:")) {
+      const templateId = optionId.slice("template:".length);
+      const template = templatesAlumnos.find((t) => t.id === templateId);
+      if (!template) return;
+
+      const nextWeeks: WeekPlanLite[] = (template.semanas || []).map((week) => ({
+        ...week,
+        id: createTrainingEntityId("semana"),
+        oculto: undefined,
+        dias: (week.dias || []).map((day) => ({
+          id: createTrainingEntityId("dia"),
+          dia: day.dia,
+          planificacion: day.planificacion,
+          objetivo: day.objetivo,
+          sesionId: day.sesionId,
+        })),
+      }));
+
+      upsertSelectedClientTrainingPlan((plan) => ({
+        ...plan,
+        semanas: nextWeeks.length > 0 ? nextWeeks : plan.semanas,
+      }));
+
+    } else if (optionId.startsWith("ai:")) {
+      const aiId = optionId.slice(3);
+      const aiPlan = aiTrainingPlans.find((p) => p.id === aiId);
+      if (!aiPlan) return;
+
+      const DAYS = TRAINING_WEEK_DAY_NAMES;
+
+      const nextWeeks: WeekPlanLite[] = (aiPlan.plan?.weeks || []).map((week) => {
+        const orderedSessions = [...(week.sessions || [])].sort(
+          (a, b) => a.sessionNumber - b.sessionNumber
+        );
+
+        const dias: WeekDayPlanLite[] = orderedSessions.map((session, idx) => ({
+          id: createTrainingEntityId("dia"),
+          dia: DAYS[idx % DAYS.length],
+          planificacion: session.title,
+          objetivo: session.goal,
+          sesionId: "",
+        }));
+
+        return {
+          id: createTrainingEntityId("semana"),
+          nombre: `Semana ${week.weekNumber}`,
+          objetivo: [week.focus, week.rationale].filter(Boolean).join(" · "),
+          dias: dias.length > 0 ? dias : [{
+            id: createTrainingEntityId("dia"),
+            dia: "Lunes",
+            planificacion: "",
+            objetivo: "",
+            sesionId: "",
+          }],
+        };
+      });
+
+      upsertSelectedClientTrainingPlan((plan) => ({
+        ...plan,
+        semanas: nextWeeks.length > 0 ? nextWeeks : plan.semanas,
+      }));
+    }
+
+    setShowAssignPlanModal(false);
+    setAssignPlanSearch("");
+    setAssignPlanFilter("todos");
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("pf-inline-toast", {
+          detail: { type: "success", message: "Plan asignado correctamente. Podés editarlo desde aquí." },
+        })
+      );
+    }
+  };
+
+  const handleCreateBlankPlanFromModal = () => {
+    if (!selectedClient) return;
+
+    upsertSelectedClientTrainingPlan((plan) => ({ ...plan }));
+
+    setShowAssignPlanModal(false);
+    setAssignPlanSearch("");
+    setAssignPlanFilter("todos");
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("pf-inline-toast", {
+          detail: { type: "success", message: "Plan en blanco creado. Completalo desde aquí." },
+        })
+      );
+    }
+  };
+
   const trainingPreviewStats = useMemo(() => {
     const weeks = visibleTrainingWeeks;
     const totalDias = weeks.reduce(
@@ -4698,9 +5340,9 @@ export default function ClientesPage() {
       ) : (
         <>
       {!isDetailMode ? (
-      <section className="relative overflow-hidden rounded-2xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/50 to-slate-900 p-6 shadow-[0_20px_80px_rgba(6,182,212,0.12)]">
-        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
+      <section className="pf-clientes-hero">
+        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -4744,17 +5386,17 @@ export default function ClientesPage() {
         </div>
 
         <div className="relative mt-5 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-300/35 bg-emerald-500/15 p-4">
-            <p className="text-xs uppercase tracking-wide text-emerald-100">Activos</p>
-            <p className="text-3xl font-black">{resumen.activos}</p>
+          <div className="pf-stat-card pf-stat-card--activos">
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-200/70">Activos</p>
+            <p className="mt-1 text-3xl font-black text-white">{resumen.activos}</p>
           </div>
-          <div className="rounded-2xl border border-rose-300/35 bg-rose-500/15 p-4">
-            <p className="text-xs uppercase tracking-wide text-rose-100">Finalizados</p>
-            <p className="text-3xl font-black">{resumen.finalizados}</p>
+          <div className="pf-stat-card pf-stat-card--fin">
+            <p className="text-xs font-semibold uppercase tracking-widest text-rose-200/70">Finalizados</p>
+            <p className="mt-1 text-3xl font-black text-white">{resumen.finalizados}</p>
           </div>
-          <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 p-4">
-            <p className="text-xs uppercase tracking-wide text-cyan-100">Total</p>
-            <p className="text-3xl font-black">{resumen.total}</p>
+          <div className="pf-stat-card pf-stat-card--total">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200/70">Total</p>
+            <p className="mt-1 text-3xl font-black text-white">{resumen.total}</p>
           </div>
         </div>
       </section>
@@ -4922,12 +5564,10 @@ export default function ClientesPage() {
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
                         FECHA NACIMIENTO <span className="text-cyan-400">(*)</span>
                       </label>
-                      <input
-                        type="date"
+                      <DateInput
                         value={form.fechaNacimiento}
-                        onChange={(e) => setForm((p) => ({ ...p, fechaNacimiento: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
-                        placeholder="dd-mm-aaaa"
+                        onChange={(v) => setForm((p) => ({ ...p, fechaNacimiento: v }))}
+                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 pr-8 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -5470,7 +6110,7 @@ export default function ClientesPage() {
       >
         {!isDetailMode ? (
         <div
-          className="w-full rounded-2xl border border-cyan-300/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_38%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_24px_60px_rgba(3,7,18,0.55)]"
+          className="pf-clientes-list-panel"
           data-layout-lock="clientes-list-panel"
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -5478,29 +6118,29 @@ export default function ClientesPage() {
               <ReliableActionButton type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "bg-emerald-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Activos</ReliableActionButton>
               <ReliableActionButton type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "bg-rose-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Finalizados</ReliableActionButton>
             </div>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="w-full max-w-sm rounded-xl border border-cyan-300/30 bg-[#0e1012]/85 px-3 py-2 text-sm shadow-inner shadow-cyan-500/5" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="pf-filter-input max-w-sm text-sm" />
           </div>
 
           <div className="mb-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as "todos" | ClienteTipo)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
+            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as "todos" | ClienteTipo)} className="pf-filter-input">
               <option value="todos">Tipo: Todos</option>
               <option value="jugadora">Tipo: Jugadoras</option>
               <option value="alumno">Tipo: Alumnos</option>
             </select>
-            <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
+            <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="pf-filter-input">
               <option value="todas">Categoria: Todas</option>
               {categoriasOptions.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
-            <select value={filtroDeporte} onChange={(e) => setFiltroDeporte(e.target.value)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
+            <select value={filtroDeporte} onChange={(e) => setFiltroDeporte(e.target.value)} className="pf-filter-input">
               <option value="todos">Deporte: Todos</option>
               {deportesOptions.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
-            <input value={filtroClub} onChange={(e) => setFiltroClub(e.target.value)} placeholder="Club" className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs" />
-            <select value={filtroPlan} onChange={(e) => setPlanFilter(e.target.value as PlanFilterType)} className="rounded-lg border border-white/20 bg-[#0e1012] px-2 py-2 text-xs">
+            <input value={filtroClub} onChange={(e) => setFiltroClub(e.target.value)} placeholder="Club" className="pf-filter-input" />
+            <select value={filtroPlan} onChange={(e) => setPlanFilter(e.target.value as PlanFilterType)} className="pf-filter-input">
               <option value="todos">Plan: Todos</option>
               <option value="con-plan">Con cualquier plan</option>
               <option value="sin-plan">Sin ningun plan</option>
@@ -5615,7 +6255,7 @@ export default function ClientesPage() {
                 return (
                   <article
                     key={cliente.id}
-                    className={`w-full overflow-hidden rounded-2xl border p-2.5 transition ${active ? "border-cyan-300/45 bg-cyan-500/10" : "border-white/10 bg-[#0e1012] hover:border-cyan-300/30 hover:bg-[#0e1012]/80"}`}
+                    className={`pf-cliente-row${active ? " pf-cliente-row--active" : ""}`}
                     data-layout-lock="clientes-row-card"
                   >
                     <div className="flex flex-wrap items-center gap-2.5" data-layout-lock="clientes-row-content">
@@ -5712,12 +6352,12 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Ver ficha">👁</ReliableActionButton>
-                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Chat y notas">💬</ReliableActionButton>
-                        <ReliableActionButton type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="rounded-lg border border-emerald-300/40 bg-emerald-500/5 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40" title="WhatsApp">🟢</ReliableActionButton>
-                        <Link href={buildPlanViewHref(cliente.id, "plan-entrenamiento")} prefetch className="rounded-lg border border-cyan-300/40 bg-cyan-500/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10" title="Abrir plan en pantalla nueva">📌</Link>
-                        <ReliableActionButton type="button" onClick={() => toggleEstado(cliente)} className="rounded-lg border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10" title="Activar/Finalizar">↔</ReliableActionButton>
-                        <ReliableActionButton type="button" onClick={() => borrarCliente(cliente)} className="rounded-lg border border-rose-300/30 bg-rose-500/5 px-2.5 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/10" title="Eliminar">🗑</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "datos")} className="pf-row-btn" title="Ver ficha">👁</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => openClientDetail(cliente.id, "notas")} className="pf-row-btn" title="Chat y notas">💬</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => openWhatsapp(cliente)} disabled={!getMeta(cliente).telefono} className="pf-row-btn pf-row-btn--green" title="WhatsApp">🟢</ReliableActionButton>
+                        <Link href={buildPlanViewHref(cliente.id, "plan-entrenamiento")} prefetch className="pf-row-btn pf-row-btn--cyan" title="Abrir plan en pantalla nueva">📌</Link>
+                        <ReliableActionButton type="button" onClick={() => toggleEstado(cliente)} className="pf-row-btn" title="Activar/Finalizar">↔</ReliableActionButton>
+                        <ReliableActionButton type="button" onClick={() => borrarCliente(cliente)} className="pf-row-btn pf-row-btn--red" title="Eliminar">🗑</ReliableActionButton>
                       </div>
                     </div>
                   </article>
@@ -5866,7 +6506,7 @@ export default function ClientesPage() {
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, color: e.target.value }))}
                       className="w-8 h-8 border border-white/20"
                     />
-                    <ReliableActionButton type="submit" className="rounded bg-cyan-400 px-2 py-1 text-xs font-bold text-slate-950 hover:bg-cyan-300">+</ReliableActionButton>
+                    <ReliableActionButton type="submit" className="pf-btn pf-btn--primary !rounded !px-2 !py-1 !text-xs">+</ReliableActionButton>
                   </form>
                   {/* Buscador por etiqueta */}
                   <input
@@ -5926,7 +6566,7 @@ export default function ClientesPage() {
                             { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Email", node: <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Nacimiento", node: <input type="date" value={datosDraft.fechaNacimiento} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" /> },
+                            { label: "Nacimiento", node: <DateInput value={datosDraft?.fechaNacimiento || ""} onChange={(v) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: v } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 pr-8 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
                             { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Pais", node: <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} placeholder="Argentina" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
@@ -6114,6 +6754,81 @@ export default function ClientesPage() {
                         </div>
                       )}
 
+                      {/* ── COBRO POR MERCADO PAGO ── */}
+                      {isAdmin && (
+                        <div className="overflow-hidden rounded-2xl border border-[#009ee3]/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                          <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
+                            <span className="h-3 w-[3px] rounded-full bg-[#009ee3] shadow-[0_0_7px_rgba(0,158,227,0.9)]" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#009ee3]/80">Cobro Mercado Pago</p>
+                          </div>
+                          <div className="space-y-2.5 p-3">
+                            {/* Email del alumno que se usará */}
+                            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-2 text-xs">
+                              <span className="text-slate-500">Email del alumno:</span>
+                              {selectedMeta.email
+                                ? <span className="font-semibold text-slate-200">{selectedMeta.email}</span>
+                                : <span className="font-semibold text-amber-400">⚠ Sin email — configuralo en la pestaña Datos</span>
+                              }
+                            </div>
+
+                            {planesDisponibles.filter((p) => p.activo).length === 0 ? (
+                              <p className="text-xs text-amber-300/90">Sin planes activos. Creá uno en Admin › Pagos.</p>
+                            ) : (
+                              <>
+                                <select
+                                  value={mpPlanSeleccionado}
+                                  onChange={(e) => { setMpPlanSeleccionado(e.target.value); setMpCheckoutUrl(null); setMpCheckoutError(""); }}
+                                  className="w-full rounded-lg bg-[#111417] px-3 py-2.5 text-sm text-white focus:outline-none"
+                                >
+                                  <option value="" className="bg-[#0e1012]">Seleccioná un plan...</option>
+                                  {planesDisponibles.filter((p) => p.activo).map((p) => (
+                                    <option key={p.id} value={p.id} className="bg-[#0e1012]">
+                                      {p.nombre} — {p.moneda} {p.precio.toLocaleString("es-AR")} / {p.duracionDias} días
+                                    </option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  disabled={mpCheckoutLoading || !mpPlanSeleccionado || !selectedMeta.email}
+                                  onClick={() => void generarLinkMP()}
+                                  className="w-full rounded-xl bg-[#009ee3] py-2.5 text-sm font-bold text-white shadow-[0_0_14px_rgba(0,158,227,0.35)] transition hover:bg-[#008dcc] disabled:opacity-40 active:scale-[0.97]"
+                                >
+                                  {mpCheckoutLoading ? "Generando..." : "🔗 Generar link de pago MP"}
+                                </button>
+                              </>
+                            )}
+
+                            {mpCheckoutError && (
+                              <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{mpCheckoutError}</p>
+                            )}
+
+                            {mpCheckoutUrl && (
+                              <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
+                                <p className="text-[10px] font-black uppercase tracking-wide text-emerald-300">✓ Link generado — compartilo con el alumno</p>
+                                <p className="break-all rounded-lg bg-black/40 px-2 py-2 text-[11px] font-mono leading-relaxed text-emerald-200">{mpCheckoutUrl}</p>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => { void navigator.clipboard.writeText(mpCheckoutUrl); }}
+                                    className="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                                  >
+                                    Copiar link
+                                  </button>
+                                  <a
+                                    href={mpCheckoutUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                                  >
+                                    Ir al checkout →
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* DETALLE DE PAGOS */}
                       <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-2.5">
@@ -6238,16 +6953,13 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={
-                            selectedClient
-                              ? `${buildPlanViewHref(selectedClient.id, "plan-entrenamiento")}#asignar-entrenamiento`
-                              : "/clientes"
-                          }
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => setShowAssignPlanModal(true)}
                           className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
                         >
-                          Asignar entrenamiento
-                        </Link>
+                          📋 Asignar template
+                        </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={reloadTrainingPlanOnly}
@@ -6267,6 +6979,15 @@ export default function ClientesPage() {
                           )}
                           Actualizar planilla
                         </ReliableActionButton>
+                        {selectedClientTrainingPlan && (
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => setSaveAsTemplateModal({ name: `Template — ${selectedClient?.nombre || ""}`.trim() })}
+                            className="rounded-lg border border-fuchsia-300/30 bg-fuchsia-500/8 px-3 py-1.5 text-xs font-semibold text-fuchsia-200 hover:bg-fuchsia-500/18"
+                          >
+                            💾 Guardar como template
+                          </ReliableActionButton>
+                        )}
                       </div>
 
                       <p className="w-full text-[11px] text-slate-300/85">
@@ -6287,16 +7008,27 @@ export default function ClientesPage() {
                     </div>
 
                     {!selectedClientTrainingPlan ? (
-                      <div className="pf-card rounded-2xl border p-4 text-sm text-slate-300">
-                        <p>No hay un plan semanal vinculado para este cliente todavia.</p>
+                      <div className="pf-card rounded-2xl border p-6 text-center">
+                        <p className="text-2xl mb-2">🏋</p>
+                        <p className="text-sm font-medium text-slate-200">Sin plan de entrenamiento</p>
+                        <p className="mt-1 text-xs text-slate-400">Asigná un template o creá uno desde cero.</p>
                         {canEditTrainingPlan ? (
-                          <ReliableActionButton
-                            type="button"
-                            onClick={createTrainingPlanForSelectedClient}
-                            className="mt-3 rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
-                          >
-                            Crear plan editable
-                          </ReliableActionButton>
+                          <div className="mt-4 flex justify-center gap-2">
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => setShowAssignPlanModal(true)}
+                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-4 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                            >
+                              📋 Asignar template
+                            </ReliableActionButton>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={createTrainingPlanForSelectedClient}
+                              className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                            >
+                              + Crear desde cero
+                            </ReliableActionButton>
+                          </div>
                         ) : null}
                       </div>
                     ) : canEditTrainingPlan ? (
@@ -6382,7 +7114,7 @@ export default function ClientesPage() {
                                     </ReliableActionButton>
                                     <ReliableActionButton
                                       type="button"
-                                      onClick={() => toggleTrainingWeekMenu(week.id)}
+                                      onClick={(e) => toggleTrainingWeekMenu(week.id, e)}
                                       className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                         weekMenuOpen
                                           ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
@@ -6395,9 +7127,16 @@ export default function ClientesPage() {
 
                                     <div
                                       aria-hidden={!weekMenuOpen}
-                                      className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                      style={weekMenuOpen && menuAnchorRect ? {
+                                        position: "fixed",
+                                        top: menuAnchorRect.top,
+                                        ...(menuAnchorRect.left !== undefined
+                                          ? { left: menuAnchorRect.left }
+                                          : { right: menuAnchorRect.right }),
+                                      } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                      className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                         weekMenuOpen
-                                          ? "translate-y-0 scale-y-100 opacity-100"
+                                          ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
                                           : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
                                       }`}
                                     >
@@ -6571,7 +7310,7 @@ export default function ClientesPage() {
                                       </ReliableActionButton>
                                       <ReliableActionButton
                                         type="button"
-                                        onClick={() => toggleTrainingDayMenu(selectedTrainingWeek.id, day.id)}
+                                        onClick={(e) => toggleTrainingDayMenu(selectedTrainingWeek.id, day.id, e)}
                                         className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                           dayMenuOpen
                                             ? "border-emerald-300/70 bg-slate-700/95 text-emerald-100"
@@ -6584,9 +7323,16 @@ export default function ClientesPage() {
 
                                       <div
                                         aria-hidden={!dayMenuOpen}
-                                        className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                        style={dayMenuOpen && menuAnchorRect ? {
+                                          position: "fixed",
+                                          top: menuAnchorRect.top,
+                                          ...(menuAnchorRect.left !== undefined
+                                            ? { left: menuAnchorRect.left }
+                                            : { right: menuAnchorRect.right }),
+                                        } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                        className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                           dayMenuOpen
-                                            ? "translate-y-0 scale-y-100 opacity-100"
+                                            ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
                                             : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
                                         }`}
                                       >
@@ -6844,14 +7590,15 @@ export default function ClientesPage() {
                                                 >
                                                   <ReliableActionButton
                                                     type="button"
-                                                    onClick={() => {
+                                                    onClick={(e) => {
                                                       setTrainingBlockGridConfigOpenId((current) =>
                                                         current === block.id ? null : current
                                                       );
                                                       toggleTrainingBlockMenu(
                                                         selectedTrainingWeek.id,
                                                         selectedTrainingDay.id,
-                                                        block.id
+                                                        block.id,
+                                                        e
                                                       );
                                                     }}
                                                     className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
@@ -6866,9 +7613,16 @@ export default function ClientesPage() {
 
                                                   <div
                                                     aria-hidden={!blockMenuOpen}
-                                                    className={`absolute right-0 top-[calc(100%+6px)] z-30 grid min-w-[220px] origin-top gap-1 rounded-xl border border-white/15 bg-[#0e1012]/95 p-2 shadow-2xl transition-all duration-200 ease-out ${
+                                                    style={blockMenuOpen && menuAnchorRect ? {
+                                                      position: "fixed",
+                                                      top: menuAnchorRect.top,
+                                                      ...(menuAnchorRect.left !== undefined
+                                                        ? { left: menuAnchorRect.left }
+                                                        : { right: menuAnchorRect.right }),
+                                                    } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                                    className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                                       blockMenuOpen
-                                                        ? "translate-y-0 scale-y-100 opacity-100"
+                                                        ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
                                                         : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
                                                     }`}
                                                   >
@@ -7156,7 +7910,7 @@ export default function ClientesPage() {
                                                         className="grid gap-2"
                                                         style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                       >
-                                                      <div className="overflow-hidden rounded-xl border border-white/20 bg-[#0e1012]">
+                                                      <div className="overflow-hidden rounded-xl border border-white/12 bg-[#0e1012]">
                                                         {exerciseMeta?.videoUrl ? (
                                                           <button
                                                             type="button"
@@ -7168,25 +7922,43 @@ export default function ClientesPage() {
                                                               )
                                                             }
                                                             title="Abrir video"
-                                                            className="block h-[66px] w-full"
+                                                            className="group/prev relative block h-[66px] w-full overflow-hidden"
                                                           >
                                                             {previewImage ? (
-                                                              <img
-                                                                src={previewImage}
-                                                                alt={exerciseMeta.nombre || "Ejercicio"}
-                                                                className="h-[66px] w-full object-cover"
-                                                                loading="lazy"
-                                                              />
+                                                              <>
+                                                                <img
+                                                                  src={previewImage}
+                                                                  alt={exerciseMeta.nombre || "Ejercicio"}
+                                                                  className="h-[66px] w-full object-cover transition-transform group-hover/prev:scale-105"
+                                                                  loading="lazy"
+                                                                  onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                                                    const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                                                    if (fallback) fallback.style.display = "flex";
+                                                                  }}
+                                                                />
+                                                                <span className="absolute inset-0 hidden items-center justify-center gap-1 bg-[#111] text-[10px] font-bold text-cyan-300">
+                                                                  ▶ Ver video
+                                                                </span>
+                                                                <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity bg-black/40 text-white text-lg">
+                                                                  ▶
+                                                                </span>
+                                                              </>
                                                             ) : (
-                                                              <span className="flex h-[66px] w-full items-center justify-center bg-[#0e1012]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                              <span className="flex h-[66px] w-full items-center justify-center gap-1.5 bg-gradient-to-br from-cyan-900/40 to-[#0e1012] text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300 transition group-hover/prev:from-cyan-800/50">
                                                                 ▶ Ver video
                                                               </span>
                                                             )}
                                                           </button>
                                                         ) : (
-                                                          <span className="flex h-[66px] w-full items-center justify-center text-xs font-semibold text-slate-200">
-                                                            Sin preview
-                                                          </span>
+                                                          <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 bg-white/3">
+                                                            <span className="text-xl leading-none">
+                                                              {exerciseMeta ? "🏋" : "❓"}
+                                                            </span>
+                                                            <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                                              {exerciseMeta ? "Sin video" : "Sin ejercicio"}
+                                                            </span>
+                                                          </div>
                                                         )}
                                                       </div>
 
@@ -7480,7 +8252,7 @@ export default function ClientesPage() {
                                                                   className="grid gap-2"
                                                                   style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                                 >
-                                                                  <div className="overflow-hidden rounded-xl border border-white/20 bg-[#0e1012]">
+                                                                  <div className="overflow-hidden rounded-xl border border-white/12 bg-[#0e1012]">
                                                                     {superMeta?.videoUrl ? (
                                                                       <button
                                                                         type="button"
@@ -7492,25 +8264,43 @@ export default function ClientesPage() {
                                                                           )
                                                                         }
                                                                         title="Abrir video"
-                                                                        className="block h-[66px] w-full"
+                                                                        className="group/prev relative block h-[66px] w-full overflow-hidden"
                                                                       >
                                                                         {superPreviewImage ? (
-                                                                          <img
-                                                                            src={superPreviewImage}
-                                                                            alt={superMeta.nombre || "Ejercicio"}
-                                                                            className="h-[66px] w-full object-cover"
-                                                                            loading="lazy"
-                                                                          />
+                                                                          <>
+                                                                            <img
+                                                                              src={superPreviewImage}
+                                                                              alt={superMeta.nombre || "Ejercicio"}
+                                                                              className="h-[66px] w-full object-cover transition-transform group-hover/prev:scale-105"
+                                                                              loading="lazy"
+                                                                              onError={(e) => {
+                                                                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                                                                                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                                                                if (fallback) fallback.style.display = "flex";
+                                                                              }}
+                                                                            />
+                                                                            <span className="absolute inset-0 hidden items-center justify-center gap-1 bg-[#111] text-[10px] font-bold text-cyan-300">
+                                                                              ▶ Ver video
+                                                                            </span>
+                                                                            <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity bg-black/40 text-white text-lg">
+                                                                              ▶
+                                                                            </span>
+                                                                          </>
                                                                         ) : (
-                                                                          <span className="flex h-[66px] w-full items-center justify-center bg-[#0e1012]/80 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100">
+                                                                          <span className="flex h-[66px] w-full items-center justify-center gap-1.5 bg-gradient-to-br from-cyan-900/40 to-[#0e1012] text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">
                                                                             ▶ Ver video
                                                                           </span>
                                                                         )}
                                                                       </button>
                                                                     ) : (
-                                                                      <span className="flex h-[66px] w-full items-center justify-center text-xs font-semibold text-slate-200">
-                                                                        Sin preview
-                                                                      </span>
+                                                                      <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 bg-white/3">
+                                                                        <span className="text-xl leading-none">
+                                                                          {superMeta ? "🏋" : "❓"}
+                                                                        </span>
+                                                                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                                                          {superMeta ? "Sin video" : "Sin ejercicio"}
+                                                                        </span>
+                                                                      </div>
                                                                     )}
                                                                   </div>
 
@@ -8189,88 +8979,314 @@ export default function ClientesPage() {
                     )}
                   </div>
                 ) : activeTab === "plan-nutricional" ? (
-                  <div className="pf-card rounded-2xl border p-4">
-                    <h3 className="text-lg font-black text-white">Plan nutricional</h3>
+                  <div className="rounded-[30px] border border-emerald-300/28 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 shadow-[0_28px_70px_-46px_rgba(16,185,129,0.45)] sm:px-5 lg:px-7 lg:py-6">
+                    {/* Header */}
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.14em] text-emerald-100/85">Plan nutricional</p>
+                        <h3 className="mt-1 text-xl font-black text-white">Nutrición personalizada</h3>
+                        <p className="mt-1 text-sm text-slate-200/90">
+                          Plan calibrado a los parámetros físicos y objetivo del cliente.
+                        </p>
+                      </div>
+                      {canEditTrainingPlan && (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedNutritionPlan && (
+                            <>
+                              <ReliableActionButton
+                                type="button"
+                                onClick={() => setNutritionEditMode((v) => !v)}
+                                disabled={nutritionAssigning}
+                                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                  nutritionEditMode
+                                    ? "border-amber-300/50 bg-amber-500/15 text-amber-200"
+                                    : "border-white/20 text-slate-300 hover:bg-white/8"
+                                }`}
+                              >
+                                {nutritionEditMode ? "✓ Editando" : "✏️ Editar plan"}
+                              </ReliableActionButton>
+                              <ReliableActionButton
+                                type="button"
+                                onClick={syncNutritionPlan}
+                                disabled={nutritionSyncing || nutritionAssigning}
+                                className={`relative rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 ${
+                                  hasUnsavedNutritionChanges
+                                    ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.35)] hover:bg-emerald-500/30"
+                                    : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                }`}
+                              >
+                                {hasUnsavedNutritionChanges && !nutritionSyncing && (
+                                  <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,1)]" />
+                                )}
+                                {nutritionSyncing ? "Actualizando..." : "Actualizar planilla"}
+                              </ReliableActionButton>
+                            </>
+                          )}
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => openNutritionWizard()}
+                            disabled={nutritionAssigning}
+                            className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-60"
+                          >
+                            ✨ {selectedNutritionPlan ? "Regenerar plan" : "Nuevo plan"}
+                          </ReliableActionButton>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => openNutritionWizard("__pick__")}
+                            disabled={nutritionAssigning}
+                            className="rounded-lg border border-emerald-300/25 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/8 disabled:opacity-60"
+                          >
+                            📋 Asignar existente
+                          </ReliableActionButton>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Estado de carga */}
+                    {nutritionAssigning && (
+                      <div className="mb-4 flex items-center gap-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-emerald-300 border-t-transparent" />
+                        <p className="text-sm font-medium text-emerald-200">Analizando perfil y personalizando el plan…</p>
+                      </div>
+                    )}
 
                     {selectedNutritionPlan ? (
                       <>
-                        <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                              <p className="text-xs uppercase tracking-wide text-emerald-100">Plan asignado</p>
-                              <p className="text-lg font-black text-white">{selectedNutritionPlan.nombre}</p>
+                        {/* Resumen del plan */}
+                        <div className="rounded-xl border border-emerald-300/25 bg-emerald-500/8 p-4">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">Plan activo</p>
+                              <p className="mt-0.5 text-base font-black text-white">{selectedNutritionPlan.nombre}</p>
+                              {selectedNutritionPlan.notas && (
+                                <p className="mt-1 text-xs text-slate-400">{selectedNutritionPlan.notas}</p>
+                              )}
                             </div>
-                            <p className="text-xs text-slate-300">
-                              Asignado: {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
+                            <p className="shrink-0 text-xs text-slate-400">
+                              {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
                             </p>
                           </div>
 
-                          <div className="mt-3 grid gap-3 md:grid-cols-4">
-                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo</p>
-                              <p className="font-bold text-cyan-100">{nutritionGoalLabel(selectedNutritionPlan.objetivo)}</p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">Kcal objetivo</p>
-                              <p className="font-bold text-white">{selectedNutritionPlan.targets.calorias}</p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G objetivo</p>
-                              <p className="font-bold text-white">
-                                {selectedNutritionPlan.targets.proteinas} / {selectedNutritionPlan.targets.carbohidratos} / {selectedNutritionPlan.targets.grasas} g
-                              </p>
-                            </div>
-                            <div className="rounded-lg border border-white/10 bg-[#0e1012] p-3">
-                              <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G del plan</p>
-                              <p className="font-bold text-emerald-100">
-                                {selectedNutritionIntake.proteinas} / {selectedNutritionIntake.carbohidratos} / {selectedNutritionIntake.grasas} g
-                              </p>
-                            </div>
+                          {/* Métricas clave */}
+                          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            {[
+                              { label: "Objetivo",      value: nutritionGoalLabel(selectedNutritionPlan.objetivo), color: "text-cyan-200"   },
+                              { label: "Kcal / día",    value: `${selectedNutritionPlan.targets.calorias} kcal`,   color: "text-amber-200"  },
+                              { label: "Proteínas",     value: `${selectedNutritionPlan.targets.proteinas} g`,     color: "text-violet-200" },
+                              { label: "Carbohidratos", value: `${selectedNutritionPlan.targets.carbohidratos} g`, color: "text-emerald-200"},
+                            ].map((s) => (
+                              <div key={s.label} className="rounded-lg border border-white/8 bg-[#0e1012]/70 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{s.label}</p>
+                                <p className={`mt-0.5 text-sm font-black ${s.color}`}>{s.value}</p>
+                              </div>
+                            ))}
                           </div>
+
+                          {/* Perfil físico aplicado */}
+                          {selectedNutritionPlan.perfil && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {[
+                                `${selectedNutritionPlan.perfil.pesoKg} kg`,
+                                `${selectedNutritionPlan.perfil.alturaCm} cm`,
+                                `${selectedNutritionPlan.perfil.edad} años`,
+                                `${selectedNutritionPlan.perfil.comidasDia} comidas/día`,
+                                selectedNutritionPlan.perfil.diasEntrenamiento
+                                  ? `${selectedNutritionPlan.perfil.diasEntrenamiento} días entren./sem.`
+                                  : null,
+                              ].filter(Boolean).map((tag) => (
+                                <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-slate-400">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Barra macro visual */}
+                          {(() => {
+                            const t = selectedNutritionPlan.targets;
+                            const total = t.proteinas * 4 + t.carbohidratos * 4 + t.grasas * 9;
+                            const pPct  = total > 0 ? Math.round((t.proteinas * 4    / total) * 100) : 0;
+                            const cPct  = total > 0 ? Math.round((t.carbohidratos * 4 / total) * 100) : 0;
+                            const gPct  = total > 0 ? Math.round((t.grasas * 9       / total) * 100) : 0;
+                            return (
+                              <div className="mt-3">
+                                <div className="mb-1 flex justify-between text-[10px] text-slate-500">
+                                  <span>Prot {pPct}%</span><span>Carbs {cPct}%</span><span>Grasas {gPct}%</span>
+                                </div>
+                                <div className="flex h-2 overflow-hidden rounded-full">
+                                  <div className="bg-violet-500" style={{ width: `${pPct}%` }} />
+                                  <div className="bg-emerald-500" style={{ width: `${cPct}%` }} />
+                                  <div className="bg-amber-500" style={{ width: `${gPct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
-                        <div className="mt-4 space-y-3">
+                        {/* Banner modo edición */}
+                        {nutritionEditMode && (
+                          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-amber-300/30 bg-amber-500/10 px-4 py-2.5">
+                            <p className="text-xs font-semibold text-amber-200">✏️ Modo edición — modificá los gramos o eliminá alimentos. Los cambios se guardan al instante.</p>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => { setNutritionEditMode(false); setNutritionGramEdit(null); setNutritionAddFoodMealId(null); setHasUnsavedNutritionChanges(false); }}
+                              className="shrink-0 rounded-lg border border-amber-300/30 px-3 py-1 text-[11px] font-bold text-amber-200 hover:bg-amber-500/15"
+                            >
+                              Cerrar edición
+                            </ReliableActionButton>
+                          </div>
+                        )}
+
+                        {/* Comidas */}
+                        <div className="mt-4 space-y-2">
                           {selectedNutritionPlan.comidas.length === 0 ? (
-                            <p className="rounded-xl border border-white/10 bg-[#0e1012] p-4 text-sm text-slate-300">
-                              El plan no tiene comidas cargadas todavia.
+                            <p className="rounded-xl border border-white/10 bg-[#0e1012] p-4 text-sm text-slate-400">
+                              El plan no tiene comidas cargadas.
                             </p>
                           ) : (
-                            selectedNutritionPlan.comidas.map((meal) => (
-                              <article key={meal.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
-                                <p className="font-semibold text-white">{meal.nombre}</p>
-                                {meal.items.length === 0 ? (
-                                  <p className="mt-1 text-xs text-slate-400">Sin alimentos cargados.</p>
-                                ) : (
-                                  <div className="mt-2 space-y-1 text-sm">
-                                    {meal.items.map((item) => {
-                                      const food = nutritionFoodsById.get(item.foodId);
-                                      return (
-                                        <p key={item.id} className="text-slate-200">
-                                          • {food?.nombre || "Alimento no encontrado"} - {item.gramos} g
-                                        </p>
-                                      );
-                                    })}
+                            selectedNutritionPlan.comidas.map((meal) => {
+                              const mealKcal = meal.items.reduce((sum, itm) => {
+                                const food = nutritionFoodsById.get(itm.foodId);
+                                return sum + (food ? food.kcalPer100g * itm.gramos / 100 : 0);
+                              }, 0);
+                              const isAddingFood = nutritionAddFoodMealId === meal.id;
+                              const foodResults = nutritionFoodSearch.trim().length >= 2
+                                ? Array.from(nutritionFoodsById.values())
+                                    .filter((f) => f.nombre.toLowerCase().includes(nutritionFoodSearch.toLowerCase()))
+                                    .slice(0, 8)
+                                : [];
+                              return (
+                                <article key={meal.id} className="rounded-xl border border-white/8 bg-white/[0.025] p-4">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-sm font-bold text-white">{meal.nombre}</p>
+                                    <div className="flex items-center gap-2">
+                                      {mealKcal > 0 && (
+                                        <span className="rounded-full border border-amber-300/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                                          {Math.round(mealKcal)} kcal
+                                        </span>
+                                      )}
+                                      {nutritionEditMode && (
+                                        <ReliableActionButton
+                                          type="button"
+                                          onClick={() => {
+                                            setNutritionAddFoodMealId(isAddingFood ? null : meal.id);
+                                            setNutritionFoodSearch("");
+                                          }}
+                                          className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-500/20"
+                                        >
+                                          {isAddingFood ? "— Cancelar" : "+ Agregar"}
+                                        </ReliableActionButton>
+                                      )}
+                                    </div>
                                   </div>
-                                )}
-                              </article>
-                            ))
+
+                                  {/* Panel agregar alimento */}
+                                  {isAddingFood && (
+                                    <div className="mt-2 rounded-xl border border-emerald-300/20 bg-emerald-500/5 p-3">
+                                      <input
+                                        value={nutritionFoodSearch}
+                                        onChange={(e) => setNutritionFoodSearch(e.target.value)}
+                                        placeholder="Buscar alimento…"
+                                        autoFocus
+                                        className="w-full rounded-lg border border-white/15 bg-[#0e1012] px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-400/40"
+                                      />
+                                      {foodResults.length > 0 && (
+                                        <div className="mt-2 space-y-1">
+                                          {foodResults.map((f) => (
+                                            <ReliableActionButton
+                                              key={f.id}
+                                              type="button"
+                                              onClick={() => addNutritionItem(meal.id, f.id)}
+                                              className="w-full rounded-lg border border-white/8 bg-white/[0.02] px-3 py-1.5 text-left text-xs text-slate-200 hover:bg-white/[0.06]"
+                                            >
+                                              <span className="font-medium">{f.nombre}</span>
+                                              <span className="ml-2 text-slate-500">{f.kcalPer100g} kcal/100g · P{f.proteinPer100g}g · C{f.carbsPer100g}g · G{f.fatPer100g}g</span>
+                                            </ReliableActionButton>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {meal.items.length === 0 ? (
+                                    <p className="mt-1 text-xs text-slate-500">Sin alimentos.</p>
+                                  ) : (
+                                    <div className="mt-2 grid gap-1 sm:grid-cols-2">
+                                      {meal.items.map((itm) => {
+                                        const food = nutritionFoodsById.get(itm.foodId);
+                                        const itemKcal = food ? Math.round(food.kcalPer100g * itm.gramos / 100) : 0;
+                                        const isEditingGrams = nutritionGramEdit?.mealId === meal.id && nutritionGramEdit?.itemId === itm.id;
+                                        return (
+                                          <div key={itm.id} className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${nutritionEditMode ? "border-white/10 bg-[#0e1012]/60 hover:border-white/20" : "border-white/5 bg-[#0e1012]/50"}`}>
+                                            <span className="min-w-0 flex-1 truncate text-slate-300">{food?.nombre || itm.foodId}</span>
+                                            {isEditingGrams ? (
+                                              <div className="flex shrink-0 items-center gap-1">
+                                                <input
+                                                  type="number"
+                                                  value={nutritionGramEdit!.value}
+                                                  onChange={(e) => setNutritionGramEdit({ ...nutritionGramEdit!, value: e.target.value })}
+                                                  onBlur={saveNutritionInlineEdit}
+                                                  onKeyDown={(e) => { if (e.key === "Enter") saveNutritionInlineEdit(); if (e.key === "Escape") setNutritionGramEdit(null); }}
+                                                  autoFocus
+                                                  className="w-14 rounded border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-right text-[11px] text-emerald-200 outline-none"
+                                                />
+                                                <span className="text-slate-500">g</span>
+                                              </div>
+                                            ) : (
+                                              <div className="flex shrink-0 items-center gap-1.5">
+                                                <span
+                                                  onClick={nutritionEditMode ? () => setNutritionGramEdit({ mealId: meal.id, itemId: itm.id, value: String(itm.gramos) }) : undefined}
+                                                  className={`font-semibold text-slate-400 ${nutritionEditMode ? "cursor-pointer rounded px-1 hover:bg-white/10 hover:text-white" : ""}`}
+                                                >
+                                                  {itm.gramos} g{itemKcal > 0 ? ` · ${itemKcal} kcal` : ""}
+                                                </span>
+                                                {nutritionEditMode && (
+                                                  <ReliableActionButton
+                                                    type="button"
+                                                    onClick={() => removeNutritionItem(meal.id, itm.id)}
+                                                    className="flex h-4 w-4 items-center justify-center rounded-full text-slate-600 hover:bg-red-500/20 hover:text-red-400"
+                                                  >
+                                                    ×
+                                                  </ReliableActionButton>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </article>
+                              );
+                            })
                           )}
                         </div>
                       </>
-                    ) : (
-                      <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                        <p className="font-semibold">Este cliente aun no tiene un plan nutricional asignado.</p>
-                        <p className="mt-1 text-amber-50/90">
-                          Puedes asignarlo desde el modulo de nutricion para verlo aqui.
-                        </p>
-                        <Link
-                          href="/categorias/Nutricion"
-                          className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
-                        >
-                          Ir a Nutricion
-                        </Link>
+                    ) : !nutritionAssigning ? (
+                      <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center">
+                        <p className="text-2xl">🥗</p>
+                        <p className="mt-2 text-sm font-semibold text-slate-200">Sin plan nutricional</p>
+                        <p className="mt-1 text-xs text-slate-400">Generá un plan personalizado basado en el perfil de este cliente, o asigná uno existente.</p>
+                        {canEditTrainingPlan && (
+                          <div className="mt-4 flex justify-center gap-2">
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => openNutritionWizard()}
+                              className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                            >
+                              ✨ Crear plan personalizado
+                            </ReliableActionButton>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => openNutritionWizard("__pick__")}
+                              className="rounded-lg border border-white/20 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-white/8"
+                            >
+                              📋 Asignar plan existente
+                            </ReliableActionButton>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
@@ -8491,116 +9507,781 @@ export default function ClientesPage() {
       ) : null}
 
       {newExerciseModalOpen ? (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-lg pf-card rounded-2xl border border-cyan-300/30 p-5 text-slate-100 shadow-2xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Nuevo ejercicio</p>
-                <h2 className="mt-1 text-xl font-black text-white">Crear ejercicio personalizado</h2>
-                <p className="mt-1 text-xs text-slate-300">
-                  Se guarda en la biblioteca y queda disponible en el selector para todos los planes.
-                </p>
+        <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center bg-black/65 px-0 pb-0 sm:px-4 sm:py-6 backdrop-blur-sm">
+          {/* Backdrop click */}
+          <div className="absolute inset-0" onClick={closeNewExerciseModal} />
+
+          <div className="relative w-full max-w-md sm:rounded-2xl overflow-hidden shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border-t sm:border border-white/10 bg-[#0b0e11]">
+
+            {/* Accent bar — color según categoría */}
+            <div className={`h-1 w-full ${
+              newExerciseCategoria === "Velocidad" ? "bg-gradient-to-r from-amber-400 to-yellow-300" :
+              newExerciseCategoria === "Potencia"  ? "bg-gradient-to-r from-orange-500 to-red-400" :
+              newExerciseCategoria === "Condición" ? "bg-gradient-to-r from-emerald-400 to-green-300" :
+              newExerciseCategoria === "Core"      ? "bg-gradient-to-r from-violet-500 to-purple-400" :
+              newExerciseCategoria === "Movilidad" ? "bg-gradient-to-r from-teal-400 to-cyan-300" :
+              newExerciseCategoria === "Técnica"   ? "bg-gradient-to-r from-indigo-400 to-blue-300" :
+                                                    "bg-gradient-to-r from-cyan-400 to-blue-400"
+            }`} />
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-lg">
+                  {newExerciseCategoria === "Velocidad" ? "⚡" :
+                   newExerciseCategoria === "Potencia"  ? "🔥" :
+                   newExerciseCategoria === "Condición" ? "🫀" :
+                   newExerciseCategoria === "Core"      ? "🎯" :
+                   newExerciseCategoria === "Movilidad" ? "🌀" :
+                   newExerciseCategoria === "Técnica"   ? "🧠" : "💪"}
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">Biblioteca</p>
+                  <h2 className="text-base font-black leading-tight text-white">Nuevo ejercicio</h2>
+                </div>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={closeNewExerciseModal}
-                className="rounded-full border border-white/20 bg-[#0e1012] px-2 py-1 text-xs text-slate-200 hover:bg-slate-700"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/6 text-slate-400 hover:bg-white/12 hover:text-white transition-colors"
               >
-                Cerrar
+                ✕
               </ReliableActionButton>
             </div>
 
-            <div className="mt-4 grid gap-3">
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Nombre del ejercicio
+            <div className="px-5 pb-5 space-y-4">
+              {/* Nombre — campo principal */}
+              <div>
                 <input
                   type="text"
                   value={newExerciseNombre}
                   onChange={(event) => setNewExerciseNombre(event.target.value)}
-                  placeholder="Ej: Sentadilla profunda"
-                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                  placeholder="Nombre del ejercicio…"
                   autoFocus
+                  className="w-full rounded-xl border border-white/10 bg-[#131720] px-4 py-3 text-base font-semibold text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/50 focus:bg-[#141b24] transition"
                 />
-              </label>
+              </div>
 
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Video (URL de YouTube, Vimeo, etc.)
-                <input
-                  type="url"
-                  value={newExerciseVideoUrl}
-                  onChange={(event) => setNewExerciseVideoUrl(event.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
-                />
-              </label>
+              {/* Categoría como chips */}
+              <div>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Categoría</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { value: "Fuerza",    icon: "💪", color: "border-cyan-400/40 bg-cyan-500/15 text-cyan-200"   },
+                    { value: "Velocidad", icon: "⚡", color: "border-amber-400/40 bg-amber-500/15 text-amber-200"},
+                    { value: "Potencia",  icon: "🔥", color: "border-orange-400/40 bg-orange-500/15 text-orange-200"},
+                    { value: "Condición", icon: "🫀", color: "border-emerald-400/40 bg-emerald-500/15 text-emerald-200"},
+                    { value: "Core",      icon: "🎯", color: "border-violet-400/40 bg-violet-500/15 text-violet-200"},
+                    { value: "Movilidad", icon: "🌀", color: "border-teal-400/40 bg-teal-500/15 text-teal-200"},
+                    { value: "Técnica",   icon: "🧠", color: "border-indigo-400/40 bg-indigo-500/15 text-indigo-200"},
+                  ] as const).map((cat) => (
+                    <ReliableActionButton
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setNewExerciseCategoria(cat.value)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
+                        newExerciseCategoria === cat.value
+                          ? cat.color + " shadow-sm scale-[1.04]"
+                          : "border-white/10 bg-white/4 text-slate-500 hover:bg-white/8 hover:text-slate-300"
+                      }`}
+                    >
+                      {cat.icon} {cat.value}
+                    </ReliableActionButton>
+                  ))}
+                </div>
+              </div>
 
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Para qué es / objetivo
-                <input
-                  type="text"
-                  value={newExerciseObjetivo}
-                  onChange={(event) => setNewExerciseObjetivo(event.target.value)}
-                  placeholder="Ej: Fortalecimiento de cuádriceps y glúteos"
-                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
-                />
-              </label>
+              {/* Objetivo + Video en fila */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">🎯 Objetivo</p>
+                  <input
+                    type="text"
+                    value={newExerciseObjetivo}
+                    onChange={(event) => setNewExerciseObjetivo(event.target.value)}
+                    placeholder="Ej: Cuádriceps, glúteos"
+                    className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
+                  />
+                </div>
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">🎬 Video</p>
+                  <input
+                    type="url"
+                    value={newExerciseVideoUrl}
+                    onChange={(event) => setNewExerciseVideoUrl(event.target.value)}
+                    placeholder="YouTube, Vimeo…"
+                    className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
+                  />
+                </div>
+              </div>
 
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Descripción técnica
+              {/* Descripción técnica */}
+              <div>
+                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">📝 Descripción técnica</p>
                 <textarea
                   value={newExerciseDescripcion}
                   onChange={(event) => setNewExerciseDescripcion(event.target.value)}
-                  placeholder="Cómo se ejecuta, posición de partida, puntos clave..."
-                  rows={3}
-                  className="resize-y rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                  placeholder="Posición de partida, puntos clave de ejecución…"
+                  rows={2}
+                  className="w-full resize-none rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
                 />
-              </label>
-
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Categoría
-                <select
-                  value={newExerciseCategoria}
-                  onChange={(event) => setNewExerciseCategoria(event.target.value)}
-                  className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
-                >
-                  <option value="Fuerza">Fuerza</option>
-                  <option value="Velocidad">Velocidad</option>
-                  <option value="Potencia">Potencia</option>
-                  <option value="Condición">Condición</option>
-                  <option value="Core">Core</option>
-                  <option value="Movilidad">Movilidad</option>
-                  <option value="Técnica">Técnica</option>
-                </select>
-              </label>
+              </div>
 
               {newExerciseError ? (
-                <p className="rounded-lg border border-rose-300/40 bg-rose-500/10 p-2 text-xs font-bold text-rose-200">
-                  {newExerciseError}
+                <p className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300">
+                  ⚠ {newExerciseError}
                 </p>
               ) : null}
 
-              <div className="mt-2 flex flex-wrap justify-end gap-2">
+              {/* Botones */}
+              <div className="flex gap-2 pt-1">
                 <ReliableActionButton
                   type="button"
                   onClick={closeNewExerciseModal}
                   disabled={newExerciseSaving}
-                  className="rounded-lg border border-white/15 bg-[#0e1012] px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-60"
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 disabled:opacity-50 transition"
                 >
                   Cancelar
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="button"
                   onClick={saveNewExerciseFromModal}
-                  disabled={newExerciseSaving}
-                  className="rounded-lg bg-cyan-400 px-4 py-2 text-xs font-black text-slate-950 disabled:opacity-70"
+                  disabled={newExerciseSaving || !newExerciseNombre.trim()}
+                  className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition disabled:opacity-50 ${
+                    newExerciseCategoria === "Velocidad" ? "bg-amber-500 hover:bg-amber-400 text-black" :
+                    newExerciseCategoria === "Potencia"  ? "bg-orange-500 hover:bg-orange-400 text-white" :
+                    newExerciseCategoria === "Condición" ? "bg-emerald-500 hover:bg-emerald-400 text-black" :
+                    newExerciseCategoria === "Core"      ? "bg-violet-500 hover:bg-violet-400 text-white" :
+                    newExerciseCategoria === "Movilidad" ? "bg-teal-500 hover:bg-teal-400 text-black" :
+                    newExerciseCategoria === "Técnica"   ? "bg-indigo-500 hover:bg-indigo-400 text-white" :
+                                                          "bg-cyan-500 hover:bg-cyan-400 text-black"
+                  }`}
                 >
-                  {newExerciseSaving ? "Guardando..." : "Guardar ejercicio"}
+                  {newExerciseSaving ? "Guardando…" : "Guardar ejercicio"}
                 </ReliableActionButton>
               </div>
             </div>
           </div>
         </div>
       ) : null}
+
+      {/* ── Assign Training Plan Modal ── */}
+      {showAssignPlanModal && selectedClient && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowAssignPlanModal(false)}
+          />
+
+          <div className="relative w-full max-w-2xl rounded-2xl border border-cyan-300/20 bg-[#0b0e11] shadow-[0_40px_80px_-20px_rgba(34,211,238,0.25)] overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 bg-[#0e1214] px-6 py-4 shrink-0">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cyan-400/80">
+                  Plan de entrenamiento
+                </p>
+                <h2 className="mt-0.5 text-lg font-black text-white">
+                  Asignar a {selectedClient.nombre}
+                </h2>
+              </div>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setShowAssignPlanModal(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-white transition-colors"
+              >
+                ✕
+              </ReliableActionButton>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-white/8 bg-[#0c0f12] px-6 py-3 shrink-0">
+              <input
+                value={assignPlanSearch}
+                onChange={(e) => setAssignPlanSearch(e.target.value)}
+                placeholder="Buscar template o plan IA…"
+                className="h-8 min-w-[180px] flex-1 rounded-lg border border-white/12 bg-white/6 px-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-400/50"
+              />
+              {(["todos", "template", "ia"] as const).map((f) => (
+                <ReliableActionButton
+                  key={f}
+                  type="button"
+                  onClick={() => setAssignPlanFilter(f)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    assignPlanFilter === f
+                      ? "border-cyan-400/60 bg-cyan-500/20 text-cyan-100"
+                      : "border-white/15 text-slate-400 hover:bg-white/8"
+                  }`}
+                >
+                  {f === "todos" ? "Todos" : f === "template" ? "Templates" : "IA"}
+                </ReliableActionButton>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-3">
+              {assignPlanItems.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-3xl">🔍</p>
+                  <p className="mt-3 text-sm text-slate-400">
+                    {assignPlanSearch
+                      ? "Sin resultados para esa búsqueda."
+                      : templatesAlumnos.length === 0 && aiTrainingPlans.length === 0
+                        ? "Todavía no tenés templates ni planes IA creados."
+                        : "Sin templates disponibles."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {assignPlanItems.map((item) => (
+                    <div
+                      key={item.optionId}
+                      className="group relative rounded-xl border border-white/10 bg-white/4 p-4 transition-all hover:border-cyan-400/40 hover:bg-cyan-500/8"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="rounded-full border border-white/15 bg-white/8 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-400">
+                              {item.source === "template" ? "Template" : "IA"}
+                            </span>
+                            {item.categoria && (
+                              <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] text-cyan-300/80">
+                                {item.categoria}
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-semibold text-slate-100 truncate" title={item.nombre}>
+                            {item.nombre}
+                          </p>
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
+                            <span>📅 {item.totalSemanas} semana{item.totalSemanas !== 1 ? "s" : ""}</span>
+                            {item.deporte && <span>⚽ {item.deporte}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <ReliableActionButton
+                        type="button"
+                        onClick={() => assignPlanFromModal(item.optionId)}
+                        className="mt-3 w-full rounded-lg border border-cyan-300/30 bg-cyan-500/12 py-1.5 text-xs font-bold text-cyan-200 transition-colors hover:bg-cyan-500/25 hover:border-cyan-300/50"
+                      >
+                        Asignar este plan
+                      </ReliableActionButton>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer — crear desde cero */}
+            <div className="shrink-0 border-t border-white/10 bg-[#0c0f12] px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-slate-300">Crear desde cero</p>
+                  <p className="text-[11px] text-slate-500">Plan vacío para completar manualmente.</p>
+                </div>
+                <ReliableActionButton
+                  type="button"
+                  onClick={handleCreateBlankPlanFromModal}
+                  className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20 transition-colors"
+                >
+                  + Plan vacío
+                </ReliableActionButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal asignación plan nutricional ─────────────────────────────────── */}
+      {/* ── Wizard plan nutricional ─────────────────────────────────────────── */}
+      {nutritionWizard && selectedClient && (
+        <div className="fixed inset-0 z-[250] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center">
+          <div className="absolute inset-0" onClick={() => setNutritionWizard(null)} />
+
+          {/* ── PASO 0: picker de plan existente ── */}
+          {nutritionWizard.basePlanId === "__pick__" ? (
+            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/12 bg-[#0c0f12] shadow-2xl sm:rounded-2xl">
+              <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">Plan nutricional</p>
+                  <h2 className="text-base font-black text-white">Asignar plan existente</h2>
+                  <p className="text-xs text-slate-400">{selectedClient.nombre}</p>
+                </div>
+                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 hover:bg-white/10">×</ReliableActionButton>
+              </div>
+              <div className="shrink-0 border-b border-white/8 px-5 py-3">
+                <input
+                  value={nutritionAssignSearch}
+                  onChange={(e) => setNutritionAssignSearch(e.target.value)}
+                  placeholder="Buscar plan…"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-400/40"
+                />
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                {(() => {
+                  const q = nutritionAssignSearch.toLowerCase().trim();
+                  const filtered = nutritionPlans.filter((p) =>
+                    !q || p.nombre.toLowerCase().includes(q) || nutritionGoalLabel(p.objetivo).toLowerCase().includes(q)
+                  );
+                  if (filtered.length === 0) {
+                    return <p className="py-8 text-center text-sm text-slate-500">{nutritionPlans.length === 0 ? "No hay planes nutricionales creados aún." : "Sin resultados."}</p>;
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {filtered.map((plan) => (
+                        <div key={plan.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-emerald-400/30 hover:bg-emerald-500/5">
+                          <p className="truncate font-semibold text-slate-100">{plan.nombre}</p>
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
+                            <span className="rounded-full border border-emerald-300/20 bg-emerald-500/10 px-2 py-0.5 text-emerald-300/80">{nutritionGoalLabel(plan.objetivo)}</span>
+                            <span>{plan.targets.calorias} kcal · P{plan.targets.proteinas}g · C{plan.targets.carbohidratos}g · G{plan.targets.grasas}g</span>
+                          </div>
+                          <ReliableActionButton
+                            type="button"
+                            onClick={() => setNutritionWizard((prev) => prev ? { ...prev, basePlanId: plan.id, step: 1 } : null)}
+                            className="mt-3 w-full rounded-lg border border-emerald-300/30 bg-emerald-500/10 py-1.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20"
+                          >
+                            Seleccionar y personalizar →
+                          </ReliableActionButton>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="shrink-0 border-t border-white/10 px-5 py-3">
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => setNutritionWizard((prev) => prev ? { ...prev, basePlanId: undefined, step: 1 } : null)}
+                  className="w-full rounded-lg border border-violet-300/30 bg-violet-500/10 py-2 text-xs font-bold text-violet-200 hover:bg-violet-500/20"
+                >
+                  ✨ Crear plan desde cero en cambio
+                </ReliableActionButton>
+              </div>
+            </div>
+
+          ) : (
+            /* ── PASOS 1, 2 y 3: wizard de configuración + análisis ── */
+            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/12 bg-[#0c0f12] shadow-2xl sm:rounded-2xl">
+              {/* Header */}
+              <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">
+                    Paso {nutritionWizard.step} de 3 —&nbsp;
+                    {nutritionWizard.step === 1 ? "Datos físicos" : nutritionWizard.step === 2 ? "Objetivo y preferencias" : "Revisión del análisis"}
+                  </p>
+                  <h2 className="text-base font-black text-white">
+                    {nutritionWizard.step === 1 ? "Perfil corporal" : nutritionWizard.step === 2 ? "Parámetros del plan" : "Análisis completo"}
+                  </h2>
+                  <p className="text-xs text-slate-400">{selectedClient.nombre}</p>
+                </div>
+                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 hover:bg-white/10">×</ReliableActionButton>
+              </div>
+
+              {/* Progress bar — 3 segmentos */}
+              <div className="h-1 shrink-0 bg-white/5">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-300"
+                  style={{ width: nutritionWizard.step === 1 ? "33%" : nutritionWizard.step === 2 ? "66%" : "100%" }}
+                />
+              </div>
+
+              {/* Body */}
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+
+                {/* ── Paso 1: Datos físicos ── */}
+                {nutritionWizard.step === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-slate-400">Verificá o corregí los datos físicos del cliente. Se usan para calcular el gasto energético (fórmula Mifflin-St Jeor).</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Peso (kg)</label>
+                        <input type="number" value={nutritionWizard.pesoKg}
+                          onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, pesoKg: e.target.value } : null)}
+                          placeholder="70" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Altura (cm)</label>
+                        <input type="number" value={nutritionWizard.alturaCm}
+                          onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, alturaCm: e.target.value } : null)}
+                          placeholder="170" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Edad</label>
+                        <input type="number" value={nutritionWizard.edad}
+                          onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, edad: e.target.value } : null)}
+                          placeholder="25" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Sexo biológico</label>
+                        <div className="flex gap-2">
+                          {(["masculino", "femenino"] as const).map((s) => (
+                            <ReliableActionButton key={s} type="button"
+                              onClick={() => setNutritionWizard((prev) => prev ? { ...prev, sexo: s } : null)}
+                              className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-colors ${nutritionWizard.sexo === s ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-200" : "border-white/10 bg-[#131720] text-slate-400 hover:bg-white/8"}`}>
+                              {s === "masculino" ? "♂ Masculino" : "♀ Femenino"}
+                            </ReliableActionButton>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {nutritionWizard.pesoKg && nutritionWizard.alturaCm && nutritionWizard.edad && (
+                      <div className="rounded-xl border border-white/8 bg-white/[0.025] p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estimación rápida</p>
+                        <div className="mt-1.5 flex flex-wrap gap-3 text-xs">
+                          {(() => {
+                            const p = parseFloat(nutritionWizard.pesoKg) || 0;
+                            const h = parseFloat(nutritionWizard.alturaCm) || 0;
+                            const a = parseInt(nutritionWizard.edad) || 0;
+                            if (!p || !h || !a) return null;
+                            const bmr = Math.round((10*p + 6.25*h - 5*a) + (nutritionWizard.sexo === "masculino" ? 5 : -161));
+                            const imc = (p / ((h/100)**2)).toFixed(1);
+                            const imcLabel = +imc < 18.5 ? "bajo peso" : +imc < 25 ? "normal" : +imc < 30 ? "sobrepeso" : "obesidad";
+                            return (
+                              <>
+                                <span className="text-slate-300">IMC <strong className="text-white">{imc}</strong> <span className="text-slate-500">({imcLabel})</span></span>
+                                <span className="text-slate-300">TMB <strong className="text-white">{bmr} kcal/día</strong></span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Paso 2: Objetivo y preferencias ── */}
+                {nutritionWizard.step === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Objetivo nutricional</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { id: "mantenimiento", label: "Mantenimiento",     desc: "Sostener composición actual",  color: "emerald" },
+                          { id: "recomposicion", label: "Recomposición",     desc: "Bajar grasa, ganar músculo",   color: "cyan"    },
+                          { id: "deficit",       label: "Pérdida de peso",   desc: "Déficit calórico controlado",  color: "amber"   },
+                          { id: "masa",          label: "Ganancia muscular", desc: "Superávit para volumen",       color: "violet"  },
+                        ] as { id: NutritionGoal; label: string; desc: string; color: string }[]).map((opt) => (
+                          <ReliableActionButton key={opt.id} type="button"
+                            onClick={() => setNutritionWizard((prev) => prev ? { ...prev, objetivo: opt.id } : null)}
+                            className={`rounded-xl border p-3 text-left transition-colors ${nutritionWizard.objetivo === opt.id ? `border-${opt.color}-400/50 bg-${opt.color}-500/15` : "border-white/10 bg-[#131720] hover:bg-white/5"}`}>
+                            <p className={`text-xs font-bold ${nutritionWizard.objetivo === opt.id ? `text-${opt.color}-200` : "text-slate-200"}`}>{opt.label}</p>
+                            <p className="mt-0.5 text-[10px] text-slate-500">{opt.desc}</p>
+                          </ReliableActionButton>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Días entreno/semana</label>
+                        <select value={nutritionWizard.diasEntrenamiento}
+                          onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, diasEntrenamiento: e.target.value } : null)}
+                          className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40">
+                          <option value="">Seleccionar</option>
+                          {[0,1,2,3,4,5,6,7].map((d) => (
+                            <option key={d} value={String(d)}>{d === 0 ? "Ninguno (sedentario)" : `${d} ${d === 1 ? "día" : "días"}`}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Comidas por día</label>
+                        <select value={nutritionWizard.comidasDia}
+                          onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, comidasDia: e.target.value } : null)}
+                          className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40">
+                          {[3,4,5,6].map((n) => (<option key={n} value={String(n)}>{n} comidas</option>))}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Horario de entrenamiento <span className="normal-case text-slate-600">(opcional)</span></label>
+                      <input value={nutritionWizard.horarioEntrenamiento}
+                        onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, horarioEntrenamiento: e.target.value } : null)}
+                        placeholder="Ej: Mañana 7–9h, tarde 18–20h…"
+                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Restricciones / alergias alimentarias</label>
+                      <input value={nutritionWizard.restricciones}
+                        onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, restricciones: e.target.value } : null)}
+                        placeholder="Ej: Sin gluten, intolerante a la lactosa, vegetariano…"
+                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Condiciones médicas relevantes</label>
+                      <input value={nutritionWizard.condicionesMedicas}
+                        onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, condicionesMedicas: e.target.value } : null)}
+                        placeholder="Ej: Diabetes tipo 2, HTA, hipotiroidismo, SOP…"
+                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Paso 3: Análisis completo ── */}
+                {nutritionWizard.step === 3 && (() => {
+                  const pesoKg   = parseFloat(nutritionWizard.pesoKg)  || 70;
+                  const alturaCm = parseFloat(nutritionWizard.alturaCm) || 170;
+                  const edad     = parseInt(nutritionWizard.edad, 10)   || 25;
+                  const diasEntr = parseInt(nutritionWizard.diasEntrenamiento, 10) || 0;
+                  const comidas  = parseInt(nutritionWizard.comidasDia, 10) || 5;
+
+                  const actividad =
+                    diasEntr >= 6 ? "muy-alto" :
+                    diasEntr >= 4 ? "alto"     :
+                    diasEntr >= 2 ? "moderado" :
+                    diasEntr === 1 ? "ligero"  : "sedentario";
+
+                  const actividadLabel: Record<string, string> = {
+                    sedentario: "Sedentario (sin ejercicio)", ligero: "Ligero (1 día/sem.)",
+                    moderado: "Moderado (2–3 días/sem.)", alto: "Alto (4–5 días/sem.)", "muy-alto": "Muy alto (6–7 días/sem.)",
+                  };
+                  const actFactor: Record<string, number> = {
+                    sedentario: 1.20, ligero: 1.375, moderado: 1.55, alto: 1.725, "muy-alto": 1.90,
+                  };
+                  const goalFactor: Record<string, number> = {
+                    mantenimiento: 1.00, recomposicion: 0.97, deficit: 0.82, masa: 1.10,
+                  };
+                  const goalLabel: Record<string, string> = {
+                    mantenimiento: "Mantenimiento (×1.00)", recomposicion: "Recomposición (−3%)",
+                    deficit: "Déficit moderado (−18%)", masa: "Superávit (+10%)",
+                  };
+                  const macroProfiles: Record<string, { protPerKg: number; fatPct: number; rationale: string }> = {
+                    mantenimiento: { protPerKg: 1.8, fatPct: 0.30, rationale: "Proteína moderada para preservar músculo. Grasas saludables al 30%." },
+                    recomposicion: { protPerKg: 2.4, fatPct: 0.27, rationale: "Alta proteína para retener músculo en déficit. Grasas reducidas para dar espacio a carbs." },
+                    deficit:       { protPerKg: 2.2, fatPct: 0.28, rationale: "Proteína elevada anti-catabolismo. Balance de grasas e hidratos para energía sostenida." },
+                    masa:          { protPerKg: 2.0, fatPct: 0.25, rationale: "Proteína para síntesis muscular. Más carbs para sostener el volumen de trabajo." },
+                  };
+
+                  const baseCalc = 10 * pesoKg + 6.25 * alturaCm - 5 * edad;
+                  const bmr      = Math.round(nutritionWizard.sexo === "masculino" ? baseCalc + 5 : baseCalc - 161);
+                  const tdee     = Math.round(bmr * actFactor[actividad]);
+                  const targets  = calcNutritionTargets({
+                    nombre: selectedClient.nombre, sexo: nutritionWizard.sexo, pesoKg, alturaCm, edad,
+                    actividad: actividad as "sedentario"|"ligero"|"moderado"|"alto"|"muy-alto",
+                    objetivo: nutritionWizard.objetivo, comidasDia: comidas, diasEntrenamiento: diasEntr,
+                  });
+                  const mp = macroProfiles[nutritionWizard.objetivo];
+                  const totalMacroKcal = targets.proteinas * 4 + targets.carbohidratos * 4 + targets.grasas * 9;
+                  const pPct = Math.round((targets.proteinas * 4 / totalMacroKcal) * 100);
+                  const cPct = Math.round((targets.carbohidratos * 4 / totalMacroKcal) * 100);
+                  const gPct = Math.round((targets.grasas * 9 / totalMacroKcal) * 100);
+
+                  const imc = (pesoKg / ((alturaCm/100)**2)).toFixed(1);
+                  const pesoIdealMin = Math.round(18.5 * (alturaCm/100)**2);
+                  const pesoIdealMax = Math.round(24.9 * (alturaCm/100)**2);
+
+                  const mealNames: Record<number, string[]> = {
+                    3: ["Desayuno","Almuerzo","Cena"],
+                    4: ["Desayuno","Almuerzo","Merienda","Cena"],
+                    5: ["Desayuno","Media mañana","Almuerzo","Merienda","Cena"],
+                    6: ["Desayuno","Media mañana","Almuerzo","Merienda","Cena","Colación nocturna"],
+                  };
+                  const mealDist: Record<number, number[]> = {
+                    3: [0.30, 0.42, 0.28],
+                    4: [0.25, 0.38, 0.12, 0.25],
+                    5: [0.25, 0.10, 0.35, 0.10, 0.20],
+                    6: [0.20, 0.10, 0.30, 0.10, 0.20, 0.10],
+                  };
+                  const names  = mealNames[comidas]  || mealNames[5];
+                  const dists  = mealDist[comidas]   || mealDist[5];
+
+                  const alertas: string[] = [];
+                  if (nutritionWizard.restricciones)     alertas.push(`⚠ Restricciones declaradas: "${nutritionWizard.restricciones}" — revisá manualmente los alimentos generados.`);
+                  if (nutritionWizard.condicionesMedicas) alertas.push(`⚠ Condición médica registrada: "${nutritionWizard.condicionesMedicas}" — consultá con profesional de salud antes de aplicar.`);
+                  if (+imc > 29.9) alertas.push("ℹ IMC indica obesidad — el déficit aplicado es conservador. Considerar ajustar calorías con supervisión médica.");
+                  if (+imc < 18.5) alertas.push("ℹ IMC indica bajo peso — se aplicará superávit aunque el objetivo sea mantenimiento.");
+                  if (diasEntr === 0 && nutritionWizard.objetivo === "masa") alertas.push("ℹ Objetivo masa sin días de entrenamiento — el superávit calórico puede acumularse como grasa. Revisá el plan de entrenamiento.");
+
+                  return (
+                    <div className="space-y-4 text-xs">
+                      {/* Intro */}
+                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/8 p-3">
+                        <p className="font-semibold text-emerald-200">Análisis completado. Revisá el razonamiento antes de confirmar.</p>
+                        <p className="mt-0.5 text-slate-400">El plan se generará exactamente con los valores calculados a continuación. Podés volver y modificar cualquier parámetro.</p>
+                      </div>
+
+                      {/* Bloque 1: Datos de entrada */}
+                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">1 — Datos de entrada</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                          {[
+                            ["Cliente",   selectedClient.nombre],
+                            ["Peso",      `${pesoKg} kg`],
+                            ["Altura",    `${alturaCm} cm`],
+                            ["Edad",      `${edad} años`],
+                            ["Sexo",      nutritionWizard.sexo === "masculino" ? "Masculino" : "Femenino"],
+                            ["IMC",       `${imc} (rango saludable ${pesoIdealMin}–${pesoIdealMax} kg)`],
+                          ].map(([k,v]) => (
+                            <div key={k} className="flex justify-between gap-2">
+                              <span className="text-slate-500">{k}</span>
+                              <span className="font-semibold text-slate-200">{v}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Bloque 2: Cálculo metabólico */}
+                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">2 — Cálculo metabólico</p>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Fórmula</span>
+                            <span className="text-slate-300">Mifflin-St Jeor</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">TMB (metabolismo basal)</span>
+                            <span className="font-semibold text-white">{bmr} kcal/día</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Nivel de actividad</span>
+                            <span className="font-semibold text-cyan-200">{actividadLabel[actividad]}</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Factor actividad</span>
+                            <span className="text-slate-300">×{actFactor[actividad]}</span>
+                          </div>
+                          <div className="flex justify-between gap-2 border-t border-white/8 pt-1.5">
+                            <span className="text-slate-500">TDEE (gasto total)</span>
+                            <span className="font-semibold text-white">{tdee} kcal/día</span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500">Ajuste por objetivo</span>
+                            <span className="text-amber-200">{goalLabel[nutritionWizard.objetivo]}</span>
+                          </div>
+                          <div className="flex justify-between gap-2 border-t border-white/8 pt-1.5">
+                            <span className="font-semibold text-slate-300">→ Calorías objetivo</span>
+                            <span className="text-lg font-black text-emerald-300">{targets.calorias} kcal</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bloque 3: Distribución de macros */}
+                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">3 — Distribución de macros</p>
+                        <p className="mb-2 text-slate-500">{mp.rationale}</p>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-violet-300">Proteínas</span>
+                            <span className="font-semibold text-white">{targets.proteinas} g <span className="text-slate-500">({mp.protPerKg} g/kg × {pesoKg} kg) · {pPct}% kcal</span></span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-amber-300">Grasas</span>
+                            <span className="font-semibold text-white">{targets.grasas} g <span className="text-slate-500">({mp.fatPct * 100}% de {targets.calorias} kcal) · {gPct}% kcal</span></span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-emerald-300">Carbohidratos</span>
+                            <span className="font-semibold text-white">{targets.carbohidratos} g <span className="text-slate-500">(resto de calorías) · {cPct}% kcal</span></span>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex h-2 overflow-hidden rounded-full">
+                          <div className="bg-violet-500" style={{ width: `${pPct}%` }} />
+                          <div className="bg-emerald-500" style={{ width: `${cPct}%` }} />
+                          <div className="bg-amber-500"  style={{ width: `${gPct}%` }} />
+                        </div>
+                        <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+                          <span>Prot {pPct}%</span><span>Carbs {cPct}%</span><span>Grasas {gPct}%</span>
+                        </div>
+                      </div>
+
+                      {/* Bloque 4: Estructura del plan */}
+                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">4 — Estructura del plan ({comidas} comidas/día)</p>
+                        <div className="space-y-1">
+                          {names.map((name, i) => (
+                            <div key={name} className="flex items-center justify-between gap-2">
+                              <span className="text-slate-300">{name}</span>
+                              <span className="text-slate-500">{Math.round(targets.calorias * dists[i])} kcal <span className="text-slate-600">({Math.round(dists[i]*100)}%)</span></span>
+                            </div>
+                          ))}
+                        </div>
+                        {nutritionWizard.horarioEntrenamiento && (
+                          <p className="mt-2 text-slate-500">Horario registrado: <span className="text-slate-300">{nutritionWizard.horarioEntrenamiento}</span></p>
+                        )}
+                      </div>
+
+                      {/* Alertas */}
+                      {alertas.length > 0 && (
+                        <div className="space-y-2">
+                          {alertas.map((a, i) => (
+                            <div key={i} className="rounded-xl border border-amber-300/25 bg-amber-500/8 px-3 py-2 text-amber-200">{a}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Footer */}
+              <div className="shrink-0 border-t border-white/10 px-5 py-4">
+                <div className="flex gap-3">
+                  {nutritionWizard.step > 1 && (
+                    <ReliableActionButton type="button"
+                      onClick={() => setNutritionWizard((prev) => prev ? { ...prev, step: (prev.step - 1) as 1|2|3 } : null)}
+                      className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10">
+                      ← Atrás
+                    </ReliableActionButton>
+                  )}
+                  {nutritionWizard.step < 3 ? (
+                    <ReliableActionButton type="button"
+                      onClick={() => setNutritionWizard((prev) => prev ? { ...prev, step: (prev.step + 1) as 1|2|3 } : null)}
+                      disabled={nutritionWizard.step === 1 && (!nutritionWizard.pesoKg || !nutritionWizard.alturaCm || !nutritionWizard.edad)}
+                      className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+                      {nutritionWizard.step === 2 ? "Ver análisis →" : "Siguiente →"}
+                    </ReliableActionButton>
+                  ) : (
+                    <ReliableActionButton type="button"
+                      onClick={() => applyNutritionPlan(nutritionWizard)}
+                      disabled={nutritionAssigning}
+                      className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+                      {nutritionAssigning ? "Generando…" : "✅ Confirmar y generar plan"}
+                    </ReliableActionButton>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Modal: Guardar plan como template ─────────────────────────────── */}
+      {saveAsTemplateModal && selectedClientTrainingPlan && (
+        <div className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setSaveAsTemplateModal(null)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-white/12 bg-[#0c0f12] p-6 shadow-2xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300/70">Templates</p>
+            <h2 className="mt-0.5 text-base font-black text-white">Guardar como template</h2>
+            <p className="mt-1 text-xs text-slate-400">
+              El plan de <strong className="text-slate-200">{selectedClient?.nombre}</strong> se guardará como template reutilizable en la categoría de templates.
+            </p>
+            <div className="mt-4">
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Nombre del template</label>
+              <input
+                value={saveAsTemplateModal.name}
+                onChange={(e) => setSaveAsTemplateModal({ name: e.target.value })}
+                onKeyDown={(e) => { if (e.key === "Enter" && saveAsTemplateModal.name.trim()) saveTrainingPlanAsTemplate(saveAsTemplateModal.name); }}
+                autoFocus
+                className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-fuchsia-400/40"
+              />
+            </div>
+            <div className="mt-4 flex gap-3">
+              <ReliableActionButton
+                type="button"
+                onClick={() => setSaveAsTemplateModal(null)}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10"
+              >
+                Cancelar
+              </ReliableActionButton>
+              <ReliableActionButton
+                type="button"
+                onClick={() => saveTrainingPlanAsTemplate(saveAsTemplateModal.name)}
+                disabled={!saveAsTemplateModal.name.trim()}
+                className="flex-1 rounded-xl bg-fuchsia-600 py-2.5 text-sm font-bold text-white hover:bg-fuchsia-500 disabled:opacity-50 transition-colors"
+              >
+                💾 Guardar template
+              </ReliableActionButton>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

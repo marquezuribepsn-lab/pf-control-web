@@ -1,3 +1,19 @@
+// Lee DATABASE_URL desde .db.env si no está en el entorno del proceso.
+// Esto asegura que el token de MP y los datos de sync persistan aunque
+// el servidor se reinicie o PM2 no tenga --update-env.
+const fs = require("fs");
+const path = require("path");
+function readDbEnvFile() {
+  try {
+    const content = fs.readFileSync(path.join(__dirname, ".db.env"), "utf8");
+    const match = content.match(/^DATABASE_URL=["']?([^\n"']+)["']?\s*$/m);
+    return match ? match[1].trim() : null;
+  } catch {
+    return null;
+  }
+}
+const DATABASE_URL = process.env.DATABASE_URL || readDbEnvFile() || undefined;
+
 module.exports = {
   apps: [
     {
@@ -10,7 +26,7 @@ module.exports = {
         PORT: 3000,
         NEXTAUTH_URL: process.env.NEXTAUTH_URL || "https://pf-control.com",
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-        DATABASE_URL: process.env.DATABASE_URL,
+        DATABASE_URL,
         MERCADOPAGO_ACCESS_TOKEN: process.env.MERCADOPAGO_ACCESS_TOKEN,
         MERCADOPAGO_WEBHOOK_TOKEN: process.env.MERCADOPAGO_WEBHOOK_TOKEN,
         MERCADOPAGO_COLLECTOR_ID: process.env.MERCADOPAGO_COLLECTOR_ID,

@@ -1,6 +1,7 @@
 'use client';
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import DateInput from "@/components/DateInput";
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -334,11 +335,10 @@ export default function RegisterPage() {
 
               <label className="grid gap-2 text-sm font-semibold text-slate-200">
                 Fecha de nacimiento
-                <input
-                  type="date"
+                <DateInput
                   value={fechaNacimiento}
-                  onChange={(e) => setFechaNacimiento(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
+                  onChange={setFechaNacimiento}
+                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 pr-10 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
                   required
                 />
               </label>
