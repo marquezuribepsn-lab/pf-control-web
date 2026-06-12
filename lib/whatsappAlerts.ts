@@ -411,18 +411,56 @@ export async function sendWhatsAppInternalAlert(message: string, toList?: string
     };
   }
 
+  const cfg = getConfig();
+  if (!cfg) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: targets.length,
+      reasons: ["config_missing"],
+    };
+  }
+
   const reasons: string[] = [];
   let sent = 0;
 
   for (const target of targets) {
-    const result = await sendWhatsAppText(message, {
-      toOverride: target,
-      forceText: true,
-    });
-    if (result.ok) {
-      sent += 1;
-    } else {
-      reasons.push(result.error || `status_${result.status}`);
+    // Try template first (always works, no 24h window restriction).
+    // Free text only works within 24h of the last user message, so use it
+    // as a fallback after template succeeds to add detail content.
+    const templateName = getFallbackTemplateName();
+    const templateLang = getFallbackTemplateLanguageCode();
+
+    let templateOk = false;
+    if (templateName) {
+      const tmplResult = await postWhatsAppPayload({
+        token: cfg.token,
+        phoneNumberId: cfg.phoneNumberId,
+        payloadType: "template",
+        payload: buildTemplatePayload({ to: target, templateName, languageCode: templateLang }),
+      });
+      templateOk = tmplResult.ok;
+      if (templateOk) sent += 1;
+      else reasons.push(tmplResult.error || `template_status_${tmplResult.status}`);
+    }
+
+    // After template opens conversation window, try free text with the actual message.
+    if (templateOk) {
+      const textResult = await postWhatsAppPayload({
+        token: cfg.token,
+        phoneNumberId: cfg.phoneNumberId,
+        payloadType: "text",
+        payload: buildTextPayload(target, message),
+      });
+      // Free text failure is non-critical — template was already delivered.
+      if (!textResult.ok) {
+        reasons.push(`free_text_after_template_failed: ${textResult.error || "unknown"}`);
+      }
+    } else if (!templateName) {
+      // No template configured — fall back to free text only
+      const result = await sendWhatsAppText(message, { toOverride: target, forceText: true });
+      if (result.ok) sent += 1;
+      else reasons.push(result.error || `status_${result.status}`);
     }
   }
 
