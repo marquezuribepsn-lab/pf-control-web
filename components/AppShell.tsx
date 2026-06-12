@@ -153,12 +153,16 @@ const COLABORADOR_ACCESS_HREFS = [
   "/asistencias",
   "/ejercicios",
   "/registros",
+  "/adherencia",
+  "/calendario",
+  "/alertas",
   "/categorias",
   "/deportes",
   "/equipos",
   "/clientes",
   "/clientes/musica",
   "/clientes/playlists",
+  "/mensajes",
 ];
 
 const COLABORADOR_CATEGORY_HREFS = ["/categorias", "/deportes", "/equipos"];
@@ -490,6 +494,7 @@ export default function AppShell({
   const [sidebarWidgetPhase, setSidebarWidgetPhase] = useState<"enter" | "exit">("enter");
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [clockNow, setClockNow] = useState<Date | null>(null);
+  const [alertasCount, setAlertasCount] = useState(0);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") return "dark";
     return normalizeThemeMode(window.localStorage.getItem(THEME_MODE_KEY));
@@ -704,6 +709,26 @@ export default function AppShell({
       setSidebarWidgetSettings(normalizeSidebarWidgetSettings(null));
     }
   }, [initialRole, initialEstado, initialProfileName, initialSidebarImage]);
+
+  // ── Alertas badge polling (admin/colaborador only) ─────────────
+  useEffect(() => {
+    if (!mounted) return;
+    const role = typeof resolvedRole === "string" ? resolvedRole.trim().toUpperCase() : "";
+    if (role !== "ADMIN" && role !== "COLABORADOR" && role !== "SUPERADMIN") return;
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/admin/alertas-profe", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const json = await res.json() as { urgente?: number; total?: number };
+        if (!cancelled) setAlertasCount(json.total ?? 0);
+      } catch { /* silencioso */ }
+    };
+    poll();
+    const interval = window.setInterval(poll, 5 * 60 * 1000); // cada 5 min
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [mounted, resolvedRole]);
 
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return;
@@ -1966,6 +1991,15 @@ export default function AppShell({
                       }}
                     >
                       {link.icon}
+                      {link.href === "/alertas" && alertasCount > 0 && (
+                        <span
+                          className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40"
+                          style={{ fontSize: "9px", fontWeight: 700, lineHeight: 1, padding: "0 3px" }}
+                          aria-label={`${alertasCount} avisos`}
+                        >
+                          {alertasCount > 99 ? "99+" : alertasCount}
+                        </span>
+                      )}
                     </span>
                     {/* Label — slides in when expanded */}
                     <span
