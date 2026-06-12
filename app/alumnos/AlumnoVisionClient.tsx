@@ -1,6 +1,9 @@
 ﻿"use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import CheckinSemanal from "@/components/CheckinSemanal";
+import OnboardingModal from "@/components/OnboardingModal";
+import ChatPanel from "@/components/ChatPanel";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -2570,6 +2573,7 @@ export default function AlumnoVisionClient({
   const { ejercicios } = useEjercicios();
 
   const [activeCategory, setActiveCategory] = useState<MainCategory>(resolvedInitialCategory);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
   const [nutritionAssignedAt, setNutritionAssignedAt] = useState<string | null>(null);
@@ -2904,6 +2908,12 @@ export default function AlumnoVisionClient({
     workoutLogsShared,
     workoutLogsSyncLoaded,
   ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const done = localStorage.getItem("pf-control-onboarding-done-v1");
+    if (!done) setShowOnboarding(true);
+  }, []);
 
   useLayoutEffect(() => {
     const nextCategory = routeCategory || resolveInitialMainCategory(initialCategory);
@@ -6761,6 +6771,74 @@ export default function AlumnoVisionClient({
     return Number((rows.reduce((acc, value) => acc + value, 0) / rows.length).toFixed(2));
   }, [anthropometryEntries]);
 
+  const grasaSeries = useMemo(() => {
+    return anthropometryEntries
+      .map((entry) => {
+        const val = toNumber(entry.grasaPct);
+        const ts = getTimestamp(entry.createdAt);
+        if (val === null || ts <= 0) return null;
+        return { val, ts };
+      })
+      .filter((r): r is { val: number; ts: number } => Boolean(r))
+      .sort((a, b) => a.ts - b.ts)
+      .slice(-8);
+  }, [anthropometryEntries]);
+
+  const musculoSeries = useMemo(() => {
+    return anthropometryEntries
+      .map((entry) => {
+        const val = toNumber(entry.musculoPct);
+        const ts = getTimestamp(entry.createdAt);
+        if (val === null || ts <= 0) return null;
+        return { val, ts };
+      })
+      .filter((r): r is { val: number; ts: number } => Boolean(r))
+      .sort((a, b) => a.ts - b.ts)
+      .slice(-8);
+  }, [anthropometryEntries]);
+
+  const grasaSparkline = useMemo(() => {
+    if (grasaSeries.length === 0) return null;
+    const values = grasaSeries.map((r) => r.val);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = Math.max(0.5, max - min);
+    const points = values
+      .map((v, i) => {
+        const x = values.length === 1 ? 12 : 12 + (i / (values.length - 1)) * 276;
+        const y = 148 - ((v - min) / range) * 116;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+    return {
+      points,
+      first: values[0],
+      last: values[values.length - 1],
+      lastDateLabel: formatDate(new Date(grasaSeries[grasaSeries.length - 1].ts)),
+    };
+  }, [grasaSeries]);
+
+  const musculoSparkline = useMemo(() => {
+    if (musculoSeries.length === 0) return null;
+    const values = musculoSeries.map((r) => r.val);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = Math.max(0.5, max - min);
+    const points = values
+      .map((v, i) => {
+        const x = values.length === 1 ? 12 : 12 + (i / (values.length - 1)) * 276;
+        const y = 148 - ((v - min) / range) * 116;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+    return {
+      points,
+      first: values[0],
+      last: values[values.length - 1],
+      lastDateLabel: formatDate(new Date(musculoSeries[musculoSeries.length - 1].ts)),
+    };
+  }, [musculoSeries]);
+
   const studentHeightCm = useMemo(() => {
     const fromAlumno = toNumber(alumnoProfile?.altura);
     if (fromAlumno !== null && fromAlumno >= 120 && fromAlumno <= 230) return fromAlumno;
@@ -8685,6 +8763,15 @@ export default function AlumnoVisionClient({
 
   return (
     <main className="pf-alumno-main pf-alumno-v2" data-pf-alumno-category={activeCategory}>
+      {showOnboarding && (
+        <OnboardingModal
+          nombre={alumnoProfile?.nombre}
+          onDone={() => {
+            localStorage.setItem("pf-control-onboarding-done-v1", "1");
+            setShowOnboarding(false);
+          }}
+        />
+      )}
       <div className="pf-a2-shell">
         {isRootCategory ? (
           <header className="pf-a3-home-head">
@@ -9115,7 +9202,57 @@ export default function AlumnoVisionClient({
                       </article>
                     ))}
                   </div>
+
+                  {(grasaSparkline || musculoSparkline) && (
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {/* Grasa % */}
+                      {grasaSparkline && (
+                        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <p className="text-xs font-bold uppercase tracking-wide text-rose-300/80">% Grasa</p>
+                            <div className="flex items-center gap-2 text-xs text-white/50">
+                              <span>{grasaSparkline.first.toFixed(1)}%</span>
+                              <span className={grasaSparkline.last < grasaSparkline.first ? "text-emerald-400" : grasaSparkline.last > grasaSparkline.first ? "text-rose-400" : "text-white/40"}>
+                                → {grasaSparkline.last.toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                          <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none">
+                            <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
+                            <polyline points={grasaSparkline.points} fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx={288} cy={(() => { const v = grasaSparkline.points.split(" "); return parseFloat(v[v.length - 1].split(",")[1]); })()} r="4" fill="#f43f5e" />
+                          </svg>
+                          <p className="mt-1 text-[10px] text-white/30">Último: {grasaSparkline.lastDateLabel}</p>
+                        </div>
+                      )}
+                      {/* Músculo % */}
+                      {musculoSparkline && (
+                        <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <p className="text-xs font-bold uppercase tracking-wide text-cyan-300/80">% Músculo</p>
+                            <div className="flex items-center gap-2 text-xs text-white/50">
+                              <span>{musculoSparkline.first.toFixed(1)}%</span>
+                              <span className={musculoSparkline.last > musculoSparkline.first ? "text-emerald-400" : musculoSparkline.last < musculoSparkline.first ? "text-rose-400" : "text-white/40"}>
+                                → {musculoSparkline.last.toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                          <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none">
+                            <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
+                            <polyline points={musculoSparkline.points} fill="none" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx={288} cy={(() => { const v = musculoSparkline.points.split(" "); return parseFloat(v[v.length - 1].split(",")[1]); })()} r="4" fill="#06b6d4" />
+                          </svg>
+                          <p className="mt-1 text-[10px] text-white/30">Último: {musculoSparkline.lastDateLabel}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+              </section>
+
+              {/* ── Check-in semanal ───────────────────────── */}
+              <section className="mt-4 px-1">
+                <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} />
               </section>
               </>}
 
@@ -9244,6 +9381,21 @@ export default function AlumnoVisionClient({
                         <circle cx="12" cy="12" r="8" />
                         <path d="M12 8v4l2.6 1.8" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M9.2 3.5h5.6" strokeLinecap="round" />
+                      </svg>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => window.open("/alumnos/plan-imprimir", "_blank")}
+                      className="pf-a3-routine-icon-btn !border !border-violet-200/65 !bg-violet-500/28 transition-colors hover:!bg-violet-400/40"
+                      aria-label="Imprimir plan"
+                      title="Imprimir / guardar PDF del plan"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M6 9V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5" strokeLinecap="round" />
+                        <rect x="3" y="9" width="18" height="9" rx="2" />
+                        <path d="M6 18v2h12v-2" strokeLinecap="round" />
+                        <circle cx="17" cy="13.5" r="0.8" fill="currentColor" />
                       </svg>
                     </ReliableActionButton>
                   </div>
@@ -10432,6 +10584,69 @@ export default function AlumnoVisionClient({
 
                     {routineExerciseLogView === "registro" ? (
                       <section className="pf-a3-routine-log-pane pf-a3-routine-log-pane-registro">
+                        {routineExerciseRecentLogs.length > 0 ? (() => {
+                          const recentFour = routineExerciseRecentLogs.slice(0, 4);
+                          const maxPeso = Math.max(...routineExerciseRecentLogs.map((l) => Number(l.pesoKg || 0)));
+                          return (
+                            <div style={{ marginBottom: "14px" }}>
+                              <p style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
+                                Últimos registros
+                              </p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                {recentFour.map((log, idx) => {
+                                  const prev = recentFour[idx + 1];
+                                  const currKg = Number(log.pesoKg || 0);
+                                  const prevKg = prev ? Number(prev.pesoKg || 0) : null;
+                                  const trendArrow = prevKg === null ? null : currKg > prevKg ? "↑" : currKg < prevKg ? "↓" : "→";
+                                  const trendColor = trendArrow === "↑" ? "#4ade80" : trendArrow === "↓" ? "#f87171" : "rgba(255,255,255,0.4)";
+                                  let dateLabel = "Sin fecha";
+                                  if (log.fecha) {
+                                    try {
+                                      const d = new Date(`${log.fecha}T00:00:00`);
+                                      const dd = String(d.getDate()).padStart(2, "0");
+                                      const mm = String(d.getMonth() + 1).padStart(2, "0");
+                                      const yy = String(d.getFullYear()).slice(-2);
+                                      dateLabel = `${dd}/${mm}/${yy}`;
+                                    } catch {
+                                      dateLabel = log.fecha;
+                                    }
+                                  }
+                                  return (
+                                    <div
+                                      key={log.id || idx}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        background: "rgba(255,255,255,0.05)",
+                                        border: "1px solid rgba(255,255,255,0.10)",
+                                        borderRadius: "10px",
+                                        padding: "6px 10px",
+                                        gap: "8px",
+                                      }}
+                                    >
+                                      <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", minWidth: "56px" }}>{dateLabel}</span>
+                                      <span style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.80)", flex: 1 }}>
+                                        {currKg > 0 ? `${currKg} kg` : "—"} · {log.series || 0}×{log.repeticiones || 0}
+                                      </span>
+                                      {log.molestia ? (
+                                        <span title="Molestia reportada" style={{ fontSize: "13px" }}>🚨</span>
+                                      ) : null}
+                                      {trendArrow ? (
+                                        <span style={{ fontSize: "13px", fontWeight: 700, color: trendColor }}>{trendArrow}</span>
+                                      ) : null}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {maxPeso > 0 ? (
+                                <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.40)", marginTop: "6px" }}>
+                                  Máximo histórico: {maxPeso} kg
+                                </p>
+                              ) : null}
+                            </div>
+                          );
+                        })() : null}
                         <div className="pf-a3-routine-log-grid">
                           <label className="pf-a3-routine-log-field pf-a3-routine-log-field-fecha">
                             <span>Fecha</span>
@@ -12267,6 +12482,15 @@ export default function AlumnoVisionClient({
                   <p className="mt-2 text-xs font-bold text-rose-300">{accountPanelPhotoError}</p>
                 ) : null}
               </article>
+
+              {alumnoProfile?.nombre ? (
+                <ChatPanel
+                  myName={alumnoProfile.nombre}
+                  myRole="alumno"
+                  otherName="profe"
+                  compact
+                />
+              ) : null}
 
               <article className="rounded-[1.2rem] border border-rose-300/40 bg-rose-500/10 p-4 sm:p-5">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-rose-200">Sesión</p>

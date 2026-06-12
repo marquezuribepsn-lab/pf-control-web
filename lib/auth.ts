@@ -8,7 +8,7 @@ import { resolveBillingAccessByEmail } from './billing';
 const db = prisma as any;
 const REMEMBERED_SESSION_MAX_AGE = 30 * 24 * 60 * 60;
 const SHORT_SESSION_MAX_AGE = 24 * 60 * 60;
-const BILLING_REFRESH_WINDOW_MS = 5 * 1000;
+const BILLING_REFRESH_WINDOW_MS = 120 * 1000; // 2 min — reduce DB queries per page load
 
 type AuthUserRecord = {
   id: string;
@@ -190,6 +190,24 @@ async function refreshClienteBillingClaims(token: Record<string, unknown>, force
 
 export const authConfig = {
   trustHost: true,
+  // Forzar nombres de cookies consistentes para entorno nginx HTTPS → HTTP proxy.
+  // Sin esto, NextAuth usa "__Host-" al setear (ve AUTH_URL=https://)
+  // pero busca sin prefijo al validar (ve request en http://localhost).
+  // Resultado: MissingCSRF en cada intento de login.
+  cookies: {
+    sessionToken: {
+      name: "__Secure-authjs.session-token",
+      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
+    },
+    callbackUrl: {
+      name: "__Secure-authjs.callback-url",
+      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
+    },
+    csrfToken: {
+      name: "__Host-authjs.csrf-token",
+      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
+    },
+  },
   providers: [
     Credentials({
       name: 'Credentials',

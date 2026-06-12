@@ -720,6 +720,7 @@ export default function SemanaPage() {
   const [nuevoDiaPorSemana, setNuevoDiaPorSemana] = useState<Record<string, string>>({});
   const [nuevaPlanPorSemana, setNuevaPlanPorSemana] = useState<Record<string, string>>({});
   const [templatesTab, setTemplatesTab] = useState<"nuevo" | "mis" | "buscar" | "motor">("mis");
+  const [motorBadgeCount, setMotorBadgeCount] = useState(0);
   const [alumnoSearch, setAlumnoSearch] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templatePreviewWeekId, setTemplatePreviewWeekId] = useState("");
@@ -3455,13 +3456,18 @@ export default function SemanaPage() {
               <ReliableActionButton
                 type="button"
                 onClick={() => setTemplatesTab("motor")}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                className={`relative rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   templatesTab === "motor"
                     ? "bg-violet-400 text-slate-950 shadow-[0_8px_20px_-10px_rgba(167,139,250,0.8)]"
                     : "text-violet-300/70 hover:bg-violet-500/10 hover:text-violet-200"
                 }`}
               >
                 ⚡ Motor IA
+                {motorBadgeCount > 0 && templatesTab !== "motor" && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-slate-900">
+                    {motorBadgeCount > 9 ? "9+" : motorBadgeCount}
+                  </span>
+                )}
               </ReliableActionButton>
             </div>
           </div>
@@ -3783,6 +3789,7 @@ export default function SemanaPage() {
             store={store}
             setStore={(updater) => {
               setStore((prev) => updater(prev) as SemanaStoreV3 | SemanaStoreV2 | SemanaPlan[] | LegacySemanaItem[]);
+              markManualSaveIntent(STORAGE_KEY);
             }}
             ejercicios={ejercicios}
             onNotify={(msg, kind = "success") => {
@@ -3790,6 +3797,13 @@ export default function SemanaPage() {
               else if (kind === "warning") notifyWarning(msg);
               else notifyError(msg);
             }}
+            onStaleWeeksDetected={(count) => setMotorBadgeCount(count)}
+            allPersonas={todasLasPersonas.map((p) => ({
+              ownerKey: toOwnerKey(p),
+              nombre: p.nombre,
+              tipo: p.tipo,
+              categoria: p.categoria,
+            }))}
           />
         ) : (
           <div className="mt-5 space-y-7 rounded-[28px] bg-white/[0.02]/8 px-2 py-3 sm:px-3 sm:py-4">

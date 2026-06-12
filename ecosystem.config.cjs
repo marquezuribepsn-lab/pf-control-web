@@ -24,8 +24,11 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3000,
+        AUTH_URL: process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://pf-control.com",
+        AUTH_TRUST_HOST: "1",
         NEXTAUTH_URL: process.env.NEXTAUTH_URL || "https://pf-control.com",
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+        AUTH_SECRET: process.env.NEXTAUTH_SECRET,
         DATABASE_URL,
         MERCADOPAGO_ACCESS_TOKEN: process.env.MERCADOPAGO_ACCESS_TOKEN,
         MERCADOPAGO_WEBHOOK_TOKEN: process.env.MERCADOPAGO_WEBHOOK_TOKEN,

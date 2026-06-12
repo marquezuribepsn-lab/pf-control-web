@@ -105,13 +105,19 @@ export default async function RootLayout({
   const initialProfileName = resolveInitialProfileName(
     session?.user as { name?: string | null; email?: string | null } | null
   );
-  const initialSidebarImage = await resolveInitialSidebarImage(sessionUserId);
+  // Sidebar image se carga en el cliente desde localStorage / useSharedState
+  // para evitar 2 queries DB extra en cada page load.
+  void sessionUserId; // keep reference to avoid lint warning
+  const initialSidebarImage: string | null = null;
 
   const links = [
     { href: "/", label: "Inicio", icon: "\u{1F3E0}", tone: "from-cyan-500 to-blue-600" },
     { href: "/semana", label: "Templates", icon: "\u{1F4C5}", tone: "from-violet-500 to-purple-600" },
     { href: "/asistencias", label: "Asistencias", icon: "\u2705", tone: "from-teal-500 to-cyan-600" },
     { href: "/registros", label: "Registros", icon: "\u{1F4CA}", tone: "from-amber-500 to-orange-600" },
+    { href: "/adherencia", label: "Adherencia", icon: "\u{1F4C8}", tone: "from-cyan-500 to-teal-600" },
+    { href: "/calendario", label: "Calendario", icon: "\u{1F5D3}️", tone: "from-indigo-500 to-violet-600" },
+    { href: "/alertas", label: "Avisos", icon: "\u{1F514}", tone: "from-rose-500 to-orange-600" },
     {
       href: "/admin/pagos",
       label: "Pagos mensuales",
@@ -174,6 +180,7 @@ export default async function RootLayout({
       tone: "from-emerald-500 to-green-600",
       adminOnly: true,
     },
+    { href: "/mensajes", label: "Mensajes", icon: "\uD83D\uDCAC", tone: "from-emerald-500 to-teal-600" },
     { href: "/configuracion", label: "Configuracion", icon: "\u2699\uFE0F", tone: "from-slate-500 to-gray-600" },
   ];
 

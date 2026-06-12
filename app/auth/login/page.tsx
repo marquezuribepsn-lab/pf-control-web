@@ -2,7 +2,7 @@
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import { Suspense, useEffect, useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const LOGIN_FAILED_ATTEMPTS_KEY = 'pf_login_failed_attempts';
@@ -121,7 +121,70 @@ function redirectAfterSuccessfulLogin(result: unknown, router: ReturnType<typeof
   }, LOGIN_HARD_REDIRECT_FALLBACK_MS);
 }
 
-async function signInWithTimeout(options: Parameters<typeof signIn>[1]) {
+/**
+ * Implementación directa del flujo de login con NextAuth v5.
+ * En lugar de usar signIn() de next-auth/react (que tiene bugs de CSRF en beta.30
+ * detrás de proxy nginx), manejamos el CSRF manualmente:
+ * 1. GET /api/auth/csrf  → obtiene token + setea cookie
+ * 2. POST /api/auth/callback/credentials con csrfToken en el body
+ */
+async function signInDirect(credentials: {
+  email: string;
+  password?: string;
+  loginToken?: string;
+  rememberMe: boolean;
+  callbackUrl: string;
+}): Promise<{ ok: boolean; error?: string | null; url?: string | null }> {
+  // 1. Obtener CSRF token (la respuesta también setea la cookie __Host-authjs.csrf-token)
+  const csrfRes = await fetch('/api/auth/csrf', { credentials: 'include' });
+  if (!csrfRes.ok) throw new Error('CSRF_FETCH_FAILED');
+  const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
+  if (!csrfToken) throw new Error('CSRF_EMPTY');
+
+  // 2. POST credenciales + csrfToken
+  const body = new URLSearchParams();
+  body.set('csrfToken', csrfToken);
+  body.set('callbackUrl', credentials.callbackUrl);
+  body.set('email', credentials.email);
+  if (credentials.password) body.set('password', credentials.password);
+  if (credentials.loginToken) body.set('loginToken', credentials.loginToken);
+  body.set('rememberMe', credentials.rememberMe ? 'true' : '');
+  body.set('json', 'true');
+
+  const res = await fetch('/api/auth/callback/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'include',
+    redirect: 'manual', // no seguir redirects automáticamente
+    body: body.toString(),
+  });
+
+  // NextAuth devuelve redirect o JSON según el header 'json: true'
+  if (res.type === 'opaqueredirect') {
+    // Redirect manual — si la URL no tiene error= es éxito
+    return { ok: true, url: credentials.callbackUrl };
+  }
+
+  if (res.headers.get('content-type')?.includes('application/json')) {
+    const data = (await res.json()) as { url?: string; error?: string };
+    const hasError = Boolean(data.error) || /[?&]error=/i.test(data.url || '');
+    return { ok: !hasError, error: data.error || null, url: data.url || null };
+  }
+
+  // Respuesta de redirect: ver Location header
+  const location = res.headers.get('location') || '';
+  const hasError = /[?&]error=/i.test(location);
+  return { ok: !hasError, url: hasError ? null : credentials.callbackUrl, error: hasError ? location : null };
+}
+
+async function signInWithTimeout(options: {
+  email: string;
+  password?: string;
+  loginToken?: string;
+  rememberMe: boolean;
+  redirect: boolean;
+  callbackUrl: string;
+}) {
   let timeoutId: number | undefined;
 
   try {
@@ -131,7 +194,7 @@ async function signInWithTimeout(options: Parameters<typeof signIn>[1]) {
       }, LOGIN_REQUEST_TIMEOUT_MS);
     });
 
-    return await Promise.race([signIn('credentials', options), timeoutPromise]);
+    return await Promise.race([signInDirect(options), timeoutPromise]);
   } finally {
     if (typeof timeoutId === 'number') {
       window.clearTimeout(timeoutId);
@@ -139,7 +202,28 @@ async function signInWithTimeout(options: Parameters<typeof signIn>[1]) {
   }
 }
 
+function FullScreenLoader({ message }: { message: string }) {
+  return (
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
+      <div className="relative z-10 flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative h-16 w-16">
+            <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-400" style={{ animationDuration: '800ms' }} />
+            <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-500" style={{ animationDuration: '1200ms', animationDirection: 'reverse' }} />
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-300/90 via-sky-400/80 to-blue-500/80 text-[15px] font-black text-slate-950" style={{ inset: '10px' }}>
+              PF
+            </div>
+          </div>
+          <p className="text-sm font-semibold text-slate-300">{message}</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function LoginPageContent() {
+  // ── Todos los hooks deben ir antes de cualquier return condicional ──
   const { status } = useSession();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -236,10 +320,10 @@ function LoginPageContent() {
       setError('');
 
       try {
-        const result = await signIn('credentials', {
+        const result = await signInDirect({
           email: magicEmail,
           loginToken: magicToken,
-          redirect: false,
+          rememberMe: false,
           callbackUrl: '/',
         });
 
@@ -264,6 +348,15 @@ function LoginPageContent() {
 
     void consumeMagic();
   }, [magicToken, magicEmail, status]);
+
+  // ── Returns condicionales DESPUÉS de todos los hooks ──
+  if (status === 'loading') {
+    return <FullScreenLoader message="Verificando sesión..." />;
+  }
+
+  if (status === 'authenticated') {
+    return <FullScreenLoader message="Redirigiendo..." />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

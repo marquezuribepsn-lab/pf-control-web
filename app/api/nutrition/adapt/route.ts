@@ -4,9 +4,14 @@ import {
   adaptNutritionPlan,
   buildNutritionPlan,
   type ClientNutritionProfile,
+  type NutritionGoal,
+  type ActivityLevel,
   type NutritionTargets,
   type PlanMeal,
 } from "@/lib/nutritionPlanAI";
+
+const VALID_OBJETIVOS: NutritionGoal[]   = ["mantenimiento", "recomposicion", "masa", "deficit"];
+const VALID_ACTIVIDAD: ActivityLevel[]   = ["sedentario", "ligero", "moderado", "alto", "muy-alto"];
 
 type AdaptPayload = {
   mode: "adapt" | "create";
@@ -36,8 +41,12 @@ export async function POST(req: NextRequest) {
       pesoKg:            Math.max(Number(body.profile.pesoKg)  || 70, 30),
       alturaCm:          Math.max(Number(body.profile.alturaCm) || 170, 100),
       edad:              Math.max(Math.min(Number(body.profile.edad) || 25, 100), 10),
-      actividad:         body.profile.actividad || "moderado",
-      objetivo:          body.profile.objetivo  || "mantenimiento",
+      actividad:         VALID_ACTIVIDAD.includes(body.profile.actividad as ActivityLevel)
+                           ? body.profile.actividad as ActivityLevel
+                           : "moderado",
+      objetivo:          VALID_OBJETIVOS.includes(body.profile.objetivo as NutritionGoal)
+                           ? body.profile.objetivo as NutritionGoal
+                           : "mantenimiento",
       observaciones:     body.profile.observaciones,
       comidasDia:        body.profile.comidasDia        ? Number(body.profile.comidasDia)        : undefined,
       diasEntrenamiento: body.profile.diasEntrenamiento ? Number(body.profile.diasEntrenamiento) : undefined,
