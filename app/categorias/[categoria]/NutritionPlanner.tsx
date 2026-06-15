@@ -695,12 +695,31 @@ export default function NutritionPlanner() {
     });
   };
 
+  /**
+   * Returns true only when `needle` appears as a complete word (or word-start)
+   * inside `haystack`. This prevents e.g. "pollo" from matching "repollo".
+   */
+  const foodNameWordMatch = (haystack: string, needle: string): boolean => {
+    const h = haystack.toLowerCase();
+    const n = needle.toLowerCase();
+    let idx = h.indexOf(n);
+    while (idx !== -1) {
+      const charBefore = idx === 0 ? "" : h[idx - 1];
+      // Accept match only when preceded by a non-letter character (space, comma, slash…)
+      if (idx === 0 || /[^a-záéíóúüñ]/.test(charBefore)) {
+        return true;
+      }
+      idx = h.indexOf(n, idx + 1);
+    }
+    return false;
+  };
+
   const pickFoodId = (keywords: string[], excludedIds: Set<string>) => {
     for (const keyword of keywords) {
       const match = allFoods.find(
         (food) =>
           !excludedIds.has(food.id) &&
-          (`${food.nombre} ${food.grupo}`.toLowerCase().includes(keyword) || food.grupo.toLowerCase().includes(keyword))
+          foodNameWordMatch(`${food.nombre} ${food.grupo}`, keyword)
       );
       if (match) {
         excludedIds.add(match.id);
@@ -1049,7 +1068,7 @@ export default function NutritionPlanner() {
     setPlans((prev) =>
       prev.map((plan) => (plan.id === planId ? { ...updater(plan), updatedAt: new Date().toISOString() } : plan))
     );
-    queueNutritionAutoSync(PLANS_KEY);
+    // No auto-save: changes are only persisted when the user clicks "Guardar"
   };
 
   const addPlan = () => {
