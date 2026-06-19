@@ -60,6 +60,12 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Páginas legales públicas — accesibles sin sesión (la App Store exige
+  // que la política de privacidad sea alcanzable estando deslogueado).
+  if (rawPath === '/privacidad' || rawPath.startsWith('/privacidad/')) {
+    return NextResponse.next();
+  }
+
   // ── Rate limiting en rutas API (antes de cualquier lógica de sesión) ──
   if (rawPath.startsWith('/api/auth/')) {
     if (!rateLimit(ip, 'api-auth', { max: 30, windowMs: 60_000 })) {
