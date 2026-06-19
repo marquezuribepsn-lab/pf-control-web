@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
 import { upsertClientPasswordSnapshot, removeClientPasswordSnapshot } from '@/lib/adminPasswordStore';
+import { removeAllPushTokensForUser } from '@/lib/pushTokenStore';
 
 const db = prisma as any;
 const MAX_SIDEBAR_IMAGE_LENGTH = 850_000;
@@ -579,6 +580,7 @@ export async function DELETE(req: NextRequest) {
     .delete({ where: { key: getSidebarImageSyncKey(user.id) } })
     .catch(() => null);
   await removeClientPasswordSnapshot(user.id).catch(() => null);
+  await removeAllPushTokensForUser(user.id).catch(() => null);
 
   return NextResponse.json({ ok: true, message: 'Tu cuenta fue eliminada permanentemente.' });
 }

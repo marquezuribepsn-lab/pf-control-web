@@ -11,6 +11,21 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+import Constants from "expo-constants";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+
+// Las notificaciones nativas son la pieza que diferencia la app de un simple
+// "sitio web reempaquetado" (regla 4.2.3 de la App Store). Mostrar el aviso
+// también con la app en primer plano.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const PRODUCTION_URL = "https://pf-control.com";
 const WEBVIEW_CACHE_TAG = "alumno-v2-20260504-nutricion-actions";
@@ -296,6 +311,96 @@ function normalizeWebViewRouteUrl(rawUrl: string): string | null {
   }
 }
 
+function resolveExpoProjectId(): string | null {
+  try {
+    const fromExtra =
+      (Constants?.expoConfig as { extra?: { eas?: { projectId?: string } } } | undefined)?.extra
+        ?.eas?.projectId;
+    const fromEas = (Constants as unknown as { easConfig?: { projectId?: string } })?.easConfig
+      ?.projectId;
+    const projectId = String(fromExtra || fromEas || "").trim();
+    return projectId || null;
+  } catch {
+    return null;
+  }
+}
+
+// Pide permiso y obtiene el Expo push token. Devuelve null si no hay permiso,
+// si corre en simulador, o si todavía no hay projectId de EAS configurado.
+async function registerForPushNotificationsAsync(): Promise<string | null> {
+  try {
+    if (Platform.OS === "web") {
+      return null;
+    }
+
+    if (!Device.isDevice) {
+      // Los simuladores no entregan push remotos.
+      return null;
+    }
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.DEFAULT,
+        lightColor: "#0d1219",
+      });
+    }
+
+    const existing = await Notifications.getPermissionsAsync();
+    let finalStatus = existing.status;
+
+    if (finalStatus !== "granted") {
+      const requested = await Notifications.requestPermissionsAsync();
+      finalStatus = requested.status;
+    }
+
+    if (finalStatus !== "granted") {
+      return null;
+    }
+
+    const projectId = resolveExpoProjectId();
+    const tokenResponse = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined
+    );
+
+    return String(tokenResponse?.data || "").trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// Script que registra el push token en la sesión web autenticada. El WebView
+// comparte cookies con el origen, así que el fetch va con la sesión del alumno.
+function buildPushTokenInjectionScript(token: string, platform: string): string {
+  const serializedToken = JSON.stringify(token);
+  const serializedPlatform = JSON.stringify(platform);
+
+  return `
+(() => {
+  try {
+    if (window.__PF_PUSH_TOKEN_SENT__ === ${serializedToken}) {
+      true;
+      return;
+    }
+    window.__PF_PUSH_TOKEN_SENT__ = ${serializedToken};
+
+    fetch("/api/account/push-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        token: ${serializedToken},
+        platform: ${serializedPlatform},
+      }),
+    }).catch(() => {});
+  } catch (_error) {
+    true;
+  }
+  true;
+})();
+`;
+}
+
 export default function App() {
   const [webViewKey, setWebViewKey] = useState(0);
   const [refreshSeed, setRefreshSeed] = useState(() => Date.now());
@@ -307,6 +412,49 @@ export default function App() {
   const loadingHardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewRef = useRef<any>(null);
   const isWeb = Platform.OS === "web";
+  const [pushToken, setPushToken] = useState<string | null>(null);
+  const pushTokenSentRef = useRef<string | null>(null);
+
+  // Registrar el push token una sola vez al montar (solo nativo).
+  useEffect(() => {
+    if (isWeb) {
+      return;
+    }
+
+    let cancelled = false;
+
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        if (!cancelled && token) {
+          setPushToken(token);
+        }
+      })
+      .catch(() => {
+        // Silencioso: la app sigue funcionando sin push.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isWeb]);
+
+  // Enviar el token a la sesión web cuando ya lo tenemos y el WebView cargó.
+  const sendPushTokenToWeb = useCallback(() => {
+    if (isWeb || !pushToken) {
+      return;
+    }
+    if (pushTokenSentRef.current === pushToken) {
+      return;
+    }
+    if (webViewRef.current && typeof webViewRef.current.injectJavaScript === "function") {
+      webViewRef.current.injectJavaScript(buildPushTokenInjectionScript(pushToken, Platform.OS));
+      pushTokenSentRef.current = pushToken;
+    }
+  }, [isWeb, pushToken]);
+
+  useEffect(() => {
+    sendPushTokenToWeb();
+  }, [sendPushTokenToWeb]);
 
   const clearLoadingTimer = useCallback(() => {
     if (loadingTimerRef.current !== null) {
@@ -471,8 +619,14 @@ export default function App() {
               incognito={false}
               onLoadStart={() => {
                 setWebError("");
+                // El documento se recarga: permitir reenviar el token a la
+                // nueva sesión de página (window.__PF_PUSH_TOKEN_SENT__ se pierde).
+                pushTokenSentRef.current = null;
               }}
-              onLoadEnd={endBrandedLoading}
+              onLoadEnd={() => {
+                endBrandedLoading();
+                sendPushTokenToWeb();
+              }}
               onNavigationStateChange={(navigationState) => {
                 rememberCurrentUrl(String(navigationState.url || ""));
               }}
