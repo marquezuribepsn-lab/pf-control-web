@@ -94,6 +94,34 @@ type ManualPaymentReceipt = {
   status: string;
 };
 
+// Detecta si la web corre dentro del wrapper nativo de iOS. La app móvil deja
+// marcas (window global, localStorage, cookie, clase en <html> y ?pfnative=ios).
+// Dentro de iOS ocultamos los flujos de cobro para cumplir la regla 3.1.1 de la
+// App Store, que prohíbe dirigir a mecanismos de pago externos a la compra in-app.
+function detectIosNative(searchFlag: string): boolean {
+  if (searchFlag === "ios") return true;
+  if (typeof window === "undefined") return false;
+
+  try {
+    if ((window as unknown as { __PF_NATIVE_PLATFORM__?: string }).__PF_NATIVE_PLATFORM__ === "ios") {
+      return true;
+    }
+    if (window.localStorage?.getItem("pfNativePlatform") === "ios") {
+      return true;
+    }
+    if (document.documentElement?.classList?.contains("pf-native-ios")) {
+      return true;
+    }
+    if (/(?:^|;\s*)pf_native=ios(?:;|$)/.test(document.cookie || "")) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
 function formatDate(value: string | null | undefined): string {
   if (!value) return "-";
   const parsed = new Date(value);
@@ -199,6 +227,13 @@ export default function AlumnoPagosClient() {
   const searchParams = useSearchParams();
   const paymentQueryStatus = String(searchParams.get("payment") || "").trim().toLowerCase();
   const payFromApp = searchParams.get("pay") === "1";
+  const nativePlatformFlag = String(searchParams.get("pfnative") || "").trim().toLowerCase();
+
+  const [isIosNative, setIsIosNative] = useState(false);
+
+  useEffect(() => {
+    setIsIosNative(detectIosNative(nativePlatformFlag));
+  }, [nativePlatformFlag]);
 
   const [status, setStatus] = useState<PaymentStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -604,7 +639,7 @@ export default function AlumnoPagosClient() {
               ) : null}
             </div>
 
-            {canUseQrStore ? (
+            {canUseQrStore && !isIosNative ? (
               <section className="mt-4 rounded-xl border border-cyan-300/30 bg-cyan-500/10 p-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-cyan-100/90">QR tienda</p>
                 <h3 className="mt-1 text-sm font-black text-cyan-100">
@@ -649,30 +684,56 @@ export default function AlumnoPagosClient() {
               </section>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <ReliableActionButton
-                type="button"
-                onClick={startCheckout}
-                disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
-                className="pf-a2-solid-btn rounded-xl px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
-              </ReliableActionButton>
-              <ReliableLink
-                href="/alumnos/inicio"
-                className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
-              >
-                Ir a inicio
-              </ReliableLink>
-            </div>
+            {isIosNative ? (
+              <>
+                <div className="mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3">
+                  <p className="text-sm text-slate-200">
+                    Para gestionar o renovar tu pase, ingresa a{" "}
+                    <span className="font-semibold text-white">pf-control.com</span> desde el
+                    navegador de tu telefono o computadora.
+                  </p>
+                  <p className="mt-2 text-xs text-slate-400">
+                    Desde aqui podes consultar el estado de tu pase en cualquier momento.
+                  </p>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <ReliableLink
+                    href="/alumnos/inicio"
+                    className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
+                  >
+                    Ir a inicio
+                  </ReliableLink>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={startCheckout}
+                    disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
+                    className="pf-a2-solid-btn rounded-xl px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
+                  </ReliableActionButton>
+                  <ReliableLink
+                    href="/alumnos/inicio"
+                    className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
+                  >
+                    Ir a inicio
+                  </ReliableLink>
+                </div>
 
-            {noMetaBlocksMP ? (
-              <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-                El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
-              </p>
-            ) : null}
+                {noMetaBlocksMP ? (
+                  <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
+                  </p>
+                ) : null}
+              </>
+            )}
           </article>
 
+          {!isIosNative ? (
           <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <p className="pf-a2-eyebrow">Pago manual</p>
             <h2 className="mt-1 text-xl font-black text-white">Transferencia, efectivo o QR Mercado Pago</h2>
@@ -800,6 +861,7 @@ export default function AlumnoPagosClient() {
               </section>
             ) : null}
           </article>
+          ) : null}
         </section>
       </div>
     </main>

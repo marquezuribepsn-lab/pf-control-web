@@ -22,7 +22,23 @@ const MAX_PERFORMANCE_QUERY_FLAGS: Record<string, string> = {
 };
 
 const MAX_PERFORMANCE_FLAG_KEYS = Object.keys(MAX_PERFORMANCE_QUERY_FLAGS);
-const WEBVIEW_CACHE_QUERY_KEYS = ["pfv", "pfrefresh", ...MAX_PERFORMANCE_FLAG_KEYS];
+
+// Marca de plataforma nativa. En iOS la web oculta los flujos de cobro
+// (MercadoPago / pago manual) para cumplir la regla 3.1.1 de la App Store,
+// que prohíbe dirigir a mecanismos de pago externos a las compras in-app.
+const NATIVE_PLATFORM = Platform.OS; // "ios" | "android" | "web"
+const IS_IOS_NATIVE = NATIVE_PLATFORM === "ios";
+const NATIVE_PLATFORM_QUERY_FLAGS: Record<string, string> = IS_IOS_NATIVE
+  ? { pfnative: "ios" }
+  : {};
+const NATIVE_PLATFORM_FLAG_KEYS = Object.keys(NATIVE_PLATFORM_QUERY_FLAGS);
+
+const WEBVIEW_CACHE_QUERY_KEYS = [
+  "pfv",
+  "pfrefresh",
+  ...MAX_PERFORMANCE_FLAG_KEYS,
+  ...NATIVE_PLATFORM_FLAG_KEYS,
+];
 const WEBVIEW_MIN_BRANDED_LOADING_MS = 1800;
 const WEBVIEW_MAX_BRANDED_LOADING_MS = 6000;
 const PRODUCTION_HOSTNAME = (() => {
@@ -169,6 +185,28 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
 })();
 `;
 
+// Persiste la marca de plataforma nativa más allá del query string, porque las
+// navegaciones internas de Next.js (router.push) reescriben la URL y borrarían
+// el flag ?pfnative=ios. Guardarlo en localStorage + cookie + clase del <html>
+// permite que la web lo detecte en cualquier ruta.
+const NATIVE_MARKER_SCRIPT = IS_IOS_NATIVE
+  ? `
+(() => {
+  try {
+    window.__PF_NATIVE_PLATFORM__ = "ios";
+    try { window.localStorage.setItem("pfNativePlatform", "ios"); } catch (_e) { true; }
+    try { document.cookie = "pf_native=ios; path=/; max-age=31536000; samesite=lax"; } catch (_e) { true; }
+    if (document.documentElement) {
+      document.documentElement.classList.add("pf-native-ios");
+    }
+  } catch (_error) {
+    true;
+  }
+  true;
+})();
+`
+  : "";
+
 function withCacheBust(url: string, refreshSeed: number): string {
   try {
     const parsed = new URL(url);
@@ -181,6 +219,10 @@ function withCacheBust(url: string, refreshSeed: number): string {
       });
     }
 
+    Object.entries(NATIVE_PLATFORM_QUERY_FLAGS).forEach(([key, value]) => {
+      parsed.searchParams.set(key, value);
+    });
+
     return parsed.toString();
   } catch {
     return url;
@@ -190,9 +232,10 @@ function withCacheBust(url: string, refreshSeed: number): string {
 function buildInPlaceRefreshScript(refreshSeed: number): string {
   const serializedCacheTag = JSON.stringify(WEBVIEW_CACHE_TAG);
   const serializedSeed = JSON.stringify(String(refreshSeed));
-  const serializedFlags = JSON.stringify(
-    MAX_PERFORMANCE_MODE ? MAX_PERFORMANCE_QUERY_FLAGS : {}
-  );
+  const serializedFlags = JSON.stringify({
+    ...(MAX_PERFORMANCE_MODE ? MAX_PERFORMANCE_QUERY_FLAGS : {}),
+    ...NATIVE_PLATFORM_QUERY_FLAGS,
+  });
 
   return `
 (() => {
@@ -457,7 +500,7 @@ export default function App() {
               allowsBackForwardNavigationGestures={false}
               allowsInlineMediaPlayback={false}
               mediaPlaybackRequiresUserAction
-              injectedJavaScriptBeforeContentLoaded={MOBILE_SCROLL_HINT_SCRIPT}
+              injectedJavaScriptBeforeContentLoaded={NATIVE_MARKER_SCRIPT + MOBILE_SCROLL_HINT_SCRIPT}
               pullToRefreshEnabled={false}
               overScrollMode="never"
               androidLayerType="software"
