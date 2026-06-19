@@ -88,6 +88,9 @@ export default function CuentaPage() {
   const [saving, setSaving] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -323,6 +326,32 @@ export default function CuentaPage() {
   const handleSignOut = async () => {
     setSigningOut(true);
     await signOut({ callbackUrl: "/auth/login" });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setError("Ingresá tu contraseña actual para confirmar la eliminación.");
+      return;
+    }
+    setDeleting(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: deletePassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "No se pudo eliminar la cuenta");
+      }
+      // Cuenta eliminada → cerrar sesión y volver al login
+      await signOut({ callbackUrl: "/auth/login" });
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "No se pudo eliminar la cuenta");
+      setDeleting(false);
+    }
   };
 
   const isLightTheme = themeMode === "light";
@@ -705,6 +734,63 @@ export default function CuentaPage() {
             >
               {signingOut ? "Cerrando sesion..." : "Cerrar sesion"}
             </ReliableActionButton>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-red-400/40 bg-red-600/10 p-4">
+            <p className="text-sm font-semibold text-red-200">Eliminar cuenta</p>
+            <p className="mt-1 text-xs text-red-200/90">
+              Borra de forma permanente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.
+            </p>
+
+            {!showDeleteConfirm ? (
+              <ReliableActionButton
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  setDeletePassword("");
+                  setError(null);
+                  setMessage(null);
+                }}
+                className="mt-3 rounded-xl border border-red-300/60 bg-red-600/25 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-600/40"
+              >
+                Eliminar mi cuenta
+              </ReliableActionButton>
+            ) : (
+              <div className="mt-3 grid gap-3">
+                <p className="text-xs font-semibold text-red-100">
+                  Ingresá tu contraseña actual para confirmar:
+                </p>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(event) => setDeletePassword(event.target.value)}
+                  className={inputClass}
+                  placeholder="Tu contraseña"
+                  autoComplete="current-password"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <ReliableActionButton
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    className="rounded-xl border border-red-300/60 bg-red-600/80 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {deleting ? "Eliminando..." : "Confirmar eliminación"}
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeletePassword("");
+                    }}
+                    disabled={deleting}
+                    className="rounded-xl border border-white/20 bg-slate-900/30 px-4 py-2 text-sm font-bold text-slate-200 transition hover:bg-slate-900/50 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    Cancelar
+                  </ReliableActionButton>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>

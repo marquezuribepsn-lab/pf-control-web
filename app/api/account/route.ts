@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken, sendVerificationEmail } from '@/lib/email';
-import { upsertClientPasswordSnapshot } from '@/lib/adminPasswordStore';
+import { upsertClientPasswordSnapshot, removeClientPasswordSnapshot } from '@/lib/adminPasswordStore';
 
 const db = prisma as any;
 const MAX_SIDEBAR_IMAGE_LENGTH = 850_000;
@@ -512,4 +512,73 @@ export async function PATCH(req: NextRequest) {
       sidebarImage: sidebarImageChanged ? requestedSidebarImage ?? null : currentSidebarImage,
     },
   });
+}
+
+/**
+ * DELETE /api/account
+ * Borrado permanente de la cuenta del usuario autenticado.
+ * Requisito de la App Store (5.1.1(v)) y derecho del usuario.
+ *
+ * Seguridad:
+ *  - Requiere sesión activa.
+ *  - Exige la contraseña actual para confirmar la acción.
+ *  - No permite que un SUPERADMIN se autoelimine (evita dejar la plataforma sin dueño).
+ *
+ * Al borrar el User, las relaciones con onDelete: Cascade del schema
+ * (asignaciones, etiquetas, suscripción + pagos, tokens) se eliminan solas.
+ * Además limpiamos datos fuera de la tabla users: imagen de sidebar y
+ * snapshot de contraseña visible.
+ */
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+  }
+
+  const payload = await req.json().catch(() => ({}));
+  const currentPasswordInput = normalizePasswordInput((payload || {}).currentPassword);
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) {
+    return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+  }
+
+  if (String(user.role || '').trim().toUpperCase() === 'SUPERADMIN') {
+    return NextResponse.json(
+      { message: 'La cuenta de superadministrador no puede eliminarse desde aquí. Contactá a soporte.' },
+      { status: 403 }
+    );
+  }
+
+  if (!currentPasswordInput.trim()) {
+    return NextResponse.json({ message: 'Debes ingresar tu contraseña actual para eliminar la cuenta' }, { status: 400 });
+  }
+
+  const passwordMatch = await compareCurrentPassword(currentPasswordInput, user.password);
+  if (!passwordMatch) {
+    return NextResponse.json({ message: 'La contraseña actual no es correcta' }, { status: 400 });
+  }
+
+  try {
+    await db.user.delete({ where: { id: user.id } });
+  } catch (dbErr) {
+    const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+    console.error('[account DELETE] db.user.delete error:', msg);
+    return NextResponse.json(
+      { message: 'No se pudo eliminar la cuenta. Intentá de nuevo más tarde.' },
+      { status: 500 }
+    );
+  }
+
+  // Limpieza best-effort de datos fuera de la tabla users (no debe bloquear el borrado)
+  await db.syncEntry
+    .delete({ where: { key: getSidebarImageSyncKey(user.id) } })
+    .catch(() => null);
+  await removeClientPasswordSnapshot(user.id).catch(() => null);
+
+  return NextResponse.json({ ok: true, message: 'Tu cuenta fue eliminada permanentemente.' });
 }

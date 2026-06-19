@@ -1718,7 +1718,7 @@ export default function AppShell({
     return rest > 0 ? `${base} +${rest}` : base;
   })();
 
-  if (pathname.startsWith("/auth")) {
+  if (pathname.startsWith("/auth") || pathname === "/privacidad") {
     return <>{children}</>;
   }
 

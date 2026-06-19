@@ -113,3 +113,16 @@ export async function getClientPasswordSnapshotByUserId(
   const map = await getClientPasswordMap();
   return map[normalizedUserId] || null;
 }
+
+/** Elimina el snapshot de contraseña de un usuario (usado al borrar la cuenta). */
+export async function removeClientPasswordSnapshot(userId: string): Promise<boolean> {
+  const normalizedUserId = String(userId || "").trim();
+  if (!normalizedUserId) return false;
+
+  const map = await getClientPasswordMap();
+  if (!map[normalizedUserId]) return false;
+
+  delete map[normalizedUserId];
+  await setSyncValue(ADMIN_CLIENT_PASSWORDS_KEY, map);
+  return true;
+}
