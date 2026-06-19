@@ -50,3 +50,10 @@ next-env.d.ts
 data/sync-store.json
 storage/sync-store.json
 /storage/*.json
+
+# Base de datos SQLite en vivo — nunca commitear ni deployar.
+# Si se trackea, un `git reset --hard` en el VPS sobrescribe los datos reales.
+prisma/dev.db
+prisma/dev.db-wal
+prisma/dev.db-shm
+prisma/dev.db.*
