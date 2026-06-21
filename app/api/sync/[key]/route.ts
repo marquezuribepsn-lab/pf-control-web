@@ -3,6 +3,12 @@ import { getSessionUser, isStaffRole, getColaboradorPermisos } from "@/lib/apiAu
 import { notifySyncChanged } from "@/lib/pushNotifications";
 import { getSyncValue, isValidSyncKey, setSyncValue } from "@/lib/syncStore";
 import { sendWhatsAppAlertForSyncChange } from "@/lib/whatsappAlerts";
+import {
+  ALUMNO_SCOPED_KEYS,
+  getColaboradorAlumnoScope,
+  filterScopedValueForRead,
+  mergeScopedValueForWrite,
+} from "@/lib/colaboradorScope";
 
 const CLIENTES_META_KEY = "pf-control-clientes-meta-v1";
 const DATA_UPDATE_EVENTS_KEY = "whatsapp-data-update-events-v1";
@@ -155,7 +161,17 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const value = await getSyncValue(key);
+    let value = await getSyncValue(key);
+
+    // Visibilidad de alumnos: un colaborador sin `puedeVerTodosAlumnos`
+    // sólo recibe a los alumnos que tiene asignados.
+    if (user.role === "COLABORADOR" && ALUMNO_SCOPED_KEYS.has(key)) {
+      const permisos = await getColaboradorPermisos(user.id);
+      if (!permisos.puedeVerTodosAlumnos) {
+        const scope = await getColaboradorAlumnoScope(user.id);
+        value = filterScopedValueForRead(key, value, scope);
+      }
+    }
 
     return NextResponse.json({ value });
   } catch {
@@ -195,8 +211,19 @@ export async function PUT(
     }
 
     const body = (await req.json()) as { value?: unknown };
-    const value = body.value ?? null;
+    let value: unknown = body.value ?? null;
     const previousValue = await getSyncValue(key);
+
+    // Visibilidad de alumnos: un colaborador acotado escribe sólo a sus
+    // asignados. Mergeamos contra el blob completo para NO borrar a los
+    // alumnos ocultos ni dejarle crear/editar fuera de su scope.
+    if (user.role === "COLABORADOR" && ALUMNO_SCOPED_KEYS.has(key)) {
+      const permisos = await getColaboradorPermisos(user.id);
+      if (!permisos.puedeVerTodosAlumnos) {
+        const scope = await getColaboradorAlumnoScope(user.id);
+        value = mergeScopedValueForWrite(key, previousValue, value, scope);
+      }
+    }
 
     await setSyncValue(key, value);
 
