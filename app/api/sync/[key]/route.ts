@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionUser, isStaffRole } from "@/lib/apiAuth";
+import { getSessionUser, isStaffRole, getColaboradorPermisos } from "@/lib/apiAuth";
 import { notifySyncChanged } from "@/lib/pushNotifications";
 import { getSyncValue, isValidSyncKey, setSyncValue } from "@/lib/syncStore";
 import { sendWhatsAppAlertForSyncChange } from "@/lib/whatsappAlerts";
@@ -13,6 +13,29 @@ const DATA_UPDATE_EVENTS_KEY = "whatsapp-data-update-events-v1";
  */
 const STAFF_ONLY_SYNC_KEYS = new Set<string>([
   "pf-control-admin-client-passwords-v1",
+]);
+
+/**
+ * Permisos granulares de colaborador (enforcement REAL, server-side).
+ *
+ * Un COLABORADOR sin el flag correspondiente no puede escribir estas keys,
+ * sin importar lo que muestre la UI. Para ADMIN/SUPERADMIN/CLIENTE no aplica
+ * (CLIENTE escribe sólo sus propios datos, que no están en estas keys).
+ *
+ * Mapeo conservador: sólo se gatean keys cuya semántica es inequívoca.
+ * Ante duda, NO se bloquea (fail-open) para no romper el trabajo legítimo.
+ */
+const PLAN_WRITE_KEYS = new Set<string>([
+  "pf-control-semana-plan",
+  "pf-control-ai-training-plans-v1",
+  "pf-control-nutricion-planes-v1",
+  "pf-control-nutricion-asignaciones-v1",
+  "pf-control-nutricion-alimentos-v1",
+]);
+
+const REGISTRO_WRITE_KEYS = new Set<string>([
+  "pf-control-asistencias-jornadas-v1",
+  "pf-control-asistencias-registros-v1",
 ]);
 
 type DataUpdateEvent = {
@@ -158,6 +181,17 @@ export async function PUT(
 
     if (STAFF_ONLY_SYNC_KEYS.has(key) && !isStaffRole(user.role)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
+    // Permisos granulares de colaborador (enforcement real, no sólo UI).
+    if (user.role === "COLABORADOR" && (PLAN_WRITE_KEYS.has(key) || REGISTRO_WRITE_KEYS.has(key))) {
+      const permisos = await getColaboradorPermisos(user.id);
+      if (PLAN_WRITE_KEYS.has(key) && !permisos.puedeEditarPlanes) {
+        return NextResponse.json({ error: "No tenés permiso para editar planes" }, { status: 403 });
+      }
+      if (REGISTRO_WRITE_KEYS.has(key) && !permisos.puedeEditarRegistros) {
+        return NextResponse.json({ error: "No tenés permiso para editar registros" }, { status: 403 });
+      }
     }
 
     const body = (await req.json()) as { value?: unknown };

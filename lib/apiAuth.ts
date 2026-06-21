@@ -1,4 +1,7 @@
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+const db = prisma as any;
 
 export type SessionRole = "SUPERADMIN" | "ADMIN" | "COLABORADOR" | "CLIENTE";
 
@@ -41,4 +44,40 @@ export function isStaffRole(role: string | null | undefined): boolean {
 
 export function isAdminRole(role: string | null | undefined): boolean {
   return ADMIN_ROLES.includes(String(role || "").trim().toUpperCase() as SessionRole);
+}
+
+/** Permisos granulares de un colaborador (qué puede editar / ver). */
+export type ColaboradorPermisos = {
+  puedeEditarRegistros: boolean;
+  puedeEditarPlanes: boolean;
+  puedeVerTodosAlumnos: boolean;
+};
+
+/**
+ * Lee los flags de permisos de un colaborador desde la base.
+ * Fail-closed: ante cualquier error devuelve todo en `false` (bloquea),
+ * que es el default seguro para un control de permisos.
+ */
+export async function getColaboradorPermisos(userId: string): Promise<ColaboradorPermisos> {
+  try {
+    const u = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        puedeEditarRegistros: true,
+        puedeEditarPlanes: true,
+        puedeVerTodosAlumnos: true,
+      },
+    });
+    return {
+      puedeEditarRegistros: Boolean(u?.puedeEditarRegistros),
+      puedeEditarPlanes: Boolean(u?.puedeEditarPlanes),
+      puedeVerTodosAlumnos: Boolean(u?.puedeVerTodosAlumnos),
+    };
+  } catch {
+    return {
+      puedeEditarRegistros: false,
+      puedeEditarPlanes: false,
+      puedeVerTodosAlumnos: false,
+    };
+  }
 }
