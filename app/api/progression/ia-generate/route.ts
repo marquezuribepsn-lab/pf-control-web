@@ -15,6 +15,7 @@
  */
 
 import { NextRequest } from 'next/server';
+import { getSessionUser, isStaffRole } from '@/lib/apiAuth';
 import {
   analyzeWeekPerformance,
   detectPlateau,
@@ -163,6 +164,14 @@ Respondé SOLO con JSON válido, sin texto adicional:
 // ─────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const sessionUser = await getSessionUser();
+  if (!sessionUser) {
+    return new Response('No autenticado', { status: 401 });
+  }
+  if (!isStaffRole(sessionUser.role)) {
+    return new Response('No autorizado', { status: 403 });
+  }
+
   let body: Partial<ProgressionEngineInput> & { historicalRecords?: ProgressionHistoryRecord[] };
   try {
     body = await req.json();

@@ -10,10 +10,11 @@ function isSuperAdmin(session: any) {
 }
 
 // POST /api/superadmin/subscriptions/[id]/pagos — register a payment
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const body = await req.json();
   const { monto, moneda, metodoPago, fechaPago, periodoDesde, periodoHasta, comprobante, notas } = body;
 
@@ -59,10 +60,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 }
 
 // GET /api/superadmin/subscriptions/[id]/pagos — list payments
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const pagos = await db.profesorPago.findMany({
     where: { subscriptionId: params.id },
     orderBy: { fechaPago: "desc" },

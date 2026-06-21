@@ -7,12 +7,13 @@ const db = prisma as any;
 
 // POST /api/superadmin/profesores/[id]/login-link
 // Genera un link de acceso temporal de 1 hora para el profesor
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if ((session?.user as any)?.role !== "SUPERADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const params = await context.params;
   const user = await db.user.findUnique({
     where: { id: params.id, role: "ADMIN" },
     select: { id: true, email: true, emailVerified: true },

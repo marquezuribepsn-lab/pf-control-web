@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
+import { getSessionUser, isStaffRole } from "@/lib/apiAuth";
 import { notifySyncChanged } from "@/lib/pushNotifications";
 import { getSyncValue, isValidSyncKey, setSyncValue } from "@/lib/syncStore";
 import { sendWhatsAppAlertForSyncChange } from "@/lib/whatsappAlerts";
 
 const CLIENTES_META_KEY = "pf-control-clientes-meta-v1";
 const DATA_UPDATE_EVENTS_KEY = "whatsapp-data-update-events-v1";
+
+/**
+ * Keys que SOLO el staff (admin/superadmin/colaborador) puede leer o escribir.
+ * Contienen datos sensibles que un alumno (CLIENTE) nunca debe ver.
+ */
+const STAFF_ONLY_SYNC_KEYS = new Set<string>([
+  "pf-control-admin-client-passwords-v1",
+]);
 
 type DataUpdateEvent = {
   id: string;
@@ -108,10 +117,19 @@ export async function GET(
   context: { params: Promise<{ key: string }> }
 ) {
   try {
+    const user = await getSessionUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const { key: rawKey } = await context.params;
     const key = isValidSyncKey(rawKey);
     if (!key) {
       return NextResponse.json({ error: "Invalid key" }, { status: 400 });
+    }
+
+    if (STAFF_ONLY_SYNC_KEYS.has(key) && !isStaffRole(user.role)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const value = await getSyncValue(key);
@@ -127,10 +145,19 @@ export async function PUT(
   context: { params: Promise<{ key: string }> }
 ) {
   try {
+    const user = await getSessionUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const { key: rawKey } = await context.params;
     const key = isValidSyncKey(rawKey);
     if (!key) {
       return NextResponse.json({ error: "Invalid key" }, { status: 400 });
+    }
+
+    if (STAFF_ONLY_SYNC_KEYS.has(key) && !isStaffRole(user.role)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const body = (await req.json()) as { value?: unknown };

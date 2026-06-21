@@ -11,10 +11,11 @@ function isSuperAdmin(session: any) {
 }
 
 // GET /api/superadmin/profesores/[id]
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const profesor = await db.user.findUnique({
     where: { id: params.id, role: "ADMIN" },
     select: {
@@ -39,10 +40,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 // PATCH /api/superadmin/profesores/[id] — update estado, datos personales
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const body = await req.json();
   const { estado, nombreCompleto, telefono, email, newPassword, notasInternas } = body;
 
@@ -78,10 +80,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // DELETE /api/superadmin/profesores/[id] — soft delete (set estado = baja)
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const user = await db.user.findUnique({ where: { id: params.id }, select: { email: true } }).catch(() => null);
   await db.user.update({
     where: { id: params.id },

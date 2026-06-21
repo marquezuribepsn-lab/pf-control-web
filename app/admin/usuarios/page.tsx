@@ -92,7 +92,6 @@ type SignupProfile = {
 };
 
 type ClientePasswordAdmin = {
-  visiblePassword: string;
   source: "register" | "admin_reset" | "account_change" | "password_reset";
   updatedAt: string;
   updatedByRole: string;
@@ -1392,9 +1391,9 @@ export default function AdminUsuariosPermisosPage() {
 
                     <div className="mt-2 grid gap-2 text-xs text-white/75 sm:grid-cols-2 lg:grid-cols-4">
                       <p>
-                        <span className="text-white/40">Clave visible:</span>{' '}
+                        <span className="text-white/40">Clave:</span>{' '}
                         <span className="font-mono font-bold text-amber-100">
-                          {snapshot?.visiblePassword || 'Sin registro'}
+                          Blanqueá para verla
                         </span>
                       </p>
                       <p>

@@ -12,11 +12,12 @@ function isSuperAdmin(session: any) {
 // PATCH /api/superadmin/subscriptions/[id]/pagos/[pagoId] — edit a payment
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string; pagoId: string } }
+  context: { params: Promise<{ id: string; pagoId: string }> }
 ) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   const body = await req.json();
   const { monto, moneda, metodoPago, fechaPago, periodoDesde, periodoHasta, notas } = body;
 
@@ -58,11 +59,12 @@ export async function PATCH(
 // DELETE /api/superadmin/subscriptions/[id]/pagos/[pagoId] — delete a payment
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string; pagoId: string } }
+  context: { params: Promise<{ id: string; pagoId: string }> }
 ) {
   const session = await auth();
   if (!isSuperAdmin(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const params = await context.params;
   await db.profesorPago.delete({ where: { id: params.pagoId } });
 
   const sub = await db.profesorSubscription.findUnique({

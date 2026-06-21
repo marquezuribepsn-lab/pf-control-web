@@ -451,7 +451,6 @@ function attachAdminPassword<T extends { id?: string | null; role?: string | nul
       ...user,
       passwordAdmin: snapshot
         ? {
-            visiblePassword: snapshot.visiblePassword,
             source: snapshot.source,
             updatedAt: snapshot.updatedAt,
             updatedByRole: snapshot.updatedByRole,

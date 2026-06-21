@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { argentineFoodsBase } from "@/data/argentineFoods";
+import { getSessionUser } from "@/lib/apiAuth";
 
 type NutritionCatalogItem = {
   id: string;
@@ -158,6 +159,11 @@ function getLocalMatches(query: string, limit: number): NutritionCatalogItem[] {
 }
 
 export async function GET(request: NextRequest) {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ ok: false, error: "No autenticado" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const query = String(searchParams.get("q") || "").trim();
   const barcode = String(searchParams.get("barcode") || "").replace(/\s+/g, "").trim();

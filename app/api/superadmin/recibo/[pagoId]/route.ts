@@ -5,12 +5,13 @@ const db = prisma as any;
 
 // GET /api/superadmin/recibo/[pagoId]
 // Devuelve HTML de comprobante listo para imprimir / guardar como PDF.
-export async function GET(_req: Request, { params }: { params: { pagoId: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ pagoId: string }> }) {
   const session = await auth();
   if ((session?.user as any)?.role !== "SUPERADMIN") {
     return new Response("Forbidden", { status: 403 });
   }
 
+  const params = await context.params;
   const pago = await db.profesorPago.findUnique({
     where: { id: params.pagoId },
     include: {
