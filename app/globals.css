@@ -4614,6 +4614,84 @@ video.pf-a3-routine-log-video-frame {
   margin-top: 0.42rem;
 }
 
+/* Campo numérico con +/- y chips de carga rápida (registro de pesos). */
+.pf-a3-stepper-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pf-a3-stepper-row input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.pf-a3-stepper-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.06rem;
+  min-width: 2.06rem;
+  block-size: 2.06rem;
+  min-block-size: 2.06rem;
+  padding: 0;
+  border-radius: 0.58rem;
+  border: 1.5px solid rgba(128, 157, 203, 0.76);
+  background: rgba(34, 46, 70, 0.95);
+  color: #f2f6ff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s ease, transform 0.06s ease;
+}
+
+.pf-a3-stepper-btn:hover {
+  background: rgba(52, 70, 104, 0.98);
+}
+
+.pf-a3-stepper-btn:active {
+  transform: scale(0.94);
+}
+
+.pf-a3-stepper-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.26rem;
+  margin-top: 0.3rem;
+}
+
+.pf-a3-stepper-chip {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.3rem 0.2rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid rgba(128, 157, 203, 0.55);
+  background: rgba(24, 33, 52, 0.92);
+  color: #d4e7ff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s ease, transform 0.06s ease;
+}
+
+.pf-a3-stepper-chip:hover {
+  background: rgba(40, 54, 84, 0.96);
+}
+
+.pf-a3-stepper-chip:active {
+  transform: scale(0.94);
+}
+
 .pf-a3-routine-log-pain-grid {
   margin-top: 0.5rem;
   display: grid;

@@ -40,6 +40,92 @@ const PROFILE_IMG_MAX_DATA_URL_LENGTH = 850_000;
 const PROFILE_IMG_MAX_DIMENSION = 720;
 const PROFILE_IMG_MIN_DIMENSION = 220;
 
+// Parseo/format numérico tolerante para los campos de carga (acepta coma o punto).
+function parseStepperNumber(value: string): number {
+  const n = parseFloat(String(value ?? "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatStepperNumber(n: number): string {
+  // Redondeo a 3 decimales para evitar ruido de punto flotante (0.1 + 0.2, etc.)
+  const rounded = Math.round(n * 1000) / 1000;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+}
+
+// Campo numérico con botones +/- y chips de carga rápida, editable a mano.
+// Permite cargar series/repeticiones/peso "de las dos maneras": tipeando o
+// sumando/restando con los botones.
+function RoutineStepperField({
+  label,
+  className,
+  value,
+  onChange,
+  step,
+  min = 0,
+  placeholder,
+  quickAdds,
+  inputMode = "decimal",
+}: {
+  label: string;
+  className?: string;
+  value: string;
+  onChange: (next: string) => void;
+  step: number;
+  min?: number;
+  placeholder?: string;
+  quickAdds?: number[];
+  inputMode?: "numeric" | "decimal";
+}) {
+  const adjust = (delta: number) => {
+    const next = Math.max(min, parseStepperNumber(value) + delta);
+    onChange(formatStepperNumber(next));
+  };
+
+  return (
+    <label className={`pf-a3-routine-log-field pf-a3-stepper-field ${className || ""}`}>
+      <span>{label}</span>
+      <div className="pf-a3-stepper-row">
+        <button
+          type="button"
+          className="pf-a3-stepper-btn"
+          onClick={() => adjust(-step)}
+          aria-label={`Restar ${step}`}
+        >
+          −
+        </button>
+        <input
+          inputMode={inputMode}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+        />
+        <button
+          type="button"
+          className="pf-a3-stepper-btn"
+          onClick={() => adjust(step)}
+          aria-label={`Sumar ${step}`}
+        >
+          +
+        </button>
+      </div>
+      {quickAdds && quickAdds.length > 0 ? (
+        <div className="pf-a3-stepper-chips">
+          {quickAdds.map((amt) => (
+            <button
+              type="button"
+              key={amt}
+              className="pf-a3-stepper-chip"
+              onClick={() => adjust(amt)}
+            >
+              +{amt}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </label>
+  );
+}
+
 function readFileAsDataUrlForProfile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -868,13 +954,19 @@ function formatDate(value: string | Date | null | undefined): string {
 function formatDateTime(value: string | Date | null | undefined): string {
   const parsed = parseDateValue(value);
   if (!parsed) return "-";
-  return parsed.toLocaleString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // Formato manual y determinista (sin Intl/toLocaleString) para evitar
+  // mismatches de hidratacion: el ICU de Node y el del navegador difieren en
+  // el separador entre la hora y "a. m." (espacio fino U+202F vs espacio normal).
+  const dd = String(parsed.getDate()).padStart(2, "0");
+  const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+  const yyyy = parsed.getFullYear();
+  let hours = parsed.getHours();
+  const minutes = String(parsed.getMinutes()).padStart(2, "0");
+  const period = hours < 12 ? "a. m." : "p. m.";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  const hh = String(hours).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy}, ${hh}:${minutes} ${period}`;
 }
 
 function formatStopwatchDuration(totalMs: number): string {
@@ -9321,7 +9413,7 @@ export default function AlumnoVisionClient({
                     <h2 className="pf-a3-routine-overview-title">
                       {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento").toUpperCase()}
                     </h2>
-                    <p className="pf-a3-routine-overview-subtitle">Actualizado el {routineUpdatedAtLabel}</p>
+                    <p className="pf-a3-routine-overview-subtitle" suppressHydrationWarning>Actualizado el {routineUpdatedAtLabel}</p>
                     <div className="pf-a3-routine-coach-row">
                       <span className="pf-a3-routine-coach-avatar" aria-hidden="true">
                         {getInitials(routineCoachLabel)}
@@ -10661,45 +10753,52 @@ export default function AlumnoVisionClient({
                               }
                             />
                           </label>
-                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-series">
-                            <span>Series</span>
-                            <input
-                              value={routineExerciseLogDraft.series}
-                              onChange={(event) =>
-                                setRoutineExerciseLogDraft((previous) => ({
-                                  ...previous,
-                                  series: event.target.value,
-                                }))
-                              }
-                              placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
-                            />
-                          </label>
-                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-repeticiones">
-                            <span>Repeticiones</span>
-                            <input
-                              value={routineExerciseLogDraft.repeticiones}
-                              onChange={(event) =>
-                                setRoutineExerciseLogDraft((previous) => ({
-                                  ...previous,
-                                  repeticiones: event.target.value,
-                                }))
-                              }
-                              placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
-                            />
-                          </label>
-                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-carga">
-                            <span>Carga (kg)</span>
-                            <input
-                              value={routineExerciseLogDraft.pesoKg}
-                              onChange={(event) =>
-                                setRoutineExerciseLogDraft((previous) => ({
-                                  ...previous,
-                                  pesoKg: event.target.value,
-                                }))
-                              }
-                              placeholder={routineExerciseLogTarget.prescribedCarga || "0"}
-                            />
-                          </label>
+                          <RoutineStepperField
+                            className="pf-a3-routine-log-field-series"
+                            label="Series"
+                            value={routineExerciseLogDraft.series}
+                            onChange={(next) =>
+                              setRoutineExerciseLogDraft((previous) => ({
+                                ...previous,
+                                series: next,
+                              }))
+                            }
+                            step={1}
+                            min={0}
+                            inputMode="numeric"
+                            placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
+                          />
+                          <RoutineStepperField
+                            className="pf-a3-routine-log-field-repeticiones"
+                            label="Repeticiones"
+                            value={routineExerciseLogDraft.repeticiones}
+                            onChange={(next) =>
+                              setRoutineExerciseLogDraft((previous) => ({
+                                ...previous,
+                                repeticiones: next,
+                              }))
+                            }
+                            step={1}
+                            min={0}
+                            inputMode="numeric"
+                            placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
+                          />
+                          <RoutineStepperField
+                            className="pf-a3-routine-log-field-carga"
+                            label="Carga (kg)"
+                            value={routineExerciseLogDraft.pesoKg}
+                            onChange={(next) =>
+                              setRoutineExerciseLogDraft((previous) => ({
+                                ...previous,
+                                pesoKg: next,
+                              }))
+                            }
+                            step={2.5}
+                            min={0}
+                            inputMode="decimal"
+                            quickAdds={[0.25, 0.5, 5, 10, 20]}
+                            placeholder={routineExerciseLogTarget.prescribedCarga || "0"}
+                          />
                         </div>
 
                         <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
