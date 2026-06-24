@@ -194,20 +194,38 @@ export const authConfig = {
   // Sin esto, NextAuth usa "__Host-" al setear (ve AUTH_URL=https://)
   // pero busca sin prefijo al validar (ve request en http://localhost).
   // Resultado: MissingCSRF en cada intento de login.
-  cookies: {
-    sessionToken: {
-      name: "__Secure-authjs.session-token",
-      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
-    },
-    callbackUrl: {
-      name: "__Secure-authjs.callback-url",
-      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
-    },
-    csrfToken: {
-      name: "__Host-authjs.csrf-token",
-      options: { httpOnly: true, sameSite: "lax" as const, path: "/", secure: true },
-    },
-  },
+  //
+  // IMPORTANTE: en producción (detrás de nginx HTTPS) usamos cookies `Secure`
+  // con prefijos `__Secure-`/`__Host-`. En desarrollo local servimos por
+  // http://localhost, donde el navegador DESCARTA cookies `Secure` y los
+  // prefijos `__Host-`/`__Secure-`: sin esta distinción, el login responde 302
+  // pero la sesión nunca persiste (todo queda 401). Por eso, fuera de
+  // producción usamos cookies normales no-seguras.
+  cookies: (() => {
+    const useSecureCookies = process.env.NODE_ENV === "production";
+    const securePrefix = useSecureCookies ? "__Secure-" : "";
+    const hostPrefix = useSecureCookies ? "__Host-" : "";
+    const baseOptions = {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: useSecureCookies,
+    };
+    return {
+      sessionToken: {
+        name: `${securePrefix}authjs.session-token`,
+        options: { ...baseOptions },
+      },
+      callbackUrl: {
+        name: `${securePrefix}authjs.callback-url`,
+        options: { ...baseOptions },
+      },
+      csrfToken: {
+        name: `${hostPrefix}authjs.csrf-token`,
+        options: { ...baseOptions },
+      },
+    };
+  })(),
   providers: [
     Credentials({
       name: 'Credentials',
