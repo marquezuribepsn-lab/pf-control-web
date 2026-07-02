@@ -4,6 +4,7 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import PlantelPanel from "@/components/PlantelPanel";
 import DateInput from "@/components/DateInput";
+import RutinaPrintOverlay, { RutinaPrintMode } from "@/components/RutinaPrintOverlay";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1779,6 +1780,8 @@ export default function ClientesPage() {
   } | null>(null);
   const [trainingPreviewWeekId, setTrainingPreviewWeekId] = useState("");
   const [trainingPreviewDayId, setTrainingPreviewDayId] = useState("");
+  const [rutinaPrintMode, setRutinaPrintMode] = useState<RutinaPrintMode | null>(null);
+  const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [trainingExercisePanelMode, setTrainingExercisePanelMode] =
     useState<TrainingExercisePanelMode | null>(null);
   const [trainingExercisePanelTarget, setTrainingExercisePanelTarget] =
@@ -6988,12 +6991,79 @@ export default function ClientesPage() {
                             💾 Guardar como template
                           </ReliableActionButton>
                         )}
+                        {selectedClientTrainingPlan && (
+                          <div className="relative">
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => setPrintMenuOpen((v) => !v)}
+                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                            >
+                              🖨️ Imprimir ▾
+                            </ReliableActionButton>
+                            {printMenuOpen && (
+                              <>
+                                <button
+                                  type="button"
+                                  aria-hidden
+                                  onClick={() => setPrintMenuOpen(false)}
+                                  className="fixed inset-0 z-40 cursor-default"
+                                />
+                                <div className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-xl border border-white/12 bg-[#1c2027] py-1 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.9)]">
+                                  <button
+                                    type="button"
+                                    disabled={!selectedTrainingDay}
+                                    onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("dia"); }}
+                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    Día actual
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={!selectedTrainingWeek}
+                                    onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("semana"); }}
+                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    Semana completa
+                                  </button>
+                                  <div className="my-1 h-px bg-white/10" />
+                                  <button
+                                    type="button"
+                                    disabled={!selectedTrainingDay}
+                                    onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("dia-blanco"); }}
+                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    Día (en blanco)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={!selectedTrainingWeek}
+                                    onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("semana-blanco"); }}
+                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    Semana (en blanco)
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <p className="w-full text-[11px] text-slate-300/85">
                         Recargar plan actualiza solo esta seccion. Recargar el navegador actualiza toda la pagina.
                       </p>
                     </div>
+
+                    {rutinaPrintMode && (
+                      <RutinaPrintOverlay
+                        mode={rutinaPrintMode}
+                        clientName={selectedClient?.nombre || ""}
+                        week={selectedTrainingWeek}
+                        day={selectedTrainingDay}
+                        ejercicios={ejercicios}
+                        onClose={() => setRutinaPrintMode(null)}
+                      />
+                    )}
 
                     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
                       <span className="rounded-full border border-white/15 bg-[#0e1012] px-3 py-1 text-slate-100">
