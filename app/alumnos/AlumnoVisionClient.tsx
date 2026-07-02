@@ -5,6 +5,7 @@ import CheckinSemanal from "@/components/CheckinSemanal";
 import OnboardingModal from "@/components/OnboardingModal";
 import ChatPanel from "@/components/ChatPanel";
 import NotificationHub, { DerivedNotif } from "@/components/NotificationHub";
+import MacroDonut, { MacroSegment } from "@/components/MacroDonut";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -11294,6 +11295,27 @@ export default function AlumnoVisionClient({
                         <p className="mt-1 text-sm font-black text-white">
                           {nutritionDailyGoalMacros.proteinas}P / {nutritionDailyGoalMacros.carbohidratos}C / {nutritionDailyGoalMacros.grasas}G
                         </p>
+                      </div>
+                    </div>
+
+                    <div className="pf-a4-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
+                      <p className="pf-a2-eyebrow">Objetivo nutricional</p>
+                      <div className="mt-3">
+                        <MacroDonut
+                          centerValue={String(nutritionDailyGoalKcal)}
+                          centerLabel="kcal"
+                          segments={macroRows.map((macro): MacroSegment => ({
+                            label: macro.label,
+                            ratio: macro.ratio,
+                            grams: macro.grams,
+                            color:
+                              macro.key === "P"
+                                ? "#38bdf8"
+                                : macro.key === "C"
+                                ? "#f59e0b"
+                                : "#34d399",
+                          }))}
+                        />
                       </div>
                     </div>
 
