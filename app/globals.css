@@ -1938,12 +1938,20 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-home-head {
+  position: relative;
   padding: 0.08rem 0.1rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.52rem;
   text-align: center;
+}
+
+.pf-a3-home-notif {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 6;
 }
 
 .pf-a3-home-intro {

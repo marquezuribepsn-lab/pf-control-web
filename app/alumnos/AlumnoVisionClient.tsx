@@ -4,6 +4,7 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import CheckinSemanal from "@/components/CheckinSemanal";
 import OnboardingModal from "@/components/OnboardingModal";
 import ChatPanel from "@/components/ChatPanel";
+import NotificationHub, { DerivedNotif } from "@/components/NotificationHub";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -6731,6 +6732,41 @@ export default function AlumnoVisionClient({
   const coachStartLabel = useMemo(() => formatDateTag(clientMeta?.startDate), [clientMeta?.startDate]);
   const coachEndLabel = useMemo(() => formatDateTag(clientMeta?.endDate), [clientMeta?.endDate]);
 
+  // Recordatorios derivados para el hub de notificaciones (ej. vencimiento de plan).
+  const homeReminders = useMemo<DerivedNotif[]>(() => {
+    const list: DerivedNotif[] = [];
+    const end = String(clientMeta?.endDate || "").trim();
+    if (end) {
+      const endTime = new Date(end).getTime();
+      if (!Number.isNaN(endTime)) {
+        const days = Math.ceil((endTime - Date.now()) / 86400000);
+        const stamp = new Date();
+        stamp.setHours(9, 0, 0, 0);
+        const createdAt = stamp.toISOString();
+        if (days < 0) {
+          list.push({
+            id: `venc:${end}`,
+            tipo: "recordatorio",
+            titulo: "Tu plan venció",
+            cuerpo: `Tu acceso venció el ${coachEndLabel}. Renová para seguir entrenando.`,
+            createdAt,
+            de: "Sistema",
+          });
+        } else if (days <= 10) {
+          list.push({
+            id: `venc:${end}`,
+            tipo: "recordatorio",
+            titulo: "Tu plan está por vencer",
+            cuerpo: `Tu acceso vence el ${coachEndLabel} (en ${days} ${days === 1 ? "día" : "días"}). Renová para no perder tu lugar.`,
+            createdAt,
+            de: "Sistema",
+          });
+        }
+      }
+    }
+    return list;
+  }, [clientMeta?.endDate, coachEndLabel]);
+
   const homeMusicCards = useMemo<HomeMusicCard[]>(() => {
     const accents = [
       "pf-a3-music-card-fallback-a",
@@ -8867,6 +8903,13 @@ export default function AlumnoVisionClient({
       <div className="pf-a2-shell">
         {isRootCategory ? (
           <header className="pf-a3-home-head">
+            <div className="pf-a3-home-notif">
+              <NotificationHub
+                studentName={profileDisplayName}
+                studentKey={nutritionTrackerOwnerKey}
+                derived={homeReminders}
+              />
+            </div>
             <div className="pf-a3-home-intro">
               <p className="pf-a3-home-greeting">{resolveGreeting()}</p>
               <h1 className="pf-a3-home-student">{profileShortName}</h1>
