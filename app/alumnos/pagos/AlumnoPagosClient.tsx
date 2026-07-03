@@ -640,9 +640,9 @@ export default function AlumnoPagosClient() {
             </div>
 
             {canUseQrStore && !isIosNative ? (
-              <section className="mt-4 rounded-xl border border-cyan-300/30 bg-cyan-500/10 p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-cyan-100/90">QR tienda</p>
-                <h3 className="mt-1 text-sm font-black text-cyan-100">
+              <section className="mt-4 rounded-xl border border-violet-300/30 bg-violet-500/10 p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-violet-100/90">QR tienda</p>
+                <h3 className="mt-1 text-sm font-black text-violet-100">
                   {status?.mercadoPago?.qrStore?.label || "Mercado Pago QR"}
                 </h3>
 
@@ -661,12 +661,12 @@ export default function AlumnoPagosClient() {
                   ) : null}
 
                   <div className="min-w-[180px] flex-1 space-y-2">
-                    <p className="text-xs text-cyan-50/90">
+                    <p className="text-xs text-violet-50/90">
                       Escanea este QR desde la app de Mercado Pago para pagar como en tienda.
                     </p>
 
                     {status?.mercadoPago?.qrStore?.notes ? (
-                      <p className="text-xs text-cyan-100/90">{status.mercadoPago.qrStore.notes}</p>
+                      <p className="text-xs text-violet-100/90">{status.mercadoPago.qrStore.notes}</p>
                     ) : null}
 
                     {status?.mercadoPago?.qrStore?.paymentLink ? (
@@ -674,7 +674,7 @@ export default function AlumnoPagosClient() {
                         href={status.mercadoPago.qrStore.paymentLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex rounded-lg border border-cyan-200/45 bg-cyan-500/20 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                        className="inline-flex rounded-lg border border-violet-200/45 bg-violet-500/20 px-3 py-1.5 text-xs font-semibold text-violet-100"
                       >
                         Abrir link de pago
                       </a>
@@ -848,7 +848,7 @@ export default function AlumnoPagosClient() {
                     : ""}
                 </p>
                 {status.latestOrder.receiptNumber || status.latestOrder.receiptIssuedAt ? (
-                  <p className="mt-1 text-xs text-cyan-200">
+                  <p className="mt-1 text-xs text-violet-200">
                     Comprobante: {status.latestOrder.receiptNumber || "-"}
                     {status.latestOrder.receiptIssuedAt
                       ? ` · Emitido: ${formatDate(status.latestOrder.receiptIssuedAt)}`
