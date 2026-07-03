@@ -1691,7 +1691,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-hero {
   position: relative;
-  background: linear-gradient(145deg, rgba(9, 24, 46, 0.95), rgba(6, 17, 34, 0.94));
+  background: linear-gradient(145deg, rgba(23, 9, 46, 0.95), rgba(17, 6, 34, 0.94));
   box-shadow: none;
 }
 
@@ -1703,16 +1703,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background:
     radial-gradient(circle at 85% -12%, rgba(34, 197, 94, 0.18), transparent 48%),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.12), transparent 34%);
+    linear-gradient(90deg, rgba(130, 56, 248, 0.12), transparent 34%);
 }
 
 .pf-a2-card {
-  background: linear-gradient(170deg, rgba(11, 26, 48, 0.92), rgba(7, 18, 35, 0.9));
+  background: linear-gradient(170deg, rgba(25, 11, 48, 0.92), rgba(18, 7, 35, 0.9));
   box-shadow: none;
 }
 
 .pf-a2-kpi {
-  background: linear-gradient(165deg, rgba(14, 32, 58, 0.84), rgba(8, 23, 43, 0.84));
+  background: linear-gradient(165deg, rgba(31, 14, 58, 0.84), rgba(21, 8, 43, 0.84));
   border-color: rgba(150, 122, 228, 0.34);
   box-shadow: none;
 }
@@ -1722,7 +1722,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]) {
-  background-color: rgba(11, 27, 50, 0.78) !important;
+  background-color: rgba(26, 11, 50, 0.78) !important;
 }
 
 .pf-a2-card :where([class*="border-slate-500/"], [class*="border-slate-600/"]) {
@@ -1763,14 +1763,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ebf4ff;
-  background: rgba(10, 29, 52, 0.74);
+  color: #f3ebff;
+  background: rgba(26, 10, 52, 0.74);
 }
 
 .pf-a2-tab {
-  background: linear-gradient(160deg, rgba(11, 30, 55, 0.84), rgba(8, 23, 43, 0.82));
-  border-color: rgba(121, 172, 231, 0.38);
-  box-shadow: inset 0 1px 0 rgba(208, 229, 253, 0.14);
+  background: linear-gradient(160deg, rgba(28, 11, 55, 0.84), rgba(21, 8, 43, 0.82));
+  border-color: rgba(163, 121, 231, 0.38);
+  box-shadow: inset 0 1px 0 rgba(225, 208, 253, 0.14);
   transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
 }
 
@@ -1780,14 +1780,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-tab-active {
   background:
-    linear-gradient(155deg, rgba(34, 197, 94, 0.9), rgba(56, 189, 248, 0.94)),
-    linear-gradient(180deg, rgba(236, 250, 255, 0.82), rgba(213, 237, 255, 0.82));
-  border-color: rgba(226, 244, 255, 0.88);
-  box-shadow: 0 10px 20px rgba(52, 145, 216, 0.24);
+    linear-gradient(155deg, rgba(34, 197, 94, 0.9), rgba(130, 56, 248, 0.94)),
+    linear-gradient(180deg, rgba(236, 250, 255, 0.82), rgba(229, 213, 255, 0.82));
+  border-color: rgba(237, 226, 255, 0.88);
+  box-shadow: 0 10px 20px rgba(115, 52, 216, 0.24);
 }
 
 .pf-a2-tab-active p {
-  color: #122132 !important;
+  color: #1e1232 !important;
 }
 
 .pf-a2-solid-btn,
@@ -1797,15 +1797,15 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-solid-btn {
-  color: #071422;
-  border: 1px solid rgba(232, 246, 255, 0.76);
+  color: #110722;
+  border: 1px solid rgba(241, 232, 255, 0.76);
   background: linear-gradient(160deg, var(--pf-a2-accent-soft), var(--pf-a2-accent-main) 58%, var(--pf-a2-accent-cold));
-  box-shadow: 0 10px 18px rgba(31, 130, 206, 0.3);
+  box-shadow: 0 10px 18px rgba(98, 31, 206, 0.3);
 }
 
 .pf-a2-solid-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(245, 252, 255, 0.95);
+  border-color: rgba(249, 245, 255, 0.95);
 }
 
 .pf-a2-solid-btn:active {
@@ -1814,13 +1814,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-ghost-btn {
   border-color: rgba(150, 122, 228, 0.52);
-  color: #dce6f2;
-  background: linear-gradient(170deg, rgba(11, 28, 52, 0.76), rgba(8, 21, 39, 0.72));
+  color: #e4dcf2;
+  background: linear-gradient(170deg, rgba(27, 11, 52, 0.76), rgba(20, 8, 39, 0.72));
 }
 
 .pf-a2-ghost-btn:hover {
   border-color: rgba(34, 197, 94, 0.62);
-  color: #f6fbff;
+  color: #f9f6ff;
 }
 
 .pf-a2-badge {
@@ -1854,9 +1854,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-badge-neutral {
-  border-color: rgba(176, 192, 208, 0.58);
-  color: #ebf2fa;
-  background: rgba(84, 99, 116, 0.4);
+  border-color: rgba(188, 176, 208, 0.58);
+  color: #f1ebfa;
+  background: rgba(96, 84, 116, 0.4);
 }
 
 .pf-a2-banner {
@@ -1879,10 +1879,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 38px;
   min-width: 38px;
   height: 38px;
-  border: 1px solid rgba(121, 172, 231, 0.52);
+  border: 1px solid rgba(163, 121, 231, 0.52);
   border-radius: 0.78rem;
-  background: linear-gradient(170deg, rgba(10, 27, 50, 0.92), rgba(7, 18, 34, 0.9));
-  color: #e5eef9;
+  background: linear-gradient(170deg, rgba(25, 10, 50, 0.92), rgba(17, 7, 34, 0.9));
+  color: #ede5f9;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1914,14 +1914,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-drawer {
   border: 1px solid var(--pf-a2-divider);
-  background: linear-gradient(170deg, rgba(11, 28, 52, 0.8), rgba(8, 20, 38, 0.76));
+  background: linear-gradient(170deg, rgba(27, 11, 52, 0.8), rgba(20, 8, 38, 0.76));
   box-shadow: inset 0 1px 0 rgba(224, 210, 255, 0.12);
 }
 
 .pf-a2-input {
-  border-color: rgba(121, 172, 231, 0.5) !important;
-  background: linear-gradient(180deg, rgba(7, 21, 41, 0.94), rgba(6, 16, 31, 0.92)) !important;
-  color: #f4f8fc;
+  border-color: rgba(163, 121, 231, 0.5) !important;
+  background: linear-gradient(180deg, rgba(20, 7, 41, 0.94), rgba(16, 6, 31, 0.92)) !important;
+  color: #f7f4fc;
 }
 
 .pf-a2-input:focus {
@@ -1930,8 +1930,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-progress-track {
-  background: rgba(95, 113, 132, 0.45) !important;
-  border: 1px solid rgba(129, 149, 170, 0.26);
+  background: rgba(109, 95, 132, 0.45) !important;
+  border: 1px solid rgba(145, 129, 170, 0.26);
 }
 
 .pf-a2-progress-fill {
@@ -1968,7 +1968,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(2rem, 4.2vw, 2.25rem);
   line-height: 1;
   font-weight: 900;
-  color: #d6efff;
+  color: #e6d6ff;
 }
 
 .pf-a3-home-student {
@@ -1977,12 +1977,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(1.95rem, 5vw, 2.6rem);
   line-height: 1;
   font-weight: 900;
-  color: #f8fcff;
+  color: #fbf8ff;
 }
 
 .pf-a3-home-subline {
   margin: 0.46rem 0 0;
-  color: #9dc3e6;
+  color: #b99de6;
   font-size: 0.86rem;
   line-height: 1.2;
   font-weight: 600;
@@ -1998,7 +1998,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(11, 30, 56, 0.94);
+  background-color: rgba(28, 11, 56, 0.94);
   box-shadow: none;
   overflow: hidden;
 }
@@ -2016,7 +2016,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  border: 2px solid #09111f;
+  border: 2px solid #11091f;
   background: radial-gradient(circle at 35% 30%, #8ff7bf, #27c96f 68%);
   box-shadow: 0 0 0 1px rgba(208, 242, 226, 0.36);
 }
@@ -2033,7 +2033,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #d7ebff;
+  color: #e6d7ff;
 }
 
 .pf-a3-online-pill {
@@ -2070,8 +2070,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-coach-card,
 .pf-a3-panel-block {
   border-radius: 1rem;
-  border: 1px solid rgba(123, 176, 231, 0.28);
-  background-color: rgba(7, 21, 38, 0.96);
+  border: 1px solid rgba(164, 123, 231, 0.28);
+  background-color: rgba(19, 7, 38, 0.96);
   box-shadow: none;
 }
 
@@ -2097,12 +2097,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  border: 2px solid rgba(145, 197, 255, 0.56);
+  border: 2px solid rgba(187, 145, 255, 0.56);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, rgba(17, 40, 72, 0.9), rgba(8, 23, 44, 0.92));
-  color: #e4edf9;
+  background: linear-gradient(160deg, rgba(38, 17, 72, 0.9), rgba(22, 8, 44, 0.92));
+  color: #ece4f9;
   font-size: 0.86rem;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -2110,7 +2110,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-coach-name {
   margin: 0;
-  color: #f7fbff;
+  color: #faf7ff;
   font-size: clamp(1.05rem, 3.4vw, 1.55rem);
   line-height: 1.12;
   font-weight: 800;
@@ -2118,7 +2118,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-coach-role {
   margin: 0.2rem 0 0;
-  color: #a8c7e6;
+  color: #c0a8e6;
   font-size: 0.82rem;
   line-height: 1.1;
   font-weight: 600;
@@ -2147,7 +2147,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-coach-meta-item p {
   margin: 0;
-  color: #f2f7ff;
+  color: #f7f2ff;
   font-size: clamp(0.93rem, 3vw, 1.2rem);
   line-height: 1.1;
   font-weight: 800;
@@ -2156,7 +2156,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-coach-meta-item span {
   display: block;
   margin-top: 0.2rem;
-  color: #8fb5da;
+  color: #ac8fda;
   font-size: 0.75rem;
   line-height: 1;
   font-weight: 600;
@@ -2166,18 +2166,18 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  border: 1px solid rgba(123, 176, 231, 0.24);
+  border: 1px solid rgba(164, 123, 231, 0.24);
   border-radius: 0.9rem;
-  background-color: rgba(6, 18, 33, 0.92);
+  background-color: rgba(16, 6, 33, 0.92);
   padding: 0.44rem;
 }
 
 .pf-a3-main-action-btn {
   min-height: 38px;
   border-radius: 0.66rem;
-  border: 1px solid rgba(128, 181, 236, 0.32);
-  background-color: rgba(13, 34, 57, 0.78);
-  color: #e3effd;
+  border: 1px solid rgba(169, 128, 236, 0.32);
+  background-color: rgba(30, 13, 57, 0.78);
+  color: #ede3fd;
   font-size: 0.82rem;
   letter-spacing: 0.01em;
   font-weight: 800;
@@ -2208,9 +2208,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background: radial-gradient(
     78% 100% at 50% 0%,
-    rgba(56, 189, 248, 0.34) 0%,
-    rgba(37, 99, 235, 0.16) 48%,
-    rgba(8, 26, 45, 0) 100%
+    rgba(130, 56, 248, 0.34) 0%,
+    rgba(113, 37, 235, 0.16) 48%,
+    rgba(22, 8, 45, 0) 100%
   );
   filter: blur(8px);
   opacity: 0.95;
@@ -2230,7 +2230,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-section-title {
   margin: 0;
-  color: #f5f9ff;
+  color: #f9f5ff;
   font-size: clamp(1.35rem, 4.5vw, 1.95rem);
   line-height: 1.08;
   font-weight: 900;
@@ -2238,7 +2238,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-section-subtitle {
   margin: 0.2rem 0 0;
-  color: #95bcdf;
+  color: #b195df;
   font-size: 0.85rem;
   line-height: 1.1;
   font-weight: 600;
@@ -2247,17 +2247,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-link-btn {
   border: 0;
   background: transparent;
-  color: #c6e4ff;
+  color: #dcc6ff;
   font-size: 0.94rem;
   font-weight: 700;
   padding: 0;
 }
 
 .pf-a3-link-btn-strong {
-  border: 1px solid rgba(113, 205, 250, 0.48);
-  background: rgba(12, 38, 66, 0.68);
+  border: 1px solid rgba(166, 113, 250, 0.48);
+  background: rgba(33, 12, 66, 0.68);
   border-radius: 999px;
-  color: #dcf4ff;
+  color: #e9dcff;
   font-size: 0.78rem;
   line-height: 1;
   text-transform: uppercase;
@@ -2284,7 +2284,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 0;
   border-radius: 0.86rem;
   border: 1px solid rgba(147, 118, 226, 0.22);
-  background: rgba(8, 24, 43, 0.56);
+  background: rgba(21, 8, 43, 0.56);
   padding: 0.34rem;
 }
 
@@ -2294,8 +2294,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-action:hover {
-  border-color: rgba(152, 211, 255, 0.5);
-  background: rgba(10, 30, 54, 0.72);
+  border-color: rgba(191, 152, 255, 0.5);
+  background: rgba(27, 10, 54, 0.72);
 }
 
 .pf-a3-music-card-action:active {
@@ -2323,7 +2323,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: 1.1rem;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: rgba(245, 250, 255, 0.85);
+  color: rgba(249, 245, 255, 0.85);
 }
 
 .pf-a3-music-fallback-shell {
@@ -2340,10 +2340,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(239, 247, 255, 0.34);
-  background: rgba(3, 12, 24, 0.34);
+  border: 1px solid rgba(245, 239, 255, 0.34);
+  background: rgba(11, 3, 24, 0.34);
   padding: 0.14rem 0.42rem;
-  color: rgba(244, 249, 255, 0.94);
+  color: rgba(248, 244, 255, 0.94);
   font-size: 0.56rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2351,7 +2351,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-fallback-type {
-  color: rgba(226, 240, 255, 0.9);
+  color: rgba(237, 226, 255, 0.9);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2359,7 +2359,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-fallback-a {
-  background: linear-gradient(145deg, rgba(238, 239, 243, 0.95), rgba(214, 218, 226, 0.9));
+  background: linear-gradient(145deg, rgba(240, 238, 243, 0.95), rgba(219, 214, 226, 0.9));
 }
 
 .pf-a3-music-card-fallback-b {
@@ -2371,12 +2371,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-fallback-d {
-  background: linear-gradient(165deg, rgba(21, 82, 120, 0.9), rgba(15, 24, 37, 0.94));
+  background: linear-gradient(165deg, rgba(59, 21, 120, 0.9), rgba(23, 15, 37, 0.94));
 }
 
 .pf-a3-music-title {
   margin: 0.48rem 0 0;
-  color: #f0f5fc;
+  color: #f5f0fc;
   font-size: 0.76rem;
   line-height: 1.2;
   font-weight: 700;
@@ -2387,7 +2387,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-artist {
   margin: 0.12rem 0 0;
-  color: #96bcde;
+  color: #b296de;
   font-size: 0.7rem;
   line-height: 1.2;
   white-space: nowrap;
@@ -2397,7 +2397,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-hint {
   margin: 0.24rem 0 0;
-  color: #81d4ff;
+  color: #b181ff;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -2406,7 +2406,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-hint-secondary {
   margin: 0.16rem 0 0;
-  color: #cbe7ff;
+  color: #dfcbff;
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2426,8 +2426,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.64rem;
   border-radius: 0.64rem;
   border: 1px solid rgba(147, 118, 226, 0.28);
-  background: linear-gradient(165deg, rgba(12, 34, 58, 0.74), rgba(6, 20, 36, 0.72));
-  color: #eef5ff;
+  background: linear-gradient(165deg, rgba(30, 12, 58, 0.74), rgba(18, 6, 36, 0.72));
+  color: #f5eeff;
   font-size: 0.9rem;
   font-weight: 700;
   text-align: left;
@@ -2472,8 +2472,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   height: 30px;
   border-radius: 999px;
   border: 1px solid rgba(147, 118, 228, 0.52);
-  background: rgba(8, 24, 45, 0.9);
-  color: #d5e0ef;
+  background: rgba(22, 8, 45, 0.9);
+  color: #dfd5ef;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2497,7 +2497,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-weight-value {
   margin: 0;
-  color: #f3f8ff;
+  color: #f8f3ff;
   font-size: clamp(1.1rem, 3.6vw, 1.6rem);
   line-height: 1;
   font-weight: 800;
@@ -2505,7 +2505,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-weight-unit {
   margin: 0.18rem 0 0;
-  color: #93bbde;
+  color: #b093de;
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
@@ -2513,7 +2513,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-weight-label {
   margin: 0.2rem 0 0;
-  color: #c8e5ff;
+  color: #ddc8ff;
   font-size: 0.84rem;
   line-height: 1;
   font-weight: 700;
@@ -2529,7 +2529,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-chart-axis {
-  stroke: rgba(125, 168, 213, 0.42);
+  stroke: rgba(159, 125, 213, 0.42);
   stroke-dasharray: 3 7;
 }
 
@@ -2549,21 +2549,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-chart-footnote {
   margin: 0.2rem 0 0;
-  color: #8eb6da;
+  color: #ab8eda;
   font-size: 0.72rem;
   font-weight: 600;
 }
 
 .pf-a3-empty-state {
   margin: 0.54rem 0 0;
-  color: #92b9dd;
+  color: #af92dd;
   font-size: 0.95rem;
   line-height: 1.35;
 }
 
 .pf-a3-bmi-title {
   margin: 0;
-  color: #def0ff;
+  color: #ebdeff;
   font-size: 0.82rem;
   line-height: 1;
   font-weight: 800;
@@ -2583,8 +2583,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   flex-direction: column;
   gap: 0.2rem;
   border-radius: 0.62rem;
-  border: 1px solid rgba(122, 174, 232, 0.2);
-  background: rgba(8, 25, 42, 0.64);
+  border: 1px solid rgba(164, 122, 232, 0.2);
+  background: rgba(21, 8, 42, 0.64);
   padding: 0.42rem 0.46rem 0.48rem;
 }
 
@@ -2602,7 +2602,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-kicker {
   margin: 0;
-  color: #9dc5e9;
+  color: #ba9de9;
   font-size: 0.66rem;
   line-height: 1;
   font-weight: 700;
@@ -2620,7 +2620,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-detail {
   margin: 0.08rem 0 0;
-  color: #d3ebff;
+  color: #e4d3ff;
   font-size: 0.72rem;
   line-height: 1.2;
   font-weight: 700;
@@ -2628,7 +2628,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-empty {
   margin: 0.42rem 0 0;
-  color: #9fc6e9;
+  color: #bb9fe9;
   font-size: 0.78rem;
   line-height: 1.3;
   font-weight: 600;
@@ -2644,7 +2644,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-status-item {
   border-radius: 0.62rem;
   border: 1px solid rgba(147, 118, 226, 0.24);
-  background: rgba(7, 23, 41, 0.64);
+  background: rgba(20, 7, 41, 0.64);
   padding: 0.46rem 0.48rem 0.52rem;
 }
 
@@ -2661,12 +2661,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-status-item-neutral {
-  border-color: rgba(148, 163, 184, 0.36);
+  border-color: rgba(162, 148, 184, 0.36);
 }
 
 .pf-a3-status-kicker {
   margin: 0;
-  color: #9bc3e6;
+  color: #b89be6;
   font-size: 0.65rem;
   line-height: 1;
   font-weight: 800;
@@ -2676,7 +2676,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-status-value {
   margin: 0.24rem 0 0;
-  color: #f5fbff;
+  color: #f9f5ff;
   font-size: 0.96rem;
   line-height: 1.15;
   font-weight: 800;
@@ -2684,7 +2684,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-status-detail {
   margin: 0.2rem 0 0;
-  color: #c8e1f7;
+  color: #dac8f7;
   font-size: 0.72rem;
   line-height: 1.25;
   font-weight: 600;
@@ -2703,9 +2703,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   z-index: 6;
   margin: 0 auto;
   border-radius: 999px;
-  border: 1px solid rgba(122, 145, 186, 0.48);
-  background: rgba(10, 16, 29, 0.94);
-  color: #c4d3ee;
+  border: 1px solid rgba(147, 122, 186, 0.48);
+  background: rgba(17, 10, 29, 0.94);
+  color: #d4c4ee;
   font-size: 0.64rem;
   line-height: 1;
   font-weight: 700;
@@ -2733,7 +2733,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border: 1px solid rgba(131, 104, 255, 0.42);
   background:
     radial-gradient(120% 130% at 92% -24%, rgba(135, 101, 255, 0.34), transparent 48%),
-    linear-gradient(165deg, rgba(5, 9, 18, 0.98), rgba(8, 13, 24, 0.97) 52%, rgba(7, 10, 18, 0.98));
+    linear-gradient(165deg, rgba(10, 5, 18, 0.98), rgba(14, 8, 24, 0.97) 52%, rgba(11, 7, 18, 0.98));
   padding: 0.64rem;
   overflow: hidden;
 }
@@ -2769,7 +2769,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-bottom: 2px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: rgba(219, 226, 243, 0.7);
+  color: rgba(228, 219, 243, 0.7);
   font-size: 0.74rem;
   line-height: 1;
   font-weight: 600;
@@ -2797,7 +2797,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-overview-kicker {
   margin: 0;
-  color: #a5afc6;
+  color: #b2a5c6;
   font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2814,9 +2814,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 1px solid rgba(124, 143, 177, 0.52);
-  background: linear-gradient(160deg, rgba(33, 42, 60, 0.98), rgba(19, 26, 39, 0.96));
-  color: #dbe4f5;
+  border: 1px solid rgba(144, 124, 177, 0.52);
+  background: linear-gradient(160deg, rgba(43, 33, 60, 0.98), rgba(27, 19, 39, 0.96));
+  color: #e5dbf5;
   font-size: 0.5rem;
   line-height: 1;
   font-weight: 700;
@@ -2858,14 +2858,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(1.34rem, 4.2vw, 1.7rem);
   line-height: 1.08;
   font-weight: 900;
-  color: #f2f6ff;
+  color: #f7f2ff;
   letter-spacing: 0.015em;
 }
 
 .pf-a3-routine-overview-subtitle {
   margin: 0.28rem 0 0;
   max-width: 52ch;
-  color: #9fa8bf;
+  color: #ab9fbf;
   font-size: 0.82rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2896,14 +2896,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-kpi {
   border-radius: 0.74rem;
-  border: 1px solid rgba(108, 127, 162, 0.34);
-  background: rgba(11, 16, 28, 0.95);
+  border: 1px solid rgba(129, 108, 162, 0.34);
+  background: rgba(18, 11, 28, 0.95);
   padding: 0.48rem 0.52rem;
 }
 
 .pf-a3-routine-kpi-label {
   margin: 0;
-  color: #8f9bb4;
+  color: #9d8fb4;
   font-size: 0.57rem;
   line-height: 1;
   font-weight: 700;
@@ -2913,7 +2913,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-kpi-value {
   margin: 0.24rem 0 0;
-  color: #f6f8ff;
+  color: #f9f6ff;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: 1.32rem;
   line-height: 1;
@@ -2922,8 +2922,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-strip {
   border-radius: 0.84rem;
-  border: 1px solid rgba(52, 74, 108, 0.48);
-  background: rgba(8, 12, 22, 0.9);
+  border: 1px solid rgba(73, 52, 108, 0.48);
+  background: rgba(13, 8, 22, 0.9);
   padding: 0.5rem 0.56rem 0.58rem;
   position: relative;
 }
@@ -2957,7 +2957,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-strip-title {
   margin: 0;
-  color: #e8edf8;
+  color: #eee8f8;
   text-align: center;
   font-size: 0.68rem;
   line-height: 1;
@@ -2998,9 +2998,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 52px;
   height: 52px;
   border-radius: 0.88rem;
-  border: 1px solid rgba(132, 151, 186, 0.68);
-  background: linear-gradient(170deg, rgba(14, 21, 35, 0.98), rgba(10, 16, 28, 0.96));
-  color: #eaf2ff;
+  border: 1px solid rgba(153, 132, 186, 0.68);
+  background: linear-gradient(170deg, rgba(22, 14, 35, 0.98), rgba(17, 10, 28, 0.96));
+  color: #f2eaff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3015,14 +3015,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-week-arrow:disabled {
   opacity: 0.42;
-  border-color: rgba(90, 106, 137, 0.48);
-  color: #8c9cb8;
+  border-color: rgba(108, 90, 137, 0.48);
+  color: #9d8cb8;
 }
 
 .pf-a3-routine-week-label {
   margin: 0;
   text-align: center;
-  color: #f1f6ff;
+  color: #f6f1ff;
   font-size: clamp(1rem, 3vw, 1.18rem);
   line-height: 1;
   font-weight: 900;
@@ -3038,7 +3038,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overflow-x: auto;
   padding: 0.02rem 0 0.12rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(146, 165, 197, 0.36) transparent;
+  scrollbar-color: rgba(166, 146, 197, 0.36) transparent;
 }
 
 .pf-a3-routine-session-scroll::-webkit-scrollbar {
@@ -3047,7 +3047,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(146, 165, 197, 0.36);
+  background: rgba(166, 146, 197, 0.36);
 }
 
 .pf-a3-routine-session-chip {
@@ -3056,9 +3056,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   align-items: center;
   justify-content: center;
   border-radius: 0.72rem;
-  border: 1px solid rgba(80, 96, 128, 0.56);
-  background: rgba(19, 24, 37, 0.98);
-  color: #d7deef;
+  border: 1px solid rgba(98, 80, 128, 0.56);
+  background: rgba(26, 19, 37, 0.98);
+  color: #e0d7ef;
   font-size: 0.78rem;
   line-height: 1;
   font-weight: 700;
@@ -3075,14 +3075,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-empty {
   border-radius: 0.96rem;
-  border: 1px solid rgba(93, 111, 145, 0.38);
-  background: linear-gradient(168deg, rgba(9, 14, 24, 0.96), rgba(12, 19, 30, 0.94));
+  border: 1px solid rgba(113, 93, 145, 0.38);
+  background: linear-gradient(168deg, rgba(15, 9, 24, 0.96), rgba(19, 12, 30, 0.94));
   padding: 0.88rem 0.92rem;
 }
 
 .pf-a3-routine-empty h2 {
   margin: 0;
-  color: #f3f7ff;
+  color: #f8f3ff;
   font-size: 1.02rem;
   line-height: 1.12;
   font-weight: 900;
@@ -3090,7 +3090,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-empty p {
   margin: 0.28rem 0 0;
-  color: #b9c6de;
+  color: #c7b9de;
   font-size: 0.78rem;
   line-height: 1.3;
   font-weight: 600;
@@ -3117,7 +3117,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  border: 3px solid rgba(126, 156, 214, 0.24);
+  border: 3px solid rgba(160, 126, 214, 0.24);
   border-top-color: rgba(166, 237, 218, 0.95);
   border-right-color: rgba(178, 150, 255, 0.88);
   animation: pf-a3-routine-loader-spin 1s linear infinite;
@@ -3134,8 +3134,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   background:
     radial-gradient(circle at 30% 24%, rgba(166, 237, 218, 0.28), transparent 54%),
     radial-gradient(circle at 74% 72%, rgba(178, 150, 255, 0.24), transparent 56%),
-    linear-gradient(165deg, rgba(11, 18, 29, 0.96), rgba(8, 13, 22, 0.95));
-  color: #eef9ff;
+    linear-gradient(165deg, rgba(18, 11, 29, 0.96), rgba(13, 8, 22, 0.95));
+  color: #f5eeff;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: 0.94rem;
   line-height: 1;
@@ -3147,7 +3147,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-loading-brand {
   margin: 0;
-  color: #98aacf;
+  color: #ad98cf;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 800;
@@ -3188,8 +3188,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-card {
   border-radius: 0.94rem;
-  border: 1px solid rgba(84, 102, 136, 0.38);
-  background: linear-gradient(165deg, rgba(8, 12, 21, 0.98), rgba(10, 16, 27, 0.96));
+  border: 1px solid rgba(104, 84, 136, 0.38);
+  background: linear-gradient(165deg, rgba(13, 8, 21, 0.98), rgba(17, 10, 27, 0.96));
   padding: 0.64rem;
 }
 
@@ -3203,7 +3203,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-kicker {
   margin: 0;
-  color: #9aa8c3;
+  color: #aa9ac3;
   font-size: 0.63rem;
   line-height: 1;
   font-weight: 800;
@@ -3213,7 +3213,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-title {
   margin: 0.25rem 0 0;
-  color: #ecf1ff;
+  color: #f3ecff;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(0.98rem, 3vw, 1.16rem);
   line-height: 1.12;
@@ -3222,7 +3222,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-goal {
   margin: 0.24rem 0 0;
-  color: #b8c8e3;
+  color: #c8b8e3;
   font-size: 0.75rem;
   line-height: 1.32;
   font-weight: 600;
@@ -3239,9 +3239,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(88, 106, 137, 0.52);
-  background: rgba(15, 21, 34, 0.94);
-  color: #d6dfef;
+  border: 1px solid rgba(107, 88, 137, 0.52);
+  background: rgba(22, 15, 34, 0.94);
+  color: #e0d6ef;
   font-size: 0.55rem;
   line-height: 1;
   font-weight: 700;
@@ -3265,7 +3265,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-block-note {
   margin: 0 0 0.32rem;
-  color: #b5c3dc;
+  color: #c4b5dc;
   font-size: 0.67rem;
   line-height: 1.24;
   font-weight: 600;
@@ -3300,11 +3300,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   isolation: isolate;
   padding: 0.54rem 0.46rem 0.46rem 0.56rem;
   border-radius: 1rem;
-  border: 1px solid rgba(89, 158, 228, 0.34);
+  border: 1px solid rgba(142, 89, 228, 0.34);
   background:
-    radial-gradient(circle at 4% 24%, rgba(72, 145, 238, 0.2), rgba(13, 20, 33, 0.88) 36%),
-    linear-gradient(165deg, rgba(15, 22, 35, 0.94), rgba(10, 15, 25, 0.94));
-  box-shadow: inset 0 0 0 1px rgba(140, 177, 214, 0.08), 0 10px 26px rgba(5, 10, 18, 0.3);
+    radial-gradient(circle at 4% 24%, rgba(136, 72, 238, 0.2), rgba(21, 13, 33, 0.88) 36%),
+    linear-gradient(165deg, rgba(23, 15, 35, 0.94), rgba(16, 10, 25, 0.94));
+  box-shadow: inset 0 0 0 1px rgba(168, 140, 214, 0.08), 0 10px 26px rgba(10, 5, 18, 0.3);
   animation: pf-a3-superset-group-glow 3.2s ease-in-out infinite;
 }
 
@@ -3319,9 +3319,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(155, 226, 255, 0.56) 0%,
-    rgba(90, 186, 255, 0.3) 32%,
-    rgba(90, 186, 255, 0) 72%
+    rgba(193, 155, 255, 0.56) 0%,
+    rgba(153, 90, 255, 0.3) 32%,
+    rgba(153, 90, 255, 0) 72%
   );
   filter: blur(1px);
   opacity: 0.3;
@@ -3335,9 +3335,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background: linear-gradient(
     118deg,
-    rgba(157, 224, 255, 0) 16%,
-    rgba(157, 224, 255, 0.12) 34%,
-    rgba(157, 224, 255, 0) 58%
+    rgba(195, 157, 255, 0) 16%,
+    rgba(195, 157, 255, 0.12) 34%,
+    rgba(195, 157, 255, 0) 58%
   );
   opacity: 0.22;
   animation: pf-a3-superset-shimmer 4.6s linear infinite;
@@ -3354,9 +3354,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   align-items: center;
   gap: 0.38rem;
   border-radius: 999px;
-  border: 1px solid rgba(114, 209, 255, 0.62);
-  background: linear-gradient(145deg, rgba(20, 112, 170, 0.34), rgba(18, 61, 101, 0.4));
-  color: #dff3ff;
+  border: 1px solid rgba(168, 114, 255, 0.62);
+  background: linear-gradient(145deg, rgba(78, 20, 170, 0.34), rgba(50, 18, 101, 0.4));
+  color: #ebdfff;
   font-size: 0.56rem;
   line-height: 1;
   font-weight: 700;
@@ -3366,7 +3366,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-group-badge strong {
-  color: #f4fbff;
+  color: #f8f4ff;
   font-size: 0.57rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -3375,18 +3375,18 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 @keyframes pf-a3-superset-group-glow {
   0%,
   100% {
-    border-color: rgba(89, 158, 228, 0.32);
+    border-color: rgba(142, 89, 228, 0.32);
     box-shadow:
-      inset 0 0 0 1px rgba(140, 177, 214, 0.08),
-      0 10px 26px rgba(5, 10, 18, 0.3),
-      0 0 12px rgba(74, 178, 255, 0.08);
+      inset 0 0 0 1px rgba(168, 140, 214, 0.08),
+      0 10px 26px rgba(10, 5, 18, 0.3),
+      0 0 12px rgba(143, 74, 255, 0.08);
   }
   50% {
-    border-color: rgba(122, 199, 255, 0.58);
+    border-color: rgba(173, 122, 255, 0.58);
     box-shadow:
-      inset 0 0 0 1px rgba(176, 216, 246, 0.16),
-      0 12px 30px rgba(6, 13, 24, 0.34),
-      0 0 24px rgba(74, 178, 255, 0.24);
+      inset 0 0 0 1px rgba(203, 176, 246, 0.16),
+      0 12px 30px rgba(13, 6, 24, 0.34),
+      0 0 24px rgba(143, 74, 255, 0.24);
   }
 }
 
@@ -3415,26 +3415,26 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-row {
   border-radius: 0.88rem;
-  border: 1px solid rgba(85, 104, 137, 0.58);
-  background: linear-gradient(158deg, rgba(20, 27, 41, 0.95), rgba(13, 19, 31, 0.96));
+  border: 1px solid rgba(105, 85, 137, 0.58);
+  background: linear-gradient(158deg, rgba(28, 20, 41, 0.95), rgba(20, 13, 31, 0.96));
   padding: 0.56rem;
-  box-shadow: inset 0 1px 0 rgba(179, 201, 233, 0.08), 0 8px 18px rgba(4, 8, 15, 0.24);
+  box-shadow: inset 0 1px 0 rgba(200, 179, 233, 0.08), 0 8px 18px rgba(8, 4, 15, 0.24);
   transition: border-color 220ms ease, background 240ms ease, box-shadow 240ms ease;
 }
 
 .pf-a3-routine-exercise-row-base {
-  border-color: rgba(85, 104, 137, 0.58);
+  border-color: rgba(105, 85, 137, 0.58);
 }
 
 .pf-a3-routine-exercise-row-superset {
   margin-left: 0.24rem;
-  border-color: rgba(104, 183, 255, 0.64);
-  background: linear-gradient(158deg, rgba(16, 33, 50, 0.95), rgba(11, 24, 38, 0.96));
-  box-shadow: inset 0 1px 0 rgba(186, 225, 255, 0.12), 0 10px 20px rgba(5, 13, 24, 0.3);
+  border-color: rgba(162, 104, 255, 0.64);
+  background: linear-gradient(158deg, rgba(29, 16, 50, 0.95), rgba(21, 11, 38, 0.96));
+  box-shadow: inset 0 1px 0 rgba(212, 186, 255, 0.12), 0 10px 20px rgba(12, 5, 24, 0.3);
 }
 
 .pf-a3-routine-exercise-row-superset .pf-a3-routine-exercise-name {
-  color: #ddf4ff;
+  color: #eaddff;
 }
 
 .pf-a3-routine-exercise-row + .pf-a3-routine-exercise-row {
@@ -3466,9 +3466,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-exercise-index-superset {
   width: 1.02rem;
   height: 1.02rem;
-  border-color: rgba(173, 188, 212, 0.54);
-  background: rgba(69, 83, 108, 0.42);
-  color: #dce4f2;
+  border-color: rgba(188, 173, 212, 0.54);
+  background: rgba(84, 69, 108, 0.42);
+  color: #e4dcf2;
   font-size: 0.5rem;
   font-weight: 700;
 }
@@ -3477,9 +3477,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 58px;
   height: 40px;
   border-radius: 0.52rem;
-  border: 1px solid rgba(88, 103, 135, 0.56);
-  background: linear-gradient(155deg, rgba(46, 54, 74, 0.96), rgba(28, 35, 51, 0.92));
-  color: #dce3f6;
+  border: 1px solid rgba(106, 88, 135, 0.56);
+  background: linear-gradient(155deg, rgba(57, 46, 74, 0.96), rgba(37, 28, 51, 0.92));
+  color: #e6dcf6;
   font-size: 0.66rem;
   line-height: 1;
   font-weight: 700;
@@ -3488,15 +3488,15 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   text-transform: uppercase;
   flex: 0 0 auto;
-  box-shadow: inset 0 0 0 1px rgba(144, 160, 189, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(161, 144, 189, 0.06);
 }
 
 .pf-a3-routine-exercise-thumb-has-media {
   position: relative;
   overflow: hidden;
   padding: 0;
-  border-color: rgba(128, 166, 211, 0.64);
-  background: rgba(8, 14, 26, 0.92);
+  border-color: rgba(160, 128, 211, 0.64);
+  background: rgba(15, 8, 26, 0.92);
 }
 
 .pf-a3-routine-exercise-thumb-media {
@@ -3513,8 +3513,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 0.88rem;
   height: 0.88rem;
   border-radius: 999px;
-  border: 1px solid rgba(244, 251, 255, 0.8);
-  background: rgba(7, 15, 28, 0.72);
+  border: 1px solid rgba(248, 244, 255, 0.8);
+  background: rgba(15, 7, 28, 0.72);
   color: #ffffff;
   font-size: 0.42rem;
   line-height: 1;
@@ -3527,7 +3527,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-name {
   margin: 0;
-  color: #f6f8ff;
+  color: #f9f6ff;
   font-size: 0.72rem;
   line-height: 1.2;
   font-weight: 800;
@@ -3537,9 +3537,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(124, 214, 255, 0.62);
-  background: linear-gradient(140deg, rgba(78, 189, 245, 0.3), rgba(65, 121, 212, 0.25));
-  color: #dff6ff;
+  border: 1px solid rgba(174, 124, 255, 0.62);
+  background: linear-gradient(140deg, rgba(142, 78, 245, 0.3), rgba(121, 65, 212, 0.25));
+  color: #ebdfff;
   font-size: 0.52rem;
   line-height: 1;
   font-weight: 800;
@@ -3568,7 +3568,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-desc {
   margin: 0.16rem 0 0;
-  color: #b2c2dd;
+  color: #c2b2dd;
   font-size: 0.66rem;
   line-height: 1.26;
   font-weight: 600;
@@ -3588,13 +3588,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.14rem;
   min-width: 0;
   border-radius: 0.42rem;
-  border: 1px solid rgba(84, 101, 133, 0.44);
-  background: rgba(17, 23, 35, 0.72);
+  border: 1px solid rgba(103, 84, 133, 0.44);
+  background: rgba(24, 17, 35, 0.72);
   padding: 0.22rem 0.3rem;
 }
 
 .pf-a3-routine-exercise-stat span {
-  color: #9ba8c4;
+  color: #ab9bc4;
   font-size: 0.52rem;
   line-height: 1;
   font-weight: 700;
@@ -3605,7 +3605,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-stat strong {
-  color: #f2f6ff;
+  color: #f7f2ff;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -3729,14 +3729,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-exercise-metrics,
 .pf-a3-routine-exercise-note {
   margin: 0.24rem 0 0;
-  color: #b7c5dd;
+  color: #c6b7dd;
   font-size: 0.65rem;
   line-height: 1.3;
   font-weight: 600;
 }
 
 .pf-a3-routine-exercise-note {
-  color: #c9d5ea;
+  color: #d6c9ea;
 }
 
 .pf-a3-routine-toggle,
@@ -3847,7 +3847,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     max(0.9rem, calc(env(safe-area-inset-right) + 0.52rem))
     max(0.84rem, env(safe-area-inset-bottom))
     max(0.9rem, calc(env(safe-area-inset-left) + 0.52rem));
-  background: radial-gradient(circle at top, rgba(38, 56, 90, 0.34), transparent 52%), rgba(4, 8, 15, 0.84);
+  background: radial-gradient(circle at top, rgba(58, 38, 90, 0.34), transparent 52%), rgba(8, 4, 15, 0.84);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3865,12 +3865,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overscroll-behavior: contain;
   box-sizing: border-box;
   border-radius: 1.04rem;
-  border: 1.5px solid rgba(132, 164, 214, 0.76);
-  background: linear-gradient(165deg, rgba(7, 13, 24, 0.99), rgba(11, 18, 30, 0.98));
+  border: 1.5px solid rgba(163, 132, 214, 0.76);
+  background: linear-gradient(165deg, rgba(14, 7, 24, 0.99), rgba(18, 11, 30, 0.98));
   background-clip: padding-box;
   box-shadow:
-    inset 0 0 0 1px rgba(191, 220, 255, 0.14),
-    0 14px 34px rgba(2, 7, 14, 0.38);
+    inset 0 0 0 1px rgba(216, 191, 255, 0.14),
+    0 14px 34px rgba(7, 2, 14, 0.38);
   padding: 0.82rem 0.8rem 0.9rem;
   margin: auto;
 }
@@ -3880,7 +3880,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: absolute;
   inset: 1px;
   border-radius: calc(1.04rem - 1px);
-  border: 1px solid rgba(221, 236, 255, 0.26);
+  border: 1px solid rgba(234, 221, 255, 0.26);
   pointer-events: none;
   z-index: 0;
 }
@@ -3918,7 +3918,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-kicker {
   margin: 0;
-  color: #99a9c5;
+  color: #aa99c5;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -3928,7 +3928,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-title {
   margin: 0.22rem 0 0;
-  color: #f3f7ff;
+  color: #f8f3ff;
   font-size: 1rem;
   line-height: 1.15;
   font-weight: 800;
@@ -3936,7 +3936,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-meta {
   margin: 0.22rem 0 0;
-  color: #b7c4dc;
+  color: #c5b7dc;
   font-size: 0.68rem;
   line-height: 1.3;
   font-weight: 600;
@@ -3953,8 +3953,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-log-preset {
   min-width: 0;
   border-radius: 0.64rem;
-  border: 1px solid rgba(95, 115, 149, 0.56);
-  background: rgba(17, 24, 38, 0.9);
+  border: 1px solid rgba(116, 95, 149, 0.56);
+  background: rgba(25, 17, 38, 0.9);
   padding: 0.3rem 0.34rem;
   display: flex;
   flex-direction: column;
@@ -3962,7 +3962,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-preset span {
-  color: #9eb0cd;
+  color: #b09ecd;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
@@ -3970,7 +3970,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-preset strong {
-  color: #eff5ff;
+  color: #f5efff;
   font-size: 0.88rem;
   line-height: 1.15;
   font-weight: 800;
@@ -3990,10 +3990,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   min-width: 0;
   border-radius: 0.72rem;
-  border: 1.5px solid rgba(111, 138, 179, 0.72);
-  background: rgba(23, 31, 47, 0.88);
+  border: 1.5px solid rgba(137, 111, 179, 0.72);
+  background: rgba(32, 23, 47, 0.88);
   background-clip: padding-box;
-  color: #cfdbf2;
+  color: #dccff2;
   font-size: 0.62rem;
   line-height: 1.12;
   font-weight: 700;
@@ -4043,9 +4043,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 100%;
   min-height: 140px;
   border-radius: 0.9rem;
-  border: 1px solid rgba(157, 178, 216, 0.36);
-  background: rgba(9, 15, 27, 0.88);
-  color: #eef6ff;
+  border: 1px solid rgba(180, 157, 216, 0.36);
+  background: rgba(16, 9, 27, 0.88);
+  color: #f5eeff;
   font-size: 0.9rem;
   line-height: 1.36;
   font-weight: 600;
@@ -4055,12 +4055,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-textarea::placeholder {
-  color: #8f9db8;
+  color: #9f8fb8;
 }
 
 .pf-a3-routine-action-textarea:focus {
-  border-color: rgba(186, 223, 255, 0.78);
-  box-shadow: 0 0 0 1px rgba(186, 223, 255, 0.34);
+  border-color: rgba(212, 186, 255, 0.78);
+  box-shadow: 0 0 0 1px rgba(212, 186, 255, 0.34);
 }
 
 .pf-a3-routine-action-row,
@@ -4073,7 +4073,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-counter {
-  color: #b9c4db;
+  color: #c6b9db;
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
@@ -4082,9 +4082,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-action-secondary,
 .pf-a3-routine-action-primary {
   border-radius: 0.76rem;
-  border: 1px solid rgba(167, 186, 220, 0.44);
+  border: 1px solid rgba(187, 167, 220, 0.44);
   padding: 0.48rem 0.74rem;
-  color: #f8fbff;
+  color: #fbf8ff;
   font-size: 0.77rem;
   line-height: 1;
   font-weight: 800;
@@ -4096,7 +4096,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-primary {
-  background: linear-gradient(160deg, rgba(99, 133, 255, 0.9), rgba(75, 96, 221, 0.88));
+  background: linear-gradient(160deg, rgba(159, 99, 255, 0.9), rgba(131, 75, 221, 0.88));
 }
 
 .pf-a3-routine-action-primary-change {
@@ -4111,7 +4111,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-primary-timer {
   border-color: rgba(153, 229, 255, 0.74);
-  background: linear-gradient(160deg, rgba(76, 178, 241, 0.95), rgba(49, 131, 214, 0.94));
+  background: linear-gradient(160deg, rgba(139, 76, 241, 0.95), rgba(112, 49, 214, 0.94));
 }
 
 .pf-a3-routine-action-secondary-danger {
@@ -4120,9 +4120,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-secondary-danger:disabled {
-  border-color: rgba(173, 179, 197, 0.36);
-  background: rgba(37, 42, 57, 0.56);
-  color: #9da8c0;
+  border-color: rgba(182, 173, 197, 0.36);
+  background: rgba(45, 37, 57, 0.56);
+  color: #aa9dc0;
 }
 
 .pf-a3-routine-action-status {
@@ -4135,7 +4135,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-meta {
   margin: 0.48rem 0 0;
-  color: #b5c4df;
+  color: #c5b5df;
   font-size: 0.72rem;
   line-height: 1.3;
   font-weight: 600;
@@ -4143,7 +4143,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-empty {
   margin: 0.82rem 0 0;
-  color: #d8e1f2;
+  color: #e2d8f2;
   font-size: 0.82rem;
   line-height: 1.34;
   font-weight: 600;
@@ -4158,8 +4158,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-card {
   border-radius: 0.84rem;
-  border: 1px solid rgba(178, 189, 211, 0.34);
-  background: rgba(8, 13, 24, 0.76);
+  border: 1px solid rgba(191, 178, 211, 0.34);
+  background: rgba(14, 8, 24, 0.76);
   padding: 0.56rem 0.6rem;
 }
 
@@ -4172,14 +4172,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-card-head p {
   margin: 0;
-  color: #f2f7ff;
+  color: #f7f2ff;
   font-size: 0.76rem;
   line-height: 1.24;
   font-weight: 800;
 }
 
 .pf-a3-routine-action-card-head span {
-  color: #bdcae2;
+  color: #cbbde2;
   font-size: 0.68rem;
   line-height: 1;
   font-weight: 700;
@@ -4191,7 +4191,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   gap: 0.26rem;
   padding-left: 1rem;
-  color: #d6e2f8;
+  color: #e3d6f8;
   font-size: 0.72rem;
   line-height: 1.28;
 }
@@ -4211,7 +4211,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-question-label {
   margin: 0;
-  color: #e7f0ff;
+  color: #f0e7ff;
   font-size: 0.76rem;
   line-height: 1.28;
   font-weight: 700;
@@ -4226,10 +4226,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-option-btn {
   border-radius: 999px;
-  border: 1px solid rgba(176, 192, 222, 0.42);
+  border: 1px solid rgba(194, 176, 222, 0.42);
   background: rgba(255, 255, 255, 0.05);
   padding: 0.34rem 0.68rem;
-  color: #eaf2ff;
+  color: #f2eaff;
   font-size: 0.73rem;
   line-height: 1;
   font-weight: 700;
@@ -4243,11 +4243,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-stopwatch-wrap {
   margin-top: 0.74rem;
   border-radius: 0.92rem;
-  border: 1px solid rgba(147, 189, 236, 0.42);
+  border: 1px solid rgba(181, 147, 236, 0.42);
   background:
-    radial-gradient(circle at 16% 22%, rgba(140, 219, 255, 0.22), transparent 52%),
-    radial-gradient(circle at 82% 78%, rgba(118, 182, 255, 0.17), transparent 56%),
-    rgba(8, 15, 26, 0.78);
+    radial-gradient(circle at 16% 22%, rgba(184, 140, 255, 0.22), transparent 52%),
+    radial-gradient(circle at 82% 78%, rgba(171, 118, 255, 0.17), transparent 56%),
+    rgba(15, 8, 26, 0.78);
   padding: 0.78rem 0.8rem;
   display: grid;
   gap: 0.58rem;
@@ -4255,7 +4255,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-display {
   margin: 0;
-  color: #f4fbff;
+  color: #f8f4ff;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(2rem, 8.2vw, 3rem);
   line-height: 1;
@@ -4266,7 +4266,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-status {
   margin: 0;
-  color: #bad2ef;
+  color: #cebaef;
   font-size: 0.8rem;
   line-height: 1.25;
   font-weight: 700;
@@ -4292,14 +4292,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: var(--pf-stopwatch-size);
   height: var(--pf-stopwatch-size);
   border-radius: 1.02rem;
-  border: 1px solid rgba(150, 201, 255, 0.56);
+  border: 1px solid rgba(190, 150, 255, 0.56);
   background:
-    radial-gradient(circle at 16% 22%, rgba(128, 214, 255, 0.24), transparent 52%),
-    radial-gradient(circle at 84% 78%, rgba(113, 181, 255, 0.2), transparent 58%),
-    rgba(7, 14, 24, 0.93);
+    radial-gradient(circle at 16% 22%, rgba(177, 128, 255, 0.24), transparent 52%),
+    radial-gradient(circle at 84% 78%, rgba(167, 113, 255, 0.2), transparent 58%),
+    rgba(14, 7, 24, 0.93);
   box-shadow:
-    inset 0 0 0 1px rgba(208, 232, 255, 0.15),
-    0 18px 36px -24px rgba(4, 10, 18, 0.82);
+    inset 0 0 0 1px rgba(226, 208, 255, 0.15),
+    0 18px 36px -24px rgba(9, 4, 18, 0.82);
   padding: 0.46rem;
   backdrop-filter: blur(8px);
   display: grid;
@@ -4314,13 +4314,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-stopwatch-float-dragging {
   cursor: grabbing;
   box-shadow:
-    inset 0 0 0 1px rgba(214, 236, 255, 0.2),
-    0 18px 44px -22px rgba(4, 10, 18, 0.88);
+    inset 0 0 0 1px rgba(230, 214, 255, 0.2),
+    0 18px 44px -22px rgba(9, 4, 18, 0.88);
 }
 
 .pf-a3-routine-stopwatch-float .pf-a3-routine-stopwatch-display {
   margin: 0;
-  color: #f4fbff;
+  color: #f8f4ff;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(1.42rem, 6.3vw, 1.92rem);
   line-height: 0.95;
@@ -4331,7 +4331,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-float .pf-a3-routine-stopwatch-status {
   margin: 0;
-  color: #bad2ef;
+  color: #cebaef;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -4348,9 +4348,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 0.58rem;
-  border: 1px solid rgba(155, 183, 224, 0.48);
-  background: rgba(22, 32, 49, 0.84);
-  color: #e7f3ff;
+  border: 1px solid rgba(181, 155, 224, 0.48);
+  background: rgba(32, 22, 49, 0.84);
+  color: #f0e7ff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4373,14 +4373,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-stopwatch-mini-btn-close {
-  border-color: rgba(170, 198, 236, 0.56);
-  background: rgba(31, 45, 67, 0.86);
+  border-color: rgba(195, 170, 236, 0.56);
+  background: rgba(45, 31, 67, 0.86);
 }
 
 .pf-a3-routine-stopwatch-mini-btn-stop:disabled {
-  border-color: rgba(149, 163, 188, 0.34);
-  background: rgba(37, 43, 58, 0.6);
-  color: #9ba8c0;
+  border-color: rgba(164, 149, 188, 0.34);
+  background: rgba(45, 37, 58, 0.6);
+  color: #a99bc0;
 }
 
 .pf-a3-routine-log-close {
@@ -4388,9 +4388,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 40px;
   height: 40px;
   border-radius: 0.72rem;
-  border: 1px solid rgba(117, 136, 171, 0.68);
-  background: rgba(18, 25, 39, 0.95);
-  color: #dae2f5;
+  border: 1px solid rgba(138, 117, 171, 0.68);
+  background: rgba(26, 18, 39, 0.95);
+  color: #e4daf5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4405,8 +4405,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-log-video-wrap {
   margin-top: 0.56rem;
   border-radius: 0.9rem;
-  border: 1px solid rgba(96, 116, 151, 0.6);
-  background: rgba(13, 20, 33, 0.94);
+  border: 1px solid rgba(117, 96, 151, 0.6);
+  background: rgba(21, 13, 33, 0.94);
   padding: 0.44rem;
   overflow: hidden;
 }
@@ -4432,8 +4432,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-video-empty {
   border-radius: 0.72rem;
-  border: 1px dashed rgba(116, 136, 172, 0.58);
-  color: #b3c3de;
+  border: 1px dashed rgba(137, 116, 172, 0.58);
+  color: #c3b3de;
   font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.25;
@@ -4460,10 +4460,10 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   overflow: visible;
   border-radius: 0.84rem;
-  border: 1.5px solid rgba(123, 154, 202, 0.66);
-  background: rgba(12, 19, 31, 0.9);
+  border: 1.5px solid rgba(153, 123, 202, 0.66);
+  background: rgba(19, 12, 31, 0.9);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px rgba(186, 218, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(212, 186, 255, 0.1);
   padding: 0.52rem;
 }
 
@@ -4549,7 +4549,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-description {
   margin: 0;
-  color: #dce7fa;
+  color: #e8dcfa;
   font-size: 0.74rem;
   line-height: 1.35;
   font-weight: 600;
@@ -4577,7 +4577,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-field span {
-  color: #c8d6ef;
+  color: #d7c8ef;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
@@ -4592,11 +4592,11 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
   box-sizing: border-box;
   border-radius: 0.58rem;
-  border: 1.5px solid rgba(128, 157, 203, 0.76);
-  background: rgba(18, 25, 39, 0.92);
+  border: 1.5px solid rgba(157, 128, 203, 0.76);
+  background: rgba(26, 18, 39, 0.92);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px rgba(186, 215, 250, 0.08);
-  color: #f2f6ff;
+  box-shadow: inset 0 0 0 1px rgba(211, 186, 250, 0.08);
+  color: #f7f2ff;
   font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
@@ -4605,7 +4605,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-field select {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #d4e7ff 50%), linear-gradient(135deg, #d4e7ff 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, #e4d4ff 50%), linear-gradient(135deg, #e4d4ff 50%, transparent 50%);
   background-position:
     calc(100% - 14px) calc(50% - 2px),
     calc(100% - 9px) calc(50% - 2px);
@@ -4649,9 +4649,9 @@ video.pf-a3-routine-log-video-frame {
   min-block-size: 2.06rem;
   padding: 0;
   border-radius: 0.58rem;
-  border: 1.5px solid rgba(128, 157, 203, 0.76);
-  background: rgba(34, 46, 70, 0.95);
-  color: #f2f6ff;
+  border: 1.5px solid rgba(157, 128, 203, 0.76);
+  background: rgba(48, 34, 70, 0.95);
+  color: #f7f2ff;
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1;
@@ -4662,7 +4662,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-stepper-btn:hover {
-  background: rgba(52, 70, 104, 0.98);
+  background: rgba(72, 52, 104, 0.98);
 }
 
 .pf-a3-stepper-btn:active {
@@ -4681,9 +4681,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
   padding: 0.3rem 0.2rem;
   border-radius: 0.5rem;
-  border: 1.5px solid rgba(128, 157, 203, 0.55);
-  background: rgba(24, 33, 52, 0.92);
-  color: #d4e7ff;
+  border: 1.5px solid rgba(157, 128, 203, 0.55);
+  background: rgba(35, 24, 52, 0.92);
+  color: #e4d4ff;
   font-size: 0.66rem;
   font-weight: 700;
   line-height: 1;
@@ -4694,7 +4694,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-stepper-chip:hover {
-  background: rgba(40, 54, 84, 0.96);
+  background: rgba(57, 40, 84, 0.96);
 }
 
 .pf-a3-stepper-chip:active {
@@ -4756,14 +4756,14 @@ video.pf-a3-routine-log-video-frame {
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
-  color: #e8f0ff;
+  color: #f1e8ff;
   font-size: 0.68rem;
   line-height: 1;
   font-weight: 700;
 }
 
 .pf-a3-routine-log-check input {
-  accent-color: #8dd2ff;
+  accent-color: #b98dff;
   width: 14px;
   height: 14px;
 }
@@ -4793,7 +4793,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-upload-note {
   margin: 0.32rem 0 0;
-  color: #b7cae7;
+  color: #c9b7e7;
   font-size: 0.62rem;
   line-height: 1.25;
   font-weight: 600;
@@ -4819,9 +4819,9 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-secondary-btn {
-  border: 1px solid rgba(106, 127, 162, 0.66);
-  background: rgba(19, 26, 41, 0.94);
-  color: #d7e1f4;
+  border: 1px solid rgba(127, 106, 162, 0.66);
+  background: rgba(27, 19, 41, 0.94);
+  color: #e2d7f4;
 }
 
 .pf-a3-routine-log-primary-btn {
@@ -4844,7 +4844,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-editing-hint {
   margin: 0.42rem 0 0;
-  color: #c6d8f7;
+  color: #d9c6f7;
   font-size: 0.62rem;
   line-height: 1.2;
   font-weight: 700;
@@ -4853,13 +4853,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-routine-log-history {
   margin-top: 0.58rem;
   border-radius: 0.74rem;
-  border: 1px solid rgba(90, 108, 142, 0.56);
-  background: rgba(11, 17, 29, 0.84);
+  border: 1px solid rgba(110, 90, 142, 0.56);
+  background: rgba(18, 11, 29, 0.84);
   padding: 0.42rem;
 }
 
 .pf-a3-routine-log-history-empty {
-  color: #bccbe4;
+  color: #cbbce4;
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.3;
@@ -4868,7 +4868,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-history-title {
   margin: 0;
-  color: #d4e0f6;
+  color: #e1d4f6;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -4892,9 +4892,9 @@ video.pf-a3-routine-log-video-frame {
   justify-content: space-between;
   gap: 0.32rem;
   border-radius: 0.52rem;
-  border: 1px solid rgba(89, 108, 141, 0.45);
-  background: rgba(16, 24, 37, 0.86);
-  color: #c7d4ec;
+  border: 1px solid rgba(109, 89, 141, 0.45);
+  background: rgba(24, 16, 37, 0.86);
+  color: #d5c7ec;
   font-size: 0.62rem;
   line-height: 1.15;
   font-weight: 600;
@@ -4902,7 +4902,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-history strong {
-  color: #e3eeff;
+  color: #eee3ff;
   font-size: 0.64rem;
   font-weight: 700;
 }
@@ -4922,7 +4922,7 @@ video.pf-a3-routine-log-video-frame {
   width: 100%;
   margin-top: 0.16rem;
   padding-top: 0.34rem;
-  border-top: 1px dashed rgba(95, 121, 164, 0.46);
+  border-top: 1px dashed rgba(121, 95, 164, 0.46);
 }
 
 .pf-a3-routine-log-history-edit-grid {
@@ -4947,9 +4947,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-history-btn {
   border-radius: 0.44rem;
-  border: 1px solid rgba(103, 127, 171, 0.7);
-  background: rgba(20, 29, 45, 0.9);
-  color: #dbe8ff;
+  border: 1px solid rgba(129, 103, 171, 0.7);
+  background: rgba(30, 20, 45, 0.9);
+  color: #e9dbff;
   font-size: 0.56rem;
   line-height: 1;
   font-weight: 800;
@@ -4970,8 +4970,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a2-payments-loading-panel {
   width: min(420px, 92vw);
-  background: linear-gradient(168deg, rgba(9, 14, 24, 0.98), rgba(10, 17, 29, 0.97));
-  border-color: rgba(108, 132, 172, 0.48);
+  background: linear-gradient(168deg, rgba(15, 9, 24, 0.98), rgba(17, 10, 29, 0.97));
+  border-color: rgba(133, 108, 172, 0.48);
 }
 
 .pf-a3-routine-toggle:hover,
@@ -4995,7 +4995,7 @@ video.pf-a3-routine-log-video-frame {
   gap: 0;
   border-radius: 0.96rem;
   border: 0;
-  background: rgba(13, 20, 29, 0.94);
+  background: rgba(19, 13, 29, 0.94);
   box-shadow: none;
   padding: 0.14rem 0.16rem calc(0.18rem + env(safe-area-inset-bottom));
   backdrop-filter: none;
@@ -5011,7 +5011,7 @@ video.pf-a3-routine-log-video-frame {
   border: 0;
   border-radius: 0.84rem;
   background: transparent;
-  color: rgba(202, 226, 249, 0.9);
+  color: rgba(220, 202, 249, 0.9);
   min-height: 56px;
   display: flex;
   justify-content: center;
@@ -5038,13 +5038,13 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a2-dock-btn-active {
-  color: #fbfdff;
-  background: rgba(101, 154, 194, 0.12);
+  color: #fdfbff;
+  background: rgba(137, 101, 194, 0.12);
 }
 
 .pf-a2-dock-btn-active::after {
   opacity: 1;
-  background: rgba(226, 242, 255, 0.96);
+  background: rgba(237, 226, 255, 0.96);
 }
 
 .pf-a2-dock-hit {
@@ -5063,7 +5063,7 @@ video.pf-a3-routine-log-video-frame {
   justify-content: center;
   border-radius: 0.52rem;
   border: 0;
-  background: rgba(226, 242, 255, 0.1);
+  background: rgba(237, 226, 255, 0.1);
   box-shadow: none;
 }
 
@@ -5083,7 +5083,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a2-dock-btn-active .pf-a2-dock-icon-wrap {
   border-color: transparent;
-  background: rgba(118, 176, 223, 0.22);
+  background: rgba(158, 118, 223, 0.22);
   box-shadow: none;
 }
 
@@ -5095,9 +5095,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-mode-btn {
   border-radius: 0.86rem;
-  border: 1px solid rgba(128, 167, 200, 0.42);
-  background: linear-gradient(165deg, rgba(13, 24, 35, 0.88), rgba(10, 18, 28, 0.9));
-  color: rgba(219, 238, 252, 0.9);
+  border: 1px solid rgba(156, 128, 200, 0.42);
+  background: linear-gradient(165deg, rgba(21, 13, 35, 0.88), rgba(17, 10, 28, 0.9));
+  color: rgba(232, 219, 252, 0.9);
   min-height: 40px;
   padding: 0.46rem 0.64rem;
   text-align: center;
@@ -5111,7 +5111,7 @@ video.pf-a3-routine-log-video-frame {
   border-color: rgba(103, 232, 249, 0.82);
   background:
     radial-gradient(120% 130% at 100% -20%, rgba(103, 232, 249, 0.2), transparent 62%),
-    linear-gradient(165deg, rgba(8, 29, 37, 0.88), rgba(7, 22, 30, 0.9));
+    linear-gradient(165deg, rgba(19, 8, 37, 0.88), rgba(16, 7, 30, 0.9));
   color: #effbff;
   box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.28);
 }
@@ -5142,14 +5142,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(191, 216, 241, 0.88);
+  color: rgba(210, 191, 241, 0.88);
 }
 
 .pf-a3-nutrition-tracker-date-input input {
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 180, 216, 0.45);
-  background: linear-gradient(170deg, rgba(12, 21, 31, 0.9), rgba(9, 16, 24, 0.92));
-  color: #e8f4ff;
+  border: 1px solid rgba(170, 142, 216, 0.45);
+  background: linear-gradient(170deg, rgba(19, 12, 31, 0.9), rgba(15, 9, 24, 0.92));
+  color: #f1e8ff;
   min-height: 34px;
   padding: 0.3rem 0.58rem;
   font-size: 0.82rem;
@@ -5167,15 +5167,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(190, 215, 240, 0.86);
+  color: rgba(209, 190, 240, 0.86);
   margin-right: 0.14rem;
 }
 
 .pf-a3-nutrition-template-chip {
   border-radius: 999px;
-  border: 1px solid rgba(143, 189, 226, 0.44);
-  background: linear-gradient(170deg, rgba(18, 31, 45, 0.9), rgba(12, 22, 33, 0.94));
-  color: rgba(232, 246, 255, 0.94);
+  border: 1px solid rgba(175, 143, 226, 0.44);
+  background: linear-gradient(170deg, rgba(28, 18, 45, 0.9), rgba(20, 12, 33, 0.94));
+  color: rgba(241, 232, 255, 0.94);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -5184,9 +5184,9 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-nutrition-template-chip.is-muted {
-  border-color: rgba(133, 157, 184, 0.38);
-  color: rgba(208, 224, 240, 0.82);
-  background: linear-gradient(170deg, rgba(17, 25, 35, 0.88), rgba(12, 18, 27, 0.9));
+  border-color: rgba(153, 133, 184, 0.38);
+  color: rgba(220, 208, 240, 0.82);
+  background: linear-gradient(170deg, rgba(24, 17, 35, 0.88), rgba(18, 12, 27, 0.9));
 }
 
 .pf-a3-nutrition-week-head {
@@ -5202,7 +5202,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(203, 228, 250, 0.9);
+  color: rgba(221, 203, 250, 0.9);
   text-align: center;
 }
 
@@ -5214,10 +5214,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-streak-card {
   border-radius: 0.82rem;
-  border: 1px solid rgba(142, 184, 218, 0.36);
+  border: 1px solid rgba(171, 142, 218, 0.36);
   background:
-    radial-gradient(120% 120% at 100% -10%, rgba(56, 189, 248, 0.18), transparent 65%),
-    linear-gradient(168deg, rgba(12, 21, 31, 0.89), rgba(9, 16, 25, 0.9));
+    radial-gradient(120% 120% at 100% -10%, rgba(130, 56, 248, 0.18), transparent 65%),
+    linear-gradient(168deg, rgba(19, 12, 31, 0.89), rgba(15, 9, 25, 0.9));
   padding: 0.56rem 0.6rem;
 }
 
@@ -5226,26 +5226,26 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(181, 208, 233, 0.86);
+  color: rgba(201, 181, 233, 0.86);
 }
 
 .pf-a3-nutrition-streak-value {
   margin-top: 0.28rem;
   font-size: 0.96rem;
   font-weight: 900;
-  color: #f4fbff;
+  color: #f8f4ff;
 }
 
 .pf-a3-nutrition-streak-note {
   margin-top: 0.14rem;
   font-size: 0.66rem;
-  color: rgba(175, 201, 226, 0.82);
+  color: rgba(195, 175, 226, 0.82);
 }
 
 .pf-a3-nutrition-week-grid-wrap {
   border-radius: 0.9rem;
-  border: 1px solid rgba(139, 180, 215, 0.34);
-  background: linear-gradient(170deg, rgba(13, 21, 31, 0.85), rgba(9, 16, 25, 0.88));
+  border: 1px solid rgba(168, 139, 215, 0.34);
+  background: linear-gradient(170deg, rgba(20, 13, 31, 0.85), rgba(15, 9, 25, 0.88));
   padding: 0.6rem 0.62rem;
 }
 
@@ -5254,7 +5254,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(188, 215, 239, 0.88);
+  color: rgba(208, 188, 239, 0.88);
 }
 
 .pf-a3-nutrition-week-grid {
@@ -5266,8 +5266,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-weekday-card {
   border-radius: 0.72rem;
-  border: 1px solid rgba(125, 158, 189, 0.34);
-  background: linear-gradient(165deg, rgba(14, 22, 32, 0.9), rgba(9, 16, 24, 0.92));
+  border: 1px solid rgba(150, 125, 189, 0.34);
+  background: linear-gradient(165deg, rgba(21, 14, 32, 0.9), rgba(15, 9, 24, 0.92));
   min-height: 94px;
   padding: 0.42rem 0.36rem;
   display: grid;
@@ -5283,8 +5283,8 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-nutrition-weekday-card.is-empty {
-  border-color: rgba(125, 154, 181, 0.3);
-  background: linear-gradient(165deg, rgba(15, 23, 33, 0.82), rgba(10, 17, 26, 0.84));
+  border-color: rgba(146, 125, 181, 0.3);
+  background: linear-gradient(165deg, rgba(22, 15, 33, 0.82), rgba(16, 10, 26, 0.84));
 }
 
 .pf-a3-nutrition-weekday-card.is-low {
@@ -5313,19 +5313,19 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(188, 214, 238, 0.86);
+  color: rgba(207, 188, 238, 0.86);
 }
 
 .pf-a3-nutrition-weekday-day {
   font-size: 1rem;
   font-weight: 900;
-  color: #f6fbff;
+  color: #f9f6ff;
   line-height: 1;
 }
 
 .pf-a3-nutrition-weekday-meta {
   font-size: 0.56rem;
-  color: rgba(181, 206, 231, 0.8);
+  color: rgba(200, 181, 231, 0.8);
 }
 
 .pf-a3-nutrition-macro-grid {
@@ -5336,8 +5336,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-macro-card {
   border-radius: 0.84rem;
-  border: 1px solid rgba(139, 179, 214, 0.35);
-  background: linear-gradient(166deg, rgba(13, 22, 33, 0.89), rgba(9, 17, 27, 0.9));
+  border: 1px solid rgba(168, 139, 214, 0.35);
+  background: linear-gradient(166deg, rgba(21, 13, 33, 0.89), rgba(16, 9, 27, 0.9));
   padding: 0.56rem 0.62rem;
 }
 
@@ -5357,28 +5357,28 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #dff3ff;
-  background: linear-gradient(150deg, rgba(14, 165, 233, 0.48), rgba(52, 211, 153, 0.4));
+  color: #ebdfff;
+  background: linear-gradient(150deg, rgba(98, 14, 233, 0.48), rgba(52, 211, 153, 0.4));
 }
 
 .pf-a3-nutrition-macro-title {
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(219, 237, 251, 0.9);
+  color: rgba(231, 219, 251, 0.9);
 }
 
 .pf-a3-nutrition-macro-value {
   margin-top: 0.34rem;
   font-size: 0.8rem;
   font-weight: 800;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a3-nutrition-macro-remaining {
   margin-top: 0.18rem;
   font-size: 0.66rem;
   font-weight: 600;
-  color: rgba(174, 203, 229, 0.9);
+  color: rgba(195, 174, 229, 0.9);
 }
 
 .pf-a3-nutrition-macro-remaining.is-over {
@@ -5390,13 +5390,13 @@ video.pf-a3-routine-log-video-frame {
   height: 0.36rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(71, 94, 122, 0.38);
+  background: rgba(91, 71, 122, 0.38);
 }
 
 .pf-a3-nutrition-macro-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(56, 189, 248, 0.95));
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(130, 56, 248, 0.95));
 }
 
 .pf-a3-nutrition-macro-fill.is-over {
@@ -5408,7 +5408,7 @@ video.pf-a3-routine-log-video-frame {
   border: 1px solid rgba(170, 145, 235, 0.34);
   background:
     radial-gradient(120% 130% at 100% -20%, rgba(167, 139, 250, 0.22), transparent 62%),
-    linear-gradient(168deg, rgba(15, 24, 34, 0.92), rgba(11, 19, 28, 0.9));
+    linear-gradient(168deg, rgba(22, 15, 34, 0.92), rgba(18, 11, 28, 0.9));
   padding: 0.74rem 0.8rem;
 }
 
@@ -5417,20 +5417,20 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(182, 208, 233, 0.78);
+  color: rgba(202, 182, 233, 0.78);
 }
 
 .pf-a3-nutrition-kpi-value {
   margin-top: 0.32rem;
   font-size: clamp(0.98rem, 2.5vw, 1.18rem);
   font-weight: 900;
-  color: #f7fbff;
+  color: #faf7ff;
 }
 
 .pf-a3-nutrition-progress {
   border-radius: 0.92rem;
-  border: 1px solid rgba(142, 182, 219, 0.35);
-  background: linear-gradient(170deg, rgba(14, 23, 34, 0.82), rgba(10, 18, 28, 0.84));
+  border: 1px solid rgba(172, 142, 219, 0.35);
+  background: linear-gradient(170deg, rgba(22, 14, 34, 0.82), rgba(17, 10, 28, 0.84));
   padding: 0.62rem 0.72rem;
 }
 
@@ -5438,13 +5438,13 @@ video.pf-a3-routine-log-video-frame {
   height: 0.56rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(74, 96, 123, 0.38);
+  background: rgba(93, 74, 123, 0.38);
 }
 
 .pf-a3-nutrition-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(56, 189, 248, 0.95));
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(130, 56, 248, 0.95));
   transition: width 220ms ease;
 }
 
@@ -5458,7 +5458,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(182, 211, 239, 0.9);
+  color: rgba(204, 182, 239, 0.9);
 }
 
 .pf-a3-nutrition-tracker-list {
@@ -5468,8 +5468,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-tracker-row {
   border-radius: 0.86rem;
-  border: 1px solid rgba(129, 163, 198, 0.34);
-  background: linear-gradient(165deg, rgba(14, 23, 33, 0.88), rgba(10, 18, 27, 0.9));
+  border: 1px solid rgba(155, 129, 198, 0.34);
+  background: linear-gradient(165deg, rgba(21, 14, 33, 0.88), rgba(17, 10, 27, 0.9));
   padding: 0.66rem 0.72rem;
   display: grid;
   gap: 0.52rem;
@@ -5500,7 +5500,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-check {
   border-radius: 999px;
-  border: 1px solid rgba(125, 158, 192, 0.42);
+  border: 1px solid rgba(151, 125, 192, 0.42);
   padding: 0.16rem 0.46rem;
   display: inline-flex;
   align-items: center;
@@ -5509,16 +5509,16 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(198, 220, 240, 0.78);
-  background: rgba(18, 28, 39, 0.72);
+  color: rgba(214, 198, 240, 0.78);
+  background: rgba(26, 18, 39, 0.72);
 }
 
 .pf-a3-nutrition-check-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(132, 162, 191, 0.7);
-  box-shadow: 0 0 0 0 rgba(132, 162, 191, 0.35);
+  background: rgba(155, 132, 191, 0.7);
+  box-shadow: 0 0 0 0 rgba(155, 132, 191, 0.35);
 }
 
 .pf-a3-nutrition-check.is-done {
@@ -5544,8 +5544,8 @@ video.pf-a3-routine-log-video-frame {
   height: 54px;
   border-radius: 0.58rem;
   overflow: hidden;
-  border: 1px solid rgba(141, 179, 214, 0.35);
-  background: rgba(9, 16, 25, 0.8);
+  border: 1px solid rgba(169, 141, 214, 0.35);
+  background: rgba(15, 9, 25, 0.8);
 }
 
 .pf-a3-nutrition-mini-thumb img {
@@ -5566,15 +5566,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(175, 203, 228, 0.88);
+  color: rgba(195, 175, 228, 0.88);
   margin-right: 0.08rem;
 }
 
 .pf-a3-nutrition-chip-btn {
   border-radius: 999px;
-  border: 1px solid rgba(124, 169, 206, 0.42);
-  background: rgba(15, 27, 39, 0.78);
-  color: rgba(222, 242, 255, 0.92);
+  border: 1px solid rgba(155, 124, 206, 0.42);
+  background: rgba(24, 15, 39, 0.78);
+  color: rgba(235, 222, 255, 0.92);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -5593,15 +5593,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(181, 208, 235, 0.82);
+  color: rgba(202, 181, 235, 0.82);
 }
 
 .pf-a3-nutrition-kcal-input input {
   width: 132px;
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 181, 216, 0.45);
-  background: rgba(9, 16, 25, 0.86);
-  color: #ecf7ff;
+  border: 1px solid rgba(170, 142, 216, 0.45);
+  background: rgba(15, 9, 25, 0.86);
+  color: #f3ecff;
   min-height: 34px;
   padding: 0.3rem 0.5rem;
   font-size: 0.82rem;
@@ -5610,10 +5610,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-student-food-card {
   border-radius: 0.94rem;
-  border: 1px solid rgba(137, 180, 215, 0.38);
+  border: 1px solid rgba(167, 137, 215, 0.38);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(167, 139, 250, 0.16), transparent 62%),
-    linear-gradient(168deg, rgba(12, 22, 33, 0.9), rgba(9, 17, 27, 0.92));
+    linear-gradient(168deg, rgba(20, 12, 33, 0.9), rgba(16, 9, 27, 0.92));
   padding: 0.72rem 0.78rem;
 }
 
@@ -5622,20 +5622,20 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(183, 212, 236, 0.86);
+  color: rgba(203, 183, 236, 0.86);
 }
 
 .pf-a3-nutrition-student-food-title {
   margin-top: 0.22rem;
   font-size: 0.94rem;
   font-weight: 900;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a3-nutrition-student-food-subtitle {
   margin-top: 0.24rem;
   font-size: 0.72rem;
-  color: rgba(180, 208, 232, 0.86);
+  color: rgba(200, 180, 232, 0.86);
 }
 
 .pf-a3-nutrition-student-food-grid {
@@ -5656,14 +5656,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(180, 208, 235, 0.86);
+  color: rgba(201, 180, 235, 0.86);
 }
 
 .pf-a3-nutrition-student-food-field input {
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 181, 216, 0.46);
-  background: rgba(9, 16, 25, 0.86);
-  color: #ebf7ff;
+  border: 1px solid rgba(170, 142, 216, 0.46);
+  background: rgba(15, 9, 25, 0.86);
+  color: #f3ebff;
   min-height: 34px;
   padding: 0.32rem 0.52rem;
   font-size: 0.8rem;
@@ -5686,8 +5686,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-student-food-item {
   border-radius: 0.72rem;
-  border: 1px solid rgba(128, 164, 197, 0.34);
-  background: rgba(11, 19, 29, 0.82);
+  border: 1px solid rgba(154, 128, 197, 0.34);
+  background: rgba(18, 11, 29, 0.82);
   padding: 0.44rem 0.5rem;
   display: flex;
   align-items: center;
@@ -5698,13 +5698,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-nutrition-student-food-name {
   font-size: 0.77rem;
   font-weight: 800;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a3-nutrition-student-food-meta {
   margin-top: 0.08rem;
   font-size: 0.66rem;
-  color: rgba(180, 207, 232, 0.84);
+  color: rgba(200, 180, 232, 0.84);
 }
 
 .pf-a3-nutrition-student-food-delete {
@@ -5721,7 +5721,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-nutrition-student-food-empty {
   margin-top: 0.62rem;
   font-size: 0.72rem;
-  color: rgba(176, 204, 229, 0.84);
+  color: rgba(196, 176, 229, 0.84);
 }
 
 .pf-a3-nutrition-student-food-status {
@@ -5752,7 +5752,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.98rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-diary-link {
@@ -5760,9 +5760,9 @@ video.pf-a3-routine-log-video-frame {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid rgba(126, 171, 205, 0.4);
-  background: rgba(11, 21, 32, 0.82);
-  color: rgba(208, 232, 252, 0.92);
+  border: 1px solid rgba(156, 126, 205, 0.4);
+  background: rgba(19, 11, 32, 0.82);
+  color: rgba(225, 208, 252, 0.92);
   min-height: 30px;
   padding: 0.22rem 0.62rem;
   font-size: 0.66rem;
@@ -5776,7 +5776,7 @@ video.pf-a3-routine-log-video-frame {
   border: 1px solid rgba(88, 164, 117, 0.34);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(16, 185, 129, 0.17), transparent 62%),
-    linear-gradient(168deg, rgba(10, 21, 31, 0.9), rgba(7, 16, 24, 0.92));
+    linear-gradient(168deg, rgba(18, 10, 31, 0.9), rgba(14, 7, 24, 0.92));
   padding: 0.72rem;
 }
 
@@ -5831,7 +5831,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-plan-field textarea {
   border-radius: 0.62rem;
   border: 1px solid rgba(116, 182, 141, 0.42);
-  background: linear-gradient(170deg, rgba(9, 20, 28, 0.94), rgba(7, 15, 23, 0.95));
+  background: linear-gradient(170deg, rgba(16, 9, 28, 0.94), rgba(13, 7, 23, 0.95));
   color: #eafcf2;
   padding: 0.38rem 0.58rem;
   font-size: 0.76rem;
@@ -5926,8 +5926,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-replacement-badge {
   border-radius: 999px;
   border: 1px solid rgba(167, 139, 250, 0.48);
-  background: rgba(11, 43, 62, 0.62);
-  color: rgba(208, 241, 255, 0.92);
+  background: rgba(31, 11, 62, 0.62);
+  color: rgba(226, 208, 255, 0.92);
   padding: 0.14rem 0.5rem;
   font-size: 0.56rem;
   font-weight: 700;
@@ -5937,21 +5937,21 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-replacement-card {
   border-radius: 0.74rem;
-  border: 1px solid rgba(118, 176, 214, 0.34);
-  background: rgba(9, 18, 28, 0.8);
+  border: 1px solid rgba(155, 118, 214, 0.34);
+  background: rgba(16, 9, 28, 0.8);
   padding: 0.44rem 0.5rem;
 }
 
 .pf-a4-nutrition-replacement-title {
   font-size: 0.7rem;
   font-weight: 800;
-  color: #eef8ff;
+  color: #f5eeff;
 }
 
 .pf-a4-nutrition-replacement-meta {
   margin-top: 0.1rem;
   font-size: 0.61rem;
-  color: rgba(177, 208, 233, 0.88);
+  color: rgba(198, 177, 233, 0.88);
 }
 
 .pf-a4-nutrition-replacement-macros {
@@ -5963,8 +5963,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-replacement-macros span {
   border-radius: 999px;
-  border: 1px solid rgba(127, 164, 196, 0.38);
-  background: rgba(10, 24, 36, 0.72);
+  border: 1px solid rgba(153, 127, 196, 0.38);
+  background: rgba(20, 10, 36, 0.72);
   padding: 0.14rem 0.4rem;
   font-size: 0.56rem;
   font-weight: 700;
@@ -5974,15 +5974,15 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-replacement-source {
   margin-top: 0.2rem;
   font-size: 0.58rem;
-  color: rgba(171, 200, 224, 0.84);
+  color: rgba(191, 171, 224, 0.84);
 }
 
 .pf-a4-nutrition-summary-card {
   border-radius: 0.96rem;
-  border: 1px solid rgba(141, 183, 218, 0.35);
+  border: 1px solid rgba(171, 141, 218, 0.35);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(94, 234, 212, 0.16), transparent 64%),
-    linear-gradient(168deg, rgba(10, 21, 32, 0.9), rgba(8, 17, 27, 0.92));
+    linear-gradient(168deg, rgba(18, 10, 32, 0.9), rgba(15, 8, 27, 0.92));
   padding: 0.68rem 0.74rem;
   display: grid;
   gap: 0.62rem;
@@ -6005,7 +6005,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-summary-gauge-track {
   fill: none;
-  stroke: rgba(117, 151, 183, 0.34);
+  stroke: rgba(142, 117, 183, 0.34);
   stroke-width: 14;
   stroke-linecap: round;
 }
@@ -6043,7 +6043,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1.05rem;
   font-weight: 900;
   line-height: 1.1;
-  color: #f8fcff;
+  color: #fbf8ff;
 }
 
 .pf-a4-nutrition-summary-gauge-goal {
@@ -6052,7 +6052,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(182, 210, 234, 0.86);
+  color: rgba(202, 182, 234, 0.86);
 }
 
 .pf-a4-nutrition-summary-gauge-pct {
@@ -6070,8 +6070,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-summary-metric {
   border-radius: 0.72rem;
-  border: 1px solid rgba(135, 174, 208, 0.3);
-  background: rgba(10, 18, 28, 0.72);
+  border: 1px solid rgba(163, 135, 208, 0.3);
+  background: rgba(17, 10, 28, 0.72);
   padding: 0.42rem 0.48rem;
 }
 
@@ -6086,7 +6086,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1rem;
   font-weight: 900;
   line-height: 1.1;
-  color: #f8fcff;
+  color: #fbf8ff;
 }
 
 .pf-a4-nutrition-summary-metric-label {
@@ -6095,7 +6095,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(188, 215, 240, 0.86);
+  color: rgba(208, 188, 240, 0.86);
 }
 
 .pf-a4-nutrition-summary-macros {
@@ -6110,8 +6110,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-meal-row {
   border-radius: 0.86rem;
-  border: 1px solid rgba(130, 168, 201, 0.33);
-  background: linear-gradient(165deg, rgba(14, 24, 35, 0.88), rgba(9, 18, 27, 0.9));
+  border: 1px solid rgba(157, 130, 201, 0.33);
+  background: linear-gradient(165deg, rgba(22, 14, 35, 0.88), rgba(16, 9, 27, 0.9));
   padding: 0.5rem 0.58rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -6127,8 +6127,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-meal-row.is-clickable:hover,
 .pf-a4-nutrition-meal-row.is-clickable:focus-visible {
   transform: translateY(-1px);
-  border-color: rgba(117, 193, 244, 0.58);
-  box-shadow: 0 10px 22px rgba(4, 10, 18, 0.28);
+  border-color: rgba(166, 117, 244, 0.58);
+  box-shadow: 0 10px 22px rgba(9, 4, 18, 0.28);
   outline: none;
 }
 
@@ -6140,27 +6140,27 @@ video.pf-a3-routine-log-video-frame {
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  border: 1px solid rgba(145, 184, 218, 0.34);
-  background: rgba(12, 22, 33, 0.78);
+  border: 1px solid rgba(173, 145, 218, 0.34);
+  background: rgba(20, 12, 33, 0.78);
 }
 
 .pf-a4-nutrition-meal-name {
   font-size: 0.84rem;
   font-weight: 900;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-meal-kcal {
   margin-top: 0.08rem;
   font-size: 0.68rem;
   font-weight: 700;
-  color: rgba(181, 211, 236, 0.9);
+  color: rgba(202, 181, 236, 0.9);
 }
 
 .pf-a4-nutrition-meal-preview {
   margin-top: 0.08rem;
   font-size: 0.64rem;
-  color: rgba(171, 199, 225, 0.82);
+  color: rgba(192, 171, 225, 0.82);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6172,8 +6172,8 @@ video.pf-a3-routine-log-video-frame {
   height: 32px;
   border-radius: 0.68rem;
   border: 1px solid rgba(139, 110, 240, 0.52);
-  background: linear-gradient(160deg, rgba(10, 75, 117, 0.52), rgba(9, 39, 66, 0.82));
-  color: rgba(227, 245, 255, 0.98);
+  background: linear-gradient(160deg, rgba(51, 10, 117, 0.52), rgba(31, 9, 66, 0.82));
+  color: rgba(238, 227, 255, 0.98);
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1;
@@ -6184,10 +6184,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-composer {
   border-radius: 0.96rem;
-  border: 1px solid rgba(121, 168, 205, 0.38);
+  border: 1px solid rgba(153, 121, 205, 0.38);
   background:
-    radial-gradient(120% 120% at 100% -10%, rgba(59, 130, 246, 0.16), transparent 63%),
-    linear-gradient(168deg, rgba(10, 21, 32, 0.93), rgba(8, 17, 26, 0.94));
+    radial-gradient(120% 120% at 100% -10%, rgba(131, 59, 246, 0.16), transparent 63%),
+    linear-gradient(168deg, rgba(18, 10, 32, 0.93), rgba(15, 8, 26, 0.94));
   padding: 0.66rem 0.7rem;
   display: grid;
   gap: 0.5rem;
@@ -6197,7 +6197,7 @@ video.pf-a3-routine-log-video-frame {
   position: fixed;
   inset: 0;
   z-index: 140;
-  background: rgba(2, 8, 16, 0.76);
+  background: rgba(7, 2, 16, 0.76);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -6211,7 +6211,7 @@ video.pf-a3-routine-log-video-frame {
   max-height: min(88vh, 760px);
   overflow-y: auto;
   border-radius: 1.04rem;
-  box-shadow: 0 26px 52px rgba(2, 10, 19, 0.5);
+  box-shadow: 0 26px 52px rgba(9, 2, 19, 0.5);
 }
 
 .pf-a4-nutrition-composer-head {
@@ -6226,14 +6226,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(183, 211, 237, 0.86);
+  color: rgba(204, 183, 237, 0.86);
 }
 
 .pf-a4-nutrition-composer-title {
   margin-top: 0.18rem;
   font-size: 0.9rem;
   font-weight: 900;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-composer-grid {
@@ -6250,8 +6250,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-cal-ia-card {
   border-radius: 0.82rem;
-  border: 1px solid rgba(136, 177, 212, 0.34);
-  background: rgba(10, 19, 29, 0.76);
+  border: 1px solid rgba(165, 136, 212, 0.34);
+  background: rgba(17, 10, 29, 0.76);
   padding: 0.46rem;
   display: grid;
   gap: 0.52rem;
@@ -6264,8 +6264,8 @@ video.pf-a3-routine-log-video-frame {
   height: 86px;
   border-radius: 0.66rem;
   overflow: hidden;
-  border: 1px solid rgba(144, 183, 216, 0.34);
-  background: rgba(8, 14, 22, 0.84);
+  border: 1px solid rgba(172, 144, 216, 0.34);
+  background: rgba(13, 8, 22, 0.84);
 }
 
 .pf-a4-nutrition-cal-ia-preview img {
@@ -6277,20 +6277,20 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-cal-ia-title {
   font-size: 0.82rem;
   font-weight: 900;
-  color: #f6fbff;
+  color: #f9f6ff;
 }
 
 .pf-a4-nutrition-cal-ia-meta {
   margin-top: 0.12rem;
   font-size: 0.64rem;
-  color: rgba(177, 205, 230, 0.88);
+  color: rgba(197, 177, 230, 0.88);
 }
 
 .pf-a4-nutrition-camera-layer {
   position: fixed;
   inset: 0;
   z-index: 170;
-  background: rgba(2, 9, 16, 0.84);
+  background: rgba(7, 2, 16, 0.84);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -6302,10 +6302,10 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-camera-sheet {
   width: min(100%, 560px);
   border-radius: 1rem;
-  border: 1px solid rgba(122, 170, 205, 0.4);
+  border: 1px solid rgba(154, 122, 205, 0.4);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(45, 212, 191, 0.12), transparent 60%),
-    linear-gradient(170deg, rgba(10, 19, 30, 0.96), rgba(8, 16, 26, 0.97));
+    linear-gradient(170deg, rgba(18, 10, 30, 0.96), rgba(15, 8, 26, 0.97));
   padding: 0.66rem;
   display: grid;
   gap: 0.56rem;
@@ -6323,22 +6323,22 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(186, 215, 239, 0.88);
+  color: rgba(206, 186, 239, 0.88);
 }
 
 .pf-a4-nutrition-camera-title {
   margin-top: 0.18rem;
   font-size: 0.88rem;
   font-weight: 900;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-camera-preview {
   position: relative;
   border-radius: 0.86rem;
   overflow: hidden;
-  border: 1px solid rgba(131, 171, 204, 0.38);
-  background: rgba(6, 11, 19, 0.9);
+  border: 1px solid rgba(159, 131, 204, 0.38);
+  background: rgba(11, 6, 19, 0.9);
   min-height: 268px;
 }
 
@@ -6355,7 +6355,7 @@ video.pf-a3-routine-log-video-frame {
   inset: 16% 10%;
   border: 2px solid rgba(126, 246, 204, 0.88);
   border-radius: 0.82rem;
-  box-shadow: inset 0 0 0 1px rgba(9, 35, 50, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(25, 9, 50, 0.8);
   pointer-events: none;
 }
 
@@ -6373,7 +6373,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: rgba(187, 215, 239, 0.9);
+  color: rgba(207, 187, 239, 0.9);
 }
 
 .pf-a4-nutrition-camera-actions {
@@ -6407,17 +6407,17 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-search-empty {
   border-radius: 0.7rem;
-  border: 1px dashed rgba(137, 178, 212, 0.34);
-  background: rgba(10, 19, 29, 0.62);
+  border: 1px dashed rgba(166, 137, 212, 0.34);
+  background: rgba(17, 10, 29, 0.62);
   padding: 0.46rem;
   font-size: 0.66rem;
-  color: rgba(176, 203, 228, 0.88);
+  color: rgba(196, 176, 228, 0.88);
 }
 
 .pf-a4-nutrition-search-row {
   border-radius: 0.74rem;
-  border: 1px solid rgba(132, 172, 206, 0.33);
-  background: rgba(10, 18, 28, 0.78);
+  border: 1px solid rgba(160, 132, 206, 0.33);
+  background: rgba(17, 10, 28, 0.78);
   padding: 0.42rem;
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) auto;
@@ -6430,8 +6430,8 @@ video.pf-a3-routine-log-video-frame {
   height: 46px;
   border-radius: 0.62rem;
   overflow: hidden;
-  border: 1px solid rgba(139, 178, 212, 0.34);
-  background: rgba(8, 14, 22, 0.84);
+  border: 1px solid rgba(167, 139, 212, 0.34);
+  background: rgba(13, 8, 22, 0.84);
 }
 
 .pf-a4-nutrition-search-thumb img {
@@ -6447,19 +6447,19 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: rgba(173, 201, 226, 0.76);
+  color: rgba(193, 173, 226, 0.76);
 }
 
 .pf-a4-nutrition-search-name {
   font-size: 0.76rem;
   font-weight: 800;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-search-meta {
   margin-top: 0.1rem;
   font-size: 0.63rem;
-  color: rgba(180, 207, 232, 0.84);
+  color: rgba(200, 180, 232, 0.84);
 }
 
 .pf-a4-nutrition-search-source {
@@ -6479,9 +6479,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 28px;
   height: 28px;
   border-radius: 0.56rem;
-  border: 1px solid rgba(156, 163, 175, 0.45);
-  background: rgba(22, 25, 31, 0.82);
-  color: rgba(212, 219, 228, 0.84);
+  border: 1px solid rgba(163, 156, 175, 0.45);
+  background: rgba(25, 22, 31, 0.82);
+  color: rgba(218, 212, 228, 0.84);
   font-size: 0.78rem;
   font-weight: 700;
   display: inline-flex;
@@ -6498,8 +6498,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-search-add {
   border-radius: 0.56rem;
   border: 1px solid rgba(139, 110, 240, 0.52);
-  background: linear-gradient(155deg, rgba(12, 80, 127, 0.56), rgba(10, 46, 76, 0.82));
-  color: rgba(221, 244, 255, 0.98);
+  background: linear-gradient(155deg, rgba(56, 12, 127, 0.56), rgba(35, 10, 76, 0.82));
+  color: rgba(234, 221, 255, 0.98);
   min-height: 28px;
   padding: 0.2rem 0.5rem;
   font-size: 0.62rem;
@@ -6513,8 +6513,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-meal-entry-row {
   border-radius: 0.72rem;
-  border: 1px solid rgba(127, 162, 194, 0.34);
-  background: rgba(10, 18, 28, 0.74);
+  border: 1px solid rgba(153, 127, 194, 0.34);
+  background: rgba(17, 10, 28, 0.74);
   padding: 0.4rem 0.46rem;
   display: flex;
   align-items: center;
@@ -6525,13 +6525,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-meal-entry-name {
   font-size: 0.74rem;
   font-weight: 800;
-  color: #f5fbff;
+  color: #f9f5ff;
 }
 
 .pf-a4-nutrition-meal-entry-meta {
   margin-top: 0.08rem;
   font-size: 0.62rem;
-  color: rgba(179, 207, 231, 0.82);
+  color: rgba(199, 179, 231, 0.82);
 }
 
 .pf-a3-nutrition-kcal-input input:focus,
@@ -6540,8 +6540,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-plan-field select:focus,
 .pf-a4-nutrition-plan-field textarea:focus {
   outline: none;
-  border-color: rgba(56, 189, 248, 0.82);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
+  border-color: rgba(130, 56, 248, 0.82);
+  box-shadow: 0 0 0 2px rgba(130, 56, 248, 0.24);
 }
 
 @keyframes pf-a3-nutrition-check-pop {
@@ -6626,7 +6626,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a2-dock-btn:hover {
-    color: #f6fbff;
+    color: #f9f6ff;
     background-color: rgba(167, 139, 250, 0.14);
   }
 }
@@ -6650,12 +6650,12 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main,
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2 {
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
   }
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 {
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
   }
 
@@ -6687,7 +6687,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-alumno-v2 {
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
   }
 
@@ -6708,7 +6708,7 @@ video.pf-a3-routine-log-video-frame {
     width: min(132vw, 820px);
     height: 46vh;
     border-radius: 0 0 56% 56%;
-    background: linear-gradient(180deg, rgba(170, 140, 255, 0.34) 0%, rgba(96, 210, 255, 0.16) 44%, rgba(8, 26, 45, 0) 100%);
+    background: linear-gradient(180deg, rgba(170, 140, 255, 0.34) 0%, rgba(157, 96, 255, 0.16) 44%, rgba(22, 8, 45, 0) 100%);
     opacity: 0.96;
   }
 
@@ -6717,12 +6717,12 @@ video.pf-a3-routine-log-video-frame {
     width: min(150vw, 960px);
     height: 62vh;
     border-radius: 0 0 62% 62%;
-    background: linear-gradient(180deg, rgba(128, 242, 255, 0.22) 0%, rgba(82, 189, 250, 0.1) 46%, rgba(8, 26, 45, 0) 100%);
+    background: linear-gradient(180deg, rgba(128, 242, 255, 0.22) 0%, rgba(146, 82, 250, 0.1) 46%, rgba(22, 8, 45, 0) 100%);
     opacity: 0.8;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
@@ -6733,7 +6733,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 .pf-alumno-stage,
   html.pf-mobile-fluid .pf-alumno-v2 .pf-alumno-stage {
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
   }
 
@@ -6747,7 +6747,7 @@ video.pf-a3-routine-log-video-frame {
     padding-inline: 0.24rem;
     gap: 0.34rem;
     padding-bottom: 0.08rem;
-    background-color: #05070a !important;
+    background-color: #07050a !important;
     background-image: none !important;
   }
 
@@ -7154,7 +7154,7 @@ video.pf-a3-routine-log-video-frame {
     max-height: none;
     overflow: visible;
     border-radius: 0.76rem;
-    border: 1.5px solid rgba(132, 164, 214, 0.76);
+    border: 1.5px solid rgba(163, 132, 214, 0.76);
     padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
   }
 
@@ -7312,35 +7312,35 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi {
     border-radius: 0.62rem !important;
-    border-color: rgba(158, 188, 216, 0.34) !important;
+    border-color: rgba(180, 158, 216, 0.34) !important;
     box-shadow: none !important;
   }
 
   html.pf-mobile-fluid .pf-a2-hero {
     background:
       radial-gradient(120% 92% at -15% -30%, rgba(178, 150, 255, 0.2), transparent 56%),
-      linear-gradient(165deg, rgba(18, 25, 35, 0.95), rgba(12, 18, 27, 0.94)) !important;
+      linear-gradient(165deg, rgba(25, 18, 35, 0.95), rgba(18, 12, 27, 0.94)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-card {
-    background: linear-gradient(170deg, rgba(15, 21, 30, 0.95), rgba(12, 18, 27, 0.94)) !important;
+    background: linear-gradient(170deg, rgba(21, 15, 30, 0.95), rgba(18, 12, 27, 0.94)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: linear-gradient(165deg, rgba(22, 31, 42, 0.9), rgba(17, 24, 33, 0.9)) !important;
+    background: linear-gradient(165deg, rgba(30, 22, 42, 0.9), rgba(23, 17, 33, 0.9)) !important;
     border-color: rgba(178, 150, 255, 0.28) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-solid-btn {
-    color: #0c1b28 !important;
-    border-color: rgba(236, 248, 255, 0.88) !important;
+    color: #170c28 !important;
+    border-color: rgba(243, 236, 255, 0.88) !important;
     background: linear-gradient(155deg, rgba(166, 237, 218, 0.94), rgba(178, 150, 255, 0.94)) !important;
     box-shadow: none !important;
   }
 
   html.pf-mobile-fluid .pf-a2-ghost-btn {
     border-color: rgba(178, 150, 255, 0.44) !important;
-    background: linear-gradient(170deg, rgba(17, 24, 34, 0.92), rgba(13, 19, 28, 0.9)) !important;
+    background: linear-gradient(170deg, rgba(24, 17, 34, 0.92), rgba(19, 13, 28, 0.9)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-back-btn {
@@ -7348,8 +7348,8 @@ video.pf-a3-routine-log-video-frame {
     min-width: 44px;
     height: 44px;
     border-radius: 0.86rem;
-    border-color: rgba(162, 202, 234, 0.56) !important;
-    background: linear-gradient(170deg, rgba(19, 28, 39, 0.96), rgba(12, 20, 30, 0.95)) !important;
+    border-color: rgba(190, 162, 234, 0.56) !important;
+    background: linear-gradient(170deg, rgba(27, 19, 39, 0.96), rgba(19, 12, 30, 0.95)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
@@ -7365,7 +7365,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a3-routine-superset-row {
     box-shadow: none !important;
     backdrop-filter: none !important;
-    border-color: rgba(141, 132, 188, 0.3) !important;
+    border-color: rgba(153, 132, 188, 0.3) !important;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 .grid.gap-4 {
@@ -7639,7 +7639,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-a2-dock {
     border-color: transparent !important;
-    background: #05070a !important;
+    background: #07050a !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
   }
@@ -7653,7 +7653,7 @@ video.pf-a3-routine-log-video-frame {
     width: 26px;
     height: 26px;
     border-color: transparent;
-    background: rgba(227, 239, 251, 0.1);
+    background: rgba(236, 227, 251, 0.1);
     box-shadow: none;
   }
 
@@ -7662,12 +7662,12 @@ video.pf-a3-routine-log-video-frame {
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active {
-    color: #f6fbff !important;
-    background: rgba(101, 154, 194, 0.2) !important;
+    color: #f9f6ff !important;
+    background: rgba(137, 101, 194, 0.2) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active::after {
-    background: rgba(230, 245, 255, 0.96) !important;
+    background: rgba(240, 230, 255, 0.96) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-label {
@@ -7749,7 +7749,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   /* DEEP scroll-flicker fix for iOS WebView.
-     Root cause: cards used rgba blue gradients (rgba(11,26,48,0.92)). During fast
+     Root cause: cards used rgba blue gradients (rgba(25, 11, 48,0.92)). During fast
      scroll, iOS drops/repaints tiles and the gradient/transparency makes the
      re-paint visible as a blue flash. Fix: solid opaque dark backgrounds,
      contain: paint to isolate cards, no backdrop-filter. */
@@ -7759,7 +7759,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-hero {
-    background: #0d1219 !important;
+    background: #120d19 !important;
     background-image: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -7767,7 +7767,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: #11161e !important;
+    background: #16111e !important;
   }
 
   html.pf-mobile-webview .pf-a2-card::before,
@@ -7783,7 +7783,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]),
   html.pf-mobile-fluid .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]) {
-    background-color: #131820 !important;
+    background-color: #181320 !important;
     background-image: none !important;
     backdrop-filter: none !important;
   }
@@ -7802,7 +7802,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell,
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main {
-    background: #0d1219 !important;
+    background: #120d19 !important;
     background-image: none !important;
   }
 
@@ -7843,7 +7843,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1.05rem;
   line-height: 1.18;
   font-weight: 900;
-  color: #eef6ff;
+  color: #f5eeff;
   letter-spacing: 0.01em;
 }
 
@@ -7851,7 +7851,7 @@ video.pf-a3-routine-log-video-frame {
   margin: 0;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #a8c0d8;
+  color: #baa8d8;
 }
 
 .pf-a3-routine-flow-cta {
@@ -7906,16 +7906,16 @@ video.pf-a3-routine-log-video-frame {
 
 /* Resume CTA (blue/purple tint) */
 .pf-a3-routine-flow-cta-resume {
-  background: linear-gradient(160deg, rgba(96, 132, 255, 0.96), rgba(72, 100, 230, 0.95));
-  border-color: rgba(140, 172, 255, 0.7);
-  box-shadow: 0 10px 24px -16px rgba(80, 112, 240, 0.6);
+  background: linear-gradient(160deg, rgba(157, 96, 255, 0.96), rgba(133, 72, 230, 0.95));
+  border-color: rgba(184, 140, 255, 0.7);
+  box-shadow: 0 10px 24px -16px rgba(141, 80, 240, 0.6);
 }
 
 .pf-a3-routine-flow-discard-btn {
   margin-top: 0.3rem;
   background: none;
   border: none;
-  color: #7a92b8;
+  color: #927ab8;
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
@@ -7923,7 +7923,7 @@ video.pf-a3-routine-log-video-frame {
   text-underline-offset: 2px;
   opacity: 0.8;
 }
-.pf-a3-routine-flow-discard-btn:hover { opacity: 1; color: #a0b8d8; }
+.pf-a3-routine-flow-discard-btn:hover { opacity: 1; color: #b5a0d8; }
 
 /* ── Guided training action bar ─────────────────────────── */
 @keyframes pf-guided-slide-in {
@@ -7955,7 +7955,7 @@ video.pf-a3-routine-log-video-frame {
 }
 .pf-a3-guided-pip-done    { background: rgba(80, 200, 130, 0.7); }
 .pf-a3-guided-pip-active  { background: rgba(160, 110, 255, 0.95); }
-.pf-a3-guided-pip-pending { background: rgba(72, 88, 118, 0.5); }
+.pf-a3-guided-pip-pending { background: rgba(90, 72, 118, 0.5); }
 
 .pf-a3-guided-btns {
   display: flex;
@@ -7980,19 +7980,19 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-guided-btn-pause {
   flex: 0 0 auto;
-  border: 1px solid rgba(86, 102, 136, 0.6);
-  background: rgba(16, 23, 38, 0.92);
-  color: #b0bfd8;
+  border: 1px solid rgba(105, 86, 136, 0.6);
+  background: rgba(24, 16, 38, 0.92);
+  color: #bfb0d8;
 }
-.pf-a3-guided-btn-pause:hover { color: #d8e6ff; border-color: rgba(140, 160, 200, 0.7); }
+.pf-a3-guided-btn-pause:hover { color: #e7d8ff; border-color: rgba(163, 140, 200, 0.7); }
 
 .pf-a3-guided-btn-back {
   flex: 0 0 auto;
-  border: 1px solid rgba(86, 102, 136, 0.55);
-  background: rgba(20, 28, 44, 0.88);
-  color: #a8b8d4;
+  border: 1px solid rgba(105, 86, 136, 0.55);
+  background: rgba(29, 20, 44, 0.88);
+  color: #b9a8d4;
 }
-.pf-a3-guided-btn-back:hover { color: #c8d8f0; }
+.pf-a3-guided-btn-back:hover { color: #d7c8f0; }
 
 .pf-a3-guided-btn-next {
   flex: 1 1 0;
@@ -8034,7 +8034,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8aa4c8;
+  color: #a28ac8;
 }
 
 .pf-a3-finalize-measurement-row {
@@ -8046,7 +8046,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-finalize-measurement-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #c8d8f0;
+  color: #d7c8f0;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
@@ -8072,9 +8072,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 2.2rem;
   height: 2.2rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(80, 100, 140, 0.5);
-  background: rgba(14, 20, 34, 0.86);
-  color: #a8bcd8;
+  border: 1px solid rgba(103, 80, 140, 0.5);
+  background: rgba(22, 14, 34, 0.86);
+  color: #baa8d8;
   font-size: 0.72rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms;
@@ -8095,9 +8095,9 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-finalize-option-btn {
   padding: 0.4rem 0.72rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(80, 100, 140, 0.5);
-  background: rgba(14, 20, 34, 0.86);
-  color: #a8bcd8;
+  border: 1px solid rgba(103, 80, 140, 0.5);
+  background: rgba(22, 14, 34, 0.86);
+  color: #baa8d8;
   font-size: 0.7rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms;
@@ -8114,9 +8114,9 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   padding: 0.46rem 0.54rem;
   border-radius: 0.56rem;
-  border: 1px solid rgba(80, 100, 140, 0.5);
-  background: rgba(10, 16, 28, 0.9);
-  color: #c8d8f0;
+  border: 1px solid rgba(103, 80, 140, 0.5);
+  background: rgba(17, 10, 28, 0.9);
+  color: #d7c8f0;
   font-size: 0.72rem;
   font-weight: 500;
   resize: none;
@@ -8130,9 +8130,9 @@ video.pf-a3-routine-log-video-frame {
   max-width: 6rem;
   padding: 0.42rem 0.54rem;
   border-radius: 0.56rem;
-  border: 1px solid rgba(80, 100, 140, 0.5);
-  background: rgba(10, 16, 28, 0.9);
-  color: #c8d8f0;
+  border: 1px solid rgba(103, 80, 140, 0.5);
+  background: rgba(17, 10, 28, 0.9);
+  color: #d7c8f0;
   font-size: 0.78rem;
   font-weight: 700;
   outline: none;
@@ -8144,7 +8144,7 @@ video.pf-a3-routine-log-video-frame {
   flex-direction: column;
   gap: 0.6rem;
   padding-top: 0.3rem;
-  border-top: 1px dashed rgba(70, 90, 120, 0.4);
+  border-top: 1px dashed rgba(89, 70, 120, 0.4);
   margin-top: 0.2rem;
 }
 
@@ -8175,7 +8175,7 @@ video.pf-a3-routine-log-video-frame {
 }
 .pf-a3-survey-pip-done    { background: rgba(80, 200, 130, 0.7); }
 .pf-a3-survey-pip-active  { background: rgba(160, 110, 255, 0.95); }
-.pf-a3-survey-pip-pending { background: rgba(60, 76, 108, 0.45); }
+.pf-a3-survey-pip-pending { background: rgba(78, 60, 108, 0.45); }
 
 .pf-a3-survey-counter {
   margin: 0;
@@ -8183,14 +8183,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6a84aa;
+  color: #836aaa;
 }
 
 .pf-a3-survey-label {
   margin: 0;
   font-size: 1rem;
   font-weight: 800;
-  color: #ddeeff;
+  color: #eaddff;
   line-height: 1.25;
 }
 
@@ -8210,9 +8210,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 2rem;
   height: 2.6rem;
   border-radius: 0.6rem;
-  border: 1.5px solid rgba(70, 90, 128, 0.5);
-  background: rgba(12, 18, 32, 0.88);
-  color: #9ab0d0;
+  border: 1.5px solid rgba(92, 70, 128, 0.5);
+  background: rgba(20, 12, 32, 0.88);
+  color: #af9ad0;
   font-size: 0.82rem;
   font-weight: 800;
   transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
@@ -8236,9 +8236,9 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-survey-option-btn {
   padding: 0.52rem 1rem;
   border-radius: 99px;
-  border: 1.5px solid rgba(70, 90, 128, 0.5);
-  background: rgba(12, 18, 32, 0.88);
-  color: #9ab0d0;
+  border: 1.5px solid rgba(92, 70, 128, 0.5);
+  background: rgba(20, 12, 32, 0.88);
+  color: #af9ad0;
   font-size: 0.78rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
@@ -8257,9 +8257,9 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   padding: 0.6rem 0.7rem;
   border-radius: 0.68rem;
-  border: 1.5px solid rgba(70, 90, 128, 0.5);
-  background: rgba(10, 16, 28, 0.9);
-  color: #c8d8f0;
+  border: 1.5px solid rgba(92, 70, 128, 0.5);
+  background: rgba(17, 10, 28, 0.9);
+  color: #d7c8f0;
   font-size: 0.84rem;
   font-weight: 500;
   resize: none;
@@ -8273,9 +8273,9 @@ video.pf-a3-routine-log-video-frame {
   max-width: 7rem;
   padding: 0.52rem 0.7rem;
   border-radius: 0.68rem;
-  border: 1.5px solid rgba(70, 90, 128, 0.5);
-  background: rgba(10, 16, 28, 0.9);
-  color: #c8d8f0;
+  border: 1.5px solid rgba(92, 70, 128, 0.5);
+  background: rgba(17, 10, 28, 0.9);
+  color: #d7c8f0;
   font-size: 0.9rem;
   font-weight: 700;
   outline: none;
@@ -8295,15 +8295,15 @@ video.pf-a3-routine-log-video-frame {
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 0.6rem;
-  border: 1.5px solid rgba(70, 90, 128, 0.45);
-  background: rgba(12, 18, 32, 0.88);
-  color: #7a96bc;
+  border: 1.5px solid rgba(92, 70, 128, 0.45);
+  background: rgba(20, 12, 32, 0.88);
+  color: #937abc;
   display: grid;
   place-items: center;
   transition: opacity 120ms;
 }
 .pf-a3-survey-nav-back:disabled { opacity: 0.28; cursor: default; }
-.pf-a3-survey-nav-back:not(:disabled):hover { border-color: rgba(120, 150, 200, 0.6); color: #b0c8e8; }
+.pf-a3-survey-nav-back:not(:disabled):hover { border-color: rgba(151, 120, 200, 0.6); color: #c5b0e8; }
 
 .pf-a3-survey-nav-next {
   flex: 1 1 0;
@@ -8313,14 +8313,14 @@ video.pf-a3-routine-log-video-frame {
   gap: 0.3rem;
   padding: 0.62rem 1rem;
   border-radius: 0.7rem;
-  border: 1.5px solid rgba(90, 110, 150, 0.5);
-  background: rgba(20, 28, 44, 0.9);
-  color: #b0c4e0;
+  border: 1.5px solid rgba(113, 90, 150, 0.5);
+  background: rgba(29, 20, 44, 0.9);
+  color: #c2b0e0;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.03em;
 }
-.pf-a3-survey-nav-next:hover { border-color: rgba(140, 160, 210, 0.6); color: #d0e0ff; }
+.pf-a3-survey-nav-next:hover { border-color: rgba(167, 140, 210, 0.6); color: #e2d0ff; }
 
 .pf-a3-survey-finish-btn {
   flex: 1 1 0;
@@ -8348,7 +8348,7 @@ video.pf-a3-routine-log-video-frame {
   gap: 1rem;
   padding: 1rem 0;
   text-align: center;
-  color: #8aa4c8;
+  color: #a28ac8;
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -9234,3 +9234,28 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
   background: rgba(255, 255, 255, 0.85) !important;
   border-color: color-mix(in srgb, var(--gym-accent) 15%, transparent) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Cohesión violeta — re-tinte de superficies slate de Tailwind (solo alumno)
+   Reemplaza los overlays azul-marino remanentes por violeta-negro, sin tocar
+   texto neutro ni colores semánticos (cian/sky). Alcance: .pf-alumno-v2.
+   ══════════════════════════════════════════════════════════════════════════ */
+.pf-alumno-v2 .bg-slate-700\/70 { background-color: rgba(56, 42, 88, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-800\/70 { background-color: rgba(38, 27, 64, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-800\/60 { background-color: rgba(38, 27, 64, 0.60) !important; }
+.pf-alumno-v2 .bg-slate-900\/60 { background-color: rgba(24, 16, 42, 0.60) !important; }
+.pf-alumno-v2 .bg-slate-900\/40 { background-color: rgba(24, 16, 42, 0.40) !important; }
+.pf-alumno-v2 .bg-slate-900\/55 { background-color: rgba(24, 16, 42, 0.55) !important; }
+.pf-alumno-v2 .bg-slate-900\/70 { background-color: rgba(24, 16, 42, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-900\/45 { background-color: rgba(24, 16, 42, 0.45) !important; }
+.pf-alumno-v2 .bg-slate-950\/55 { background-color: rgba(13, 9, 26, 0.55) !important; }
+.pf-alumno-v2 .bg-slate-950\/40 { background-color: rgba(13, 9, 26, 0.40) !important; }
+.pf-alumno-v2 .bg-slate-950\/35 { background-color: rgba(13, 9, 26, 0.35) !important; }
+.pf-alumno-v2 .bg-slate-950\/30 { background-color: rgba(13, 9, 26, 0.30) !important; }
+.pf-alumno-v2 .bg-slate-950\/20 { background-color: rgba(13, 9, 26, 0.20) !important; }
+.pf-alumno-v2 .bg-slate-950\/45 { background-color: rgba(13, 9, 26, 0.45) !important; }
+.pf-alumno-v2 .border-slate-500\/45 { border-color: rgba(104, 82, 152, 0.45) !important; }
+.pf-alumno-v2 .border-slate-500\/35 { border-color: rgba(104, 82, 152, 0.35) !important; }
+.pf-alumno-v2 .border-slate-500\/60 { border-color: rgba(104, 82, 152, 0.60) !important; }
+.pf-alumno-v2 .border-slate-600\/60 { border-color: rgba(74, 58, 112, 0.60) !important; }
+.pf-alumno-v2 .border-slate-600\/45 { border-color: rgba(74, 58, 112, 0.45) !important; }
