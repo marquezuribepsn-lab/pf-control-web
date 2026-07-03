@@ -6,6 +6,7 @@ import OnboardingModal from "@/components/OnboardingModal";
 import ChatPanel from "@/components/ChatPanel";
 import NotificationHub, { DerivedNotif } from "@/components/NotificationHub";
 import MacroDonut, { MacroSegment } from "@/components/MacroDonut";
+import FraseDelDia from "@/components/FraseDelDia";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -9213,6 +9214,8 @@ export default function AlumnoVisionClient({
                   </div>
                 ) : null}
               </section>
+
+              <FraseDelDia />
 
               <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
