@@ -2,7 +2,7 @@
 
 import ReliableActionButton from "@/components/ReliableActionButton";
 import DateInput from "@/components/DateInput";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 
 type AccountData = {
@@ -72,6 +72,13 @@ function applyThemeMode(mode: ThemeMode) {
   document.documentElement.setAttribute("data-pf-theme", resolved);
   document.documentElement.style.colorScheme = resolved;
 }
+
+// En el cliente aplicamos el tema con un layout effect (síncrono, antes del
+// paint) para evitar el parpadeo: sin esto la página pinta primero en tema
+// oscuro por defecto y recién después salta al tema guardado. En el server
+// cae a useEffect (no-op) para no romper el render.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export default function CuentaPage() {
   const [account, setAccount] = useState<AccountData | null>(null);
@@ -148,7 +155,7 @@ export default function CuentaPage() {
     setTelefono(digits ? `${countryCode}${digits}` : "");
   }, [countryCode, phoneLocal]);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
     const syncTheme = () => {

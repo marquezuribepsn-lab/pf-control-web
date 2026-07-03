@@ -9552,21 +9552,6 @@ export default function AlumnoVisionClient({
                         <path d="M9.2 3.5h5.6" strokeLinecap="round" />
                       </svg>
                     </ReliableActionButton>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => window.open("/alumnos/plan-imprimir", "_blank")}
-                      className="pf-a3-routine-icon-btn !border !border-violet-200/65 !bg-violet-500/28 transition-colors hover:!bg-violet-400/40"
-                      aria-label="Imprimir plan"
-                      title="Imprimir / guardar PDF del plan"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="M6 9V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5" strokeLinecap="round" />
-                        <rect x="3" y="9" width="18" height="9" rx="2" />
-                        <path d="M6 18v2h12v-2" strokeLinecap="round" />
-                        <circle cx="17" cy="13.5" r="0.8" fill="currentColor" />
-                      </svg>
-                    </ReliableActionButton>
                   </div>
                 </div>
 
