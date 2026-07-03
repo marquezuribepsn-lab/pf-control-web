@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PlanesDestacados from "@/components/PlanesDestacados";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import ReliableLink from "@/components/ReliableLink";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -565,6 +566,15 @@ export default function AlumnoPagosClient() {
           <section className="pf-a2-banner pf-a2-banner-danger rounded-xl border px-4 py-3 text-sm">
             {error}
           </section>
+        ) : null}
+
+        {!isIosNative ? (
+          <PlanesDestacados
+            daysRemaining={status?.daysRemaining ?? null}
+            onSelectPlan={startCheckout}
+            checkoutLoading={checkoutLoading}
+            canPay={canPay}
+          />
         ) : null}
 
         <section className="grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
