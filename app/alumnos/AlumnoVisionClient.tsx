@@ -11429,32 +11429,36 @@ export default function AlumnoVisionClient({
                             grams: macro.grams,
                             color:
                               macro.key === "P"
-                                ? "#38bdf8"
-                                : macro.key === "C"
                                 ? "#f59e0b"
-                                : "#34d399",
+                                : macro.key === "C"
+                                ? "#22d3ee"
+                                : "#8b5cf6",
                           }))}
                         />
                       </div>
                     </div>
 
                     <div className="mt-4 space-y-3">
-                      {macroRows.map((macro) => (
-                        <div key={macro.key}>
-                          <div className="flex items-center justify-between text-xs text-slate-300">
-                            <span>{macro.label}</span>
-                            <span>
-                              {macro.grams} g · {macro.ratio}%
-                            </span>
+                      {macroRows.map((macro) => {
+                        const macroColor =
+                          macro.key === "P" ? "#f59e0b" : macro.key === "C" ? "#22d3ee" : "#8b5cf6";
+                        return (
+                          <div key={macro.key}>
+                            <div className="flex items-center justify-between text-xs text-slate-300">
+                              <span>{macro.label}</span>
+                              <span style={{ color: macroColor, fontWeight: 700 }}>
+                                {macro.grams} g · {macro.ratio}%
+                              </span>
+                            </div>
+                            <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                              <div
+                                className="h-full rounded-full"
+                                style={{ width: `${Math.max(4, macro.ratio)}%`, background: macroColor }}
+                              />
+                            </div>
                           </div>
-                          <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
-                            <div
-                              className="pf-a2-progress-fill h-full rounded-full"
-                              style={{ width: `${Math.max(4, macro.ratio)}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     {nutritionPlan ? (
