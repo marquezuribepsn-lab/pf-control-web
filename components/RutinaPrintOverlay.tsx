@@ -10,8 +10,9 @@
  * Modes:
  *  - "dia"          → current day, real data
  *  - "semana"       → full week, real data
- *  - "dia-blanco"   → current day, exercise names kept but value cells blank
- *  - "semana-blanco"→ full week, blank value cells (fill-in-by-hand sheet)
+ *  - "dia-blanco"   → planilla de sesión: mantiene nombres de ejercicios y
+ *                     encabezados, vacía las celdas de valores para anotar a mano.
+ *  - "semana-blanco"→ igual que dia-blanco pero para la semana completa.
  *
  * Printing uses the browser's native window.print() (→ "Guardar como PDF").
  * No extra npm packages required.
