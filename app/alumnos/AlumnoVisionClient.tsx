@@ -9038,7 +9038,7 @@ export default function AlumnoVisionClient({
                   <p className="text-sm font-bold text-amber-200">{blockedGateMessage}</p>
                   <a
                     href="/alumnos/pagos?pay=1"
-                    className="mt-3 flex items-center justify-center rounded-xl bg-cyan-500 py-2.5 text-sm font-black text-white active:opacity-80"
+                    className="mt-3 flex items-center justify-center rounded-xl bg-violet-500 py-2.5 text-sm font-black text-white active:opacity-80"
                   >
                     Ver opciones de pago
                   </a>
@@ -9538,9 +9538,9 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => toggleRoutineQuickPanel("timer")}
-                      className={`pf-a3-routine-icon-btn !border !border-sky-200/65 !bg-sky-500/28 transition-colors ${
+                      className={`pf-a3-routine-icon-btn !border !border-violet-200/65 !bg-violet-500/28 transition-colors ${
                         activeRoutineActionScreen === "timer" || routineStopwatchRunning
-                          ? "!border-sky-100 !bg-sky-400/45"
+                          ? "!border-violet-100 !bg-violet-400/45"
                           : ""
                       }`}
                       aria-label="Abrir cronómetro"
@@ -11288,7 +11288,7 @@ export default function AlumnoVisionClient({
                   onClick={() => setNutritionTab("plan")}
                   className={`pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
                     nutritionTab === "plan"
-                      ? "border-cyan-300/50 bg-cyan-500/15 text-cyan-100"
+                      ? "border-violet-300/50 bg-violet-500/15 text-violet-100"
                       : "border-white/10 bg-slate-950/40 text-slate-300"
                   }`}
                 >
@@ -11458,19 +11458,19 @@ export default function AlumnoVisionClient({
                     </div>
 
                     {nutritionPlan ? (
-                      <div className="mt-4 rounded-xl border border-cyan-300/25 bg-cyan-500/[0.08] p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-100/90">
+                      <div className="mt-4 rounded-xl border border-violet-300/25 bg-violet-500/[0.08] p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-100/90">
                           Guía útil del plan
                         </p>
 
                         {nutritionPlanTrainingSplit ? (
-                          <p className="mt-2 text-xs text-cyan-50">
+                          <p className="mt-2 text-xs text-violet-50">
                             Ritmo semanal: {nutritionPlanTrainingSplit.trainingDays} con entrenamiento / {nutritionPlanTrainingSplit.restDays} de descanso
                           </p>
                         ) : null}
 
                         {nutritionPlanMealSchedule.length > 0 ? (
-                          <p className="mt-1 text-xs text-cyan-50">
+                          <p className="mt-1 text-xs text-violet-50">
                             Horarios sugeridos: {nutritionPlanMealSchedule.join(" · ")}
                           </p>
                         ) : null}
@@ -11480,9 +11480,9 @@ export default function AlumnoVisionClient({
                             {nutritionPlanGuideRows.map((row) => (
                               <div
                                 key={row.label}
-                                className="rounded-lg border border-cyan-200/20 bg-slate-950/30 px-3 py-2"
+                                className="rounded-lg border border-violet-200/20 bg-slate-950/30 px-3 py-2"
                               >
-                                <p className="text-[11px] uppercase tracking-[0.11em] text-cyan-100/75">{row.label}</p>
+                                <p className="text-[11px] uppercase tracking-[0.11em] text-violet-100/75">{row.label}</p>
                                 <p className="mt-1 text-sm font-semibold text-slate-100">{row.value}</p>
                               </div>
                             ))}
@@ -11490,8 +11490,8 @@ export default function AlumnoVisionClient({
                         ) : null}
 
                         {nutritionPlan?.notas ? (
-                          <details className="mt-3 rounded-lg border border-cyan-200/20 bg-slate-950/20 p-2">
-                            <summary className="cursor-pointer text-xs font-semibold text-cyan-100/90">
+                          <details className="mt-3 rounded-lg border border-violet-200/20 bg-slate-950/20 p-2">
+                            <summary className="cursor-pointer text-xs font-semibold text-violet-100/90">
                               Ver detalle técnico
                             </summary>
                             <p className="mt-2 whitespace-pre-wrap text-xs text-slate-300">{nutritionPlan.notas}</p>
@@ -11651,7 +11651,7 @@ export default function AlumnoVisionClient({
                                   <div className="flex flex-wrap items-center gap-2">
                                     <h3 className="text-sm font-black text-slate-100">{mealName}</h3>
                                     {mealTime ? (
-                                      <span className="rounded-full border border-cyan-200/35 bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-100">
+                                      <span className="rounded-full border border-violet-200/35 bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100">
                                         {mealTime}
                                       </span>
                                     ) : null}
@@ -12417,19 +12417,19 @@ export default function AlumnoVisionClient({
                   ) : null}
 
                   {nutritionFoodSearchStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
                       {nutritionFoodSearchStatus}
                     </p>
                   ) : null}
 
                   {nutritionBarcodeStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
                       {nutritionBarcodeStatus}
                     </p>
                   ) : null}
 
                   {nutritionCalIaStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
                       {nutritionCalIaStatus}
                     </p>
                   ) : null}
@@ -12715,7 +12715,7 @@ export default function AlumnoVisionClient({
                     <img
                       src={accountPanelSidebarImageDraft}
                       alt="Foto de perfil"
-                      className="h-16 w-16 rounded-full border border-cyan-300/40 object-cover"
+                      className="h-16 w-16 rounded-full border border-violet-300/40 object-cover"
                     />
                   ) : (
                     <div className="grid h-16 w-16 place-items-center rounded-full border border-slate-600/60 bg-slate-900/60 text-xs font-bold text-slate-400">
@@ -12726,7 +12726,7 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => accountPanelFileInputRef.current?.click()}
-                      className="rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-100"
+                      className="rounded-lg border border-violet-300/60 bg-violet-500/10 px-3 py-1.5 text-xs font-bold text-violet-100"
                     >
                       Seleccionar imagen
                     </ReliableActionButton>
