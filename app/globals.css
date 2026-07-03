@@ -1554,31 +1554,32 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
  * Login-inspired blue/cyan palette applied across all alumno screens.
  */
 .pf-alumno-v2 {
-  --pf-a2-bg-0: #09111f;
-  --pf-a2-bg-1: #102a56;
-  --pf-a2-bg-2: #16385f;
-  --pf-a2-stage-surface: rgba(8, 18, 36, 0.88);
-  --pf-a2-stage-border: rgba(164, 205, 255, 0.23);
-  --pf-a2-divider: rgba(137, 180, 230, 0.22);
-  --pf-a2-surface: rgba(10, 24, 46, 0.85);
-  --pf-a2-surface-soft: rgba(11, 28, 54, 0.82);
-  --pf-a2-border: rgba(124, 173, 232, 0.36);
-  --pf-a2-border-strong: rgba(207, 232, 255, 0.54);
-  --pf-a2-text: #f4f7fb;
-  --pf-a2-muted: #c5d9ee;
-  --pf-a2-muted-strong: #95b9dd;
-  --pf-a2-accent-main: #22d3ee;
-  --pf-a2-accent-soft: #7dd3fc;
-  --pf-a2-accent-cold: #60a5fa;
-  --pf-a2-shadow: 0 14px 30px rgba(3, 10, 22, 0.36);
+  /* Paleta violeta sobre negro casi puro (rediseño alumno v3) */
+  --pf-a2-bg-0: #08070d;
+  --pf-a2-bg-1: #140f22;
+  --pf-a2-bg-2: #1b1430;
+  --pf-a2-stage-surface: rgba(16, 13, 24, 0.9);
+  --pf-a2-stage-border: rgba(167, 139, 250, 0.22);
+  --pf-a2-divider: rgba(150, 130, 210, 0.2);
+  --pf-a2-surface: rgba(18, 15, 28, 0.86);
+  --pf-a2-surface-soft: rgba(22, 18, 34, 0.84);
+  --pf-a2-border: rgba(139, 92, 246, 0.32);
+  --pf-a2-border-strong: rgba(196, 170, 255, 0.5);
+  --pf-a2-text: #f5f3fb;
+  --pf-a2-muted: #cbc2dd;
+  --pf-a2-muted-strong: #9a8fb5;
+  --pf-a2-accent-main: #8b5cf6;
+  --pf-a2-accent-soft: #a78bfa;
+  --pf-a2-accent-cold: #7c3aed;
+  --pf-a2-shadow: 0 14px 30px rgba(5, 3, 12, 0.42);
   position: relative;
   min-height: 100svh;
   color: var(--pf-a2-text);
   font-family: var(--font-body), "Space Grotesk", sans-serif;
   background-color: var(--pf-a2-bg-0);
   background-image:
-    linear-gradient(180deg, rgba(122, 245, 255, 0.3) 0%, rgba(101, 212, 255, 0.16) 30%, rgba(17, 46, 76, 0.06) 60%, rgba(10, 24, 46, 0) 100%),
-    linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #0d2140 48%, var(--pf-a2-bg-2) 100%);
+    linear-gradient(180deg, rgba(139, 92, 246, 0.3) 0%, rgba(124, 58, 237, 0.15) 30%, rgba(20, 15, 32, 0.05) 60%, rgba(10, 8, 16, 0) 100%),
+    linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #130d24 48%, var(--pf-a2-bg-2) 100%);
   overflow-x: clip;
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
 }
@@ -1601,7 +1602,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   height: 56vh;
   border-radius: 0 0 56% 56%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(146, 250, 255, 0.44) 0%, rgba(109, 221, 255, 0.22) 40%, rgba(9, 28, 50, 0) 100%);
+  background: linear-gradient(180deg, rgba(160, 120, 255, 0.46) 0%, rgba(124, 58, 237, 0.22) 40%, rgba(10, 8, 18, 0) 100%);
   opacity: 0.98;
   animation: none;
 }
@@ -1613,7 +1614,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   height: 70vh;
   border-radius: 0 0 60% 60%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(129, 238, 255, 0.28) 0%, rgba(85, 188, 248, 0.12) 46%, rgba(9, 24, 44, 0) 100%);
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.28) 0%, rgba(109, 60, 225, 0.12) 46%, rgba(9, 7, 16, 0) 100%);
   opacity: 0.82;
   animation: none;
 }
@@ -1637,7 +1638,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-tab-rail {
   scrollbar-width: thin;
-  scrollbar-color: rgba(125, 211, 252, 0.45) transparent;
+  scrollbar-color: rgba(167, 139, 250, 0.45) transparent;
 }
 
 .pf-a2-tab-rail::-webkit-scrollbar {
@@ -1645,7 +1646,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-tab-rail::-webkit-scrollbar-thumb {
-  background: rgba(125, 211, 252, 0.45);
+  background: rgba(167, 139, 250, 0.45);
   border-radius: 999px;
 }
 
@@ -2445,19 +2446,19 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-quick-icon-agua {
-  background: linear-gradient(165deg, #22d3ee, #3b82f6);
+  background: linear-gradient(165deg, #38bdf8, #2563eb);
 }
 
 .pf-a3-quick-icon-sueno {
-  background: linear-gradient(165deg, #0ea5e9, #2563eb);
+  background: linear-gradient(165deg, #94a3b8, #475569);
 }
 
 .pf-a3-quick-icon-progreso {
-  background: linear-gradient(165deg, #34d399, #22d3ee);
+  background: linear-gradient(165deg, #2dd4bf, #14b8a6);
 }
 
 .pf-a3-quick-icon-pagos {
-  background: linear-gradient(165deg, #60a5fa, #22d3ee);
+  background: linear-gradient(165deg, #f472b6, #db2777);
 }
 
 .pf-a3-head-actions {
