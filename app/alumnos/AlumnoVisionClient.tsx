@@ -2684,6 +2684,7 @@ export default function AlumnoVisionClient({
     Record<string, NutritionReplacementSuggestionLite>
   >({});
   const [nutritionPanelView] = useState<"plan" | "registro">("plan");
+  const [nutritionTab, setNutritionTab] = useState<"plan" | "recetas">("plan");
   const [nutritionShowTrackerDetails, setNutritionShowTrackerDetails] = useState(false);
   const [nutritionTrackerDate, setNutritionTrackerDate] = useState<string>(() => getTodayDateInputValue());
   const [nutritionTrackerStatus, setNutritionTrackerStatus] = useState<string>("");
@@ -4462,6 +4463,28 @@ export default function AlumnoVisionClient({
 
   const nutritionPlanCaloriesFromMeals = useMemo(
     () => roundToOneDecimal(nutritionMealsDetailed.reduce((total, meal) => total + meal.totalKcal, 0)),
+    [nutritionMealsDetailed]
+  );
+
+  const nutritionRecipes = useMemo(
+    () =>
+      nutritionMealsDetailed
+        .filter((meal) => meal.items.length > 0)
+        .map((meal) => ({
+          id: meal.mealId,
+          title: meal.mealName,
+          imageUrl: meal.imageUrl,
+          totalKcal: meal.totalKcal,
+          totalProtein: meal.totalProtein,
+          totalCarbs: meal.totalCarbs,
+          totalFat: meal.totalFat,
+          ingredients: meal.items.map((item) => ({
+            id: item.id,
+            label: item.label,
+            grams: item.grams,
+            calories: item.calories,
+          })),
+        })),
     [nutritionMealsDetailed]
   );
 
@@ -11272,7 +11295,108 @@ export default function AlumnoVisionClient({
                 </div>
               </article>
 
-              {nutritionPanelView === "plan" ? (
+              <div className="pf-a4-nutrition-tabs flex gap-2" role="tablist" aria-label="Vistas de nutrición">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={nutritionTab === "plan"}
+                  onClick={() => setNutritionTab("plan")}
+                  className={`pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
+                    nutritionTab === "plan"
+                      ? "border-cyan-300/50 bg-cyan-500/15 text-cyan-100"
+                      : "border-white/10 bg-slate-950/40 text-slate-300"
+                  }`}
+                >
+                  Nutrición
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={nutritionTab === "recetas"}
+                  onClick={() => setNutritionTab("recetas")}
+                  className={`pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
+                    nutritionTab === "recetas"
+                      ? "border-amber-300/50 bg-amber-500/15 text-amber-100"
+                      : "border-white/10 bg-slate-950/40 text-slate-300"
+                  }`}
+                >
+                  Recetas
+                </button>
+              </div>
+
+              {nutritionTab === "recetas" ? (
+                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                  <p className="pf-a2-eyebrow">Recetas</p>
+                  <h2 className="mt-1 text-xl font-black text-white">Recetas de tu plan</h2>
+                  <p className="mt-2 text-sm text-slate-300">
+                    Cada comida pautada con sus ingredientes y aporte calórico, lista para cocinar.
+                  </p>
+
+                  {nutritionRecipes.length > 0 ? (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {nutritionRecipes.map((recipe) => (
+                        <section
+                          key={recipe.id}
+                          className="pf-a2-kpi flex flex-col overflow-hidden rounded-xl border"
+                        >
+                          {recipe.imageUrl ? (
+                            <img
+                              src={recipe.imageUrl}
+                              alt={recipe.title}
+                              className="h-32 w-full object-cover"
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : null}
+                          <div className="flex flex-1 flex-col p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="min-w-0 text-sm font-black text-slate-100">{recipe.title}</h3>
+                              <span className="pf-a2-pill shrink-0">
+                                {formatCompactNumber(recipe.totalKcal)} kcal
+                              </span>
+                            </div>
+
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+                              <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                                P {formatCompactNumber(recipe.totalProtein)} g
+                              </span>
+                              <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                                C {formatCompactNumber(recipe.totalCarbs)} g
+                              </span>
+                              <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                                G {formatCompactNumber(recipe.totalFat)} g
+                              </span>
+                            </div>
+
+                            <ul className="mt-3 space-y-1.5">
+                              {recipe.ingredients.map((ing) => (
+                                <li
+                                  key={ing.id}
+                                  className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/35 px-2.5 py-1.5 text-xs text-slate-200"
+                                >
+                                  <span className="min-w-0 truncate">{ing.label}</span>
+                                  <span className="shrink-0 text-slate-400">
+                                    {ing.grams !== null && Number.isFinite(ing.grams)
+                                      ? `${formatCompactNumber(ing.grams)} g · `
+                                      : ""}
+                                    {formatCompactNumber(ing.calories)} kcal
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                      Todavía no hay recetas para mostrar. Aparecerán aquí cuando tu profesor cargue comidas en tu plan.
+                    </div>
+                  )}
+                </article>
+              ) : null}
+
+              {nutritionTab === "plan" && nutritionPanelView === "plan" ? (
                 <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
                   <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
                     <p className="pf-a2-eyebrow">Plan pautado</p>
