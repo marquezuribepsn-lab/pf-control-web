@@ -300,6 +300,8 @@ type NutritionFoodLite = {
   proteinPer100g?: number;
   carbsPer100g?: number;
   fatPer100g?: number;
+  fiberPer100g?: number;
+  waterPer100g?: number;
   imageUrl?: string;
   imagenUrl?: string;
   photoUrl?: string;
@@ -1619,6 +1621,8 @@ function normalizeNutritionFoodRows(rawRows: unknown[]): NutritionFoodLite[] {
         proteinPer100g: toSafeNumeric(candidate.proteinPer100g) || 0,
         carbsPer100g: toSafeNumeric(candidate.carbsPer100g) || 0,
         fatPer100g: toSafeNumeric(candidate.fatPer100g) || 0,
+        fiberPer100g: toSafeNumeric(candidate.fiberPer100g) || 0,
+        waterPer100g: toSafeNumeric(candidate.waterPer100g) || 0,
         imageUrl: String(candidate.imageUrl || "").trim(),
         imagenUrl: String(candidate.imagenUrl || "").trim(),
         photoUrl: String(candidate.photoUrl || "").trim(),
@@ -4384,10 +4388,14 @@ export default function AlumnoVisionClient({
         const proteinPer100g = Math.max(0, toNumber(food?.proteinPer100g) || 0);
         const carbsPer100g = Math.max(0, toNumber(food?.carbsPer100g) || 0);
         const fatPer100g = Math.max(0, toNumber(food?.fatPer100g) || 0);
+        const fiberPer100g = Math.max(0, toNumber(food?.fiberPer100g) || 0);
+        const waterPer100g = Math.max(0, toNumber(food?.waterPer100g) || 0);
         const calories = roundToOneDecimal((kcalPer100g * safeGrams) / 100);
         const protein = roundToOneDecimal((proteinPer100g * safeGrams) / 100);
         const carbs = roundToOneDecimal((carbsPer100g * safeGrams) / 100);
         const fat = roundToOneDecimal((fatPer100g * safeGrams) / 100);
+        const fiber = roundToOneDecimal((fiberPer100g * safeGrams) / 100);
+        const water = roundToOneDecimal((waterPer100g * safeGrams) / 100);
         const imageUrls = resolveNutritionImageUrls([
           item.imageUrl,
           item.imagenUrl,
@@ -4415,6 +4423,8 @@ export default function AlumnoVisionClient({
           protein,
           carbs,
           fat,
+          fiber,
+          water,
           imageUrl,
           imageUrls,
         };
@@ -11605,6 +11615,12 @@ export default function AlumnoVisionClient({
                                         </span>
                                         <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
                                           G {formatCompactNumber(item.fat)} g
+                                        </span>
+                                        <span className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-0.5 font-semibold text-sky-100">
+                                          Agua {formatCompactNumber(item.water)} ml
+                                        </span>
+                                        <span className="rounded-full border border-lime-300/30 bg-lime-500/10 px-2 py-0.5 font-semibold text-lime-100">
+                                          Fibra {formatCompactNumber(item.fiber)} g
                                         </span>
                                       </div>
 
