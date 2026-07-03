@@ -1299,7 +1299,11 @@ export default function AppShell({
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
   const isClienteRole = normalizedRole === "CLIENTE";
-  const shouldRenderSidebar = !(isClienteRole && isMobileViewport);
+  // Un alumno (CLIENTE) NUNCA debe ver el shell de admin (sidebar + topbar),
+  // sin importar el ancho del viewport. Antes se ocultaba solo en mobile, lo
+  // que dejaba filtrar la sidebar de admin en escritorio o si fallaba la
+  // detección de mobile. El alumno usa su propia UI (AlumnoVisionClient).
+  const shouldRenderSidebar = !isClienteRole;
   const isClientePendingApproval = isClienteRole && normalizedEstado === "PENDIENTE_ALTA";
   const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
   const hasSidebarImage = Boolean(sidebarImageToRender);
