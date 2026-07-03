@@ -11740,12 +11740,16 @@ export default function AlumnoVisionClient({
                                         <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
                                           G {formatCompactNumber(item.fat)} g
                                         </span>
-                                        <span className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-0.5 font-semibold text-sky-100">
-                                          Agua {formatCompactNumber(item.water)} ml
-                                        </span>
-                                        <span className="rounded-full border border-lime-300/30 bg-lime-500/10 px-2 py-0.5 font-semibold text-lime-100">
-                                          Fibra {formatCompactNumber(item.fiber)} g
-                                        </span>
+                                        {item.water > 0 ? (
+                                          <span className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-0.5 font-semibold text-sky-100">
+                                            Agua {formatCompactNumber(item.water)} ml
+                                          </span>
+                                        ) : null}
+                                        {item.fiber > 0 ? (
+                                          <span className="rounded-full border border-lime-300/30 bg-lime-500/10 px-2 py-0.5 font-semibold text-lime-100">
+                                            Fibra {formatCompactNumber(item.fiber)} g
+                                          </span>
+                                        ) : null}
                                       </div>
 
                                       <div className="mt-2 flex flex-wrap items-center gap-2">

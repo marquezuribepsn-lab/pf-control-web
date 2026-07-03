@@ -9,6 +9,8 @@ type NutritionCatalogItem = {
   proteinPer100g: number;
   carbsPer100g: number;
   fatPer100g: number;
+  fiberPer100g?: number;
+  waterPer100g?: number;
   imageUrl?: string;
   barcode?: string;
   sourceLabel: string;
@@ -92,6 +94,8 @@ function parseOpenFoodFactsProduct(product: Record<string, unknown>): NutritionC
   const proteinPer100g = Math.max(0, roundToOneDecimal(toNumber(nutriments.proteins_100g) || 0));
   const carbsPer100g = Math.max(0, roundToOneDecimal(toNumber(nutriments.carbohydrates_100g) || 0));
   const fatPer100g = Math.max(0, roundToOneDecimal(toNumber(nutriments.fat_100g) || 0));
+  const fiberPer100g = Math.max(0, roundToOneDecimal(toNumber(nutriments.fiber_100g) || 0));
+  const waterPer100g = Math.max(0, roundToOneDecimal(toNumber(nutriments["water_100g"]) || 0));
 
   if (kcalPer100g <= 0 && proteinPer100g <= 0 && carbsPer100g <= 0 && fatPer100g <= 0) {
     return null;
@@ -113,6 +117,8 @@ function parseOpenFoodFactsProduct(product: Record<string, unknown>): NutritionC
     proteinPer100g,
     carbsPer100g,
     fatPer100g,
+    fiberPer100g: fiberPer100g > 0 ? fiberPer100g : undefined,
+    waterPer100g: waterPer100g > 0 ? waterPer100g : undefined,
     imageUrl,
     barcode: code || undefined,
     sourceLabel: code ? "Open Food Facts (barcode)" : "Open Food Facts",
