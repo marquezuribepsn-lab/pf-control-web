@@ -6737,20 +6737,31 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-alumno-v2::before {
     top: 0;
-    width: min(132vw, 820px);
-    height: 46vh;
-    border-radius: 0 0 56% 56%;
-    background: linear-gradient(180deg, rgba(170, 140, 255, 0.34) 0%, rgba(157, 96, 255, 0.16) 44%, rgba(22, 8, 45, 0) 100%);
-    opacity: 0.96;
+    width: min(150vw, 940px);
+    height: 52vh;
+    border-radius: 0 0 58% 58%;
+    background: linear-gradient(180deg, rgba(178, 148, 255, 0.5) 0%, rgba(150, 92, 255, 0.24) 42%, rgba(22, 8, 45, 0) 100%);
+    opacity: 1;
   }
 
+  /* Capa ambiental de viewport completo: pools de luz fijos (violeta, magenta
+     calido, indigo frio) que los paneles cruzan al hacer scroll. Da vida y
+     profundidad en lugar del negro plano. */
   .pf-alumno-v2::after {
     top: 0;
-    width: min(150vw, 960px);
-    height: 62vh;
-    border-radius: 0 0 62% 62%;
-    background: linear-gradient(180deg, rgba(128, 242, 255, 0.22) 0%, rgba(146, 82, 250, 0.1) 46%, rgba(22, 8, 45, 0) 100%);
-    opacity: 0.8;
+    left: 0;
+    right: auto;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: none;
+    background:
+      radial-gradient(46% 26% at 92% 8%, rgba(184, 156, 255, 0.4), transparent 66%),
+      radial-gradient(60% 34% at -6% 32%, rgba(236, 92, 190, 0.4), transparent 68%),
+      radial-gradient(64% 36% at 106% 56%, rgba(104, 128, 255, 0.42), transparent 70%),
+      radial-gradient(58% 32% at -4% 80%, rgba(168, 112, 255, 0.36), transparent 70%),
+      radial-gradient(66% 34% at 104% 98%, rgba(128, 100, 250, 0.32), transparent 72%);
+    opacity: 1;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
