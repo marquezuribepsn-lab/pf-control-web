@@ -9265,3 +9265,22 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
 .pf-alumno-v2 .border-slate-500\/60 { border-color: rgba(104, 82, 152, 0.60) !important; }
 .pf-alumno-v2 .border-slate-600\/60 { border-color: rgba(74, 58, 112, 0.60) !important; }
 .pf-alumno-v2 .border-slate-600\/45 { border-color: rgba(74, 58, 112, 0.45) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Normalización tipográfica (solo alumno) — reduce el peso font-black (900)
+   que delataba un look "hecho por IA" a un negro más editorial y agrega
+   tracking óptico negativo a titulares. Los números grandes ganan tabular-
+   nums para alinear dígitos. Alcance: .pf-alumno-v2.
+   ══════════════════════════════════════════════════════════════════════════ */
+.pf-alumno-v2 .font-black {
+  font-weight: 780 !important;
+  letter-spacing: -0.02em;
+}
+.pf-alumno-v2 .font-extrabold {
+  font-weight: 700 !important;
+  letter-spacing: -0.012em;
+}
+.pf-alumno-v2 .tabular-nums,
+.pf-alumno-v2 .font-black.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
