@@ -9078,25 +9078,6 @@ export default function AlumnoVisionClient({
                 </div>
               </article>
 
-              {!isBlocked && (
-                <div className="pf-a3-main-actions">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-main-action-btn"
-                  >
-                    Cuestionarios
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("rutina")}
-                    className="pf-a3-main-action-btn"
-                  >
-                    Reservas
-                  </ReliableActionButton>
-                </div>
-              )}
-
               {!isBlocked && <><section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
                   <div>
@@ -9144,8 +9125,13 @@ export default function AlumnoVisionClient({
                           title={`music-player-home-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
                           src={selectedMusicPlayer.src}
                           className={`w-full rounded-lg border border-white/10 ${
-                            selectedMusicPlatform === "SPOTIFY" ? "h-[360px] sm:h-[400px]" : "h-64 sm:h-72"
+                            selectedMusicPlatform === "SPOTIFY"
+                              ? selectedMusicContentType === "SONG"
+                                ? "h-[152px]"
+                                : "h-[352px]"
+                              : "h-64 sm:h-72"
                           }`}
+                          style={{ background: "#120d1e", colorScheme: "dark" }}
                           loading="lazy"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         />
@@ -9255,7 +9241,7 @@ export default function AlumnoVisionClient({
                         <rect x="3.5" y="7" width="17" height="7" rx="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </span>
-                    <span>Sueno</span>
+                    <span>Sueño</span>
                   </ReliableActionButton>
 
                   <ReliableActionButton
@@ -12475,7 +12461,7 @@ export default function AlumnoVisionClient({
                           </p>
                         </div>
                         <div className="pf-a2-kpi rounded-xl border p-3">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sueno</p>
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sueño</p>
                           <p className="mt-1 text-lg font-black text-white">
                             {toNumber(latestAnthropometry.suenoHoras) ?? "-"}
                             {toNumber(latestAnthropometry.suenoHoras) !== null ? " h" : ""}
@@ -12892,8 +12878,13 @@ export default function AlumnoVisionClient({
                           title={`music-player-featured-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
                           src={selectedMusicPlayer.src}
                           className={`w-full rounded-lg border border-white/10 ${
-                            selectedMusicPlatform === "SPOTIFY" ? "h-[380px] sm:h-[420px]" : "h-64 sm:h-72"
+                            selectedMusicPlatform === "SPOTIFY"
+                              ? selectedMusicContentType === "SONG"
+                                ? "h-[152px]"
+                                : "h-[352px]"
+                              : "h-64 sm:h-72"
                           }`}
+                          style={{ background: "#120d1e", colorScheme: "dark" }}
                           loading="lazy"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         />
