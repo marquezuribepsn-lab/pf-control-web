@@ -1609,13 +1609,20 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-alumno-v2::after {
   top: 0;
-  left: 50%;
-  width: min(122vw, 980px);
-  height: 70vh;
-  border-radius: 0 0 60% 60%;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.28) 0%, rgba(109, 60, 225, 0.12) 46%, rgba(9, 7, 16, 0) 100%);
-  opacity: 0.82;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  transform: none;
+  /* Pools de luz ambiental fijos: al hacer scroll los paneles pasan sobre
+     ellos. Mezcla de violeta con toques de magenta cálido e índigo frío para
+     romper la monotonía monocroma sin salirse del sistema. */
+  background:
+    radial-gradient(42% 30% at 86% 14%, rgba(167, 139, 250, 0.22), transparent 72%),
+    radial-gradient(52% 34% at 4% 40%, rgba(224, 78, 176, 0.17), transparent 74%),
+    radial-gradient(56% 36% at 96% 64%, rgba(94, 110, 250, 0.19), transparent 75%),
+    radial-gradient(50% 32% at 12% 90%, rgba(150, 96, 255, 0.16), transparent 74%);
+  opacity: 0.95;
   animation: none;
 }
 
@@ -1692,7 +1699,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a2-hero {
   position: relative;
   background: linear-gradient(145deg, rgba(23, 9, 46, 0.95), rgba(17, 6, 34, 0.94));
-  box-shadow: none;
+  box-shadow:
+    0 22px 46px -20px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(214, 196, 255, 0.07);
 }
 
 .pf-a2-hero::before {
@@ -1708,13 +1717,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-card {
   background: linear-gradient(170deg, rgba(25, 11, 48, 0.92), rgba(18, 7, 35, 0.9));
-  box-shadow: none;
+  box-shadow:
+    0 22px 46px -20px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(214, 196, 255, 0.07);
 }
 
 .pf-a2-kpi {
   background: linear-gradient(165deg, rgba(31, 14, 58, 0.84), rgba(21, 8, 43, 0.84));
   border-color: rgba(150, 122, 228, 0.34);
-  box-shadow: none;
+  box-shadow:
+    0 10px 22px -16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(214, 196, 255, 0.06);
 }
 
 .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
@@ -2096,8 +2109,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-panel-block {
   border-radius: 1rem;
   border: 1px solid rgba(164, 123, 231, 0.28);
-  background-color: rgba(19, 7, 38, 0.96);
-  box-shadow: none;
+  background-color: rgba(19, 7, 38, 0.9);
+  background-image: linear-gradient(168deg, rgba(38, 18, 68, 0.55), rgba(17, 7, 34, 0.35) 62%);
+  box-shadow:
+    0 22px 46px -20px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(214, 196, 255, 0.07);
 }
 
 .pf-a3-coach-card {
@@ -2213,7 +2229,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-panel-block {
   padding: 0.82rem 0.9rem 0.88rem;
-  box-shadow: none;
 }
 
 .pf-a3-panel-block-flat {
