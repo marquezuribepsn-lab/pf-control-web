@@ -233,6 +233,110 @@ export default function SandboxDisenoAlumno() {
           {/* Planes / Pagos (componente real) */}
           <PlanesDestacados daysRemaining={6} onSelectPlan={noop} canPay />
         </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            Pantalla: Progreso (capa pf-a2). Reproduce el JSX real de
+            AlumnoVisionClient (activeCategory === "progreso") con datos de
+            ejemplo, para poder ver e iterar su diseño sin login. */}
+        <div
+          style={{
+            margin: "1.6rem 0 0.9rem",
+            borderRadius: "0.8rem",
+            border: "1px dashed rgba(167, 139, 250, 0.4)",
+            background: "rgba(30, 20, 55, 0.5)",
+            padding: "0.55rem 0.75rem",
+            fontSize: "11.5px",
+            color: "#c4b5fd",
+          }}
+        >
+          Pantalla: Progreso — misma capa pf-a2 de las vistas internas.
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+              <p className="pf-a2-eyebrow">Ultima medicion</p>
+              <h2 className="mt-1 text-xl font-black text-white">Antropometria</h2>
+
+              <p className="mt-2 text-xs text-slate-400">Registro del 6 jul 2026, 08:00</p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Peso</p>
+                  <p className="mt-1 text-lg font-black text-white">78.4 kg</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Agua</p>
+                  <p className="mt-1 text-lg font-black text-white">2.5 L</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sueño</p>
+                  <p className="mt-1 text-lg font-black text-white">7 h</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Actividad</p>
+                  <p className="mt-1 text-lg font-black text-white">6/10</p>
+                </div>
+              </div>
+
+              <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3 text-sm text-slate-200">
+                Variacion de peso vs registro anterior: -0.7 kg.
+              </div>
+            </article>
+
+            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+              <p className="pf-a2-eyebrow">Consistencia semanal</p>
+              <h2 className="mt-1 text-xl font-black text-white">Ritmo de entreno</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                En los ultimos 7 dias registraste 4 entradas de entrenamiento.
+              </p>
+
+              <div className="pf-a2-progress-track mt-3 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                <div className="pf-a2-progress-fill h-full rounded-full" style={{ width: "68%" }} />
+              </div>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">
+                Score 68/100
+              </p>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Registros totales</p>
+                  <p className="mt-1 text-lg font-black text-white">12</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Check-ins</p>
+                  <p className="mt-1 text-lg font-black text-white">9</p>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+            <p className="pf-a2-eyebrow">Ultimos registros</p>
+            <h2 className="mt-1 text-xl font-black text-white">Historial de entreno</h2>
+
+            <div className="mt-3 space-y-2">
+              {[
+                { title: "Push A", ex: "Press banca", meta: "· 4 series · 8 reps · 60 kg", date: "5 jul 2026, 09:12", block: "Fuerza" },
+                { title: "Pull A", ex: "Remo con barra", meta: "· 4 series · 10 reps · 50 kg", date: "3 jul 2026, 08:40", block: "Espalda" },
+                { title: "Legs", ex: "Sentadilla", meta: "· 5 series · 6 reps · 80 kg", date: "1 jul 2026, 19:05", block: null },
+              ].map((log, index) => (
+                <div
+                  key={index}
+                  className="pf-a2-drawer rounded-xl border border-slate-600/45 bg-slate-900/45 px-3 py-2"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-100">{log.title}</p>
+                    <p className="text-xs text-slate-400">{log.date}</p>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-300">
+                    {log.ex} {log.meta}
+                  </p>
+                  {log.block ? <p className="mt-1 text-xs text-slate-400">Bloque: {log.block}</p> : null}
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
       </div>
     </main>
   );

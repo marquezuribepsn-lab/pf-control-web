@@ -1721,12 +1721,37 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-radius: 0.82rem !important;
 }
 
-.pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]) {
+.pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]),
+.pf-a2-kpi :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]) {
   background-color: rgba(26, 11, 50, 0.78) !important;
 }
 
-.pf-a2-card :where([class*="border-slate-500/"], [class*="border-slate-600/"]) {
+.pf-a2-card :where([class*="border-slate-500/"], [class*="border-slate-600/"]),
+.pf-a2-kpi :where([class*="border-slate-500/"], [class*="border-slate-600/"]) {
   border-color: var(--pf-a2-divider) !important;
+}
+
+/* Mapea los grises slate genéricos (que se veían de "otra app") a la paleta
+   violeta del home. Los text-white grandes se mantienen; solo se re-tintan los
+   grises apagados para unificar el sistema en las vistas internas pf-a2. */
+.pf-a2-card :where([class*="text-slate-400"]),
+.pf-a2-kpi :where([class*="text-slate-400"]) {
+  color: #9585b4 !important;
+}
+
+.pf-a2-card :where([class*="text-slate-300"]),
+.pf-a2-kpi :where([class*="text-slate-300"]) {
+  color: #b3a4d2 !important;
+}
+
+.pf-a2-card :where([class*="text-slate-200"]),
+.pf-a2-kpi :where([class*="text-slate-200"]) {
+  color: #cabce6 !important;
+}
+
+.pf-a2-card :where([class*="text-slate-100"]),
+.pf-a2-kpi :where([class*="text-slate-100"]) {
+  color: #ece5f7 !important;
 }
 
 .pf-a2-hero :where(h1, h2, h3, p, span, a, button),
@@ -1741,16 +1766,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a2-card h3,
 .pf-a2-kpi h3 {
   font-family: var(--font-display), "Sora", sans-serif;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.015em;
 }
 
 .pf-a2-eyebrow {
   margin: 0;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--pf-a2-muted-strong);
+  color: #9a86c6;
 }
 
 .pf-a2-pill {
