@@ -2219,11 +2219,6 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   opacity: 0.95;
 }
 
-.pf-a3-home-stack > .pf-a3-coach-card + .pf-a3-panel-block,
-.pf-a3-home-stack > .pf-a3-panel-block + .pf-a3-panel-block {
-  border-top: 0;
-}
-
 .pf-a3-section-head {
   display: flex;
   align-items: flex-start;
