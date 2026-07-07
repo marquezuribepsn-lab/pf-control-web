@@ -337,6 +337,127 @@ export default function SandboxDisenoAlumno() {
             </div>
           </article>
         </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            Pantalla: Nutrición (capa pf-a2). Reproduce el JSX real de
+            AlumnoVisionClient (activeCategory === "nutricion") con datos de
+            ejemplo, para poder ver e iterar su diseño sin login. */}
+        <div
+          style={{
+            margin: "1.6rem 0 0.9rem",
+            borderRadius: "0.8rem",
+            border: "1px dashed rgba(167, 139, 250, 0.4)",
+            background: "rgba(30, 20, 55, 0.5)",
+            padding: "0.55rem 0.75rem",
+            fontSize: "11.5px",
+            color: "#c4b5fd",
+          }}
+        >
+          Pantalla: Nutrición — misma capa pf-a2 de las vistas internas.
+        </div>
+
+        <div className="pf-a4-nutrition-screen space-y-4">
+          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+            <p className="pf-a2-eyebrow">Plan nutricional</p>
+            <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
+            <p className="mt-2 text-sm text-slate-300">
+              Espacio centrado en el plan nutricional asignado por el profesor.
+            </p>
+            <div className="pf-a4-nutrition-plan-quick-row mt-3">
+              <button type="button" className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick">
+                Solicitar cambio de plan
+              </button>
+              <button type="button" className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick">
+                Sustituir alimento
+              </button>
+            </div>
+          </article>
+
+          <div className="pf-a4-nutrition-tabs flex gap-2">
+            <button
+              type="button"
+              className="pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition border-violet-300/50 bg-violet-500/15 text-violet-100"
+            >
+              Nutrición
+            </button>
+            <button
+              type="button"
+              className="pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition border-white/10 bg-slate-950/40 text-slate-300"
+            >
+              Recetas
+            </button>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+              <p className="pf-a2-eyebrow">Plan pautado</p>
+              <h2 className="mt-1 text-xl font-black text-white">Definición 2400 kcal</h2>
+              <p className="mt-2 text-sm text-slate-300">Objetivo: Recomposición corporal</p>
+              <p className="mt-1 text-xs text-slate-400">Última asignación: 5 jul 2026, 10:20</p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
+                  <p className="mt-1 text-lg font-black text-white">2400 kcal</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
+                  <p className="mt-1 text-lg font-black text-white">2380 kcal</p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas pautadas</p>
+                  <p className="mt-1 text-lg font-black text-white">5</p>
+                </div>
+                <div className="pf-a2-kpi rounded-xl border p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Macros objetivo</p>
+                  <p className="mt-1 text-sm font-black text-white">180P / 240C / 70G</p>
+                </div>
+              </div>
+
+              <div className="pf-a4-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
+                <p className="pf-a2-eyebrow">Objetivo nutricional</p>
+                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                  <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                    P 180 g
+                  </span>
+                  <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                    C 240 g
+                  </span>
+                  <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-2 py-0.5 font-semibold text-violet-100">
+                    G 70 g
+                  </span>
+                </div>
+              </div>
+            </article>
+
+            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+              <p className="pf-a2-eyebrow">Comidas del día</p>
+              <h2 className="mt-1 text-xl font-black text-white">Distribución</h2>
+              <ul className="mt-4 space-y-2">
+                {[
+                  { name: "Desayuno", kcal: "520 kcal", detail: "Avena · huevos · fruta" },
+                  { name: "Almuerzo", kcal: "680 kcal", detail: "Pollo · arroz · verduras" },
+                  { name: "Merienda", kcal: "320 kcal", detail: "Yogur · frutos secos" },
+                  { name: "Cena", kcal: "560 kcal", detail: "Salmón · batata · ensalada" },
+                ].map((meal, i) => (
+                  <li
+                    key={i}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-600/60 bg-slate-900/40 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-100">{meal.name}</p>
+                      <p className="text-xs text-slate-400">{meal.detail}</p>
+                    </div>
+                    <span className="pf-a2-pill shrink-0">{meal.kcal}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+        </div>
       </div>
     </main>
   );
