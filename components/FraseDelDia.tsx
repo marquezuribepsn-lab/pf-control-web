@@ -108,10 +108,10 @@ export default function FraseDelDia() {
         <span
           style={{
             fontSize: "10.5px",
-            fontWeight: 800,
-            letterSpacing: "0.18em",
+            fontWeight: 600,
+            letterSpacing: "0.11em",
             textTransform: "uppercase",
-            opacity: 0.9,
+            opacity: 0.82,
           }}
         >
           — Frase del día
@@ -149,11 +149,11 @@ export default function FraseDelDia() {
         style={{
           position: "relative",
           margin: 0,
-          fontSize: "clamp(1.02rem, 4.4vw, 1.28rem)",
-          fontWeight: 800,
-          lineHeight: 1.32,
+          fontSize: "clamp(1.02rem, 4.2vw, 1.24rem)",
+          fontWeight: 600,
+          lineHeight: 1.4,
           fontStyle: "italic",
-          letterSpacing: "-0.01em",
+          letterSpacing: "-0.012em",
           textShadow: "0 1px 10px rgba(76, 5, 90, 0.28)",
           ...(expanded
             ? {}
@@ -195,8 +195,8 @@ export default function FraseDelDia() {
                 background: "transparent",
                 color: "#fff",
                 fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
                 textTransform: "uppercase",
                 cursor: "pointer",
                 opacity: 0.95,
