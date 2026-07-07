@@ -2443,25 +2443,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border: 1px solid rgba(167, 139, 250, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   background: linear-gradient(160deg, rgba(124, 58, 237, 0.2), rgba(76, 29, 149, 0.32));
-  color: #cbb8f5;
+  color: #d0bef8;
 }
 
-/* Set cohesivo: mismo vidrio violeta, el glyph lleva un tinte semántico sutil
-   para conservar la pista de categoría sin volver al look "arcoíris". */
-.pf-a3-quick-icon-agua {
-  color: #8fb8e6;
-}
-
-.pf-a3-quick-icon-sueno {
-  color: #a7b0c4;
-}
-
-.pf-a3-quick-icon-progreso {
-  color: #6fd0c2;
-}
-
+/* Set monocromo: mismo vidrio violeta y un único tinte lavanda para todos los
+   glyphs. La categoría la distingue el ícono y la etiqueta, no el color, para
+   evitar el look "arcoíris" que se sentía generado por IA. */
+.pf-a3-quick-icon-agua,
+.pf-a3-quick-icon-sueno,
+.pf-a3-quick-icon-progreso,
 .pf-a3-quick-icon-pagos {
-  color: #e6a0c4;
+  color: #d0bef8;
 }
 
 .pf-a3-head-actions {
