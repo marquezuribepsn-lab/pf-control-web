@@ -2323,9 +2323,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-fallback {
   font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  color: rgba(249, 245, 255, 0.85);
+  font-weight: 720;
+  letter-spacing: 0.02em;
+  color: rgba(249, 245, 255, 0.9);
 }
 
 .pf-a3-music-fallback-shell {
@@ -2342,21 +2342,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(245, 239, 255, 0.34);
+  border: 1px solid rgba(245, 239, 255, 0.28);
   background: rgba(11, 3, 24, 0.34);
   padding: 0.14rem 0.42rem;
-  color: rgba(248, 244, 255, 0.94);
+  color: rgba(248, 244, 255, 0.92);
   font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 650;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .pf-a3-music-fallback-type {
-  color: rgba(237, 226, 255, 0.9);
+  color: rgba(237, 226, 255, 0.82);
   font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 650;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -2377,11 +2377,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-title {
-  margin: 0.48rem 0 0;
+  margin: 0.5rem 0 0;
   color: #f5f0fc;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: 640;
+  letter-spacing: -0.006em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2398,21 +2399,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-hint {
-  margin: 0.24rem 0 0;
-  color: #b181ff;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.pf-a3-music-hint-secondary {
-  margin: 0.16rem 0 0;
-  color: #dfcbff;
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  margin: 0.2rem 0 0;
+  color: #9b86cf;
+  font-size: 0.64rem;
+  font-weight: 550;
+  letter-spacing: 0.005em;
 }
 
 .pf-a3-quick-grid {

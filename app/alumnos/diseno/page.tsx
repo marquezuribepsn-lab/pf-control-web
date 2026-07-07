@@ -16,9 +16,9 @@ import FraseDelDia from "@/components/FraseDelDia";
 import PlanesDestacados from "@/components/PlanesDestacados";
 
 const MUSIC_CARDS = [
-  { id: "m1", title: "Beast Mode", artist: "Varios artistas", platform: "SPOTIFY", type: "Playlist" },
-  { id: "m2", title: "Cardio Pump", artist: "Running Hits", platform: "SPOTIFY", type: "Playlist" },
-  { id: "m3", title: "Focus Lift", artist: "Deep Gym", platform: "YOUTUBE", type: "Video" },
+  { id: "m1", title: "Beast Mode", artist: "Varios artistas", platform: "Spotify", type: "Playlist" },
+  { id: "m2", title: "Cardio Pump", artist: "Running Hits", platform: "Spotify", type: "Playlist" },
+  { id: "m3", title: "Focus Lift", artist: "Deep Gym", platform: "YouTube", type: "Video" },
 ];
 
 function getInitials(name: string): string {
@@ -122,7 +122,6 @@ export default function SandboxDisenoAlumno() {
                   <p className="pf-a3-music-hint">
                     {track.platform} · {track.type}
                   </p>
-                  <p className="pf-a3-music-hint-secondary">Tocar para escuchar</p>
                 </button>
               ))}
             </div>

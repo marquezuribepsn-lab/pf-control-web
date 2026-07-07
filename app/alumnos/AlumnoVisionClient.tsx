@@ -9191,9 +9191,6 @@ export default function AlumnoVisionClient({
                           <p className="pf-a3-music-hint">
                             {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
                           </p>
-                          <p className="pf-a3-music-hint-secondary">
-                            {track.playlistUrl ? "Tocar para escuchar" : "Tocar para abrir musica"}
-                          </p>
                         </ReliableActionButton>
                       );
                     })}
