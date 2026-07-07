@@ -66,6 +66,13 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Mesa de diseño del alumno — pública, solo datos de ejemplo (sin sesión ni
+  // datos reales). Permite iterar el diseño de los paneles sin necesidad de
+  // iniciar sesión; no expone nada sensible.
+  if (rawPath === '/alumnos/diseno' || rawPath.startsWith('/alumnos/diseno/')) {
+    return NextResponse.next();
+  }
+
   // ── Rate limiting en rutas API (antes de cualquier lógica de sesión) ──
   if (rawPath.startsWith('/api/auth/')) {
     if (!rateLimit(ip, 'api-auth', { max: 30, windowMs: 60_000 })) {
