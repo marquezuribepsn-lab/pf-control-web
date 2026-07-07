@@ -9276,6 +9276,15 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
 .pf-alumno-v2 .border-slate-500\/60 { border-color: rgba(104, 82, 152, 0.60) !important; }
 .pf-alumno-v2 .border-slate-600\/60 { border-color: rgba(74, 58, 112, 0.60) !important; }
 .pf-alumno-v2 .border-slate-600\/45 { border-color: rgba(74, 58, 112, 0.45) !important; }
+.pf-alumno-v2 .border-slate-400\/35 { border-color: rgba(140, 120, 184, 0.35) !important; }
+
+/* Re-tinte de texto slate → violeta-gris (alcance completo del alumno, no solo
+   pf-a2-card). Cohesiona las pantallas internas (nutrición, cuenta, música)
+   con el palette del home sin tocar semánticos (cian/sky/emerald/amber). */
+.pf-alumno-v2 .text-slate-400 { color: #9585b4 !important; }
+.pf-alumno-v2 .text-slate-300 { color: #b3a4d2 !important; }
+.pf-alumno-v2 .text-slate-200 { color: #cabce6 !important; }
+.pf-alumno-v2 .text-slate-100 { color: #ece5f7 !important; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    Normalización tipográfica (solo alumno) — reduce el peso font-black (900)
