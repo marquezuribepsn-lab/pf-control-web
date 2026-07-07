@@ -9131,7 +9131,7 @@ export default function AlumnoVisionClient({
                                 : "h-[352px]"
                               : "h-64 sm:h-72"
                           }`}
-                          style={{ background: "#120d1e", colorScheme: "dark" }}
+                          style={{ background: "#0d151e", colorScheme: "dark" }}
                           loading="lazy"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         />
@@ -11418,7 +11418,7 @@ export default function AlumnoVisionClient({
                                 ? "#f59e0b"
                                 : macro.key === "C"
                                 ? "#22d3ee"
-                                : "#8b5cf6",
+                                : "#5ca6f6",
                           }))}
                         />
                       </div>
@@ -11427,7 +11427,7 @@ export default function AlumnoVisionClient({
                     <div className="mt-4 space-y-3">
                       {macroRows.map((macro) => {
                         const macroColor =
-                          macro.key === "P" ? "#f59e0b" : macro.key === "C" ? "#22d3ee" : "#8b5cf6";
+                          macro.key === "P" ? "#f59e0b" : macro.key === "C" ? "#22d3ee" : "#5ca6f6";
                         return (
                           <div key={macro.key}>
                             <div className="flex items-center justify-between text-xs text-slate-300">
@@ -12881,7 +12881,7 @@ export default function AlumnoVisionClient({
                                 : "h-[352px]"
                               : "h-64 sm:h-72"
                           }`}
-                          style={{ background: "#120d1e", colorScheme: "dark" }}
+                          style={{ background: "#0d151e", colorScheme: "dark" }}
                           loading="lazy"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         />

@@ -37,18 +37,18 @@ export default function SandboxDisenoAlumno() {
     <main
       className="pf-alumno-main pf-alumno-v2 pf-alumno-main-inicio"
       data-pf-alumno-category="inicio"
-      style={{ minHeight: "100vh", background: "#08070d" }}
+      style={{ minHeight: "100vh", background: "#070a0d" }}
     >
       <div style={{ maxWidth: 520, margin: "0 auto", padding: "0.9rem 0.9rem 3rem" }}>
         <div
           style={{
             marginBottom: "0.9rem",
             borderRadius: "0.8rem",
-            border: "1px dashed rgba(167, 139, 250, 0.4)",
-            background: "rgba(30, 20, 55, 0.5)",
+            border: "1px dashed rgba(139, 193, 250, 0.4)",
+            background: "rgba(20, 37, 55, 0.5)",
             padding: "0.55rem 0.75rem",
             fontSize: "11.5px",
-            color: "#c4b5fd",
+            color: "#b5d9fd",
           }}
         >
           Mesa de diseño — datos de ejemplo. Lo que quede acá se porta a los
@@ -242,11 +242,11 @@ export default function SandboxDisenoAlumno() {
           style={{
             margin: "1.6rem 0 0.9rem",
             borderRadius: "0.8rem",
-            border: "1px dashed rgba(167, 139, 250, 0.4)",
-            background: "rgba(30, 20, 55, 0.5)",
+            border: "1px dashed rgba(139, 193, 250, 0.4)",
+            background: "rgba(20, 37, 55, 0.5)",
             padding: "0.55rem 0.75rem",
             fontSize: "11.5px",
-            color: "#c4b5fd",
+            color: "#b5d9fd",
           }}
         >
           Pantalla: Progreso — misma capa pf-a2 de las vistas internas.
@@ -346,11 +346,11 @@ export default function SandboxDisenoAlumno() {
           style={{
             margin: "1.6rem 0 0.9rem",
             borderRadius: "0.8rem",
-            border: "1px dashed rgba(167, 139, 250, 0.4)",
-            background: "rgba(30, 20, 55, 0.5)",
+            border: "1px dashed rgba(139, 193, 250, 0.4)",
+            background: "rgba(20, 37, 55, 0.5)",
             padding: "0.55rem 0.75rem",
             fontSize: "11.5px",
-            color: "#c4b5fd",
+            color: "#b5d9fd",
           }}
         >
           Pantalla: Nutrición — misma capa pf-a2 de las vistas internas.
