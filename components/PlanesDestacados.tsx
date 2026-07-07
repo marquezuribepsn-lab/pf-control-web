@@ -32,8 +32,8 @@ const PLANS: Plan[] = [
     id: "12-clases",
     title: "12 clases",
     subtitle: "3 por semana · 30 días",
-    border: "#8bc1fa",
-    glow: "rgba(92, 166, 246, 0.30)",
+    border: "#a1c2e4",
+    glow: "rgba(123, 167, 215, 0.30)",
     originalPrice: 48000,
     price: 39000,
     discountPct: 19,
@@ -49,8 +49,8 @@ const PLANS: Plan[] = [
     id: "8-clases",
     title: "8 clases",
     subtitle: "2 por semana · 30 días",
-    border: "#5b8fc4",
-    glow: "rgba(91, 143, 196, 0.18)",
+    border: "#708faf",
+    glow: "rgba(112, 143, 175, 0.18)",
     originalPrice: 36000,
     price: 31000,
     discountPct: 14,
@@ -88,12 +88,12 @@ export default function PlanesDestacados({
       style={{
         position: "relative",
         borderRadius: "1.2rem",
-        border: "1px solid rgba(139, 193, 250, 0.22)",
+        border: "1px solid rgba(161, 194, 228, 0.22)",
         background:
-          "linear-gradient(160deg, rgba(20, 34, 48, 0.92) 0%, rgba(15, 24, 34, 0.94) 100%)",
+          "linear-gradient(160deg, rgba(26, 34, 42, 0.92) 0%, rgba(19, 24, 30, 0.94) 100%)",
         padding: "1.05rem 1.05rem 1.15rem",
-        boxShadow: "0 18px 40px rgba(6, 14, 22, 0.5)",
-        color: "#f3f7fb",
+        boxShadow: "0 18px 40px rgba(9, 14, 19, 0.5)",
+        color: "#f5f7f9",
       }}
     >
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.6rem", flexWrap: "wrap" }}>
@@ -105,12 +105,12 @@ export default function PlanesDestacados({
               fontWeight: 650,
               letterSpacing: "0.11em",
               textTransform: "uppercase",
-              color: "#86a9cf",
+              color: "#95aac0",
             }}
           >
             Planes disponibles
           </p>
-          <h2 style={{ margin: "0.28rem 0 0", fontSize: "1.14rem", fontWeight: 720, letterSpacing: "-0.02em", color: "#f2f8ff" }}>
+          <h2 style={{ margin: "0.28rem 0 0", fontSize: "1.14rem", fontWeight: 720, letterSpacing: "-0.02em", color: "#f5f8fc" }}>
             Elegí tu pase mensual
           </h2>
         </div>
@@ -148,10 +148,10 @@ export default function PlanesDestacados({
               position: "relative",
               borderRadius: "0.95rem",
               borderLeft: `5px solid ${plan.border}`,
-              border: "1px solid rgba(139, 193, 250, 0.16)",
+              border: "1px solid rgba(161, 194, 228, 0.16)",
               borderLeftWidth: "5px",
               borderLeftColor: plan.border,
-              background: `linear-gradient(180deg, ${plan.glow} 0%, rgba(11, 18, 26, 0) 62%), rgba(13, 21, 30, 0.82)`,
+              background: `linear-gradient(180deg, ${plan.glow} 0%, rgba(14, 18, 23, 0) 62%), rgba(16, 21, 27, 0.82)`,
               padding: "0.95rem 0.95rem 1rem",
               display: "flex",
               flexDirection: "column",
@@ -159,8 +159,8 @@ export default function PlanesDestacados({
           >
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.5rem" }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.04rem", fontWeight: 700, letterSpacing: "-0.015em", color: "#f2f8ff" }}>{plan.title}</h3>
-                <p style={{ margin: "0.16rem 0 0", fontSize: "12px", color: "#a2bbd6", fontWeight: 500 }}>
+                <h3 style={{ margin: 0, fontSize: "1.04rem", fontWeight: 700, letterSpacing: "-0.015em", color: "#f5f8fc" }}>{plan.title}</h3>
+                <p style={{ margin: "0.16rem 0 0", fontSize: "12px", color: "#acbbcc", fontWeight: 500 }}>
                   {plan.subtitle}
                 </p>
               </div>
@@ -168,7 +168,7 @@ export default function PlanesDestacados({
                 <span
                   style={{
                     borderRadius: "999px",
-                    background: "linear-gradient(120deg, #5ca6f6, #3a8eed)",
+                    background: "linear-gradient(120deg, #7ba7d7, #5e90c9)",
                     color: "#fff",
                     padding: "0.2rem 0.55rem",
                     fontSize: "10px",
@@ -189,7 +189,7 @@ export default function PlanesDestacados({
               <span
                 style={{
                   fontSize: "13px",
-                  color: "#94a3b8",
+                  color: "#9ba4b1",
                   textDecoration: "line-through",
                   marginBottom: "0.15rem",
                 }}
@@ -212,11 +212,11 @@ export default function PlanesDestacados({
                 -{plan.discountPct}%
               </span>
             </div>
-            <p style={{ margin: "0.28rem 0 0", fontSize: "11.5px", color: "#94a3b8" }}>por mes</p>
+            <p style={{ margin: "0.28rem 0 0", fontSize: "11.5px", color: "#9ba4b1" }}>por mes</p>
 
             <ul style={{ listStyle: "none", margin: "0.8rem 0 0", padding: 0, display: "grid", gap: "0.4rem" }}>
               {plan.includes.map((item) => (
-                <li key={item} style={{ display: "flex", gap: "0.45rem", fontSize: "12.5px", color: "#dde9f5" }}>
+                <li key={item} style={{ display: "flex", gap: "0.45rem", fontSize: "12.5px", color: "#e2e9f0" }}>
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={plan.border} strokeWidth="2.6" style={{ flexShrink: 0, marginTop: "1px" }} aria-hidden="true">
                     <path d="M5 12.5 10 17 19 7" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -239,8 +239,8 @@ export default function PlanesDestacados({
                 borderRadius: "0.75rem",
                 border: 0,
                 background: canPay
-                  ? "linear-gradient(120deg, #5ca6f6 0%, #3a8eed 100%)"
-                  : "rgba(58, 142, 237, 0.35)",
+                  ? "linear-gradient(120deg, #7ba7d7 0%, #5e90c9 100%)"
+                  : "rgba(94, 144, 201, 0.35)",
                 color: "#fff",
                 padding: "0.64rem 0.9rem",
                 fontSize: "13px",
@@ -248,7 +248,7 @@ export default function PlanesDestacados({
                 letterSpacing: "-0.005em",
                 cursor: !canPay || checkoutLoading ? "not-allowed" : "pointer",
                 opacity: !canPay || checkoutLoading ? 0.6 : 1,
-                boxShadow: canPay ? "0 10px 22px rgba(58, 142, 237, 0.35)" : "none",
+                boxShadow: canPay ? "0 10px 22px rgba(94, 144, 201, 0.35)" : "none",
               }}
             >
               {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
@@ -257,7 +257,7 @@ export default function PlanesDestacados({
         ))}
       </div>
 
-      <p style={{ margin: "0.85rem 0 0", fontSize: "11px", color: "#8295a8", textAlign: "center" }}>
+      <p style={{ margin: "0.85rem 0 0", fontSize: "11px", color: "#8a95a0", textAlign: "center" }}>
         El cobro se procesa por el monto de renovación vigente configurado por tu centro.
       </p>
     </section>

@@ -1556,33 +1556,33 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-alumno-v2 {
   /* Paleta gris-azul (slate) sobre negro casi puro con acento naranja
      (rediseño alumno v4) */
-  --pf-a2-bg-0: #090b11;
-  --pf-a2-bg-1: #121824;
-  --pf-a2-bg-2: #19222f;
-  --pf-a2-stage-surface: rgba(15, 19, 27, 0.9);
-  --pf-a2-stage-border: rgba(120, 150, 195, 0.22);
-  --pf-a2-divider: rgba(130, 150, 185, 0.2);
-  --pf-a2-surface: rgba(16, 21, 30, 0.86);
-  --pf-a2-surface-soft: rgba(20, 26, 37, 0.84);
-  --pf-a2-border: rgba(70, 130, 210, 0.32);
-  --pf-a2-border-strong: rgba(150, 190, 250, 0.5);
-  --pf-a2-text: #f1f4fa;
-  --pf-a2-muted: #c3ccda;
-  --pf-a2-muted-strong: #8d99ad;
-  --pf-a2-accent-main: #3d84f2;
-  --pf-a2-accent-soft: #7db1ff;
-  --pf-a2-accent-cold: #1f5fd6;
+  --pf-a2-bg-0: #0b0c0f;
+  --pf-a2-bg-1: #161920;
+  --pf-a2-bg-2: #1d232b;
+  --pf-a2-stage-surface: rgba(17, 20, 25, 0.9);
+  --pf-a2-stage-border: rgba(135, 153, 180, 0.22);
+  --pf-a2-divider: rgba(141, 153, 174, 0.2);
+  --pf-a2-surface: rgba(19, 22, 27, 0.86);
+  --pf-a2-surface-soft: rgba(23, 27, 34, 0.84);
+  --pf-a2-border: rgba(98, 134, 182, 0.32);
+  --pf-a2-border-strong: rgba(170, 194, 230, 0.5);
+  --pf-a2-text: #f3f5f8;
+  --pf-a2-muted: #c8cdd5;
+  --pf-a2-muted-strong: #939ba7;
+  --pf-a2-accent-main: #618cce;
+  --pf-a2-accent-soft: #97b6e5;
+  --pf-a2-accent-cold: #446ab1;
   --pf-a2-accent-warm: #f97b34;
   --pf-a2-accent-warm-soft: #ffa060;
-  --pf-a2-shadow: 0 14px 30px rgba(3, 6, 12, 0.46);
+  --pf-a2-shadow: 0 14px 30px rgba(5, 7, 10, 0.46);
   position: relative;
   min-height: 100svh;
   color: var(--pf-a2-text);
   font-family: var(--font-body), "Space Grotesk", sans-serif;
   background-color: var(--pf-a2-bg-0);
   background-image:
-    linear-gradient(180deg, rgba(61, 132, 242, 0.28) 0%, rgba(31, 95, 214, 0.14) 30%, rgba(16, 22, 32, 0.05) 60%, rgba(8, 11, 17, 0) 100%),
-    linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #101826 48%, var(--pf-a2-bg-2) 100%);
+    linear-gradient(180deg, rgba(97, 140, 206, 0.28) 0%, rgba(68, 106, 177, 0.14) 30%, rgba(19, 23, 29, 0.05) 60%, rgba(10, 12, 15, 0) 100%),
+    linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #141922 48%, var(--pf-a2-bg-2) 100%);
   overflow-x: clip;
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
 }
@@ -1605,7 +1605,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   height: 56vh;
   border-radius: 0 0 56% 56%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(120, 185, 255, 0.46) 0%, rgba(58, 142, 237, 0.22) 40%, rgba(8, 13, 18, 0) 100%);
+  background: linear-gradient(180deg, rgba(147, 186, 228, 0.46) 0%, rgba(94, 144, 201, 0.22) 40%, rgba(10, 13, 16, 0) 100%);
   opacity: 0.98;
   animation: none;
 }
@@ -1621,10 +1621,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
      ellos. Mezcla de violeta con toques de magenta cálido e índigo frío para
      romper la monotonía monocroma sin salirse del sistema. */
   background:
-    radial-gradient(42% 30% at 86% 14%, rgba(139, 193, 250, 0.22), transparent 72%),
-    radial-gradient(52% 34% at 4% 40%, rgba(78, 125, 224, 0.17), transparent 74%),
-    radial-gradient(56% 36% at 96% 64%, rgba(94, 110, 250, 0.19), transparent 75%),
-    radial-gradient(50% 32% at 12% 90%, rgba(96, 171, 255, 0.16), transparent 74%);
+    radial-gradient(42% 30% at 86% 14%, rgba(161, 194, 228, 0.22), transparent 72%),
+    radial-gradient(52% 34% at 4% 40%, rgba(107, 135, 195, 0.17), transparent 74%),
+    radial-gradient(56% 36% at 96% 64%, rgba(125, 135, 219, 0.19), transparent 75%),
+    radial-gradient(50% 32% at 12% 90%, rgba(128, 173, 223, 0.16), transparent 74%);
   opacity: 0.95;
   animation: none;
 }
@@ -1648,7 +1648,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-tab-rail {
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 193, 250, 0.45) transparent;
+  scrollbar-color: rgba(161, 194, 228, 0.45) transparent;
 }
 
 .pf-a2-tab-rail::-webkit-scrollbar {
@@ -1656,7 +1656,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-tab-rail::-webkit-scrollbar-thumb {
-  background: rgba(139, 193, 250, 0.45);
+  background: rgba(161, 194, 228, 0.45);
   border-radius: 999px;
 }
 
@@ -1701,10 +1701,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-hero {
   position: relative;
-  background: linear-gradient(145deg, rgba(9, 26, 46, 0.95), rgba(6, 19, 34, 0.94));
+  background: linear-gradient(145deg, rgba(16, 27, 39, 0.95), rgba(12, 19, 28, 0.94));
   box-shadow:
     0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(196, 224, 255, 0.07);
+    inset 0 1px 0 rgba(208, 225, 243, 0.07);
 }
 
 .pf-a2-hero::before {
@@ -1715,22 +1715,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background:
     radial-gradient(circle at 85% -12%, rgba(34, 197, 94, 0.18), transparent 48%),
-    linear-gradient(90deg, rgba(56, 145, 248, 0.12), transparent 34%);
+    linear-gradient(90deg, rgba(94, 148, 210, 0.12), transparent 34%);
 }
 
 .pf-a2-card {
-  background: linear-gradient(170deg, rgba(11, 28, 48, 0.92), rgba(7, 20, 35, 0.9));
+  background: linear-gradient(170deg, rgba(18, 29, 41, 0.92), rgba(13, 20, 29, 0.9));
   box-shadow:
     0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(196, 224, 255, 0.07);
+    inset 0 1px 0 rgba(208, 225, 243, 0.07);
 }
 
 .pf-a2-kpi {
-  background: linear-gradient(165deg, rgba(14, 34, 58, 0.84), rgba(8, 24, 43, 0.84));
-  border-color: rgba(122, 173, 228, 0.34);
+  background: linear-gradient(165deg, rgba(23, 35, 49, 0.84), rgba(15, 25, 36, 0.84));
+  border-color: rgba(143, 174, 207, 0.34);
   box-shadow:
     0 10px 22px -16px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(196, 224, 255, 0.06);
+    inset 0 1px 0 rgba(208, 225, 243, 0.06);
 }
 
 .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
@@ -1739,7 +1739,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]),
 .pf-a2-kpi :where([class*="bg-slate-900/"], [class*="bg-slate-800/"]) {
-  background-color: rgba(11, 29, 50, 0.78) !important;
+  background-color: rgba(19, 30, 42, 0.78) !important;
 }
 
 .pf-a2-card :where([class*="border-slate-500/"], [class*="border-slate-600/"]),
@@ -1752,22 +1752,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
    grises apagados para unificar el sistema en las vistas internas pf-a2. */
 .pf-a2-card :where([class*="text-slate-400"]),
 .pf-a2-kpi :where([class*="text-slate-400"]) {
-  color: #859bb4 !important;
+  color: #8e9cab !important;
 }
 
 .pf-a2-card :where([class*="text-slate-300"]),
 .pf-a2-kpi :where([class*="text-slate-300"]) {
-  color: #a4bad2 !important;
+  color: #adbac9 !important;
 }
 
 .pf-a2-card :where([class*="text-slate-200"]),
 .pf-a2-kpi :where([class*="text-slate-200"]) {
-  color: #bcd0e6 !important;
+  color: #c4d0de !important;
 }
 
 .pf-a2-card :where([class*="text-slate-100"]),
 .pf-a2-kpi :where([class*="text-slate-100"]) {
-  color: #e5edf7 !important;
+  color: #e9edf3 !important;
 }
 
 .pf-a2-hero :where(h1, h2, h3, p, span, a, button),
@@ -1791,27 +1791,27 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #86a5c6;
+  color: #93a5b9;
 }
 
 .pf-a2-pill {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(139, 193, 250, 0.55);
+  border: 1px solid rgba(161, 194, 228, 0.55);
   border-radius: 999px;
   padding: 0.26rem 0.62rem;
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ebf4ff;
-  background: rgba(10, 30, 52, 0.74);
+  color: #eff4fb;
+  background: rgba(18, 30, 44, 0.74);
 }
 
 .pf-a2-tab {
-  background: linear-gradient(160deg, rgba(11, 31, 55, 0.84), rgba(8, 24, 43, 0.82));
-  border-color: rgba(121, 172, 231, 0.38);
-  box-shadow: inset 0 1px 0 rgba(208, 229, 253, 0.14);
+  background: linear-gradient(160deg, rgba(20, 32, 46, 0.84), rgba(15, 25, 36, 0.82));
+  border-color: rgba(143, 174, 209, 0.38);
+  box-shadow: inset 0 1px 0 rgba(217, 230, 244, 0.14);
   transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
 }
 
@@ -1820,15 +1820,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-tab-active {
-  background:
-    linear-gradient(155deg, rgba(34, 197, 94, 0.9), rgba(56, 145, 248, 0.94)),
-    linear-gradient(180deg, rgba(236, 250, 255, 0.82), rgba(213, 233, 255, 0.82));
-  border-color: rgba(226, 240, 255, 0.88);
-  box-shadow: 0 10px 20px rgba(52, 128, 216, 0.24);
+  background: linear-gradient(160deg, #ff9048 0%, #f4700f 100%);
+  border-color: rgba(255, 176, 120, 0.78);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(240, 110, 20, 0.28);
 }
 
 .pf-a2-tab-active p {
-  color: #122132 !important;
+  color: #18212c !important;
 }
 
 .pf-a2-solid-btn,
@@ -1838,15 +1837,15 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-solid-btn {
-  color: #071422;
-  border: 1px solid rgba(232, 243, 255, 0.76);
+  color: #0c141d;
+  border: 1px solid rgba(237, 243, 250, 0.76);
   background: linear-gradient(160deg, var(--pf-a2-accent-soft), var(--pf-a2-accent-main) 58%, var(--pf-a2-accent-cold));
-  box-shadow: 0 10px 18px rgba(31, 113, 206, 0.3);
+  box-shadow: 0 10px 18px rgba(66, 115, 171, 0.3);
 }
 
 .pf-a2-solid-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(245, 250, 255, 0.95);
+  border-color: rgba(247, 250, 253, 0.95);
 }
 
 .pf-a2-solid-btn:active {
@@ -1854,14 +1853,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-ghost-btn {
-  border-color: rgba(122, 173, 228, 0.52);
-  color: #dce6f2;
-  background: linear-gradient(170deg, rgba(11, 30, 52, 0.76), rgba(8, 22, 39, 0.72));
+  border-color: rgba(143, 174, 207, 0.52);
+  color: #e0e6ee;
+  background: linear-gradient(170deg, rgba(19, 31, 44, 0.76), rgba(14, 23, 33, 0.72));
 }
 
 .pf-a2-ghost-btn:hover {
   border-color: rgba(34, 197, 94, 0.62);
-  color: #f6faff;
+  color: #f8fafd;
 }
 
 .pf-a2-badge {
@@ -1895,9 +1894,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-badge-neutral {
-  border-color: rgba(176, 191, 208, 0.58);
-  color: #ebf2fa;
-  background: rgba(84, 99, 116, 0.4);
+  border-color: rgba(182, 191, 202, 0.58);
+  color: #eef2f7;
+  background: rgba(90, 99, 110, 0.4);
 }
 
 .pf-a2-banner {
@@ -1920,10 +1919,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 38px;
   min-width: 38px;
   height: 38px;
-  border: 1px solid rgba(121, 172, 231, 0.52);
+  border: 1px solid rgba(143, 174, 209, 0.52);
   border-radius: 0.78rem;
-  background: linear-gradient(170deg, rgba(10, 29, 50, 0.92), rgba(7, 20, 34, 0.9));
-  color: #e5eef9;
+  background: linear-gradient(170deg, rgba(18, 29, 42, 0.92), rgba(12, 20, 29, 0.9));
+  color: #e9eef5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1955,14 +1954,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a2-drawer {
   border: 1px solid var(--pf-a2-divider);
-  background: linear-gradient(170deg, rgba(11, 30, 52, 0.8), rgba(8, 22, 38, 0.76));
-  box-shadow: inset 0 1px 0 rgba(210, 231, 255, 0.12);
+  background: linear-gradient(170deg, rgba(19, 31, 44, 0.8), rgba(14, 22, 32, 0.76));
+  box-shadow: inset 0 1px 0 rgba(219, 232, 246, 0.12);
 }
 
 .pf-a2-input {
-  border-color: rgba(121, 172, 231, 0.5) !important;
-  background: linear-gradient(180deg, rgba(7, 23, 41, 0.94), rgba(6, 18, 31, 0.92)) !important;
-  color: #f4f8fc;
+  border-color: rgba(143, 174, 209, 0.5) !important;
+  background: linear-gradient(180deg, rgba(14, 23, 34, 0.94), rgba(11, 18, 26, 0.92)) !important;
+  color: #f6f8fa;
 }
 
 .pf-a2-input:focus {
@@ -1971,8 +1970,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-progress-track {
-  background: rgba(95, 112, 132, 0.45) !important;
-  border: 1px solid rgba(129, 148, 170, 0.26);
+  background: rgba(102, 113, 125, 0.45) !important;
+  border: 1px solid rgba(137, 149, 162, 0.26);
 }
 
 .pf-a2-progress-fill {
@@ -2009,7 +2008,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(2rem, 4.2vw, 2.25rem);
   line-height: 1;
   font-weight: 900;
-  color: #d6e9ff;
+  color: #deeaf7;
 }
 
 .pf-a3-home-student {
@@ -2018,12 +2017,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(1.95rem, 5vw, 2.6rem);
   line-height: 1;
   font-weight: 900;
-  color: #f8fbff;
+  color: #f9fbfe;
 }
 
 .pf-a3-home-subline {
   margin: 0.46rem 0 0;
-  color: #9dbfe6;
+  color: #acc0d7;
   font-size: 0.86rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2035,11 +2034,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 78px;
   height: 78px;
   border-radius: 999px;
-  border: 2px solid rgba(150, 201, 255, 0.6);
+  border: 2px solid rgba(171, 202, 234, 0.6);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(11, 32, 56, 0.94);
+  background-color: rgba(20, 33, 47, 0.94);
   box-shadow: none;
   overflow: hidden;
 }
@@ -2057,7 +2056,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  border: 2px solid #09131f;
+  border: 2px solid #0d131b;
   background: radial-gradient(circle at 35% 30%, #8ff7bf, #27c96f 68%);
   box-shadow: 0 0 0 1px rgba(208, 242, 226, 0.36);
 }
@@ -2074,7 +2073,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #d7eaff;
+  color: #dfeaf7;
 }
 
 .pf-a3-online-pill {
@@ -2111,12 +2110,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-coach-card,
 .pf-a3-panel-block {
   border-radius: 1rem;
-  border: 1px solid rgba(123, 173, 231, 0.28);
-  background-color: rgba(7, 21, 38, 0.9);
-  background-image: linear-gradient(168deg, rgba(18, 41, 68, 0.55), rgba(7, 20, 34, 0.35) 62%);
+  border: 1px solid rgba(145, 175, 209, 0.28);
+  background-color: rgba(13, 22, 32, 0.9);
+  background-image: linear-gradient(168deg, rgba(28, 42, 58, 0.55), rgba(12, 20, 29, 0.35) 62%);
   box-shadow:
     0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(196, 224, 255, 0.07);
+    inset 0 1px 0 rgba(208, 225, 243, 0.07);
 }
 
 .pf-a3-coach-card {
@@ -2141,12 +2140,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  border: 2px solid rgba(145, 196, 255, 0.56);
+  border: 2px solid rgba(167, 198, 233, 0.56);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, rgba(17, 43, 72, 0.9), rgba(8, 25, 44, 0.92));
-  color: #e4eef9;
+  background: linear-gradient(160deg, rgba(28, 44, 61, 0.9), rgba(15, 25, 37, 0.92));
+  color: #e8eef5;
   font-size: 0.86rem;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -2154,7 +2153,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-coach-name {
   margin: 0;
-  color: #f7fbff;
+  color: #f9fbfd;
   font-size: clamp(1.05rem, 3.4vw, 1.55rem);
   line-height: 1.12;
   font-weight: 720;
@@ -2163,7 +2162,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-coach-role {
   margin: 0.2rem 0 0;
-  color: #a8c5e6;
+  color: #b4c6da;
   font-size: 0.82rem;
   line-height: 1.1;
   font-weight: 600;
@@ -2186,13 +2185,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  border-top: 1px solid rgba(118, 170, 226, 0.18);
+  border-top: 1px solid rgba(140, 171, 204, 0.18);
   padding-top: 0.52rem;
 }
 
 .pf-a3-coach-meta-item p {
   margin: 0;
-  color: #f2f8ff;
+  color: #f5f8fc;
   font-size: clamp(0.93rem, 3vw, 1.2rem);
   line-height: 1.1;
   font-weight: 700;
@@ -2203,7 +2202,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-coach-meta-item span {
   display: block;
   margin-top: 0.2rem;
-  color: #8fb2da;
+  color: #9eb3cb;
   font-size: 0.75rem;
   line-height: 1;
   font-weight: 600;
@@ -2213,18 +2212,18 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  border: 1px solid rgba(123, 173, 231, 0.24);
+  border: 1px solid rgba(145, 175, 209, 0.24);
   border-radius: 0.9rem;
-  background-color: rgba(6, 19, 33, 0.92);
+  background-color: rgba(11, 19, 28, 0.92);
   padding: 0.44rem;
 }
 
 .pf-a3-main-action-btn {
   min-height: 38px;
   border-radius: 0.66rem;
-  border: 1px solid rgba(128, 178, 236, 0.32);
-  background-color: rgba(13, 33, 57, 0.78);
-  color: #e3effd;
+  border: 1px solid rgba(150, 180, 214, 0.32);
+  background-color: rgba(22, 34, 48, 0.78);
+  color: #e8eff8;
   font-size: 0.82rem;
   letter-spacing: 0.01em;
   font-weight: 800;
@@ -2254,9 +2253,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background: radial-gradient(
     78% 100% at 50% 0%,
-    rgba(56, 145, 248, 0.34) 0%,
-    rgba(37, 129, 235, 0.16) 48%,
-    rgba(8, 25, 45, 0) 100%
+    rgba(94, 148, 210, 0.34) 0%,
+    rgba(77, 132, 195, 0.16) 48%,
+    rgba(15, 26, 38, 0) 100%
   );
   filter: blur(8px);
   opacity: 0.95;
@@ -2271,7 +2270,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-section-title {
   margin: 0;
-  color: #f2f8ff;
+  color: #f5f8fc;
   font-size: clamp(1.16rem, 3.4vw, 1.42rem);
   line-height: 1.12;
   font-weight: 700;
@@ -2280,7 +2279,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-section-subtitle {
   margin: 0.26rem 0 0;
-  color: #94abc4;
+  color: #9eabba;
   font-size: 0.84rem;
   line-height: 1.25;
   font-weight: 550;
@@ -2290,7 +2289,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-link-btn {
   border: 0;
   background: transparent;
-  color: #a1bfe0;
+  color: #aec0d3;
   font-size: 0.86rem;
   font-weight: 600;
   letter-spacing: -0.003em;
@@ -2298,10 +2297,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-link-btn-strong {
-  border: 1px solid rgba(113, 177, 250, 0.36);
-  background: rgba(12, 37, 66, 0.58);
+  border: 1px solid rgba(140, 179, 223, 0.36);
+  background: rgba(23, 38, 55, 0.58);
   border-radius: 999px;
-  color: #d4e8ff;
+  color: #dde9f6;
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1;
@@ -2327,8 +2326,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-music-card {
   min-width: 0;
   border-radius: 0.86rem;
-  border: 1px solid rgba(118, 170, 226, 0.22);
-  background: rgba(8, 24, 43, 0.56);
+  border: 1px solid rgba(140, 171, 204, 0.22);
+  background: rgba(15, 25, 36, 0.56);
   padding: 0.34rem;
 }
 
@@ -2338,8 +2337,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-action:hover {
-  border-color: rgba(152, 200, 255, 0.5);
-  background: rgba(10, 30, 54, 0.72);
+  border-color: rgba(173, 201, 234, 0.5);
+  background: rgba(19, 31, 45, 0.72);
 }
 
 .pf-a3-music-card-action:active {
@@ -2367,7 +2366,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: 1.1rem;
   font-weight: 720;
   letter-spacing: 0.02em;
-  color: rgba(245, 250, 255, 0.9);
+  color: rgba(247, 250, 253, 0.9);
 }
 
 .pf-a3-music-fallback-shell {
@@ -2384,10 +2383,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(239, 246, 255, 0.28);
-  background: rgba(3, 13, 24, 0.34);
+  border: 1px solid rgba(242, 246, 252, 0.28);
+  background: rgba(7, 13, 20, 0.34);
   padding: 0.14rem 0.42rem;
-  color: rgba(244, 249, 255, 0.92);
+  color: rgba(246, 249, 253, 0.92);
   font-size: 0.56rem;
   font-weight: 650;
   letter-spacing: 0.06em;
@@ -2395,7 +2394,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-fallback-type {
-  color: rgba(226, 240, 255, 0.82);
+  color: rgba(232, 240, 249, 0.82);
   font-size: 0.58rem;
   font-weight: 650;
   letter-spacing: 0.06em;
@@ -2403,7 +2402,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-fallback-a {
-  background: linear-gradient(145deg, rgba(238, 240, 243, 0.95), rgba(214, 220, 226, 0.9));
+  background: linear-gradient(145deg, rgba(239, 240, 242, 0.95), rgba(216, 220, 224, 0.9));
 }
 
 .pf-a3-music-card-fallback-b {
@@ -2411,16 +2410,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-fallback-c {
-  background: linear-gradient(160deg, rgba(20, 51, 92, 0.9), rgba(17, 25, 34, 0.95));
+  background: linear-gradient(160deg, rgba(34, 53, 78, 0.9), rgba(20, 25, 31, 0.95));
 }
 
 .pf-a3-music-card-fallback-d {
-  background: linear-gradient(165deg, rgba(21, 67, 120, 0.9), rgba(15, 25, 37, 0.94));
+  background: linear-gradient(165deg, rgba(41, 68, 100, 0.9), rgba(19, 25, 33, 0.94));
 }
 
 .pf-a3-music-title {
   margin: 0.5rem 0 0;
-  color: #f0f6fc;
+  color: #f2f6fa;
   font-size: 0.78rem;
   line-height: 1.2;
   font-weight: 640;
@@ -2432,7 +2431,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-artist {
   margin: 0.12rem 0 0;
-  color: #96b8de;
+  color: #a4b9d0;
   font-size: 0.7rem;
   line-height: 1.2;
   white-space: nowrap;
@@ -2442,7 +2441,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-music-hint {
   margin: 0.2rem 0 0;
-  color: #86a9cf;
+  color: #95aac0;
   font-size: 0.64rem;
   font-weight: 550;
   letter-spacing: 0.005em;
@@ -2460,9 +2459,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   align-items: center;
   gap: 0.64rem;
   border-radius: 0.64rem;
-  border: 1px solid rgba(118, 170, 226, 0.28);
-  background: linear-gradient(165deg, rgba(12, 33, 58, 0.74), rgba(6, 20, 36, 0.72));
-  color: #e7f0fb;
+  border: 1px solid rgba(140, 171, 204, 0.28);
+  background: linear-gradient(165deg, rgba(21, 34, 49, 0.74), rgba(12, 20, 30, 0.72));
+  color: #ebf0f7;
   font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: -0.006em;
@@ -2478,10 +2477,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(139, 193, 250, 0.16);
+  border: 1px solid rgba(161, 194, 228, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  background: linear-gradient(160deg, rgba(58, 142, 237, 0.2), rgba(29, 85, 149, 0.32));
-  color: #bedaf8;
+  background: linear-gradient(160deg, rgba(94, 144, 201, 0.2), rgba(53, 87, 125, 0.32));
+  color: #cadaec;
 }
 
 /* Set monocromo: mismo vidrio violeta y un único tinte lavanda para todos los
@@ -2491,7 +2490,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-quick-icon-sueno,
 .pf-a3-quick-icon-progreso,
 .pf-a3-quick-icon-pagos {
-  color: #bedaf8;
+  color: #cadaec;
 }
 
 .pf-a3-head-actions {
@@ -2504,9 +2503,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  border: 1px solid rgba(118, 171, 228, 0.52);
-  background: rgba(8, 25, 45, 0.9);
-  color: #d5e1ef;
+  border: 1px solid rgba(140, 172, 206, 0.52);
+  background: rgba(15, 26, 38, 0.9);
+  color: #dae1ea;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2524,13 +2523,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.56rem;
-  border-bottom: 1px solid rgba(118, 170, 226, 0.28);
+  border-bottom: 1px solid rgba(140, 171, 204, 0.28);
   padding-bottom: 0.52rem;
 }
 
 .pf-a3-weight-value {
   margin: 0;
-  color: #f1f8ff;
+  color: #f4f8fc;
   font-size: clamp(1.08rem, 3.4vw, 1.5rem);
   line-height: 1;
   font-weight: 680;
@@ -2540,7 +2539,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-weight-unit {
   margin: 0.18rem 0 0;
-  color: #93b6de;
+  color: #a2b7cf;
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
@@ -2548,7 +2547,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-weight-label {
   margin: 0.2rem 0 0;
-  color: #c8e2ff;
+  color: #d3e3f4;
   font-size: 0.84rem;
   line-height: 1;
   font-weight: 700;
@@ -2564,13 +2563,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-chart-axis {
-  stroke: rgba(125, 166, 213, 0.42);
+  stroke: rgba(143, 167, 195, 0.42);
   stroke-dasharray: 3 7;
 }
 
 .pf-a3-chart-line {
   fill: none;
-  stroke: #8bc1fa;
+  stroke: #a1c2e4;
   stroke-width: 2.3;
 }
 
@@ -2584,21 +2583,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-chart-footnote {
   margin: 0.2rem 0 0;
-  color: #8eb1da;
+  color: #9db2cb;
   font-size: 0.72rem;
   font-weight: 600;
 }
 
 .pf-a3-empty-state {
   margin: 0.54rem 0 0;
-  color: #92b5dd;
+  color: #a1b6ce;
   font-size: 0.95rem;
   line-height: 1.35;
 }
 
 .pf-a3-bmi-title {
   margin: 0;
-  color: #deedff;
+  color: #e5eef8;
   font-size: 0.82rem;
   line-height: 1;
   font-weight: 800;
@@ -2618,8 +2617,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   flex-direction: column;
   gap: 0.2rem;
   border-radius: 0.62rem;
-  border: 1px solid rgba(122, 173, 232, 0.2);
-  background: rgba(8, 24, 42, 0.64);
+  border: 1px solid rgba(144, 175, 210, 0.2);
+  background: rgba(15, 24, 35, 0.64);
   padding: 0.42rem 0.46rem 0.48rem;
 }
 
@@ -2637,7 +2636,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-kicker {
   margin: 0;
-  color: #9dc0e9;
+  color: #acc1da;
   font-size: 0.66rem;
   line-height: 1;
   font-weight: 700;
@@ -2655,7 +2654,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-detail {
   margin: 0.08rem 0 0;
-  color: #d3e7ff;
+  color: #dce8f6;
   font-size: 0.72rem;
   line-height: 1.2;
   font-weight: 700;
@@ -2663,7 +2662,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-bmi-empty {
   margin: 0.42rem 0 0;
-  color: #9fc2e9;
+  color: #aec3da;
   font-size: 0.78rem;
   line-height: 1.3;
   font-weight: 600;
@@ -2678,8 +2677,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-status-item {
   border-radius: 0.62rem;
-  border: 1px solid rgba(118, 170, 226, 0.24);
-  background: rgba(7, 23, 41, 0.64);
+  border: 1px solid rgba(140, 171, 204, 0.24);
+  background: rgba(14, 23, 34, 0.64);
   padding: 0.46rem 0.48rem 0.52rem;
 }
 
@@ -2696,12 +2695,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-status-item-neutral {
-  border-color: rgba(148, 165, 184, 0.36);
+  border-color: rgba(155, 165, 177, 0.36);
 }
 
 .pf-a3-status-kicker {
   margin: 0;
-  color: #9bbee6;
+  color: #aabfd7;
   font-size: 0.65rem;
   line-height: 1;
   font-weight: 800;
@@ -2711,7 +2710,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-status-value {
   margin: 0.24rem 0 0;
-  color: #f5faff;
+  color: #f7fafd;
   font-size: 0.96rem;
   line-height: 1.15;
   font-weight: 800;
@@ -2719,7 +2718,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-status-detail {
   margin: 0.2rem 0 0;
-  color: #c8def7;
+  color: #d1dfee;
   font-size: 0.72rem;
   line-height: 1.25;
   font-weight: 600;
@@ -2738,9 +2737,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   z-index: 6;
   margin: 0 auto;
   border-radius: 999px;
-  border: 1px solid rgba(122, 152, 186, 0.48);
-  background: rgba(10, 19, 29, 0.94);
-  color: #c4d8ee;
+  border: 1px solid rgba(135, 153, 173, 0.48);
+  background: rgba(14, 19, 25, 0.94);
+  color: #ccd8e6;
   font-size: 0.64rem;
   line-height: 1;
   font-weight: 700;
@@ -2758,17 +2757,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-pull-indicator-refreshing {
-  border-color: rgba(150, 201, 255, 0.82);
-  color: #e5f1ff;
+  border-color: rgba(171, 202, 234, 0.82);
+  color: #eaf1fa;
 }
 
 .pf-a3-routine-overview {
   position: relative;
   border-radius: 0.96rem;
-  border: 1px solid rgba(104, 179, 255, 0.42);
+  border: 1px solid rgba(134, 179, 225, 0.42);
   background:
-    radial-gradient(120% 130% at 92% -24%, rgba(101, 177, 255, 0.34), transparent 48%),
-    linear-gradient(165deg, rgba(5, 11, 18, 0.98), rgba(8, 15, 24, 0.97) 52%, rgba(7, 12, 18, 0.98));
+    radial-gradient(120% 130% at 92% -24%, rgba(132, 177, 224, 0.34), transparent 48%),
+    linear-gradient(165deg, rgba(8, 11, 15, 0.98), rgba(11, 15, 21, 0.97) 52%, rgba(9, 12, 16, 0.98));
   padding: 0.64rem;
   overflow: hidden;
 }
@@ -2804,7 +2803,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-bottom: 2px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: rgba(219, 230, 243, 0.7);
+  color: rgba(224, 230, 238, 0.7);
   font-size: 0.74rem;
   line-height: 1;
   font-weight: 600;
@@ -2816,8 +2815,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-nav-btn-active {
-  color: #f3f9ff;
-  border-bottom-color: #6bb1ff;
+  color: #ffab6b;
+  border-bottom-color: #f97316;
 }
 
 .pf-a3-routine-overview-head {
@@ -2832,7 +2831,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-overview-kicker {
   margin: 0;
-  color: #a5b4c6;
+  color: #acb5bf;
   font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2849,9 +2848,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 1px solid rgba(124, 149, 177, 0.52);
-  background: linear-gradient(160deg, rgba(33, 46, 60, 0.98), rgba(19, 28, 39, 0.96));
-  color: #dbe7f5;
+  border: 1px solid rgba(135, 150, 166, 0.52);
+  background: linear-gradient(160deg, rgba(38, 46, 55, 0.98), rgba(23, 28, 35, 0.96));
+  color: #e0e7f0;
   font-size: 0.5rem;
   line-height: 1;
   font-weight: 700;
@@ -2872,8 +2871,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 44px;
   height: 44px;
   border-radius: 0.72rem;
-  border: 1px solid rgba(120, 184, 255, 0.66);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.98), rgba(59, 146, 241, 0.95));
+  border: 1px solid rgba(147, 185, 228, 0.66);
+  background: linear-gradient(160deg, rgba(120, 168, 221, 0.98), rgba(95, 148, 205, 0.95));
   color: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -2893,14 +2892,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   font-size: clamp(1.34rem, 4.2vw, 1.7rem);
   line-height: 1.08;
   font-weight: 900;
-  color: #f2f8ff;
+  color: #f5f8fc;
   letter-spacing: 0.015em;
 }
 
 .pf-a3-routine-overview-subtitle {
   margin: 0.28rem 0 0;
   max-width: 52ch;
-  color: #9faebf;
+  color: #a5aeb9;
   font-size: 0.82rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2931,14 +2930,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-kpi {
   border-radius: 0.74rem;
-  border: 1px solid rgba(108, 133, 162, 0.34);
-  background: rgba(11, 19, 28, 0.95);
+  border: 1px solid rgba(119, 134, 151, 0.34);
+  background: rgba(14, 19, 25, 0.95);
   padding: 0.48rem 0.52rem;
 }
 
 .pf-a3-routine-kpi-label {
   margin: 0;
-  color: #8fa0b4;
+  color: #96a1ad;
   font-size: 0.57rem;
   line-height: 1;
   font-weight: 700;
@@ -2948,7 +2947,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-kpi-value {
   margin: 0.24rem 0 0;
-  color: #f6faff;
+  color: #f8fafd;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: 1.32rem;
   line-height: 1;
@@ -2957,8 +2956,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-strip {
   border-radius: 0.84rem;
-  border: 1px solid rgba(52, 78, 108, 0.48);
-  background: rgba(8, 15, 22, 0.9);
+  border: 1px solid rgba(63, 79, 97, 0.48);
+  background: rgba(11, 15, 19, 0.9);
   padding: 0.5rem 0.56rem 0.58rem;
   position: relative;
 }
@@ -2992,7 +2991,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-strip-title {
   margin: 0;
-  color: #e8eff8;
+  color: #ebeff5;
   text-align: center;
   font-size: 0.68rem;
   line-height: 1;
@@ -3033,9 +3032,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 52px;
   height: 52px;
   border-radius: 0.88rem;
-  border: 1px solid rgba(132, 157, 186, 0.68);
-  background: linear-gradient(170deg, rgba(14, 24, 35, 0.98), rgba(10, 18, 28, 0.96));
-  color: #eaf4ff;
+  border: 1px solid rgba(143, 158, 175, 0.68);
+  background: linear-gradient(170deg, rgba(18, 24, 31, 0.98), rgba(14, 18, 24, 0.96));
+  color: #eef4fb;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3050,14 +3049,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-week-arrow:disabled {
   opacity: 0.42;
-  border-color: rgba(90, 112, 137, 0.48);
-  color: #8ca0b8;
+  border-color: rgba(99, 113, 128, 0.48);
+  color: #95a1af;
 }
 
 .pf-a3-routine-week-label {
   margin: 0;
   text-align: center;
-  color: #f1f8ff;
+  color: #f4f8fc;
   font-size: clamp(1rem, 3vw, 1.18rem);
   line-height: 1;
   font-weight: 900;
@@ -3073,7 +3072,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overflow-x: auto;
   padding: 0.02rem 0 0.12rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(146, 170, 197, 0.36) transparent;
+  scrollbar-color: rgba(156, 171, 187, 0.36) transparent;
 }
 
 .pf-a3-routine-session-scroll::-webkit-scrollbar {
@@ -3082,7 +3081,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(146, 170, 197, 0.36);
+  background: rgba(156, 171, 187, 0.36);
 }
 
 .pf-a3-routine-session-chip {
@@ -3091,9 +3090,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   align-items: center;
   justify-content: center;
   border-radius: 0.72rem;
-  border: 1px solid rgba(80, 102, 128, 0.56);
-  background: rgba(19, 27, 37, 0.98);
-  color: #d7e2ef;
+  border: 1px solid rgba(90, 103, 118, 0.56);
+  background: rgba(23, 27, 33, 0.98);
+  color: #dce2ea;
   font-size: 0.78rem;
   line-height: 1;
   font-weight: 700;
@@ -3103,21 +3102,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-session-chip-active {
-  border-color: rgba(146, 197, 255, 0.86);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.98), rgba(59, 146, 241, 0.95));
+  border-color: rgba(255, 176, 120, 0.82);
+  background: linear-gradient(160deg, #ff9048, #f4700f);
   color: #ffffff;
 }
 
 .pf-a3-routine-empty {
   border-radius: 0.96rem;
-  border: 1px solid rgba(93, 117, 145, 0.38);
-  background: linear-gradient(168deg, rgba(9, 16, 24, 0.96), rgba(12, 20, 30, 0.94));
+  border: 1px solid rgba(103, 118, 135, 0.38);
+  background: linear-gradient(168deg, rgba(12, 16, 21, 0.96), rgba(16, 20, 26, 0.94));
   padding: 0.88rem 0.92rem;
 }
 
 .pf-a3-routine-empty h2 {
   margin: 0;
-  color: #f3f9ff;
+  color: #f5f9fd;
   font-size: 1.02rem;
   line-height: 1.12;
   font-weight: 900;
@@ -3125,7 +3124,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-empty p {
   margin: 0.28rem 0 0;
-  color: #b9cade;
+  color: #c0cbd7;
   font-size: 0.78rem;
   line-height: 1.3;
   font-weight: 600;
@@ -3152,9 +3151,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  border: 3px solid rgba(126, 167, 214, 0.24);
+  border: 3px solid rgba(144, 168, 196, 0.24);
   border-top-color: rgba(166, 237, 218, 0.95);
-  border-right-color: rgba(150, 201, 255, 0.88);
+  border-right-color: rgba(171, 202, 234, 0.88);
   animation: pf-a3-routine-loader-spin 1s linear infinite;
 }
 
@@ -3168,9 +3167,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border: 1px solid rgba(192, 236, 222, 0.6);
   background:
     radial-gradient(circle at 30% 24%, rgba(166, 237, 218, 0.28), transparent 54%),
-    radial-gradient(circle at 74% 72%, rgba(150, 201, 255, 0.24), transparent 56%),
-    linear-gradient(165deg, rgba(11, 19, 29, 0.96), rgba(8, 15, 22, 0.95));
-  color: #eef6ff;
+    radial-gradient(circle at 74% 72%, rgba(171, 202, 234, 0.24), transparent 56%),
+    linear-gradient(165deg, rgba(15, 19, 25, 0.96), rgba(11, 15, 19, 0.95));
+  color: #f1f6fc;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: 0.94rem;
   line-height: 1;
@@ -3182,7 +3181,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-loading-brand {
   margin: 0;
-  color: #98b2cf;
+  color: #a3b3c4;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 800;
@@ -3200,12 +3199,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   0%,
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 rgba(120, 171, 226, 0);
+    box-shadow: 0 0 0 rgba(141, 172, 205, 0);
   }
 
   50% {
     transform: scale(1.045);
-    box-shadow: 0 0 22px rgba(120, 171, 226, 0.24);
+    box-shadow: 0 0 22px rgba(141, 172, 205, 0.24);
   }
 }
 
@@ -3223,8 +3222,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-card {
   border-radius: 0.94rem;
-  border: 1px solid rgba(84, 108, 136, 0.38);
-  background: linear-gradient(165deg, rgba(8, 14, 21, 0.98), rgba(10, 18, 27, 0.96));
+  border: 1px solid rgba(94, 109, 126, 0.38);
+  background: linear-gradient(165deg, rgba(11, 14, 18, 0.98), rgba(13, 18, 24, 0.96));
   padding: 0.64rem;
 }
 
@@ -3238,7 +3237,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-kicker {
   margin: 0;
-  color: #9aadc3;
+  color: #a2aebb;
   font-size: 0.63rem;
   line-height: 1;
   font-weight: 800;
@@ -3248,7 +3247,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-title {
   margin: 0.25rem 0 0;
-  color: #ecf5ff;
+  color: #f0f5fb;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(0.98rem, 3vw, 1.16rem);
   line-height: 1.12;
@@ -3257,7 +3256,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-session-goal {
   margin: 0.24rem 0 0;
-  color: #b8cce3;
+  color: #c1cdda;
   font-size: 0.75rem;
   line-height: 1.32;
   font-weight: 600;
@@ -3274,9 +3273,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(88, 111, 137, 0.52);
-  background: rgba(15, 24, 34, 0.94);
-  color: #d6e2ef;
+  border: 1px solid rgba(98, 112, 127, 0.52);
+  background: rgba(19, 24, 30, 0.94);
+  color: #dbe2ea;
   font-size: 0.55rem;
   line-height: 1;
   font-weight: 700;
@@ -3300,7 +3299,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-block-note {
   margin: 0 0 0.32rem;
-  color: #b5c7dc;
+  color: #bdc8d4;
   font-size: 0.67rem;
   line-height: 1.24;
   font-weight: 600;
@@ -3335,11 +3334,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   isolation: isolate;
   padding: 0.54rem 0.46rem 0.46rem 0.56rem;
   border-radius: 1rem;
-  border: 1px solid rgba(89, 154, 228, 0.34);
+  border: 1px solid rgba(117, 156, 200, 0.34);
   background:
-    radial-gradient(circle at 4% 24%, rgba(72, 149, 238, 0.2), rgba(13, 22, 33, 0.88) 36%),
-    linear-gradient(165deg, rgba(15, 24, 35, 0.94), rgba(10, 17, 25, 0.94));
-  box-shadow: inset 0 0 0 1px rgba(140, 175, 214, 0.08), 0 10px 26px rgba(5, 11, 18, 0.3);
+    radial-gradient(circle at 4% 24%, rgba(105, 151, 205, 0.2), rgba(17, 22, 29, 0.88) 36%),
+    linear-gradient(165deg, rgba(19, 24, 31, 0.94), rgba(13, 17, 22, 0.94));
+  box-shadow: inset 0 0 0 1px rgba(155, 176, 199, 0.08), 0 10px 26px rgba(8, 11, 15, 0.3);
   animation: pf-a3-superset-group-glow 3.2s ease-in-out infinite;
 }
 
@@ -3354,9 +3353,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(155, 202, 255, 0.56) 0%,
-    rgba(90, 167, 255, 0.3) 32%,
-    rgba(90, 167, 255, 0) 72%
+    rgba(175, 203, 235, 0.56) 0%,
+    rgba(123, 169, 222, 0.3) 32%,
+    rgba(123, 169, 222, 0) 72%
   );
   filter: blur(1px);
   opacity: 0.3;
@@ -3370,9 +3369,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   pointer-events: none;
   background: linear-gradient(
     118deg,
-    rgba(157, 203, 255, 0) 16%,
-    rgba(157, 203, 255, 0.12) 34%,
-    rgba(157, 203, 255, 0) 58%
+    rgba(177, 204, 235, 0) 16%,
+    rgba(177, 204, 235, 0.12) 34%,
+    rgba(177, 204, 235, 0) 58%
   );
   opacity: 0.22;
   animation: pf-a3-superset-shimmer 4.6s linear infinite;
@@ -3389,9 +3388,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   align-items: center;
   gap: 0.38rem;
   border-radius: 999px;
-  border: 1px solid rgba(114, 180, 255, 0.62);
-  background: linear-gradient(145deg, rgba(20, 90, 170, 0.34), rgba(18, 57, 101, 0.4));
-  color: #dfeeff;
+  border: 1px solid rgba(142, 182, 227, 0.62);
+  background: linear-gradient(145deg, rgba(50, 92, 140, 0.34), rgba(35, 58, 84, 0.4));
+  color: #e5eef9;
   font-size: 0.56rem;
   line-height: 1;
   font-weight: 700;
@@ -3401,7 +3400,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-group-badge strong {
-  color: #f4f9ff;
+  color: #f6f9fd;
   font-size: 0.57rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -3410,18 +3409,18 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 @keyframes pf-a3-superset-group-glow {
   0%,
   100% {
-    border-color: rgba(89, 154, 228, 0.32);
+    border-color: rgba(117, 156, 200, 0.32);
     box-shadow:
-      inset 0 0 0 1px rgba(140, 175, 214, 0.08),
-      0 10px 26px rgba(5, 11, 18, 0.3),
-      0 0 12px rgba(74, 158, 255, 0.08);
+      inset 0 0 0 1px rgba(155, 176, 199, 0.08),
+      0 10px 26px rgba(8, 11, 15, 0.3),
+      0 0 12px rgba(110, 161, 219, 0.08);
   }
   50% {
-    border-color: rgba(122, 184, 255, 0.58);
+    border-color: rgba(149, 186, 228, 0.58);
     box-shadow:
-      inset 0 0 0 1px rgba(176, 209, 246, 0.16),
-      0 12px 30px rgba(6, 14, 24, 0.34),
-      0 0 24px rgba(74, 158, 255, 0.24);
+      inset 0 0 0 1px rgba(190, 210, 232, 0.16),
+      0 12px 30px rgba(10, 14, 20, 0.34),
+      0 0 24px rgba(110, 161, 219, 0.24);
   }
 }
 
@@ -3450,26 +3449,26 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-row {
   border-radius: 0.88rem;
-  border: 1px solid rgba(85, 109, 137, 0.58);
-  background: linear-gradient(158deg, rgba(20, 30, 41, 0.95), rgba(13, 21, 31, 0.96));
+  border: 1px solid rgba(95, 110, 127, 0.58);
+  background: linear-gradient(158deg, rgba(24, 30, 37, 0.95), rgba(17, 21, 27, 0.96));
   padding: 0.56rem;
-  box-shadow: inset 0 1px 0 rgba(179, 204, 233, 0.08), 0 8px 18px rgba(4, 9, 15, 0.24);
+  box-shadow: inset 0 1px 0 rgba(190, 205, 222, 0.08), 0 8px 18px rgba(6, 9, 13, 0.24);
   transition: border-color 220ms ease, background 240ms ease, box-shadow 240ms ease;
 }
 
 .pf-a3-routine-exercise-row-base {
-  border-color: rgba(85, 109, 137, 0.58);
+  border-color: rgba(95, 110, 127, 0.58);
 }
 
 .pf-a3-routine-exercise-row-superset {
   margin-left: 0.24rem;
-  border-color: rgba(104, 174, 255, 0.64);
-  background: linear-gradient(158deg, rgba(16, 32, 50, 0.95), rgba(11, 24, 38, 0.96));
-  box-shadow: inset 0 1px 0 rgba(186, 218, 255, 0.12), 0 10px 20px rgba(5, 14, 24, 0.3);
+  border-color: rgba(134, 176, 225, 0.64);
+  background: linear-gradient(158deg, rgba(23, 32, 43, 0.95), rgba(16, 24, 33, 0.96));
+  box-shadow: inset 0 1px 0 rgba(200, 219, 241, 0.12), 0 10px 20px rgba(9, 14, 20, 0.3);
 }
 
 .pf-a3-routine-exercise-row-superset .pf-a3-routine-exercise-name {
-  color: #ddedff;
+  color: #e4edf8;
 }
 
 .pf-a3-routine-exercise-row + .pf-a3-routine-exercise-row {
@@ -3487,9 +3486,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   height: 1.22rem;
   flex: 0 0 auto;
   border-radius: 999px;
-  border: 1px solid rgba(120, 185, 255, 0.7);
-  background: rgba(60, 114, 174, 0.52);
-  color: #f3f9ff;
+  border: 1px solid rgba(147, 186, 228, 0.7);
+  background: rgba(83, 115, 151, 0.52);
+  color: #f5f9fd;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 800;
@@ -3501,9 +3500,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-exercise-index-superset {
   width: 1.02rem;
   height: 1.02rem;
-  border-color: rgba(173, 191, 212, 0.54);
-  background: rgba(69, 87, 108, 0.42);
-  color: #dce6f2;
+  border-color: rgba(181, 192, 204, 0.54);
+  background: rgba(77, 88, 100, 0.42);
+  color: #e0e6ee;
   font-size: 0.5rem;
   font-weight: 700;
 }
@@ -3512,9 +3511,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 58px;
   height: 40px;
   border-radius: 0.52rem;
-  border: 1px solid rgba(88, 110, 135, 0.56);
-  background: linear-gradient(155deg, rgba(46, 59, 74, 0.96), rgba(28, 39, 51, 0.92));
-  color: #dce8f6;
+  border: 1px solid rgba(97, 111, 126, 0.56);
+  background: linear-gradient(155deg, rgba(52, 59, 68, 0.96), rgba(33, 39, 46, 0.92));
+  color: #e1e8f1;
   font-size: 0.66rem;
   line-height: 1;
   font-weight: 700;
@@ -3523,15 +3522,15 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   text-transform: uppercase;
   flex: 0 0 auto;
-  box-shadow: inset 0 0 0 1px rgba(144, 165, 189, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(153, 166, 180, 0.06);
 }
 
 .pf-a3-routine-exercise-thumb-has-media {
   position: relative;
   overflow: hidden;
   padding: 0;
-  border-color: rgba(128, 167, 211, 0.64);
-  background: rgba(8, 16, 26, 0.92);
+  border-color: rgba(145, 168, 194, 0.64);
+  background: rgba(12, 16, 22, 0.92);
 }
 
 .pf-a3-routine-exercise-thumb-media {
@@ -3548,8 +3547,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 0.88rem;
   height: 0.88rem;
   border-radius: 999px;
-  border: 1px solid rgba(244, 249, 255, 0.8);
-  background: rgba(7, 17, 28, 0.72);
+  border: 1px solid rgba(246, 249, 253, 0.8);
+  background: rgba(11, 17, 24, 0.72);
   color: #ffffff;
   font-size: 0.42rem;
   line-height: 1;
@@ -3562,7 +3561,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-name {
   margin: 0;
-  color: #f6faff;
+  color: #f8fafd;
   font-size: 0.72rem;
   line-height: 1.2;
   font-weight: 800;
@@ -3572,9 +3571,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(124, 185, 255, 0.62);
-  background: linear-gradient(140deg, rgba(78, 156, 245, 0.3), rgba(65, 134, 212, 0.25));
-  color: #dfeeff;
+  border: 1px solid rgba(150, 187, 229, 0.62);
+  background: linear-gradient(140deg, rgba(111, 158, 212, 0.3), rgba(94, 136, 183, 0.25));
+  color: #e5eef9;
   font-size: 0.52rem;
   line-height: 1;
   font-weight: 800;
@@ -3595,7 +3594,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-name-btn:hover .pf-a3-routine-exercise-name {
-  color: #e2efff;
+  color: #e8f0f9;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
@@ -3603,7 +3602,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-desc {
   margin: 0.16rem 0 0;
-  color: #b2c6dd;
+  color: #bbc7d4;
   font-size: 0.66rem;
   line-height: 1.26;
   font-weight: 600;
@@ -3623,13 +3622,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.14rem;
   min-width: 0;
   border-radius: 0.42rem;
-  border: 1px solid rgba(84, 107, 133, 0.44);
-  background: rgba(17, 25, 35, 0.72);
+  border: 1px solid rgba(94, 108, 123, 0.44);
+  background: rgba(21, 25, 31, 0.72);
   padding: 0.22rem 0.3rem;
 }
 
 .pf-a3-routine-exercise-stat span {
-  color: #9baec4;
+  color: #a3afbc;
   font-size: 0.52rem;
   line-height: 1;
   font-weight: 700;
@@ -3640,7 +3639,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-exercise-stat strong {
-  color: #f2f8ff;
+  color: #f5f8fc;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -3658,9 +3657,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-exercise-tag {
   border-radius: 0.44rem;
-  border: 1px solid rgba(120, 184, 255, 0.68);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.92), rgba(59, 146, 241, 0.9));
-  color: #fbfdff;
+  border: 1px solid rgba(147, 185, 228, 0.68);
+  background: linear-gradient(160deg, rgba(120, 168, 221, 0.92), rgba(95, 148, 205, 0.9));
+  color: #fcfdfe;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
@@ -3673,7 +3672,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   margin-top: 0.44rem;
   border-radius: 0.66rem;
   border: 1px dashed rgba(244, 132, 132, 0.5);
-  background: linear-gradient(155deg, rgba(21, 29, 49, 0.6), rgba(15, 19, 28, 0.64));
+  background: linear-gradient(155deg, rgba(27, 31, 43, 0.6), rgba(18, 20, 25, 0.64));
   padding: 0.42rem;
 }
 
@@ -3694,7 +3693,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-superset-row {
   border-radius: 0.54rem;
   border: 1px solid rgba(222, 128, 128, 0.44);
-  background: rgba(13, 16, 24, 0.68);
+  background: rgba(15, 17, 22, 0.68);
   padding: 0.34rem;
 }
 
@@ -3742,7 +3741,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   gap: 0.24rem;
   border-radius: 0.36rem;
   border: 1px solid rgba(198, 121, 121, 0.4);
-  background: rgba(18, 23, 35, 0.64);
+  background: rgba(21, 24, 32, 0.64);
   padding: 0.2rem 0.26rem;
 }
 
@@ -3764,22 +3763,22 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-exercise-metrics,
 .pf-a3-routine-exercise-note {
   margin: 0.24rem 0 0;
-  color: #b7c9dd;
+  color: #bfc9d5;
   font-size: 0.65rem;
   line-height: 1.3;
   font-weight: 600;
 }
 
 .pf-a3-routine-exercise-note {
-  color: #c9d8ea;
+  color: #d0d9e3;
 }
 
 .pf-a3-routine-toggle,
 .pf-a3-routine-more {
   margin-top: 0.4rem;
   border-radius: 0.64rem;
-  border: 1px solid rgba(118, 184, 255, 0.66);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.98), rgba(59, 146, 241, 0.95));
+  border: 1px solid rgba(145, 185, 228, 0.66);
+  background: linear-gradient(160deg, rgba(120, 168, 221, 0.98), rgba(95, 148, 205, 0.95));
   color: #ffffff;
   font-size: 0.65rem;
   line-height: 1;
@@ -3802,8 +3801,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 100%;
   min-height: 42px;
   border-radius: 0.85rem;
-  border: 1px solid rgba(173, 212, 255, 0.74);
-  background: linear-gradient(180deg, rgba(83, 163, 255, 0.97), rgba(58, 144, 236, 0.95));
+  border: 1px solid rgba(189, 213, 239, 0.74);
+  background: linear-gradient(180deg, rgba(117, 165, 221, 0.97), rgba(94, 145, 200, 0.95));
   color: #ffffff;
   padding: 0.46rem 0.7rem;
   display: inline-flex;
@@ -3811,8 +3810,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   text-align: center;
   box-shadow:
-    inset 0 0 0 1px rgba(227, 240, 255, 0.24),
-    0 16px 30px -22px rgba(73, 153, 241, 0.82);
+    inset 0 0 0 1px rgba(233, 240, 249, 0.24),
+    0 16px 30px -22px rgba(107, 155, 207, 0.82);
   transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 
@@ -3823,7 +3822,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 170%;
   height: 310%;
   border-radius: 999px;
-  border: 1px solid rgba(243, 248, 255, 0.36);
+  border: 1px solid rgba(245, 248, 253, 0.36);
   transform: translate(-50%, -50%) scale(0.22);
   opacity: 0.45;
   animation: pf-a3-routine-finalize-wave 2.3s ease-out infinite;
@@ -3863,10 +3862,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-finalize-cta:hover,
 .pf-a3-routine-finalize-cta:focus-visible {
-  border-color: rgba(229, 241, 255, 0.9);
+  border-color: rgba(234, 241, 250, 0.9);
   box-shadow:
-    inset 0 0 0 1px rgba(243, 248, 255, 0.3),
-    0 20px 34px -24px rgba(83, 161, 247, 0.9);
+    inset 0 0 0 1px rgba(245, 248, 253, 0.3),
+    0 20px 34px -24px rgba(116, 163, 214, 0.9);
 }
 
 .pf-a3-routine-finalize-cta:active {
@@ -3882,7 +3881,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     max(0.9rem, calc(env(safe-area-inset-right) + 0.52rem))
     max(0.84rem, env(safe-area-inset-bottom))
     max(0.9rem, calc(env(safe-area-inset-left) + 0.52rem));
-  background: radial-gradient(circle at top, rgba(38, 62, 90, 0.34), transparent 52%), rgba(4, 9, 15, 0.84);
+  background: radial-gradient(circle at top, rgba(48, 63, 80, 0.34), transparent 52%), rgba(6, 9, 13, 0.84);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3900,12 +3899,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   overscroll-behavior: contain;
   box-sizing: border-box;
   border-radius: 1.04rem;
-  border: 1.5px solid rgba(132, 170, 214, 0.76);
-  background: linear-gradient(165deg, rgba(7, 15, 24, 0.99), rgba(11, 20, 30, 0.98));
+  border: 1.5px solid rgba(148, 171, 198, 0.76);
+  background: linear-gradient(165deg, rgba(10, 15, 21, 0.99), rgba(15, 20, 26, 0.98));
   background-clip: padding-box;
   box-shadow:
-    inset 0 0 0 1px rgba(191, 221, 255, 0.14),
-    0 14px 34px rgba(2, 8, 14, 0.38);
+    inset 0 0 0 1px rgba(204, 222, 242, 0.14),
+    0 14px 34px rgba(4, 8, 12, 0.38);
   padding: 0.82rem 0.8rem 0.9rem;
   margin: auto;
 }
@@ -3915,7 +3914,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: absolute;
   inset: 1px;
   border-radius: calc(1.04rem - 1px);
-  border: 1px solid rgba(221, 237, 255, 0.26);
+  border: 1px solid rgba(228, 237, 248, 0.26);
   pointer-events: none;
   z-index: 0;
 }
@@ -3953,7 +3952,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-kicker {
   margin: 0;
-  color: #99adc5;
+  color: #a2aebc;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -3963,7 +3962,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-title {
   margin: 0.22rem 0 0;
-  color: #f3f9ff;
+  color: #f5f9fd;
   font-size: 1rem;
   line-height: 1.15;
   font-weight: 800;
@@ -3971,7 +3970,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-log-meta {
   margin: 0.22rem 0 0;
-  color: #b7c8dc;
+  color: #bec9d5;
   font-size: 0.68rem;
   line-height: 1.3;
   font-weight: 600;
@@ -3988,8 +3987,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-log-preset {
   min-width: 0;
   border-radius: 0.64rem;
-  border: 1px solid rgba(95, 120, 149, 0.56);
-  background: rgba(17, 27, 38, 0.9);
+  border: 1px solid rgba(106, 121, 138, 0.56);
+  background: rgba(21, 27, 34, 0.9);
   padding: 0.3rem 0.34rem;
   display: flex;
   flex-direction: column;
@@ -3997,7 +3996,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-preset span {
-  color: #9eb4cd;
+  color: #a7b5c4;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
@@ -4005,7 +4004,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-preset strong {
-  color: #eff6ff;
+  color: #f2f6fc;
   font-size: 0.88rem;
   line-height: 1.15;
   font-weight: 800;
@@ -4025,10 +4024,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   justify-content: center;
   min-width: 0;
   border-radius: 0.72rem;
-  border: 1.5px solid rgba(111, 143, 179, 0.72);
-  background: rgba(23, 34, 47, 0.88);
+  border: 1.5px solid rgba(125, 144, 165, 0.72);
+  background: rgba(28, 34, 42, 0.88);
   background-clip: padding-box;
-  color: #cfdff2;
+  color: #d6e0eb;
   font-size: 0.62rem;
   line-height: 1.12;
   font-weight: 700;
@@ -4038,8 +4037,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-log-tab-active {
-  border-color: rgba(132, 191, 255, 0.82);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.96), rgba(60, 145, 238, 0.93));
+  border-color: rgba(255, 176, 120, 0.8);
+  background: linear-gradient(160deg, #ff9048, #f4700f);
   color: #fff;
 }
 
@@ -4061,12 +4060,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-panel-sessions {
   border-color: rgba(236, 137, 155, 0.54);
-  background: linear-gradient(166deg, rgba(10, 14, 23, 0.99), rgba(10, 14, 24, 0.98));
+  background: linear-gradient(166deg, rgba(13, 15, 20, 0.99), rgba(13, 15, 21, 0.98));
 }
 
 .pf-a3-routine-action-panel-finalize {
-  border-color: rgba(134, 191, 255, 0.62);
-  background: linear-gradient(166deg, rgba(10, 18, 27, 0.99), rgba(10, 19, 29, 0.98));
+  border-color: rgba(158, 192, 231, 0.62);
+  background: linear-gradient(166deg, rgba(13, 18, 24, 0.99), rgba(14, 19, 25, 0.98));
 }
 
 .pf-a3-routine-action-loading {
@@ -4078,9 +4077,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 100%;
   min-height: 140px;
   border-radius: 0.9rem;
-  border: 1px solid rgba(157, 184, 216, 0.36);
-  background: rgba(9, 17, 27, 0.88);
-  color: #eef6ff;
+  border: 1px solid rgba(169, 185, 204, 0.36);
+  background: rgba(13, 17, 23, 0.88);
+  color: #f1f6fc;
   font-size: 0.9rem;
   line-height: 1.36;
   font-weight: 600;
@@ -4090,12 +4089,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-textarea::placeholder {
-  color: #8fa2b8;
+  color: #97a3b0;
 }
 
 .pf-a3-routine-action-textarea:focus {
-  border-color: rgba(186, 218, 255, 0.78);
-  box-shadow: 0 0 0 1px rgba(186, 218, 255, 0.34);
+  border-color: rgba(200, 219, 241, 0.78);
+  box-shadow: 0 0 0 1px rgba(200, 219, 241, 0.34);
 }
 
 .pf-a3-routine-action-row,
@@ -4108,7 +4107,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-counter {
-  color: #b9c9db;
+  color: #c0c9d4;
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
@@ -4117,9 +4116,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-action-secondary,
 .pf-a3-routine-action-primary {
   border-radius: 0.76rem;
-  border: 1px solid rgba(167, 192, 220, 0.44);
+  border: 1px solid rgba(178, 193, 209, 0.44);
   padding: 0.48rem 0.74rem;
-  color: #f8fbff;
+  color: #f9fbfe;
   font-size: 0.77rem;
   line-height: 1;
   font-weight: 800;
@@ -4131,7 +4130,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-primary {
-  background: linear-gradient(160deg, rgba(99, 172, 255, 0.9), rgba(75, 143, 221, 0.88));
+  background: linear-gradient(160deg, rgba(130, 174, 224, 0.9), rgba(104, 145, 192, 0.88));
 }
 
 .pf-a3-routine-action-primary-change {
@@ -4140,13 +4139,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-primary-finalize {
-  border-color: rgba(166, 208, 255, 0.74);
-  background: linear-gradient(160deg, rgba(89, 168, 255, 0.95), rgba(56, 143, 236, 0.94));
+  border-color: rgba(184, 209, 237, 0.74);
+  background: linear-gradient(160deg, rgba(122, 170, 222, 0.95), rgba(92, 144, 200, 0.94));
 }
 
 .pf-a3-routine-action-primary-timer {
   border-color: rgba(153, 229, 255, 0.74);
-  background: linear-gradient(160deg, rgba(76, 153, 241, 0.95), rgba(49, 126, 214, 0.94));
+  background: linear-gradient(160deg, rgba(109, 155, 208, 0.95), rgba(82, 128, 181, 0.94));
 }
 
 .pf-a3-routine-action-secondary-danger {
@@ -4155,9 +4154,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-action-secondary-danger:disabled {
-  border-color: rgba(173, 184, 197, 0.36);
-  background: rgba(37, 46, 57, 0.56);
-  color: #9dadc0;
+  border-color: rgba(178, 184, 192, 0.36);
+  background: rgba(41, 46, 53, 0.56);
+  color: #a4aeb9;
 }
 
 .pf-a3-routine-action-status {
@@ -4170,7 +4169,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-meta {
   margin: 0.48rem 0 0;
-  color: #b5c9df;
+  color: #bdc9d7;
   font-size: 0.72rem;
   line-height: 1.3;
   font-weight: 600;
@@ -4178,7 +4177,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-empty {
   margin: 0.82rem 0 0;
-  color: #d8e4f2;
+  color: #dde4ed;
   font-size: 0.82rem;
   line-height: 1.34;
   font-weight: 600;
@@ -4193,8 +4192,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-card {
   border-radius: 0.84rem;
-  border: 1px solid rgba(178, 193, 211, 0.34);
-  background: rgba(8, 15, 24, 0.76);
+  border: 1px solid rgba(185, 194, 204, 0.34);
+  background: rgba(11, 15, 21, 0.76);
   padding: 0.56rem 0.6rem;
 }
 
@@ -4207,14 +4206,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-card-head p {
   margin: 0;
-  color: #f2f8ff;
+  color: #f5f8fc;
   font-size: 0.76rem;
   line-height: 1.24;
   font-weight: 800;
 }
 
 .pf-a3-routine-action-card-head span {
-  color: #bdcee2;
+  color: #c4cfdb;
   font-size: 0.68rem;
   line-height: 1;
   font-weight: 700;
@@ -4226,19 +4225,19 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: grid;
   gap: 0.26rem;
   padding-left: 1rem;
-  color: #d6e6f8;
+  color: #dde6f1;
   font-size: 0.72rem;
   line-height: 1.28;
 }
 
 .pf-a3-routine-action-answer-list span {
-  color: #e2eaff;
+  color: #e8edf9;
   font-weight: 700;
 }
 
 .pf-a3-routine-action-title {
   margin: 0;
-  color: #e1efff;
+  color: #e7eff9;
   font-size: 0.84rem;
   line-height: 1.28;
   font-weight: 800;
@@ -4246,7 +4245,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-question-label {
   margin: 0;
-  color: #e7f2ff;
+  color: #ecf2fa;
   font-size: 0.76rem;
   line-height: 1.28;
   font-weight: 700;
@@ -4261,28 +4260,28 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-action-option-btn {
   border-radius: 999px;
-  border: 1px solid rgba(176, 197, 222, 0.42);
+  border: 1px solid rgba(185, 198, 213, 0.42);
   background: rgba(255, 255, 255, 0.05);
   padding: 0.34rem 0.68rem;
-  color: #eaf4ff;
+  color: #eef4fb;
   font-size: 0.73rem;
   line-height: 1;
   font-weight: 700;
 }
 
 .pf-a3-routine-action-option-btn-active {
-  border-color: rgba(179, 215, 255, 0.82);
-  background: rgba(89, 168, 255, 0.42);
+  border-color: rgba(255, 176, 120, 0.82);
+  background: rgba(249, 123, 52, 0.34);
 }
 
 .pf-a3-routine-stopwatch-wrap {
   margin-top: 0.74rem;
   border-radius: 0.92rem;
-  border: 1px solid rgba(147, 189, 236, 0.42);
+  border: 1px solid rgba(165, 190, 218, 0.42);
   background:
-    radial-gradient(circle at 16% 22%, rgba(140, 194, 255, 0.22), transparent 52%),
-    radial-gradient(circle at 82% 78%, rgba(118, 182, 255, 0.17), transparent 56%),
-    rgba(8, 16, 26, 0.78);
+    radial-gradient(circle at 16% 22%, rgba(163, 195, 232, 0.22), transparent 52%),
+    radial-gradient(circle at 82% 78%, rgba(145, 184, 228, 0.17), transparent 56%),
+    rgba(12, 16, 22, 0.78);
   padding: 0.78rem 0.8rem;
   display: grid;
   gap: 0.58rem;
@@ -4290,7 +4289,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-display {
   margin: 0;
-  color: #f4f9ff;
+  color: #f6f9fd;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(2rem, 8.2vw, 3rem);
   line-height: 1;
@@ -4301,7 +4300,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-status {
   margin: 0;
-  color: #bad3ef;
+  color: #c5d4e4;
   font-size: 0.8rem;
   line-height: 1.25;
   font-weight: 700;
@@ -4327,14 +4326,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: var(--pf-stopwatch-size);
   height: var(--pf-stopwatch-size);
   border-radius: 1.02rem;
-  border: 1px solid rgba(150, 199, 255, 0.56);
+  border: 1px solid rgba(171, 200, 234, 0.56);
   background:
-    radial-gradient(circle at 16% 22%, rgba(128, 187, 255, 0.24), transparent 52%),
-    radial-gradient(circle at 84% 78%, rgba(113, 179, 255, 0.2), transparent 58%),
-    rgba(7, 15, 24, 0.93);
+    radial-gradient(circle at 16% 22%, rgba(153, 189, 230, 0.24), transparent 52%),
+    radial-gradient(circle at 84% 78%, rgba(141, 181, 227, 0.2), transparent 58%),
+    rgba(10, 15, 21, 0.93);
   box-shadow:
-    inset 0 0 0 1px rgba(208, 230, 255, 0.15),
-    0 18px 36px -24px rgba(4, 11, 18, 0.82);
+    inset 0 0 0 1px rgba(217, 231, 246, 0.15),
+    0 18px 36px -24px rgba(7, 11, 15, 0.82);
   padding: 0.46rem;
   backdrop-filter: blur(8px);
   display: grid;
@@ -4349,13 +4348,13 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-stopwatch-float-dragging {
   cursor: grabbing;
   box-shadow:
-    inset 0 0 0 1px rgba(214, 233, 255, 0.2),
-    0 18px 44px -22px rgba(4, 11, 18, 0.88);
+    inset 0 0 0 1px rgba(222, 234, 247, 0.2),
+    0 18px 44px -22px rgba(7, 11, 15, 0.88);
 }
 
 .pf-a3-routine-stopwatch-float .pf-a3-routine-stopwatch-display {
   margin: 0;
-  color: #f4f9ff;
+  color: #f6f9fd;
   font-family: var(--font-display), "Sora", sans-serif;
   font-size: clamp(1.42rem, 6.3vw, 1.92rem);
   line-height: 0.95;
@@ -4366,7 +4365,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 
 .pf-a3-routine-stopwatch-float .pf-a3-routine-stopwatch-status {
   margin: 0;
-  color: #bad3ef;
+  color: #c5d4e4;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -4383,9 +4382,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 0.58rem;
-  border: 1px solid rgba(155, 187, 224, 0.48);
-  background: rgba(22, 35, 49, 0.84);
-  color: #e7f2ff;
+  border: 1px solid rgba(169, 188, 210, 0.48);
+  background: rgba(27, 35, 44, 0.84);
+  color: #ecf2fa;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4408,14 +4407,14 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-routine-stopwatch-mini-btn-close {
-  border-color: rgba(170, 201, 236, 0.56);
-  background: rgba(31, 48, 67, 0.86);
+  border-color: rgba(183, 202, 223, 0.56);
+  background: rgba(38, 48, 60, 0.86);
 }
 
 .pf-a3-routine-stopwatch-mini-btn-stop:disabled {
-  border-color: rgba(149, 167, 188, 0.34);
-  background: rgba(37, 47, 58, 0.6);
-  color: #9bacc0;
+  border-color: rgba(157, 168, 180, 0.34);
+  background: rgba(41, 47, 54, 0.6);
+  color: #a2adb9;
 }
 
 .pf-a3-routine-log-close {
@@ -4423,9 +4422,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   min-width: 40px;
   height: 40px;
   border-radius: 0.72rem;
-  border: 1px solid rgba(117, 142, 171, 0.68);
-  background: rgba(18, 28, 39, 0.95);
-  color: #dae7f5;
+  border: 1px solid rgba(128, 143, 160, 0.68);
+  background: rgba(22, 28, 35, 0.95);
+  color: #dfe7f0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4440,8 +4439,8 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-routine-log-video-wrap {
   margin-top: 0.56rem;
   border-radius: 0.9rem;
-  border: 1px solid rgba(96, 122, 151, 0.6);
-  background: rgba(13, 22, 33, 0.94);
+  border: 1px solid rgba(107, 123, 140, 0.6);
+  background: rgba(17, 22, 29, 0.94);
   padding: 0.44rem;
   overflow: hidden;
 }
@@ -4467,8 +4466,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-video-empty {
   border-radius: 0.72rem;
-  border: 1px dashed rgba(116, 142, 172, 0.58);
-  color: #b3c7de;
+  border: 1px dashed rgba(127, 143, 161, 0.58);
+  color: #bcc8d5;
   font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.25;
@@ -4495,10 +4494,10 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   overflow: visible;
   border-radius: 0.84rem;
-  border: 1.5px solid rgba(123, 160, 202, 0.66);
-  background: rgba(12, 21, 31, 0.9);
+  border: 1.5px solid rgba(139, 161, 186, 0.66);
+  background: rgba(16, 21, 27, 0.9);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px rgba(186, 218, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(200, 219, 241, 0.1);
   padding: 0.52rem;
 }
 
@@ -4584,7 +4583,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-description {
   margin: 0;
-  color: #dceafa;
+  color: #e2eaf4;
   font-size: 0.74rem;
   line-height: 1.35;
   font-weight: 600;
@@ -4612,7 +4611,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-field span {
-  color: #c8daef;
+  color: #d0dbe7;
   font-size: 0.6rem;
   line-height: 1;
   font-weight: 700;
@@ -4627,11 +4626,11 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
   box-sizing: border-box;
   border-radius: 0.58rem;
-  border: 1.5px solid rgba(128, 163, 203, 0.76);
-  background: rgba(18, 28, 39, 0.92);
+  border: 1.5px solid rgba(143, 164, 188, 0.76);
+  background: rgba(22, 28, 35, 0.92);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px rgba(186, 216, 250, 0.08);
-  color: #f2f8ff;
+  box-shadow: inset 0 0 0 1px rgba(199, 217, 237, 0.08);
+  color: #f5f8fc;
   font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
@@ -4640,7 +4639,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-field select {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #d4e8ff 50%), linear-gradient(135deg, #d4e8ff 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, #dde9f6 50%), linear-gradient(135deg, #dde9f6 50%, transparent 50%);
   background-position:
     calc(100% - 14px) calc(50% - 2px),
     calc(100% - 9px) calc(50% - 2px);
@@ -4684,9 +4683,9 @@ video.pf-a3-routine-log-video-frame {
   min-block-size: 2.06rem;
   padding: 0;
   border-radius: 0.58rem;
-  border: 1.5px solid rgba(128, 163, 203, 0.76);
-  background: rgba(34, 51, 70, 0.95);
-  color: #f2f8ff;
+  border: 1.5px solid rgba(143, 164, 188, 0.76);
+  background: rgba(41, 51, 63, 0.95);
+  color: #f5f8fc;
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1;
@@ -4697,7 +4696,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-stepper-btn:hover {
-  background: rgba(52, 76, 104, 0.98);
+  background: rgba(62, 77, 94, 0.98);
 }
 
 .pf-a3-stepper-btn:active {
@@ -4716,9 +4715,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 0;
   padding: 0.3rem 0.2rem;
   border-radius: 0.5rem;
-  border: 1.5px solid rgba(128, 163, 203, 0.55);
-  background: rgba(24, 37, 52, 0.92);
-  color: #d4e8ff;
+  border: 1.5px solid rgba(143, 164, 188, 0.55);
+  background: rgba(30, 37, 46, 0.92);
+  color: #dde9f6;
   font-size: 0.66rem;
   font-weight: 700;
   line-height: 1;
@@ -4729,7 +4728,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-stepper-chip:hover {
-  background: rgba(40, 60, 84, 0.96);
+  background: rgba(49, 61, 75, 0.96);
 }
 
 .pf-a3-stepper-chip:active {
@@ -4743,7 +4742,7 @@ video.pf-a3-routine-log-video-frame {
   gap: 0.36rem;
   border-radius: 0.72rem;
   border: 1px solid rgba(255, 160, 160, 0.44);
-  background: linear-gradient(165deg, rgba(23, 30, 47, 0.56), rgba(14, 18, 26, 0.54));
+  background: linear-gradient(165deg, rgba(28, 32, 42, 0.56), rgba(16, 19, 24, 0.54));
   padding: 0.42rem;
 }
 
@@ -4756,7 +4755,7 @@ video.pf-a3-routine-log-video-frame {
   grid-column: 1 / -1;
   border-radius: 0.62rem;
   border: 1px solid rgba(248, 182, 182, 0.4);
-  background: rgba(22, 30, 52, 0.58);
+  background: rgba(28, 33, 46, 0.58);
   padding: 0.38rem 0.42rem;
 }
 
@@ -4791,14 +4790,14 @@ video.pf-a3-routine-log-video-frame {
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
-  color: #e8f3ff;
+  color: #edf3fa;
   font-size: 0.68rem;
   line-height: 1;
   font-weight: 700;
 }
 
 .pf-a3-routine-log-check input {
-  accent-color: #8dc2ff;
+  accent-color: #a4c4e8;
   width: 14px;
   height: 14px;
 }
@@ -4828,7 +4827,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-upload-note {
   margin: 0.32rem 0 0;
-  color: #b7cde7;
+  color: #c1cedd;
   font-size: 0.62rem;
   line-height: 1.25;
   font-weight: 600;
@@ -4854,14 +4853,14 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-secondary-btn {
-  border: 1px solid rgba(106, 132, 162, 0.66);
-  background: rgba(19, 29, 41, 0.94);
-  color: #d7e5f4;
+  border: 1px solid rgba(117, 133, 151, 0.66);
+  background: rgba(23, 29, 37, 0.94);
+  color: #dde5ee;
 }
 
 .pf-a3-routine-log-primary-btn {
-  border: 1px solid rgba(145, 198, 255, 0.78);
-  background: linear-gradient(160deg, rgba(86, 166, 255, 0.98), rgba(59, 146, 241, 0.95));
+  border: 1px solid rgba(167, 199, 233, 0.78);
+  background: linear-gradient(160deg, rgba(120, 168, 221, 0.98), rgba(95, 148, 205, 0.95));
   color: #fff;
 }
 
@@ -4879,7 +4878,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-editing-hint {
   margin: 0.42rem 0 0;
-  color: #c6ddf7;
+  color: #d0deed;
   font-size: 0.62rem;
   line-height: 1.2;
   font-weight: 700;
@@ -4888,13 +4887,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-routine-log-history {
   margin-top: 0.58rem;
   border-radius: 0.74rem;
-  border: 1px solid rgba(90, 114, 142, 0.56);
-  background: rgba(11, 19, 29, 0.84);
+  border: 1px solid rgba(100, 115, 132, 0.56);
+  background: rgba(15, 19, 25, 0.84);
   padding: 0.42rem;
 }
 
 .pf-a3-routine-log-history-empty {
-  color: #bccfe4;
+  color: #c4cfdc;
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.3;
@@ -4903,7 +4902,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-history-title {
   margin: 0;
-  color: #d4e4f6;
+  color: #dbe4ef;
   font-size: 0.62rem;
   line-height: 1;
   font-weight: 700;
@@ -4927,9 +4926,9 @@ video.pf-a3-routine-log-video-frame {
   justify-content: space-between;
   gap: 0.32rem;
   border-radius: 0.52rem;
-  border: 1px solid rgba(89, 113, 141, 0.45);
-  background: rgba(16, 26, 37, 0.86);
-  color: #c7d8ec;
+  border: 1px solid rgba(99, 114, 131, 0.45);
+  background: rgba(20, 26, 33, 0.86);
+  color: #ced9e5;
   font-size: 0.62rem;
   line-height: 1.15;
   font-weight: 600;
@@ -4937,7 +4936,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-routine-log-history strong {
-  color: #e3f0ff;
+  color: #e9f0f9;
   font-size: 0.64rem;
   font-weight: 700;
 }
@@ -4957,7 +4956,7 @@ video.pf-a3-routine-log-video-frame {
   width: 100%;
   margin-top: 0.16rem;
   padding-top: 0.34rem;
-  border-top: 1px dashed rgba(95, 127, 164, 0.46);
+  border-top: 1px dashed rgba(109, 128, 150, 0.46);
 }
 
 .pf-a3-routine-log-history-edit-grid {
@@ -4982,9 +4981,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-routine-log-history-btn {
   border-radius: 0.44rem;
-  border: 1px solid rgba(103, 135, 171, 0.7);
-  background: rgba(20, 32, 45, 0.9);
-  color: #dbecff;
+  border: 1px solid rgba(117, 136, 157, 0.7);
+  background: rgba(25, 32, 40, 0.9);
+  color: #e2ecf8;
   font-size: 0.56rem;
   line-height: 1;
   font-weight: 800;
@@ -5005,8 +5004,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a2-payments-loading-panel {
   width: min(420px, 92vw);
-  background: linear-gradient(168deg, rgba(9, 16, 24, 0.98), rgba(10, 19, 29, 0.97));
-  border-color: rgba(108, 138, 172, 0.48);
+  background: linear-gradient(168deg, rgba(12, 16, 21, 0.98), rgba(14, 19, 25, 0.97));
+  border-color: rgba(121, 139, 159, 0.48);
 }
 
 .pf-a3-routine-toggle:hover,
@@ -5014,7 +5013,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-routine-session-chip:hover,
 .pf-a3-routine-icon-btn:hover,
 .pf-a3-routine-week-arrow:hover {
-  border-color: rgba(214, 233, 255, 0.88);
+  border-color: rgba(222, 234, 247, 0.88);
 }
 
 .pf-a2-dock {
@@ -5030,7 +5029,7 @@ video.pf-a3-routine-log-video-frame {
   gap: 0;
   border-radius: 0.96rem;
   border: 0;
-  background: rgba(13, 20, 29, 0.94);
+  background: rgba(16, 20, 26, 0.94);
   box-shadow: none;
   padding: 0.14rem 0.16rem calc(0.18rem + env(safe-area-inset-bottom));
   backdrop-filter: none;
@@ -5046,7 +5045,7 @@ video.pf-a3-routine-log-video-frame {
   border: 0;
   border-radius: 0.84rem;
   background: transparent;
-  color: rgba(202, 224, 249, 0.9);
+  color: rgba(211, 225, 240, 0.9);
   min-height: 56px;
   display: flex;
   justify-content: center;
@@ -5073,13 +5072,13 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a2-dock-btn-active {
-  color: #fbfdff;
-  background: rgba(101, 144, 194, 0.12);
+  color: #ff9d55;
+  background: rgba(249, 123, 52, 0.1);
 }
 
 .pf-a2-dock-btn-active::after {
   opacity: 1;
-  background: rgba(226, 240, 255, 0.96);
+  background: #f97316;
 }
 
 .pf-a2-dock-hit {
@@ -5098,7 +5097,7 @@ video.pf-a3-routine-log-video-frame {
   justify-content: center;
   border-radius: 0.52rem;
   border: 0;
-  background: rgba(226, 240, 255, 0.1);
+  background: rgba(232, 240, 249, 0.1);
   box-shadow: none;
 }
 
@@ -5118,7 +5117,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a2-dock-btn-active .pf-a2-dock-icon-wrap {
   border-color: transparent;
-  background: rgba(118, 167, 223, 0.22);
+  background: rgba(249, 123, 52, 0.2);
   box-shadow: none;
 }
 
@@ -5130,9 +5129,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-mode-btn {
   border-radius: 0.86rem;
-  border: 1px solid rgba(128, 162, 200, 0.42);
-  background: linear-gradient(165deg, rgba(13, 23, 35, 0.88), rgba(10, 18, 28, 0.9));
-  color: rgba(219, 234, 252, 0.9);
+  border: 1px solid rgba(142, 163, 186, 0.42);
+  background: linear-gradient(165deg, rgba(17, 23, 31, 0.88), rgba(14, 18, 24, 0.9));
+  color: rgba(226, 235, 245, 0.9);
   min-height: 40px;
   padding: 0.46rem 0.64rem;
   text-align: center;
@@ -5143,12 +5142,12 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-nutrition-mode-btn.is-active {
-  border-color: rgba(103, 232, 249, 0.82);
+  border-color: rgba(255, 176, 120, 0.82);
   background:
-    radial-gradient(120% 130% at 100% -20%, rgba(103, 232, 249, 0.2), transparent 62%),
-    linear-gradient(165deg, rgba(8, 22, 37, 0.88), rgba(7, 18, 30, 0.9));
-  color: #effbff;
-  box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.28);
+    radial-gradient(120% 130% at 100% -20%, rgba(249, 123, 52, 0.22), transparent 62%),
+    linear-gradient(165deg, rgba(14, 22, 31, 0.88), rgba(12, 18, 25, 0.9));
+  color: #fff4ec;
+  box-shadow: 0 0 0 1px rgba(249, 123, 52, 0.32);
 }
 
 .pf-a3-nutrition-tracker-head {
@@ -5177,14 +5176,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(191, 214, 241, 0.88);
+  color: rgba(201, 215, 231, 0.88);
 }
 
 .pf-a3-nutrition-tracker-date-input input {
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 177, 216, 0.45);
-  background: linear-gradient(170deg, rgba(12, 21, 31, 0.9), rgba(9, 16, 24, 0.92));
-  color: #e8f3ff;
+  border: 1px solid rgba(157, 178, 201, 0.45);
+  background: linear-gradient(170deg, rgba(16, 21, 27, 0.9), rgba(12, 16, 21, 0.92));
+  color: #edf3fa;
   min-height: 34px;
   padding: 0.3rem 0.58rem;
   font-size: 0.82rem;
@@ -5202,15 +5201,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(190, 213, 240, 0.86);
+  color: rgba(200, 214, 230, 0.86);
   margin-right: 0.14rem;
 }
 
 .pf-a3-nutrition-template-chip {
   border-radius: 999px;
-  border: 1px solid rgba(143, 182, 226, 0.44);
-  background: linear-gradient(170deg, rgba(18, 31, 45, 0.9), rgba(12, 22, 33, 0.94));
-  color: rgba(232, 243, 255, 0.94);
+  border: 1px solid rgba(160, 183, 209, 0.44);
+  background: linear-gradient(170deg, rgba(23, 31, 40, 0.9), rgba(16, 22, 29, 0.94));
+  color: rgba(237, 243, 250, 0.94);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -5219,9 +5218,9 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-nutrition-template-chip.is-muted {
-  border-color: rgba(133, 157, 184, 0.38);
-  color: rgba(208, 223, 240, 0.82);
-  background: linear-gradient(170deg, rgba(17, 25, 35, 0.88), rgba(12, 19, 27, 0.9));
+  border-color: rgba(143, 158, 174, 0.38);
+  color: rgba(214, 223, 234, 0.82);
+  background: linear-gradient(170deg, rgba(21, 25, 31, 0.88), rgba(15, 19, 24, 0.9));
 }
 
 .pf-a3-nutrition-week-head {
@@ -5237,7 +5236,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(203, 225, 250, 0.9);
+  color: rgba(212, 226, 241, 0.9);
   text-align: center;
 }
 
@@ -5249,10 +5248,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-streak-card {
   border-radius: 0.82rem;
-  border: 1px solid rgba(142, 177, 218, 0.36);
+  border: 1px solid rgba(157, 178, 203, 0.36);
   background:
-    radial-gradient(120% 120% at 100% -10%, rgba(56, 145, 248, 0.18), transparent 65%),
-    linear-gradient(168deg, rgba(12, 21, 31, 0.89), rgba(9, 16, 25, 0.9));
+    radial-gradient(120% 120% at 100% -10%, rgba(94, 148, 210, 0.18), transparent 65%),
+    linear-gradient(168deg, rgba(16, 21, 27, 0.89), rgba(12, 16, 22, 0.9));
   padding: 0.56rem 0.6rem;
 }
 
@@ -5261,26 +5260,26 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(181, 205, 233, 0.86);
+  color: rgba(191, 206, 223, 0.86);
 }
 
 .pf-a3-nutrition-streak-value {
   margin-top: 0.28rem;
   font-size: 0.96rem;
   font-weight: 900;
-  color: #f4f9ff;
+  color: #f6f9fd;
 }
 
 .pf-a3-nutrition-streak-note {
   margin-top: 0.14rem;
   font-size: 0.66rem;
-  color: rgba(175, 199, 226, 0.82);
+  color: rgba(185, 200, 216, 0.82);
 }
 
 .pf-a3-nutrition-week-grid-wrap {
   border-radius: 0.9rem;
-  border: 1px solid rgba(139, 174, 215, 0.34);
-  background: linear-gradient(170deg, rgba(13, 21, 31, 0.85), rgba(9, 16, 25, 0.88));
+  border: 1px solid rgba(154, 175, 200, 0.34);
+  background: linear-gradient(170deg, rgba(17, 21, 27, 0.85), rgba(12, 16, 22, 0.88));
   padding: 0.6rem 0.62rem;
 }
 
@@ -5289,7 +5288,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(188, 212, 239, 0.88);
+  color: rgba(198, 213, 229, 0.88);
 }
 
 .pf-a3-nutrition-week-grid {
@@ -5301,8 +5300,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-weekday-card {
   border-radius: 0.72rem;
-  border: 1px solid rgba(125, 155, 189, 0.34);
-  background: linear-gradient(165deg, rgba(14, 22, 32, 0.9), rgba(9, 16, 24, 0.92));
+  border: 1px solid rgba(138, 156, 176, 0.34);
+  background: linear-gradient(165deg, rgba(18, 22, 28, 0.9), rgba(12, 16, 21, 0.92));
   min-height: 94px;
   padding: 0.42rem 0.36rem;
   display: grid;
@@ -5318,8 +5317,8 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a3-nutrition-weekday-card.is-empty {
-  border-color: rgba(125, 151, 181, 0.3);
-  background: linear-gradient(165deg, rgba(15, 23, 33, 0.82), rgba(10, 17, 26, 0.84));
+  border-color: rgba(136, 152, 170, 0.3);
+  background: linear-gradient(165deg, rgba(19, 23, 29, 0.82), rgba(13, 17, 23, 0.84));
 }
 
 .pf-a3-nutrition-weekday-card.is-low {
@@ -5348,19 +5347,19 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(188, 211, 238, 0.86);
+  color: rgba(198, 212, 228, 0.86);
 }
 
 .pf-a3-nutrition-weekday-day {
   font-size: 1rem;
   font-weight: 900;
-  color: #f6faff;
+  color: #f8fafd;
   line-height: 1;
 }
 
 .pf-a3-nutrition-weekday-meta {
   font-size: 0.56rem;
-  color: rgba(181, 204, 231, 0.8);
+  color: rgba(191, 205, 221, 0.8);
 }
 
 .pf-a3-nutrition-macro-grid {
@@ -5371,8 +5370,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-macro-card {
   border-radius: 0.84rem;
-  border: 1px solid rgba(139, 174, 214, 0.35);
-  background: linear-gradient(166deg, rgba(13, 22, 33, 0.89), rgba(9, 17, 27, 0.9));
+  border: 1px solid rgba(154, 175, 199, 0.35);
+  background: linear-gradient(166deg, rgba(17, 22, 29, 0.89), rgba(13, 17, 23, 0.9));
   padding: 0.56rem 0.62rem;
 }
 
@@ -5392,28 +5391,28 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #dfeeff;
-  background: linear-gradient(150deg, rgba(14, 116, 233, 0.48), rgba(52, 211, 153, 0.4));
+  color: #e5eef9;
+  background: linear-gradient(150deg, rgba(58, 119, 189, 0.48), rgba(52, 211, 153, 0.4));
 }
 
 .pf-a3-nutrition-macro-title {
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(219, 234, 251, 0.9);
+  color: rgba(225, 234, 245, 0.9);
 }
 
 .pf-a3-nutrition-macro-value {
   margin-top: 0.34rem;
   font-size: 0.8rem;
   font-weight: 800;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a3-nutrition-macro-remaining {
   margin-top: 0.18rem;
   font-size: 0.66rem;
   font-weight: 600;
-  color: rgba(174, 200, 229, 0.9);
+  color: rgba(185, 201, 218, 0.9);
 }
 
 .pf-a3-nutrition-macro-remaining.is-over {
@@ -5425,13 +5424,13 @@ video.pf-a3-routine-log-video-frame {
   height: 0.36rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(71, 95, 122, 0.38);
+  background: rgba(81, 96, 112, 0.38);
 }
 
 .pf-a3-nutrition-macro-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(56, 145, 248, 0.95));
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(94, 148, 210, 0.95));
 }
 
 .pf-a3-nutrition-macro-fill.is-over {
@@ -5440,10 +5439,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-kpi {
   border-radius: 0.9rem;
-  border: 1px solid rgba(145, 188, 235, 0.34);
+  border: 1px solid rgba(163, 189, 217, 0.34);
   background:
-    radial-gradient(120% 130% at 100% -20%, rgba(139, 193, 250, 0.22), transparent 62%),
-    linear-gradient(168deg, rgba(15, 24, 34, 0.92), rgba(11, 19, 28, 0.9));
+    radial-gradient(120% 130% at 100% -20%, rgba(161, 194, 228, 0.22), transparent 62%),
+    linear-gradient(168deg, rgba(19, 24, 30, 0.92), rgba(14, 19, 25, 0.9));
   padding: 0.74rem 0.8rem;
 }
 
@@ -5452,20 +5451,20 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(182, 206, 233, 0.78);
+  color: rgba(192, 207, 223, 0.78);
 }
 
 .pf-a3-nutrition-kpi-value {
   margin-top: 0.32rem;
   font-size: clamp(0.98rem, 2.5vw, 1.18rem);
   font-weight: 900;
-  color: #f7fbff;
+  color: #f9fbfd;
 }
 
 .pf-a3-nutrition-progress {
   border-radius: 0.92rem;
-  border: 1px solid rgba(142, 178, 219, 0.35);
-  background: linear-gradient(170deg, rgba(14, 23, 34, 0.82), rgba(10, 18, 28, 0.84));
+  border: 1px solid rgba(157, 179, 204, 0.35);
+  background: linear-gradient(170deg, rgba(18, 23, 30, 0.82), rgba(14, 18, 24, 0.84));
   padding: 0.62rem 0.72rem;
 }
 
@@ -5473,13 +5472,13 @@ video.pf-a3-routine-log-video-frame {
   height: 0.56rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(74, 97, 123, 0.38);
+  background: rgba(84, 98, 113, 0.38);
 }
 
 .pf-a3-nutrition-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(56, 145, 248, 0.95));
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(94, 148, 210, 0.95));
   transition: width 220ms ease;
 }
 
@@ -5493,7 +5492,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(182, 209, 239, 0.9);
+  color: rgba(193, 210, 228, 0.9);
 }
 
 .pf-a3-nutrition-tracker-list {
@@ -5503,8 +5502,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-tracker-row {
   border-radius: 0.86rem;
-  border: 1px solid rgba(129, 161, 198, 0.34);
-  background: linear-gradient(165deg, rgba(14, 23, 33, 0.88), rgba(10, 18, 27, 0.9));
+  border: 1px solid rgba(143, 162, 184, 0.34);
+  background: linear-gradient(165deg, rgba(18, 23, 29, 0.88), rgba(13, 18, 24, 0.9));
   padding: 0.66rem 0.72rem;
   display: grid;
   gap: 0.52rem;
@@ -5535,7 +5534,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-check {
   border-radius: 999px;
-  border: 1px solid rgba(125, 156, 192, 0.42);
+  border: 1px solid rgba(138, 157, 179, 0.42);
   padding: 0.16rem 0.46rem;
   display: inline-flex;
   align-items: center;
@@ -5544,16 +5543,16 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(198, 218, 240, 0.78);
-  background: rgba(18, 28, 39, 0.72);
+  color: rgba(206, 218, 232, 0.78);
+  background: rgba(22, 28, 35, 0.72);
 }
 
 .pf-a3-nutrition-check-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(132, 159, 191, 0.7);
-  box-shadow: 0 0 0 0 rgba(132, 159, 191, 0.35);
+  background: rgba(144, 160, 179, 0.7);
+  box-shadow: 0 0 0 0 rgba(144, 160, 179, 0.35);
 }
 
 .pf-a3-nutrition-check.is-done {
@@ -5579,8 +5578,8 @@ video.pf-a3-routine-log-video-frame {
   height: 54px;
   border-radius: 0.58rem;
   overflow: hidden;
-  border: 1px solid rgba(141, 175, 214, 0.35);
-  background: rgba(9, 16, 25, 0.8);
+  border: 1px solid rgba(156, 176, 199, 0.35);
+  background: rgba(12, 16, 22, 0.8);
 }
 
 .pf-a3-nutrition-mini-thumb img {
@@ -5601,15 +5600,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(175, 200, 228, 0.88);
+  color: rgba(186, 201, 217, 0.88);
   margin-right: 0.08rem;
 }
 
 .pf-a3-nutrition-chip-btn {
   border-radius: 999px;
-  border: 1px solid rgba(124, 162, 206, 0.42);
-  background: rgba(15, 26, 39, 0.78);
-  color: rgba(222, 237, 255, 0.92);
+  border: 1px solid rgba(140, 163, 190, 0.42);
+  background: rgba(20, 26, 34, 0.78);
+  color: rgba(229, 238, 248, 0.92);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -5628,15 +5627,15 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(181, 206, 235, 0.82);
+  color: rgba(192, 207, 224, 0.82);
 }
 
 .pf-a3-nutrition-kcal-input input {
   width: 132px;
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 177, 216, 0.45);
-  background: rgba(9, 16, 25, 0.86);
-  color: #ecf5ff;
+  border: 1px solid rgba(157, 178, 201, 0.45);
+  background: rgba(12, 16, 22, 0.86);
+  color: #f0f5fb;
   min-height: 34px;
   padding: 0.3rem 0.5rem;
   font-size: 0.82rem;
@@ -5645,10 +5644,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-student-food-card {
   border-radius: 0.94rem;
-  border: 1px solid rgba(137, 173, 215, 0.38);
+  border: 1px solid rgba(153, 174, 199, 0.38);
   background:
-    radial-gradient(120% 120% at 100% -10%, rgba(139, 193, 250, 0.16), transparent 62%),
-    linear-gradient(168deg, rgba(12, 22, 33, 0.9), rgba(9, 17, 27, 0.92));
+    radial-gradient(120% 120% at 100% -10%, rgba(161, 194, 228, 0.16), transparent 62%),
+    linear-gradient(168deg, rgba(16, 22, 29, 0.9), rgba(13, 17, 23, 0.92));
   padding: 0.72rem 0.78rem;
 }
 
@@ -5657,20 +5656,20 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(183, 208, 236, 0.86);
+  color: rgba(194, 209, 225, 0.86);
 }
 
 .pf-a3-nutrition-student-food-title {
   margin-top: 0.22rem;
   font-size: 0.94rem;
   font-weight: 900;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a3-nutrition-student-food-subtitle {
   margin-top: 0.24rem;
   font-size: 0.72rem;
-  color: rgba(180, 204, 232, 0.86);
+  color: rgba(190, 205, 222, 0.86);
 }
 
 .pf-a3-nutrition-student-food-grid {
@@ -5691,14 +5690,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(180, 206, 235, 0.86);
+  color: rgba(191, 207, 224, 0.86);
 }
 
 .pf-a3-nutrition-student-food-field input {
   border-radius: 0.62rem;
-  border: 1px solid rgba(142, 177, 216, 0.46);
-  background: rgba(9, 16, 25, 0.86);
-  color: #ebf4ff;
+  border: 1px solid rgba(157, 178, 201, 0.46);
+  background: rgba(12, 16, 22, 0.86);
+  color: #eff4fb;
   min-height: 34px;
   padding: 0.32rem 0.52rem;
   font-size: 0.8rem;
@@ -5721,8 +5720,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-nutrition-student-food-item {
   border-radius: 0.72rem;
-  border: 1px solid rgba(128, 160, 197, 0.34);
-  background: rgba(11, 19, 29, 0.82);
+  border: 1px solid rgba(142, 161, 183, 0.34);
+  background: rgba(15, 19, 25, 0.82);
   padding: 0.44rem 0.5rem;
   display: flex;
   align-items: center;
@@ -5733,13 +5732,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-nutrition-student-food-name {
   font-size: 0.77rem;
   font-weight: 800;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a3-nutrition-student-food-meta {
   margin-top: 0.08rem;
   font-size: 0.66rem;
-  color: rgba(180, 204, 232, 0.84);
+  color: rgba(190, 205, 222, 0.84);
 }
 
 .pf-a3-nutrition-student-food-delete {
@@ -5756,7 +5755,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-nutrition-student-food-empty {
   margin-top: 0.62rem;
   font-size: 0.72rem;
-  color: rgba(176, 201, 229, 0.84);
+  color: rgba(187, 202, 218, 0.84);
 }
 
 .pf-a3-nutrition-student-food-status {
@@ -5787,7 +5786,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.98rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-diary-link {
@@ -5795,9 +5794,9 @@ video.pf-a3-routine-log-video-frame {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid rgba(126, 163, 205, 0.4);
-  background: rgba(11, 21, 32, 0.82);
-  color: rgba(208, 228, 252, 0.92);
+  border: 1px solid rgba(142, 164, 189, 0.4);
+  background: rgba(15, 21, 28, 0.82);
+  color: rgba(217, 229, 243, 0.92);
   min-height: 30px;
   padding: 0.22rem 0.62rem;
   font-size: 0.66rem;
@@ -5811,7 +5810,7 @@ video.pf-a3-routine-log-video-frame {
   border: 1px solid rgba(88, 164, 117, 0.34);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(16, 185, 129, 0.17), transparent 62%),
-    linear-gradient(168deg, rgba(10, 20, 31, 0.9), rgba(7, 15, 24, 0.92));
+    linear-gradient(168deg, rgba(14, 20, 27, 0.9), rgba(10, 15, 21, 0.92));
   padding: 0.72rem;
 }
 
@@ -5866,7 +5865,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-plan-field textarea {
   border-radius: 0.62rem;
   border: 1px solid rgba(116, 182, 141, 0.42);
-  background: linear-gradient(170deg, rgba(9, 18, 28, 0.94), rgba(7, 14, 23, 0.95));
+  background: linear-gradient(170deg, rgba(13, 18, 24, 0.94), rgba(10, 14, 20, 0.95));
   color: #eafcf2;
   padding: 0.38rem 0.58rem;
   font-size: 0.76rem;
@@ -5887,9 +5886,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-plan-action-btn {
   border-radius: 0.66rem;
-  border: 1px solid rgba(122, 173, 228, 0.52);
-  background: linear-gradient(170deg, rgba(11, 30, 52, 0.78), rgba(8, 22, 39, 0.74));
-  color: #dce6f2;
+  border: 1px solid rgba(143, 174, 207, 0.52);
+  background: linear-gradient(170deg, rgba(19, 31, 44, 0.78), rgba(14, 23, 33, 0.74));
+  color: #e0e6ee;
   min-height: 34px;
   min-width: 188px;
   padding: 0.32rem 0.68rem;
@@ -5904,8 +5903,8 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a4-nutrition-plan-action-btn:hover {
-  border-color: rgba(139, 193, 250, 0.78);
-  color: #f6faff;
+  border-color: rgba(161, 194, 228, 0.78);
+  color: #f8fafd;
   transform: none;
 }
 
@@ -5960,9 +5959,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-replacement-badge {
   border-radius: 999px;
-  border: 1px solid rgba(139, 193, 250, 0.48);
-  background: rgba(11, 35, 62, 0.62);
-  color: rgba(208, 230, 255, 0.92);
+  border: 1px solid rgba(161, 194, 228, 0.48);
+  background: rgba(21, 36, 52, 0.62);
+  color: rgba(217, 231, 246, 0.92);
   padding: 0.14rem 0.5rem;
   font-size: 0.56rem;
   font-weight: 700;
@@ -5972,21 +5971,21 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-replacement-card {
   border-radius: 0.74rem;
-  border: 1px solid rgba(118, 163, 214, 0.34);
-  background: rgba(9, 18, 28, 0.8);
+  border: 1px solid rgba(137, 164, 195, 0.34);
+  background: rgba(13, 18, 24, 0.8);
   padding: 0.44rem 0.5rem;
 }
 
 .pf-a4-nutrition-replacement-title {
   font-size: 0.7rem;
   font-weight: 800;
-  color: #eef6ff;
+  color: #f1f6fc;
 }
 
 .pf-a4-nutrition-replacement-meta {
   margin-top: 0.1rem;
   font-size: 0.61rem;
-  color: rgba(177, 203, 233, 0.88);
+  color: rgba(188, 204, 222, 0.88);
 }
 
 .pf-a4-nutrition-replacement-macros {
@@ -5998,26 +5997,26 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-replacement-macros span {
   border-radius: 999px;
-  border: 1px solid rgba(127, 159, 196, 0.38);
-  background: rgba(10, 22, 36, 0.72);
+  border: 1px solid rgba(141, 160, 182, 0.38);
+  background: rgba(15, 22, 31, 0.72);
   padding: 0.14rem 0.4rem;
   font-size: 0.56rem;
   font-weight: 700;
-  color: rgba(210, 231, 255, 0.9);
+  color: rgba(219, 232, 246, 0.9);
 }
 
 .pf-a4-nutrition-replacement-source {
   margin-top: 0.2rem;
   font-size: 0.58rem;
-  color: rgba(171, 196, 224, 0.84);
+  color: rgba(182, 197, 213, 0.84);
 }
 
 .pf-a4-nutrition-summary-card {
   border-radius: 0.96rem;
-  border: 1px solid rgba(141, 177, 218, 0.35);
+  border: 1px solid rgba(156, 178, 203, 0.35);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(94, 234, 212, 0.16), transparent 64%),
-    linear-gradient(168deg, rgba(10, 20, 32, 0.9), rgba(8, 17, 27, 0.92));
+    linear-gradient(168deg, rgba(14, 20, 28, 0.9), rgba(12, 17, 23, 0.92));
   padding: 0.68rem 0.74rem;
   display: grid;
   gap: 0.62rem;
@@ -6040,7 +6039,7 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-summary-gauge-track {
   fill: none;
-  stroke: rgba(117, 148, 183, 0.34);
+  stroke: rgba(130, 149, 170, 0.34);
   stroke-width: 14;
   stroke-linecap: round;
 }
@@ -6078,7 +6077,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1.05rem;
   font-weight: 900;
   line-height: 1.1;
-  color: #f8fbff;
+  color: #f9fbfe;
 }
 
 .pf-a4-nutrition-summary-gauge-goal {
@@ -6087,7 +6086,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(182, 206, 234, 0.86);
+  color: rgba(192, 207, 224, 0.86);
 }
 
 .pf-a4-nutrition-summary-gauge-pct {
@@ -6105,8 +6104,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-summary-metric {
   border-radius: 0.72rem;
-  border: 1px solid rgba(135, 169, 208, 0.3);
-  background: rgba(10, 18, 28, 0.72);
+  border: 1px solid rgba(150, 170, 193, 0.3);
+  background: rgba(14, 18, 24, 0.72);
   padding: 0.42rem 0.48rem;
 }
 
@@ -6121,7 +6120,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1rem;
   font-weight: 900;
   line-height: 1.1;
-  color: #f8fbff;
+  color: #f9fbfe;
 }
 
 .pf-a4-nutrition-summary-metric-label {
@@ -6130,7 +6129,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(188, 212, 240, 0.86);
+  color: rgba(198, 213, 230, 0.86);
 }
 
 .pf-a4-nutrition-summary-macros {
@@ -6145,8 +6144,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-meal-row {
   border-radius: 0.86rem;
-  border: 1px solid rgba(130, 163, 201, 0.33);
-  background: linear-gradient(165deg, rgba(14, 24, 35, 0.88), rgba(9, 17, 27, 0.9));
+  border: 1px solid rgba(144, 164, 187, 0.33);
+  background: linear-gradient(165deg, rgba(18, 24, 31, 0.88), rgba(13, 17, 23, 0.9));
   padding: 0.5rem 0.58rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -6162,8 +6161,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-meal-row.is-clickable:hover,
 .pf-a4-nutrition-meal-row.is-clickable:focus-visible {
   transform: translateY(-1px);
-  border-color: rgba(117, 176, 244, 0.58);
-  box-shadow: 0 10px 22px rgba(4, 11, 18, 0.28);
+  border-color: rgba(142, 178, 219, 0.58);
+  box-shadow: 0 10px 22px rgba(7, 11, 15, 0.28);
   outline: none;
 }
 
@@ -6175,27 +6174,27 @@ video.pf-a3-routine-log-video-frame {
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  border: 1px solid rgba(145, 179, 218, 0.34);
-  background: rgba(12, 22, 33, 0.78);
+  border: 1px solid rgba(160, 180, 203, 0.34);
+  background: rgba(16, 22, 29, 0.78);
 }
 
 .pf-a4-nutrition-meal-name {
   font-size: 0.84rem;
   font-weight: 900;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-meal-kcal {
   margin-top: 0.08rem;
   font-size: 0.68rem;
   font-weight: 700;
-  color: rgba(181, 207, 236, 0.9);
+  color: rgba(192, 208, 225, 0.9);
 }
 
 .pf-a4-nutrition-meal-preview {
   margin-top: 0.08rem;
   font-size: 0.64rem;
-  color: rgba(171, 196, 225, 0.82);
+  color: rgba(182, 197, 214, 0.82);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6206,9 +6205,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 32px;
   height: 32px;
   border-radius: 0.68rem;
-  border: 1px solid rgba(110, 174, 240, 0.52);
-  background: linear-gradient(160deg, rgba(10, 60, 117, 0.52), rgba(9, 36, 66, 0.82));
-  color: rgba(227, 240, 255, 0.98);
+  border: 1px solid rgba(136, 174, 214, 0.52);
+  background: linear-gradient(160deg, rgba(31, 61, 96, 0.52), rgba(20, 37, 55, 0.82));
+  color: rgba(233, 240, 249, 0.98);
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1;
@@ -6219,10 +6218,10 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-composer {
   border-radius: 0.96rem;
-  border: 1px solid rgba(121, 160, 205, 0.38);
+  border: 1px solid rgba(138, 161, 188, 0.38);
   background:
-    radial-gradient(120% 120% at 100% -10%, rgba(59, 146, 246, 0.16), transparent 63%),
-    linear-gradient(168deg, rgba(10, 20, 32, 0.93), rgba(8, 16, 26, 0.94));
+    radial-gradient(120% 120% at 100% -10%, rgba(96, 149, 209, 0.16), transparent 63%),
+    linear-gradient(168deg, rgba(14, 20, 28, 0.93), rgba(12, 16, 22, 0.94));
   padding: 0.66rem 0.7rem;
   display: grid;
   gap: 0.5rem;
@@ -6232,7 +6231,7 @@ video.pf-a3-routine-log-video-frame {
   position: fixed;
   inset: 0;
   z-index: 140;
-  background: rgba(2, 9, 16, 0.76);
+  background: rgba(5, 9, 13, 0.76);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -6246,7 +6245,7 @@ video.pf-a3-routine-log-video-frame {
   max-height: min(88vh, 760px);
   overflow-y: auto;
   border-radius: 1.04rem;
-  box-shadow: 0 26px 52px rgba(2, 10, 19, 0.5);
+  box-shadow: 0 26px 52px rgba(5, 10, 16, 0.5);
 }
 
 .pf-a4-nutrition-composer-head {
@@ -6261,14 +6260,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(183, 208, 237, 0.86);
+  color: rgba(194, 209, 226, 0.86);
 }
 
 .pf-a4-nutrition-composer-title {
   margin-top: 0.18rem;
   font-size: 0.9rem;
   font-weight: 900;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-composer-grid {
@@ -6285,8 +6284,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-cal-ia-card {
   border-radius: 0.82rem;
-  border: 1px solid rgba(136, 171, 212, 0.34);
-  background: rgba(10, 19, 29, 0.76);
+  border: 1px solid rgba(151, 172, 197, 0.34);
+  background: rgba(14, 19, 25, 0.76);
   padding: 0.46rem;
   display: grid;
   gap: 0.52rem;
@@ -6299,8 +6298,8 @@ video.pf-a3-routine-log-video-frame {
   height: 86px;
   border-radius: 0.66rem;
   overflow: hidden;
-  border: 1px solid rgba(144, 178, 216, 0.34);
-  background: rgba(8, 15, 22, 0.84);
+  border: 1px solid rgba(158, 179, 202, 0.34);
+  background: rgba(11, 15, 19, 0.84);
 }
 
 .pf-a4-nutrition-cal-ia-preview img {
@@ -6312,20 +6311,20 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-cal-ia-title {
   font-size: 0.82rem;
   font-weight: 900;
-  color: #f6faff;
+  color: #f8fafd;
 }
 
 .pf-a4-nutrition-cal-ia-meta {
   margin-top: 0.12rem;
   font-size: 0.64rem;
-  color: rgba(177, 202, 230, 0.88);
+  color: rgba(188, 203, 219, 0.88);
 }
 
 .pf-a4-nutrition-camera-layer {
   position: fixed;
   inset: 0;
   z-index: 170;
-  background: rgba(2, 9, 16, 0.84);
+  background: rgba(5, 9, 13, 0.84);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -6337,10 +6336,10 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-camera-sheet {
   width: min(100%, 560px);
   border-radius: 1rem;
-  border: 1px solid rgba(122, 161, 205, 0.4);
+  border: 1px solid rgba(139, 162, 188, 0.4);
   background:
     radial-gradient(120% 120% at 100% -10%, rgba(45, 212, 191, 0.12), transparent 60%),
-    linear-gradient(170deg, rgba(10, 19, 30, 0.96), rgba(8, 16, 26, 0.97));
+    linear-gradient(170deg, rgba(14, 19, 26, 0.96), rgba(12, 16, 22, 0.97));
   padding: 0.66rem;
   display: grid;
   gap: 0.56rem;
@@ -6358,22 +6357,22 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(186, 211, 239, 0.88);
+  color: rgba(197, 212, 228, 0.88);
 }
 
 .pf-a4-nutrition-camera-title {
   margin-top: 0.18rem;
   font-size: 0.88rem;
   font-weight: 900;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-camera-preview {
   position: relative;
   border-radius: 0.86rem;
   overflow: hidden;
-  border: 1px solid rgba(131, 165, 204, 0.38);
-  background: rgba(6, 12, 19, 0.9);
+  border: 1px solid rgba(146, 166, 189, 0.38);
+  background: rgba(9, 12, 16, 0.9);
   min-height: 268px;
 }
 
@@ -6390,7 +6389,7 @@ video.pf-a3-routine-log-video-frame {
   inset: 16% 10%;
   border: 2px solid rgba(126, 246, 204, 0.88);
   border-radius: 0.82rem;
-  box-shadow: inset 0 0 0 1px rgba(9, 28, 50, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(17, 29, 42, 0.8);
   pointer-events: none;
 }
 
@@ -6408,7 +6407,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: rgba(187, 211, 239, 0.9);
+  color: rgba(197, 212, 229, 0.9);
 }
 
 .pf-a4-nutrition-camera-actions {
@@ -6442,17 +6441,17 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-search-empty {
   border-radius: 0.7rem;
-  border: 1px dashed rgba(137, 172, 212, 0.34);
-  background: rgba(10, 19, 29, 0.62);
+  border: 1px dashed rgba(152, 173, 197, 0.34);
+  background: rgba(14, 19, 25, 0.62);
   padding: 0.46rem;
   font-size: 0.66rem;
-  color: rgba(176, 200, 228, 0.88);
+  color: rgba(186, 201, 218, 0.88);
 }
 
 .pf-a4-nutrition-search-row {
   border-radius: 0.74rem;
-  border: 1px solid rgba(132, 167, 206, 0.33);
-  background: rgba(10, 18, 28, 0.78);
+  border: 1px solid rgba(147, 168, 191, 0.33);
+  background: rgba(14, 18, 24, 0.78);
   padding: 0.42rem;
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) auto;
@@ -6465,8 +6464,8 @@ video.pf-a3-routine-log-video-frame {
   height: 46px;
   border-radius: 0.62rem;
   overflow: hidden;
-  border: 1px solid rgba(139, 173, 212, 0.34);
-  background: rgba(8, 15, 22, 0.84);
+  border: 1px solid rgba(154, 174, 197, 0.34);
+  background: rgba(11, 15, 19, 0.84);
 }
 
 .pf-a4-nutrition-search-thumb img {
@@ -6482,19 +6481,19 @@ video.pf-a3-routine-log-video-frame {
   font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: rgba(173, 198, 226, 0.76);
+  color: rgba(184, 199, 215, 0.76);
 }
 
 .pf-a4-nutrition-search-name {
   font-size: 0.76rem;
   font-weight: 800;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-search-meta {
   margin-top: 0.1rem;
   font-size: 0.63rem;
-  color: rgba(180, 204, 232, 0.84);
+  color: rgba(190, 205, 222, 0.84);
 }
 
 .pf-a4-nutrition-search-source {
@@ -6514,9 +6513,9 @@ video.pf-a3-routine-log-video-frame {
   min-width: 28px;
   height: 28px;
   border-radius: 0.56rem;
-  border: 1px solid rgba(156, 165, 175, 0.45);
-  background: rgba(22, 26, 31, 0.82);
-  color: rgba(212, 219, 228, 0.84);
+  border: 1px solid rgba(160, 165, 171, 0.45);
+  background: rgba(24, 26, 29, 0.82);
+  color: rgba(215, 219, 225, 0.84);
   font-size: 0.78rem;
   font-weight: 700;
   display: inline-flex;
@@ -6532,9 +6531,9 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-search-add {
   border-radius: 0.56rem;
-  border: 1px solid rgba(110, 174, 240, 0.52);
-  background: linear-gradient(155deg, rgba(12, 66, 127, 0.56), rgba(10, 41, 76, 0.82));
-  color: rgba(221, 237, 255, 0.98);
+  border: 1px solid rgba(136, 174, 214, 0.52);
+  background: linear-gradient(155deg, rgba(35, 67, 104, 0.56), rgba(23, 42, 63, 0.82));
+  color: rgba(228, 237, 248, 0.98);
   min-height: 28px;
   padding: 0.2rem 0.5rem;
   font-size: 0.62rem;
@@ -6548,8 +6547,8 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a4-nutrition-meal-entry-row {
   border-radius: 0.72rem;
-  border: 1px solid rgba(127, 158, 194, 0.34);
-  background: rgba(10, 18, 28, 0.74);
+  border: 1px solid rgba(140, 159, 181, 0.34);
+  background: rgba(14, 18, 24, 0.74);
   padding: 0.4rem 0.46rem;
   display: flex;
   align-items: center;
@@ -6560,13 +6559,13 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-meal-entry-name {
   font-size: 0.74rem;
   font-weight: 800;
-  color: #f5faff;
+  color: #f7fafd;
 }
 
 .pf-a4-nutrition-meal-entry-meta {
   margin-top: 0.08rem;
   font-size: 0.62rem;
-  color: rgba(179, 203, 231, 0.82);
+  color: rgba(189, 204, 221, 0.82);
 }
 
 .pf-a3-nutrition-kcal-input input:focus,
@@ -6575,8 +6574,8 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-plan-field select:focus,
 .pf-a4-nutrition-plan-field textarea:focus {
   outline: none;
-  border-color: rgba(56, 145, 248, 0.82);
-  box-shadow: 0 0 0 2px rgba(56, 145, 248, 0.24);
+  border-color: rgba(94, 148, 210, 0.82);
+  box-shadow: 0 0 0 2px rgba(94, 148, 210, 0.24);
 }
 
 @keyframes pf-a3-nutrition-check-pop {
@@ -6657,12 +6656,12 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a2-kpi:hover {
-    border-color: rgba(139, 193, 250, 0.44);
+    border-color: rgba(161, 194, 228, 0.44);
   }
 
   .pf-a2-dock-btn:hover {
-    color: #f6faff;
-    background-color: rgba(139, 193, 250, 0.14);
+    color: #f8fafd;
+    background-color: rgba(161, 194, 228, 0.14);
   }
 }
 
@@ -6685,12 +6684,12 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main,
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2 {
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
   }
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 {
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
   }
 
@@ -6722,7 +6721,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-alumno-v2 {
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
   }
 
@@ -6745,8 +6744,8 @@ video.pf-a3-routine-log-video-frame {
     border-radius: 0 0 58% 58%;
     background:
       radial-gradient(52% 72% at 15% 0%, rgba(249, 123, 52, 0.32), transparent 70%),
-      radial-gradient(50% 80% at 50% 0%, rgba(61, 132, 242, 0.46), transparent 72%),
-      radial-gradient(52% 72% at 86% 2%, rgba(96, 165, 250, 0.4), transparent 70%);
+      radial-gradient(50% 80% at 50% 0%, rgba(97, 140, 206, 0.46), transparent 72%),
+      radial-gradient(52% 72% at 86% 2%, rgba(127, 168, 219, 0.4), transparent 70%);
     opacity: 1;
   }
 
@@ -6762,17 +6761,17 @@ video.pf-a3-routine-log-video-frame {
     border-radius: 0;
     transform: none;
     background:
-      radial-gradient(48% 28% at 94% 6%, rgba(96, 158, 250, 0.42), transparent 66%),
-      radial-gradient(60% 34% at -8% 26%, rgba(128, 152, 188, 0.36), transparent 68%),
-      radial-gradient(64% 36% at 108% 52%, rgba(61, 132, 242, 0.44), transparent 70%),
+      radial-gradient(48% 28% at 94% 6%, rgba(127, 164, 219, 0.42), transparent 66%),
+      radial-gradient(60% 34% at -8% 26%, rgba(140, 154, 176, 0.36), transparent 68%),
+      radial-gradient(64% 36% at 108% 52%, rgba(97, 140, 206, 0.44), transparent 70%),
       radial-gradient(58% 32% at -6% 74%, rgba(249, 123, 52, 0.28), transparent 70%),
-      radial-gradient(60% 32% at 106% 92%, rgba(90, 140, 214, 0.36), transparent 72%),
+      radial-gradient(60% 32% at 106% 92%, rgba(115, 145, 189, 0.36), transparent 72%),
       radial-gradient(52% 26% at 22% 104%, rgba(255, 160, 96, 0.2), transparent 72%);
     opacity: 1;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
@@ -6783,7 +6782,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 .pf-alumno-stage,
   html.pf-mobile-fluid .pf-alumno-v2 .pf-alumno-stage {
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
   }
 
@@ -6797,7 +6796,7 @@ video.pf-a3-routine-log-video-frame {
     padding-inline: 0.24rem;
     gap: 0.34rem;
     padding-bottom: 0.08rem;
-    background-color: #080b11 !important;
+    background-color: #0a0c0f !important;
     background-image: none !important;
   }
 
@@ -7204,7 +7203,7 @@ video.pf-a3-routine-log-video-frame {
     max-height: none;
     overflow: visible;
     border-radius: 0.76rem;
-    border: 1.5px solid rgba(132, 170, 214, 0.76);
+    border: 1.5px solid rgba(148, 171, 198, 0.76);
     padding: 0.62rem 0.56rem calc(0.72rem + env(safe-area-inset-bottom));
   }
 
@@ -7362,35 +7361,35 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi {
     border-radius: 0.62rem !important;
-    border-color: rgba(158, 185, 216, 0.34) !important;
+    border-color: rgba(170, 186, 204, 0.34) !important;
     box-shadow: none !important;
   }
 
   html.pf-mobile-fluid .pf-a2-hero {
     background:
-      radial-gradient(120% 92% at -15% -30%, rgba(150, 201, 255, 0.2), transparent 56%),
-      linear-gradient(165deg, rgba(18, 26, 35, 0.95), rgba(12, 19, 27, 0.94)) !important;
+      radial-gradient(120% 92% at -15% -30%, rgba(171, 202, 234, 0.2), transparent 56%),
+      linear-gradient(165deg, rgba(21, 26, 32, 0.95), rgba(15, 19, 24, 0.94)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-card {
-    background: linear-gradient(170deg, rgba(15, 22, 30, 0.95), rgba(12, 19, 27, 0.94)) !important;
+    background: linear-gradient(170deg, rgba(18, 22, 27, 0.95), rgba(15, 19, 24, 0.94)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: linear-gradient(165deg, rgba(22, 31, 42, 0.9), rgba(17, 24, 33, 0.9)) !important;
-    border-color: rgba(150, 201, 255, 0.28) !important;
+    background: linear-gradient(165deg, rgba(26, 31, 38, 0.9), rgba(20, 24, 30, 0.9)) !important;
+    border-color: rgba(171, 202, 234, 0.28) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-solid-btn {
-    color: #0c1928 !important;
-    border-color: rgba(236, 245, 255, 0.88) !important;
-    background: linear-gradient(155deg, rgba(166, 237, 218, 0.94), rgba(150, 201, 255, 0.94)) !important;
+    color: #121922 !important;
+    border-color: rgba(240, 245, 251, 0.88) !important;
+    background: linear-gradient(155deg, rgba(166, 237, 218, 0.94), rgba(171, 202, 234, 0.94)) !important;
     box-shadow: none !important;
   }
 
   html.pf-mobile-fluid .pf-a2-ghost-btn {
-    border-color: rgba(150, 201, 255, 0.44) !important;
-    background: linear-gradient(170deg, rgba(17, 25, 34, 0.92), rgba(13, 20, 28, 0.9)) !important;
+    border-color: rgba(171, 202, 234, 0.44) !important;
+    background: linear-gradient(170deg, rgba(20, 25, 31, 0.92), rgba(16, 20, 25, 0.9)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-back-btn {
@@ -7398,8 +7397,8 @@ video.pf-a3-routine-log-video-frame {
     min-width: 44px;
     height: 44px;
     border-radius: 0.86rem;
-    border-color: rgba(162, 196, 234, 0.56) !important;
-    background: linear-gradient(170deg, rgba(19, 28, 39, 0.96), rgba(12, 20, 30, 0.95)) !important;
+    border-color: rgba(176, 197, 220, 0.56) !important;
+    background: linear-gradient(170deg, rgba(23, 28, 35, 0.96), rgba(16, 20, 26, 0.95)) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
@@ -7415,7 +7414,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a3-routine-superset-row {
     box-shadow: none !important;
     backdrop-filter: none !important;
-    border-color: rgba(132, 158, 188, 0.3) !important;
+    border-color: rgba(143, 159, 177, 0.3) !important;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 .grid.gap-4 {
@@ -7689,7 +7688,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-a2-dock {
     border-color: transparent !important;
-    background: #080b11 !important;
+    background: #0a0c0f !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
   }
@@ -7703,7 +7702,7 @@ video.pf-a3-routine-log-video-frame {
     width: 26px;
     height: 26px;
     border-color: transparent;
-    background: rgba(227, 238, 251, 0.1);
+    background: rgba(232, 238, 246, 0.1);
     box-shadow: none;
   }
 
@@ -7712,12 +7711,12 @@ video.pf-a3-routine-log-video-frame {
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active {
-    color: #f6faff !important;
-    background: rgba(101, 144, 194, 0.2) !important;
+    color: #f8fafd !important;
+    background: rgba(120, 145, 175, 0.2) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active::after {
-    background: rgba(230, 242, 255, 0.96) !important;
+    background: rgba(235, 242, 250, 0.96) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-label {
@@ -7799,7 +7798,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   /* DEEP scroll-flicker fix for iOS WebView.
-     Root cause: cards used rgba blue gradients (rgba(11, 28, 48,0.92)). During fast
+     Root cause: cards used rgba blue gradients (rgba(18, 29, 41,0.92)). During fast
      scroll, iOS drops/repaints tiles and the gradient/transparency makes the
      re-paint visible as a blue flash. Fix: solid opaque dark backgrounds,
      contain: paint to isolate cards, no backdrop-filter. */
@@ -7809,7 +7808,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-hero {
-    background: #0d1319 !important;
+    background: #0f1317 !important;
     background-image: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -7817,7 +7816,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: #11171e !important;
+    background: #14171b !important;
   }
 
   html.pf-mobile-webview .pf-a2-card::before,
@@ -7833,7 +7832,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]),
   html.pf-mobile-fluid .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]) {
-    background-color: #131920 !important;
+    background-color: #16191d !important;
     background-image: none !important;
     backdrop-filter: none !important;
   }
@@ -7852,7 +7851,7 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell,
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main {
-    background: #0d1319 !important;
+    background: #0f1317 !important;
     background-image: none !important;
   }
 
@@ -7893,7 +7892,7 @@ video.pf-a3-routine-log-video-frame {
   font-size: 1.05rem;
   line-height: 1.18;
   font-weight: 900;
-  color: #eef6ff;
+  color: #f1f6fc;
   letter-spacing: 0.01em;
 }
 
@@ -7901,7 +7900,7 @@ video.pf-a3-routine-log-video-frame {
   margin: 0;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #a8bed8;
+  color: #b2bfce;
 }
 
 .pf-a3-routine-flow-cta {
@@ -7956,16 +7955,16 @@ video.pf-a3-routine-log-video-frame {
 
 /* Resume CTA (blue/purple tint) */
 .pf-a3-routine-flow-cta-resume {
-  background: linear-gradient(160deg, rgba(96, 170, 255, 0.96), rgba(72, 146, 230, 0.95));
-  border-color: rgba(140, 194, 255, 0.7);
-  box-shadow: 0 10px 24px -16px rgba(80, 155, 240, 0.6);
+  background: linear-gradient(160deg, rgba(128, 172, 223, 0.96), rgba(104, 148, 198, 0.95));
+  border-color: rgba(163, 195, 232, 0.7);
+  box-shadow: 0 10px 24px -16px rgba(112, 157, 208, 0.6);
 }
 
 .pf-a3-routine-flow-discard-btn {
   margin-top: 0.3rem;
   background: none;
   border: none;
-  color: #7a97b8;
+  color: #8698ac;
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
@@ -7973,7 +7972,7 @@ video.pf-a3-routine-log-video-frame {
   text-underline-offset: 2px;
   opacity: 0.8;
 }
-.pf-a3-routine-flow-discard-btn:hover { opacity: 1; color: #a0bad8; }
+.pf-a3-routine-flow-discard-btn:hover { opacity: 1; color: #abbbcd; }
 
 /* ── Guided training action bar ─────────────────────────── */
 @keyframes pf-guided-slide-in {
@@ -8004,8 +8003,8 @@ video.pf-a3-routine-log-video-frame {
   transition: background 220ms ease;
 }
 .pf-a3-guided-pip-done    { background: rgba(80, 200, 130, 0.7); }
-.pf-a3-guided-pip-active  { background: rgba(110, 178, 255, 0.95); }
-.pf-a3-guided-pip-pending { background: rgba(72, 93, 118, 0.5); }
+.pf-a3-guided-pip-active  { background: #f97316; }
+.pf-a3-guided-pip-pending { background: rgba(81, 94, 109, 0.5); }
 
 .pf-a3-guided-btns {
   display: flex;
@@ -8030,29 +8029,29 @@ video.pf-a3-routine-log-video-frame {
 
 .pf-a3-guided-btn-pause {
   flex: 0 0 auto;
-  border: 1px solid rgba(86, 109, 136, 0.6);
-  background: rgba(16, 26, 38, 0.92);
-  color: #b0c3d8;
+  border: 1px solid rgba(96, 110, 126, 0.6);
+  background: rgba(20, 26, 34, 0.92);
+  color: #b8c3d0;
 }
-.pf-a3-guided-btn-pause:hover { color: #d8eaff; border-color: rgba(140, 168, 200, 0.7); }
+.pf-a3-guided-btn-pause:hover { color: #e0ebf7; border-color: rgba(152, 169, 188, 0.7); }
 
 .pf-a3-guided-btn-back {
   flex: 0 0 auto;
-  border: 1px solid rgba(86, 109, 136, 0.55);
-  background: rgba(20, 31, 44, 0.88);
-  color: #a8bcd4;
+  border: 1px solid rgba(96, 110, 126, 0.55);
+  background: rgba(25, 31, 39, 0.88);
+  color: #b1bdcb;
 }
-.pf-a3-guided-btn-back:hover { color: #c8dbf0; }
+.pf-a3-guided-btn-back:hover { color: #d0dbe8; }
 
 .pf-a3-guided-btn-next {
   flex: 1 1 0;
   justify-content: center;
-  border: 1px solid rgba(100, 174, 255, 0.7);
-  background: linear-gradient(155deg, rgba(80, 164, 255, 0.98), rgba(60, 143, 230, 0.96));
+  border: 1px solid rgba(131, 175, 224, 0.7);
+  background: linear-gradient(155deg, rgba(115, 165, 220, 0.98), rgba(94, 144, 196, 0.96));
   color: #fff;
-  box-shadow: 0 8px 20px -12px rgba(70, 152, 240, 0.55);
+  box-shadow: 0 8px 20px -12px rgba(104, 153, 206, 0.55);
 }
-.pf-a3-guided-btn-next:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(80, 164, 255, 0.7); }
+.pf-a3-guided-btn-next:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(115, 165, 220, 0.7); }
 
 .pf-a3-guided-btn-finish {
   border-color: rgba(90, 210, 140, 0.76);
@@ -8084,7 +8083,7 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8aa7c8;
+  color: #96a8bc;
 }
 
 .pf-a3-finalize-measurement-row {
@@ -8096,7 +8095,7 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-finalize-measurement-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #c8dbf0;
+  color: #d0dbe8;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
@@ -8122,17 +8121,17 @@ video.pf-a3-routine-log-video-frame {
   min-width: 2.2rem;
   height: 2.2rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(80, 108, 140, 0.5);
-  background: rgba(14, 23, 34, 0.86);
-  color: #a8bed8;
+  border: 1px solid rgba(92, 109, 128, 0.5);
+  background: rgba(18, 23, 30, 0.86);
+  color: #b2bfce;
   font-size: 0.72rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms;
 }
-.pf-a3-finalize-scale-btn:hover { border-color: rgba(110, 178, 255, 0.6); color: #d4e9ff; }
+.pf-a3-finalize-scale-btn:hover { border-color: rgba(139, 180, 226, 0.6); color: #dde9f6; }
 .pf-a3-finalize-scale-btn-active {
-  border-color: rgba(110, 178, 255, 0.9);
-  background: rgba(60, 131, 210, 0.92);
+  border-color: rgba(255, 176, 120, 0.82);
+  background: linear-gradient(160deg, #ff9048 0%, #f4700f 100%);
   color: #fff;
 }
 
@@ -8145,17 +8144,17 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-finalize-option-btn {
   padding: 0.4rem 0.72rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(80, 108, 140, 0.5);
-  background: rgba(14, 23, 34, 0.86);
-  color: #a8bed8;
+  border: 1px solid rgba(92, 109, 128, 0.5);
+  background: rgba(18, 23, 30, 0.86);
+  color: #b2bfce;
   font-size: 0.7rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms;
 }
-.pf-a3-finalize-option-btn:hover { border-color: rgba(110, 178, 255, 0.6); color: #d4e9ff; }
+.pf-a3-finalize-option-btn:hover { border-color: rgba(139, 180, 226, 0.6); color: #dde9f6; }
 .pf-a3-finalize-option-btn-active {
-  border-color: rgba(110, 178, 255, 0.9);
-  background: rgba(60, 131, 210, 0.92);
+  border-color: rgba(255, 176, 120, 0.82);
+  background: linear-gradient(160deg, #ff9048 0%, #f4700f 100%);
   color: #fff;
 }
 
@@ -8164,37 +8163,37 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   padding: 0.46rem 0.54rem;
   border-radius: 0.56rem;
-  border: 1px solid rgba(80, 108, 140, 0.5);
-  background: rgba(10, 18, 28, 0.9);
-  color: #c8dbf0;
+  border: 1px solid rgba(92, 109, 128, 0.5);
+  background: rgba(14, 18, 24, 0.9);
+  color: #d0dbe8;
   font-size: 0.72rem;
   font-weight: 500;
   resize: none;
   outline: none;
   font-family: inherit;
 }
-.pf-a3-finalize-textarea:focus { border-color: rgba(100, 167, 240, 0.7); }
+.pf-a3-finalize-textarea:focus { border-color: rgba(128, 168, 212, 0.7); }
 
 .pf-a3-finalize-number {
   width: 100%;
   max-width: 6rem;
   padding: 0.42rem 0.54rem;
   border-radius: 0.56rem;
-  border: 1px solid rgba(80, 108, 140, 0.5);
-  background: rgba(10, 18, 28, 0.9);
-  color: #c8dbf0;
+  border: 1px solid rgba(92, 109, 128, 0.5);
+  background: rgba(14, 18, 24, 0.9);
+  color: #d0dbe8;
   font-size: 0.78rem;
   font-weight: 700;
   outline: none;
 }
-.pf-a3-finalize-number:focus { border-color: rgba(100, 167, 240, 0.7); }
+.pf-a3-finalize-number:focus { border-color: rgba(128, 168, 212, 0.7); }
 
 .pf-a3-finalize-legacy-questions {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   padding-top: 0.3rem;
-  border-top: 1px dashed rgba(70, 93, 120, 0.4);
+  border-top: 1px dashed rgba(80, 94, 110, 0.4);
   margin-top: 0.2rem;
 }
 
@@ -8224,8 +8223,8 @@ video.pf-a3-routine-log-video-frame {
   transition: background 200ms ease;
 }
 .pf-a3-survey-pip-done    { background: rgba(80, 200, 130, 0.7); }
-.pf-a3-survey-pip-active  { background: rgba(110, 178, 255, 0.95); }
-.pf-a3-survey-pip-pending { background: rgba(60, 82, 108, 0.45); }
+.pf-a3-survey-pip-active  { background: #f97316; }
+.pf-a3-survey-pip-pending { background: rgba(70, 83, 98, 0.45); }
 
 .pf-a3-survey-counter {
   margin: 0;
@@ -8233,14 +8232,14 @@ video.pf-a3-routine-log-video-frame {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6a88aa;
+  color: #77899d;
 }
 
 .pf-a3-survey-label {
   margin: 0;
   font-size: 1rem;
   font-weight: 800;
-  color: #ddedff;
+  color: #e4edf8;
   line-height: 1.25;
 }
 
@@ -8260,18 +8259,18 @@ video.pf-a3-routine-log-video-frame {
   min-width: 2rem;
   height: 2.6rem;
   border-radius: 0.6rem;
-  border: 1.5px solid rgba(70, 97, 128, 0.5);
-  background: rgba(12, 21, 32, 0.88);
-  color: #9ab3d0;
+  border: 1.5px solid rgba(82, 98, 116, 0.5);
+  background: rgba(16, 21, 28, 0.88);
+  color: #a5b4c5;
   font-size: 0.82rem;
   font-weight: 800;
   transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
 }
 .pf-a3-survey-scale-btn:active { transform: scale(0.93); }
-.pf-a3-survey-scale-btn:hover  { border-color: rgba(110, 178, 255, 0.55); color: #b0d2f8; }
+.pf-a3-survey-scale-btn:hover  { border-color: rgba(139, 180, 226, 0.55); color: #bed3ea; }
 .pf-a3-survey-scale-btn-active {
-  border-color: rgba(110, 178, 255, 0.9);
-  background: rgba(60, 131, 210, 0.94);
+  border-color: rgba(255, 176, 120, 0.82);
+  background: linear-gradient(160deg, #ff9048 0%, #f4700f 100%);
   color: #fff;
   transform: scale(1.06);
 }
@@ -8286,18 +8285,18 @@ video.pf-a3-routine-log-video-frame {
 .pf-a3-survey-option-btn {
   padding: 0.52rem 1rem;
   border-radius: 99px;
-  border: 1.5px solid rgba(70, 97, 128, 0.5);
-  background: rgba(12, 21, 32, 0.88);
-  color: #9ab3d0;
+  border: 1.5px solid rgba(82, 98, 116, 0.5);
+  background: rgba(16, 21, 28, 0.88);
+  color: #a5b4c5;
   font-size: 0.78rem;
   font-weight: 700;
   transition: background 120ms, border-color 120ms, color 120ms, transform 100ms;
 }
 .pf-a3-survey-option-btn:active { transform: scale(0.95); }
-.pf-a3-survey-option-btn:hover  { border-color: rgba(110, 178, 255, 0.55); color: #b0d2f8; }
+.pf-a3-survey-option-btn:hover  { border-color: rgba(139, 180, 226, 0.55); color: #bed3ea; }
 .pf-a3-survey-option-btn-active {
-  border-color: rgba(110, 178, 255, 0.9);
-  background: rgba(60, 131, 210, 0.94);
+  border-color: rgba(255, 176, 120, 0.82);
+  background: linear-gradient(160deg, #ff9048 0%, #f4700f 100%);
   color: #fff;
 }
 
@@ -8307,30 +8306,30 @@ video.pf-a3-routine-log-video-frame {
   box-sizing: border-box;
   padding: 0.6rem 0.7rem;
   border-radius: 0.68rem;
-  border: 1.5px solid rgba(70, 97, 128, 0.5);
-  background: rgba(10, 18, 28, 0.9);
-  color: #c8dbf0;
+  border: 1.5px solid rgba(82, 98, 116, 0.5);
+  background: rgba(14, 18, 24, 0.9);
+  color: #d0dbe8;
   font-size: 0.84rem;
   font-weight: 500;
   resize: none;
   outline: none;
   font-family: inherit;
 }
-.pf-a3-survey-textarea:focus { border-color: rgba(100, 167, 240, 0.7); }
+.pf-a3-survey-textarea:focus { border-color: rgba(128, 168, 212, 0.7); }
 
 .pf-a3-survey-number {
   width: 100%;
   max-width: 7rem;
   padding: 0.52rem 0.7rem;
   border-radius: 0.68rem;
-  border: 1.5px solid rgba(70, 97, 128, 0.5);
-  background: rgba(10, 18, 28, 0.9);
-  color: #c8dbf0;
+  border: 1.5px solid rgba(82, 98, 116, 0.5);
+  background: rgba(14, 18, 24, 0.9);
+  color: #d0dbe8;
   font-size: 0.9rem;
   font-weight: 700;
   outline: none;
 }
-.pf-a3-survey-number:focus { border-color: rgba(100, 167, 240, 0.7); }
+.pf-a3-survey-number:focus { border-color: rgba(128, 168, 212, 0.7); }
 
 /* Nav row */
 .pf-a3-survey-nav {
@@ -8345,15 +8344,15 @@ video.pf-a3-routine-log-video-frame {
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 0.6rem;
-  border: 1.5px solid rgba(70, 97, 128, 0.45);
-  background: rgba(12, 21, 32, 0.88);
-  color: #7a99bc;
+  border: 1.5px solid rgba(82, 98, 116, 0.45);
+  background: rgba(16, 21, 28, 0.88);
+  color: #879aaf;
   display: grid;
   place-items: center;
   transition: opacity 120ms;
 }
 .pf-a3-survey-nav-back:disabled { opacity: 0.28; cursor: default; }
-.pf-a3-survey-nav-back:not(:disabled):hover { border-color: rgba(120, 157, 200, 0.6); color: #b0cae8; }
+.pf-a3-survey-nav-back:not(:disabled):hover { border-color: rgba(136, 158, 184, 0.6); color: #bbcbdd; }
 
 .pf-a3-survey-nav-next {
   flex: 1 1 0;
@@ -8363,14 +8362,14 @@ video.pf-a3-routine-log-video-frame {
   gap: 0.3rem;
   padding: 0.62rem 1rem;
   border-radius: 0.7rem;
-  border: 1.5px solid rgba(90, 118, 150, 0.5);
-  background: rgba(20, 31, 44, 0.9);
-  color: #b0c6e0;
+  border: 1.5px solid rgba(102, 119, 138, 0.5);
+  background: rgba(25, 31, 39, 0.9);
+  color: #bac7d6;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.03em;
 }
-.pf-a3-survey-nav-next:hover { border-color: rgba(140, 173, 210, 0.6); color: #d0e6ff; }
+.pf-a3-survey-nav-next:hover { border-color: rgba(154, 174, 196, 0.6); color: #d9e7f6; }
 
 .pf-a3-survey-finish-btn {
   flex: 1 1 0;
@@ -8398,7 +8397,7 @@ video.pf-a3-routine-log-video-frame {
   gap: 1rem;
   padding: 1rem 0;
   text-align: center;
-  color: #8aa7c8;
+  color: #96a8bc;
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -9290,34 +9289,34 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
    Reemplaza los overlays azul-marino remanentes por violeta-negro, sin tocar
    texto neutro ni colores semánticos (cian/sky). Alcance: .pf-alumno-v2.
    ══════════════════════════════════════════════════════════════════════════ */
-.pf-alumno-v2 .bg-slate-700\/70 { background-color: rgba(42, 64, 88, 0.70) !important; }
-.pf-alumno-v2 .bg-slate-800\/70 { background-color: rgba(27, 45, 64, 0.70) !important; }
-.pf-alumno-v2 .bg-slate-800\/60 { background-color: rgba(27, 45, 64, 0.60) !important; }
-.pf-alumno-v2 .bg-slate-900\/60 { background-color: rgba(16, 28, 42, 0.60) !important; }
-.pf-alumno-v2 .bg-slate-900\/40 { background-color: rgba(16, 28, 42, 0.40) !important; }
-.pf-alumno-v2 .bg-slate-900\/55 { background-color: rgba(16, 28, 42, 0.55) !important; }
-.pf-alumno-v2 .bg-slate-900\/70 { background-color: rgba(16, 28, 42, 0.70) !important; }
-.pf-alumno-v2 .bg-slate-900\/45 { background-color: rgba(16, 28, 42, 0.45) !important; }
-.pf-alumno-v2 .bg-slate-950\/55 { background-color: rgba(9, 17, 26, 0.55) !important; }
-.pf-alumno-v2 .bg-slate-950\/40 { background-color: rgba(9, 17, 26, 0.40) !important; }
-.pf-alumno-v2 .bg-slate-950\/35 { background-color: rgba(9, 17, 26, 0.35) !important; }
-.pf-alumno-v2 .bg-slate-950\/30 { background-color: rgba(9, 17, 26, 0.30) !important; }
-.pf-alumno-v2 .bg-slate-950\/20 { background-color: rgba(9, 17, 26, 0.20) !important; }
-.pf-alumno-v2 .bg-slate-950\/45 { background-color: rgba(9, 17, 26, 0.45) !important; }
-.pf-alumno-v2 .border-slate-500\/45 { border-color: rgba(82, 115, 152, 0.45) !important; }
-.pf-alumno-v2 .border-slate-500\/35 { border-color: rgba(82, 115, 152, 0.35) !important; }
-.pf-alumno-v2 .border-slate-500\/60 { border-color: rgba(82, 115, 152, 0.60) !important; }
-.pf-alumno-v2 .border-slate-600\/60 { border-color: rgba(58, 84, 112, 0.60) !important; }
-.pf-alumno-v2 .border-slate-600\/45 { border-color: rgba(58, 84, 112, 0.45) !important; }
-.pf-alumno-v2 .border-slate-400\/35 { border-color: rgba(120, 151, 184, 0.35) !important; }
+.pf-alumno-v2 .bg-slate-700\/70 { background-color: rgba(51, 64, 79, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-800\/70 { background-color: rgba(34, 45, 57, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-800\/60 { background-color: rgba(34, 45, 57, 0.60) !important; }
+.pf-alumno-v2 .bg-slate-900\/60 { background-color: rgba(21, 28, 37, 0.60) !important; }
+.pf-alumno-v2 .bg-slate-900\/40 { background-color: rgba(21, 28, 37, 0.40) !important; }
+.pf-alumno-v2 .bg-slate-900\/55 { background-color: rgba(21, 28, 37, 0.55) !important; }
+.pf-alumno-v2 .bg-slate-900\/70 { background-color: rgba(21, 28, 37, 0.70) !important; }
+.pf-alumno-v2 .bg-slate-900\/45 { background-color: rgba(21, 28, 37, 0.45) !important; }
+.pf-alumno-v2 .bg-slate-950\/55 { background-color: rgba(12, 17, 23, 0.55) !important; }
+.pf-alumno-v2 .bg-slate-950\/40 { background-color: rgba(12, 17, 23, 0.40) !important; }
+.pf-alumno-v2 .bg-slate-950\/35 { background-color: rgba(12, 17, 23, 0.35) !important; }
+.pf-alumno-v2 .bg-slate-950\/30 { background-color: rgba(12, 17, 23, 0.30) !important; }
+.pf-alumno-v2 .bg-slate-950\/20 { background-color: rgba(12, 17, 23, 0.20) !important; }
+.pf-alumno-v2 .bg-slate-950\/45 { background-color: rgba(12, 17, 23, 0.45) !important; }
+.pf-alumno-v2 .border-slate-500\/45 { border-color: rgba(96, 116, 138, 0.45) !important; }
+.pf-alumno-v2 .border-slate-500\/35 { border-color: rgba(96, 116, 138, 0.35) !important; }
+.pf-alumno-v2 .border-slate-500\/60 { border-color: rgba(96, 116, 138, 0.60) !important; }
+.pf-alumno-v2 .border-slate-600\/60 { border-color: rgba(69, 84, 101, 0.60) !important; }
+.pf-alumno-v2 .border-slate-600\/45 { border-color: rgba(69, 84, 101, 0.45) !important; }
+.pf-alumno-v2 .border-slate-400\/35 { border-color: rgba(133, 151, 171, 0.35) !important; }
 
 /* Re-tinte de texto slate → violeta-gris (alcance completo del alumno, no solo
    pf-a2-card). Cohesiona las pantallas internas (nutrición, cuenta, música)
    con el palette del home sin tocar semánticos (cian/sky/emerald/amber). */
-.pf-alumno-v2 .text-slate-400 { color: #859bb4 !important; }
-.pf-alumno-v2 .text-slate-300 { color: #a4bad2 !important; }
-.pf-alumno-v2 .text-slate-200 { color: #bcd0e6 !important; }
-.pf-alumno-v2 .text-slate-100 { color: #e5edf7 !important; }
+.pf-alumno-v2 .text-slate-400 { color: #8e9cab !important; }
+.pf-alumno-v2 .text-slate-300 { color: #adbac9 !important; }
+.pf-alumno-v2 .text-slate-200 { color: #c4d0de !important; }
+.pf-alumno-v2 .text-slate-100 { color: #e9edf3 !important; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    Normalización tipográfica (solo alumno) — reduce el peso font-black (900)
@@ -9343,37 +9342,37 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
    usa paleta gris-azul + naranja; estas utilidades quedaban violetas en el
    markup de los componentes. Alcance: .pf-alumno-v2.
    ══════════════════════════════════════════════════════════════════════════ */
-.pf-alumno-v2 .bg-violet-400 { background-color: #60a5fa !important; }
-.pf-alumno-v2 .bg-violet-400\/45 { background-color: rgba(96, 165, 250, 0.45) !important; }
-.pf-alumno-v2 .bg-violet-500 { background-color: #3b82f6 !important; }
-.pf-alumno-v2 .bg-violet-500\/10 { background-color: rgba(59, 130, 246, 0.10) !important; }
-.pf-alumno-v2 .bg-violet-500\/15 { background-color: rgba(59, 130, 246, 0.15) !important; }
-.pf-alumno-v2 .bg-violet-500\/20 { background-color: rgba(59, 130, 246, 0.20) !important; }
-.pf-alumno-v2 .bg-violet-500\/28 { background-color: rgba(59, 130, 246, 0.28) !important; }
-.pf-alumno-v2 .border-violet-100 { border-color: #dbeafe !important; }
-.pf-alumno-v2 .border-violet-200\/20 { border-color: rgba(191, 219, 254, 0.20) !important; }
-.pf-alumno-v2 .border-violet-200\/35 { border-color: rgba(191, 219, 254, 0.35) !important; }
-.pf-alumno-v2 .border-violet-200\/45 { border-color: rgba(191, 219, 254, 0.45) !important; }
-.pf-alumno-v2 .border-violet-200\/65 { border-color: rgba(191, 219, 254, 0.65) !important; }
-.pf-alumno-v2 .border-violet-300\/25 { border-color: rgba(147, 197, 253, 0.25) !important; }
-.pf-alumno-v2 .border-violet-300\/30 { border-color: rgba(147, 197, 253, 0.30) !important; }
-.pf-alumno-v2 .border-violet-300\/35 { border-color: rgba(147, 197, 253, 0.35) !important; }
-.pf-alumno-v2 .border-violet-300\/40 { border-color: rgba(147, 197, 253, 0.40) !important; }
-.pf-alumno-v2 .border-violet-300\/50 { border-color: rgba(147, 197, 253, 0.50) !important; }
-.pf-alumno-v2 .border-violet-300\/60 { border-color: rgba(147, 197, 253, 0.60) !important; }
-.pf-alumno-v2 .border-violet-400\/60 { border-color: rgba(96, 165, 250, 0.60) !important; }
-.pf-alumno-v2 .border-violet-500\/40 { border-color: rgba(59, 130, 246, 0.40) !important; }
-.pf-alumno-v2 .text-violet-50 { color: #eff6ff !important; }
-.pf-alumno-v2 .text-violet-50\/90 { color: rgba(239, 246, 255, 0.90) !important; }
-.pf-alumno-v2 .text-violet-100 { color: #dbeafe !important; }
-.pf-alumno-v2 .text-violet-100\/75 { color: rgba(219, 234, 254, 0.75) !important; }
-.pf-alumno-v2 .text-violet-100\/90 { color: rgba(219, 234, 254, 0.90) !important; }
-.pf-alumno-v2 .text-violet-200 { color: #bfdbfe !important; }
-.pf-alumno-v2 .text-violet-300 { color: #93c5fd !important; }
-.pf-alumno-v2 .text-violet-400\/70 { color: rgba(96, 165, 250, 0.70) !important; }
+.pf-alumno-v2 .bg-violet-400 { background-color: #7fa8db !important; }
+.pf-alumno-v2 .bg-violet-400\/45 { background-color: rgba(127, 168, 219, 0.45) !important; }
+.pf-alumno-v2 .bg-violet-500 { background-color: #608bd1 !important; }
+.pf-alumno-v2 .bg-violet-500\/10 { background-color: rgba(96, 139, 209, 0.10) !important; }
+.pf-alumno-v2 .bg-violet-500\/15 { background-color: rgba(96, 139, 209, 0.15) !important; }
+.pf-alumno-v2 .bg-violet-500\/20 { background-color: rgba(96, 139, 209, 0.20) !important; }
+.pf-alumno-v2 .bg-violet-500\/28 { background-color: rgba(96, 139, 209, 0.28) !important; }
+.pf-alumno-v2 .border-violet-100 { border-color: #e2ebf7 !important; }
+.pf-alumno-v2 .border-violet-200\/20 { border-color: rgba(204, 220, 241, 0.20) !important; }
+.pf-alumno-v2 .border-violet-200\/35 { border-color: rgba(204, 220, 241, 0.35) !important; }
+.pf-alumno-v2 .border-violet-200\/45 { border-color: rgba(204, 220, 241, 0.45) !important; }
+.pf-alumno-v2 .border-violet-200\/65 { border-color: rgba(204, 220, 241, 0.65) !important; }
+.pf-alumno-v2 .border-violet-300\/25 { border-color: rgba(168, 198, 232, 0.25) !important; }
+.pf-alumno-v2 .border-violet-300\/30 { border-color: rgba(168, 198, 232, 0.30) !important; }
+.pf-alumno-v2 .border-violet-300\/35 { border-color: rgba(168, 198, 232, 0.35) !important; }
+.pf-alumno-v2 .border-violet-300\/40 { border-color: rgba(168, 198, 232, 0.40) !important; }
+.pf-alumno-v2 .border-violet-300\/50 { border-color: rgba(168, 198, 232, 0.50) !important; }
+.pf-alumno-v2 .border-violet-300\/60 { border-color: rgba(168, 198, 232, 0.60) !important; }
+.pf-alumno-v2 .border-violet-400\/60 { border-color: rgba(127, 168, 219, 0.60) !important; }
+.pf-alumno-v2 .border-violet-500\/40 { border-color: rgba(96, 139, 209, 0.40) !important; }
+.pf-alumno-v2 .text-violet-50 { color: #f2f6fc !important; }
+.pf-alumno-v2 .text-violet-50\/90 { color: rgba(242, 246, 252, 0.90) !important; }
+.pf-alumno-v2 .text-violet-100 { color: #e2ebf7 !important; }
+.pf-alumno-v2 .text-violet-100\/75 { color: rgba(226, 235, 247, 0.75) !important; }
+.pf-alumno-v2 .text-violet-100\/90 { color: rgba(226, 235, 247, 0.90) !important; }
+.pf-alumno-v2 .text-violet-200 { color: #ccdcf1 !important; }
+.pf-alumno-v2 .text-violet-300 { color: #a8c6e8 !important; }
+.pf-alumno-v2 .text-violet-400\/70 { color: rgba(127, 168, 219, 0.70) !important; }
 .pf-alumno-v2 .from-violet-500\/20 {
-  --tw-gradient-from: rgba(59, 130, 246, 0.20) var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(59, 130, 246, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: rgba(96, 139, 209, 0.20) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(96, 139, 209, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
-.pf-alumno-v2 .shadow-violet-500\/20 { --tw-shadow-color: rgba(59, 130, 246, 0.20) !important; }
+.pf-alumno-v2 .shadow-violet-500\/20 { --tw-shadow-color: rgba(96, 139, 209, 0.20) !important; }

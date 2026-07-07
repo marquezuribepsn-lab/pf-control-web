@@ -75,8 +75,8 @@ export default function FraseDelDia() {
         borderRadius: "1.1rem",
         padding: "1rem 1.15rem 1.05rem",
         background:
-          "linear-gradient(122deg, #2f6fed 0%, #2159d6 48%, #123a86 100%)",
-        boxShadow: "0 16px 34px rgba(37, 99, 235, 0.32)",
+          "linear-gradient(122deg, #557bc7 0%, #4567b2 48%, #29416f 100%)",
+        boxShadow: "0 16px 34px rgba(77, 114, 195, 0.32)",
         color: "#fff",
       }}
     >
@@ -154,7 +154,7 @@ export default function FraseDelDia() {
           lineHeight: 1.4,
           fontStyle: "italic",
           letterSpacing: "-0.012em",
-          textShadow: "0 1px 10px rgba(10, 32, 86, 0.28)",
+          textShadow: "0 1px 10px rgba(25, 38, 71, 0.28)",
           ...(expanded
             ? {}
             : {

@@ -62,9 +62,9 @@ type Props = {
 };
 
 const TIPO_META: Record<NotifTipo, { label: string; icon: string; color: string }> = {
-  novedad: { label: "Novedad", icon: "✨", color: "#559df7" },
+  novedad: { label: "Novedad", icon: "✨", color: "#75a1d7" },
   recordatorio: { label: "Recordatorio", icon: "⏰", color: "#f59e0b" },
-  mensaje: { label: "Mensaje", icon: "💬", color: "#38bdf8" },
+  mensaje: { label: "Mensaje", icon: "💬", color: "#5eaed2" },
 };
 
 function normalize(value: string): string {
@@ -99,26 +99,26 @@ const STYLES = `
 .pf-notif-bell {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
   width: 42px; height: 42px; border-radius: 14px; cursor: pointer;
-  border: 1px solid rgba(85, 157, 247,0.35);
-  background: linear-gradient(135deg, rgba(58, 142, 237,0.22), rgba(20, 37, 55,0.55));
-  color: #e9f3fe; transition: transform .12s ease, background .2s ease;
+  border: 1px solid rgba(117, 161, 215,0.35);
+  background: linear-gradient(135deg, rgba(94, 144, 201,0.22), rgba(27, 37, 48,0.55));
+  color: #edf3fa; transition: transform .12s ease, background .2s ease;
 }
-.pf-notif-bell:hover { background: linear-gradient(135deg, rgba(58, 142, 237,0.36), rgba(20, 37, 55,0.7)); }
+.pf-notif-bell:hover { background: linear-gradient(135deg, rgba(94, 144, 201,0.36), rgba(27, 37, 48,0.7)); }
 .pf-notif-bell:active { transform: scale(0.94); }
 .pf-notif-badge {
   position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
   border-radius: 9px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 800;
   display: inline-flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 0 2px rgba(6, 13, 20,0.9);
+  box-shadow: 0 0 0 2px rgba(9, 13, 17,0.9);
 }
 .pf-notif-backdrop {
-  position: fixed; inset: 0; z-index: 2147482000; background: rgba(2, 6, 10,0.55);
+  position: fixed; inset: 0; z-index: 2147482000; background: rgba(4, 6, 8,0.55);
   backdrop-filter: blur(2px);
 }
 .pf-notif-panel {
   position: fixed; z-index: 2147482001; top: 0; right: 0; height: 100dvh; width: min(420px, 100vw);
-  background: #0b1520; color: #e9f3fe; display: flex; flex-direction: column;
-  border-left: 1px solid rgba(85, 157, 247,0.22); box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  background: #0f151c; color: #edf3fa; display: flex; flex-direction: column;
+  border-left: 1px solid rgba(117, 161, 215,0.22); box-shadow: -20px 0 60px rgba(0,0,0,0.5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   animation: pf-notif-slide .22s ease;
 }
@@ -126,30 +126,30 @@ const STYLES = `
 .pf-notif-head { padding: 18px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
 .pf-notif-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .pf-notif-title { font-size: 18px; font-weight: 900; margin: 0; }
-.pf-notif-title small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #8bc1fa; margin-bottom: 2px; }
-.pf-notif-close { background: rgba(255,255,255,0.08); border: 0; color: #e9f3fe; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+.pf-notif-title small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #a1c2e4; margin-bottom: 2px; }
+.pf-notif-close { background: rgba(255,255,255,0.08); border: 0; color: #edf3fa; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 16px; }
 .pf-notif-close:hover { background: rgba(255,255,255,0.16); }
 .pf-notif-actions { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.pf-notif-markall { background: none; border: 0; color: #8bc1fa; font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 0; }
-.pf-notif-markall:disabled { color: #6b7280; cursor: default; }
+.pf-notif-markall { background: none; border: 0; color: #a1c2e4; font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 0; }
+.pf-notif-markall:disabled { color: #6f737c; cursor: default; }
 .pf-notif-tabs { display: flex; gap: 6px; padding: 12px 14px; overflow-x: auto; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.pf-notif-tab { flex: 0 0 auto; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #b8d5f5; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-.pf-notif-tab.is-active { background: linear-gradient(135deg,#3a8eed,#559df7); color: #fff; border-color: transparent; }
+.pf-notif-tab { flex: 0 0 auto; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #c4d6e9; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.pf-notif-tab.is-active { background: linear-gradient(135deg,#5e90c9,#75a1d7); color: #fff; border-color: transparent; }
 .pf-notif-tab-count { margin-left: 6px; background: rgba(0,0,0,0.25); border-radius: 999px; padding: 0 6px; font-size: 10px; }
 .pf-notif-list { flex: 1; overflow-y: auto; padding: 8px 12px 20px; }
 .pf-notif-item { display: flex; gap: 12px; padding: 12px; border-radius: 14px; cursor: pointer; transition: background .15s ease; align-items: flex-start; }
 .pf-notif-item:hover { background: rgba(255,255,255,0.05); }
-.pf-notif-item.is-unread { background: rgba(58, 142, 237,0.1); }
-.pf-notif-item.is-unread:hover { background: rgba(58, 142, 237,0.16); }
+.pf-notif-item.is-unread { background: rgba(94, 144, 201,0.1); }
+.pf-notif-item.is-unread:hover { background: rgba(94, 144, 201,0.16); }
 .pf-notif-ic { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; background: rgba(255,255,255,0.06); }
 .pf-notif-body { min-width: 0; flex: 1; }
 .pf-notif-body-top { display: flex; align-items: center; gap: 8px; }
 .pf-notif-ntitle { font-size: 14px; font-weight: 800; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pf-notif-time { margin-left: auto; font-size: 11px; color: #9ca3af; flex: 0 0 auto; }
-.pf-notif-text { margin: 3px 0 0; font-size: 13px; color: #bdcee0; line-height: 1.4; }
+.pf-notif-time { margin-left: auto; font-size: 11px; color: #a0a4ab; flex: 0 0 auto; }
+.pf-notif-text { margin: 3px 0 0; font-size: 13px; color: #c4ced9; line-height: 1.4; }
 .pf-notif-text.is-collapsed { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pf-notif-dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #559df7; margin-top: 6px; }
-.pf-notif-empty { text-align: center; padding: 60px 20px; color: #7f97b0; }
+.pf-notif-dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #75a1d7; margin-top: 6px; }
+.pf-notif-empty { text-align: center; padding: 60px 20px; color: #8997a6; }
 .pf-notif-empty .pf-notif-empty-emoji { font-size: 34px; }
 .pf-notif-empty p { margin: 10px 0 0; font-size: 13px; }
 `;
@@ -349,7 +349,7 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
                 </button>
               </div>
               <div className="pf-notif-actions">
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                <span style={{ fontSize: 12, color: "#a0a4ab" }}>
                   {unreadCount > 0 ? `${unreadCount} sin leer` : "Todo al día"}
                 </span>
                 <button type="button" className="pf-notif-markall" onClick={markAll} disabled={unreadCount === 0}>
