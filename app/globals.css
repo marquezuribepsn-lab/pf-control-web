@@ -1625,9 +1625,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
      romper la monotonía monocroma sin salirse del sistema. */
   background:
     radial-gradient(42% 30% at 90% 12%, rgba(255, 150, 78, 0.26), transparent 72%),
-    radial-gradient(52% 34% at 4% 40%, rgba(249, 123, 52, 0.24), transparent 74%),
-    radial-gradient(56% 36% at 96% 64%, rgba(107, 135, 195, 0.18), transparent 75%),
-    radial-gradient(50% 32% at 12% 90%, rgba(255, 160, 96, 0.22), transparent 74%);
+    radial-gradient(46% 40% at -2% 44%, rgba(249, 123, 52, 0.3), transparent 72%),
+    radial-gradient(46% 40% at 102% 56%, rgba(255, 140, 66, 0.28), transparent 72%),
+    radial-gradient(50% 32% at 12% 90%, rgba(255, 160, 96, 0.24), transparent 74%);
   opacity: 0.95;
   animation: none;
 }
@@ -6765,8 +6765,10 @@ video.pf-a3-routine-log-video-frame {
     transform: none;
     background:
       radial-gradient(50% 30% at 94% 6%, rgba(255, 150, 78, 0.46), transparent 66%),
-      radial-gradient(60% 34% at -8% 26%, rgba(249, 123, 52, 0.44), transparent 68%),
-      radial-gradient(64% 36% at 108% 52%, rgba(97, 140, 206, 0.38), transparent 70%),
+      radial-gradient(46% 40% at -8% 26%, rgba(249, 123, 52, 0.46), transparent 66%),
+      radial-gradient(48% 44% at 110% 44%, rgba(255, 140, 66, 0.48), transparent 66%),
+      radial-gradient(48% 44% at -10% 52%, rgba(249, 123, 52, 0.46), transparent 66%),
+      radial-gradient(46% 40% at 108% 74%, rgba(255, 150, 78, 0.42), transparent 68%),
       radial-gradient(60% 34% at -6% 74%, rgba(249, 123, 52, 0.5), transparent 70%),
       radial-gradient(60% 32% at 106% 92%, rgba(255, 160, 96, 0.4), transparent 72%),
       radial-gradient(56% 30% at 22% 104%, rgba(255, 160, 96, 0.34), transparent 72%);
