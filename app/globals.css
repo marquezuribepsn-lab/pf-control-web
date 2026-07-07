@@ -6787,7 +6787,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 .pf-alumno-stage,
   html.pf-mobile-fluid .pf-alumno-v2 .pf-alumno-stage {
-    background-color: #0a0c0f !important;
+    background-color: transparent !important;
     background-image: none !important;
   }
 
@@ -6801,7 +6801,7 @@ video.pf-a3-routine-log-video-frame {
     padding-inline: 0.24rem;
     gap: 0.34rem;
     padding-bottom: 0.08rem;
-    background-color: #0a0c0f !important;
+    background-color: transparent !important;
     background-image: none !important;
   }
 
@@ -7857,6 +7857,31 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main {
     background: #0f1317 !important;
+    background-image: none !important;
+  }
+
+  /* El root del alumno lleva la iluminación naranja lateral (fija al viewport),
+     visible en TODAS las pantallas: home, entrenamiento y nutrición. */
+  html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2,
+  html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2,
+  html.pf-mobile-fluid .pf-alumno-v2 {
+    background-color: #0f1317 !important;
+    background-image:
+      linear-gradient(90deg, rgba(249, 123, 52, 0.6) 0%, rgba(249, 123, 52, 0.28) 7%, rgba(249, 123, 52, 0.05) 18%, transparent 34%),
+      linear-gradient(270deg, rgba(255, 140, 66, 0.6) 0%, rgba(255, 140, 66, 0.28) 7%, rgba(255, 140, 66, 0.05) 18%, transparent 34%),
+      radial-gradient(74% 22% at 50% 0%, rgba(249, 123, 52, 0.34), transparent 66%),
+      radial-gradient(82% 20% at 50% 100%, rgba(255, 150, 78, 0.24), transparent 70%) !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+  }
+
+  /* Los envoltorios internos van transparentes para que el naranja del root
+     se vea a través en todas las pantallas. */
+  html.pf-mobile-webview .pf-a2-shell,
+  html.pf-mobile-fluid .pf-a2-shell,
+  html.pf-mobile-webview .pf-alumno-stage-panel,
+  html.pf-mobile-fluid .pf-alumno-stage-panel {
+    background-color: transparent !important;
     background-image: none !important;
   }
 
