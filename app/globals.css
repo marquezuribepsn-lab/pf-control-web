@@ -2231,10 +2231,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-section-title {
   margin: 0;
   color: #f7f2ff;
-  font-size: clamp(1.28rem, 3.9vw, 1.66rem);
-  line-height: 1.06;
-  font-weight: 760;
-  letter-spacing: -0.018em;
+  font-size: clamp(1.16rem, 3.4vw, 1.42rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.017em;
 }
 
 .pf-a3-section-subtitle {
@@ -2249,9 +2249,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a3-link-btn {
   border: 0;
   background: transparent;
-  color: #dcc6ff;
-  font-size: 0.94rem;
-  font-weight: 700;
+  color: #b6a1e0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.003em;
   padding: 0;
 }
 
@@ -6849,7 +6850,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-a3-section-title {
-    font-size: clamp(1.18rem, 5.4vw, 1.5rem);
+    font-size: clamp(1.08rem, 4.7vw, 1.34rem);
   }
 
   .pf-a3-music-scroll {
