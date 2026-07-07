@@ -102,15 +102,15 @@ export default function PlanesDestacados({
             style={{
               margin: 0,
               fontSize: "10.5px",
-              fontWeight: 800,
-              letterSpacing: "0.16em",
+              fontWeight: 650,
+              letterSpacing: "0.11em",
               textTransform: "uppercase",
-              color: "#a78bfa",
+              color: "#9b86cf",
             }}
           >
             Planes disponibles
           </p>
-          <h2 style={{ margin: "0.25rem 0 0", fontSize: "1.15rem", fontWeight: 900, color: "#fff" }}>
+          <h2 style={{ margin: "0.28rem 0 0", fontSize: "1.14rem", fontWeight: 720, letterSpacing: "-0.02em", color: "#f7f2ff" }}>
             Elegí tu pase mensual
           </h2>
         </div>
@@ -125,7 +125,8 @@ export default function PlanesDestacados({
             color: "#fbbf24",
             padding: "0.24rem 0.62rem",
             fontSize: "11px",
-            fontWeight: 800,
+            fontWeight: 600,
+            letterSpacing: "-0.005em",
           }}
         >
           ⏳ Quedan {promoDays} días con este precio
@@ -158,8 +159,8 @@ export default function PlanesDestacados({
           >
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.5rem" }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 900, color: "#fff" }}>{plan.title}</h3>
-                <p style={{ margin: "0.15rem 0 0", fontSize: "12px", color: "#c4b5fd", fontWeight: 600 }}>
+                <h3 style={{ margin: 0, fontSize: "1.04rem", fontWeight: 700, letterSpacing: "-0.015em", color: "#f7f2ff" }}>{plan.title}</h3>
+                <p style={{ margin: "0.16rem 0 0", fontSize: "12px", color: "#b3a2d6", fontWeight: 500 }}>
                   {plan.subtitle}
                 </p>
               </div>
@@ -171,7 +172,8 @@ export default function PlanesDestacados({
                     color: "#fff",
                     padding: "0.2rem 0.55rem",
                     fontSize: "10px",
-                    fontWeight: 800,
+                    fontWeight: 650,
+                    letterSpacing: "0.01em",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -181,7 +183,7 @@ export default function PlanesDestacados({
             </div>
 
             <div style={{ display: "flex", alignItems: "flex-end", gap: "0.5rem", marginTop: "0.7rem" }}>
-              <span style={{ fontSize: "1.6rem", fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+              <span style={{ fontSize: "1.58rem", fontWeight: 720, letterSpacing: "-0.03em", color: "#fff", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
                 {formatARS(plan.price)}
               </span>
               <span
@@ -203,7 +205,8 @@ export default function PlanesDestacados({
                   color: "#4ade80",
                   padding: "0.14rem 0.5rem",
                   fontSize: "11px",
-                  fontWeight: 800,
+                  fontWeight: 650,
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
                 -{plan.discountPct}%
@@ -239,9 +242,10 @@ export default function PlanesDestacados({
                   ? "linear-gradient(120deg, #8b5cf6 0%, #7c3aed 100%)"
                   : "rgba(124, 58, 237, 0.35)",
                 color: "#fff",
-                padding: "0.6rem 0.9rem",
+                padding: "0.64rem 0.9rem",
                 fontSize: "13px",
-                fontWeight: 800,
+                fontWeight: 640,
+                letterSpacing: "-0.005em",
                 cursor: !canPay || checkoutLoading ? "not-allowed" : "pointer",
                 opacity: !canPay || checkoutLoading ? 0.6 : 1,
                 boxShadow: canPay ? "0 10px 22px rgba(124, 58, 237, 0.35)" : "none",
