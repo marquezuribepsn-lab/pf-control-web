@@ -2445,24 +2445,28 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: linear-gradient(160deg, rgba(124, 58, 237, 0.2), rgba(76, 29, 149, 0.32));
+  color: #cbb8f5;
 }
 
+/* Set cohesivo: mismo vidrio violeta, el glyph lleva un tinte semántico sutil
+   para conservar la pista de categoría sin volver al look "arcoíris". */
 .pf-a3-quick-icon-agua {
-  background: linear-gradient(160deg, #4a8fc7, #2f5f9e);
+  color: #8fb8e6;
 }
 
 .pf-a3-quick-icon-sueno {
-  background: linear-gradient(160deg, #7e8aa0, #48526a);
+  color: #a7b0c4;
 }
 
 .pf-a3-quick-icon-progreso {
-  background: linear-gradient(160deg, #3f9f95, #2a7a72);
+  color: #6fd0c2;
 }
 
 .pf-a3-quick-icon-pagos {
-  background: linear-gradient(160deg, #c072a0, #a04b7e);
+  color: #e6a0c4;
 }
 
 .pf-a3-head-actions {

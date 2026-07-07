@@ -75,7 +75,7 @@ export default function FraseDelDia() {
         borderRadius: "1.1rem",
         padding: "1rem 1.15rem 1.05rem",
         background:
-          "linear-gradient(122deg, #ec4899 0%, #d946ef 42%, #8b5cf6 100%)",
+          "linear-gradient(122deg, #7c3aed 0%, #6d28d9 48%, #4c1d95 100%)",
         boxShadow: "0 16px 34px rgba(124, 58, 237, 0.32)",
         color: "#fff",
       }}
