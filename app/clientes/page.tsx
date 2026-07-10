@@ -1839,6 +1839,8 @@ export default function ClientesPage() {
   const [trainingPreviewDayId, setTrainingPreviewDayId] = useState("");
   const [rutinaPrintMode, setRutinaPrintMode] = useState<RutinaPrintMode | null>(null);
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  // Nombre real del profesor (User.nombreCompleto) para el encabezado del PDF.
+  const [professorFullName, setProfessorFullName] = useState<string>("");
   const [trainingExercisePanelMode, setTrainingExercisePanelMode] =
     useState<TrainingExercisePanelMode | null>(null);
   const [trainingExercisePanelTarget, setTrainingExercisePanelTarget] =
@@ -3307,6 +3309,22 @@ export default function ClientesPage() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yyyy = d.getFullYear();
     return `${dd}-${mm}-${yyyy}`;
+  }, []);
+
+  // Trae el nombre real del profesor (User.nombreCompleto) para el PDF, sin
+  // depender del token de sesión (que no lo incluye).
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/account")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const n = String(data?.nombreCompleto || "").trim();
+        if (alive && n && n.toLowerCase() !== "sin nombre") setProfessorFullName(n);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -7131,7 +7149,7 @@ export default function ClientesPage() {
                       <RutinaPrintOverlay
                         mode={rutinaPrintMode}
                         clientName={selectedClient?.nombre || ""}
-                        professorName={String((session?.user as any)?.name || (session?.user as any)?.email || "").trim()}
+                        professorName={professorFullName || String((session?.user as any)?.name || "").trim()}
                         week={selectedTrainingWeek}
                         day={selectedTrainingDay}
                         ejercicios={ejercicios}
