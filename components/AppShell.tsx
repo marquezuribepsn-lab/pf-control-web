@@ -1299,11 +1299,17 @@ export default function AppShell({
   const profileInitials = resolveInitials(displayName);
   const roleLabel = roleToLabel(normalizedRole || cachedProfileRole);
   const isClienteRole = normalizedRole === "CLIENTE";
+  // Cualquier ruta /alumnos/* es una vista del alumno (la app real solo la
+  // alcanza un CLIENTE — los demás roles se redirigen a /clientes — y el
+  // sandbox público /alumnos/diseno/* también debe verse como el alumno).
+  const isAlumnosArea = pathname === "/alumnos" || pathname.startsWith("/alumnos/");
   // Un alumno (CLIENTE) NUNCA debe ver el shell de admin (sidebar + topbar),
   // sin importar el ancho del viewport. Antes se ocultaba solo en mobile, lo
   // que dejaba filtrar la sidebar de admin en escritorio o si fallaba la
   // detección de mobile. El alumno usa su propia UI (AlumnoVisionClient).
-  const shouldRenderSidebar = !isClienteRole;
+  // Además lo ocultamos en TODA ruta /alumnos para que no se filtre sobre el
+  // sandbox de diseño cuando lo abre un admin o un usuario sin sesión.
+  const shouldRenderSidebar = !isClienteRole && !isAlumnosArea;
   const isClientePendingApproval = isClienteRole && normalizedEstado === "PENDIENTE_ALTA";
   const sidebarImageToRender = sidebarImage || stableSidebarImageRef.current;
   const hasSidebarImage = Boolean(sidebarImageToRender);
@@ -1760,7 +1766,7 @@ export default function AppShell({
           </section>
         </div>
       ) : null}
-      {!isClienteRole ? (
+      {shouldRenderSidebar ? (
         <ReliableActionButton
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
@@ -1776,7 +1782,7 @@ export default function AppShell({
       ) : null}
 
 
-      {mobileOpen && !isClienteRole ? (
+      {mobileOpen && shouldRenderSidebar ? (
         <div
           className="fixed inset-0 z-[88] bg-slate-950/65 md:hidden"
           onClick={() => setMobileOpen(false)}
