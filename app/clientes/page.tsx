@@ -8,6 +8,7 @@ import RutinaPrintOverlay, { RutinaPrintMode } from "@/components/RutinaPrintOve
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAlumnos } from "../../components/AlumnosProvider";
 import { useCategories } from "../../components/CategoriesProvider";
 import { useDeportes } from "../../components/DeportesProvider";
@@ -7195,6 +7196,7 @@ export default function ClientesPage() {
                                       ⋯
                                     </ReliableActionButton>
 
+                                    {typeof document !== "undefined" && createPortal(
                                     <div
                                       aria-hidden={!weekMenuOpen}
                                       style={weekMenuOpen && menuAnchorRect ? {
@@ -7203,7 +7205,7 @@ export default function ClientesPage() {
                                         ...(menuAnchorRect.left !== undefined
                                           ? { left: menuAnchorRect.left }
                                           : { right: menuAnchorRect.right }),
-                                      } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                      } : { position: "fixed", top: -9999, left: -9999 }}
                                       className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                         weekMenuOpen
                                           ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
@@ -7272,7 +7274,8 @@ export default function ClientesPage() {
                                         >
                                           Eliminar
                                         </ReliableActionButton>
-                                      </div>
+                                      </div>,
+                                    document.body)}
                                   </div>
                                 );
                               })}
@@ -7391,6 +7394,7 @@ export default function ClientesPage() {
                                         ⋯
                                       </ReliableActionButton>
 
+                                      {typeof document !== "undefined" && createPortal(
                                       <div
                                         aria-hidden={!dayMenuOpen}
                                         style={dayMenuOpen && menuAnchorRect ? {
@@ -7399,7 +7403,7 @@ export default function ClientesPage() {
                                           ...(menuAnchorRect.left !== undefined
                                             ? { left: menuAnchorRect.left }
                                             : { right: menuAnchorRect.right }),
-                                        } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                        } : { position: "fixed", top: -9999, left: -9999 }}
                                         className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                           dayMenuOpen
                                             ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
@@ -7478,7 +7482,8 @@ export default function ClientesPage() {
                                           >
                                             Eliminar
                                           </ReliableActionButton>
-                                        </div>
+                                        </div>,
+                                      document.body)}
                                     </div>
                                   );
                                 })}
@@ -7681,6 +7686,7 @@ export default function ClientesPage() {
                                                     ⋯
                                                   </ReliableActionButton>
 
+                                                  {typeof document !== "undefined" && createPortal(
                                                   <div
                                                     aria-hidden={!blockMenuOpen}
                                                     style={blockMenuOpen && menuAnchorRect ? {
@@ -7689,7 +7695,7 @@ export default function ClientesPage() {
                                                       ...(menuAnchorRect.left !== undefined
                                                         ? { left: menuAnchorRect.left }
                                                         : { right: menuAnchorRect.right }),
-                                                    } : { position: "absolute", right: 0, top: "calc(100% + 6px)" }}
+                                                    } : { position: "fixed", top: -9999, left: -9999 }}
                                                     className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
                                                       blockMenuOpen
                                                         ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
@@ -7748,7 +7754,8 @@ export default function ClientesPage() {
                                                     >
                                                       Eliminar bloque
                                                     </ReliableActionButton>
-                                                  </div>
+                                                  </div>,
+                                                  document.body)}
                                                 </div>
                                               </div>
                                             </div>
