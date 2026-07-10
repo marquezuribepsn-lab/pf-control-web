@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 
 export type RutinaPrintMode = "dia" | "semana" | "dia-blanco" | "semana-blanco";
 
@@ -70,6 +71,7 @@ type EjercicioLite = { id: string; nombre: string };
 type Props = {
   mode: RutinaPrintMode;
   clientName: string;
+  professorName?: string;
   week: PrintWeek | null;
   day: PrintDay | null;
   ejercicios: EjercicioLite[];
@@ -105,12 +107,22 @@ const PRINT_STYLES = `
   box-shadow: 0 10px 40px rgba(0,0,0,.4);
 }
 .pfr-doc-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 20px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  border-bottom: 2px solid #111; padding-bottom: 14px; margin-bottom: 20px;
 }
-.pfr-doc-header .pfr-client { font-size: 22px; font-weight: 900; margin: 0; }
-.pfr-doc-header .pfr-kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #9ca3af; margin: 0 0 2px; }
-.pfr-doc-header .pfr-meta { text-align: right; font-size: 11px; color: #9ca3af; }
+.pfr-brand { display: flex; align-items: center; gap: 12px; }
+.pfr-logo {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(160deg, #f97316 0%, #c2410c 100%);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 19px; letter-spacing: .02em;
+  box-shadow: 0 6px 16px -6px rgba(249,115,22,.7);
+}
+.pfr-brand-name { font-size: 17px; font-weight: 900; margin: 0; letter-spacing: .01em; color: #111; }
+.pfr-doc-header .pfr-kicker { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #9ca3af; margin: 2px 0 0; }
+.pfr-doc-header .pfr-meta { text-align: right; font-size: 11px; color: #6b7280; line-height: 1.6; }
+.pfr-doc-header .pfr-client { font-size: 20px; font-weight: 900; margin: 0 0 2px; color: #111; }
+.pfr-doc-header .pfr-meta b { color: #111; font-weight: 700; }
 
 .pfr-overline {
   font-size: 12px; letter-spacing: .08em; color: #6b7280;
@@ -136,10 +148,13 @@ const PRINT_STYLES = `
 .pfr-empty { color: #9ca3af; font-style: italic; font-size: 13px; margin: 4px 0 12px; }
 
 @media print {
+  html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .pf-rutina-print-overlay, .pf-rutina-print-overlay * { visibility: visible !important; }
   .pf-rutina-print-overlay {
-    position: absolute !important; inset: 0 !important; background: #fff !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: auto !important;
+    height: auto !important; background: #fff !important;
     overflow: visible !important;
   }
   .pfr-no-print { display: none !important; }
@@ -154,6 +169,7 @@ const PRINT_STYLES = `
 export default function RutinaPrintOverlay({
   mode,
   clientName,
+  professorName,
   week,
   day,
   ejercicios,
@@ -285,7 +301,9 @@ export default function RutinaPrintOverlay({
     );
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  const overlay = (
     <div className="pf-rutina-print-overlay" role="dialog" aria-modal="true">
       <style>{PRINT_STYLES}</style>
 
@@ -306,13 +324,20 @@ export default function RutinaPrintOverlay({
 
       <div className="pfr-doc">
         <div className="pfr-doc-header">
-          <div>
-            <p className="pfr-kicker">Plan de entrenamiento</p>
-            <p className="pfr-client">{clientName || "Rutina"}</p>
+          <div className="pfr-brand">
+            <div className="pfr-logo">PF</div>
+            <div>
+              <p className="pfr-brand-name">PF Control</p>
+              <p className="pfr-kicker">Plan de entrenamiento</p>
+            </div>
           </div>
           <div className="pfr-meta">
-            <p style={{ margin: 0 }}>{week?.nombre || ""}</p>
-            <p style={{ margin: "2px 0 0" }}>Generado: {generatedOn}</p>
+            <p className="pfr-client">{clientName || "Rutina"}</p>
+            {professorName ? (
+              <p style={{ margin: 0 }}>Profesor: <b>{professorName}</b></p>
+            ) : null}
+            {week?.nombre ? <p style={{ margin: 0 }}>{week.nombre}</p> : null}
+            <p style={{ margin: 0 }}>Generado: {generatedOn}</p>
           </div>
         </div>
 
@@ -324,4 +349,9 @@ export default function RutinaPrintOverlay({
       </div>
     </div>
   );
+
+  // CANDADO TÉCNICO: el overlay SIEMPRE se renderiza en un portal a document.body.
+  // Si queda dentro del árbol, algún ancestro con overflow/transform lo recorta y
+  // en @media print el position:absolute cae fuera de la página → PDF en blanco.
+  return createPortal(overlay, document.body);
 }

@@ -7131,6 +7131,7 @@ export default function ClientesPage() {
                       <RutinaPrintOverlay
                         mode={rutinaPrintMode}
                         clientName={selectedClient?.nombre || ""}
+                        professorName={String((session?.user as any)?.name || (session?.user as any)?.email || "").trim()}
                         week={selectedTrainingWeek}
                         day={selectedTrainingDay}
                         ejercicios={ejercicios}
