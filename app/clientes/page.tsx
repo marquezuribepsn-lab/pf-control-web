@@ -3450,20 +3450,22 @@ export default function ClientesPage() {
   };
 
   // Calcula la posicion fija del menu contextual relativa al boton que lo abre.
-  // Prefiere alinear el borde derecho del menu con el del boton; si eso lo
-  // dejaria fuera de la pantalla por la izquierda, lo alinea por la izquierda.
+  // Prefiere que el menu se abra hacia la derecha del boton (borde izq del menu =
+  // borde izq del boton), porque los botones suelen estar pegados a la izquierda.
+  // Si no cabe por la derecha, lo alinea por la derecha del boton (se abre hacia
+  // la izquierda) clampeado dentro de la pantalla.
   const calcMenuAnchor = (el: HTMLElement): { top: number; left?: number; right?: number } => {
     const rect = el.getBoundingClientRect();
     const MENU_W = 232; // min-w-[220px] + bordes + padding
     const GAP    = 8;
     const PAD    = 6;
     const top    = rect.bottom + GAP;
-    // ¿Cabe alineado a la derecha (borde der del menu = borde der del boton)?
-    if (rect.right - MENU_W >= PAD) {
-      return { top, right: window.innerWidth - rect.right };
+    // ¿Cabe alineado a la izquierda (menu se extiende hacia la derecha)?
+    if (rect.left + MENU_W <= window.innerWidth - PAD) {
+      return { top, left: rect.left };
     }
-    // Si no cabe a la derecha, alinear a la izquierda clampeado
-    return { top, left: Math.max(PAD, Math.min(rect.left, window.innerWidth - MENU_W - PAD)) };
+    // Si no cabe, alinear por la derecha del boton clampeado
+    return { top, right: Math.max(PAD, window.innerWidth - rect.right) };
   };
 
   const toggleTrainingWeekMenu = (weekId: string, e?: React.MouseEvent) => {
