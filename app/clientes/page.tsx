@@ -1521,6 +1521,62 @@ function defaultMeta(cliente: ClienteView): ClienteMeta {
   };
 }
 
+// ============================================================================
+// CANDADO TÉCNICO — Menú contextual de las planillas (semana / día / bloque).
+//
+// Por qué este componente existe y NO debe volverse inline:
+//   Los menús ⋯ viven dentro de contenedores con overflow/transform que crean
+//   un "containing block" y RECORTAN cualquier hijo con position:fixed. La única
+//   forma robusta de evitar el recorte es renderizar el panel con createPortal a
+//   document.body (fuera de todo ancestro). Este componente encapsula ese portal
+//   + el posicionamiento fijo + el estado cerrado fuera de pantalla, de modo que
+//   los tres menús comparten UNA sola fuente de verdad y nadie pueda reintroducir
+//   el bug de recorte copiando/pegando un <div> suelto.
+//
+// INVARIANTE: el panel SIEMPRE se renderiza en un portal a document.body y su ref
+// se pasa por panelRef para que el "click-afuera" reconozca los clicks internos.
+// ============================================================================
+type MenuAnchor = { top: number; left?: number; right?: number } | null;
+
+function PortalMenu({
+  open,
+  anchor,
+  panelRef,
+  children,
+}: {
+  open: boolean;
+  anchor: MenuAnchor;
+  panelRef: React.RefObject<HTMLDivElement | null>;
+  children: React.ReactNode;
+}) {
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div
+      ref={open ? panelRef : undefined}
+      aria-hidden={!open}
+      style={
+        open && anchor
+          ? {
+              position: "fixed",
+              top: anchor.top,
+              ...(anchor.left !== undefined
+                ? { left: anchor.left }
+                : { right: anchor.right }),
+            }
+          : { position: "fixed", top: -9999, left: -9999 }
+      }
+      className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
+        open
+          ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
+          : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
+      }`}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 export default function ClientesPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -1895,6 +1951,11 @@ export default function ClientesPage() {
   const trainingActionCooldownRef = useRef<Record<string, number>>({});
   const trainingStructureMenuRef = useRef<HTMLDivElement | null>(null);
   const trainingBlockMenuRef = useRef<HTMLDivElement | null>(null);
+  // Refs al PANEL portaleado (vive en document.body, fuera del wrapper). Sin esto,
+  // el handler de "click afuera" trataría los clicks dentro del menú como externos
+  // y cerraría el menú antes de que el botón ejecute su accion.
+  const trainingStructureMenuPanelRef = useRef<HTMLDivElement | null>(null);
+  const trainingBlockMenuPanelRef = useRef<HTMLDivElement | null>(null);
 
   const userRole = String((session?.user as any)?.role || '').trim().toUpperCase();
   // While the session is still loading, assume admin so the editor view shows
@@ -3264,7 +3325,12 @@ export default function ClientesPage() {
 
     const onMouseDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
-      if (trainingStructureMenuRef.current && target && trainingStructureMenuRef.current.contains(target)) {
+      if (!target) return;
+      // "Dentro" = el wrapper con el boton ⋯ o el panel portaleado en body.
+      if (trainingStructureMenuRef.current && trainingStructureMenuRef.current.contains(target)) {
+        return;
+      }
+      if (trainingStructureMenuPanelRef.current && trainingStructureMenuPanelRef.current.contains(target)) {
         return;
       }
 
@@ -3282,7 +3348,11 @@ export default function ClientesPage() {
 
     const onMouseDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
-      if (trainingBlockMenuRef.current && target && trainingBlockMenuRef.current.contains(target)) {
+      if (!target) return;
+      if (trainingBlockMenuRef.current && trainingBlockMenuRef.current.contains(target)) {
+        return;
+      }
+      if (trainingBlockMenuPanelRef.current && trainingBlockMenuPanelRef.current.contains(target)) {
         return;
       }
 
@@ -7198,21 +7268,10 @@ export default function ClientesPage() {
                                       ⋯
                                     </ReliableActionButton>
 
-                                    {typeof document !== "undefined" && createPortal(
-                                    <div
-                                      aria-hidden={!weekMenuOpen}
-                                      style={weekMenuOpen && menuAnchorRect ? {
-                                        position: "fixed",
-                                        top: menuAnchorRect.top,
-                                        ...(menuAnchorRect.left !== undefined
-                                          ? { left: menuAnchorRect.left }
-                                          : { right: menuAnchorRect.right }),
-                                      } : { position: "fixed", top: -9999, left: -9999 }}
-                                      className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
-                                        weekMenuOpen
-                                          ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
-                                          : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
-                                      }`}
+                                    <PortalMenu
+                                      open={weekMenuOpen}
+                                      anchor={menuAnchorRect}
+                                      panelRef={trainingStructureMenuPanelRef}
                                     >
                                         <ReliableActionButton
                                           type="button"
@@ -7276,8 +7335,7 @@ export default function ClientesPage() {
                                         >
                                           Eliminar
                                         </ReliableActionButton>
-                                      </div>,
-                                    document.body)}
+                                    </PortalMenu>
                                   </div>
                                 );
                               })}
@@ -7396,21 +7454,10 @@ export default function ClientesPage() {
                                         ⋯
                                       </ReliableActionButton>
 
-                                      {typeof document !== "undefined" && createPortal(
-                                      <div
-                                        aria-hidden={!dayMenuOpen}
-                                        style={dayMenuOpen && menuAnchorRect ? {
-                                          position: "fixed",
-                                          top: menuAnchorRect.top,
-                                          ...(menuAnchorRect.left !== undefined
-                                            ? { left: menuAnchorRect.left }
-                                            : { right: menuAnchorRect.right }),
-                                        } : { position: "fixed", top: -9999, left: -9999 }}
-                                        className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
-                                          dayMenuOpen
-                                            ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
-                                            : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
-                                        }`}
+                                      <PortalMenu
+                                        open={dayMenuOpen}
+                                        anchor={menuAnchorRect}
+                                        panelRef={trainingStructureMenuPanelRef}
                                       >
                                           <ReliableActionButton
                                             type="button"
@@ -7484,8 +7531,7 @@ export default function ClientesPage() {
                                           >
                                             Eliminar
                                           </ReliableActionButton>
-                                        </div>,
-                                      document.body)}
+                                      </PortalMenu>
                                     </div>
                                   );
                                 })}
@@ -7688,21 +7734,10 @@ export default function ClientesPage() {
                                                     ⋯
                                                   </ReliableActionButton>
 
-                                                  {typeof document !== "undefined" && createPortal(
-                                                  <div
-                                                    aria-hidden={!blockMenuOpen}
-                                                    style={blockMenuOpen && menuAnchorRect ? {
-                                                      position: "fixed",
-                                                      top: menuAnchorRect.top,
-                                                      ...(menuAnchorRect.left !== undefined
-                                                        ? { left: menuAnchorRect.left }
-                                                        : { right: menuAnchorRect.right }),
-                                                    } : { position: "fixed", top: -9999, left: -9999 }}
-                                                    className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
-                                                      blockMenuOpen
-                                                        ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
-                                                        : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
-                                                    }`}
+                                                  <PortalMenu
+                                                    open={blockMenuOpen}
+                                                    anchor={menuAnchorRect}
+                                                    panelRef={trainingBlockMenuPanelRef}
                                                   >
                                                     <ReliableActionButton
                                                       type="button"
@@ -7756,8 +7791,7 @@ export default function ClientesPage() {
                                                     >
                                                       Eliminar bloque
                                                     </ReliableActionButton>
-                                                  </div>,
-                                                  document.body)}
+                                                  </PortalMenu>
                                                 </div>
                                               </div>
                                             </div>
