@@ -152,6 +152,7 @@ type PagoRegistro = {
   importe: number;
   moneda: string;
   createdAt: string;
+  metodo?: "transferencia" | "efectivo" | "mercadopago" | "gratis";
 };
 
 type NutritionGoal = "mantenimiento" | "recomposicion" | "masa" | "deficit";
@@ -1434,8 +1435,6 @@ const TABS: { id: ClienteTab; label: string; icon: string }[] = [
   { id: "cuestionario", label: "Cuestionario", icon: "🧠" },
   { id: "plan-entrenamiento", label: "Plan entrenamiento", icon: "🏋" },
   { id: "plan-nutricional", label: "Plan nutricional", icon: "🥗" },
-  { id: "recetas", label: "Recetas", icon: "🍽" },
-  { id: "notas", label: "Notas", icon: "📝" },
   { id: "documentos", label: "Documentos", icon: "📁" },
   { id: "chequeos", label: "Chequeos", icon: "✅" },
   { id: "progreso", label: "Progreso", icon: "📈" },
@@ -5389,6 +5388,55 @@ export default function ClientesPage() {
     setPagoForm((prev) => ({ ...prev, importe: "" }));
   };
 
+  // Confirmar un pago desde la pestaña Datos: registra el pago (con método),
+  // habilita el pase (pagoEstado confirmado) y renueva la vigencia del plan.
+  // metodo "gratis" => pase libre sin cobro.
+  const confirmarPagoDatos = (
+    cliente: { id: string; nombre: string },
+    metodo: NonNullable<PagoRegistro["metodo"]>,
+  ) => {
+    markManualSaveIntent(PAGOS_KEY);
+    markManualSaveIntent(CLIENTE_META_KEY);
+    const metaActual = getMeta(cliente as ClienteView);
+    const esGratis = metodo === "gratis";
+    const importe = esGratis ? 0 : parseFloat(String(metaActual.importe || "0").replace(",", ".")) || 0;
+    const moneda = metaActual.moneda || "ARS";
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    const renewalDays = Number.isFinite(Number(metaActual.renewalDays))
+      ? Math.max(1, Math.min(365, Number(metaActual.renewalDays)))
+      : 30;
+    const currentEndDate = parseDateAtStart(metaActual.endDate);
+    const paymentDate = parseDateAtStart(hoy);
+    let endDatePatch = metaActual.endDate;
+    if (paymentDate) {
+      const renewalBase = currentEndDate && currentEndDate >= paymentDate ? currentEndDate : paymentDate;
+      endDatePatch = sumarDias(renewalBase.toISOString().slice(0, 10), renewalDays);
+    }
+    const startDatePatch = metaActual.startDate || hoy;
+
+    const pago: PagoRegistro = {
+      id: `${Date.now()}-${Math.round(Math.random() * 100000)}`,
+      clientId: cliente.id,
+      clientName: cliente.nombre,
+      fecha: hoy,
+      importe,
+      moneda,
+      createdAt: new Date().toISOString(),
+      metodo,
+    };
+
+    setPagos((prev) => [pago, ...prev]);
+    setMetaPatch(cliente.id, {
+      pagoEstado: "confirmado",
+      moneda,
+      importe: String(importe),
+      saldo: "0",
+      startDate: startDatePatch,
+      endDate: endDatePatch,
+    });
+  };
+
   return (
     <main className="relative mx-auto max-w-[1920px] space-y-6 p-6 text-slate-100">
       {/* Ambient glow */}
@@ -6922,6 +6970,86 @@ export default function ClientesPage() {
                           </div>
                         </div>
                       )}
+
+                      {/* ── CONFIRMAR PAGO / HABILITAR PASE ── */}
+                      {isAdmin && (() => {
+                        const paseActivo = selectedMeta.pagoEstado === "confirmado";
+                        const historial = pagos
+                          .filter((p) => p.clientId === selectedClient.id)
+                          .slice(0, 6);
+                        const metodoLabel: Record<NonNullable<PagoRegistro["metodo"]>, string> = {
+                          transferencia: "Transferencia",
+                          efectivo: "Efectivo",
+                          mercadopago: "Mercado Pago",
+                          gratis: "Pase libre",
+                        };
+                        return (
+                          <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                            <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-2.5">
+                              <div className="flex items-center gap-2.5">
+                                <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
+                                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Confirmar pago / Habilitar pase</p>
+                              </div>
+                              <span className={`rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${paseActivo ? "bg-emerald-500/15 text-emerald-400 shadow-[0_0_9px_rgba(16,185,129,0.25)]" : "bg-amber-500/15 text-amber-400 shadow-[0_0_9px_rgba(245,158,11,0.25)]"}`}>
+                                {paseActivo ? "✓ Pase habilitado" : "⏳ Sin habilitar"}
+                              </span>
+                            </div>
+                            <div className="space-y-3 p-3">
+                              <p className="text-[11px] leading-relaxed text-slate-400">
+                                Registrá cómo pagó el alumno para <span className="font-semibold text-slate-200">habilitar el pase</span> y renovar la vigencia
+                                {selectedMeta.importe ? <> (<span className="font-semibold text-slate-200">{selectedMeta.moneda} {Number(selectedMeta.importe).toLocaleString("es-AR")}</span>)</> : null}.
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => confirmarPagoDatos(selectedClient, "transferencia")}
+                                  className="flex items-center justify-center gap-1.5 rounded-xl bg-sky-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-sky-500/90 active:scale-[0.97]"
+                                >
+                                  🏦 Transferencia
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => confirmarPagoDatos(selectedClient, "efectivo")}
+                                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500/90 active:scale-[0.97]"
+                                >
+                                  💵 Efectivo
+                                </button>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => confirmarPagoDatos(selectedClient, "gratis")}
+                                className="w-full rounded-xl border border-violet-400/40 bg-violet-600/20 py-2.5 text-sm font-bold text-violet-100 transition hover:bg-violet-600/35 active:scale-[0.97]"
+                              >
+                                🎟 Dar pase libre (sin cobro)
+                              </button>
+
+                              {/* Historial de pagos del alumno */}
+                              <div className="mt-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5">
+                                <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Historial de pagos</p>
+                                {historial.length === 0 ? (
+                                  <p className="px-1 py-1.5 text-[11px] text-slate-500">Todavía no hay pagos registrados.</p>
+                                ) : (
+                                  <ul className="space-y-1.5">
+                                    {historial.map((p) => (
+                                      <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg bg-black/25 px-2.5 py-1.5">
+                                        <div className="flex min-w-0 flex-col">
+                                          <span className="text-[11px] font-semibold text-slate-200">
+                                            {p.metodo ? metodoLabel[p.metodo] : "Pago"}
+                                          </span>
+                                          <span className="text-[10px] text-slate-500">{p.fecha}</span>
+                                        </div>
+                                        <span className={`shrink-0 text-[11px] font-black ${p.importe > 0 ? "text-emerald-300" : "text-violet-300"}`}>
+                                          {p.importe > 0 ? `${p.moneda} ${p.importe.toLocaleString("es-AR")}` : "Sin cobro"}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* DETALLE DE PAGOS */}
                       <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
@@ -9419,6 +9547,25 @@ export default function ClientesPage() {
                         )}
                       </div>
                     ) : null}
+
+                    {/* Recetas — fusionado dentro de Plan nutricional */}
+                    <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-500/[0.06] p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">🍽</span>
+                        <div>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-100/85">Recetas</p>
+                          <p className="text-xs text-slate-300/85">Recetas sugeridas, reemplazos y planificación de comidas.</p>
+                        </div>
+                      </div>
+                      <textarea
+                        value={selectedMeta.tabNotas["recetas"] || ""}
+                        onChange={(e) => updateTabNote("recetas", e.target.value)}
+                        disabled={!canEditTrainingPlan}
+                        rows={8}
+                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-amber-500/5 placeholder:text-slate-600 focus:outline-none disabled:opacity-70"
+                        placeholder="Ej: Desayuno — avena con banana y huevos. Reemplazo: yogur + frutos secos..."
+                      />
+                    </div>
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
@@ -9433,6 +9580,43 @@ export default function ClientesPage() {
                     <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
                       <p className="text-xs text-slate-300">Peso actual</p>
                       <p className="text-3xl font-black text-violet-100">{selectedClient.peso || "-"}</p>
+                    </div>
+                  </div>
+                ) : activeTab === "documentos" ? (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-sky-300/25 bg-sky-500/[0.06] p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">📁</span>
+                        <div>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-100/85">Documentos</p>
+                          <p className="text-xs text-slate-300/85">Links o referencias de documentos cargados (estudios, aptos, PDFs).</p>
+                        </div>
+                      </div>
+                      <textarea
+                        value={selectedMeta.tabNotas["documentos"] || ""}
+                        onChange={(e) => updateTabNote("documentos", e.target.value)}
+                        rows={7}
+                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-sky-500/5 placeholder:text-slate-600 focus:outline-none"
+                        placeholder="Ej: Apto físico 2026 — drive.google.com/... · Estudio de sangre — ..."
+                      />
+                    </div>
+
+                    {/* Notas — fusionado dentro de Documentos */}
+                    <div className="rounded-2xl border border-slate-300/20 bg-slate-500/[0.08] p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">📝</span>
+                        <div>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-200/85">Notas</p>
+                          <p className="text-xs text-slate-300/85">Notas del profesional y seguimiento del cliente.</p>
+                        </div>
+                      </div>
+                      <textarea
+                        value={selectedMeta.tabNotas["notas"] || ""}
+                        onChange={(e) => updateTabNote("notas", e.target.value)}
+                        rows={8}
+                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-cyan-500/5 placeholder:text-slate-600 focus:outline-none"
+                        placeholder="Observaciones accionables, acuerdos y pendientes..."
+                      />
                     </div>
                   </div>
                 ) : (
