@@ -1828,6 +1828,7 @@ export default function ClientesPage() {
   const [mpCheckoutLoading, setMpCheckoutLoading] = useState(false);
   const [passwordNuevaAlumno, setPasswordNuevaAlumno] = useState("");
   const [passwordGeneradaAlumno, setPasswordGeneradaAlumno] = useState<string | null>(null);
+  const [passwordActualAlumno, setPasswordActualAlumno] = useState<string | null>(null);
   const [guardandoPassword, setGuardandoPassword] = useState(false);
   const [mpCheckoutUrl, setMpCheckoutUrl] = useState<string | null>(null);
   const [mpCheckoutError, setMpCheckoutError] = useState("");
@@ -2171,6 +2172,7 @@ export default function ClientesPage() {
   useEffect(() => {
     setPasswordNuevaAlumno("");
     setPasswordGeneradaAlumno(null);
+    setPasswordActualAlumno(null);
   }, [selectedClientId]);
 
   const nutritionFoodsById = useMemo(() => {
@@ -2187,6 +2189,29 @@ export default function ClientesPage() {
       .trim()
       .toLowerCase();
   }, [clientesMeta, selectedClient]);
+
+  // Traer la contraseña visible que el admin haya definido para este alumno,
+  // para mostrarla de forma persistente en el panel de Acceso y contraseña.
+  useEffect(() => {
+    const email = selectedClientEmail.trim();
+    if (!isAdmin || !email) {
+      setPasswordActualAlumno(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/admin/users/password?email=${encodeURIComponent(email)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setPasswordActualAlumno(String((data as { visiblePassword?: string }).visiblePassword || "") || null);
+      })
+      .catch(() => {
+        if (!cancelled) setPasswordActualAlumno(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedClientEmail, isAdmin]);
 
   const selectedNutritionAssignment = useMemo(() => {
     if (!selectedClient) return null;
@@ -5528,6 +5553,7 @@ export default function ClientesPage() {
       }
       const nueva = String(data.visiblePassword || manual || "");
       setPasswordGeneradaAlumno(nueva);
+      setPasswordActualAlumno(nueva || null);
       setPasswordNuevaAlumno("");
       emitToast("success", "Contraseña actualizada. Copiala y compartila con el alumno.");
     } catch {
@@ -6924,18 +6950,20 @@ export default function ClientesPage() {
                                 Generar automática
                               </button>
                             </div>
-                            {passwordGeneradaAlumno && (
+                            {passwordActualAlumno ? (
                               <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/[0.08] px-3 py-2.5">
-                                <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/80">Contraseña nueva — copiala ahora</p>
+                                <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/80">
+                                  {passwordGeneradaAlumno ? "Contraseña nueva" : "Contraseña actual (definida por vos)"}
+                                </p>
                                 <div className="flex items-center gap-2">
                                   <code className="flex-1 select-all break-all rounded bg-[#0e1012] px-2 py-1.5 text-sm font-black text-emerald-200">
-                                    {passwordGeneradaAlumno}
+                                    {passwordActualAlumno}
                                   </code>
                                   <button
                                     type="button"
                                     onClick={() => {
                                       if (typeof navigator !== "undefined" && navigator.clipboard) {
-                                        void navigator.clipboard.writeText(passwordGeneradaAlumno);
+                                        void navigator.clipboard.writeText(passwordActualAlumno);
                                         window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type: "success", message: "Contraseña copiada al portapapeles." } }));
                                       }
                                     }}
@@ -6944,8 +6972,12 @@ export default function ClientesPage() {
                                     Copiar
                                   </button>
                                 </div>
-                                <p className="mt-1.5 text-[9px] text-emerald-400/60">No se volverá a mostrar. Si la perdés, generá una nueva.</p>
+                                <p className="mt-1.5 text-[9px] text-emerald-400/60">Visible solo para el admin. Se actualiza cada vez que la blanqueás.</p>
                               </div>
+                            ) : (
+                              <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-600">
+                                Todavía no definiste una contraseña para este alumno. Si la eligió él mismo, no puede mostrarse; blanqueala para poder verla.
+                              </p>
                             )}
                           </div>
                         </div>

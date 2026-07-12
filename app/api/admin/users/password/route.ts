@@ -2,9 +2,47 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { upsertClientPasswordSnapshot } from "@/lib/adminPasswordStore";
+import {
+  upsertClientPasswordSnapshot,
+  getClientPasswordSnapshotByUserId,
+} from "@/lib/adminPasswordStore";
 
 const db = prisma as any;
+
+/**
+ * Devuelve la contraseña visible guardada para un alumno (si la definió el admin).
+ * Solo accesible para ADMIN. Se resuelve por userId o email.
+ */
+export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session || (session.user as { role?: string } | undefined)?.role !== "ADMIN") {
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  }
+
+  const userIdParam = String(req.nextUrl.searchParams.get("userId") || "").trim();
+  const emailParam = normalizeEmail(req.nextUrl.searchParams.get("email"));
+
+  if (!userIdParam && !emailParam) {
+    return NextResponse.json({ message: "userId o email requerido" }, { status: 400 });
+  }
+
+  const user = userIdParam
+    ? await db.user.findUnique({ where: { id: userIdParam }, select: { id: true, email: true } })
+    : await db.user.findUnique({ where: { email: emailParam }, select: { id: true, email: true } });
+
+  if (!user) {
+    return NextResponse.json({ ok: true, hasAccount: false, visiblePassword: null });
+  }
+
+  const snapshot = await getClientPasswordSnapshotByUserId(user.id);
+  return NextResponse.json({
+    ok: true,
+    hasAccount: true,
+    visiblePassword: snapshot?.visiblePassword || null,
+    updatedAt: snapshot?.updatedAt || null,
+    source: snapshot?.source || null,
+  });
+}
 
 function normalizePassword(raw: unknown): string {
   return typeof raw === "string" ? raw.normalize("NFKC").trim() : "";

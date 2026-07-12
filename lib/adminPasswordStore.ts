@@ -9,12 +9,13 @@ export type ClientPasswordSource =
   | "password_reset";
 
 /**
- * Snapshot de auditoría de contraseña de un alumno.
+ * Snapshot de contraseña de un alumno.
  *
- * IMPORTANTE: por seguridad ya NO se almacena la contraseña en texto plano.
- * Sólo se guarda metadata (cuándo, por quién y a través de qué flujo cambió).
- * Para entregarle la clave a un alumno, el admin debe blanquearla: el endpoint
- * de blanqueo devuelve la nueva contraseña una sola vez en su respuesta.
+ * `visiblePassword` guarda, SOLO para las contraseñas que define el admin
+ * (blanqueo/generación), el texto para que el admin pueda consultarlo luego
+ * en la ficha del alumno. Las contraseñas que el alumno elige por su cuenta
+ * (registro/cambio propio) NUNCA se guardan en texto: siguen siendo un hash
+ * bcrypt irreversible, por lo que su `visiblePassword` queda null.
  */
 export type ClientPasswordSnapshot = {
   userId: string;
@@ -23,7 +24,13 @@ export type ClientPasswordSnapshot = {
   updatedAt: string;
   updatedByRole: string;
   updatedByEmail: string | null;
+  visiblePassword: string | null;
 };
+
+/** Flujos en los que la contraseña la define el admin (se puede mostrar). */
+const ADMIN_DEFINED_SOURCES: ReadonlySet<ClientPasswordSource> = new Set([
+  "admin_reset",
+]);
 
 type PasswordMap = Record<string, ClientPasswordSnapshot>;
 
@@ -60,15 +67,19 @@ export async function getClientPasswordMap(): Promise<PasswordMap> {
       continue;
     }
 
-    // Nota: se ignora intencionalmente `row.visiblePassword` de datos antiguos;
-    // no se vuelve a exponer ni a re-escribir.
+    const source = (String(row.source || "register").trim().toLowerCase() || "register") as ClientPasswordSource;
+    const rawVisible = typeof row.visiblePassword === "string" ? row.visiblePassword : "";
+    // Solo conservamos el texto visible para contraseñas definidas por el admin.
+    const visiblePassword = ADMIN_DEFINED_SOURCES.has(source) && rawVisible ? rawVisible : null;
+
     map[normalizedUserId] = {
       userId: normalizedUserId,
       email: normalizeEmail(row.email),
-      source: (String(row.source || "register").trim().toLowerCase() || "register") as ClientPasswordSource,
+      source,
       updatedAt: String(row.updatedAt || nowIso()),
       updatedByRole: normalizeRole(row.updatedByRole),
       updatedByEmail: normalizeEmail(row.updatedByEmail) || null,
+      visiblePassword,
     };
   }
 
@@ -76,9 +87,11 @@ export async function getClientPasswordMap(): Promise<PasswordMap> {
 }
 
 /**
- * Registra metadata del cambio de contraseña de un alumno.
- * Acepta `visiblePassword` por compatibilidad con los llamadores existentes,
- * pero NO la persiste (se descarta).
+ * Registra el cambio de contraseña de un alumno.
+ * Si la fuente es un flujo definido por el admin (blanqueo), persiste el
+ * texto en `visiblePassword` para que el admin pueda consultarlo luego.
+ * En cualquier otro flujo (registro / cambio del propio alumno) NO se guarda
+ * texto: se descarta y queda null.
  */
 export async function upsertClientPasswordSnapshot(input: {
   userId: string;
@@ -95,6 +108,12 @@ export async function upsertClientPasswordSnapshot(input: {
     return null;
   }
 
+  const isAdminDefined = ADMIN_DEFINED_SOURCES.has(input.source);
+  const visiblePassword =
+    isAdminDefined && typeof input.visiblePassword === "string" && input.visiblePassword
+      ? input.visiblePassword
+      : null;
+
   const map = await getClientPasswordMap();
   const snapshot: ClientPasswordSnapshot = {
     userId,
@@ -103,12 +122,10 @@ export async function upsertClientPasswordSnapshot(input: {
     updatedAt: nowIso(),
     updatedByRole: normalizeRole(input.updatedByRole || "SYSTEM"),
     updatedByEmail: normalizeEmail(input.updatedByEmail) || null,
+    visiblePassword,
   };
 
   map[userId] = snapshot;
-  // setSyncValue reescribe el mapa completo a partir de getClientPasswordMap(),
-  // que ya descarta cualquier `visiblePassword` antiguo: esto purga el texto
-  // plano remanente a medida que se actualiza cada alumno.
   await setSyncValue(ADMIN_CLIENT_PASSWORDS_KEY, map);
   return snapshot;
 }
