@@ -5391,7 +5391,9 @@ export default function ClientesPage() {
   // Confirmar un pago desde la pestaña Datos: registra el pago (con método),
   // habilita el pase (pagoEstado confirmado) y renueva la vigencia del plan.
   // metodo "gratis" => pase libre sin cobro.
-  const confirmarPagoDatos = (
+  // Si el alumno tiene email, además sincroniza contra el servidor (mismo núcleo
+  // que Mercado Pago) para habilitar el acceso real del alumno.
+  const confirmarPagoDatos = async (
     cliente: { id: string; nombre: string },
     metodo: NonNullable<PagoRegistro["metodo"]>,
   ) => {
@@ -5401,6 +5403,7 @@ export default function ClientesPage() {
     const esGratis = metodo === "gratis";
     const importe = esGratis ? 0 : parseFloat(String(metaActual.importe || "0").replace(",", ".")) || 0;
     const moneda = metaActual.moneda || "ARS";
+    const email = String(metaActual.email || "").trim().toLowerCase();
     const hoy = new Date().toISOString().slice(0, 10);
 
     const renewalDays = Number.isFinite(Number(metaActual.renewalDays))
@@ -5426,6 +5429,7 @@ export default function ClientesPage() {
       metodo,
     };
 
+    // 1) Actualización local optimista (funciona aun sin email).
     setPagos((prev) => [pago, ...prev]);
     setMetaPatch(cliente.id, {
       pagoEstado: "confirmado",
@@ -5435,6 +5439,42 @@ export default function ClientesPage() {
       startDate: startDatePatch,
       endDate: endDatePatch,
     });
+
+    const emitToast = (type: "success" | "error" | "info", message: string) => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type, message } }));
+      }
+    };
+
+    const metodoLabel = esGratis ? "Pase libre" : metodo === "efectivo" ? "Efectivo" : "Transferencia";
+
+    // 2) Sincronización server-side (habilita el acceso real del alumno por email).
+    if (!email) {
+      emitToast("info", `${metodoLabel} registrado localmente. Cargá el email del alumno para habilitar su acceso en la app.`);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/payments/confirmar-directo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, metodo, amount: importe, currency: moneda, periodDays: renewalDays }),
+      });
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
+      if (!res.ok) {
+        emitToast("error", String((data as { message?: string }).message || "No se pudo habilitar el acceso del alumno en el servidor."));
+        return;
+      }
+      const endDate = String((data as { endDate?: string }).endDate || endDatePatch || "");
+      if (endDate) {
+        setMetaPatch(cliente.id, { endDate });
+      }
+      emitToast("success", esGratis
+        ? "Pase libre otorgado y acceso del alumno habilitado."
+        : `Pago por ${metodoLabel.toLowerCase()} confirmado y acceso habilitado.`);
+    } catch {
+      emitToast("error", "Error de red al sincronizar el pago. Se guardó localmente.");
+    }
   };
 
   return (
@@ -7002,14 +7042,14 @@ export default function ClientesPage() {
                               <div className="grid grid-cols-2 gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => confirmarPagoDatos(selectedClient, "transferencia")}
+                                  onClick={() => void confirmarPagoDatos(selectedClient, "transferencia")}
                                   className="flex items-center justify-center gap-1.5 rounded-xl bg-sky-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-sky-500/90 active:scale-[0.97]"
                                 >
                                   🏦 Transferencia
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => confirmarPagoDatos(selectedClient, "efectivo")}
+                                  onClick={() => void confirmarPagoDatos(selectedClient, "efectivo")}
                                   className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500/90 active:scale-[0.97]"
                                 >
                                   💵 Efectivo
@@ -7017,7 +7057,7 @@ export default function ClientesPage() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() => confirmarPagoDatos(selectedClient, "gratis")}
+                                onClick={() => void confirmarPagoDatos(selectedClient, "gratis")}
                                 className="w-full rounded-xl border border-violet-400/40 bg-violet-600/20 py-2.5 text-sm font-bold text-violet-100 transition hover:bg-violet-600/35 active:scale-[0.97]"
                               >
                                 🎟 Dar pase libre (sin cobro)
