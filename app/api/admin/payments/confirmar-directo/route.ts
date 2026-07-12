@@ -4,6 +4,7 @@ import {
   applyApprovedPayment,
   findClientMetaByEmail,
   createPaymentOrder,
+  getClientMetaMap,
 } from "@/lib/billing";
 
 type MetodoDirecto = "transferencia" | "efectivo" | "gratis";
@@ -40,23 +41,44 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const email = String(body.email || "").trim().toLowerCase();
+  const clientKey = String(body.clientKey || "").trim();
   const metodo = normalizeMetodo(body.metodo);
   const currency = String(body.currency || "ARS").trim().toUpperCase() || "ARS";
   const periodDays = toPositiveInt(body.periodDays, 30);
   const esGratis = metodo === "gratis";
   const amount = esGratis ? 0 : toAmount(body.amount);
 
-  if (!email || !metodo) {
+  if (!metodo || (!email && !clientKey)) {
     return NextResponse.json(
-      { message: "Faltan datos: email y metodo (transferencia/efectivo/gratis) son requeridos." },
+      { message: "Faltan datos: metodo (transferencia/efectivo/gratis) y email o clientKey son requeridos." },
       { status: 400 }
     );
   }
 
-  const match = await findClientMetaByEmail(email);
-  if (!match) {
+  // Resolver la ficha por clientKey (alumno:*) o por email.
+  let resolvedClientKey: string | null = null;
+  let resolvedEmail = email;
+
+  if (clientKey.startsWith("alumno:")) {
+    const metaMap = await getClientMetaMap();
+    const meta = metaMap[clientKey];
+    if (meta && typeof meta === "object") {
+      resolvedClientKey = clientKey;
+      resolvedEmail = String((meta as { email?: unknown }).email || email || "").trim().toLowerCase();
+    }
+  }
+
+  if (!resolvedClientKey && email) {
+    const match = await findClientMetaByEmail(email);
+    if (match) {
+      resolvedClientKey = match.clientKey;
+      resolvedEmail = email;
+    }
+  }
+
+  if (!resolvedClientKey) {
     return NextResponse.json(
-      { message: "No se encontró ficha de alumno para ese email. Verificá en Clientes." },
+      { message: "No se encontró ficha de alumno. Verificá el email o los datos en Clientes." },
       { status: 404 }
     );
   }
@@ -70,8 +92,8 @@ export async function POST(req: NextRequest) {
 
   // 1) Renovar el pase (mismo núcleo que MP).
   const applyResult = await applyApprovedPayment({
-    clientKey: match.clientKey,
-    email,
+    clientKey: resolvedClientKey,
+    email: resolvedEmail,
     amount,
     currency,
     periodDays,
@@ -89,8 +111,8 @@ export async function POST(req: NextRequest) {
   const externalReference = `directo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const order = await createPaymentOrder({
     userId: reviewerUserId || "admin",
-    email,
-    clientKey: match.clientKey,
+    email: resolvedEmail,
+    clientKey: resolvedClientKey,
     provider: "manual",
     paymentMethod: esGratis ? "efectivo" : metodo,
     externalReference,

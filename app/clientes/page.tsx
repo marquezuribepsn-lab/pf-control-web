@@ -5448,8 +5448,10 @@ export default function ClientesPage() {
 
     const metodoLabel = esGratis ? "Pase libre" : metodo === "efectivo" ? "Efectivo" : "Transferencia";
 
-    // 2) Sincronización server-side (habilita el acceso real del alumno por email).
-    if (!email) {
+    // 2) Sincronización server-side. Habilita el acceso real del alumno.
+    //    Funciona por clientKey (alumno:*) o por email; si no hay ninguno, queda local.
+    const clientKey = String(cliente.id || "");
+    if (!email && !clientKey.startsWith("alumno:")) {
       emitToast("info", `${metodoLabel} registrado localmente. Cargá el email del alumno para habilitar su acceso en la app.`);
       return;
     }
@@ -5458,7 +5460,7 @@ export default function ClientesPage() {
       const res = await fetch("/api/admin/payments/confirmar-directo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, metodo, amount: importe, currency: moneda, periodDays: renewalDays }),
+        body: JSON.stringify({ email, clientKey, metodo, amount: importe, currency: moneda, periodDays: renewalDays }),
       });
       const data = await res.json().catch(() => ({} as Record<string, unknown>));
       if (!res.ok) {
