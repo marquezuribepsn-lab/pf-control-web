@@ -6807,7 +6807,6 @@ export default function ClientesPage() {
                             { label: "Nombre", node: <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Email", node: <input value={selectedMeta.email} onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Nacimiento", node: <DateInput value={datosDraft?.fechaNacimiento || ""} onChange={(v) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: v } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 pr-8 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
                             { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
                             { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
@@ -6884,9 +6883,14 @@ export default function ClientesPage() {
                           <div className="space-y-3 p-3">
                             <div>
                               <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Email de acceso</p>
-                              <p className="truncate rounded-lg bg-[#111417] px-3 py-2 text-xs font-bold text-cyan-100">
-                                {selectedClientEmail.trim() || "— sin cuenta cargada —"}
-                              </p>
+                              <input
+                                type="email"
+                                value={selectedMeta.email}
+                                onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })}
+                                placeholder="email@ejemplo.com"
+                                autoComplete="off"
+                                className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-cyan-100 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]"
+                              />
                             </div>
                             <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-500">
                               Por seguridad, la contraseña actual del alumno no puede verse (se guarda cifrada). Podés definirle una nueva y compartírsela.
