@@ -1826,6 +1826,9 @@ export default function ClientesPage() {
   const [planSeleccionado, setPlanSeleccionado] = useState("");
   const [mpPlanSeleccionado, setMpPlanSeleccionado] = useState("");
   const [mpCheckoutLoading, setMpCheckoutLoading] = useState(false);
+  const [passwordNuevaAlumno, setPasswordNuevaAlumno] = useState("");
+  const [passwordGeneradaAlumno, setPasswordGeneradaAlumno] = useState<string | null>(null);
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
   const [mpCheckoutUrl, setMpCheckoutUrl] = useState<string | null>(null);
   const [mpCheckoutError, setMpCheckoutError] = useState("");
   const [presenceByEmail, setPresenceByEmail] = useState<Record<string, PresenceSnapshot>>({});
@@ -2162,6 +2165,13 @@ export default function ClientesPage() {
     () => clientes.find((cliente) => cliente.id === selectedClientId) || null,
     [clientes, selectedClientId]
   );
+
+  // Limpiar el estado del panel de contraseña al cambiar de alumno,
+  // para no dejar visible una contraseña generada en otra ficha.
+  useEffect(() => {
+    setPasswordNuevaAlumno("");
+    setPasswordGeneradaAlumno(null);
+  }, [selectedClientId]);
 
   const nutritionFoodsById = useMemo(() => {
     const mergedFoods: NutritionFood[] = [
@@ -5481,6 +5491,52 @@ export default function ClientesPage() {
     }
   };
 
+  // Establecer / blanquear la contraseña de acceso del alumno (admin).
+  // La contraseña actual NO se puede recuperar (hash bcrypt de una vía);
+  // solo se puede definir una nueva, que se muestra una única vez para copiarla.
+  const blanquearPasswordAlumno = async (opts: { generar: boolean }) => {
+    const emitToast = (type: "success" | "error" | "info", message: string) => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type, message } }));
+      }
+    };
+
+    const email = selectedClientEmail.trim().toLowerCase();
+    if (!email) {
+      emitToast("info", "Este alumno no tiene email/cuenta cargada. Cargá el email en Datos para poder definir su contraseña.");
+      return;
+    }
+
+    const manual = passwordNuevaAlumno.trim();
+    if (!opts.generar && manual.length < 6) {
+      emitToast("error", "La contraseña debe tener al menos 6 caracteres (o usá 'Generar automática').");
+      return;
+    }
+
+    setGuardandoPassword(true);
+    setPasswordGeneradaAlumno(null);
+    try {
+      const res = await fetch("/api/admin/users/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: opts.generar ? "" : manual }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { message?: string; visiblePassword?: string };
+      if (!res.ok) {
+        emitToast("error", String(data.message || "No se pudo actualizar la contraseña del alumno."));
+        return;
+      }
+      const nueva = String(data.visiblePassword || manual || "");
+      setPasswordGeneradaAlumno(nueva);
+      setPasswordNuevaAlumno("");
+      emitToast("success", "Contraseña actualizada. Copiala y compartila con el alumno.");
+    } catch {
+      emitToast("error", "Error de red al actualizar la contraseña.");
+    } finally {
+      setGuardandoPassword(false);
+    }
+  };
+
   return (
     <main className="relative mx-auto max-w-[1920px] space-y-6 p-6 text-slate-100">
       {/* Ambient glow */}
@@ -6817,6 +6873,79 @@ export default function ClientesPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* ACCESO Y CONTRASEÑA (solo admin) */}
+                      {isAdmin && (
+                        <div className="overflow-hidden rounded-2xl border border-cyan-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                          <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
+                            <span className="h-3 w-[3px] rounded-full bg-cyan-400 shadow-[0_0_7px_rgba(34,211,238,1)]" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300/75">Acceso y contraseña</p>
+                          </div>
+                          <div className="space-y-3 p-3">
+                            <div>
+                              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Email de acceso</p>
+                              <p className="truncate rounded-lg bg-[#111417] px-3 py-2 text-xs font-bold text-cyan-100">
+                                {selectedClientEmail.trim() || "— sin cuenta cargada —"}
+                              </p>
+                            </div>
+                            <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-500">
+                              Por seguridad, la contraseña actual del alumno no puede verse (se guarda cifrada). Podés definirle una nueva y compartírsela.
+                            </p>
+                            <div>
+                              <p className="mb-1 text-[10px] font-medium text-slate-500">Nueva contraseña</p>
+                              <input
+                                type="text"
+                                value={passwordNuevaAlumno}
+                                onChange={(e) => setPasswordNuevaAlumno(e.target.value)}
+                                placeholder="Mínimo 6 caracteres"
+                                autoComplete="off"
+                                className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-700 focus:bg-white/[0.09] focus:outline-none"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                disabled={guardandoPassword || !selectedClientEmail.trim()}
+                                onClick={() => void blanquearPasswordAlumno({ generar: false })}
+                                className="rounded-lg bg-gradient-to-r from-cyan-500 to-sky-500 py-2.5 text-xs font-black text-white shadow-[0_0_16px_rgba(34,211,238,0.35)] transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                {guardandoPassword ? "Guardando..." : "Establecer contraseña"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={guardandoPassword || !selectedClientEmail.trim()}
+                                onClick={() => void blanquearPasswordAlumno({ generar: true })}
+                                className="rounded-lg border border-cyan-500/40 bg-[#111417] py-2.5 text-xs font-black text-cyan-200 transition hover:bg-white/[0.06] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                Generar automática
+                              </button>
+                            </div>
+                            {passwordGeneradaAlumno && (
+                              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/[0.08] px-3 py-2.5">
+                                <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/80">Contraseña nueva — copiala ahora</p>
+                                <div className="flex items-center gap-2">
+                                  <code className="flex-1 select-all break-all rounded bg-[#0e1012] px-2 py-1.5 text-sm font-black text-emerald-200">
+                                    {passwordGeneradaAlumno}
+                                  </code>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                        void navigator.clipboard.writeText(passwordGeneradaAlumno);
+                                        window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type: "success", message: "Contraseña copiada al portapapeles." } }));
+                                      }
+                                    }}
+                                    className="shrink-0 rounded-md border border-emerald-500/40 px-2.5 py-1.5 text-[10px] font-black text-emerald-200 transition hover:bg-emerald-500/20"
+                                  >
+                                    Copiar
+                                  </button>
+                                </div>
+                                <p className="mt-1.5 text-[9px] text-emerald-400/60">No se volverá a mostrar. Si la perdés, generá una nueva.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* TIPO DE ASESORIA */}
                       <div className="overflow-hidden rounded-2xl border border-sky-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">

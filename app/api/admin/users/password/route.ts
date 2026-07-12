@@ -33,23 +33,28 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const userId = String(body?.userId || "").trim();
+    const bodyEmail = normalizeEmail(body?.email);
     const customPassword = normalizePassword(body?.password);
 
-    if (!userId) {
-      return NextResponse.json({ message: "userId requerido" }, { status: 400 });
+    if (!userId && !bodyEmail) {
+      return NextResponse.json({ message: "userId o email requerido" }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-      },
-    });
+    const user = userId
+      ? await db.user.findUnique({
+          where: { id: userId },
+          select: { id: true, email: true, role: true },
+        })
+      : await db.user.findUnique({
+          where: { email: bodyEmail },
+          select: { id: true, email: true, role: true },
+        });
 
     if (!user) {
-      return NextResponse.json({ message: "Usuario no encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { message: "No se encontró la cuenta del alumno. Verificá el email en la ficha." },
+        { status: 404 }
+      );
     }
 
     if (String(user.role || "").toUpperCase() !== "CLIENTE") {
