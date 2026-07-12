@@ -6818,27 +6818,6 @@ export default function ClientesPage() {
                         </div>
                       </div>
 
-                      {/* RENOVACION AUTOMATICA */}
-                      <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-amber-400 shadow-[0_0_7px_rgba(245,158,11,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300/75">Renovacion automatica</p>
-                        </div>
-                        <div className="flex items-center justify-between px-4 py-3">
-                          <p className="text-[11px] text-slate-400">Extiende la fecha de fin al registrar pago.</p>
-                          <label className="flex cursor-pointer items-center">
-                            <input type="checkbox" checked={selectedMeta.autoRenewPlan} onChange={(e) => setMetaPatch(selectedClient.id, { autoRenewPlan: e.target.checked })} className="sr-only" />
-                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.45)]" : "bg-[#0e1012]"}`}>
-                              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${selectedMeta.autoRenewPlan ? "translate-x-5" : "translate-x-0.5"}`} />
-                            </div>
-                          </label>
-                        </div>
-                        <div className="px-3 pb-3">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Plazo (dias)</p>
-                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white focus:bg-white/[0.09] focus:outline-none" />
-                        </div>
-                      </div>
-
                       {/* TIPO DE ASESORIA */}
                       <div className="overflow-hidden rounded-2xl border border-sky-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
                         <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
@@ -6947,6 +6926,27 @@ export default function ClientesPage() {
                 ) : activeTab === "pagos" ? (
                   <div className="space-y-4">
                   <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
+                      {/* RENOVACION AUTOMATICA */}
+                      <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full bg-amber-400 shadow-[0_0_7px_rgba(245,158,11,1)]" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300/75">Renovacion automatica</p>
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-3">
+                          <p className="text-[11px] text-slate-400">Extiende la fecha de fin al registrar pago.</p>
+                          <label className="flex cursor-pointer items-center">
+                            <input type="checkbox" checked={selectedMeta.autoRenewPlan} onChange={(e) => setMetaPatch(selectedClient.id, { autoRenewPlan: e.target.checked })} className="sr-only" />
+                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.45)]" : "bg-[#0e1012]"}`}>
+                              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${selectedMeta.autoRenewPlan ? "translate-x-5" : "translate-x-0.5"}`} />
+                            </div>
+                          </label>
+                        </div>
+                        <div className="px-3 pb-3">
+                          <p className="mb-1 text-[10px] font-medium text-slate-500">Plazo (dias)</p>
+                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white focus:bg-white/[0.09] focus:outline-none" />
+                        </div>
+                      </div>
+
                       {/* ASIGNAR PLAN */}
                       {isAdmin && planesDisponibles.filter((p) => p.activo).length > 0 && (
                         <div className="overflow-hidden rounded-2xl border border-rose-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
