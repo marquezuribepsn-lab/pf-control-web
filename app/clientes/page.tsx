@@ -30,6 +30,7 @@ type ClienteTab =
   | "recetas"
   | "notas"
   | "documentos"
+  | "pagos"
   | "chequeos"
   | "progreso";
 
@@ -1436,6 +1437,7 @@ const TABS: { id: ClienteTab; label: string; icon: string }[] = [
   { id: "plan-entrenamiento", label: "Plan entrenamiento", icon: "🏋" },
   { id: "plan-nutricional", label: "Plan nutricional", icon: "🥗" },
   { id: "documentos", label: "Documentos", icon: "📁" },
+  { id: "pagos", label: "Pagos", icon: "💳" },
   { id: "chequeos", label: "Chequeos", icon: "✅" },
   { id: "progreso", label: "Progreso", icon: "📈" },
 ];
@@ -6874,6 +6876,77 @@ export default function ClientesPage() {
                         </div>
                       </div>
 
+
+                    </div>
+                  </div>{/* fin grid 2 cols */}
+
+                  {/* ── CONTEXTO DEPORTIVO — full width ── */}
+                  <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                    <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
+                      <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
+                      <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Contexto deportivo</p>
+                    </div>
+                    <div className="grid gap-x-4 gap-y-0 px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="py-1.5">
+                        <p className="mb-1 text-[10px] font-medium text-slate-500">Club</p>
+                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                      </div>
+                      <div className="py-1.5">
+                        <p className="mb-1 text-[10px] font-medium text-slate-500">Objetivo</p>
+                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                      </div>
+                      {selectedClient.tipo === "jugadora" ? (
+                        <>
+                          <div className="py-1.5">
+                            <p className="mb-1 text-[10px] font-medium text-slate-500">Deporte</p>
+                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              {deportesOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                            </select>
+                          </div>
+                          <div className="py-1.5">
+                            <p className="mb-1 text-[10px] font-medium text-slate-500">Posicion</p>
+                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                              <option value="" className="bg-[#0e1012]">Sin posicion</option>
+                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="py-1.5 sm:col-span-2">
+                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
+                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
+                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales sobre el contexto del cliente..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {selectedClient.tipo === "jugadora" && (
+                      <div className="grid gap-x-4 gap-y-0 border-t border-white/[0.04] px-4 py-3 sm:grid-cols-2">
+                        <div className="py-1.5">
+                          <p className="mb-1 text-[10px] font-medium text-slate-500">Categoria</p>
+                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
+                            {categoriasOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                          </select>
+                        </div>
+                        <div className="py-1.5">
+                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
+                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
+                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* GUARDAR — full width */}
+                  <ReliableActionButton type="button" onClick={saveDatosGenerales} className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 py-3 text-sm font-black text-white shadow-[0_0_22px_rgba(139,92,246,0.4)] transition hover:opacity-90 active:scale-[0.98]">
+                    Guardar cambios
+                  </ReliableActionButton>
+
+                  </div>
+                ) : activeTab === "pagos" ? (
+                  <div className="space-y-4">
+                  <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
                       {/* ASIGNAR PLAN */}
                       {isAdmin && planesDisponibles.filter((p) => p.activo).length > 0 && (
                         <div className="overflow-hidden rounded-2xl border border-rose-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
@@ -7133,73 +7206,7 @@ export default function ClientesPage() {
                           </div>
                         </div>
                       </div>
-
-                    </div>
-                  </div>{/* fin grid 2 cols */}
-
-                  {/* ── CONTEXTO DEPORTIVO — full width ── */}
-                  <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                      <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
-                      <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Contexto deportivo</p>
-                    </div>
-                    <div className="grid gap-x-4 gap-y-0 px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
-                      <div className="py-1.5">
-                        <p className="mb-1 text-[10px] font-medium text-slate-500">Club</p>
-                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
-                      </div>
-                      <div className="py-1.5">
-                        <p className="mb-1 text-[10px] font-medium text-slate-500">Objetivo</p>
-                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
-                      </div>
-                      {selectedClient.tipo === "jugadora" ? (
-                        <>
-                          <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Deporte</p>
-                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              {deportesOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
-                            </select>
-                          </div>
-                          <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Posicion</p>
-                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="" className="bg-[#0e1012]">Sin posicion</option>
-                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
-                            </select>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="py-1.5 sm:col-span-2">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales sobre el contexto del cliente..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {selectedClient.tipo === "jugadora" && (
-                      <div className="grid gap-x-4 gap-y-0 border-t border-white/[0.04] px-4 py-3 sm:grid-cols-2">
-                        <div className="py-1.5">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Categoria</p>
-                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                            {categoriasOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
-                          </select>
-                        </div>
-                        <div className="py-1.5">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
-
-                  {/* GUARDAR — full width */}
-                  <ReliableActionButton type="button" onClick={saveDatosGenerales} className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 py-3 text-sm font-black text-white shadow-[0_0_22px_rgba(139,92,246,0.4)] transition hover:opacity-90 active:scale-[0.98]">
-                    Guardar cambios
-                  </ReliableActionButton>
-
                   </div>
                 ) : activeTab === "plan-entrenamiento" ? (
                   <div className="rounded-[30px] border border-cyan-300/32 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 shadow-[0_28px_70px_-46px_rgba(34,211,238,0.55)] sm:px-5 lg:px-7 lg:py-6">
