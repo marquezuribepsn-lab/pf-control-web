@@ -5563,6 +5563,70 @@ export default function ClientesPage() {
     }
   };
 
+  // Asignar un plan desde la pestaña Pagos y habilitar el pase server-side.
+  // opts.cobrar=false → pase sin cobro (gratis); true → registra el cobro manual.
+  const asignarPlanDirecto = async (
+    cliente: ClienteView,
+    plan: { id: string; nombre: string; precio: number; moneda: string; duracionDias: number; activo: boolean },
+    opts: { cobrar: boolean }
+  ) => {
+    const emitToast = (type: "success" | "error" | "info", message: string) => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type, message } }));
+      }
+    };
+
+    const meta = getMeta(cliente);
+    const email = String(meta.email || "").trim().toLowerCase();
+    const clientKey = String(cliente.id || "");
+    const today = new Date().toISOString().slice(0, 10);
+    const end = sumarDias(today, plan.duracionDias);
+
+    // Actualización local optimista.
+    setMetaPatch(cliente.id, {
+      importe: String(plan.precio),
+      moneda: plan.moneda,
+      renewalDays: plan.duracionDias,
+      pagoEstado: "confirmado",
+      startDate: today,
+      endDate: end,
+    });
+    markManualSaveIntent(CLIENTE_META_KEY);
+    setPlanSeleccionado("");
+
+    if (!email && !clientKey.startsWith("alumno:")) {
+      emitToast("info", "Plan asignado localmente. Cargá el email del alumno para habilitar su acceso en la app.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/payments/confirmar-directo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          clientKey,
+          metodo: opts.cobrar ? "transferencia" : "gratis",
+          amount: opts.cobrar ? plan.precio : 0,
+          currency: plan.moneda,
+          periodDays: plan.duracionDias,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { message?: string; endDate?: string };
+      if (!res.ok) {
+        emitToast("error", String(data.message || "No se pudo habilitar el pase del alumno."));
+        return;
+      }
+      const endDate = String(data.endDate || end || "");
+      if (endDate) setMetaPatch(cliente.id, { endDate });
+      emitToast("success", opts.cobrar
+        ? `Plan ${plan.nombre} cobrado y pase habilitado.`
+        : `Plan ${plan.nombre} asignado sin cobro y pase habilitado.`);
+    } catch {
+      emitToast("error", "Error de red al habilitar el pase. Se guardó localmente.");
+    }
+  };
+
   return (
     <main className="relative mx-auto max-w-[1920px] space-y-6 p-6 text-slate-100">
       {/* Ambient glow */}
@@ -7135,18 +7199,7 @@ export default function ClientesPage() {
                                 onClick={() => {
                                   const plan = planesDisponibles.find((p) => p.id === planSeleccionado);
                                   if (!plan) return;
-                                  const today = new Date().toISOString().slice(0, 10);
-                                  const end = new Date(Date.now() + plan.duracionDias * 86400000).toISOString().slice(0, 10);
-                                  setMetaPatch(selectedClient.id, {
-                                    importe: String(plan.precio),
-                                    moneda: plan.moneda,
-                                    renewalDays: plan.duracionDias,
-                                    pagoEstado: "confirmado",
-                                    startDate: today,
-                                    endDate: end,
-                                  });
-                                  markManualSaveIntent(CLIENTE_META_KEY);
-                                  setPlanSeleccionado("");
+                                  void asignarPlanDirecto(selectedClient, plan, { cobrar: false });
                                 }}
                                 className="rounded-xl bg-emerald-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500/90 disabled:opacity-40 active:scale-[0.97]"
                               >
@@ -7158,14 +7211,7 @@ export default function ClientesPage() {
                                 onClick={() => {
                                   const plan = planesDisponibles.find((p) => p.id === planSeleccionado);
                                   if (!plan) return;
-                                  setMetaPatch(selectedClient.id, {
-                                    importe: String(plan.precio),
-                                    moneda: plan.moneda,
-                                    renewalDays: plan.duracionDias,
-                                    pagoEstado: "pendiente",
-                                  });
-                                  markManualSaveIntent(CLIENTE_META_KEY);
-                                  setPlanSeleccionado("");
+                                  void asignarPlanDirecto(selectedClient, plan, { cobrar: true });
                                 }}
                                 className="rounded-xl bg-rose-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500/90 disabled:opacity-40 active:scale-[0.97]"
                               >
