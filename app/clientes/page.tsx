@@ -1829,6 +1829,10 @@ export default function ClientesPage() {
   const [passwordNuevaAlumno, setPasswordNuevaAlumno] = useState("");
   const [passwordGeneradaAlumno, setPasswordGeneradaAlumno] = useState<string | null>(null);
   const [passwordActualAlumno, setPasswordActualAlumno] = useState<string | null>(null);
+  // Email de login con el que el alumno tiene su cuenta al momento de abrir la ficha.
+  // Es estable (no cambia mientras el admin edita el input) y sirve para resolver
+  // la cuenta en el backend aunque el admin escriba un email nuevo.
+  const [emailOriginalAlumno, setEmailOriginalAlumno] = useState("");
   const [guardandoPassword, setGuardandoPassword] = useState(false);
   const [mpCheckoutUrl, setMpCheckoutUrl] = useState<string | null>(null);
   const [mpCheckoutError, setMpCheckoutError] = useState("");
@@ -2173,6 +2177,13 @@ export default function ClientesPage() {
     setPasswordNuevaAlumno("");
     setPasswordGeneradaAlumno(null);
     setPasswordActualAlumno(null);
+    setEmailOriginalAlumno(
+      selectedClientId
+        ? String(clientesMeta[selectedClientId]?.email || "").trim().toLowerCase()
+        : ""
+    );
+    // Sólo al cambiar de alumno: capturamos el email de login vigente como ancla estable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClientId]);
 
   const nutritionFoodsById = useMemo(() => {
@@ -5516,9 +5527,11 @@ export default function ClientesPage() {
     }
   };
 
-  // Establecer / blanquear la contraseña de acceso del alumno (admin).
-  // La contraseña actual NO se puede recuperar (hash bcrypt de una vía);
-  // solo se puede definir una nueva, que se muestra una única vez para copiarla.
+  // Establecer accesos del alumno (admin): permite cambiar el email de login
+  // y/o definir una contraseña nueva. La contraseña actual NO se puede recuperar
+  // (hash bcrypt de una vía); solo se puede definir una nueva, que se muestra
+  // para copiarla. El email se resuelve por el email ANCLA (el que tenía al abrir
+  // la ficha) para poder renombrarlo aunque el input ya muestre el valor nuevo.
   const blanquearPasswordAlumno = async (opts: { generar: boolean }) => {
     const emitToast = (type: "success" | "error" | "info", message: string) => {
       if (typeof window !== "undefined") {
@@ -5526,16 +5539,28 @@ export default function ClientesPage() {
       }
     };
 
-    const email = selectedClientEmail.trim().toLowerCase();
-    if (!email) {
-      emitToast("info", "Este alumno no tiene email/cuenta cargada. Cargá el email en Datos para poder definir su contraseña.");
+    // Email con el que resolvemos la cuenta (estable), y el email nuevo del input.
+    const emailAncla = (emailOriginalAlumno || selectedClientEmail).trim().toLowerCase();
+    const emailNuevo = selectedClientEmail.trim().toLowerCase();
+    if (!emailAncla) {
+      emitToast("info", "Este alumno no tiene email/cuenta cargada. Cargá el email en Datos para poder definir sus accesos.");
       return;
     }
 
+    const cambiaEmail = Boolean(emailNuevo) && emailNuevo !== emailAncla;
     const manual = passwordNuevaAlumno.trim();
-    if (!opts.generar && manual.length < 6) {
-      emitToast("error", "La contraseña debe tener al menos 6 caracteres (o usá 'Generar automática').");
-      return;
+
+    // Con "Establecer accesos" (generar=false) exigimos que haya ALGÚN cambio:
+    // o una contraseña válida, o un email nuevo.
+    if (!opts.generar) {
+      if (!manual && !cambiaEmail) {
+        emitToast("info", "No hay cambios: editá el email o escribí una contraseña nueva.");
+        return;
+      }
+      if (manual && manual.length < 6) {
+        emitToast("error", "La contraseña debe tener al menos 6 caracteres (o dejala vacía para solo cambiar el email).");
+        return;
+      }
     }
 
     setGuardandoPassword(true);
@@ -5544,20 +5569,40 @@ export default function ClientesPage() {
       const res = await fetch("/api/admin/users/password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: opts.generar ? "" : manual }),
+        body: JSON.stringify({
+          email: emailAncla,
+          newEmail: cambiaEmail ? emailNuevo : undefined,
+          password: opts.generar ? "" : manual,
+          generatePassword: opts.generar,
+        }),
       });
-      const data = (await res.json().catch(() => ({}))) as { message?: string; visiblePassword?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        visiblePassword?: string;
+        email?: string;
+        emailChanged?: boolean;
+        passwordChanged?: boolean;
+      };
       if (!res.ok) {
-        emitToast("error", String(data.message || "No se pudo actualizar la contraseña del alumno."));
+        emitToast("error", String(data.message || "No se pudieron actualizar los accesos del alumno."));
         return;
       }
-      const nueva = String(data.visiblePassword || manual || "");
-      setPasswordGeneradaAlumno(nueva);
-      setPasswordActualAlumno(nueva || null);
-      setPasswordNuevaAlumno("");
-      emitToast("success", "Contraseña actualizada. Copiala y compartila con el alumno.");
+      // Si cambió el email de login, sincronizamos el ancla y la ficha al valor confirmado.
+      if (data.emailChanged && data.email) {
+        setEmailOriginalAlumno(String(data.email).trim().toLowerCase());
+        if (selectedClientId) {
+          setMetaPatch(selectedClientId, { email: String(data.email).trim().toLowerCase() });
+        }
+      }
+      if (data.passwordChanged) {
+        const nueva = String(data.visiblePassword || manual || "");
+        setPasswordGeneradaAlumno(nueva);
+        setPasswordActualAlumno(nueva || null);
+        setPasswordNuevaAlumno("");
+      }
+      emitToast("success", String(data.message || "Accesos actualizados.") + (data.passwordChanged ? " Copiá la contraseña y compartila." : ""));
     } catch {
-      emitToast("error", "Error de red al actualizar la contraseña.");
+      emitToast("error", "Error de red al actualizar los accesos.");
     } finally {
       setGuardandoPassword(false);
     }
@@ -6983,10 +7028,10 @@ export default function ClientesPage() {
                               />
                             </div>
                             <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-500">
-                              Por seguridad, la contraseña actual del alumno no puede verse (se guarda cifrada). Podés definirle una nueva y compartírsela.
+                              Podés cambiar el email de login del alumno y/o definirle una contraseña nueva. Por seguridad, la contraseña actual no puede verse (se guarda cifrada). Si solo querés cambiar el email, dejá la contraseña vacía.
                             </p>
                             <div>
-                              <p className="mb-1 text-[10px] font-medium text-slate-500">Nueva contraseña</p>
+                              <p className="mb-1 text-[10px] font-medium text-slate-500">Nueva contraseña <span className="text-slate-600">(opcional)</span></p>
                               <input
                                 type="text"
                                 value={passwordNuevaAlumno}
@@ -7003,7 +7048,7 @@ export default function ClientesPage() {
                                 onClick={() => void blanquearPasswordAlumno({ generar: false })}
                                 className="rounded-lg bg-gradient-to-r from-cyan-500 to-sky-500 py-2.5 text-xs font-black text-white shadow-[0_0_16px_rgba(34,211,238,0.35)] transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                               >
-                                {guardandoPassword ? "Guardando..." : "Establecer contraseña"}
+                                {guardandoPassword ? "Guardando..." : "Establecer accesos"}
                               </button>
                               <button
                                 type="button"
