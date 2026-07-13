@@ -1,7 +1,7 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { markManualSaveIntent, useSharedState } from "../../../components/useSharedState";
 
@@ -361,29 +361,47 @@ function signature(rows: MusicaAlumno[]): string {
     .join("||");
 }
 
-function MusicPlayer({ item }: { item: MusicaAlumno }) {
+function resolveItemCover(item: MusicaAlumno): string {
+  return (
+    String(item.coverUrl || "").trim() ||
+    String(item.imageUrl || "").trim() ||
+    String(item.thumbnailUrl || "").trim() ||
+    String(item.artworkUrl || "").trim()
+  );
+}
+
+function MusicPlayer({ item, cover }: { item: MusicaAlumno; cover?: string }) {
   const player = resolveEmbeddedPlayerSource(item.platform, item.playlistUrl);
 
+  // Los archivos de audio directos si tienen un reproductor nativo real.
   if (player.kind === "audio" && player.src) {
     return <audio controls preload="none" className="mt-2 w-full" src={player.src} />;
   }
 
-  if (player.kind === "iframe" && player.src) {
-    return (
-      <iframe
-        title={`player-${item.id}`}
-        src={player.src}
-        className="mt-2 h-40 w-full rounded-lg border border-white/10"
-        loading="lazy"
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-      />
-    );
-  }
+  // El resto (Spotify, YouTube, etc.) mostramos la PORTADA de la playlist.
+  // El embed iframe se ve como una caja blanca dentro del webview, por eso
+  // usamos la imagen real (oEmbed) y un fondo oscuro como fallback.
+  const coverUrl = String(cover || "").trim() || resolveItemCover(item);
 
   return (
-    <p className="mt-2 text-xs text-white/40">
-      Esta plataforma no permite embed directo en esta pagina. El alumno puede abrir el enlace y escuchar en su app.
-    </p>
+    <div className="mt-2 aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
+      {coverUrl ? (
+        <img
+          src={coverUrl}
+          alt={item.playlistName || "Portada de playlist"}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/50 to-slate-900/80 p-3 text-left">
+          <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/80">
+            {getPlatformLabel(item.platform)}
+          </span>
+          <p className="line-clamp-2 text-sm font-black text-white/90">{item.playlistName}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -407,6 +425,9 @@ export default function ClientesMusicaPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  // Portadas resueltas en runtime para las asignaciones viejas que no las tienen.
+  const [coverByUrl, setCoverByUrl] = useState<Record<string, string>>({});
+  const attemptedCoversRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setAssignments((prev) => {
@@ -422,6 +443,50 @@ export default function ClientesMusicaPage() {
     () => [...normalizeAssignments(assignments)].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [assignments]
   );
+
+  // Backfill de portadas: para las asignaciones que se guardaron antes de que
+  // existiera el cover, buscamos la miniatura via oEmbed y la persistimos en el
+  // store compartido. Asi la portada se ve en admin Y le llega al alumno (incluso
+  // offline, porque queda en la asignacion sincronizada).
+  useEffect(() => {
+    let cancelled = false;
+    const pending = sortedAssignments.filter((item) => {
+      const url = normalizeUrl(item.playlistUrl);
+      return Boolean(url) && !resolveItemCover(item) && !attemptedCoversRef.current.has(url);
+    });
+    if (pending.length === 0) return;
+
+    (async () => {
+      for (const item of pending) {
+        if (cancelled) break;
+        const url = normalizeUrl(item.playlistUrl);
+        attemptedCoversRef.current.add(url);
+        const metadata = await fetchPlaylistMetadata(url);
+        const cover = String(metadata?.thumbnailUrl || "").trim();
+        if (!cover || cancelled) continue;
+
+        setCoverByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: cover }));
+
+        markManualSaveIntent(STORAGE_KEY);
+        setAssignments((prev) => {
+          const list = Array.isArray(prev) ? prev : [];
+          let changed = false;
+          const nextList = list.map((row) => {
+            if (normalizeUrl(row.playlistUrl) === url && !resolveItemCover(row)) {
+              changed = true;
+              return { ...row, coverUrl: cover, imageUrl: cover, thumbnailUrl: cover, artworkUrl: cover };
+            }
+            return row;
+          });
+          return changed ? nextList : prev;
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sortedAssignments, setAssignments]);
 
   const alumnoOptions = useMemo(
     () => (Array.isArray(alumnos) ? alumnos.map((item) => item.nombre).filter(Boolean) : []),
@@ -764,7 +829,7 @@ export default function ClientesMusicaPage() {
                   {item.recommendedSongArtist ? ` · ${item.recommendedSongArtist}` : ""}
                 </p>
 
-                <MusicPlayer item={item} />
+                <MusicPlayer item={item} cover={coverByUrl[normalizeUrl(item.playlistUrl)]} />
 
                 <ReliableActionButton
                   type="button"
