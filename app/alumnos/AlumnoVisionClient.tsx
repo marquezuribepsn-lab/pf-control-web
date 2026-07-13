@@ -9120,24 +9120,29 @@ export default function AlumnoVisionClient({
                           className="h-12 w-full"
                           src={selectedMusicPlayer.src || undefined}
                         />
-                      ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
-                        <iframe
-                          title={`music-player-home-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
-                          src={selectedMusicPlayer.src}
-                          className={`w-full rounded-lg border border-white/10 ${
-                            selectedMusicPlatform === "SPOTIFY"
-                              ? selectedMusicContentType === "SONG"
-                                ? "h-[152px]"
-                                : "h-[352px]"
-                              : "h-64 sm:h-72"
-                          }`}
-                          style={{ background: "#10151b", colorScheme: "dark" }}
-                          loading="lazy"
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        />
                       ) : (
-                        <div className="flex h-28 items-center justify-center rounded-lg border border-slate-500/35 bg-slate-900/55 px-4 text-center text-xs text-slate-300">
-                          Esta plataforma no permite vista previa embebida. Usa &quot;Abrir playlist&quot; para escucharla.
+                        <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
+                          {selectedMusicCoverUrl ? (
+                            <img
+                              src={selectedMusicCoverUrl}
+                              alt={selectedMusicDisplayName || "Portada de playlist"}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-4 text-left">
+                              <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/90">
+                                {resolveMusicPlatformLabel(selectedMusicPlatform)}
+                              </span>
+                              <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
+                                  {resolveMusicContentTypeLabel(selectedMusicContentType)}
+                                </p>
+                                <p className="mt-1 line-clamp-2 text-sm font-black text-white/95">{selectedMusicDisplayName}</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
