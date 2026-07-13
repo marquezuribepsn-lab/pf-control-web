@@ -5575,6 +5575,7 @@ export default function ClientesPage() {
           password: opts.generar ? "" : manual,
           generatePassword: opts.generar,
           nombre: selectedClient?.nombre || "",
+          clientKey: selectedClientId || "",
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -5596,6 +5597,7 @@ export default function ClientesPage() {
         setEmailOriginalAlumno(emailConfirmado);
         if (selectedClientId) {
           setMetaPatch(selectedClientId, { email: emailConfirmado });
+          markManualSaveIntent(CLIENTE_META_KEY);
         }
       }
       if (data.passwordChanged) {

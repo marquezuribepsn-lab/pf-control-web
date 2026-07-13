@@ -7,6 +7,7 @@ import {
   upsertClientPasswordSnapshot,
   getClientPasswordSnapshotByUserId,
 } from "@/lib/adminPasswordStore";
+import { getClientMetaMap, saveClientMetaMap } from "@/lib/billing";
 
 const db = prisma as any;
 
@@ -32,6 +33,30 @@ function generateTemporaryPassword(): string {
 }
 
 type SafeUser = { id: string; email: string; role: string };
+
+/**
+ * Sincroniza el email de la ficha del alumno (ClienteMeta, en el sync store) con
+ * el email de login. Es CLAVE para el acceso: /api/payments/status resuelve el
+ * pase del alumno buscando la ficha por `meta.email`. Si la ficha no tiene el
+ * mismo email que la cuenta, el alumno queda bloqueado aunque tenga pase activo.
+ */
+async function syncFichaEmail(clientKey: string, email: string): Promise<void> {
+  const key = String(clientKey || "").trim();
+  const normalizedEmail = normalizeEmail(email);
+  if (!key.startsWith("alumno:") || !normalizedEmail) {
+    return;
+  }
+  try {
+    const metaMap = await getClientMetaMap();
+    const existing = metaMap[key];
+    if (existing && typeof existing === "object") {
+      metaMap[key] = { ...(existing as Record<string, unknown>), email: normalizedEmail };
+      await saveClientMetaMap(metaMap);
+    }
+  } catch (error) {
+    console.error("[admin/users/password] syncFichaEmail error", error);
+  }
+}
 
 /**
  * Búsqueda de usuario a prueba de P2023: la tabla `users` tiene filas con
@@ -115,6 +140,7 @@ export async function POST(req: NextRequest) {
     const customPassword = normalizePassword(body?.password);
     const generatePassword = Boolean(body?.generatePassword);
     const newEmail = normalizeEmail(body?.newEmail);
+    const clientKey = String(body?.clientKey || "").trim();
 
     if (!userId && !bodyEmail) {
       return NextResponse.json({ message: "userId o email requerido" }, { status: 400 });
@@ -180,6 +206,9 @@ export async function POST(req: NextRequest) {
         updatedByRole: "ADMIN",
         updatedByEmail: normalizeEmail(session.user.email),
       });
+
+      // Vincular la ficha del alumno con el email de login recién creado.
+      await syncFichaEmail(clientKey, createEmail);
 
       return NextResponse.json({
         ok: true,
@@ -280,6 +309,10 @@ export async function POST(req: NextRequest) {
         updatedByEmail: normalizeEmail(session.user.email),
       });
     }
+
+    // Mantener la ficha del alumno vinculada al email de login vigente, para que
+    // el billing pueda resolver su pase (sea que cambió el email o no).
+    await syncFichaEmail(clientKey, effectiveEmail);
 
     const message = wantsEmailChange && wantsPasswordChange
       ? "Email y contraseña actualizados correctamente"
