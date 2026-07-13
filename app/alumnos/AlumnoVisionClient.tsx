@@ -1027,6 +1027,62 @@ function normalizeMusicUrl(rawUrl: string): string {
   return `https://${value}`;
 }
 
+/** Plataformas con oEmbed: su portada se puede resolver desde nuestro proxy. */
+function musicPlatformHasCover(platform: MusicPlatform): boolean {
+  return (
+    platform === "SPOTIFY" ||
+    platform === "YOUTUBE" ||
+    platform === "YOUTUBE_MUSIC" ||
+    platform === "SOUNDCLOUD"
+  );
+}
+
+/**
+ * URL del proxy propio que devuelve los bytes de la portada. Usar el proxy (mismo
+ * dominio) evita que el webview del alumno tenga que llamar al CDN de Spotify, que
+ * bloquea el hotlink por referrer y hacia que la portada se viera como caja blanca.
+ */
+function buildMusicCoverProxyUrl(rawUrl: string): string {
+  const normalized = normalizeMusicUrl(rawUrl);
+  if (!normalized) return "";
+  return `/api/musica/cover?url=${encodeURIComponent(normalized)}`;
+}
+
+/**
+ * Imagen de portada con fallback robusto: si `src` no carga (plataforma sin
+ * portada, offline, etc.) muestra el nodo `fallback` en vez de una imagen rota.
+ */
+function MusicCoverImage({
+  src,
+  alt,
+  imgClassName,
+  fallback,
+}: {
+  src: string | null | undefined;
+  alt: string;
+  imgClassName: string;
+  fallback: ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (!src || failed) {
+    return <>{fallback}</>;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={imgClassName}
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function looksLikeAudioFile(rawUrl: string): boolean {
   const normalized = String(rawUrl || "").toLowerCase();
   return DIRECT_AUDIO_EXTENSIONS.some((extension) => normalized.includes(extension));
@@ -3766,6 +3822,14 @@ export default function AlumnoVisionClient({
     if (!selectedMusicAssignment) return null;
 
     const playlistUrl = normalizeMusicUrl(String(selectedMusicAssignment.playlistUrl || ""));
+
+    // Para plataformas con oEmbed usamos SIEMPRE el proxy propio: es mismo dominio,
+    // no depende del fetch cliente ni del hotlink de Spotify y funciona en el webview.
+    if (playlistUrl && musicPlatformHasCover(selectedMusicPlatform)) {
+      return buildMusicCoverProxyUrl(playlistUrl);
+    }
+
+    // Otras plataformas: si el admin cargo una portada explicita, la usamos.
     return (
       uniqueStrings([
         selectedMusicAssignment.coverUrl,
@@ -3775,7 +3839,16 @@ export default function AlumnoVisionClient({
         playlistUrl ? musicArtworkByUrl[playlistUrl] : "",
       ])[0] || null
     );
-  }, [musicArtworkByUrl, selectedMusicAssignment]);
+  }, [musicArtworkByUrl, selectedMusicAssignment, selectedMusicPlatform]);
+
+  // Si la portada no carga (plataforma sin oEmbed, offline, etc.) mostramos el
+  // fondo oscuro con el nombre en vez de una imagen rota. Se resetea al cambiar
+  // de playlist seleccionada.
+  const [selectedMusicCoverFailed, setSelectedMusicCoverFailed] = useState(false);
+  useEffect(() => {
+    setSelectedMusicCoverFailed(false);
+  }, [selectedMusicCoverUrl]);
+  const showSelectedMusicCover = Boolean(selectedMusicCoverUrl) && !selectedMusicCoverFailed;
 
   const selectedMusicDisplayName = useMemo<string>(() => {
     if (!selectedMusicAssignment) return "Playlist seleccionada";
@@ -6836,13 +6909,16 @@ export default function AlumnoVisionClient({
         String(assignment.objetivo || "").trim() ||
         `${resolveMusicPlatformLabel(platform)} · ${resolveMusicContentTypeLabel(contentType)}`;
 
-      const coverUrl = uniqueStrings([
-        assignment.coverUrl,
-        assignment.artworkUrl,
-        assignment.imageUrl,
-        assignment.thumbnailUrl,
-        normalizedPlaylistUrl ? musicArtworkByUrl[normalizedPlaylistUrl] : "",
-      ])[0] || null;
+      const coverUrl =
+        normalizedPlaylistUrl && musicPlatformHasCover(platform)
+          ? buildMusicCoverProxyUrl(normalizedPlaylistUrl)
+          : uniqueStrings([
+              assignment.coverUrl,
+              assignment.artworkUrl,
+              assignment.imageUrl,
+              assignment.thumbnailUrl,
+              normalizedPlaylistUrl ? musicArtworkByUrl[normalizedPlaylistUrl] : "",
+            ])[0] || null;
 
       return {
         id: resolveMusicAssignmentId(assignment, index),
@@ -9122,13 +9198,13 @@ export default function AlumnoVisionClient({
                         />
                       ) : (
                         <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
-                          {selectedMusicCoverUrl ? (
+                          {showSelectedMusicCover && selectedMusicCoverUrl ? (
                             <img
                               src={selectedMusicCoverUrl}
                               alt={selectedMusicDisplayName || "Portada de playlist"}
                               className="h-full w-full object-cover"
                               loading="lazy"
-                              referrerPolicy="no-referrer"
+                              onError={() => setSelectedMusicCoverFailed(true)}
                             />
                           ) : (
                             <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-4 text-left">
@@ -9181,21 +9257,18 @@ export default function AlumnoVisionClient({
                           aria-label={`Abrir musica: ${track.title}`}
                         >
                           <div className={`pf-a3-music-cover ${track.accentClass}`}>
-                            {track.coverUrl ? (
-                              <img
-                                src={track.coverUrl}
-                                alt={track.title}
-                                className="pf-a3-music-image"
-                                loading="lazy"
-                                referrerPolicy="no-referrer"
-                              />
-                            ) : (
-                              <div className="pf-a3-music-fallback-shell">
-                                <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
-                                <span className="pf-a3-music-fallback">{coverInitials}</span>
-                                <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
-                              </div>
-                            )}
+                            <MusicCoverImage
+                              src={track.coverUrl}
+                              alt={track.title}
+                              imgClassName="pf-a3-music-image"
+                              fallback={
+                                <div className="pf-a3-music-fallback-shell">
+                                  <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
+                                  <span className="pf-a3-music-fallback">{coverInitials}</span>
+                                  <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
+                                </div>
+                              }
+                            />
                           </div>
                           <p className="pf-a3-music-title">{track.title}</p>
                           <p className="pf-a3-music-artist">{track.artist}</p>
@@ -12850,13 +12923,13 @@ export default function AlumnoVisionClient({
 
                   <div className="mt-3 grid gap-3 lg:grid-cols-[190px,minmax(0,1fr)]">
                     <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-900/70 lg:h-full">
-                      {selectedMusicCoverUrl ? (
+                      {showSelectedMusicCover && selectedMusicCoverUrl ? (
                         <img
                           src={selectedMusicCoverUrl}
                           alt={selectedMusicDisplayName || "Portada de playlist"}
                           className="h-full w-full object-cover"
                           loading="lazy"
-                          referrerPolicy="no-referrer"
+                          onError={() => setSelectedMusicCoverFailed(true)}
                         />
                       ) : (
                         <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-3 text-left">
@@ -12927,13 +13000,15 @@ export default function AlumnoVisionClient({
                     const platform = resolveMusicPlatform(assignment.platform, assignment.playlistUrl);
                     const normalizedPlaylistUrl = normalizeMusicUrl(String(assignment.playlistUrl || ""));
                     const coverUrl =
-                      uniqueStrings([
-                        assignment.coverUrl,
-                        assignment.imageUrl,
-                        assignment.thumbnailUrl,
-                        assignment.artworkUrl,
-                        normalizedPlaylistUrl ? musicArtworkByUrl[normalizedPlaylistUrl] : "",
-                      ])[0] || null;
+                      normalizedPlaylistUrl && musicPlatformHasCover(platform)
+                        ? buildMusicCoverProxyUrl(normalizedPlaylistUrl)
+                        : uniqueStrings([
+                            assignment.coverUrl,
+                            assignment.imageUrl,
+                            assignment.thumbnailUrl,
+                            assignment.artworkUrl,
+                            normalizedPlaylistUrl ? musicArtworkByUrl[normalizedPlaylistUrl] : "",
+                          ])[0] || null;
                     const isSelected = selectedMusicAssignmentId === assignmentId;
                     const openLabel = resolveMusicOpenActionLabel(platform);
 
@@ -12948,19 +13023,16 @@ export default function AlumnoVisionClient({
                       >
                         <div className="flex items-start gap-3">
                           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900/60">
-                            {coverUrl ? (
-                              <img
-                                src={coverUrl}
-                                alt={assignment.playlistName || "Portada"}
-                                className="h-full w-full object-cover"
-                                loading="lazy"
-                                referrerPolicy="no-referrer"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                                Sin cover
-                              </div>
-                            )}
+                            <MusicCoverImage
+                              src={coverUrl}
+                              alt={assignment.playlistName || "Portada"}
+                              imgClassName="h-full w-full object-cover"
+                              fallback={
+                                <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                  Sin cover
+                                </div>
+                              }
+                            />
                           </div>
 
                           <div className="min-w-0 flex-1">

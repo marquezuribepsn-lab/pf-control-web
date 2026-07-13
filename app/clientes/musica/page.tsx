@@ -1,7 +1,7 @@
 "use client";
 
 import ReliableActionButton from "@/components/ReliableActionButton";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAlumnos } from "../../../components/AlumnosProvider";
 import { markManualSaveIntent, useSharedState } from "../../../components/useSharedState";
 
@@ -361,16 +361,20 @@ function signature(rows: MusicaAlumno[]): string {
     .join("||");
 }
 
-function resolveItemCover(item: MusicaAlumno): string {
-  return (
-    String(item.coverUrl || "").trim() ||
-    String(item.imageUrl || "").trim() ||
-    String(item.thumbnailUrl || "").trim() ||
-    String(item.artworkUrl || "").trim()
-  );
+/** Plataformas que exponen oEmbed y por ende tienen portada resoluble en el proxy. */
+function platformHasCover(platform: MusicPlatform): boolean {
+  return platform === "SPOTIFY" || platform === "YOUTUBE" || platform === "YOUTUBE_MUSIC" || platform === "SOUNDCLOUD";
 }
 
-function MusicPlayer({ item, cover }: { item: MusicaAlumno; cover?: string }) {
+/** URL del proxy propio que devuelve los bytes de la portada (mismo dominio, sin hotlink). */
+function buildCoverProxyUrl(rawUrl: string): string {
+  const normalized = normalizeUrl(rawUrl);
+  if (!normalized) return "";
+  return `/api/musica/cover?url=${encodeURIComponent(normalized)}`;
+}
+
+function MusicPlayer({ item }: { item: MusicaAlumno }) {
+  const [failed, setFailed] = useState(false);
   const player = resolveEmbeddedPlayerSource(item.platform, item.playlistUrl);
 
   // Los archivos de audio directos si tienen un reproductor nativo real.
@@ -380,18 +384,20 @@ function MusicPlayer({ item, cover }: { item: MusicaAlumno; cover?: string }) {
 
   // El resto (Spotify, YouTube, etc.) mostramos la PORTADA de la playlist.
   // El embed iframe se ve como una caja blanca dentro del webview, por eso
-  // usamos la imagen real (oEmbed) y un fondo oscuro como fallback.
-  const coverUrl = String(cover || "").trim() || resolveItemCover(item);
+  // usamos SIEMPRE el proxy propio (mismo dominio) y un fondo oscuro como fallback
+  // si la plataforma no tiene portada o el proxy no la pudo resolver.
+  const proxyUrl = platformHasCover(item.platform) ? buildCoverProxyUrl(item.playlistUrl) : "";
+  const showImage = Boolean(proxyUrl) && !failed;
 
   return (
     <div className="mt-2 aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
-      {coverUrl ? (
+      {showImage ? (
         <img
-          src={coverUrl}
+          src={proxyUrl}
           alt={item.playlistName || "Portada de playlist"}
           className="h-full w-full object-cover"
           loading="lazy"
-          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
         />
       ) : (
         <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/50 to-slate-900/80 p-3 text-left">
@@ -425,9 +431,6 @@ export default function ClientesMusicaPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  // Portadas resueltas en runtime para las asignaciones viejas que no las tienen.
-  const [coverByUrl, setCoverByUrl] = useState<Record<string, string>>({});
-  const attemptedCoversRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setAssignments((prev) => {
@@ -443,50 +446,6 @@ export default function ClientesMusicaPage() {
     () => [...normalizeAssignments(assignments)].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [assignments]
   );
-
-  // Backfill de portadas: para las asignaciones que se guardaron antes de que
-  // existiera el cover, buscamos la miniatura via oEmbed y la persistimos en el
-  // store compartido. Asi la portada se ve en admin Y le llega al alumno (incluso
-  // offline, porque queda en la asignacion sincronizada).
-  useEffect(() => {
-    let cancelled = false;
-    const pending = sortedAssignments.filter((item) => {
-      const url = normalizeUrl(item.playlistUrl);
-      return Boolean(url) && !resolveItemCover(item) && !attemptedCoversRef.current.has(url);
-    });
-    if (pending.length === 0) return;
-
-    (async () => {
-      for (const item of pending) {
-        if (cancelled) break;
-        const url = normalizeUrl(item.playlistUrl);
-        attemptedCoversRef.current.add(url);
-        const metadata = await fetchPlaylistMetadata(url);
-        const cover = String(metadata?.thumbnailUrl || "").trim();
-        if (!cover || cancelled) continue;
-
-        setCoverByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: cover }));
-
-        markManualSaveIntent(STORAGE_KEY);
-        setAssignments((prev) => {
-          const list = Array.isArray(prev) ? prev : [];
-          let changed = false;
-          const nextList = list.map((row) => {
-            if (normalizeUrl(row.playlistUrl) === url && !resolveItemCover(row)) {
-              changed = true;
-              return { ...row, coverUrl: cover, imageUrl: cover, thumbnailUrl: cover, artworkUrl: cover };
-            }
-            return row;
-          });
-          return changed ? nextList : prev;
-        });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sortedAssignments, setAssignments]);
 
   const alumnoOptions = useMemo(
     () => (Array.isArray(alumnos) ? alumnos.map((item) => item.nombre).filter(Boolean) : []),
@@ -829,7 +788,7 @@ export default function ClientesMusicaPage() {
                   {item.recommendedSongArtist ? ` · ${item.recommendedSongArtist}` : ""}
                 </p>
 
-                <MusicPlayer item={item} cover={coverByUrl[normalizeUrl(item.playlistUrl)]} />
+                <MusicPlayer item={item} />
 
                 <ReliableActionButton
                   type="button"
