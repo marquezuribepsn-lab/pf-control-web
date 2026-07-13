@@ -1773,6 +1773,32 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   color: #e9edf3 !important;
 }
 
+/* Autocompletado del navegador: por defecto WebKit pinta los campos autocompletados
+   (email/contraseña) con fondo blanco y texto negro, lo que rompía la lectura sobre
+   el tema oscuro (se veía "fondo blanco, texto negro" en la ficha de cuenta).
+   Forzamos fondo oscuro y texto claro para que quede armónico con el resto. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #e9edf3 !important;
+  caret-color: #e9edf3;
+  -webkit-box-shadow: 0 0 0 1000px rgba(19, 30, 42, 0.96) inset !important;
+  box-shadow: 0 0 0 1000px rgba(19, 30, 42, 0.96) inset !important;
+  transition: background-color 600000s ease-out 0s;
+}
+
+/* Controles nativos dentro del shell del alumno: garantizamos texto legible en
+   selects y sus opciones (algunos navegadores renderizan el texto en negro sobre
+   fondo oscuro, dejándolo invisible). */
+.pf-alumno-v2 select,
+.pf-alumno-v2 option {
+  color: #e9edf3;
+  background-color: #131e2a;
+}
+
 .pf-a2-hero :where(h1, h2, h3, p, span, a, button),
 .pf-a2-card :where(h1, h2, h3, p, span, a, button),
 .pf-a2-kpi :where(h1, h2, h3, p, span, a, button) {
@@ -2405,7 +2431,7 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a3-music-card-fallback-a {
-  background: linear-gradient(145deg, rgba(239, 240, 242, 0.95), rgba(216, 220, 224, 0.9));
+  background: linear-gradient(150deg, rgba(37, 71, 63, 0.92), rgba(17, 26, 24, 0.95));
 }
 
 .pf-a3-music-card-fallback-b {

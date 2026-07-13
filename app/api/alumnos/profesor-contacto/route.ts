@@ -49,8 +49,9 @@ function normalizePhoneForChat(input: unknown): string | null {
 }
 
 function toContactoPayload(candidate: ContactCandidate, source: ContactSource) {
+  // El teléfono es opcional: sirve para el chat de WhatsApp, pero el nombre del
+  // profesor debe verse igual aunque no haya número cargado.
   const waPhone = normalizePhoneForChat(candidate.telefono);
-  if (!waPhone) return null;
 
   const role = String(candidate.role || "COLABORADOR").toUpperCase();
   const nombre =
@@ -70,6 +71,26 @@ function toContactoPayload(candidate: ContactCandidate, source: ContactSource) {
 function isActive(candidate: ContactCandidate): boolean {
   const estado = String(candidate.estado || "activo").trim().toLowerCase();
   return estado !== "suspendido" && estado !== "baja";
+}
+
+/** ¿El candidato tiene un nombre real (no vacío ni el placeholder "Sin nombre")? */
+function hasRealName(candidate: ContactCandidate): boolean {
+  const nombre = String(candidate.nombreCompleto || "").trim().toLowerCase();
+  return Boolean(nombre) && nombre !== "sin nombre";
+}
+
+/**
+ * Elige el mejor candidato: primero los que tienen nombre real y teléfono,
+ * luego nombre real, luego teléfono, y por último cualquiera activo.
+ */
+function pickBestCandidate(candidates: ContactCandidate[]): ContactCandidate | null {
+  const active = candidates.filter(isActive);
+  if (active.length === 0) return null;
+
+  const score = (c: ContactCandidate) =>
+    (hasRealName(c) ? 2 : 0) + (normalizePhoneForChat(c.telefono) ? 1 : 0);
+
+  return active.slice().sort((a, b) => score(b) - score(a))[0];
 }
 
 export async function GET() {
@@ -119,27 +140,22 @@ export async function GET() {
         colaborador?: ContactCandidate | null;
       }>;
 
-      const linked = asignaciones
+      const linkedCandidates = asignaciones
         .slice()
         .sort((a, b) => Number(Boolean(b.puedeEditar)) - Number(Boolean(a.puedeEditar)))
         .map((row) => row.colaborador)
         .filter((row): row is ContactCandidate => Boolean(row))
-        .find((row) => {
-          const role = String(row.role || "").toUpperCase();
-          return role === "COLABORADOR" && isActive(row) && Boolean(normalizePhoneForChat(row.telefono));
-        });
+        .filter((row) => String(row.role || "").toUpperCase() === "COLABORADOR");
 
+      const linked = pickBestCandidate(linkedCandidates);
       if (linked) {
         contacto = toContactoPayload(linked, "asignado");
       }
     }
 
     if (!contacto) {
-      const colaborador = (await db.user.findFirst({
-        where: {
-          role: "COLABORADOR",
-          telefono: { not: null },
-        },
+      const colaboradores = (await db.user.findMany({
+        where: { role: "COLABORADOR" },
         select: {
           id: true,
           nombreCompleto: true,
@@ -147,22 +163,18 @@ export async function GET() {
           telefono: true,
           estado: true,
         },
-        orderBy: {
-          updatedAt: "desc",
-        },
-      })) as ContactCandidate | null;
+        orderBy: { updatedAt: "desc" },
+      })) as ContactCandidate[];
 
-      if (colaborador && isActive(colaborador)) {
+      const colaborador = pickBestCandidate(colaboradores);
+      if (colaborador) {
         contacto = toContactoPayload(colaborador, "colaborador");
       }
     }
 
     if (!contacto) {
-      const admin = (await db.user.findFirst({
-        where: {
-          role: "ADMIN",
-          telefono: { not: null },
-        },
+      const admins = (await db.user.findMany({
+        where: { role: "ADMIN" },
         select: {
           id: true,
           nombreCompleto: true,
@@ -170,19 +182,18 @@ export async function GET() {
           telefono: true,
           estado: true,
         },
-        orderBy: {
-          updatedAt: "desc",
-        },
-      })) as ContactCandidate | null;
+        orderBy: { updatedAt: "desc" },
+      })) as ContactCandidate[];
 
-      if (admin && isActive(admin)) {
+      const admin = pickBestCandidate(admins);
+      if (admin) {
         contacto = toContactoPayload(admin, "admin");
       }
     }
 
     if (!contacto) {
       return NextResponse.json(
-        { ok: false, error: "No hay un numero de telefono de profesor/admin configurado" },
+        { ok: false, error: "No hay un profesor o administrador configurado" },
         { status: 404 }
       );
     }

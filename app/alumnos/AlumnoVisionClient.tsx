@@ -9177,7 +9177,13 @@ export default function AlumnoVisionClient({
                         >
                           <div className={`pf-a3-music-cover ${track.accentClass}`}>
                             {track.coverUrl ? (
-                              <img src={track.coverUrl} alt={track.title} className="pf-a3-music-image" loading="lazy" />
+                              <img
+                                src={track.coverUrl}
+                                alt={track.title}
+                                className="pf-a3-music-image"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
                             ) : (
                               <div className="pf-a3-music-fallback-shell">
                                 <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
