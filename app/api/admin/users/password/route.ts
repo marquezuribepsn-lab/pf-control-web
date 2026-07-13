@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -40,8 +41,8 @@ type SafeUser = { id: string; email: string; role: string };
  */
 async function findUserSafe(opts: { userId?: string; email?: string }): Promise<SafeUser | null> {
   const byId = Boolean(opts.userId);
-  const where = byId ? "id = ?" : "email = ?";
-  const param = byId ? String(opts.userId) : String(opts.email);
+  const where = byId ? "id = ?" : "LOWER(email) = ?";
+  const param = byId ? String(opts.userId) : String(opts.email || "").trim().toLowerCase();
 
   try {
     const rows = (await db.$queryRawUnsafe(
@@ -121,11 +122,76 @@ export async function POST(req: NextRequest) {
 
     const user = await findUserSafe(userId ? { userId } : { email: bodyEmail });
 
+    // La ficha del alumno todavía no tiene cuenta de login: la creamos acá.
+    // Así "Establecer accesos" da de alta el acceso en vez de fallar.
     if (!user) {
-      return NextResponse.json(
-        { message: "No se encontró la cuenta del alumno. Verificá el email en la ficha." },
-        { status: 404 }
-      );
+      const createEmail = newEmail || bodyEmail;
+      if (!createEmail || !isValidEmail(createEmail)) {
+        return NextResponse.json(
+          { message: "Cargá un email válido en la ficha para crear el acceso del alumno." },
+          { status: 400 }
+        );
+      }
+
+      const nextPassword = customPassword || generateTemporaryPassword();
+      if (nextPassword.length < 6) {
+        return NextResponse.json(
+          { message: "La contraseña debe tener al menos 6 caracteres." },
+          { status: 400 }
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(nextPassword, 10);
+      const newId = randomUUID();
+      const nombre = String(body?.nombre || "").trim() || "Sin nombre";
+      // Prisma/SQLite guarda DateTime como epoch en milisegundos (número), no ISO.
+      // Usar ms evita generar filas con datos inconsistentes (P2023) al leerlas.
+      const nowMs = Date.now();
+
+      try {
+        // emailVerified=1 y estado='activo': el admin habilita el acceso directo,
+        // por eso la cuenta puede iniciar sesión sin el paso de verificación por mail.
+        // fechaNacimiento: su DEFAULT es un string que Prisma no puede parsear (P2023).
+        // Lo fijamos como epoch ms (2000-01-01) para que la fila sea 100% legible.
+        const fechaNacimientoMs = Date.UTC(2000, 0, 1);
+        await db.$executeRawUnsafe(
+          `INSERT INTO users (id, email, password, role, "emailVerified", estado, "updatedAt", "createdAt", "fechaNacimiento", "nombreCompleto") VALUES (?, ?, ?, 'CLIENTE', 1, 'activo', ?, ?, ?, ?)`,
+          newId,
+          createEmail,
+          hashedPassword,
+          nowMs,
+          nowMs,
+          fechaNacimientoMs,
+          nombre
+        );
+      } catch (error) {
+        console.error("[admin/users/password] create account error", error);
+        return NextResponse.json(
+          { message: "No se pudo crear el acceso. Puede que el email ya esté en uso." },
+          { status: 409 }
+        );
+      }
+
+      const snapshot = await upsertClientPasswordSnapshot({
+        userId: newId,
+        email: createEmail,
+        visiblePassword: nextPassword,
+        source: "admin_reset",
+        updatedByRole: "ADMIN",
+        updatedByEmail: normalizeEmail(session.user.email),
+      });
+
+      return NextResponse.json({
+        ok: true,
+        message: "Acceso creado. Compartí el email y la contraseña con el alumno.",
+        created: true,
+        userId: newId,
+        email: createEmail,
+        emailChanged: false,
+        passwordChanged: true,
+        visiblePassword: nextPassword,
+        snapshot,
+      });
     }
 
     if (user.role.toUpperCase() !== "CLIENTE") {

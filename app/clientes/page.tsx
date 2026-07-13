@@ -5574,6 +5574,7 @@ export default function ClientesPage() {
           newEmail: cambiaEmail ? emailNuevo : undefined,
           password: opts.generar ? "" : manual,
           generatePassword: opts.generar,
+          nombre: selectedClient?.nombre || "",
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -5582,16 +5583,19 @@ export default function ClientesPage() {
         email?: string;
         emailChanged?: boolean;
         passwordChanged?: boolean;
+        created?: boolean;
       };
       if (!res.ok) {
         emitToast("error", String(data.message || "No se pudieron actualizar los accesos del alumno."));
         return;
       }
-      // Si cambió el email de login, sincronizamos el ancla y la ficha al valor confirmado.
-      if (data.emailChanged && data.email) {
-        setEmailOriginalAlumno(String(data.email).trim().toLowerCase());
+      // Sincronizamos el email ancla (y la ficha) con el email de login confirmado
+      // por el backend, ya sea porque se creó la cuenta o porque se renombró.
+      if (data.email) {
+        const emailConfirmado = String(data.email).trim().toLowerCase();
+        setEmailOriginalAlumno(emailConfirmado);
         if (selectedClientId) {
-          setMetaPatch(selectedClientId, { email: String(data.email).trim().toLowerCase() });
+          setMetaPatch(selectedClientId, { email: emailConfirmado });
         }
       }
       if (data.passwordChanged) {
