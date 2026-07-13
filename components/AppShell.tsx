@@ -2171,10 +2171,10 @@ export default function AppShell({
                 toast.phase === "enter" ? "pf-ios-toast-enter" : "pf-ios-toast-exit"
               } ${
                 toast.type === "success"
-                  ? "border-emerald-200/45 bg-gradient-to-r from-emerald-500/35 to-cyan-400/30 text-emerald-50"
+                  ? "border-emerald-300/55 bg-slate-950/92 text-emerald-50"
                   : toast.type === "warning"
-                  ? "border-amber-200/45 bg-gradient-to-r from-amber-500/35 to-orange-400/30 text-amber-50"
-                  : "border-rose-200/40 bg-rose-500/25 text-rose-50"
+                  ? "border-amber-300/55 bg-slate-950/92 text-amber-50"
+                  : "border-rose-300/55 bg-slate-950/92 text-rose-50"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -2194,7 +2194,7 @@ export default function AppShell({
                   <p className="mt-1 text-sm font-semibold leading-5">{toast.message}</p>
                 </div>
               </div>
-              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-black/20">
+              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-white/15">
                 <div className="pf-ios-toast-progress h-full rounded-full bg-white/70" />
               </div>
             </div>
