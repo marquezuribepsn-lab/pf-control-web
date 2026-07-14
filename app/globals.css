@@ -2089,6 +2089,17 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-subline {
   color: #c4d2e6 !important;
   -webkit-text-fill-color: #c4d2e6 !important;
 }
+/* Los títulos/subtítulos de las secciones del inicio (Musica, Carga rapida,
+   Peso y medidas...) van sobre paneles oscuros; en tema claro se pintaban
+   oscuros e ilegibles. Se conservan sus colores de diseño dentro del WebView. */
+html.pf-mobile-webview:not(#_) .pf-a3-section-title {
+  color: #f5f8fc !important;
+  -webkit-text-fill-color: #f5f8fc !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-section-subtitle {
+  color: #9eabba !important;
+  -webkit-text-fill-color: #9eabba !important;
+}
 
 .pf-a3-avatar-wrap {
   position: relative;
