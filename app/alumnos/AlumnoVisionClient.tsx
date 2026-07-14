@@ -9115,7 +9115,7 @@ export default function AlumnoVisionClient({
                   <p className="text-sm font-bold text-amber-200">{blockedGateMessage}</p>
                   <a
                     href="/alumnos/pagos?pay=1"
-                    className="mt-3 flex items-center justify-center rounded-xl bg-violet-500 py-2.5 text-sm font-black text-white active:opacity-80"
+                    className="mt-3 flex items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 py-2.5 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 active:opacity-80"
                   >
                     Ver opciones de pago
                   </a>

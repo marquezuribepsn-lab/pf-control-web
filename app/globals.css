@@ -2331,14 +2331,18 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
 
 .pf-a3-coach-card,
 .pf-a3-panel-block {
-  border-radius: 1.25rem;
-  border: 1px solid rgba(150, 180, 214, 0.18);
-  background-color: rgba(16, 24, 34, 0.62);
-  background-image: linear-gradient(168deg, rgba(34, 50, 68, 0.42), rgba(13, 21, 30, 0.22) 66%);
+  /* Rediseño inspirado en la tarjeta de /auth/login: borde blanco translúcido,
+     fondo slate-950 translúcido con vidrio esmerilado y esquinas más redondeadas. */
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(2, 6, 23, 0.55);
+  background-image: linear-gradient(168deg, rgba(30, 64, 120, 0.34), rgba(8, 15, 30, 0.22) 66%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow:
-    0 26px 54px -26px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(120, 156, 210, 0.05),
-    inset 0 1px 0 rgba(210, 227, 245, 0.06);
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(56, 189, 248, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* ── Fundido de entrada de los paneles del inicio ─────────────────────────── */
@@ -7116,7 +7120,7 @@ video.pf-a3-routine-log-video-frame {
 
   .pf-a3-coach-card,
   .pf-a3-panel-block {
-    border-radius: 0.86rem;
+    border-radius: 1.1rem;
   }
 
   .pf-a3-coach-card {

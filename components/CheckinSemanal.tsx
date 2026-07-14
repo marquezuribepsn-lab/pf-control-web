@@ -216,7 +216,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
   return (
     <div className="pf-a3-checkin-semanal space-y-4">
       {/* Form card */}
-      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wide text-white/80">
             ✍️ Check-in semanal
@@ -224,7 +224,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
           {myCheckins.length > 0 && (
             <button
               onClick={() => setShowHistory((v) => !v)}
-              className="text-xs text-violet-400/70 hover:text-violet-300 transition-colors"
+              className="text-xs text-cyan-300/70 hover:text-cyan-200 transition-colors"
             >
               {showHistory ? "Ocultar historial" : `Ver historial (${myCheckins.length})`}
             </button>
@@ -249,7 +249,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
             {/* Claude analysis result */}
             {analyzing && (
               <div className="mt-2 flex items-center gap-2 text-xs text-white/40">
-                <span className="inline-block h-3 w-3 animate-spin rounded-full border border-white/20 border-t-violet-400" />
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border border-white/20 border-t-cyan-400" />
                 Analizando con IA…
               </div>
             )}
@@ -283,7 +283,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
                     onClick={() => setSensacion(opt.id)}
                     className={`flex flex-1 flex-col items-center gap-1 rounded-xl border py-2.5 transition-all ${
                       sensacion === opt.id
-                        ? "border-violet-400/60 bg-violet-500/15 text-white"
+                        ? "border-cyan-300/55 bg-cyan-500/15 text-white"
                         : "border-white/8 bg-white/[0.03] text-white/40 hover:border-white/20 hover:text-white/70"
                     }`}
                   >
@@ -326,7 +326,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
                   onChange={(e) => setDolorDetalle(e.target.value)}
                   placeholder="¿Dónde? ¿Cuándo duele? (opcional)"
                   rows={2}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-violet-500/40"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
                 />
               )}
             </div>
@@ -342,13 +342,13 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
                 onChange={(e) => setCambios(e.target.value)}
                 placeholder="Ej: estuve de viaje, cambie el trabajo, dormí mal..."
                 rows={2}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-violet-500/40"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
               />
             </div>
 
             <button
               onClick={handleSubmit}
-              className="w-full rounded-xl bg-violet-500 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/20 hover:bg-violet-400 active:scale-95 transition-all"
+              className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:from-cyan-300 hover:to-blue-400 active:scale-95"
             >
               Enviar check-in 📤
             </button>
