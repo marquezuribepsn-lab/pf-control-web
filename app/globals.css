@@ -2037,7 +2037,10 @@ select:-webkit-autofill {
   font-size: clamp(2rem, 4.2vw, 2.25rem);
   line-height: 1;
   font-weight: 900;
-  color: #deeaf7;
+  color: #eaf1fb !important;
+  opacity: 1 !important;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 22px rgba(120, 162, 224, 0.28);
 }
 
 .pf-a3-home-student {
@@ -2046,12 +2049,18 @@ select:-webkit-autofill {
   font-size: clamp(1.95rem, 5vw, 2.6rem);
   line-height: 1;
   font-weight: 900;
-  color: #f9fbfe;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  letter-spacing: -0.015em;
+  text-shadow:
+    0 2px 30px rgba(249, 123, 52, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .pf-a3-home-subline {
   margin: 0.46rem 0 0;
-  color: #acc0d7;
+  color: #c4d2e6 !important;
+  opacity: 1 !important;
   font-size: 0.86rem;
   line-height: 1.2;
   font-weight: 600;
@@ -2132,19 +2141,60 @@ select:-webkit-autofill {
 .pf-a3-home-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.86rem;
-  padding: 0.04rem 0;
+  gap: 1.05rem;
+  padding: 0.2rem 0 0;
 }
 
 .pf-a3-coach-card,
 .pf-a3-panel-block {
-  border-radius: 1rem;
-  border: 1px solid rgba(145, 175, 209, 0.28);
-  background-color: rgba(13, 22, 32, 0.9);
-  background-image: linear-gradient(168deg, rgba(28, 42, 58, 0.55), rgba(12, 20, 29, 0.35) 62%);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(150, 180, 214, 0.18);
+  background-color: rgba(16, 24, 34, 0.62);
+  background-image: linear-gradient(168deg, rgba(34, 50, 68, 0.42), rgba(13, 21, 30, 0.22) 66%);
   box-shadow:
-    0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(208, 225, 243, 0.07);
+    0 26px 54px -26px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(120, 156, 210, 0.05),
+    inset 0 1px 0 rgba(210, 227, 245, 0.06);
+}
+
+/* ── Fundido de entrada de los paneles del inicio ─────────────────────────── */
+@keyframes pf-a3-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.pf-a3-home-intro,
+.pf-a3-avatar-wrap,
+.pf-a3-home-status-row,
+.pf-a3-home-stack > * {
+  animation: pf-a3-panel-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+.pf-a3-home-intro { animation-delay: 20ms; }
+.pf-a3-avatar-wrap { animation-delay: 70ms; }
+.pf-a3-home-status-row { animation-delay: 100ms; }
+.pf-a3-home-stack > *:nth-child(1) { animation-delay: 130ms; }
+.pf-a3-home-stack > *:nth-child(2) { animation-delay: 175ms; }
+.pf-a3-home-stack > *:nth-child(3) { animation-delay: 215ms; }
+.pf-a3-home-stack > *:nth-child(4) { animation-delay: 250ms; }
+.pf-a3-home-stack > *:nth-child(5) { animation-delay: 280ms; }
+.pf-a3-home-stack > *:nth-child(n + 6) { animation-delay: 305ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-a3-home-intro,
+  .pf-a3-avatar-wrap,
+  .pf-a3-home-status-row,
+  .pf-a3-home-stack > * {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 .pf-a3-coach-card {
