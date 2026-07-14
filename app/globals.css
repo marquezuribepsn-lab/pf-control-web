@@ -2231,6 +2231,25 @@ html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-violet-400"]
   color: rgba(167, 139, 250, 0.7) !important;
   -webkit-text-fill-color: rgba(167, 139, 250, 0.7) !important;
 }
+/* Tarjeta de "Vista previa" de música (dentro del panel Musica del inicio):
+   usa bg-slate-950/bg-slate-900 + border-slate-500/border-white, que una
+   regla global de tema claro (pensada para NutritionPlanner) convierte en
+   panel BLANCO — se ve como una tarjeta blanca fuera de lugar sobre el
+   resto oscuro del inicio. Se restaura el fondo oscuro original solo aquí. */
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="bg-slate-950"] {
+  background-color: rgba(2, 6, 23, 0.55) !important;
+  border-color: rgba(100, 116, 139, 0.35) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="bg-slate-900"] {
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/1"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
 
 .pf-a3-avatar-wrap {
   position: relative;
