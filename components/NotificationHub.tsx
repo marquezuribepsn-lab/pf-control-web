@@ -152,6 +152,16 @@ const STYLES = `
 .pf-notif-empty { text-align: center; padding: 60px 20px; color: #8997a6; }
 .pf-notif-empty .pf-notif-empty-emoji { font-size: 34px; }
 .pf-notif-empty p { margin: 10px 0 0; font-size: 13px; }
+/* El panel es siempre oscuro (fondo #0f151c fijo), pero las reglas globales
+   de tema claro (html[data-pf-theme=light] .pf-training-shell h1..h5,p)
+   repintan estos títulos/textos en tonos oscuros con !important, dejándolos
+   ilegibles sobre el panel oscuro. Reforzamos aquí con el mismo truco de
+   especificidad (":not(#_)" agrega un componente de tipo ID) para ganar
+   siempre, sea cual sea el tema del dispositivo. */
+.pf-notif-panel:not(#_) .pf-notif-title { color: #edf3fa !important; }
+.pf-notif-panel:not(#_) .pf-notif-ntitle { color: #edf3fa !important; }
+.pf-notif-panel:not(#_) .pf-notif-text { color: #c4ced9 !important; }
+.pf-notif-panel:not(#_) .pf-notif-empty p { color: #8997a6 !important; }
 `;
 
 export default function NotificationHub({ studentName, studentKey, derived = [] }: Props) {

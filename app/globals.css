@@ -2100,6 +2100,102 @@ html.pf-mobile-webview:not(#_) .pf-a3-section-subtitle {
   color: #9eabba !important;
   -webkit-text-fill-color: #9eabba !important;
 }
+/* Resto de textos del inicio: tarjeta del coach, tarjetas de música y panel
+   de peso/medidas. Mismo problema (tema claro pinta oscuro sobre fondo
+   forzado oscuro del WebView), mismo arreglo: reafirmar el color de diseño
+   con especificidad elevada, solo dentro de .pf-a3-home-stack / .pf-a3-home-head. */
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-name {
+  color: #f9fbfd !important;
+  -webkit-text-fill-color: #f9fbfd !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-role {
+  color: #b4c6da !important;
+  -webkit-text-fill-color: #b4c6da !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-meta-item p {
+  color: #f5f8fc !important;
+  -webkit-text-fill-color: #f5f8fc !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-title {
+  color: #f2f6fa !important;
+  -webkit-text-fill-color: #f2f6fa !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-artist {
+  color: #a4b9d0 !important;
+  -webkit-text-fill-color: #a4b9d0 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-hint {
+  color: #95aac0 !important;
+  -webkit-text-fill-color: #95aac0 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-weight-value {
+  color: #f4f8fc !important;
+  -webkit-text-fill-color: #f4f8fc !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-weight-unit {
+  color: #a2b7cf !important;
+  -webkit-text-fill-color: #a2b7cf !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-weight-label {
+  color: #d3e3f4 !important;
+  -webkit-text-fill-color: #d3e3f4 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-chart-footnote {
+  color: #9db2cb !important;
+  -webkit-text-fill-color: #9db2cb !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-bmi-kicker {
+  color: #acc1da !important;
+  -webkit-text-fill-color: #acc1da !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-bmi-value {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-bmi-detail {
+  color: #dce8f6 !important;
+  -webkit-text-fill-color: #dce8f6 !important;
+}
+/* Clases utilitarias de Tailwind usadas puntualmente dentro del inicio
+   (tarjeta de reproducción de música y sparklines de grasa/músculo). El
+   mapeo de tema claro las repinta oscuras vía selectores [class*="text-..."];
+   se restauran aquí sus colores de diseño originales. */
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-amber-200 {
+  color: #fde68a !important;
+  -webkit-text-fill-color: #fde68a !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-400 {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-300 {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-200 {
+  color: #e2e8f0 !important;
+  -webkit-text-fill-color: #e2e8f0 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-white {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-white\/95 {
+  color: rgba(255, 255, 255, 0.95) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-white\/30 {
+  color: rgba(255, 255, 255, 0.3) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.3) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-rose-300\/80 {
+  color: rgba(253, 164, 175, 0.8) !important;
+  -webkit-text-fill-color: rgba(253, 164, 175, 0.8) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-cyan-300\/80 {
+  color: rgba(103, 232, 249, 0.8) !important;
+  -webkit-text-fill-color: rgba(103, 232, 249, 0.8) !important;
+}
 
 .pf-a3-avatar-wrap {
   position: relative;
