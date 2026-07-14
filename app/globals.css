@@ -2196,6 +2196,41 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-cyan-300\/80 {
   color: rgba(103, 232, 249, 0.8) !important;
   -webkit-text-fill-color: rgba(103, 232, 249, 0.8) !important;
 }
+/* Tarjeta de "Check-in semanal" (parte final del inicio): usa utilidades
+   text-white/NN de Tailwind para toda su jerarquía de texto (título,
+   preguntas 1/2/3, resumen, historial). El mapeo de tema claro las repinta
+   oscuras vía [class*="text-white/N"], invisibles sobre el fondo oscuro
+   forzado del WebView. Se restauran por nivel de opacidad; el orden importa:
+   las reglas de opacidad específica van después de la genérica para ganar
+   el empate de especificidad en clases como "text-white/70". */
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white/8"] {
+  color: rgba(255, 255, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.8) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white/7"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white/5"] {
+  color: rgba(255, 255, 255, 0.5) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white/4"] {
+  color: rgba(255, 255, 255, 0.4) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.4) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-white/3"] {
+  color: rgba(255, 255, 255, 0.3) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.3) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-checkin-semanal [class*="text-violet-400"] {
+  color: rgba(167, 139, 250, 0.7) !important;
+  -webkit-text-fill-color: rgba(167, 139, 250, 0.7) !important;
+}
 
 .pf-a3-avatar-wrap {
   position: relative;

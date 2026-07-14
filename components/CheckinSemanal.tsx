@@ -214,7 +214,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
   void sensacionOpt;
 
   return (
-    <div className="space-y-4">
+    <div className="pf-a3-checkin-semanal space-y-4">
       {/* Form card */}
       <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
         <div className="mb-4 flex items-center justify-between">
