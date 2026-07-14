@@ -2067,6 +2067,29 @@ select:-webkit-autofill {
   max-width: 30ch;
 }
 
+/*
+ * En el WebView de la app (pf-mobile-webview) el fondo del inicio se fuerza
+ * siempre oscuro (modo maxperf). Si el dispositivo está en tema claro, las
+ * reglas de light theme pintan el saludo (p) y el nombre (h1) en tonos
+ * oscuros -> texto oscuro sobre fondo oscuro = ilegible. Forzamos aquí el
+ * hero en claro pase lo que pase, con `:not(#_)` para elevar la
+ * especificidad por encima de `html[data-pf-theme=light] .pf-training-shell p`.
+ * Solo afecta al WebView de la app; en el navegador de escritorio con tema
+ * claro el fondo es claro y el hero conserva su color oscuro legible.
+ */
+html.pf-mobile-webview:not(#_) .pf-a3-home-greeting {
+  color: #eaf1fb !important;
+  -webkit-text-fill-color: #eaf1fb !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-student {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-subline {
+  color: #c4d2e6 !important;
+  -webkit-text-fill-color: #c4d2e6 !important;
+}
+
 .pf-a3-avatar-wrap {
   position: relative;
   width: 78px;
