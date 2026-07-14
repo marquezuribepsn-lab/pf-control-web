@@ -1,6 +1,7 @@
 'use client';
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import PasswordRevealInput from "@/components/PasswordRevealInput";
 import { Suspense, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -518,10 +519,9 @@ function LoginPageContent() {
 
               <label className="grid gap-2 text-sm font-semibold text-slate-200">
                 Contraseña
-                <input
-                  type="password"
+                <PasswordRevealInput
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={setPassword}
                   className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-cyan-300/55 focus:bg-slate-900"
                   placeholder="Ingresa tu contraseña"
                   required
