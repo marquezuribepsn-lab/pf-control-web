@@ -86,20 +86,22 @@ const steps = [
 
 export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps) {
   const [step, setStep] = useState(0);
+  const [closing, setClosing] = useState(false);
 
   const isLast = step === steps.length - 1;
   const firstName = nombre ? nombre.split(" ")[0] : "";
 
+  function handleClose() {
+    setClosing(true);
+    window.setTimeout(() => markDone(onDone), 200);
+  }
+
   function handleNext() {
     if (isLast) {
-      markDone(onDone);
+      handleClose();
     } else {
       setStep((s) => s + 1);
     }
-  }
-
-  function handleClose() {
-    markDone(onDone);
   }
 
   return (
@@ -107,9 +109,15 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
       role="dialog"
       aria-modal="true"
       aria-label="Bienvenida al entrenamiento"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 pf-dialog-fade-overlay${
+        closing ? " pf-dialog-is-closing" : ""
+      }`}
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#0e1012] shadow-2xl">
+      <div
+        className={`relative w-full max-w-md rounded-2xl border border-white/10 bg-[#0e1012] shadow-2xl pf-dialog-fade-panel${
+          closing ? " pf-dialog-is-closing" : ""
+        }`}
+      >
         {/* Close button */}
         <button
           type="button"

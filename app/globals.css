@@ -895,6 +895,49 @@ button[disabled] {
   }
 }
 
+/* ── Fundido genérico de entrada/salida para diálogos y paneles sueltos
+   (OnboardingModal y similares que se montan/desmontan por condición en JS,
+   a diferencia de .pf-modal-overlay que se queda montado y usa data-open).
+   Se agrega la clase .pf-dialog-is-closing justo antes de desmontar (con un
+   setTimeout que coincide con la duración de la animación de salida) para
+   lograr un fundido real de salida en vez de un corte abrupto. ─────────── */
+@keyframes pf-dialog-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pf-dialog-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes pf-dialog-pop-in {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes pf-dialog-pop-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.96) translateY(6px); }
+}
+
+.pf-dialog-fade-overlay {
+  animation: pf-dialog-fade-in 220ms ease both;
+}
+.pf-dialog-fade-overlay.pf-dialog-is-closing {
+  animation: pf-dialog-fade-out 200ms ease both;
+}
+.pf-dialog-fade-panel {
+  animation: pf-dialog-pop-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pf-dialog-fade-panel.pf-dialog-is-closing {
+  animation: pf-dialog-pop-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-dialog-fade-overlay,
+  .pf-dialog-fade-panel {
+    animation: none !important;
+  }
+}
+
 /* ── Expand/collapse animated section ───────────────────────────────────── */
 .pf-expand-wrap {
   display: grid;

@@ -225,67 +225,71 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
           />
         </div>
 
-        {activePicker === "agua" ? (
-          <div className="pf-a3-ring-picker">
-            <div className="pf-a3-ring-picker-head">
-              <span className="pf-a3-ring-picker-title">Vasos de agua hoy</span>
-              <button
-                type="button"
-                className="pf-a3-ring-picker-close"
-                onClick={() => setActivePicker(null)}
-                aria-label="Cerrar selector de agua"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-            <div className="pf-a3-ring-picker-chips">
-              {AGUA_OPTIONS.map((opt) => (
+        <div className="pf-expand-wrap" data-open={activePicker === "agua" ? "true" : "false"}>
+          <div className="pf-expand-inner">
+            <div className="pf-a3-ring-picker">
+              <div className="pf-a3-ring-picker-head">
+                <span className="pf-a3-ring-picker-title">Vasos de agua hoy</span>
                 <button
-                  key={opt}
                   type="button"
-                  className={`pf-a3-ring-picker-chip${opt === vasos ? " pf-a3-ring-picker-chip-active" : ""}`}
-                  onClick={() => elegirAgua(opt)}
-                  aria-label={`${opt} vaso${opt === 1 ? "" : "s"} de agua`}
+                  className="pf-a3-ring-picker-close"
+                  onClick={() => setActivePicker(null)}
+                  aria-label="Cerrar selector de agua"
                 >
-                  {opt}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
+                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                  </svg>
                 </button>
-              ))}
+              </div>
+              <div className="pf-a3-ring-picker-chips">
+                {AGUA_OPTIONS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`pf-a3-ring-picker-chip${opt === vasos ? " pf-a3-ring-picker-chip-active" : ""}`}
+                    onClick={() => elegirAgua(opt)}
+                    aria-label={`${opt} vaso${opt === 1 ? "" : "s"} de agua`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
+        </div>
 
-        {activePicker === "sueno" ? (
-          <div className="pf-a3-ring-picker">
-            <div className="pf-a3-ring-picker-head">
-              <span className="pf-a3-ring-picker-title">Horas de sueño anoche</span>
-              <button
-                type="button"
-                className="pf-a3-ring-picker-close"
-                onClick={() => setActivePicker(null)}
-                aria-label="Cerrar selector de sueño"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-            <div className="pf-a3-ring-picker-chips">
-              {SUENO_OPTIONS.map((opt) => (
+        <div className="pf-expand-wrap" data-open={activePicker === "sueno" ? "true" : "false"}>
+          <div className="pf-expand-inner">
+            <div className="pf-a3-ring-picker">
+              <div className="pf-a3-ring-picker-head">
+                <span className="pf-a3-ring-picker-title">Horas de sueño anoche</span>
                 <button
-                  key={opt}
                   type="button"
-                  className={`pf-a3-ring-picker-chip${opt === horasSueno ? " pf-a3-ring-picker-chip-active" : ""}`}
-                  onClick={() => elegirSueno(opt)}
-                  aria-label={`${formatHoras(opt)} de sueño`}
+                  className="pf-a3-ring-picker-close"
+                  onClick={() => setActivePicker(null)}
+                  aria-label="Cerrar selector de sueño"
                 >
-                  {formatHoras(opt)}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
+                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                  </svg>
                 </button>
-              ))}
+              </div>
+              <div className="pf-a3-ring-picker-chips">
+                {SUENO_OPTIONS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`pf-a3-ring-picker-chip${opt === horasSueno ? " pf-a3-ring-picker-chip-active" : ""}`}
+                    onClick={() => elegirSueno(opt)}
+                    aria-label={`${formatHoras(opt)} de sueño`}
+                  >
+                    {formatHoras(opt)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
+        </div>
       </div>
     </>
   );

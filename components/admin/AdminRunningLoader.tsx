@@ -86,14 +86,18 @@ export default function AdminRunningLoaderOverlay({
     <div
       className={mergeClassNames(
         positionClass,
-        "z-[120] flex items-center justify-center",
+        "z-[120] flex items-center justify-center pf-dialog-fade-overlay",
         "bg-slate-950/60 backdrop-blur-sm",
         backdropClassName,
         className
       )}
       aria-live={ariaLive}
     >
-      <AdminRunningLoaderCard message={message} detail={detail} className={cardClassName} />
+      <AdminRunningLoaderCard
+        message={message}
+        detail={detail}
+        className={mergeClassNames("pf-dialog-fade-panel", cardClassName)}
+      />
     </div>
   );
 }

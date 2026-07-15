@@ -176,43 +176,45 @@ export default function FraseDelDia() {
         </span>
       </button>
 
-      {expanded && (
-        <div
-          style={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "flex-end",
-            marginTop: "0.65rem",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleShare}
+      <div className="pf-expand-wrap" data-open={expanded ? "true" : "false"}>
+        <div className="pf-expand-inner">
+          <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.34rem",
-              border: "1px solid rgba(125, 211, 252, 0.4)",
-              background: "rgba(56, 189, 248, 0.12)",
-              color: "#e0f2fe",
-              borderRadius: "999px",
-              padding: "0.3rem 0.7rem",
-              fontSize: "11.5px",
-              fontWeight: 700,
-              cursor: "pointer",
-              backdropFilter: "blur(4px)",
+              position: "relative",
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "0.65rem",
             }}
           >
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <circle cx="18" cy="5" r="2.6" />
-              <circle cx="6" cy="12" r="2.6" />
-              <circle cx="18" cy="19" r="2.6" />
-              <path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4" strokeLinecap="round" />
-            </svg>
-            {shareMsg ?? "Compartir"}
-          </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.34rem",
+                border: "1px solid rgba(125, 211, 252, 0.4)",
+                background: "rgba(56, 189, 248, 0.12)",
+                color: "#e0f2fe",
+                borderRadius: "999px",
+                padding: "0.3rem 0.7rem",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                cursor: "pointer",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <circle cx="18" cy="5" r="2.6" />
+                <circle cx="6" cy="12" r="2.6" />
+                <circle cx="18" cy="19" r="2.6" />
+                <path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4" strokeLinecap="round" />
+              </svg>
+              {shareMsg ?? "Compartir"}
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

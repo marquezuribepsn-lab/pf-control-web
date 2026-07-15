@@ -114,15 +114,24 @@ const STYLES = `
 .pf-notif-backdrop {
   position: fixed; inset: 0; z-index: 2147482000; background: rgba(4, 6, 8,0.55);
   backdrop-filter: blur(2px);
+  animation: pf-notif-fade-in .18s ease both;
 }
+.pf-notif-backdrop.pf-notif-closing { animation: pf-notif-fade-out .2s ease both; }
+@keyframes pf-notif-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pf-notif-fade-out { from { opacity: 1; } to { opacity: 0; } }
 .pf-notif-panel {
   position: fixed; z-index: 2147482001; top: 0; right: 0; height: 100dvh; width: min(420px, 100vw);
   background: #0f151c; color: #edf3fa; display: flex; flex-direction: column;
   border-left: 1px solid rgba(117, 161, 215,0.22); box-shadow: -20px 0 60px rgba(0,0,0,0.5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  animation: pf-notif-slide .22s ease;
+  animation: pf-notif-slide-in .24s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes pf-notif-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.pf-notif-panel.pf-notif-closing { animation: pf-notif-slide-out .2s cubic-bezier(0.4, 0, 1, 1) both; }
+@keyframes pf-notif-slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes pf-notif-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pf-notif-backdrop, .pf-notif-panel { animation: none !important; }
+}
 .pf-notif-head { padding: 18px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
 .pf-notif-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .pf-notif-title { font-size: 18px; font-weight: 900; margin: 0; }
@@ -175,6 +184,7 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
   });
 
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [tab, setTab] = useState<"todas" | NotifTipo>("todas");
   const [mounted, setMounted] = useState(false);
   const [localRead, setLocalRead] = useState<Set<string>>(new Set());
@@ -309,14 +319,22 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
     persistLocalRead(next);
   }, [setStored, matchesStudent, localRead, unified, persistLocalRead]);
 
+  const closePanel = useCallback(() => {
+    setClosing(true);
+    window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, 200);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") closePanel();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, closePanel]);
 
   const showBadge = mounted && unreadCount > 0;
 
@@ -346,15 +364,23 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
 
       {open && (
         <>
-          <div className="pf-notif-backdrop" onClick={() => setOpen(false)} />
-          <aside className="pf-notif-panel" role="dialog" aria-modal="true" aria-label="Notificaciones">
+          <div
+            className={`pf-notif-backdrop${closing ? " pf-notif-closing" : ""}`}
+            onClick={closePanel}
+          />
+          <aside
+            className={`pf-notif-panel${closing ? " pf-notif-closing" : ""}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Notificaciones"
+          >
             <div className="pf-notif-head">
               <div className="pf-notif-head-row">
                 <h2 className="pf-notif-title">
                   <small>Tu hub</small>
                   Notificaciones
                 </h2>
-                <button type="button" className="pf-notif-close" onClick={() => setOpen(false)} aria-label="Cerrar">
+                <button type="button" className="pf-notif-close" onClick={closePanel} aria-label="Cerrar">
                   ✕
                 </button>
               </div>
