@@ -164,51 +164,55 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
         </button>
       </div>
 
-      <div className="pf-a3-rings-row">
-        <Ring
-          pct={(entrenos / ENTRENOS_META) * 100}
-          color="#4ade80"
-          trackColor="rgba(74, 222, 128, 0.14)"
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-              <path d="M6.5 8.5v7M17.5 8.5v7" strokeLinecap="round" />
-              <path d="M3.5 10.5v3M20.5 10.5v3" strokeLinecap="round" />
-              <path d="M6.5 12h11" strokeLinecap="round" />
-            </svg>
-          }
-          value={`${entrenos}/${ENTRENOS_META}`}
-          label="Entrenos esta semana"
-          ariaLabel="Marcar un entrenamiento de esta semana como completado"
-          onClick={marcarEntreno}
-        />
-        <Ring
-          pct={(vasos / AGUA_META) * 100}
-          color="#38bdf8"
-          trackColor="rgba(56, 189, 248, 0.14)"
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-              <path d="M12 3.8c2.7 3.1 5.2 6.2 5.2 9.2a5.2 5.2 0 1 1-10.4 0c0-3 2.5-6.1 5.2-9.2Z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          }
-          value={`${vasos}/${AGUA_META}`}
-          label="Agua vasos hoy"
-          ariaLabel="Sumar un vaso de agua de hoy"
-          onClick={sumarAgua}
-        />
-        <Ring
-          pct={horasSueno == null ? 0 : (horasSueno / 9) * 100}
-          color="#818cf8"
-          trackColor="rgba(129, 140, 248, 0.14)"
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-              <path d="M20 13.2a8 8 0 1 1-9.2-9.1 6.4 6.4 0 0 0 9.2 9.1Z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          }
-          value={formatHoras(horasSueno)}
-          label="Sueño esta noche"
-          ariaLabel="Registrar horas de sueño de anoche"
-          onClick={ciclarSueno}
-        />
+      <div className="pf-a3-panel-block pf-a3-rings-card">
+        <div className="pf-a3-rings-row">
+          <Ring
+            pct={(entrenos / ENTRENOS_META) * 100}
+            color="#4ade80"
+            trackColor="rgba(74, 222, 128, 0.14)"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <path d="M6.5 8.5v7M17.5 8.5v7" strokeLinecap="round" />
+                <path d="M3.5 10.5v3M20.5 10.5v3" strokeLinecap="round" />
+                <path d="M6.5 12h11" strokeLinecap="round" />
+              </svg>
+            }
+            value={`${entrenos}/${ENTRENOS_META}`}
+            label="Entrenos esta semana"
+            ariaLabel="Marcar un entrenamiento de esta semana como completado"
+            onClick={marcarEntreno}
+          />
+          <span className="pf-a3-ring-divider" aria-hidden="true" />
+          <Ring
+            pct={(vasos / AGUA_META) * 100}
+            color="#38bdf8"
+            trackColor="rgba(56, 189, 248, 0.14)"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <path d="M12 3.8c2.7 3.1 5.2 6.2 5.2 9.2a5.2 5.2 0 1 1-10.4 0c0-3 2.5-6.1 5.2-9.2Z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            }
+            value={`${vasos}/${AGUA_META}`}
+            label="Agua vasos hoy"
+            ariaLabel="Sumar un vaso de agua de hoy"
+            onClick={sumarAgua}
+          />
+          <span className="pf-a3-ring-divider" aria-hidden="true" />
+          <Ring
+            pct={horasSueno == null ? 0 : (horasSueno / 9) * 100}
+            color="#818cf8"
+            trackColor="rgba(129, 140, 248, 0.14)"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <path d="M20 13.2a8 8 0 1 1-9.2-9.1 6.4 6.4 0 0 0 9.2 9.1Z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            }
+            value={formatHoras(horasSueno)}
+            label="Sueño esta noche"
+            ariaLabel="Registrar horas de sueño de anoche"
+            onClick={ciclarSueno}
+          />
+        </div>
       </div>
     </>
   );

@@ -64,16 +64,14 @@ function formatRelative(iso: string): string {
   return new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
 }
 
-function EventRow({ event }: { event: HomeEvent }) {
+function EventCard({ event }: { event: HomeEvent }) {
   return (
-    <li className="pf-a3-activity-row">
+    <li className="pf-a3-activity-card-item">
       <span className="pf-a3-activity-icon" style={{ color: COLORS[event.tipo], background: `${COLORS[event.tipo]}1f` }} aria-hidden="true">
         {ICONS[event.tipo]}
       </span>
-      <span className="pf-a3-activity-body">
-        <span className="pf-a3-activity-label">{event.label}</span>
-        {event.detail ? <span className="pf-a3-activity-detail">{event.detail}</span> : null}
-      </span>
+      <span className="pf-a3-activity-label">{event.label}</span>
+      {event.detail ? <span className="pf-a3-activity-detail">{event.detail}</span> : null}
       <span className="pf-a3-activity-time">{formatRelative(event.timestamp)}</span>
     </li>
   );
@@ -94,7 +92,7 @@ export default function InicioActividadReciente() {
       ) : (
         <ul className="pf-a3-activity-list">
           {events.map((event) => (
-            <EventRow key={event.id} event={event} />
+            <EventCard key={event.id} event={event} />
           ))}
         </ul>
       )}

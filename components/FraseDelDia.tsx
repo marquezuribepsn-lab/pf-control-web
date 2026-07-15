@@ -47,7 +47,6 @@ export default function FraseDelDia() {
 
   const quote = useMemo(() => QUOTES[pickDailyIndex(QUOTES.length)], []);
   const fullText = quote.author ? `“${quote.text}” — ${quote.author}` : `“${quote.text}”`;
-  const isLong = quote.text.length > 70;
 
   const handleShare = async () => {
     try {
@@ -73,7 +72,7 @@ export default function FraseDelDia() {
         position: "relative",
         overflow: "hidden",
         borderRadius: "1.1rem",
-        padding: "1rem 1.15rem 1.05rem",
+        padding: "0.9rem 1rem",
         border: "1px solid rgba(255, 255, 255, 0.12)",
         backgroundColor: "rgba(2, 6, 23, 0.55)",
         backgroundImage:
@@ -85,137 +84,133 @@ export default function FraseDelDia() {
         color: "#fff",
       }}
     >
-      {/* icono de comilla decorativo, esquina superior derecha */}
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "0.4rem",
-          right: "0.6rem",
-          fontSize: "3.4rem",
-          lineHeight: 1,
-          fontWeight: 900,
-          color: "rgba(56, 189, 248, 0.14)",
-          fontFamily: "Georgia, serif",
-          pointerEvents: "none",
-        }}
-      >
-        &rdquo;
-      </span>
-
-      <div
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         style={{
           position: "relative",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.6rem",
-          marginBottom: "0.6rem",
+          gap: "0.75rem",
+          width: "100%",
+          border: 0,
+          background: "transparent",
+          padding: 0,
+          textAlign: "left",
+          cursor: "pointer",
+          color: "inherit",
         }}
       >
         <span
+          aria-hidden="true"
           style={{
-            fontSize: "10.5px",
-            fontWeight: 700,
-            letterSpacing: "0.11em",
-            textTransform: "uppercase",
-            color: "#7dd3fc",
-          }}
-        >
-          Frase del día
-        </span>
-
-        <button
-          type="button"
-          onClick={handleShare}
-          style={{
+            flex: "0 0 auto",
+            width: "42px",
+            height: "42px",
+            borderRadius: "0.85rem",
             display: "inline-flex",
             alignItems: "center",
-            gap: "0.34rem",
-            border: "1px solid rgba(125, 211, 252, 0.4)",
-            background: "rgba(56, 189, 248, 0.12)",
-            color: "#e0f2fe",
-            borderRadius: "999px",
-            padding: "0.3rem 0.7rem",
-            fontSize: "11.5px",
-            fontWeight: 700,
-            cursor: "pointer",
-            backdropFilter: "blur(4px)",
+            justifyContent: "center",
+            color: "#7dd3fc",
+            border: "1px solid rgba(125, 211, 252, 0.28)",
+            background: "linear-gradient(160deg, rgba(56, 189, 248, 0.18), rgba(37, 99, 235, 0.14))",
+            fontSize: "1.5rem",
+            fontWeight: 900,
+            fontFamily: "Georgia, serif",
+            lineHeight: 1,
           }}
         >
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <circle cx="18" cy="5" r="2.6" />
-            <circle cx="6" cy="12" r="2.6" />
-            <circle cx="18" cy="19" r="2.6" />
-            <path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4" strokeLinecap="round" />
+          &rdquo;
+        </span>
+
+        <span style={{ flex: "1 1 auto", minWidth: 0 }}>
+          <span
+            style={{
+              display: "block",
+              fontSize: "10.5px",
+              fontWeight: 700,
+              letterSpacing: "0.11em",
+              textTransform: "uppercase",
+              color: "#7dd3fc",
+              marginBottom: "0.22rem",
+            }}
+          >
+            Frase del día
+          </span>
+          <span
+            style={{
+              display: expanded ? "block" : "-webkit-box",
+              WebkitLineClamp: expanded ? undefined : 2,
+              WebkitBoxOrient: expanded ? undefined : ("vertical" as const),
+              overflow: expanded ? "visible" : "hidden",
+              fontSize: "0.92rem",
+              fontWeight: 600,
+              lineHeight: 1.4,
+              fontStyle: "italic",
+              letterSpacing: "-0.008em",
+            }}
+          >
+            {quote.text}
+          </span>
+          {expanded && quote.author ? (
+            <span style={{ display: "block", marginTop: "0.4rem", fontSize: "11.5px", fontWeight: 700, opacity: 0.9 }}>
+              — {quote.author}
+            </span>
+          ) : null}
+        </span>
+
+        <span
+          aria-hidden="true"
+          style={{
+            flex: "0 0 auto",
+            display: "inline-flex",
+            transform: expanded ? "rotate(90deg)" : "none",
+            transition: "transform 180ms ease",
+            color: "#9db1c9",
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          {shareMsg ?? "Compartir"}
-        </button>
-      </div>
+        </span>
+      </button>
 
-      <p
-        style={{
-          position: "relative",
-          margin: 0,
-          fontSize: "clamp(1.02rem, 4.2vw, 1.24rem)",
-          fontWeight: 600,
-          lineHeight: 1.4,
-          fontStyle: "italic",
-          letterSpacing: "-0.012em",
-          textShadow: "0 1px 10px rgba(25, 38, 71, 0.28)",
-          ...(expanded
-            ? {}
-            : {
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical" as const,
-                overflow: "hidden",
-              }),
-        }}
-      >
-        {quote.text}
-      </p>
-
-      {(quote.author || isLong) && (
+      {expanded && (
         <div
           style={{
             position: "relative",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "0.6rem",
-            marginTop: "0.7rem",
+            justifyContent: "flex-end",
+            marginTop: "0.65rem",
           }}
         >
-          <span style={{ fontSize: "11.5px", fontWeight: 700, opacity: 0.9 }}>
-            {expanded && quote.author ? `— ${quote.author}` : ""}
-          </span>
-
-          {isLong ? (
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.28rem",
-                border: 0,
-                background: "transparent",
-                color: "#fff",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                opacity: 0.95,
-              }}
-            >
-              {expanded ? "Ver menos" : "Ver completa"}
-              <span aria-hidden="true">{expanded ? "↑" : "→"}</span>
-            </button>
-          ) : (
-            <span />
-          )}
+          <button
+            type="button"
+            onClick={handleShare}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.34rem",
+              border: "1px solid rgba(125, 211, 252, 0.4)",
+              background: "rgba(56, 189, 248, 0.12)",
+              color: "#e0f2fe",
+              borderRadius: "999px",
+              padding: "0.3rem 0.7rem",
+              fontSize: "11.5px",
+              fontWeight: 700,
+              cursor: "pointer",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="18" cy="5" r="2.6" />
+              <circle cx="6" cy="12" r="2.6" />
+              <circle cx="18" cy="19" r="2.6" />
+              <path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4" strokeLinecap="round" />
+            </svg>
+            {shareMsg ?? "Compartir"}
+          </button>
         </div>
       )}
     </section>

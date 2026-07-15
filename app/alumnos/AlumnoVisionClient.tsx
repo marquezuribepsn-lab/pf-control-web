@@ -9025,8 +9025,9 @@ export default function AlumnoVisionClient({
               />
             </div>
             <div className="pf-a3-home-intro">
-              <p className="pf-a3-home-greeting">{resolveGreeting()}</p>
-              <h1 className="pf-a3-home-student">{profileShortName}</h1>
+              <h1 className="pf-a3-home-student">
+                {resolveGreeting()}, <span className="pf-a3-home-name-accent">{profileShortName}</span>
+              </h1>
               <p className="pf-a3-home-subline">Preparado para comenzar a entrenar.</p>
             </div>
 
@@ -9367,21 +9368,46 @@ export default function AlumnoVisionClient({
               <InicioDiasSemana />
 
               <div className="pf-a3-compact-row">
-                <div className="pf-a3-panel-block pf-a3-compact-weight-card">
-                  <p className="pf-a3-compact-card-title">Peso</p>
-                  <p className="pf-a3-compact-weight-value">
-                    {formatWeightValue(weightLast7)}
-                    <span className="pf-a3-compact-weight-unit">kg</span>
-                  </p>
-                  <p className="pf-a3-compact-card-sub">Promedio últimos 7 días</p>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-compact-card-link"
-                  >
-                    Ver detalle
-                  </ReliableActionButton>
-                </div>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => goToCategory("progreso")}
+                  className="pf-a3-panel-block pf-a3-compact-weight-card"
+                >
+                  <div className="pf-a3-compact-card-head">
+                    <span className="pf-a3-compact-card-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-4 w-4">
+                        <circle cx="12" cy="12" r="8" />
+                        <path d="M12 8.5v3.5l2.2 2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <p className="pf-a3-compact-card-title">Peso</p>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="pf-a3-compact-card-chevron" aria-hidden="true">
+                      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+
+                  <div className="pf-a3-compact-weight-stats">
+                    <div className="pf-a3-compact-weight-stat">
+                      <p className="pf-a3-compact-weight-value">
+                        {formatWeightValue(weightLast7)}
+                        <span className="pf-a3-compact-weight-unit">kg</span>
+                      </p>
+                      <p className="pf-a3-compact-card-sub">Peso actual</p>
+                    </div>
+                    <div className="pf-a3-compact-weight-stat">
+                      <p className={`pf-a3-compact-weight-delta${weightDelta !== null && weightDelta > 0 ? " pf-a3-compact-weight-delta-up" : weightDelta !== null && weightDelta < 0 ? " pf-a3-compact-weight-delta-down" : ""}`}>
+                        {weightDelta === null ? "-" : `${weightDelta >= 0 ? "+" : ""}${weightDelta} kg`}
+                      </p>
+                      <p className="pf-a3-compact-card-sub">Vs. registro anterior</p>
+                    </div>
+                  </div>
+
+                  <div className="pf-a3-compact-weight-imc">
+                    <span>IMC</span>
+                    <strong>{bmiSnapshot ? bmiSnapshot.bmi : "-"}</strong>
+                    {bmiSnapshot ? <span className="pf-a3-compact-weight-imc-label">{bmiSnapshot.label}</span> : null}
+                  </div>
+                </ReliableActionButton>
 
                 <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
               </div>
