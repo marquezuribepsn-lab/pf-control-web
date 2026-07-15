@@ -9128,168 +9128,32 @@ export default function AlumnoVisionClient({
 
               {!isBlocked && <InicioAnillos onComenzarRutina={() => goToCategory("rutina")} />}
 
-              <article className="pf-a3-coach-card">
-                <div className="pf-a3-coach-top">
-                  <div className="pf-a3-coach-identity">
-                    <span className="pf-a3-coach-avatar" aria-hidden="true">
-                      {coachAvatarInitials}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="pf-a3-coach-name">{coachDisplayName}</p>
-                      <p className="pf-a3-coach-role">{coachRoleLabel}</p>
-                    </div>
-                  </div>
-                  <span className="pf-a3-coach-star" aria-hidden="true">
-                    ★
-                  </span>
-                </div>
-
-                <div className="pf-a3-coach-meta-row">
-                  <div className="pf-a3-coach-meta-item">
-                    <p>{coachPlanLabel}</p>
-                    <span>Membresia</span>
-                  </div>
-                  <div className="pf-a3-coach-meta-item">
-                    <p>{coachStartLabel}</p>
-                    <span>Desde</span>
-                  </div>
-                  <div className="pf-a3-coach-meta-item">
-                    <p>{coachEndLabel}</p>
-                    <span>Hasta</span>
-                  </div>
-                </div>
-              </article>
-
               {!isBlocked && <>
                 <FraseDelDia />
 
-                <section className="pf-a3-panel-block">
-                <div className="pf-a3-section-head">
-                  <div>
-                    <h2 className="pf-a3-section-title">Musica</h2>
-                    <p className="pf-a3-section-subtitle">
-                      {musicAssignments.length > 0 ? "Tu musica de entrenamiento" : "Playlist sugerida para hoy"}
-                    </p>
-                  </div>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("musica")}
-                    className="pf-a3-link-btn"
-                  >
-                    Ver
-                  </ReliableActionButton>
-                </div>
-
-                {selectedMusicAssignment ? (
-                  <div className="mt-3 overflow-hidden rounded-xl border border-slate-500/35 bg-slate-950/55 p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Vista previa</p>
-                        <h3 className="mt-1 break-words text-base font-black text-white">{selectedMusicDisplayName}</h3>
-                        <p className="mt-1 text-[11px] text-slate-300">
-                          Objetivo: {selectedMusicAssignment.objetivo || "General"}
-                          {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="pf-a2-pill">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
-                        <span className="pf-a2-pill">{resolveMusicContentTypeLabel(selectedMusicContentType)}</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/35 p-2">
-                      {selectedMusicPlayer.kind === "audio" ? (
-                        <audio
-                          controls
-                          preload="none"
-                          className="h-12 w-full"
-                          src={selectedMusicPlayer.src || undefined}
-                        />
-                      ) : (
-                        <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
-                          {showSelectedMusicCover && selectedMusicCoverUrl ? (
-                            <img
-                              src={selectedMusicCoverUrl}
-                              alt={selectedMusicDisplayName || "Portada de playlist"}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                              onError={() => setSelectedMusicCoverFailed(true)}
-                            />
-                          ) : (
-                            <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-4 text-left">
-                              <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/90">
-                                {resolveMusicPlatformLabel(selectedMusicPlatform)}
-                              </span>
-                              <div>
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
-                                  {resolveMusicContentTypeLabel(selectedMusicContentType)}
-                                </p>
-                                <p className="mt-1 line-clamp-2 text-sm font-black text-white/95">{selectedMusicDisplayName}</p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <ReliableActionButton
-                        type="button"
-                        onClick={() => goToCategory("musica")}
-                        className="pf-a2-solid-btn inline-flex rounded-lg px-3 py-1.5 text-xs font-semibold"
-                      >
-                        Ver en musica
-                      </ReliableActionButton>
-                      <ReliableActionButton
-                        type="button"
-                        onClick={() => openMusicPlaylistExternal(selectedMusicAssignment)}
-                        className="pf-a2-ghost-btn inline-flex rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                      >
-                        {resolveMusicOpenActionLabel(selectedMusicPlatform)}
-                      </ReliableActionButton>
-                    </div>
-                  </div>
-                ) : null}
-
-                {!selectedMusicAssignment ? (
-                  <div className="pf-a3-music-scroll" role="list" aria-label="Playlists recomendadas">
-                    {homeMusicCards.map((track) => {
-                      const coverInitials = getInitials(track.title);
-
-                      return (
-                        <ReliableActionButton
-                          key={track.id}
-                          type="button"
-                          onClick={() => handleHomeMusicCardPress(track)}
-                          className="pf-a3-music-card pf-a3-music-card-action"
-                          role="listitem"
-                          aria-label={`Abrir musica: ${track.title}`}
-                        >
-                          <div className={`pf-a3-music-cover ${track.accentClass}`}>
-                            <MusicCoverImage
-                              src={track.coverUrl}
-                              alt={track.title}
-                              imgClassName="pf-a3-music-image"
-                              fallback={
-                                <div className="pf-a3-music-fallback-shell">
-                                  <span className="pf-a3-music-fallback-platform">{resolveMusicPlatformLabel(track.platform)}</span>
-                                  <span className="pf-a3-music-fallback">{coverInitials}</span>
-                                  <span className="pf-a3-music-fallback-type">{resolveMusicContentTypeLabel(track.contentType)}</span>
-                                </div>
-                              }
-                            />
-                          </div>
-                          <p className="pf-a3-music-title">{track.title}</p>
-                          <p className="pf-a3-music-artist">{track.artist}</p>
-                          <p className="pf-a3-music-hint">
-                            {resolveMusicPlatformLabel(track.platform)} · {resolveMusicContentTypeLabel(track.contentType)}
-                          </p>
-                        </ReliableActionButton>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </section>
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => goToCategory("musica")}
+                  className="pf-a3-music-quick-btn"
+                  aria-label="Ir a Música"
+                >
+                  <span className="pf-a3-music-quick-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
+                      <path d="M4 14.5v-3a8 8 0 0 1 16 0v3" strokeLinecap="round" />
+                      <rect x="3" y="13.5" width="4" height="6" rx="1.6" />
+                      <rect x="17" y="13.5" width="4" height="6" rx="1.6" />
+                    </svg>
+                  </span>
+                  <span className="pf-a3-music-quick-text">
+                    <span className="pf-a3-music-quick-title">Música</span>
+                    <span className="pf-a3-music-quick-sub">
+                      {musicAssignments.length > 0 ? "Tu música de entrenamiento" : "Playlist sugerida para hoy"}
+                    </span>
+                  </span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="pf-a3-music-quick-chevron" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </ReliableActionButton>
 
               <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
@@ -9367,183 +9231,9 @@ export default function AlumnoVisionClient({
 
               <InicioDiasSemana />
 
-              <div className="pf-a3-compact-row">
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => goToCategory("progreso")}
-                  className="pf-a3-panel-block pf-a3-compact-weight-card"
-                >
-                  <div className="pf-a3-compact-card-head">
-                    <span className="pf-a3-compact-card-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-4 w-4">
-                        <circle cx="12" cy="12" r="8" />
-                        <path d="M12 8.5v3.5l2.2 2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <p className="pf-a3-compact-card-title">Peso</p>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="pf-a3-compact-card-chevron" aria-hidden="true">
-                      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-
-                  <div className="pf-a3-compact-weight-stats">
-                    <div className="pf-a3-compact-weight-stat">
-                      <p className="pf-a3-compact-weight-value">
-                        {formatWeightValue(weightLast7)}
-                        <span className="pf-a3-compact-weight-unit">kg</span>
-                      </p>
-                      <p className="pf-a3-compact-card-sub">Peso actual</p>
-                    </div>
-                    <div className="pf-a3-compact-weight-stat">
-                      <p className={`pf-a3-compact-weight-delta${weightDelta !== null && weightDelta > 0 ? " pf-a3-compact-weight-delta-up" : weightDelta !== null && weightDelta < 0 ? " pf-a3-compact-weight-delta-down" : ""}`}>
-                        {weightDelta === null ? "-" : `${weightDelta >= 0 ? "+" : ""}${weightDelta} kg`}
-                      </p>
-                      <p className="pf-a3-compact-card-sub">Vs. registro anterior</p>
-                    </div>
-                  </div>
-
-                  <div className="pf-a3-compact-weight-imc">
-                    <span>IMC</span>
-                    <strong>{bmiSnapshot ? bmiSnapshot.bmi : "-"}</strong>
-                    {bmiSnapshot ? <span className="pf-a3-compact-weight-imc-label">{bmiSnapshot.label}</span> : null}
-                  </div>
-                </ReliableActionButton>
-
-                <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
-              </div>
+              <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
 
               <InicioActividadReciente />
-
-              <section className="pf-a3-panel-block pf-a3-panel-block-flat">
-                <div className="pf-a3-section-head">
-                  <h2 className="pf-a3-section-title">Peso y medidas corporales</h2>
-                  <div className="pf-a3-head-actions">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={loadStorageState}
-                      className="pf-a3-icon-btn"
-                      aria-label="Actualizar peso"
-                      title="Actualizar"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-4 w-4" aria-hidden="true">
-                        <path d="M20 12a8 8 0 1 1-2.3-5.6" strokeLinecap="round" />
-                        <path d="M20 5v4h-4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </ReliableActionButton>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => goToCategory("progreso")}
-                      className="pf-a3-link-btn pf-a3-link-btn-strong"
-                      aria-label="Ir a progreso"
-                      title="Progreso"
-                    >
-                      Progreso
-                    </ReliableActionButton>
-                  </div>
-                </div>
-
-                <div className="pf-a3-weight-content">
-                  <div className="pf-a3-weight-kpi-grid">
-                    <div>
-                      <p className="pf-a3-weight-value">{formatWeightValue(weightLast7)}</p>
-                      <p className="pf-a3-weight-unit">kg</p>
-                      <p className="pf-a3-weight-label">7 dias</p>
-                    </div>
-                    <div>
-                      <p className="pf-a3-weight-value">{formatWeightValue(weightLast15)}</p>
-                      <p className="pf-a3-weight-unit">kg</p>
-                      <p className="pf-a3-weight-label">15 dias</p>
-                    </div>
-                    <div>
-                      <p className="pf-a3-weight-value">{formatWeightValue(weightHistoric)}</p>
-                      <p className="pf-a3-weight-unit">kg</p>
-                      <p className="pf-a3-weight-label">Historico</p>
-                    </div>
-                  </div>
-
-                  <div className="pf-a3-chart-wrap" aria-label="Evolucion de peso">
-                    <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none" role="img">
-                      <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
-                      <line x1="12" y1="20" x2="12" y2="148" className="pf-a3-chart-axis" />
-
-                      {weightSparkline ? (
-                        <>
-                          <polyline points={weightSparkline.points} className="pf-a3-chart-line" />
-                          <circle
-                            cx={Number.isFinite(weightSparkline.lastPointX) ? weightSparkline.lastPointX : 12}
-                            cy={Number.isFinite(weightSparkline.lastPointY) ? weightSparkline.lastPointY : 148}
-                            r="4"
-                            className="pf-a3-chart-dot"
-                          />
-                        </>
-                      ) : (
-                        <line x1="12" y1="120" x2="288" y2="120" className="pf-a3-chart-line pf-a3-chart-line-empty" />
-                      )}
-                    </svg>
-                    <p className="pf-a3-chart-footnote">
-                      {weightSparkline ? `Ultimo registro: ${weightSparkline.lastDateLabel}` : "Sin registros de peso"}
-                    </p>
-                  </div>
-
-                  <div className="pf-a3-bmi-grid">
-                    {bodyMetricsCards.map((metric) => (
-                      <article
-                        key={metric.key}
-                        className={`pf-a3-bmi-item ${metric.tone ? `pf-a3-bmi-item-${metric.tone}` : ""}`}
-                      >
-                        <p className="pf-a3-bmi-kicker">{metric.label}</p>
-                        <p className="pf-a3-bmi-value">{metric.value}</p>
-                        <p className="pf-a3-bmi-detail">{metric.detail}</p>
-                      </article>
-                    ))}
-                  </div>
-
-                  {(grasaSparkline || musculoSparkline) && (
-                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {/* Grasa % */}
-                      {grasaSparkline && (
-                        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4">
-                          <div className="mb-2 flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wide text-rose-300/80">% Grasa</p>
-                            <div className="flex items-center gap-2 text-xs text-white/50">
-                              <span>{grasaSparkline.first.toFixed(1)}%</span>
-                              <span className={grasaSparkline.last < grasaSparkline.first ? "text-emerald-400" : grasaSparkline.last > grasaSparkline.first ? "text-rose-400" : "text-white/40"}>
-                                → {grasaSparkline.last.toFixed(1)}%
-                              </span>
-                            </div>
-                          </div>
-                          <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none">
-                            <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
-                            <polyline points={grasaSparkline.points} fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx={288} cy={(() => { const v = grasaSparkline.points.split(" "); return parseFloat(v[v.length - 1].split(",")[1]); })()} r="4" fill="#f43f5e" />
-                          </svg>
-                          <p className="mt-1 text-[10px] text-white/30">Último: {grasaSparkline.lastDateLabel}</p>
-                        </div>
-                      )}
-                      {/* Músculo % */}
-                      {musculoSparkline && (
-                        <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                          <div className="mb-2 flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wide text-cyan-300/80">% Músculo</p>
-                            <div className="flex items-center gap-2 text-xs text-white/50">
-                              <span>{musculoSparkline.first.toFixed(1)}%</span>
-                              <span className={musculoSparkline.last > musculoSparkline.first ? "text-emerald-400" : musculoSparkline.last < musculoSparkline.first ? "text-rose-400" : "text-white/40"}>
-                                → {musculoSparkline.last.toFixed(1)}%
-                              </span>
-                            </div>
-                          </div>
-                          <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none">
-                            <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
-                            <polyline points={musculoSparkline.points} fill="none" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx={288} cy={(() => { const v = musculoSparkline.points.split(" "); return parseFloat(v[v.length - 1].split(",")[1]); })()} r="4" fill="#06b6d4" />
-                          </svg>
-                          <p className="mt-1 text-[10px] text-white/30">Último: {musculoSparkline.lastDateLabel}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </section>
               </>}
 
             </div>
