@@ -6,6 +6,14 @@ type SharedStateOptions = {
   key: string;
   legacyLocalStorageKey?: string;
   pollMs?: number;
+  /**
+   * Si es true, este hook sincroniza igual (guarda/reintenta) pero no dispara
+   * los toasts flotantes de "Cambios guardados"/"Sin conexion". Pensado para
+   * widgets livianos y auto-reportados (ej. anillos del inicio, bitacora de
+   * actividad reciente) donde el guardado es un detalle de implementacion,
+   * no una accion que el alumno necesite confirmar visualmente.
+   */
+  silentToasts?: boolean;
 };
 
 const NOTIFICATIONS_ENABLED_KEY = "pf-control-notifications-enabled-v1";
@@ -245,7 +253,7 @@ export function useSharedState<T>(
   initialValue: T,
   options: SharedStateOptions
 ): [T, Dispatch<SetStateAction<T>>, boolean] {
-  const { key, legacyLocalStorageKey, pollMs = 12000 } = options;
+  const { key, legacyLocalStorageKey, pollMs = 12000, silentToasts = false } = options;
   const [state, setState] = useState<T>(initialValue);
   const [loaded, setLoaded] = useState(false);
   const initialValueRef = useRef<T>(initialValue);
@@ -323,12 +331,16 @@ export function useSharedState<T>(
 
         if (consumeManualSaveIntent(key)) {
           maybeSendNotification(key);
-          emitInlineToast("success", "Cambios guardados correctamente");
+          if (!silentToasts) {
+            emitInlineToast("success", "Cambios guardados correctamente");
+          }
         }
       } catch {
         setPendingForKey(key, true);
         if (consumeManualSaveIntent(key)) {
-          emitInlineToast("error", "No se pudieron guardar los cambios");
+          if (!silentToasts) {
+            emitInlineToast("error", "No se pudieron guardar los cambios");
+          }
         }
       } finally {
         writeInFlightRef.current = false;
@@ -530,7 +542,7 @@ export function useSharedState<T>(
   }, [key, loaded, pollIntervalMs]);
 
   const guardedSetState: Dispatch<SetStateAction<T>> = useCallback((nextState) => {
-    if (typeof window !== "undefined" && !window.navigator.onLine) {
+    if (!silentToasts && typeof window !== "undefined" && !window.navigator.onLine) {
       const now = Date.now();
       if (now - lastOfflineWriteToastAtRef.current > OFFLINE_WRITE_TOAST_TTL_MS) {
         lastOfflineWriteToastAtRef.current = now;
@@ -542,7 +554,7 @@ export function useSharedState<T>(
     }
 
     setState(nextState);
-  }, []);
+  }, [silentToasts]);
 
   return [state, guardedSetState, loaded];
 }

@@ -128,6 +128,7 @@ export default function CheckinSemanal({ alumnoNombre, compact = false }: Props)
   const [checkinsRaw, setCheckinsRaw] = useSharedState<unknown[]>([], {
     key: CHECKIN_KEY,
     legacyLocalStorageKey: CHECKIN_KEY,
+    silentToasts: true,
   });
 
   const checkins = useMemo(() => normalizeCheckins(checkinsRaw), [checkinsRaw]);

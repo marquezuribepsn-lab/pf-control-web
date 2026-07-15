@@ -97,15 +97,15 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
 
   const [aguaRaw, setAguaRaw] = useSharedState<AguaState>(
     { fecha: today, vasos: 0 },
-    { key: AGUA_KEY, legacyLocalStorageKey: AGUA_KEY }
+    { key: AGUA_KEY, legacyLocalStorageKey: AGUA_KEY, silentToasts: true }
   );
   const [suenoRaw, setSuenoRaw] = useSharedState<SuenoState>(
     { fecha: today, horas: null },
-    { key: SUENO_KEY, legacyLocalStorageKey: SUENO_KEY }
+    { key: SUENO_KEY, legacyLocalStorageKey: SUENO_KEY, silentToasts: true }
   );
   const [entrenosRaw, setEntrenosRaw] = useSharedState<EntrenosState>(
     { semana: monday, completados: 0 },
-    { key: ENTRENOS_KEY, legacyLocalStorageKey: ENTRENOS_KEY }
+    { key: ENTRENOS_KEY, legacyLocalStorageKey: ENTRENOS_KEY, silentToasts: true }
   );
 
   const vasos = aguaRaw?.fecha === today ? Math.max(0, aguaRaw.vasos || 0) : 0;

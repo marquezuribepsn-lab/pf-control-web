@@ -47,6 +47,7 @@ export function useHomeEvents() {
   const [raw, setRaw] = useSharedState<unknown[]>([], {
     key: HOME_EVENTS_KEY,
     legacyLocalStorageKey: HOME_EVENTS_KEY,
+    silentToasts: true,
   });
 
   const events = normalize(raw);
