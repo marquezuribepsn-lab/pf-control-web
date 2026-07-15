@@ -1628,6 +1628,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #141922 48%, var(--pf-a2-bg-2) 100%);
   overflow-x: clip;
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
+  /* Aisla el stacking context de esta pantalla: sin esto, las luces
+     ambientales de abajo (::before/::after, position:fixed) no quedan
+     confinadas detrás de .pf-a2-shell y pueden pintarse por encima de las
+     tarjetas en vez de en el fondo. */
+  isolation: isolate;
 }
 
 .pf-alumno-v2::before,
@@ -1636,7 +1641,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: fixed;
   inset: auto;
   pointer-events: none;
-  z-index: 0;
+  /* Negativo: queda detrás de .pf-a2-shell (z-index: 1) dentro del stacking
+     context aislado de .pf-alumno-v2, sin dejar de estar "fijo" respecto al
+     viewport (isolation no cambia el containing block de position:fixed). */
+  z-index: -1;
   filter: blur(0);
   transform-origin: center;
 }
@@ -8719,7 +8727,14 @@ video.pf-a3-routine-log-video-frame {
       radial-gradient(74% 22% at 50% 0%, rgba(249, 123, 52, 0.34), transparent 66%),
       radial-gradient(82% 20% at 50% 100%, rgba(255, 150, 78, 0.24), transparent 70%) !important;
     background-repeat: no-repeat !important;
-    background-attachment: fixed !important;
+    /* "fixed" (en vez de "scroll") es un bug clásico de WKWebView/Android
+       WebView: el motor promueve este fondo a su propia capa de composición
+       y a veces la pinta por encima de elementos position:fixed (la barra
+       de navegación inferior, el borde superior), haciendo que el naranja
+       "tape" la barra en vez de quedar detrás. "scroll" evita ese bug —
+       el brillo se desplaza junto con el contenido en vez de quedar fijo
+       al viewport, un costo estético menor comparado con taparse la nav. */
+    background-attachment: scroll !important;
   }
 
   /* Los envoltorios internos van transparentes para que el naranja del root
