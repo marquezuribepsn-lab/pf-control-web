@@ -1657,11 +1657,11 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   border-radius: 0 0 56% 56%;
   transform: translateX(-50%);
   background:
-    radial-gradient(56% 80% at 14% 0%, rgba(249, 123, 52, 0.4), transparent 70%),
-    radial-gradient(56% 80% at 86% 2%, rgba(255, 150, 78, 0.34), transparent 70%),
-    linear-gradient(180deg, rgba(120, 156, 205, 0.34) 0%, rgba(94, 144, 201, 0.18) 42%, rgba(10, 13, 16, 0) 100%);
+    radial-gradient(56% 80% at 14% 0%, rgba(249, 123, 52, 0.24), transparent 70%),
+    radial-gradient(56% 80% at 86% 2%, rgba(255, 150, 78, 0.2), transparent 70%),
+    linear-gradient(180deg, rgba(120, 156, 205, 0.24) 0%, rgba(94, 144, 201, 0.12) 42%, rgba(10, 13, 16, 0) 100%);
   opacity: 0.98;
-  animation: none;
+  animation: pf-a2-glow-breathe 8s ease-in-out infinite;
 }
 
 .pf-alumno-v2::after {
@@ -1675,12 +1675,33 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
      ellos. Mezcla de violeta con toques de magenta cálido e índigo frío para
      romper la monotonía monocroma sin salirse del sistema. */
   background:
-    radial-gradient(42% 30% at 90% 12%, rgba(255, 150, 78, 0.26), transparent 72%),
-    radial-gradient(46% 40% at -2% 44%, rgba(249, 123, 52, 0.3), transparent 72%),
-    radial-gradient(46% 40% at 102% 56%, rgba(255, 140, 66, 0.28), transparent 72%),
-    radial-gradient(50% 32% at 12% 90%, rgba(255, 160, 96, 0.24), transparent 74%);
+    radial-gradient(42% 30% at 90% 12%, rgba(255, 150, 78, 0.15), transparent 72%),
+    radial-gradient(46% 40% at -2% 44%, rgba(249, 123, 52, 0.17), transparent 72%),
+    radial-gradient(46% 40% at 102% 56%, rgba(255, 140, 66, 0.16), transparent 72%),
+    radial-gradient(50% 32% at 12% 90%, rgba(255, 160, 96, 0.14), transparent 74%);
   opacity: 0.95;
-  animation: none;
+  animation: pf-a2-glow-breathe 9.5s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+/* Respiración sutil de la luz ambiental naranja: le da vida ("reactivo")
+   sin mover geometría (solo opacidad), así nunca interfiere con el
+   contenido ni reintroduce bugs de compositing en WebView. */
+@keyframes pf-a2-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-alumno-v2::before,
+  .pf-alumno-v2::after {
+    animation: none !important;
+  }
 }
 
 .pf-a2-shell {
@@ -7564,7 +7585,6 @@ video.pf-a3-routine-log-video-frame {
     bottom: auto;
     pointer-events: none;
     transform: translateX(-50%);
-    animation: none !important;
   }
 
   .pf-alumno-v2::before {
@@ -7573,10 +7593,11 @@ video.pf-a3-routine-log-video-frame {
     height: 54vh;
     border-radius: 0 0 58% 58%;
     background:
-      radial-gradient(56% 78% at 12% 0%, rgba(249, 123, 52, 0.55), transparent 70%),
-      radial-gradient(46% 76% at 50% 0%, rgba(97, 140, 206, 0.38), transparent 72%),
-      radial-gradient(56% 76% at 88% 2%, rgba(255, 150, 78, 0.48), transparent 70%);
+      radial-gradient(56% 78% at 12% 0%, rgba(249, 123, 52, 0.3), transparent 70%),
+      radial-gradient(46% 76% at 50% 0%, rgba(97, 140, 206, 0.2), transparent 72%),
+      radial-gradient(56% 76% at 88% 2%, rgba(255, 150, 78, 0.26), transparent 70%);
     opacity: 1;
+    animation: pf-a2-glow-breathe 8s ease-in-out infinite;
   }
 
   /* Capa ambiental de viewport completo: pools de luz fijos (violeta, magenta
@@ -7591,15 +7612,17 @@ video.pf-a3-routine-log-video-frame {
     border-radius: 0;
     transform: none;
     background:
-      radial-gradient(50% 30% at 94% 6%, rgba(255, 150, 78, 0.46), transparent 66%),
-      radial-gradient(46% 40% at -8% 26%, rgba(249, 123, 52, 0.46), transparent 66%),
-      radial-gradient(48% 44% at 110% 44%, rgba(255, 140, 66, 0.48), transparent 66%),
-      radial-gradient(48% 44% at -10% 52%, rgba(249, 123, 52, 0.46), transparent 66%),
-      radial-gradient(46% 40% at 108% 74%, rgba(255, 150, 78, 0.42), transparent 68%),
-      radial-gradient(60% 34% at -6% 74%, rgba(249, 123, 52, 0.5), transparent 70%),
-      radial-gradient(60% 32% at 106% 92%, rgba(255, 160, 96, 0.4), transparent 72%),
-      radial-gradient(56% 30% at 22% 104%, rgba(255, 160, 96, 0.34), transparent 72%);
+      radial-gradient(50% 30% at 94% 6%, rgba(255, 150, 78, 0.24), transparent 66%),
+      radial-gradient(46% 40% at -8% 26%, rgba(249, 123, 52, 0.24), transparent 66%),
+      radial-gradient(48% 44% at 110% 44%, rgba(255, 140, 66, 0.25), transparent 66%),
+      radial-gradient(48% 44% at -10% 52%, rgba(249, 123, 52, 0.24), transparent 66%),
+      radial-gradient(46% 40% at 108% 74%, rgba(255, 150, 78, 0.22), transparent 68%),
+      radial-gradient(60% 34% at -6% 74%, rgba(249, 123, 52, 0.26), transparent 70%),
+      radial-gradient(60% 32% at 106% 92%, rgba(255, 160, 96, 0.2), transparent 72%),
+      radial-gradient(56% 30% at 22% 104%, rgba(255, 160, 96, 0.18), transparent 72%);
     opacity: 1;
+    animation: pf-a2-glow-breathe 9.5s ease-in-out infinite;
+    animation-delay: -3s;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
@@ -8546,8 +8569,14 @@ video.pf-a3-routine-log-video-frame {
     opacity: 0.65;
   }
 
+  html.pf-mobile-webview .pf-a2-dock,
   html.pf-mobile-fluid .pf-a2-dock {
     border-color: transparent !important;
+    /* Antes quedaba en rgba(...,0.94): ese 6% de transparencia dejaba pasar
+       el brillo naranja del fondo por detrás de la barra, dando la
+       sensación de que el "led" se pintaba encima de los íconos. Sólido
+       100% opaco = la barra siempre tapa el brillo, sin importar el
+       compositing del WebView. */
     background: #0a0c0f !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
@@ -8721,11 +8750,13 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2,
   html.pf-mobile-fluid .pf-alumno-v2 {
     background-color: #0f1317 !important;
+    /* Alphas reducidas (antes hasta 0.6): el "led" quedaba demasiado fuerte
+       sobre la pantalla del celular. */
     background-image:
-      linear-gradient(90deg, rgba(249, 123, 52, 0.6) 0%, rgba(249, 123, 52, 0.28) 7%, rgba(249, 123, 52, 0.05) 18%, transparent 34%),
-      linear-gradient(270deg, rgba(255, 140, 66, 0.6) 0%, rgba(255, 140, 66, 0.28) 7%, rgba(255, 140, 66, 0.05) 18%, transparent 34%),
-      radial-gradient(74% 22% at 50% 0%, rgba(249, 123, 52, 0.34), transparent 66%),
-      radial-gradient(82% 20% at 50% 100%, rgba(255, 150, 78, 0.24), transparent 70%) !important;
+      linear-gradient(90deg, rgba(249, 123, 52, 0.32) 0%, rgba(249, 123, 52, 0.14) 7%, rgba(249, 123, 52, 0.02) 18%, transparent 34%),
+      linear-gradient(270deg, rgba(255, 140, 66, 0.32) 0%, rgba(255, 140, 66, 0.14) 7%, rgba(255, 140, 66, 0.02) 18%, transparent 34%),
+      radial-gradient(74% 22% at 50% 0%, rgba(249, 123, 52, 0.18), transparent 66%),
+      radial-gradient(82% 20% at 50% 100%, rgba(255, 150, 78, 0.13), transparent 70%) !important;
     background-repeat: no-repeat !important;
     /* "fixed" (en vez de "scroll") es un bug clásico de WKWebView/Android
        WebView: el motor promueve este fondo a su propia capa de composición
@@ -8735,6 +8766,44 @@ video.pf-a3-routine-log-video-frame {
        el brillo se desplaza junto con el contenido en vez de quedar fijo
        al viewport, un costo estético menor comparado con taparse la nav. */
     background-attachment: scroll !important;
+  }
+
+  /* Capa extra sólo para la "respiración" del brillo: un ::after propio,
+     position:absolute (no fixed → no dispara el bug de compositing de
+     WKWebView) y con z-index negativo dentro del stacking context aislado
+     de .pf-alumno-v2, así queda siempre detrás del contenido y de la
+     dock aunque el navegador la recomponga. Es aditiva sobre el fondo
+     estático de arriba, por eso sus alphas son bajas. */
+  html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    background-repeat: no-repeat !important;
+    background-attachment: scroll !important;
+    background-image:
+      linear-gradient(90deg, rgba(249, 123, 52, 0.22) 0%, rgba(249, 123, 52, 0.08) 7%, transparent 20%),
+      linear-gradient(270deg, rgba(255, 140, 66, 0.22) 0%, rgba(255, 140, 66, 0.08) 7%, transparent 20%) !important;
+    animation: pf-a2-glow-breathe-webview 7s ease-in-out infinite;
+  }
+
+  @keyframes pf-a2-glow-breathe-webview {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2::after {
+      animation: none !important;
+      opacity: 0.85;
+    }
   }
 
   /* Los envoltorios internos van transparentes para que el naranja del root
