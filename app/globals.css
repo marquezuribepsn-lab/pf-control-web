@@ -2954,22 +2954,22 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
 }
 
 .pf-a3-rings-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-evenly;
   gap: 0.2rem;
 }
 
 .pf-a3-ring-divider {
   width: 1px;
   height: 64px;
-  justify-self: center;
+  flex: 0 0 auto;
   background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14), transparent);
-  grid-row: 1;
 }
 
 .pf-a3-ring-item {
   display: flex;
+  flex: 0 1 auto;
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
@@ -2977,6 +2977,71 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
   background: transparent;
   padding: 0.4rem 0.2rem;
   text-align: center;
+}
+
+/* ── Selector de vasos de agua / horas de sueño (InicioAnillos) ─────────── */
+.pf-a3-ring-picker {
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pf-a3-ring-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.pf-a3-ring-picker-title {
+  color: #eaf1fb;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+.pf-a3-ring-picker-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9eabba;
+}
+
+.pf-a3-ring-picker-chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.1rem;
+}
+
+.pf-a3-ring-picker-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-a3-ring-picker-chip {
+  flex: 0 0 auto;
+  min-width: 2.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.42rem 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-a3-ring-picker-chip-active {
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  color: #04121f;
+  border-color: transparent;
+  box-shadow: 0 4px 14px -4px rgba(56, 189, 248, 0.6);
 }
 
 .pf-a3-ring-track {

@@ -14,7 +14,7 @@
  * hasta que el alumno los toca.
  */
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
 import { useHomeEvents } from "@/components/useHomeEvents";
 
@@ -24,7 +24,8 @@ const ENTRENOS_KEY = "pf-control-inicio-entrenos-v1";
 
 const AGUA_META = 8;
 const ENTRENOS_META = 5;
-const SUENO_PRESETS = [6, 6.5, 7, 7.5, 8, 8.5, 9];
+const AGUA_OPTIONS = Array.from({ length: 13 }, (_, i) => i); // 0..12 vasos
+const SUENO_OPTIONS = Array.from({ length: 13 }, (_, i) => 4 + i * 0.5); // 4h..10h
 
 type AguaState = { fecha: string; vasos: number };
 type SuenoState = { fecha: string; horas: number | null };
@@ -112,25 +113,35 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
   const horasSueno = suenoRaw?.fecha === today ? suenoRaw.horas ?? null : null;
   const entrenos = entrenosRaw?.semana === monday ? Math.max(0, entrenosRaw.completados || 0) : 0;
 
-  const sumarAgua = useCallback(() => {
-    markManualSaveIntent(AGUA_KEY);
-    setAguaRaw((prev) => {
-      const base = prev?.fecha === today ? prev.vasos || 0 : 0;
-      return { fecha: today, vasos: Math.min(AGUA_META + 6, base + 1) };
-    });
-    addEvent("agua", "Sumaste un vaso de agua");
-  }, [today, setAguaRaw, addEvent]);
+  const [activePicker, setActivePicker] = useState<"agua" | "sueno" | null>(null);
 
-  const ciclarSueno = useCallback(() => {
-    markManualSaveIntent(SUENO_KEY);
-    setSuenoRaw((prev) => {
-      const current = prev?.fecha === today ? prev.horas ?? null : null;
-      const idx = current == null ? -1 : SUENO_PRESETS.indexOf(current);
-      const next = SUENO_PRESETS[(idx + 1) % SUENO_PRESETS.length];
-      return { fecha: today, horas: next };
-    });
-    addEvent("sueno", `Registraste ${formatHoras(horasSueno)} de sueño`.replace("—", "tus horas"));
-  }, [today, setSuenoRaw, addEvent, horasSueno]);
+  const toggleAguaPicker = useCallback(() => {
+    setActivePicker((prev) => (prev === "agua" ? null : "agua"));
+  }, []);
+
+  const toggleSuenoPicker = useCallback(() => {
+    setActivePicker((prev) => (prev === "sueno" ? null : "sueno"));
+  }, []);
+
+  const elegirAgua = useCallback(
+    (nextVasos: number) => {
+      markManualSaveIntent(AGUA_KEY);
+      setAguaRaw({ fecha: today, vasos: nextVasos });
+      addEvent("agua", `Registraste ${nextVasos} vaso${nextVasos === 1 ? "" : "s"} de agua`);
+      setActivePicker(null);
+    },
+    [today, setAguaRaw, addEvent]
+  );
+
+  const elegirSueno = useCallback(
+    (nextHoras: number) => {
+      markManualSaveIntent(SUENO_KEY);
+      setSuenoRaw({ fecha: today, horas: nextHoras });
+      addEvent("sueno", `Registraste ${formatHoras(nextHoras)} de sueño`);
+      setActivePicker(null);
+    },
+    [today, setSuenoRaw, addEvent]
+  );
 
   const marcarEntreno = useCallback(() => {
     markManualSaveIntent(ENTRENOS_KEY);
@@ -194,8 +205,8 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
             }
             value={`${vasos}/${AGUA_META}`}
             label="Agua vasos hoy"
-            ariaLabel="Sumar un vaso de agua de hoy"
-            onClick={sumarAgua}
+            ariaLabel="Elegir cuantos vasos de agua tomaste hoy"
+            onClick={toggleAguaPicker}
           />
           <span className="pf-a3-ring-divider" aria-hidden="true" />
           <Ring
@@ -209,10 +220,72 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
             }
             value={formatHoras(horasSueno)}
             label="Sueño esta noche"
-            ariaLabel="Registrar horas de sueño de anoche"
-            onClick={ciclarSueno}
+            ariaLabel="Elegir cuantas horas dormiste anoche"
+            onClick={toggleSuenoPicker}
           />
         </div>
+
+        {activePicker === "agua" ? (
+          <div className="pf-a3-ring-picker">
+            <div className="pf-a3-ring-picker-head">
+              <span className="pf-a3-ring-picker-title">Vasos de agua hoy</span>
+              <button
+                type="button"
+                className="pf-a3-ring-picker-close"
+                onClick={() => setActivePicker(null)}
+                aria-label="Cerrar selector de agua"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="pf-a3-ring-picker-chips">
+              {AGUA_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`pf-a3-ring-picker-chip${opt === vasos ? " pf-a3-ring-picker-chip-active" : ""}`}
+                  onClick={() => elegirAgua(opt)}
+                  aria-label={`${opt} vaso${opt === 1 ? "" : "s"} de agua`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {activePicker === "sueno" ? (
+          <div className="pf-a3-ring-picker">
+            <div className="pf-a3-ring-picker-head">
+              <span className="pf-a3-ring-picker-title">Horas de sueño anoche</span>
+              <button
+                type="button"
+                className="pf-a3-ring-picker-close"
+                onClick={() => setActivePicker(null)}
+                aria-label="Cerrar selector de sueño"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="pf-a3-ring-picker-chips">
+              {SUENO_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`pf-a3-ring-picker-chip${opt === horasSueno ? " pf-a3-ring-picker-chip-active" : ""}`}
+                  onClick={() => elegirSueno(opt)}
+                  aria-label={`${formatHoras(opt)} de sueño`}
+                >
+                  {formatHoras(opt)}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </>
   );
