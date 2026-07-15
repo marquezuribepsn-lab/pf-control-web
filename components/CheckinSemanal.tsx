@@ -13,6 +13,7 @@
  */
 
 import { markManualSaveIntent, useSharedState } from "@/components/useSharedState";
+import { useHomeEvents } from "@/components/useHomeEvents";
 import { useCallback, useMemo, useState } from "react";
 
 const CHECKIN_KEY = "pf-control-checkin-semanal-v1";
@@ -118,15 +119,19 @@ const NIVEL_LABELS: Record<string, string> = {
 
 type Props = {
   alumnoNombre?: string;
+  /** Modo compacto: solo pregunta 1 (sensación) + botón. Dolor/cambios quedan
+   *  ocultos detrás de un enlace "+ Agregar" para no perder esos datos. */
+  compact?: boolean;
 };
 
-export default function CheckinSemanal({ alumnoNombre }: Props) {
+export default function CheckinSemanal({ alumnoNombre, compact = false }: Props) {
   const [checkinsRaw, setCheckinsRaw] = useSharedState<unknown[]>([], {
     key: CHECKIN_KEY,
     legacyLocalStorageKey: CHECKIN_KEY,
   });
 
   const checkins = useMemo(() => normalizeCheckins(checkinsRaw), [checkinsRaw]);
+  const { addEvent } = useHomeEvents();
 
   // My check-ins (filter by name if provided)
   const myCheckins = useMemo(() => {
@@ -153,6 +158,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
   const [showHistory,  setShowHistory]  = useState(false);
   const [analyzing,    setAnalyzing]    = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [showExtra,    setShowExtra]    = useState(!compact);
 
   const handleSubmit = useCallback(async () => {
     const opt = SENSACION_OPTS.find((o) => o.id === sensacion);
@@ -172,6 +178,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
     markManualSaveIntent(CHECKIN_KEY);
     setCheckinsRaw((prev) => [record, ...normalizeCheckins(prev)]);
     setSubmitted(true);
+    addEvent("checkin", `Hiciste tu check-in: ${record.sensacionLabel}`, record.dolor ? "Reportaste dolor o molestia" : undefined);
 
     // Run Claude analysis on text fields (non-blocking UX)
     const hasDolorText  = dolor && Boolean(dolorDetalle.trim());
@@ -208,7 +215,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
         setAnalyzing(false);
       }
     }
-  }, [alumnoNombre, thisMonday, sensacion, dolor, dolorDetalle, cambios, setCheckinsRaw]);
+  }, [alumnoNombre, thisMonday, sensacion, dolor, dolorDetalle, cambios, setCheckinsRaw, addEvent]);
 
   const sensacionOpt = SENSACION_OPTS.find((o) => o.id === sensacion);
   void sensacionOpt;
@@ -219,7 +226,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
       <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wide text-white/80">
-            ✍️ Check-in semanal
+            {compact ? "☺️ Check-in de hoy" : "✍️ Check-in semanal"}
           </h3>
           {myCheckins.length > 0 && (
             <button
@@ -274,7 +281,7 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
             {/* Q1: Sensación */}
             <div>
               <p className="mb-3 text-sm font-medium text-white/70">
-                1. ¿Cómo te sentiste esta semana?
+                {compact ? "¿Cómo te sentís hoy?" : "1. ¿Cómo te sentiste esta semana?"}
               </p>
               <div className="flex gap-2">
                 {SENSACION_OPTS.map((opt) => (
@@ -294,64 +301,78 @@ export default function CheckinSemanal({ alumnoNombre }: Props) {
               </div>
             </div>
 
-            {/* Q2: Dolor / molestia */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-white/70">
-                2. ¿Tuviste algún dolor o molestia?
-              </p>
-              <div className="flex gap-2">
-                {[
-                  { val: false, label: "No, todo bien",    icon: "✅" },
-                  { val: true,  label: "Sí, tuve molestia", icon: "🚨" },
-                ].map(({ val, label, icon }) => (
-                  <button
-                    key={String(val)}
-                    onClick={() => setDolor(val)}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-sm transition-all ${
-                      dolor === val
-                        ? val
-                          ? "border-rose-400/60 bg-rose-500/15 text-rose-200"
-                          : "border-emerald-400/60 bg-emerald-500/15 text-emerald-200"
-                        : "border-white/8 bg-white/[0.03] text-white/40 hover:border-white/20"
-                    }`}
-                  >
-                    <span>{icon}</span>
-                    <span className="text-xs">{label}</span>
-                  </button>
-                ))}
-              </div>
-              {dolor && (
-                <textarea
-                  value={dolorDetalle}
-                  onChange={(e) => setDolorDetalle(e.target.value)}
-                  placeholder="¿Dónde? ¿Cuándo duele? (opcional)"
-                  rows={2}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
-                />
-              )}
-            </div>
+            {showExtra && (
+              <>
+                {/* Q2: Dolor / molestia */}
+                <div>
+                  <p className="mb-2 text-sm font-medium text-white/70">
+                    2. ¿Tuviste algún dolor o molestia?
+                  </p>
+                  <div className="flex gap-2">
+                    {[
+                      { val: false, label: "No, todo bien",    icon: "✅" },
+                      { val: true,  label: "Sí, tuve molestia", icon: "🚨" },
+                    ].map(({ val, label, icon }) => (
+                      <button
+                        key={String(val)}
+                        onClick={() => setDolor(val)}
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-sm transition-all ${
+                          dolor === val
+                            ? val
+                              ? "border-rose-400/60 bg-rose-500/15 text-rose-200"
+                              : "border-emerald-400/60 bg-emerald-500/15 text-emerald-200"
+                            : "border-white/8 bg-white/[0.03] text-white/40 hover:border-white/20"
+                        }`}
+                      >
+                        <span>{icon}</span>
+                        <span className="text-xs">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {dolor && (
+                    <textarea
+                      value={dolorDetalle}
+                      onChange={(e) => setDolorDetalle(e.target.value)}
+                      placeholder="¿Dónde? ¿Cuándo duele? (opcional)"
+                      rows={2}
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
+                    />
+                  )}
+                </div>
 
-            {/* Q3: Cambios */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-white/70">
-                3. ¿Algo cambió en tu rutina o vida esta semana?{" "}
-                <span className="text-xs text-white/30">(opcional)</span>
-              </p>
-              <textarea
-                value={cambios}
-                onChange={(e) => setCambios(e.target.value)}
-                placeholder="Ej: estuve de viaje, cambie el trabajo, dormí mal..."
-                rows={2}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
-              />
-            </div>
+                {/* Q3: Cambios */}
+                <div>
+                  <p className="mb-2 text-sm font-medium text-white/70">
+                    3. ¿Algo cambió en tu rutina o vida esta semana?{" "}
+                    <span className="text-xs text-white/30">(opcional)</span>
+                  </p>
+                  <textarea
+                    value={cambios}
+                    onChange={(e) => setCambios(e.target.value)}
+                    placeholder="Ej: estuve de viaje, cambie el trabajo, dormí mal..."
+                    rows={2}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/25 outline-none focus:border-cyan-300/55"
+                  />
+                </div>
+              </>
+            )}
 
             <button
               onClick={handleSubmit}
               className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:from-cyan-300 hover:to-blue-400 active:scale-95"
             >
-              Enviar check-in 📤
+              {compact ? "Realizar check-in" : "Enviar check-in 📤"}
             </button>
+
+            {compact && !showExtra && (
+              <button
+                type="button"
+                onClick={() => setShowExtra(true)}
+                className="w-full text-center text-xs text-cyan-300/70 hover:text-cyan-200 transition-colors"
+              >
+                + Agregar dolor o cambios (opcional)
+              </button>
+            )}
           </div>
         )}
       </div>

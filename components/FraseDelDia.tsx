@@ -74,26 +74,34 @@ export default function FraseDelDia() {
         overflow: "hidden",
         borderRadius: "1.1rem",
         padding: "1rem 1.15rem 1.05rem",
-        background:
-          "linear-gradient(122deg, #557bc7 0%, #4567b2 48%, #29416f 100%)",
-        boxShadow: "0 16px 34px rgba(77, 114, 195, 0.32)",
+        border: "1px solid rgba(255, 255, 255, 0.12)",
+        backgroundColor: "rgba(2, 6, 23, 0.55)",
+        backgroundImage:
+          "linear-gradient(160deg, rgba(30, 64, 120, 0.42), rgba(8, 15, 30, 0.28) 70%)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        boxShadow:
+          "0 26px 60px -26px rgba(8, 15, 30, 0.6), 0 0 0 1px rgba(56, 189, 248, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
         color: "#fff",
       }}
     >
-      {/* brillo sutil superior derecha */}
+      {/* icono de comilla decorativo, esquina superior derecha */}
       <span
         aria-hidden="true"
         style={{
           position: "absolute",
-          top: "-40%",
-          right: "-10%",
-          width: "58%",
-          height: "160%",
-          background:
-            "radial-gradient(closest-side, rgba(255,255,255,0.22), transparent 72%)",
+          top: "0.4rem",
+          right: "0.6rem",
+          fontSize: "3.4rem",
+          lineHeight: 1,
+          fontWeight: 900,
+          color: "rgba(56, 189, 248, 0.14)",
+          fontFamily: "Georgia, serif",
           pointerEvents: "none",
         }}
-      />
+      >
+        &rdquo;
+      </span>
 
       <div
         style={{
@@ -108,13 +116,13 @@ export default function FraseDelDia() {
         <span
           style={{
             fontSize: "10.5px",
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: "0.11em",
             textTransform: "uppercase",
-            opacity: 0.82,
+            color: "#7dd3fc",
           }}
         >
-          — Frase del día
+          Frase del día
         </span>
 
         <button
@@ -124,9 +132,9 @@ export default function FraseDelDia() {
             display: "inline-flex",
             alignItems: "center",
             gap: "0.34rem",
-            border: "1px solid rgba(255,255,255,0.55)",
-            background: "rgba(255,255,255,0.16)",
-            color: "#fff",
+            border: "1px solid rgba(125, 211, 252, 0.4)",
+            background: "rgba(56, 189, 248, 0.12)",
+            color: "#e0f2fe",
             borderRadius: "999px",
             padding: "0.3rem 0.7rem",
             fontSize: "11.5px",

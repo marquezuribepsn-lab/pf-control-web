@@ -7,6 +7,9 @@ import ChatPanel from "@/components/ChatPanel";
 import NotificationHub, { DerivedNotif } from "@/components/NotificationHub";
 import MacroDonut, { MacroSegment } from "@/components/MacroDonut";
 import FraseDelDia from "@/components/FraseDelDia";
+import InicioAnillos from "@/components/InicioAnillos";
+import InicioDiasSemana from "@/components/InicioDiasSemana";
+import InicioActividadReciente from "@/components/InicioActividadReciente";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -9122,6 +9125,8 @@ export default function AlumnoVisionClient({
                 </div>
               )}
 
+              {!isBlocked && <InicioAnillos onComenzarRutina={() => goToCategory("rutina")} />}
+
               <article className="pf-a3-coach-card">
                 <div className="pf-a3-coach-top">
                   <div className="pf-a3-coach-identity">
@@ -9154,7 +9159,10 @@ export default function AlumnoVisionClient({
                 </div>
               </article>
 
-              {!isBlocked && <><section className="pf-a3-panel-block">
+              {!isBlocked && <>
+                <FraseDelDia />
+
+                <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
                   <div>
                     <h2 className="pf-a3-section-title">Musica</h2>
@@ -9282,17 +9290,15 @@ export default function AlumnoVisionClient({
                 ) : null}
               </section>
 
-              <FraseDelDia />
-
               <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
-                  <h2 className="pf-a3-section-title">Carga rapida</h2>
+                  <h2 className="pf-a3-section-title">Acciones rápidas</h2>
                   <ReliableActionButton
                     type="button"
                     onClick={() => goToCategory("progreso")}
                     className="pf-a3-link-btn"
                   >
-                    Ver
+                    Ver todo
                   </ReliableActionButton>
                 </div>
 
@@ -9357,6 +9363,30 @@ export default function AlumnoVisionClient({
                   </ReliableActionButton>
                 </div>
               </section>
+
+              <InicioDiasSemana />
+
+              <div className="pf-a3-compact-row">
+                <div className="pf-a3-panel-block pf-a3-compact-weight-card">
+                  <p className="pf-a3-compact-card-title">Peso</p>
+                  <p className="pf-a3-compact-weight-value">
+                    {formatWeightValue(weightLast7)}
+                    <span className="pf-a3-compact-weight-unit">kg</span>
+                  </p>
+                  <p className="pf-a3-compact-card-sub">Promedio últimos 7 días</p>
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("progreso")}
+                    className="pf-a3-compact-card-link"
+                  >
+                    Ver detalle
+                  </ReliableActionButton>
+                </div>
+
+                <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
+              </div>
+
+              <InicioActividadReciente />
 
               <section className="pf-a3-panel-block pf-a3-panel-block-flat">
                 <div className="pf-a3-section-head">
@@ -9487,11 +9517,6 @@ export default function AlumnoVisionClient({
                     </div>
                   )}
                 </div>
-              </section>
-
-              {/* ── Check-in semanal ───────────────────────── */}
-              <section className="mt-4 px-1">
-                <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} />
               </section>
               </>}
 
