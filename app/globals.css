@@ -2730,7 +2730,7 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
 .pf-a3-quick-grid {
   margin-top: 0.72rem;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
@@ -2771,7 +2771,8 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
 .pf-a3-quick-icon-agua,
 .pf-a3-quick-icon-sueno,
 .pf-a3-quick-icon-progreso,
-.pf-a3-quick-icon-pagos {
+.pf-a3-quick-icon-pagos,
+.pf-a3-quick-icon-musica {
   color: #cadaec;
 }
 
@@ -2945,72 +2946,6 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: -0.005em;
-}
-
-/* ── Música (botón compacto en inicio) ───────────────────────────────────── */
-.pf-a3-music-quick-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  width: 100%;
-  border-radius: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background-color: rgba(2, 6, 23, 0.55);
-  background-image: linear-gradient(160deg, rgba(30, 64, 120, 0.34), rgba(8, 15, 30, 0.22) 66%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  padding: 0.85rem 1rem;
-  cursor: pointer;
-  text-align: left;
-}
-
-.pf-a3-music-quick-icon {
-  flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  border-radius: 0.85rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #67e8f9;
-  border: 1px solid rgba(103, 232, 249, 0.22);
-  background: linear-gradient(160deg, rgba(56, 189, 248, 0.18), rgba(37, 99, 235, 0.14));
-}
-
-.pf-a3-music-quick-text {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.pf-a3-music-quick-title {
-  display: block;
-  margin: 0;
-  color: #f5f8fc;
-  font-size: 1.02rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
-}
-
-.pf-a3-music-quick-sub {
-  display: block;
-  margin: 0.16rem 0 0;
-  color: #9eabba;
-  font-size: 0.76rem;
-  font-weight: 550;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pf-a3-music-quick-chevron {
-  flex: 0 0 auto;
-  color: #9db1c9;
 }
 
 .pf-a3-rings-card {

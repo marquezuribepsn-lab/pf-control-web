@@ -9131,30 +9131,6 @@ export default function AlumnoVisionClient({
               {!isBlocked && <>
                 <FraseDelDia />
 
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => goToCategory("musica")}
-                  className="pf-a3-music-quick-btn"
-                  aria-label="Ir a Música"
-                >
-                  <span className="pf-a3-music-quick-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
-                      <path d="M4 14.5v-3a8 8 0 0 1 16 0v3" strokeLinecap="round" />
-                      <rect x="3" y="13.5" width="4" height="6" rx="1.6" />
-                      <rect x="17" y="13.5" width="4" height="6" rx="1.6" />
-                    </svg>
-                  </span>
-                  <span className="pf-a3-music-quick-text">
-                    <span className="pf-a3-music-quick-title">Música</span>
-                    <span className="pf-a3-music-quick-sub">
-                      {musicAssignments.length > 0 ? "Tu música de entrenamiento" : "Playlist sugerida para hoy"}
-                    </span>
-                  </span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="pf-a3-music-quick-chevron" aria-hidden="true">
-                    <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </ReliableActionButton>
-
               <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
                   <h2 className="pf-a3-section-title">Acciones rápidas</h2>
@@ -9225,6 +9201,21 @@ export default function AlumnoVisionClient({
                       </svg>
                     </span>
                     <span>Pagos</span>
+                  </ReliableActionButton>
+
+                  <ReliableActionButton
+                    type="button"
+                    onClick={() => goToCategory("musica")}
+                    className="pf-a3-quick-item"
+                  >
+                    <span className="pf-a3-quick-icon pf-a3-quick-icon-musica" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
+                        <path d="M4 14.5v-3a8 8 0 0 1 16 0v3" strokeLinecap="round" />
+                        <rect x="3" y="13.5" width="4" height="6" rx="1.6" />
+                        <rect x="17" y="13.5" width="4" height="6" rx="1.6" />
+                      </svg>
+                    </span>
+                    <span>Música</span>
                   </ReliableActionButton>
                 </div>
               </section>
