@@ -39,7 +39,6 @@ const STRICT_MANUAL_INTENT_PREFIXES = ["pf-control-clientes-table-ui-v1-"];
 
 type ToastType = "success" | "error" | "warning";
 
-const OFFLINE_WRITE_TOAST_TTL_MS = 2200;
 const MOBILE_INTERACTION_HOLD_MS = 480;
 const BOOTSTRAP_RETRY_DELAYS_MS = [1200, 2600, 4800];
 
@@ -260,7 +259,6 @@ export function useSharedState<T>(
   const lastSyncedRef = useRef<string>(JSON.stringify(initialValue));
   const pendingSerializedRef = useRef<string | null>(null);
   const writeInFlightRef = useRef(false);
-  const lastOfflineWriteToastAtRef = useRef(0);
 
   useEffect(() => {
     ensureMobileInteractionTracking();
@@ -541,20 +539,14 @@ export function useSharedState<T>(
     return () => clearInterval(interval);
   }, [key, loaded, pollIntervalMs]);
 
+  // Nota: antes se mostraba un toast de "Sin conexión..." acá cuando se
+  // escribía estando offline. Se sacó por pedido explícito (quedaba
+  // superpuesto con el encabezado del inicio) — el guardado local +
+  // sincronización al volver la conexión sigue funcionando igual, solo que
+  // en silencio.
   const guardedSetState: Dispatch<SetStateAction<T>> = useCallback((nextState) => {
-    if (!silentToasts && typeof window !== "undefined" && !window.navigator.onLine) {
-      const now = Date.now();
-      if (now - lastOfflineWriteToastAtRef.current > OFFLINE_WRITE_TOAST_TTL_MS) {
-        lastOfflineWriteToastAtRef.current = now;
-        emitInlineToast(
-          "warning",
-          "Sin conexion: los cambios se guardan localmente y se sincronizan cuando vuelva internet"
-        );
-      }
-    }
-
     setState(nextState);
-  }, [silentToasts]);
+  }, []);
 
   return [state, guardedSetState, loaded];
 }

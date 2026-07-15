@@ -1635,73 +1635,16 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   isolation: isolate;
 }
 
+/* La "iluminación LED" ambiental (::before/::after con radial-gradients
+   naranja) se eliminó por pedido explícito: quedaba encima de contenido en
+   varias pantallas (íconos de la dock, cajones del check-in) pese a varios
+   intentos de ajuste de capas/opacidad, y el usuario prefirió sacarla del
+   todo antes de seguir iterando. Se deja el selector vacío (sin content)
+   para no tener que tocar cada media query que lo referenciaba. */
 .pf-alumno-v2::before,
 .pf-alumno-v2::after {
-  content: "";
-  position: fixed;
-  inset: auto;
-  pointer-events: none;
-  /* Negativo: queda detrás de .pf-a2-shell (z-index: 1) dentro del stacking
-     context aislado de .pf-alumno-v2, sin dejar de estar "fijo" respecto al
-     viewport (isolation no cambia el containing block de position:fixed). */
-  z-index: -1;
-  filter: blur(0);
-  transform-origin: center;
-}
-
-.pf-alumno-v2::before {
-  top: 0;
-  left: 50%;
-  width: min(92vw, 780px);
-  height: 56vh;
-  border-radius: 0 0 56% 56%;
-  transform: translateX(-50%);
-  background:
-    radial-gradient(56% 80% at 14% 0%, rgba(249, 123, 52, 0.24), transparent 70%),
-    radial-gradient(56% 80% at 86% 2%, rgba(255, 150, 78, 0.2), transparent 70%),
-    linear-gradient(180deg, rgba(120, 156, 205, 0.24) 0%, rgba(94, 144, 201, 0.12) 42%, rgba(10, 13, 16, 0) 100%);
-  opacity: 0.98;
-  animation: pf-a2-glow-breathe 6s ease-in-out infinite;
-}
-
-.pf-alumno-v2::after {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  transform: none;
-  /* Pools de luz ambiental fijos: al hacer scroll los paneles pasan sobre
-     ellos. Mezcla de violeta con toques de magenta cálido e índigo frío para
-     romper la monotonía monocroma sin salirse del sistema. */
-  background:
-    radial-gradient(42% 30% at 90% 12%, rgba(255, 150, 78, 0.15), transparent 72%),
-    radial-gradient(46% 40% at -2% 44%, rgba(249, 123, 52, 0.17), transparent 72%),
-    radial-gradient(46% 40% at 102% 56%, rgba(255, 140, 66, 0.16), transparent 72%),
-    radial-gradient(50% 32% at 12% 90%, rgba(255, 160, 96, 0.14), transparent 74%);
-  opacity: 0.95;
-  animation: pf-a2-glow-breathe 7s ease-in-out infinite;
-  animation-delay: -2s;
-}
-
-/* Respiración sutil de la luz ambiental naranja: le da vida ("reactivo")
-   sin mover geometría (solo opacidad), así nunca interfiere con el
-   contenido ni reintroduce bugs de compositing en WebView. */
-@keyframes pf-a2-glow-breathe {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pf-alumno-v2::before,
-  .pf-alumno-v2::after {
-    animation: none !important;
-  }
+  content: none;
+  display: none;
 }
 
 .pf-a2-shell {
@@ -7620,55 +7563,6 @@ video.pf-a3-routine-log-video-frame {
     background-image: none !important;
   }
 
-  .pf-alumno-v2::before,
-  .pf-alumno-v2::after {
-    display: block;
-    position: fixed;
-    left: 50%;
-    right: auto;
-    bottom: auto;
-    pointer-events: none;
-    transform: translateX(-50%);
-  }
-
-  .pf-alumno-v2::before {
-    top: 0;
-    width: min(150vw, 940px);
-    height: 54vh;
-    border-radius: 0 0 58% 58%;
-    background:
-      radial-gradient(56% 78% at 12% 0%, rgba(249, 123, 52, 0.3), transparent 70%),
-      radial-gradient(46% 76% at 50% 0%, rgba(97, 140, 206, 0.2), transparent 72%),
-      radial-gradient(56% 76% at 88% 2%, rgba(255, 150, 78, 0.26), transparent 70%);
-    opacity: 1;
-    animation: pf-a2-glow-breathe 6s ease-in-out infinite;
-  }
-
-  /* Capa ambiental de viewport completo: pools de luz fijos (violeta, magenta
-     calido, indigo frio) que los paneles cruzan al hacer scroll. Da vida y
-     profundidad en lugar del negro plano. */
-  .pf-alumno-v2::after {
-    top: 0;
-    left: 0;
-    right: auto;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    transform: none;
-    background:
-      radial-gradient(50% 30% at 94% 6%, rgba(255, 150, 78, 0.24), transparent 66%),
-      radial-gradient(46% 40% at -8% 26%, rgba(249, 123, 52, 0.24), transparent 66%),
-      radial-gradient(48% 44% at 110% 44%, rgba(255, 140, 66, 0.25), transparent 66%),
-      radial-gradient(48% 44% at -10% 52%, rgba(249, 123, 52, 0.24), transparent 66%),
-      radial-gradient(46% 40% at 108% 74%, rgba(255, 150, 78, 0.22), transparent 68%),
-      radial-gradient(60% 34% at -6% 74%, rgba(249, 123, 52, 0.26), transparent 70%),
-      radial-gradient(60% 32% at 106% 92%, rgba(255, 160, 96, 0.2), transparent 72%),
-      radial-gradient(56% 30% at 22% 104%, rgba(255, 160, 96, 0.18), transparent 72%);
-    opacity: 1;
-    animation: pf-a2-glow-breathe 9.5s ease-in-out infinite;
-    animation-delay: -3s;
-  }
-
   html.pf-mobile-fluid .pf-alumno-v2 {
     background-color: #0a0c0f !important;
     background-image: none !important;
@@ -8788,70 +8682,25 @@ video.pf-a3-routine-log-video-frame {
     background-image: none !important;
   }
 
-  /* El root del alumno lleva la iluminación naranja lateral (fija al viewport),
-     visible en TODAS las pantallas: home, entrenamiento y nutrición. */
+  /* La iluminación naranja ("led") del root del alumno se eliminó por
+     pedido explícito del usuario — quedaba pasando por encima de otros
+     elementos (dock, tarjetas) en distintas pantallas y se prefirió
+     sacarla del todo en vez de seguir ajustando capas. Fondo sólido plano
+     en todas las pantallas: home, entrenamiento y nutrición. */
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2,
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2,
   html.pf-mobile-fluid .pf-alumno-v2 {
     background-color: #0f1317 !important;
-    /* Alphas reducidas (antes hasta 0.6): el "led" quedaba demasiado fuerte
-       sobre la pantalla del celular. */
-    background-image:
-      linear-gradient(90deg, rgba(249, 123, 52, 0.32) 0%, rgba(249, 123, 52, 0.14) 7%, rgba(249, 123, 52, 0.02) 18%, transparent 34%),
-      linear-gradient(270deg, rgba(255, 140, 66, 0.32) 0%, rgba(255, 140, 66, 0.14) 7%, rgba(255, 140, 66, 0.02) 18%, transparent 34%),
-      radial-gradient(74% 22% at 50% 0%, rgba(249, 123, 52, 0.18), transparent 66%),
-      radial-gradient(82% 20% at 50% 100%, rgba(255, 150, 78, 0.13), transparent 70%) !important;
-    background-repeat: no-repeat !important;
-    /* "fixed" (en vez de "scroll") es un bug clásico de WKWebView/Android
-       WebView: el motor promueve este fondo a su propia capa de composición
-       y a veces la pinta por encima de elementos position:fixed (la barra
-       de navegación inferior, el borde superior), haciendo que el naranja
-       "tape" la barra en vez de quedar detrás. "scroll" evita ese bug —
-       el brillo se desplaza junto con el contenido en vez de quedar fijo
-       al viewport, un costo estético menor comparado con taparse la nav. */
-    background-attachment: scroll !important;
+    background-image: none !important;
   }
 
-  /* Capa extra sólo para la "respiración" del brillo: un ::after propio,
-     position:absolute (no fixed → no dispara el bug de compositing de
-     WKWebView) y con z-index negativo dentro del stacking context aislado
-     de .pf-alumno-v2, así queda siempre detrás del contenido y de la
-     dock aunque el navegador la recomponga. Es aditiva sobre el fondo
-     estático de arriba, por eso sus alphas son bajas. */
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    inset: 0 !important;
-    z-index: -1 !important;
-    pointer-events: none !important;
-    background-repeat: no-repeat !important;
-    background-attachment: scroll !important;
-    background-image:
-      linear-gradient(90deg, rgba(249, 123, 52, 0.3) 0%, rgba(249, 123, 52, 0.12) 7%, transparent 20%),
-      linear-gradient(270deg, rgba(255, 140, 66, 0.3) 0%, rgba(255, 140, 66, 0.12) 7%, transparent 20%) !important;
-    animation: pf-a2-glow-breathe-webview 5.5s ease-in-out infinite;
+    content: none !important;
+    display: none !important;
   }
 
-  @keyframes pf-a2-glow-breathe-webview {
-    0%,
-    100% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2::after {
-      animation: none !important;
-      opacity: 0.85;
-    }
-  }
-
-  /* Los envoltorios internos van transparentes para que el naranja del root
-     se vea a través en todas las pantallas. */
+  /* Los envoltorios internos van transparentes para dejar ver el fondo
+     sólido plano del root en todas las pantallas (sin brillo). */
   html.pf-mobile-webview .pf-a2-shell,
   html.pf-mobile-fluid .pf-a2-shell,
   html.pf-mobile-webview .pf-alumno-stage-panel,
