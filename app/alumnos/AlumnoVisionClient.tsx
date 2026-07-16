@@ -9134,13 +9134,6 @@ export default function AlumnoVisionClient({
               <section className="pf-a3-panel-block">
                 <div className="pf-a3-section-head">
                   <h2 className="pf-a3-section-title">Acciones rápidas</h2>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-link-btn"
-                  >
-                    Ver todo
-                  </ReliableActionButton>
                 </div>
 
                 <div className="pf-a3-quick-grid">

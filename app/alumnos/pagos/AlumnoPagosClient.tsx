@@ -221,6 +221,117 @@ function resolveStatusTone(isActive: boolean, reason: PaymentStatusResponse["rea
   return "neutral";
 }
 
+function formatTime(value: string | null | undefined): string {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Divide un mensaje de una sola oracion en titulo + subtitulo (si hay una
+// segunda oracion), para el banner de estado con icono estilo "Centro de pagos".
+function splitMessage(msg: string): { title: string; subtitle: string } {
+  const trimmed = msg.trim();
+  const idx = trimmed.indexOf(". ");
+  if (idx === -1) return { title: trimmed, subtitle: "" };
+  return { title: trimmed.slice(0, idx + 1), subtitle: trimmed.slice(idx + 2).trim() };
+}
+
+function toneIconClasses(tone: "ok" | "warning" | "danger" | "neutral"): string {
+  switch (tone) {
+    case "ok":
+      return "border-emerald-300/35 bg-emerald-500/15 text-emerald-200";
+    case "warning":
+      return "border-amber-300/35 bg-amber-500/15 text-amber-200";
+    case "danger":
+      return "border-rose-300/35 bg-rose-500/15 text-rose-200";
+    default:
+      return "border-slate-300/25 bg-slate-500/15 text-slate-200";
+  }
+}
+
+function IconCheck({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconAlert({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <path d="M12 3.8 21.3 20H2.7L12 3.8Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 10v4.2" strokeLinecap="round" />
+      <circle cx="12" cy="17.4" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconRefresh({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2" strokeLinecap="round" />
+      <path d="M18 4v3.4h-3.4M6 20v-3.4h3.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconCalendar({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15" rx="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 3.3v3.4M16 3.3v3.4M3.5 9.6h17" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconClock({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8.3" />
+      <path d="M12 7.6V12l3 2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconDollar({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <path d="M12 3v18" strokeLinecap="round" />
+      <path d="M16.5 7.2c0-1.5-1.6-2.7-4-2.7-2.6 0-4.3 1.3-4.3 3.1 0 4 8.6 1.9 8.6 5.9 0 1.9-1.9 3.2-4.5 3.2-2.4 0-4.1-1.1-4.3-2.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconChevron({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="m9 5 7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconWalletCard({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <rect x="2.8" y="6" width="18.4" height="13" rx="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2.8 10.4h18.4" strokeLinecap="round" />
+      <path d="M6.5 14.4h4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconDocument({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 3.5V8h4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.6 12.2h6.8M8.6 15.4h6.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 0;
 
 export default function AlumnoPagosClient() {
@@ -247,8 +358,14 @@ export default function AlumnoPagosClient() {
   const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const statusRefreshTimerRef = useRef<number | null>(null);
   const statusRefreshTokenRef = useRef(0);
+  const manualSectionRef = useRef<HTMLElement | null>(null);
+
+  const scrollToManualSection = useCallback(() => {
+    manualSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -472,6 +589,11 @@ export default function AlumnoPagosClient() {
     }
   };
 
+  const handleManualRefresh = async () => {
+    await loadStatus({ withBrandedLoader: true });
+    setLastRefreshedAt(new Date().toISOString());
+  };
+
   const isActive = Boolean(status?.active);
   // MP checkout requiere que el alumno tenga ficha de billing (clientKey) para que
   // el webhook pueda activar automáticamente el pase. Si aún no está vinculado,
@@ -487,6 +609,64 @@ export default function AlumnoPagosClient() {
     () => resolveStatusTone(isActive, status?.reason || "no-meta"),
     [isActive, status?.reason]
   );
+
+  type ActivityItem = {
+    id: string;
+    icon: "check" | "refresh" | "alert";
+    tone: "ok" | "warning" | "danger" | "neutral";
+    title: string;
+    subtitle: string;
+    time: string;
+    ts: number;
+  };
+
+  const activityItems = useMemo<ActivityItem[]>(() => {
+    const items: ActivityItem[] = [];
+
+    const approved = status?.latestApprovedOrder;
+    if (approved) {
+      const when = approved.approvedAt || approved.createdAt;
+      items.push({
+        id: `approved-${approved.id}`,
+        icon: "check",
+        tone: "ok",
+        title: "Pago aprobado",
+        subtitle: `${resolvePaymentMethodLabel(approved.paymentMethod)} · ${formatDate(when)}`,
+        time: formatTime(when),
+        ts: new Date(when || 0).getTime() || 0,
+      });
+    }
+
+    const latest = status?.latestOrder;
+    if (latest && (!approved || latest.id !== approved.id)) {
+      const normalized = String(latest.status || "").trim().toLowerCase();
+      const isBad = normalized === "rejected" || normalized === "cancelled" || normalized === "charged_back";
+      items.push({
+        id: `latest-${latest.id}`,
+        icon: isBad ? "alert" : "refresh",
+        tone: isBad ? "danger" : normalized === "approved" ? "ok" : "warning",
+        title: resolveOrderStatusLabel(latest.status),
+        subtitle: `${resolvePaymentMethodLabel(latest.paymentMethod)} · ${formatDate(latest.createdAt)}`,
+        time: formatTime(latest.createdAt),
+        ts: new Date(latest.createdAt || 0).getTime() || 0,
+      });
+    }
+
+    if (lastRefreshedAt) {
+      items.push({
+        id: `refresh-${lastRefreshedAt}`,
+        icon: "refresh",
+        tone: "neutral",
+        title: "Estado actualizado",
+        subtitle: isActive ? "Tu pase fue renovado exitosamente" : "Se volvio a consultar tu estado de pago",
+        time: formatTime(lastRefreshedAt),
+        ts: new Date(lastRefreshedAt).getTime() || 0,
+      });
+    }
+
+    items.sort((a, b) => b.ts - a.ts);
+    return items.slice(0, 5);
+  }, [status?.latestApprovedOrder, status?.latestOrder, lastRefreshedAt, isActive]);
 
   return (
     <main className="pf-alumno-main pf-alumno-v2">
@@ -511,60 +691,90 @@ export default function AlumnoPagosClient() {
         ) : null}
 
         <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex min-w-0 items-start gap-3">
-              <button
-                type="button"
-                onClick={() => { window.location.assign("/alumnos/inicio"); }}
-                className="pf-a2-back-btn mt-0.5"
-                aria-label="Volver al inicio"
-                title="Volver al inicio"
-                style={{ position: "relative", zIndex: 9999 }}
+          <div className="flex min-w-0 items-start gap-3">
+            <button
+              type="button"
+              onClick={() => { window.location.assign("/alumnos/inicio"); }}
+              className="pf-a2-back-btn mt-0.5"
+              aria-label="Volver al inicio"
+              title="Volver al inicio"
+              style={{ position: "relative", zIndex: 9999 }}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="h-4 w-4"
+                aria-hidden="true"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                >
-                  <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="sr-only">Volver al inicio</span>
-              </button>
+                <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="sr-only">Volver al inicio</span>
+            </button>
 
-              <div className="min-w-0">
-                <p className="pf-a2-eyebrow">BILLING</p>
-                <h1 className="mt-1 break-words text-[clamp(1.35rem,4vw,2.2rem)] font-black text-white">
-                  Centro de pagos
-                </h1>
-                <p className="mt-2 max-w-2xl break-words text-sm text-slate-300">
-                  Gestiona tu pase mensual, paga por Mercado Pago o informa pago manual para revision.
-                </p>
-              </div>
+            <div className="min-w-0">
+              <p className="pf-a2-eyebrow">BILLING</p>
+              <h1 className="mt-1 break-words text-[clamp(1.35rem,4vw,2.2rem)] font-black text-white">
+                Centro de pagos
+              </h1>
+              <p className="mt-2 max-w-2xl break-words text-sm text-slate-300">
+                Gestiona tu pase mensual, paga por Mercado Pago o informa pago manual para revision.
+              </p>
             </div>
+          </div>
 
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {!isIosNative ? (
+              <ReliableActionButton
+                type="button"
+                onClick={startCheckout}
+                disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
+                className="pf-a2-solid-btn inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <IconWalletCard className="h-4 w-4" />
+                {checkoutLoading ? "Redirigiendo..." : "Pagar ahora"}
+                <IconChevron className="h-3.5 w-3.5" />
+              </ReliableActionButton>
+            ) : null}
             <ReliableActionButton
               type="button"
-              onClick={() => void loadStatus({ withBrandedLoader: true })}
+              onClick={() => void handleManualRefresh()}
               disabled={statusRefreshLoading}
-              className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+              className="pf-a2-ghost-btn inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
             >
+              <IconRefresh className="h-4 w-4" />
               Actualizar estado
             </ReliableActionButton>
           </div>
+
+          {noMetaBlocksMP && !isIosNative ? (
+            <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+              El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
+            </p>
+          ) : null}
         </header>
 
         {message ? (
-          <section className="pf-a2-banner pf-a2-banner-ok rounded-xl border px-4 py-3 text-sm">
-            {message}
+          <section className="pf-a2-banner pf-a2-banner-ok flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
+            <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${toneIconClasses("ok")}`}>
+              <IconCheck className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold">{splitMessage(message).title}</p>
+              {splitMessage(message).subtitle ? (
+                <p className="mt-0.5 text-xs text-emerald-100/75">{splitMessage(message).subtitle}</p>
+              ) : null}
+            </div>
           </section>
         ) : null}
 
         {error ? (
-          <section className="pf-a2-banner pf-a2-banner-danger rounded-xl border px-4 py-3 text-sm">
-            {error}
+          <section className="pf-a2-banner pf-a2-banner-danger flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
+            <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${toneIconClasses("danger")}`}>
+              <IconAlert className="h-4 w-4" />
+            </span>
+            <p className="min-w-0">{error}</p>
           </section>
         ) : null}
 
@@ -577,44 +787,56 @@ export default function AlumnoPagosClient() {
           />
         ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+        <section className="grid gap-4">
           <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="pf-a2-eyebrow">Estado actual</p>
-                <h2 className="mt-1 text-xl font-black text-white">
-                  {loading ? "Consultando..." : resolveReasonLabel(status?.reason || "no-meta")}
-                </h2>
+              <div className="flex min-w-0 items-start gap-3">
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${toneIconClasses(statusTone)}`}>
+                  <IconCheck className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-black text-white">
+                    {loading ? "Consultando..." : resolveReasonLabel(status?.reason || "no-meta")}
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {loading
+                      ? "Estamos consultando tu pase, espera unos segundos."
+                      : resolveReasonDetail(status?.reason || "no-meta")}
+                  </p>
+                </div>
               </div>
               <span className={`pf-a2-badge pf-a2-badge-${statusTone}`}>
                 {isActive ? "ACTIVO" : "INHABILITADO"}
               </span>
             </div>
 
-            <p className="mt-2 text-sm text-slate-300">
-              {loading
-                ? "Estamos consultando tu pase, espera unos segundos."
-                : resolveReasonDetail(status?.reason || "no-meta")}
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="pf-a2-kpi rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Pago al dia</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
+                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
+                  <IconCalendar className="h-4 w-4 shrink-0 text-slate-400" />
+                  Pago al dia
+                </span>
+                <span className="shrink-0 text-sm font-semibold text-slate-100">
                   {status?.paymentSummary?.isPaid ? "Si" : "No"}
-                </p>
+                </span>
               </div>
-              <div className="pf-a2-kpi rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Vigencia del plan</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
+                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
+                  <IconCalendar className="h-4 w-4 shrink-0 text-slate-400" />
+                  Vigencia del plan
+                </span>
+                <span className="shrink-0 text-sm font-semibold text-slate-100">
                   {formatDate(status?.paymentSummary?.planValidUntil || status?.billing.endDate)}
-                </p>
+                </span>
               </div>
-              <div className="pf-a2-kpi rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Ultimo pago</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
+                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
+                  <IconClock className="h-4 w-4 shrink-0 text-slate-400" />
+                  Ultimo pago
+                </span>
+                <span className="shrink-0 text-sm font-semibold text-slate-100">
                   {formatDate(status?.paymentSummary?.latestPaymentAt)}
-                </p>
+                </span>
               </div>
             </div>
 
@@ -633,20 +855,26 @@ export default function AlumnoPagosClient() {
               </p>
             ) : null}
 
-            <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3">
-              <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Monto de renovacion</p>
-              <p className="mt-1 text-xl font-black text-white">
-                {formatMoney(status?.billing.amount || 0, status?.billing.currency || "ARS")}
-              </p>
-              <p className="text-xs text-slate-300">
-                Periodo: {status?.billing.periodDays || 0} dias
-                {typeof status?.daysRemaining === "number" ? ` · Restan ${status.daysRemaining} dias` : ""}
-              </p>
-              {status?.mercadoPago?.accountLabel ? (
-                <p className="mt-2 text-xs text-slate-400">
-                  Cuenta receptora: {status.mercadoPago.accountLabel}
+            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-3.5">
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${toneIconClasses("ok")}`}>
+                <IconDollar className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/80">Monto de renovacion</p>
+                <p className="mt-0.5 text-xl font-black text-white">
+                  {formatMoney(status?.billing.amount || 0, status?.billing.currency || "ARS")}
                 </p>
-              ) : null}
+                <p className="text-xs text-emerald-100/70">
+                  Periodo: {status?.billing.periodDays || 0} dias
+                  {typeof status?.daysRemaining === "number" ? ` · Restan ${status.daysRemaining} dias` : ""}
+                </p>
+                {status?.mercadoPago?.accountLabel ? (
+                  <p className="mt-1 text-xs text-emerald-100/60">
+                    Cuenta receptora: {status.mercadoPago.accountLabel}
+                  </p>
+                ) : null}
+              </div>
+              <IconChevron className="h-4 w-4 shrink-0 text-emerald-200/50" />
             </div>
 
             {canUseQrStore && !isIosNative ? (
@@ -715,36 +943,49 @@ export default function AlumnoPagosClient() {
                   </ReliableLink>
                 </div>
               </>
-            ) : (
-              <>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={startCheckout}
-                    disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
-                    className="pf-a2-solid-btn rounded-xl px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    {checkoutLoading ? "Redirigiendo..." : "Pagar con Mercado Pago"}
-                  </ReliableActionButton>
-                  <ReliableLink
-                    href="/alumnos/inicio"
-                    className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
-                  >
-                    Ir a inicio
-                  </ReliableLink>
-                </div>
-
-                {noMetaBlocksMP ? (
-                  <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-                    El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
-                  </p>
-                ) : null}
-              </>
-            )}
+            ) : null}
           </article>
 
           {!isIosNative ? (
-          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+            <section>
+              <h3 className="text-sm font-black text-white">Opciones de pago</h3>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <ReliableActionButton
+                  type="button"
+                  onClick={startCheckout}
+                  disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
+                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-300/30 bg-sky-500/15 text-sky-200">
+                    <IconWalletCard className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-white">Mercado Pago</span>
+                    <span className="block text-xs text-slate-300">Paga de forma rapida y segura</span>
+                  </span>
+                  <IconChevron className="h-4 w-4 shrink-0 text-slate-400" />
+                </ReliableActionButton>
+
+                <ReliableActionButton
+                  type="button"
+                  onClick={scrollToManualSection}
+                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-300/30 bg-violet-500/15 text-violet-200">
+                    <IconDocument className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-white">Pago manual</span>
+                    <span className="block text-xs text-slate-300">Informa tu pago para revision</span>
+                  </span>
+                  <IconChevron className="h-4 w-4 shrink-0 text-slate-400" />
+                </ReliableActionButton>
+              </div>
+            </section>
+          ) : null}
+
+          {!isIosNative ? (
+          <article ref={manualSectionRef} className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <p className="pf-a2-eyebrow">Pago manual</p>
             <h2 className="mt-1 text-xl font-black text-white">Transferencia, efectivo o QR Mercado Pago</h2>
             <p className="mt-2 text-sm text-slate-300">
@@ -872,6 +1113,41 @@ export default function AlumnoPagosClient() {
             ) : null}
           </article>
           ) : null}
+
+          <section>
+            <h3 className="text-sm font-black text-white">Actividad reciente</h3>
+            <div className="mt-2 space-y-2">
+              {activityItems.length > 0 ? (
+                activityItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3"
+                  >
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${toneIconClasses(item.tone)}`}>
+                      {item.icon === "check" ? (
+                        <IconCheck className="h-4 w-4" />
+                      ) : item.icon === "alert" ? (
+                        <IconAlert className="h-4 w-4" />
+                      ) : (
+                        <IconRefresh className="h-4 w-4" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-white">{item.title}</span>
+                      <span className="block text-xs text-slate-300">{item.subtitle}</span>
+                    </span>
+                    {item.time ? (
+                      <span className="shrink-0 text-xs text-slate-400">{item.time}</span>
+                    ) : null}
+                  </div>
+                ))
+              ) : (
+                <p className="pf-a2-card rounded-2xl border p-3.5 text-xs text-slate-400">
+                  Todavia no hay actividad reciente para mostrar.
+                </p>
+              )}
+            </div>
+          </section>
         </section>
       </div>
     </main>
