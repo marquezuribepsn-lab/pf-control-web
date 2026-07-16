@@ -1710,19 +1710,28 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a2-hero,
 .pf-a2-card,
 .pf-a2-kpi {
+  /* Misma paleta "vidrio esmerilado" de las tarjetas del inicio
+     (.pf-a3-coach-card / .pf-a3-panel-block): borde blanco translúcido,
+     fondo slate-950 translúcido con degradado azulado y esquinas más
+     redondeadas, para que progreso/pagos/musica/cuenta se vean
+     consistentes con la pantalla principal. */
   min-width: 0;
   overflow: visible;
-  border-radius: 1rem !important;
-  border: 1px solid var(--pf-a2-border);
+  border-radius: 1.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(2, 6, 23, 0.55);
+  background-image: linear-gradient(168deg, rgba(30, 64, 120, 0.34), rgba(8, 15, 30, 0.22) 66%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: var(--pf-a2-text);
 }
 
 .pf-a2-hero {
   position: relative;
-  background: linear-gradient(145deg, rgba(16, 27, 39, 0.95), rgba(12, 19, 28, 0.94));
   box-shadow:
-    0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(208, 225, 243, 0.07);
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(56, 189, 248, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pf-a2-hero::before {
@@ -1737,18 +1746,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-card {
-  background: linear-gradient(170deg, rgba(18, 29, 41, 0.92), rgba(13, 20, 29, 0.9));
   box-shadow:
-    0 22px 46px -20px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(208, 225, 243, 0.07);
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(56, 189, 248, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pf-a2-kpi {
-  background: linear-gradient(165deg, rgba(23, 35, 49, 0.84), rgba(15, 25, 36, 0.84));
-  border-color: rgba(143, 174, 207, 0.34);
   box-shadow:
-    0 10px 22px -16px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(208, 225, 243, 0.06);
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(56, 189, 248, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
