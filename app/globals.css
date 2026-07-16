@@ -8261,8 +8261,12 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-hero,
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi {
-    border-radius: 0.62rem !important;
-    border-color: rgba(170, 186, 204, 0.34) !important;
+    /* Mismo borde/esquinas "vidrio" que las tarjetas del inicio (ver bloque
+       base .pf-a2-hero/.pf-a2-card/.pf-a2-kpi más arriba), aunque en la app
+       movil se mantiene el fondo sólido (sin degradado ni backdrop-filter)
+       por el fix de parpadeo de scroll en iOS de más abajo. */
+    border-radius: 1.5rem !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
     box-shadow: none !important;
   }
 
@@ -8715,7 +8719,10 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-hero {
-    background: #0f1317 !important;
+    /* Color sólido (sin degradado ni transparencia) para no reintroducir el
+       parpadeo de scroll, pero con el mismo tinte azul-marino "vidrio" que
+       las tarjetas del inicio (.pf-a3-coach-card) en vez del gris neutro. */
+    background: #101a2e !important;
     background-image: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -8723,7 +8730,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: #14171b !important;
+    background: #172544 !important;
   }
 
   html.pf-mobile-webview .pf-a2-card::before,
