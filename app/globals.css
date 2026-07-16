@@ -1597,35 +1597,57 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
  * Login-inspired blue/cyan palette applied across all alumno screens.
  */
 .pf-alumno-v2 {
-  /* Paleta gris-azul (slate) sobre negro casi puro con acento naranja
-     (rediseño alumno v4) */
-  --pf-a2-bg-0: #0b0c0f;
-  --pf-a2-bg-1: #161920;
-  --pf-a2-bg-2: #1d232b;
-  --pf-a2-stage-surface: rgba(17, 20, 25, 0.9);
-  --pf-a2-stage-border: rgba(135, 153, 180, 0.22);
-  --pf-a2-divider: rgba(141, 153, 174, 0.2);
-  --pf-a2-surface: rgba(19, 22, 27, 0.86);
-  --pf-a2-surface-soft: rgba(23, 27, 34, 0.84);
-  --pf-a2-border: rgba(98, 134, 182, 0.32);
-  --pf-a2-border-strong: rgba(170, 194, 230, 0.5);
-  --pf-a2-text: #f3f5f8;
-  --pf-a2-muted: #c8cdd5;
-  --pf-a2-muted-strong: #939ba7;
-  --pf-a2-accent-main: #618cce;
-  --pf-a2-accent-soft: #97b6e5;
-  --pf-a2-accent-cold: #446ab1;
+  /* ── Paleta "navy premium" (rediseño alumno v5) ──────────────────────────
+     Dark navy con glow azul, look Apple-inspired. Estas variables --pf-nv-*
+     son la fuente de verdad de color; los tokens --pf-a2-* de abajo se
+     recablean a ellas para que todos los componentes queden consistentes. */
+  --pf-nv-bg-0: #021531;      /* fondo primario navy profundo */
+  --pf-nv-bg-1: #0b2848;      /* fondo secundario */
+  --pf-nv-depth: #023786;     /* acento de profundidad (glow) */
+  --pf-nv-card: #0b1f3f;      /* fondo de tarjeta */
+  --pf-nv-card-2: #11284a;    /* tarjeta secundaria */
+  --pf-nv-card-hi: #16365f;   /* tarjeta destacada */
+  --pf-nv-border: #294b60;    /* borde de tarjeta */
+  --pf-nv-border-hi: #3a628a; /* borde highlight suave */
+  --pf-nv-text: #e5e6e9;      /* texto primario */
+  --pf-nv-text-2: #bbc3c9;    /* texto secundario */
+  --pf-nv-muted: #768596;     /* texto atenuado */
+  --pf-nv-accent: #025ce4;    /* azul acento */
+  --pf-nv-bright: #1b8bf3;    /* azul brillante */
+  --pf-nv-deep: #003dce;      /* azul profundo */
+  --pf-nv-soft: #5f9de7;      /* azul suave */
+  --pf-nv-green: #299d90;     /* verde estado ok */
+  --pf-nv-green-dark: #108873;/* verde ok oscuro */
+  --pf-nv-glow: rgba(27, 139, 243, 0.14);
+
+  /* Tokens --pf-a2-* recableados a la paleta navy (v5) */
+  --pf-a2-bg-0: var(--pf-nv-bg-0);
+  --pf-a2-bg-1: var(--pf-nv-card);
+  --pf-a2-bg-2: var(--pf-nv-bg-1);
+  --pf-a2-stage-surface: rgba(11, 31, 63, 0.9);
+  --pf-a2-stage-border: rgba(58, 98, 138, 0.4);
+  --pf-a2-divider: rgba(41, 75, 96, 0.62);
+  --pf-a2-surface: rgba(11, 31, 63, 0.86);
+  --pf-a2-surface-soft: rgba(17, 40, 74, 0.84);
+  --pf-a2-border: var(--pf-nv-border);
+  --pf-a2-border-strong: var(--pf-nv-border-hi);
+  --pf-a2-text: var(--pf-nv-text);
+  --pf-a2-muted: var(--pf-nv-text-2);
+  --pf-a2-muted-strong: var(--pf-nv-muted);
+  --pf-a2-accent-main: var(--pf-nv-bright);
+  --pf-a2-accent-soft: var(--pf-nv-soft);
+  --pf-a2-accent-cold: var(--pf-nv-deep);
   --pf-a2-accent-warm: #f97b34;
   --pf-a2-accent-warm-soft: #ffa060;
-  --pf-a2-shadow: 0 14px 30px rgba(5, 7, 10, 0.46);
+  --pf-a2-shadow: 0 18px 40px rgba(2, 10, 24, 0.55);
   position: relative;
   min-height: 100svh;
   color: var(--pf-a2-text);
   font-family: var(--font-body), "Space Grotesk", sans-serif;
-  background-color: var(--pf-a2-bg-0);
+  background-color: var(--pf-nv-bg-0);
   background-image:
-    linear-gradient(180deg, rgba(97, 140, 206, 0.28) 0%, rgba(68, 106, 177, 0.14) 30%, rgba(19, 23, 29, 0.05) 60%, rgba(10, 12, 15, 0) 100%),
-    linear-gradient(160deg, var(--pf-a2-bg-0) 0%, #141922 48%, var(--pf-a2-bg-2) 100%);
+    radial-gradient(120% 80% at 50% -10%, rgba(2, 55, 134, 0.45) 0%, rgba(2, 55, 134, 0.16) 32%, rgba(2, 21, 49, 0) 62%),
+    linear-gradient(168deg, var(--pf-nv-bg-0) 0%, #06203f 52%, var(--pf-nv-bg-1) 100%);
   overflow-x: clip;
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
   /* Aisla el stacking context de esta pantalla: sin esto, las luces
@@ -1717,10 +1739,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
      consistentes con la pantalla principal. */
   min-width: 0;
   overflow: visible;
-  border-radius: 1.5rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background-color: rgba(2, 6, 23, 0.55);
-  background-image: linear-gradient(168deg, rgba(30, 64, 120, 0.34), rgba(8, 15, 30, 0.22) 66%);
+  border-radius: 1.65rem !important;
+  border: 1px solid var(--pf-nv-border);
+  background-color: rgba(11, 31, 63, 0.72);
+  background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--pf-a2-text);
@@ -1729,9 +1751,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 .pf-a2-hero {
   position: relative;
   box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 26px 60px -26px rgba(2, 10, 24, 0.66),
+    0 0 0 1px rgba(27, 139, 243, 0.08),
+    inset 0 1px 0 rgba(95, 157, 231, 0.1);
 }
 
 .pf-a2-hero::before {
@@ -1841,9 +1863,9 @@ select:-webkit-autofill {
   margin: 0;
   font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #93a5b9;
+  color: var(--pf-nv-muted);
 }
 
 .pf-a2-pill {
@@ -1889,15 +1911,16 @@ select:-webkit-autofill {
 }
 
 .pf-a2-solid-btn {
-  color: #0c141d;
-  border: 1px solid rgba(237, 243, 250, 0.76);
-  background: linear-gradient(160deg, var(--pf-a2-accent-soft), var(--pf-a2-accent-main) 58%, var(--pf-a2-accent-cold));
-  box-shadow: 0 10px 18px rgba(66, 115, 171, 0.3);
+  color: #ffffff;
+  border: 1px solid rgba(95, 157, 231, 0.55);
+  background: linear-gradient(150deg, var(--pf-nv-bright) 0%, var(--pf-nv-deep) 100%);
+  box-shadow: 0 10px 22px -6px rgba(0, 61, 206, 0.5), 0 0 0 1px rgba(27, 139, 243, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .pf-a2-solid-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(247, 250, 253, 0.95);
+  border-color: rgba(126, 178, 240, 0.85);
+  box-shadow: 0 14px 28px -6px rgba(0, 61, 206, 0.58), 0 0 18px rgba(27, 139, 243, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .pf-a2-solid-btn:active {
@@ -1905,14 +1928,14 @@ select:-webkit-autofill {
 }
 
 .pf-a2-ghost-btn {
-  border-color: rgba(143, 174, 207, 0.52);
-  color: #e0e6ee;
-  background: linear-gradient(170deg, rgba(19, 31, 44, 0.76), rgba(14, 23, 33, 0.72));
+  border-color: var(--pf-nv-border);
+  color: var(--pf-nv-text);
+  background: linear-gradient(170deg, rgba(17, 40, 74, 0.7), rgba(11, 31, 63, 0.66));
 }
 
 .pf-a2-ghost-btn:hover {
-  border-color: rgba(34, 197, 94, 0.62);
-  color: #f8fafd;
+  border-color: var(--pf-nv-border-hi);
+  color: #ffffff;
 }
 
 .pf-a2-badge {
@@ -1928,9 +1951,9 @@ select:-webkit-autofill {
 }
 
 .pf-a2-badge-ok {
-  border-color: rgba(115, 226, 191, 0.66);
-  color: #defced;
-  background: rgba(27, 148, 107, 0.3);
+  border-color: var(--pf-nv-green);
+  color: #7ef3d7;
+  background: #123c3a;
 }
 
 .pf-a2-badge-warning {
@@ -1956,9 +1979,9 @@ select:-webkit-autofill {
 }
 
 .pf-a2-banner-ok {
-  border-color: rgba(115, 226, 191, 0.58);
-  color: #ddfaec;
-  background: rgba(33, 148, 108, 0.2);
+  border-color: rgba(41, 157, 144, 0.6);
+  color: #a9f3e2;
+  background: rgba(18, 60, 58, 0.55);
 }
 
 .pf-a2-banner-danger {
@@ -1971,10 +1994,10 @@ select:-webkit-autofill {
   width: 38px;
   min-width: 38px;
   height: 38px;
-  border: 1px solid rgba(143, 174, 209, 0.52);
-  border-radius: 0.78rem;
-  background: linear-gradient(170deg, rgba(18, 29, 42, 0.92), rgba(12, 20, 29, 0.9));
-  color: #e9eef5;
+  border: 1px solid var(--pf-nv-border);
+  border-radius: 0.92rem;
+  background: linear-gradient(170deg, rgba(17, 40, 74, 0.9), rgba(11, 31, 63, 0.88));
+  color: var(--pf-nv-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1990,13 +2013,13 @@ select:-webkit-autofill {
 
 .pf-a2-back-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(34, 197, 94, 0.65);
+  border-color: var(--pf-nv-border-hi);
   color: #ffffff;
 }
 
 .pf-a2-back-btn:active {
   transform: translateY(0);
-  border-color: rgba(108, 222, 187, 0.72);
+  border-color: var(--pf-nv-bright);
 }
 
 .pf-a2-back-btn-suspended {
@@ -2552,16 +2575,16 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 .pf-a3-panel-block {
   /* Rediseño inspirado en la tarjeta de /auth/login: borde blanco translúcido,
      fondo slate-950 translúcido con vidrio esmerilado y esquinas más redondeadas. */
-  border-radius: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background-color: rgba(2, 6, 23, 0.55);
-  background-image: linear-gradient(168deg, rgba(30, 64, 120, 0.34), rgba(8, 15, 30, 0.22) 66%);
+  border-radius: 1.65rem;
+  border: 1px solid var(--pf-nv-border);
+  background-color: rgba(11, 31, 63, 0.72);
+  background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 26px 60px -26px rgba(2, 10, 24, 0.66),
+    0 0 0 1px rgba(27, 139, 243, 0.08),
+    inset 0 1px 0 rgba(95, 157, 231, 0.1);
 }
 
 /* ── Fundido de entrada de los paneles del inicio ─────────────────────────── */
@@ -2946,10 +2969,10 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   align-items: center;
   justify-content: flex-start;
   gap: 0.4rem;
-  border-radius: 0.85rem;
-  border: 1px solid rgba(140, 171, 204, 0.22);
-  background: linear-gradient(165deg, rgba(21, 34, 49, 0.74), rgba(12, 20, 30, 0.72));
-  color: #ebf0f7;
+  border-radius: 1rem;
+  border: 1px solid var(--pf-nv-border);
+  background: linear-gradient(165deg, rgba(17, 40, 74, 0.82), rgba(11, 31, 63, 0.78));
+  color: var(--pf-nv-text);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: -0.006em;
@@ -2965,10 +2988,10 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(125, 211, 252, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  background: linear-gradient(160deg, rgba(56, 189, 248, 0.18), rgba(37, 99, 235, 0.14));
-  color: #7dd3fc;
+  border: 1px solid rgba(27, 139, 243, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 14px rgba(27, 139, 243, 0.14);
+  background: linear-gradient(160deg, rgba(27, 139, 243, 0.24), rgba(0, 61, 206, 0.18));
+  color: #7fb6f2;
 }
 
 /* Set monocromo: mismo vidrio violeta y un único tinte lavanda para todos los
@@ -6013,10 +6036,10 @@ video.pf-a3-routine-log-video-frame {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  border-radius: 0.96rem;
-  border: 0;
-  background: rgba(16, 20, 26, 0.94);
-  box-shadow: none;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(41, 75, 96, 0.7);
+  background: rgba(4, 24, 47, 0.96);
+  box-shadow: 0 -10px 26px -14px rgba(2, 10, 24, 0.7), inset 0 1px 0 rgba(95, 157, 231, 0.08);
   padding: 0.14rem 0.16rem calc(0.18rem + env(safe-area-inset-bottom));
   backdrop-filter: none;
   isolation: isolate;
@@ -6051,7 +6074,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a2-dock-btn-active {
-  color: #7dd3fc;
+  color: #7fb6f2;
   background: transparent;
 }
 
@@ -6068,8 +6091,8 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a2-dock-btn-active .pf-a2-dock-hit {
-  background: linear-gradient(160deg, rgba(56, 189, 248, 0.22), rgba(37, 99, 235, 0.18));
-  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.16);
+  background: linear-gradient(160deg, rgba(27, 139, 243, 0.28), rgba(0, 61, 206, 0.2));
+  box-shadow: 0 0 0 1px rgba(27, 139, 243, 0.4), 0 0 18px rgba(27, 139, 243, 0.26);
 }
 
 .pf-a2-dock-icon-wrap {
@@ -8664,8 +8687,8 @@ video.pf-a3-routine-log-video-frame {
        sensación de que el "led" se pintaba encima de los íconos. Sólido
        100% opaco = la barra siempre tapa el brillo, sin importar el
        compositing del WebView. */
-    background: #0a0c0f !important;
-    box-shadow: none !important;
+    background: #04182f !important;
+    box-shadow: 0 -10px 26px -14px rgba(2, 10, 24, 0.7), inset 0 1px 0 rgba(95, 157, 231, 0.08) !important;
     backdrop-filter: none !important;
   }
 
@@ -8687,12 +8710,18 @@ video.pf-a3-routine-log-video-frame {
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active {
-    color: #f8fafd !important;
-    background: rgba(120, 145, 175, 0.2) !important;
+    color: #ffffff !important;
+    background: rgba(27, 139, 243, 0.18) !important;
+    box-shadow: inset 0 0 0 1px rgba(27, 139, 243, 0.4), 0 0 18px rgba(27, 139, 243, 0.28) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active::after {
-    background: rgba(235, 242, 250, 0.96) !important;
+    background: var(--pf-nv-bright) !important;
+    box-shadow: 0 0 10px rgba(27, 139, 243, 0.7) !important;
+  }
+
+  html.pf-mobile-fluid .pf-a2-dock-btn-active .pf-a2-dock-icon-wrap {
+    background: rgba(27, 139, 243, 0.22) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-label {
@@ -8785,17 +8814,17 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-hero {
     /* Color sólido (sin degradado ni transparencia) para no reintroducir el
-       parpadeo de scroll, pero con el mismo tinte azul-marino "vidrio" que
-       las tarjetas del inicio (.pf-a3-coach-card) en vez del gris neutro. */
-    background: #101a2e !important;
+       parpadeo de scroll, ahora con el navy premium (v5) de las tarjetas. */
+    background: var(--pf-nv-card) !important;
     background-image: none !important;
+    border-color: var(--pf-nv-border) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
   html.pf-mobile-webview .pf-a2-kpi,
   html.pf-mobile-fluid .pf-a2-kpi {
-    background: #172544 !important;
+    background: var(--pf-nv-card-2) !important;
   }
 
   html.pf-mobile-webview .pf-a2-card::before,
@@ -8811,7 +8840,7 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-webview .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]),
   html.pf-mobile-fluid .pf-a2-card :where([class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-cyan-"], [class*="bg-violet-"]) {
-    background-color: #16191d !important;
+    background-color: var(--pf-nv-card-2) !important;
     background-image: none !important;
     backdrop-filter: none !important;
   }
@@ -8830,7 +8859,11 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell,
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main {
-    background: #0f1317 !important;
+    /* Navy premium plano (v5). Se mantiene plano —sin degradado— en el
+       contenedor scrolleable para no reintroducir el parpadeo de scroll del
+       WebView; el "glow" azul se logra con las sombras/brillo de las tarjetas
+       y el degradado interno del hero, no con el fondo de página. */
+    background: var(--pf-nv-bg-0) !important;
     background-image: none !important;
   }
 
