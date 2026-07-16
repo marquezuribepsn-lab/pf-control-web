@@ -370,6 +370,58 @@ function MercadoPagoLogo({ className = "h-6 w-6" }: { className?: string }) {
   );
 }
 
+function PfPayLogo({ className = "h-12 w-12" }: { className?: string }) {
+  // Marca propia de PF Control para el centro de pagos: emblema de "pase" con
+  // monograma PF. Al ser un logo propio (no un medio de pago de terceros) esta
+  // permitido mostrarlo dentro de la app nativa.
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      role="img"
+      aria-label="PF Control Pagos"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#pfpayBg)" />
+      <rect
+        x="2.75"
+        y="2.75"
+        width="58.5"
+        height="58.5"
+        rx="17.25"
+        fill="none"
+        stroke="url(#pfpayStroke)"
+        strokeWidth="1.5"
+      />
+      <rect x="14" y="24" width="36" height="24" rx="6" fill="none" stroke="#5f9de7" strokeWidth="2.4" opacity="0.55" />
+      <path d="M14 32h36" stroke="#5f9de7" strokeWidth="2.4" opacity="0.55" />
+      <text
+        x="32"
+        y="30"
+        textAnchor="middle"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif"
+        fontSize="17"
+        fontWeight="800"
+        fill="#ffffff"
+        letterSpacing="0.5"
+      >
+        PF
+      </text>
+      <defs>
+        <linearGradient id="pfpayBg" x1="2" y1="2" x2="62" y2="62" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1b8bf3" />
+          <stop offset="0.55" stopColor="#025ce4" />
+          <stop offset="1" stopColor="#003dce" />
+        </linearGradient>
+        <linearGradient id="pfpayStroke" x1="2" y1="2" x2="62" y2="62" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#ffffff" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0.08" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 0;
 
 export default function AlumnoPagosClient() {
@@ -962,7 +1014,8 @@ export default function AlumnoPagosClient() {
 
             {isIosNative ? (
               <>
-                <div className="mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3">
+                <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-center">
+                  <PfPayLogo className="h-14 w-14" />
                   <p className="text-sm text-slate-200">
                     Para gestionar o renovar tu pase, ingresa a{" "}
                     <span className="font-semibold text-white">pf-control.com</span> desde el
