@@ -9149,34 +9149,6 @@ export default function AlumnoVisionClient({
                     onClick={() => goToCategory("progreso")}
                     className="pf-a3-quick-item"
                   >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-agua" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <path d="M12 3.8c2.7 3.1 5.2 6.2 5.2 9.2a5.2 5.2 0 1 1-10.4 0c0-3 2.5-6.1 5.2-9.2Z" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span>Agua</span>
-                  </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-quick-item"
-                  >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-sueno" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <path d="M4 14h16M6 10h6m8 0h-4" strokeLinecap="round" />
-                        <path d="M5 14v3h2.5v-3M16.5 14v3H19v-3" strokeLinecap="round" strokeLinejoin="round" />
-                        <rect x="3.5" y="7" width="17" height="7" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span>Sueño</span>
-                  </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-quick-item"
-                  >
                     <span className="pf-a3-quick-icon pf-a3-quick-icon-progreso" aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
                         <path d="M5 17.5c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" strokeLinecap="round" />

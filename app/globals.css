@@ -2451,6 +2451,21 @@ html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="border-white/"],
 html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.14) !important;
 }
+/* Mismo problema de especificidad, ahora con overlays bg-white/N (tintes
+   translúcidos sutiles usados en algunos sub-elementos dentro de pf-a2).
+   html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/N"]
+   los remapea a un tinte claro tipo --gym-accent, que no se ve bien sobre
+   el fondo oscuro ya reforzado arriba. Se restaura un tinte blanco
+   translucido acorde a la paleta "vidrio" del inicio. */
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="bg-white/"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="bg-white/"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="bg-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="bg-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="bg-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  background-image: none !important;
+}
 
 .pf-a3-avatar-wrap {
   position: relative;
@@ -2959,8 +2974,6 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="border-white/"] {
 /* Set monocromo: mismo vidrio violeta y un único tinte lavanda para todos los
    glyphs. La categoría la distingue el ícono y la etiqueta, no el color, para
    evitar el look "arcoíris" que se sentía generado por IA. */
-.pf-a3-quick-icon-agua,
-.pf-a3-quick-icon-sueno,
 .pf-a3-quick-icon-progreso,
 .pf-a3-quick-icon-pagos,
 .pf-a3-quick-icon-musica {
