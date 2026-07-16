@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import PlanesDestacados from "@/components/PlanesDestacados";
 import ReliableActionButton from "@/components/ReliableActionButton";
 import ReliableLink from "@/components/ReliableLink";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -876,15 +875,6 @@ export default function AlumnoPagosClient() {
             </span>
             <p className="min-w-0">{error}</p>
           </section>
-        ) : null}
-
-        {!paymentsHiddenForNative ? (
-          <PlanesDestacados
-            daysRemaining={status?.daysRemaining ?? null}
-            onSelectPlan={startCheckout}
-            checkoutLoading={checkoutLoading}
-            canPay={canPay}
-          />
         ) : null}
 
         <section className="grid gap-4">
