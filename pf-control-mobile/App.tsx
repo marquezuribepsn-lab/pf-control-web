@@ -179,9 +179,11 @@ const MOBILE_SCROLL_HINT_SCRIPT = `
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-v2, html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-quick-row { display: grid !important; grid-template-columns: 1fr !important; gap: 0.48rem !important; margin-top: 0.75rem !important; }",
         "html.pf-mobile-maxperf.pf-mobile-webview .pf-a4-nutrition-plan-action-btn-quick { width: 100% !important; min-height: 38px !important; opacity: 1 !important; visibility: visible !important; }",
-        // LED ambiental de fondo (iluminación sombreada) sobre el root del alumno,
-        // incluso en maxperf. Es un degradado estático fijo: no cuesta rendimiento.
-        "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { background-color: #0d1219 !important; background-image: radial-gradient(80% 34% at 50% 0%, rgba(249, 123, 52, 0.24), transparent 66%), radial-gradient(58% 32% at 4% 24%, rgba(97, 140, 206, 0.18), transparent 72%), radial-gradient(58% 32% at 96% 58%, rgba(255, 150, 78, 0.16), transparent 74%), radial-gradient(64% 34% at 50% 100%, rgba(255, 140, 66, 0.13), transparent 78%) !important; background-repeat: no-repeat !important; background-attachment: fixed !important; }",
+        // El LED ambiental de fondo (degradados radiales naranja) se eliminó por
+        // pedido explícito: quedaba pasando por encima de tarjetas y textos en
+        // varias pantallas (progreso, etc). Ya no se reinyecta acá; el fondo
+        // plano oscuro lo deja fijo la regla de arriba (línea 178).
+        "html.pf-mobile-maxperf.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 { background-color: #0d1219 !important; background-image: none !important; }",
         // Reactiva el fundido de entrada de los paneles del inicio pese al bloqueo
         // global de animaciones de maxperf. El :not(#_) eleva la especificidad para
         // ganarle a la regla que las apaga.

@@ -2320,6 +2320,78 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack [class*="border-white/2"] {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* Mismo bug que el de arriba (.pf-a3-home-stack / .pf-a3-checkin-semanal),
+   pero en el resto de pantallas del alumno (progreso, pagos, musica, cuenta):
+   todas envuelven su contenido en .pf-training-shell (ver AppShell.tsx), así
+   que cuando el dispositivo no tiene preferencia de tema guardada y el SO
+   está en modo claro, las reglas html[data-pf-theme="light"] .pf-training-shell
+   [class*="text-white"]/[class*="text-slate-NNN"] repintan los títulos y
+   textos de las tarjetas .pf-a2-card/.pf-a2-hero/.pf-a2-kpi en tonos oscuros
+   de diseño claro, mientras el fondo del WebView queda forzado oscuro:
+   texto oscuro sobre fondo oscuro = ilegible ("Evolucion", "Antropometria",
+   etc. se veían casi invisibles). Se reafirma el color de diseño oscuro con
+   especificidad elevada (:not(#_)), igual que en el inicio, pero sin atarlo
+   a una categoría puntual para que cubra todas las pantallas pf-a2. */
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="text-white"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="text-white"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="text-white"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="text-white"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="text-white"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="text-white"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero :where(h1, h2, h3),
+html.pf-mobile-webview:not(#_) .pf-a2-card :where(h1, h2, h3),
+html.pf-mobile-webview:not(#_) .pf-a2-kpi :where(h1, h2, h3),
+html.pf-mobile-fluid:not(#_) .pf-a2-hero :where(h1, h2, h3),
+html.pf-mobile-fluid:not(#_) .pf-a2-card :where(h1, h2, h3),
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi :where(h1, h2, h3) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="text-slate-100"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="text-slate-100"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="text-slate-100"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="text-slate-100"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="text-slate-100"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="text-slate-100"] {
+  color: #e9edf3 !important;
+  -webkit-text-fill-color: #e9edf3 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="text-slate-200"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="text-slate-200"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="text-slate-200"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="text-slate-200"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="text-slate-200"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="text-slate-200"] {
+  color: #c4d0de !important;
+  -webkit-text-fill-color: #c4d0de !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="text-slate-300"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="text-slate-300"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="text-slate-300"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="text-slate-300"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="text-slate-300"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="text-slate-300"] {
+  color: #adbac9 !important;
+  -webkit-text-fill-color: #adbac9 !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="text-slate-400"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="text-slate-400"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="text-slate-400"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="text-slate-400"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="text-slate-400"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="text-slate-400"] {
+  color: #8e9cab !important;
+  -webkit-text-fill-color: #8e9cab !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-eyebrow,
+html.pf-mobile-fluid:not(#_) .pf-a2-eyebrow {
+  color: #93a5b9 !important;
+  -webkit-text-fill-color: #93a5b9 !important;
+}
+
 .pf-a3-avatar-wrap {
   position: relative;
   order: 2;
