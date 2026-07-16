@@ -332,6 +332,44 @@ function IconDocument({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function MercadoPagoLogo({ className = "h-6 w-6" }: { className?: string }) {
+  // Isologotipo oficial de Mercado Pago (marca del "apreton de manos" sobre ovalo azul).
+  // Uso nominativo para identificar el medio de pago: colores y proporciones oficiales,
+  // sin recolorear ni distorsionar la marca.
+  return (
+    <svg
+      viewBox="0 0 512 340"
+      className={className}
+      role="img"
+      aria-label="Mercado Pago"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <ellipse cx="256" cy="170" rx="254" ry="168" fill="#009EE3" />
+      <ellipse cx="256" cy="170" rx="254" ry="168" fill="url(#mpGloss)" />
+      <path
+        d="M96 150c14-30 46-52 84-52 30 0 52 12 76 30 24-18 46-30 76-30 38 0 70 22 84 52 6 12 4 24-6 30-40 26-90 42-154 42s-114-16-154-42c-10-6-12-18-6-30Z"
+        fill="#FFE600"
+      />
+      <path
+        d="M172 158c8-14 22-22 40-22 12 0 22 4 30 12l14 12 14-12c8-8 18-12 30-12 18 0 32 8 40 22"
+        fill="none"
+        stroke="#2D3277"
+        strokeWidth="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="212" cy="150" r="12" fill="#2D3277" />
+      <circle cx="300" cy="150" r="12" fill="#2D3277" />
+      <defs>
+        <linearGradient id="mpGloss" x1="256" y1="2" x2="256" y2="338" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#ffffff" stopOpacity="0.22" />
+          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 0;
 
 export default function AlumnoPagosClient() {
@@ -956,8 +994,8 @@ export default function AlumnoPagosClient() {
                   disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
                   className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-300/30 bg-sky-500/15 text-sky-200">
-                    <IconWalletCard className="h-5 w-5" />
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white">
+                    <MercadoPagoLogo className="h-6 w-9" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-white">Mercado Pago</span>
@@ -1115,7 +1153,20 @@ export default function AlumnoPagosClient() {
           ) : null}
 
           <section>
-            <h3 className="text-sm font-black text-white">Actividad reciente</h3>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-black text-white">Actividad reciente</h3>
+              {activityItems.length > 0 ? (
+                <ReliableActionButton
+                  type="button"
+                  onClick={scrollToManualSection}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-sky-300 transition-colors hover:text-sky-200"
+                  aria-label="Ver el detalle completo de tus movimientos"
+                >
+                  Ver todo
+                  <IconChevron className="h-3.5 w-3.5" />
+                </ReliableActionButton>
+              ) : null}
+            </div>
             <div className="mt-2 space-y-2">
               {activityItems.length > 0 ? (
                 activityItems.map((item) => (
