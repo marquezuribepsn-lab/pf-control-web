@@ -2400,6 +2400,58 @@ html.pf-mobile-fluid:not(#_) .pf-a2-eyebrow {
   -webkit-text-fill-color: #93a5b9 !important;
 }
 
+/* Mismo bug de tema claro, pero de FONDO en vez de texto: elementos internos
+   con utilidades bg-slate-900/800/950/700 (p.ej. el "drawer" de Monto de
+   renovacion en Pagos) quedaban con fondo blanco casi opaco y texto claro
+   encima -> ilegible. Las reglas de arriba usan :where() (especificidad 0),
+   así que pierden contra html[data-pf-theme="light"] .pf-training-shell
+   [class*="bg-slate-900"] (2 clases). Se reafirma el fondo oscuro con la
+   misma técnica de especificidad elevada. */
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="bg-slate-900"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="bg-slate-900"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="bg-slate-900"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="bg-slate-900"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="bg-slate-900"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-slate-900"],
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="bg-slate-950"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="bg-slate-950"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="bg-slate-950"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="bg-slate-950"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="bg-slate-950"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-slate-950"] {
+  background-color: rgba(19, 30, 42, 0.78) !important;
+  border-color: var(--pf-a2-divider) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="bg-slate-800"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="bg-slate-800"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="bg-slate-800"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="bg-slate-800"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="bg-slate-800"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-slate-800"] {
+  background-color: rgba(19, 30, 42, 0.78) !important;
+  border-color: var(--pf-a2-divider) !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="bg-slate-700"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="bg-slate-700"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="bg-slate-700"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="bg-slate-700"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="bg-slate-700"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-slate-700"] {
+  background-color: rgba(23, 35, 49, 0.84) !important;
+  border-color: var(--pf-a2-divider) !important;
+}
+/* Bordes border-white/N dentro de pf-a2: el tema claro los repinta a
+   #e2e8f0 (gris claro), que desentona sobre el fondo oscuro ya reforzado
+   arriba. Se restaura un borde blanco translucido acorde a la paleta. */
+html.pf-mobile-webview:not(#_) .pf-a2-hero [class*="border-white/"],
+html.pf-mobile-webview:not(#_) .pf-a2-card [class*="border-white/"],
+html.pf-mobile-webview:not(#_) .pf-a2-kpi [class*="border-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-hero [class*="border-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-card [class*="border-white/"],
+html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
 .pf-a3-avatar-wrap {
   position: relative;
   order: 2;
