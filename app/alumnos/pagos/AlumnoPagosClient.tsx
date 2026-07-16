@@ -695,6 +695,16 @@ export default function AlumnoPagosClient() {
   const canRequestManual = Boolean(status?.manualMethodsEnabled);
   const canUseQrStore = Boolean(status?.mercadoPago?.qrStore?.enabled);
 
+  // Apple 3.1.3(e): el pase de gimnasio es un servicio fisico consumido fuera de
+  // la app (el alumno entrena presencialmente), por lo que esta permitido cobrarlo
+  // con Mercado Pago (medio de pago externo) dentro de la app iOS nativa. Por eso
+  // ya no se ocultan las opciones de pago en el WebView nativo.
+  const paymentsHiddenForNative: boolean = false;
+  // El bloque "ingresa por el navegador" queda solo como respaldo: se muestra
+  // unicamente si en nativo no hay ningun medio de pago disponible.
+  const showNativeFallback =
+    isIosNative && (paymentsHiddenForNative || (!canPay && !canRequestManual && !canUseQrStore));
+
   const statusTone = useMemo(
     () => resolveStatusTone(isActive, status?.reason || "no-meta"),
     [isActive, status?.reason]
@@ -815,7 +825,7 @@ export default function AlumnoPagosClient() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2.5">
-            {!isIosNative ? (
+            {!paymentsHiddenForNative ? (
               <ReliableActionButton
                 type="button"
                 onClick={startCheckout}
@@ -838,7 +848,7 @@ export default function AlumnoPagosClient() {
             </ReliableActionButton>
           </div>
 
-          {noMetaBlocksMP && !isIosNative ? (
+          {noMetaBlocksMP && !paymentsHiddenForNative ? (
             <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
               El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
             </p>
@@ -868,7 +878,7 @@ export default function AlumnoPagosClient() {
           </section>
         ) : null}
 
-        {!isIosNative ? (
+        {!paymentsHiddenForNative ? (
           <PlanesDestacados
             daysRemaining={status?.daysRemaining ?? null}
             onSelectPlan={startCheckout}
@@ -967,7 +977,7 @@ export default function AlumnoPagosClient() {
               <IconChevron className="h-4 w-4 shrink-0 text-emerald-200/50" />
             </div>
 
-            {canUseQrStore && !isIosNative ? (
+            {canUseQrStore && !paymentsHiddenForNative ? (
               <section className="mt-4 rounded-xl border border-violet-300/30 bg-violet-500/10 p-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-violet-100/90">QR tienda</p>
                 <h3 className="mt-1 text-sm font-black text-violet-100">
@@ -1012,7 +1022,7 @@ export default function AlumnoPagosClient() {
               </section>
             ) : null}
 
-            {isIosNative ? (
+            {showNativeFallback ? (
               <>
                 <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-center">
                   <PfPayLogo className="h-14 w-14" />
@@ -1037,7 +1047,7 @@ export default function AlumnoPagosClient() {
             ) : null}
           </article>
 
-          {!isIosNative ? (
+          {!paymentsHiddenForNative ? (
             <section>
               <h3 className="text-sm font-black text-white">Opciones de pago</h3>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
@@ -1075,7 +1085,7 @@ export default function AlumnoPagosClient() {
             </section>
           ) : null}
 
-          {!isIosNative ? (
+          {!paymentsHiddenForNative ? (
           <article ref={manualSectionRef} className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <p className="pf-a2-eyebrow">Pago manual</p>
             <h2 className="mt-1 text-xl font-black text-white">Transferencia, efectivo o QR Mercado Pago</h2>
