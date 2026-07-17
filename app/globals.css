@@ -1781,6 +1781,34 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Bottom sheet del pago manual: fondo solido (sin transparencia) para evitar
+   el flicker de repintado al scrollear dentro del WebView nativo. */
+.pf-a2-sheet {
+  border-color: var(--pf-nv-border);
+  background-color: var(--pf-nv-card);
+  box-shadow:
+    0 -24px 60px -20px rgba(2, 12, 30, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  animation: pf-a2-sheet-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes pf-a2-sheet-in {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-a2-sheet {
+    animation: none;
+  }
+}
+
 .pf-a2-card :where(section, div):where([class*="rounded-xl"], [class*="rounded-lg"]) {
   border-radius: 0.82rem !important;
 }

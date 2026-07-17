@@ -2,6 +2,8 @@ import { getSyncValue, setSyncValue } from "@/lib/syncStore";
 
 export const CLIENTES_META_KEY = "pf-control-clientes-meta-v1";
 export const PAYMENT_ORDERS_KEY = "pf-control-payment-orders-v1";
+// Store que alimenta la lista de pagos de la ficha del alumno (app/clientes).
+export const FICHA_PAGOS_KEY = "pf-control-pagos-v1";
 export const PAYMENT_INCOME_RESET_KEY = "pf-control-payment-income-reset-v1";
 export const PLAN_PRECIOS_KEY = "pf-control-plan-precios-v1";
 
@@ -63,6 +65,8 @@ export type PaymentOrderRecord = {
   providerPaymentId: string | null;
   receiptNumber: string | null;
   receiptIssuedAt: string | null;
+  receiptFileUrl: string | null;
+  receiptFileName: string | null;
   approvedAt: string | null;
   adminNote: string | null;
   reviewedByUserId: string | null;
@@ -515,6 +519,8 @@ export async function getPaymentOrders(): Promise<PaymentOrderRecord[]> {
         providerPaymentId: value.providerPaymentId ? String(value.providerPaymentId) : null,
         receiptNumber: normalizeOptionalText(value.receiptNumber),
         receiptIssuedAt: normalizeOptionalText(value.receiptIssuedAt),
+        receiptFileUrl: normalizeReceiptFileUrl(value.receiptFileUrl),
+        receiptFileName: normalizeReceiptFileName(value.receiptFileName),
         approvedAt: value.approvedAt ? String(value.approvedAt) : null,
         adminNote: normalizeOptionalText(value.adminNote),
         reviewedByUserId: normalizeOptionalText(value.reviewedByUserId),
@@ -547,6 +553,8 @@ export async function createPaymentOrder(input: {
   checkoutUrl?: string | null;
   receiptNumber?: string | null;
   receiptIssuedAt?: string | null;
+  receiptFileUrl?: string | null;
+  receiptFileName?: string | null;
   adminNote?: string | null;
   reviewedByUserId?: string | null;
   reviewedByUserEmail?: string | null;
@@ -573,6 +581,8 @@ export async function createPaymentOrder(input: {
     providerPaymentId: null,
     receiptNumber: normalizeOptionalText(input.receiptNumber),
     receiptIssuedAt: normalizeOptionalText(input.receiptIssuedAt),
+    receiptFileUrl: normalizeReceiptFileUrl(input.receiptFileUrl),
+    receiptFileName: normalizeReceiptFileName(input.receiptFileName),
     approvedAt: null,
     adminNote: normalizeOptionalText(input.adminNote),
     reviewedByUserId: normalizeOptionalText(input.reviewedByUserId),
@@ -598,6 +608,8 @@ export async function createManualPaymentRequest(input: {
   periodDays: number;
   method: ManualPaymentMethod;
   note?: string;
+  receiptFileUrl?: string | null;
+  receiptFileName?: string | null;
 }): Promise<PaymentOrderRecord> {
   const externalReference = `manual-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -615,8 +627,82 @@ export async function createManualPaymentRequest(input: {
     providerStatus: "pending_admin_confirmation",
     receiptNumber: buildManualReceiptNumber(),
     receiptIssuedAt: nowIso(),
+    receiptFileUrl: input.receiptFileUrl || null,
+    receiptFileName: input.receiptFileName || null,
     adminNote: input.note || null,
   });
+}
+
+// El comprobante se guarda como data URL (imagen o PDF) dentro del sync store,
+// siguiendo el mismo patron que el avatar/QR. Se limita el tamano para no
+// inflar el JSON del store; el cliente ademas comprime las imagenes.
+// La ficha del alumno (app/clientes) lee sus pagos de FICHA_PAGOS_KEY, que es un
+// store distinto al de las ordenes de pago. Cuando el admin aprueba un pago
+// manual dejamos tambien el registro en la ficha para que quede reflejado ahi.
+export type FichaPagoRegistro = {
+  id: string;
+  clientId: string;
+  clientName: string;
+  fecha: string;
+  importe: number;
+  moneda: string;
+  createdAt: string;
+  metodo?: "transferencia" | "efectivo" | "mercadopago" | "gratis";
+};
+
+export async function appendFichaPaymentRecord(input: {
+  clientKey: string | null;
+  clientName: string;
+  email: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  approvedAt: string;
+}): Promise<FichaPagoRegistro | null> {
+  const clientKey = String(input.clientKey || "").trim();
+  if (!clientKey.startsWith("alumno:")) return null;
+
+  const clientId = clientKey.slice("alumno:".length).trim();
+  if (!clientId) return null;
+
+  const raw = await getSyncValue(FICHA_PAGOS_KEY);
+  const current = Array.isArray(raw) ? (raw as FichaPagoRegistro[]) : [];
+
+  const metodo: FichaPagoRegistro["metodo"] =
+    input.method === "transferencia" || input.method === "efectivo" || input.method === "mercadopago"
+      ? input.method
+      : undefined;
+
+  const record: FichaPagoRegistro = {
+    id: `pago-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    clientId,
+    clientName: input.clientName || input.email,
+    fecha: input.approvedAt.slice(0, 10),
+    importe: toPositiveAmount(input.amount, DEFAULT_AMOUNT_ARS),
+    moneda: normalizeCurrency(input.currency),
+    createdAt: input.approvedAt,
+    metodo,
+  };
+
+  await setSyncValue(FICHA_PAGOS_KEY, [...current, record].slice(-4000));
+  return record;
+}
+
+const RECEIPT_FILE_MAX_CHARS = 1_400_000; // ~1 MB de data URL
+function normalizeReceiptFileUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!/^data:(image\/(png|jpe?g|webp)|application\/pdf);base64,/i.test(trimmed)) {
+    return null;
+  }
+  if (trimmed.length > RECEIPT_FILE_MAX_CHARS) return null;
+  return trimmed;
+}
+function normalizeReceiptFileName(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().slice(0, 160);
+  return trimmed || null;
 }
 
 type PaymentOrderPatch = Partial<Pick<

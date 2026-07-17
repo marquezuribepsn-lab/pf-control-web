@@ -87,6 +87,10 @@ export async function POST(req: NextRequest) {
   const periodDays = toPositiveDays(payload?.periodDays, defaults.periodDays);
   const currency = normalizeCurrency(payload?.currency, defaults.currency);
   const note = String(payload?.note || "").trim().slice(0, 400);
+  const receiptFileUrl =
+    typeof payload?.receiptFileUrl === "string" ? payload.receiptFileUrl : null;
+  const receiptFileName =
+    typeof payload?.receiptFileName === "string" ? payload.receiptFileName : null;
 
   const order = await createManualPaymentRequest({
     userId: session.user.id,
@@ -97,6 +101,8 @@ export async function POST(req: NextRequest) {
     periodDays,
     method,
     note,
+    receiptFileUrl,
+    receiptFileName,
   });
 
   const alertMessageLines = [
@@ -111,6 +117,10 @@ export async function POST(req: NextRequest) {
 
   if (note) {
     alertMessageLines.push(`Nota: ${note}`);
+  }
+
+  if (order.receiptFileUrl) {
+    alertMessageLines.push("Comprobante adjunto: si");
   }
 
   let whatsAppAlertSent = false;

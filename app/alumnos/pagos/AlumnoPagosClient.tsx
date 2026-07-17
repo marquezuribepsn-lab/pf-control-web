@@ -421,6 +421,63 @@ function PfPayLogo({ className = "h-12 w-12" }: { className?: string }) {
   );
 }
 
+// El comprobante viaja como data URL dentro del JSON (mismo patron que el avatar
+// y el QR de MP). Las imagenes se comprimen en el cliente para no inflar el store.
+const RECEIPT_MAX_INPUT_BYTES = 10 * 1024 * 1024;
+const RECEIPT_MAX_DATA_URL_CHARS = 1_300_000;
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressImageDataUrl(
+  dataUrl: string,
+  maxSide = 1400,
+  quality = 0.72
+): Promise<string> {
+  const image = document.createElement("img");
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("No se pudo procesar la imagen"));
+    image.src = dataUrl;
+  });
+
+  const largestSide = Math.max(image.width, image.height);
+  const scale = largestSide > maxSide ? maxSide / largestSide : 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function IconPaperclip({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
+      <path
+        d="M20 11.5 12.4 19a4.5 4.5 0 0 1-6.4-6.4l7.8-7.8a3 3 0 0 1 4.3 4.3l-7.8 7.8a1.5 1.5 0 0 1-2.2-2.2l7-7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconClose({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const PAYMENT_STATUS_BRANDED_LOADING_MIN_MS = 0;
 
 export default function AlumnoPagosClient() {
@@ -439,12 +496,16 @@ export default function AlumnoPagosClient() {
   const [status, setStatus] = useState<PaymentStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [manualLoadingMethod, setManualLoadingMethod] = useState<
-    "transferencia" | "efectivo" | "mercadopago" | null
-  >(null);
   const [statusRefreshLoading, setStatusRefreshLoading] = useState(false);
   const [manualNote, setManualNote] = useState("");
   const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
+  const [manualSheetOpen, setManualSheetOpen] = useState(false);
+  const [manualMethod, setManualMethod] = useState<"transferencia" | "efectivo">("transferencia");
+  const [manualAmount, setManualAmount] = useState("");
+  const [manualFileUrl, setManualFileUrl] = useState<string | null>(null);
+  const [manualFileName, setManualFileName] = useState<string | null>(null);
+  const [manualFileError, setManualFileError] = useState("");
+  const [manualSubmitting, setManualSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
@@ -629,10 +690,74 @@ export default function AlumnoPagosClient() {
     }
   };
 
-  const requestManualReview = async (method: "transferencia" | "efectivo" | "mercadopago") => {
+  const openManualSheet = useCallback(() => {
+    setManualFileError("");
+    setError("");
+    setManualAmount(
+      status?.billing.amount ? String(status.billing.amount) : ""
+    );
+    setManualSheetOpen(true);
+  }, [status?.billing.amount]);
+
+  const closeManualSheet = useCallback(() => {
+    setManualSheetOpen(false);
+  }, []);
+
+  const handleReceiptFileChange = async (file: File | null) => {
+    setManualFileError("");
+
+    if (!file) {
+      setManualFileUrl(null);
+      setManualFileName(null);
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf";
+    const isImage = /^image\/(png|jpe?g|webp)$/i.test(file.type);
+
+    if (!isPdf && !isImage) {
+      setManualFileError("Formato no valido. Adjunta una imagen JPG/PNG o un PDF.");
+      return;
+    }
+
+    if (file.size > RECEIPT_MAX_INPUT_BYTES) {
+      setManualFileError("El archivo supera los 10 MB.");
+      return;
+    }
+
+    try {
+      let dataUrl = await readFileAsDataUrl(file);
+      if (isImage) {
+        dataUrl = await compressImageDataUrl(dataUrl);
+      }
+
+      if (dataUrl.length > RECEIPT_MAX_DATA_URL_CHARS) {
+        setManualFileError(
+          isPdf
+            ? "El PDF es muy pesado. Adjunta una foto del comprobante o un PDF mas liviano."
+            : "La imagen es muy pesada. Proba con otra foto."
+        );
+        return;
+      }
+
+      setManualFileUrl(dataUrl);
+      setManualFileName(file.name);
+    } catch {
+      setManualFileError("No se pudo procesar el archivo.");
+    }
+  };
+
+  const submitManualPayment = async () => {
     if (!status) return;
 
-    setManualLoadingMethod(method);
+    const parsedAmount = Number(String(manualAmount).replace(",", "."));
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setManualFileError("Ingresa un monto valido.");
+      return;
+    }
+
+    setManualSubmitting(true);
+    setManualFileError("");
     setError("");
 
     try {
@@ -642,11 +767,13 @@ export default function AlumnoPagosClient() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          method,
-          amount: status.billing.amount,
+          method: manualMethod,
+          amount: parsedAmount,
           currency: status.billing.currency,
           periodDays: status.billing.periodDays,
           note: manualNote,
+          receiptFileUrl: manualFileUrl,
+          receiptFileName: manualFileName,
         }),
       });
 
@@ -657,24 +784,25 @@ export default function AlumnoPagosClient() {
       };
 
       if (!response.ok) {
-        throw new Error(String(data.message || "No se pudo registrar el pago manual"));
+        throw new Error(String(data.message || "No se pudo enviar el informe de pago"));
       }
 
       setMessage(
         data.message ||
-          "Solicitud enviada. Queda pendiente de confirmacion del admin para renovar tu pase."
+          "Informe enviado. Queda pendiente de confirmacion del admin para renovar tu pase."
       );
       setManualReceipt(data.receipt || null);
       setManualNote("");
+      setManualFileUrl(null);
+      setManualFileName(null);
+      setManualSheetOpen(false);
       await loadStatus({ withBrandedLoader: true });
     } catch (manualError) {
-      setError(
-        manualError instanceof Error
-          ? manualError.message
-          : "No se pudo registrar el pago manual."
+      setManualFileError(
+        manualError instanceof Error ? manualError.message : "No se pudo enviar el informe."
       );
     } finally {
-      setManualLoadingMethod(null);
+      setManualSubmitting(false);
     }
   };
 
@@ -1059,15 +1187,17 @@ export default function AlumnoPagosClient() {
 
                 <ReliableActionButton
                   type="button"
-                  onClick={scrollToManualSection}
-                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left"
+                  onClick={openManualSheet}
+                  disabled={!canRequestManual || loading || statusRefreshLoading}
+                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
+                  aria-haspopup="dialog"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-300/30 bg-violet-500/15 text-violet-200">
                     <IconDocument className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-white">Pago manual</span>
-                    <span className="block text-xs text-slate-300">Informa tu pago para revision</span>
+                    <span className="block text-xs text-slate-300">Transferencia o efectivo</span>
                   </span>
                   <IconChevron className="h-4 w-4 shrink-0 text-slate-400" />
                 </ReliableActionButton>
@@ -1078,80 +1208,23 @@ export default function AlumnoPagosClient() {
           {!paymentsHiddenForNative ? (
           <article ref={manualSectionRef} className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
             <p className="pf-a2-eyebrow">Pago manual</p>
-            <h2 className="mt-1 text-xl font-black text-white">Transferencia, efectivo o QR Mercado Pago</h2>
+            <h2 className="mt-1 text-xl font-black text-white">Transferencia o efectivo</h2>
             <p className="mt-2 text-sm text-slate-300">
-              Si ya pagaste por fuera del checkout, envia el aviso para revision del admin.
+              Si ya pagaste por fuera del checkout, informa tu pago y adjunta el comprobante
+              para que el admin lo revise.
             </p>
 
-            <div className="mt-3 rounded-xl border border-white/15 bg-slate-950/45 p-3">
-              <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
-                Cuentas destino (transferencia)
-              </p>
-              {Array.isArray(status?.transferAccounts) && status.transferAccounts.length > 0 ? (
-                <div className="mt-2 space-y-2">
-                  {status.transferAccounts.map((account) => (
-                    <article key={account.id} className="rounded-lg border border-white/10 bg-slate-900/70 p-2.5 text-xs text-slate-200">
-                      <p className="font-semibold text-slate-100">{account.label}</p>
-                      <p className="text-slate-300">
-                        {account.bankName || "Banco no definido"}
-                        {account.accountType ? ` · ${account.accountType}` : ""}
-                      </p>
-                      {account.holderName ? <p>Titular: {account.holderName}</p> : null}
-                      {account.holderDocument ? <p>CUIT/DNI: {account.holderDocument}</p> : null}
-                      {account.accountNumber ? <p>Nro cuenta: {account.accountNumber}</p> : null}
-                      {account.cbu ? <p>CBU/CVU: {account.cbu}</p> : null}
-                      {account.alias ? <p>Alias: {account.alias}</p> : null}
-                      {account.notes ? <p>Nota: {account.notes}</p> : null}
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-2 text-xs text-slate-400">
-                  El admin aun no cargo cuentas de transferencia visibles.
-                </p>
-              )}
-            </div>
-
-            <label className="mt-3 block text-[11px] uppercase tracking-[0.14em] text-slate-400" htmlFor="manual-note">
-              Nota opcional
-            </label>
-            <textarea
-              id="manual-note"
-              value={manualNote}
-              onChange={(event) => setManualNote(event.target.value)}
-              placeholder="Referencia, comprobante o comentario"
-              rows={4}
-              className="pf-a2-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-300/65"
-            />
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <ReliableActionButton
-                type="button"
-                onClick={() => void requestManualReview("transferencia")}
-                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
-                className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {manualLoadingMethod === "transferencia" ? "Enviando..." : "Informar transferencia"}
-              </ReliableActionButton>
-
-              <ReliableActionButton
-                type="button"
-                onClick={() => void requestManualReview("efectivo")}
-                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
-                className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {manualLoadingMethod === "efectivo" ? "Enviando..." : "Informar efectivo"}
-              </ReliableActionButton>
-
-              <ReliableActionButton
-                type="button"
-                onClick={() => void requestManualReview("mercadopago")}
-                disabled={Boolean(manualLoadingMethod) || loading || statusRefreshLoading || !canRequestManual}
-                className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {manualLoadingMethod === "mercadopago" ? "Enviando..." : "Informar pago QR MP"}
-              </ReliableActionButton>
-            </div>
+            <ReliableActionButton
+              type="button"
+              onClick={openManualSheet}
+              disabled={!canRequestManual || loading || statusRefreshLoading}
+              className="pf-a2-solid-btn mt-4 inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+              aria-haspopup="dialog"
+            >
+              <IconDocument className="h-4 w-4" />
+              Informar pago manual
+              <IconChevron className="h-3.5 w-3.5" />
+            </ReliableActionButton>
 
             {manualReceipt ? (
               <section className="pf-a2-kpi mt-4 rounded-xl border p-3">
@@ -1254,6 +1327,218 @@ export default function AlumnoPagosClient() {
           </section>
         </section>
       </div>
+
+      {manualSheetOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="manual-sheet-title"
+        >
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={closeManualSheet}
+            className="absolute inset-0 h-full w-full cursor-default bg-black/65 backdrop-blur-sm"
+          />
+
+          <section className="pf-a2-sheet relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-[1.6rem] border p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-[1.6rem] sm:pb-5">
+            <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-white/20 sm:hidden" />
+
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="pf-a2-eyebrow">Pago manual</p>
+                <h2 id="manual-sheet-title" className="mt-1 text-xl font-black text-white">
+                  Informar pago
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeManualSheet}
+                aria-label="Cerrar"
+                className="pf-a2-back-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              >
+                <IconClose className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Metodo: solo transferencia o efectivo */}
+            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-slate-400">Metodo de pago</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {(["transferencia", "efectivo"] as const).map((method) => {
+                const selected = manualMethod === method;
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setManualMethod(method)}
+                    aria-pressed={selected}
+                    className={`rounded-xl border px-3 py-3 text-sm font-semibold transition-all ${
+                      selected
+                        ? "border-sky-300/60 bg-sky-500/20 text-white"
+                        : "border-white/12 bg-slate-900/50 text-slate-300"
+                    }`}
+                  >
+                    {method === "transferencia" ? "Transferencia" : "Efectivo"}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Cuentas destino solo aplican a transferencia */}
+            {manualMethod === "transferencia" ? (
+              <div className="mt-3 rounded-xl border border-white/15 bg-slate-950/45 p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                  Cuentas destino
+                </p>
+                {Array.isArray(status?.transferAccounts) && status.transferAccounts.length > 0 ? (
+                  <div className="mt-2 space-y-2">
+                    {status.transferAccounts.map((account) => (
+                      <article
+                        key={account.id}
+                        className="rounded-lg border border-white/10 bg-slate-900/70 p-2.5 text-xs text-slate-200"
+                      >
+                        <p className="font-semibold text-slate-100">{account.label}</p>
+                        <p className="text-slate-300">
+                          {account.bankName || "Banco no definido"}
+                          {account.accountType ? ` · ${account.accountType}` : ""}
+                        </p>
+                        {account.holderName ? <p>Titular: {account.holderName}</p> : null}
+                        {account.holderDocument ? <p>CUIT/DNI: {account.holderDocument}</p> : null}
+                        {account.accountNumber ? <p>Nro cuenta: {account.accountNumber}</p> : null}
+                        {account.cbu ? <p>CBU/CVU: {account.cbu}</p> : null}
+                        {account.alias ? <p>Alias: {account.alias}</p> : null}
+                        {account.notes ? <p>Nota: {account.notes}</p> : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-slate-400">
+                    El admin aun no cargo cuentas de transferencia visibles.
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            {/* Monto */}
+            <label
+              className="mt-4 block text-[11px] uppercase tracking-[0.14em] text-slate-400"
+              htmlFor="manual-amount"
+            >
+              Monto ({status?.billing.currency || "ARS"})
+            </label>
+            <input
+              id="manual-amount"
+              type="number"
+              inputMode="decimal"
+              min="1"
+              step="any"
+              value={manualAmount}
+              onChange={(event) => setManualAmount(event.target.value)}
+              placeholder="0"
+              className="pf-a2-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2.5 text-base font-semibold text-slate-100 outline-none focus:border-sky-300/65"
+            />
+            {status?.billing.amount ? (
+              <p className="mt-1.5 text-xs text-slate-400">
+                Monto de renovacion vigente:{" "}
+                {formatMoney(status.billing.amount, status.billing.currency)}
+              </p>
+            ) : null}
+
+            {/* Comprobante */}
+            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-slate-400">
+              Comprobante de pago
+            </p>
+            {manualFileUrl ? (
+              <div className="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-500/[0.08] p-3">
+                {manualFileUrl.startsWith("data:application/pdf") ? (
+                  <p className="text-sm font-semibold text-emerald-100">PDF adjuntado</p>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={manualFileUrl}
+                    alt="Vista previa del comprobante"
+                    className="max-h-48 w-auto rounded-lg border border-white/10 object-contain"
+                  />
+                )}
+                <p className="mt-2 truncate text-xs text-slate-300">{manualFileName}</p>
+                <button
+                  type="button"
+                  onClick={() => void handleReceiptFileChange(null)}
+                  className="mt-2 text-xs font-semibold text-rose-300 underline underline-offset-2"
+                >
+                  Quitar comprobante
+                </button>
+              </div>
+            ) : (
+              <label
+                htmlFor="manual-receipt-file"
+                className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-500/60 bg-slate-900/45 px-3 py-4 text-left transition-colors hover:border-sky-300/60"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-300/30 bg-sky-500/15 text-sky-200">
+                  <IconPaperclip className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-white">Adjuntar comprobante</span>
+                  <span className="block text-xs text-slate-400">Foto o PDF · JPG, PNG o PDF</span>
+                </span>
+              </label>
+            )}
+            <input
+              id="manual-receipt-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,application/pdf"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0] || null;
+                void handleReceiptFileChange(file);
+                event.target.value = "";
+              }}
+            />
+
+            {/* Nota */}
+            <label
+              className="mt-4 block text-[11px] uppercase tracking-[0.14em] text-slate-400"
+              htmlFor="manual-note"
+            >
+              Nota opcional
+            </label>
+            <textarea
+              id="manual-note"
+              value={manualNote}
+              onChange={(event) => setManualNote(event.target.value)}
+              placeholder="Referencia, numero de operacion o comentario"
+              rows={3}
+              className="pf-a2-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-300/65"
+            />
+
+            {manualFileError ? (
+              <p className="mt-3 rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                {manualFileError}
+              </p>
+            ) : null}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <ReliableActionButton
+                type="button"
+                onClick={() => void submitManualPayment()}
+                disabled={manualSubmitting}
+                className="pf-a2-solid-btn inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {manualSubmitting ? "Enviando..." : "Enviar informe"}
+              </ReliableActionButton>
+              <button
+                type="button"
+                onClick={closeManualSheet}
+                disabled={manualSubmitting}
+                className="pf-a2-ghost-btn rounded-2xl border px-4 py-3 text-sm font-semibold disabled:opacity-45"
+              >
+                Cancelar
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

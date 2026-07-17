@@ -27,6 +27,8 @@ type ManualOrder = {
   periodDays: number;
   receiptNumber: string | null;
   receiptIssuedAt: string | null;
+  receiptFileUrl: string | null;
+  receiptFileName: string | null;
   createdAt: string;
   approvedAt: string | null;
   reviewedAt: string | null;
@@ -2014,6 +2016,46 @@ export default function AdminPagosManualPage() {
                     Comprobante: {order.receiptNumber || "-"}
                     {order.receiptIssuedAt ? ` · Emitido: ${formatDate(order.receiptIssuedAt)}` : ""}
                   </p>
+                ) : null}
+
+                {order.receiptFileUrl ? (
+                  <div className="mt-3 rounded-xl border border-emerald-400/25 bg-emerald-500/[0.06] p-3">
+                    <p className="text-[11px] uppercase tracking-wide text-emerald-300/80">
+                      Comprobante adjunto del alumno
+                    </p>
+                    {order.receiptFileUrl.startsWith("data:application/pdf") ? (
+                      <a
+                        href={order.receiptFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-emerald-200 underline decoration-emerald-400/40 underline-offset-2"
+                      >
+                        Ver comprobante (PDF)
+                        {order.receiptFileName ? (
+                          <span className="text-xs font-normal text-slate-400">
+                            · {order.receiptFileName}
+                          </span>
+                        ) : null}
+                      </a>
+                    ) : (
+                      <a
+                        href={order.receiptFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 block"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={order.receiptFileUrl}
+                          alt={`Comprobante de pago de ${order.email}`}
+                          className="max-h-56 w-auto rounded-lg border border-white/10 object-contain"
+                        />
+                        <span className="mt-1 block text-xs text-emerald-200 underline decoration-emerald-400/40 underline-offset-2">
+                          Abrir en tamano completo
+                        </span>
+                      </a>
+                    )}
+                  </div>
                 ) : null}
 
                 {!pending ? (

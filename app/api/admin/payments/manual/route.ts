@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
+  appendFichaPaymentRecord,
   applyApprovedPayment,
   getManualPaymentOrders,
   updatePaymentOrderById,
 } from "@/lib/billing";
+import { prisma } from "@/lib/prisma";
 
 type ManualAction = "approve" | "reject";
 
@@ -34,6 +36,8 @@ function mapOrderForResponse(order: Awaited<ReturnType<typeof getManualPaymentOr
     periodDays: order.periodDays,
     receiptNumber: order.receiptNumber,
     receiptIssuedAt: order.receiptIssuedAt,
+    receiptFileUrl: order.receiptFileUrl,
+    receiptFileName: order.receiptFileName,
     createdAt: order.createdAt,
     approvedAt: order.approvedAt,
     reviewedAt: order.reviewedAt,
@@ -120,6 +124,27 @@ export async function POST(req: NextRequest) {
       reviewedByUserEmail: reviewerEmail,
       adminNote: adminNote || targetOrder.adminNote,
     });
+
+    // El pago aprobado tambien queda registrado en la ficha del alumno, que lee
+    // de un store distinto al de las ordenes de pago.
+    try {
+      const alumno = await prisma.user.findUnique({
+        where: { email: targetOrder.email },
+        select: { nombreCompleto: true },
+      });
+
+      await appendFichaPaymentRecord({
+        clientKey: targetOrder.clientKey,
+        clientName: alumno?.nombreCompleto || targetOrder.email,
+        email: targetOrder.email,
+        amount: targetOrder.amount,
+        currency: targetOrder.currency,
+        method: targetOrder.paymentMethod,
+        approvedAt: reviewDate,
+      });
+    } catch {
+      // Si falla el registro en la ficha no bloqueamos la aprobacion del pago.
+    }
 
     return NextResponse.json({
       ok: true,
