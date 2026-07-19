@@ -85,16 +85,6 @@ type PaymentStatusResponse = {
   }>;
 };
 
-type ManualPaymentReceipt = {
-  number: string | null;
-  issuedAt: string | null;
-  amount: number;
-  currency: string;
-  periodDays: number;
-  paymentMethod: "transferencia" | "efectivo" | "mercadopago";
-  status: string;
-};
-
 // Detecta si la web corre dentro del wrapper nativo de iOS. La app móvil deja
 // marcas (window global, localStorage, cookie, clase en <html> y ?pfnative=ios).
 // Dentro de iOS ocultamos los flujos de cobro para cumplir la regla 3.1.1 de la
@@ -504,7 +494,6 @@ export default function AlumnoPagosClient() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [statusRefreshLoading, setStatusRefreshLoading] = useState(false);
   const [manualNote, setManualNote] = useState("");
-  const [manualReceipt, setManualReceipt] = useState<ManualPaymentReceipt | null>(null);
   const [manualSheetOpen, setManualSheetOpen] = useState(false);
   const [manualMethod, setManualMethod] = useState<"transferencia" | "efectivo">("transferencia");
   const [manualAmount, setManualAmount] = useState("");
@@ -517,11 +506,6 @@ export default function AlumnoPagosClient() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const statusRefreshTimerRef = useRef<number | null>(null);
   const statusRefreshTokenRef = useRef(0);
-  const manualSectionRef = useRef<HTMLElement | null>(null);
-
-  const scrollToManualSection = useCallback(() => {
-    manualSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -786,7 +770,6 @@ export default function AlumnoPagosClient() {
       const data = (await response.json().catch(() => ({}))) as {
         ok?: boolean;
         message?: string;
-        receipt?: ManualPaymentReceipt;
       };
 
       if (!response.ok) {
@@ -797,7 +780,6 @@ export default function AlumnoPagosClient() {
         data.message ||
           "Informe enviado. Queda pendiente de confirmacion del admin para renovar tu pase."
       );
-      setManualReceipt(data.receipt || null);
       setManualNote("");
       setManualFileUrl(null);
       setManualFileName(null);
@@ -1211,94 +1193,8 @@ export default function AlumnoPagosClient() {
             </section>
           ) : null}
 
-          {!paymentsHiddenForNative ? (
-          <article ref={manualSectionRef} className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-            <p className="pf-a2-eyebrow">Pago manual</p>
-            <h2 className="mt-1 text-xl font-black text-white">Transferencia o efectivo</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Si ya pagaste por fuera del checkout, informa tu pago y adjunta el comprobante
-              para que el admin lo revise.
-            </p>
-
-            <ReliableActionButton
-              type="button"
-              onClick={openManualSheet}
-              disabled={!canRequestManual || loading || statusRefreshLoading}
-              className="pf-a2-solid-btn mt-4 inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              aria-haspopup="dialog"
-            >
-              <IconDocument className="h-4 w-4" />
-              Informar pago manual
-              <IconChevron className="h-3.5 w-3.5" />
-            </ReliableActionButton>
-
-            {manualReceipt ? (
-              <section className="pf-a2-kpi mt-4 rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comprobante generado</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">
-                  {manualReceipt.number || "Sin numero"}
-                </p>
-                <p className="mt-1 text-xs text-slate-300">
-                  Emitido: {formatDate(manualReceipt.issuedAt)} · Metodo: {resolvePaymentMethodLabel(manualReceipt.paymentMethod)}
-                </p>
-                <p className="mt-1 text-xs text-slate-300">
-                  {formatMoney(manualReceipt.amount, manualReceipt.currency)} · Periodo: {manualReceipt.periodDays} dias
-                </p>
-                <p className="mt-1 text-xs text-slate-400">Estado: {resolveOrderStatusLabel(manualReceipt.status)}</p>
-              </section>
-            ) : null}
-
-            {status?.latestOrder ? (
-              <section className="pf-a2-kpi mt-4 rounded-xl border p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Ultimo intento</p>
-                <p className="mt-1 text-sm font-semibold text-slate-100">
-                  {resolveOrderStatusLabel(status.latestOrder.status)} ·{" "}
-                  {formatMoney(status.latestOrder.amount, status.latestOrder.currency)}
-                </p>
-                <p className="mt-1 text-xs text-slate-300">
-                  Metodo: {resolvePaymentMethodLabel(status.latestOrder.paymentMethod)}
-                  {status.latestOrder.providerStatus ? ` · ${status.latestOrder.providerStatus}` : ""}
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  Creado: {formatDate(status.latestOrder.createdAt)}
-                  {status.latestOrder.approvedAt
-                    ? ` · Aprobado: ${formatDate(status.latestOrder.approvedAt)}`
-                    : ""}
-                  {status.latestOrder.reviewedAt
-                    ? ` · Revisado: ${formatDate(status.latestOrder.reviewedAt)}`
-                    : ""}
-                </p>
-                {status.latestOrder.receiptNumber || status.latestOrder.receiptIssuedAt ? (
-                  <p className="mt-1 text-xs text-violet-200">
-                    Comprobante: {status.latestOrder.receiptNumber || "-"}
-                    {status.latestOrder.receiptIssuedAt
-                      ? ` · Emitido: ${formatDate(status.latestOrder.receiptIssuedAt)}`
-                      : ""}
-                  </p>
-                ) : null}
-                {status.latestOrder.adminNote ? (
-                  <p className="mt-1 text-xs text-slate-300">Nota admin: {status.latestOrder.adminNote}</p>
-                ) : null}
-              </section>
-            ) : null}
-          </article>
-          ) : null}
-
           <section>
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="text-sm font-black text-white">Actividad reciente</h3>
-              {activityItems.length > 0 ? (
-                <ReliableActionButton
-                  type="button"
-                  onClick={scrollToManualSection}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-sky-300 transition-colors hover:text-sky-200"
-                  aria-label="Ver el detalle completo de tus movimientos"
-                >
-                  Ver todo
-                  <IconChevron className="h-3.5 w-3.5" />
-                </ReliableActionButton>
-              ) : null}
-            </div>
+            <h3 className="text-sm font-black text-white">Actividad reciente</h3>
             <div className="mt-2 space-y-2">
               {activityItems.length > 0 ? (
                 activityItems.map((item) => (
