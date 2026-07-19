@@ -577,6 +577,40 @@ export default function AlumnoPagosClient() {
     void loadStatus();
   }, [loadStatus]);
 
+  // Sincroniza el estado de pago automaticamente cada vez que se vuelve al
+  // Centro de pagos: al traer la app al frente, volver atras (bfcache), cambiar
+  // de pestana o recuperar el foco. Es silencioso para no parpadear.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    let lastAutoSyncAt = 0;
+    const autoSync = () => {
+      const now = Date.now();
+      // Throttle: evita fetches duplicados cuando varios eventos disparan juntos.
+      if (now - lastAutoSyncAt < 2500) return;
+      lastAutoSyncAt = now;
+      void loadStatus({ silent: true });
+    };
+
+    const syncIfVisible = () => {
+      if (document.visibilityState === "visible") autoSync();
+    };
+
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) autoSync();
+    };
+
+    document.addEventListener("visibilitychange", syncIfVisible);
+    window.addEventListener("focus", syncIfVisible);
+    window.addEventListener("pageshow", onPageShow);
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncIfVisible);
+      window.removeEventListener("focus", syncIfVisible);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [loadStatus]);
+
   useEffect(() => {
     router.prefetch("/alumnos/inicio");
   }, [router]);
