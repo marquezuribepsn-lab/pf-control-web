@@ -302,16 +302,6 @@ function IconChevron({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function IconWalletCard({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
-      <rect x="2.8" y="6" width="18.4" height="13" rx="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M2.8 10.4h18.4" strokeLinecap="round" />
-      <path d="M6.5 14.4h4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function IconDocument({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className={className} aria-hidden="true">
@@ -940,18 +930,6 @@ export default function AlumnoPagosClient() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2.5">
-            {!paymentsHiddenForNative ? (
-              <ReliableActionButton
-                type="button"
-                onClick={startCheckout}
-                disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
-                className="pf-a2-solid-btn inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                <IconWalletCard className="h-4 w-4" />
-                {checkoutLoading ? "Redirigiendo..." : "Pagar ahora"}
-                <IconChevron className="h-3.5 w-3.5" />
-              </ReliableActionButton>
-            ) : null}
             <ReliableActionButton
               type="button"
               onClick={() => void handleManualRefresh()}
