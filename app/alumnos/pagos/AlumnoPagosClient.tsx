@@ -5,6 +5,7 @@ import ReliableActionButton from "@/components/ReliableActionButton";
 import ReliableLink from "@/components/ReliableLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type PaymentStatusResponse = {
   active: boolean;
@@ -488,6 +489,11 @@ export default function AlumnoPagosClient() {
   const nativePlatformFlag = String(searchParams.get("pfnative") || "").trim().toLowerCase();
 
   const [isIosNative, setIsIosNative] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsIosNative(detectIosNative(nativePlatformFlag));
@@ -1328,9 +1334,10 @@ export default function AlumnoPagosClient() {
         </section>
       </div>
 
-      {manualSheetOpen ? (
+      {mounted && manualSheetOpen
+        ? createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          className="pf-alumno-v2 pf-a2-portal fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-labelledby="manual-sheet-title"
@@ -1537,8 +1544,10 @@ export default function AlumnoPagosClient() {
               </button>
             </div>
           </section>
-        </div>
-      ) : null}
+        </div>,
+            document.body
+          )
+        : null}
     </main>
   );
 }

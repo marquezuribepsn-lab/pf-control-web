@@ -1781,6 +1781,24 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Contenedor del portal del sheet: se monta en <body> para escapar del
+   stacking context / containing-block del shell del alumno (isolation, overflow,
+   etc.) que atrapaban el position:fixed y dejaban el sheet fuera de vista.
+   Conserva la clase .pf-alumno-v2 solo para heredar las variables de color,
+   pero anula todo el layout del shell para no pintar un fondo a pantalla completa. */
+.pf-a2-portal.pf-alumno-v2 {
+  position: fixed !important;
+  inset: 0 !important;
+  min-height: 0 !important;
+  isolation: auto !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* Bottom sheet del pago manual: fondo solido (sin transparencia) para evitar
    el flicker de repintado al scrollear dentro del WebView nativo. */
 .pf-a2-sheet {
