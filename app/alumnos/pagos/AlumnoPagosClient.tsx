@@ -493,7 +493,6 @@ export default function AlumnoPagosClient() {
   const [manualSubmitting, setManualSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const statusRefreshTimerRef = useRef<number | null>(null);
   const statusRefreshTokenRef = useRef(0);
 
@@ -818,11 +817,6 @@ export default function AlumnoPagosClient() {
     }
   };
 
-  const handleManualRefresh = async () => {
-    await loadStatus({ withBrandedLoader: true });
-    setLastRefreshedAt(new Date().toISOString());
-  };
-
   const isActive = Boolean(status?.active);
   // MP checkout requiere que el alumno tenga ficha de billing (clientKey) para que
   // el webhook pueda activar automáticamente el pase. Si aún no está vinculado,
@@ -891,21 +885,9 @@ export default function AlumnoPagosClient() {
       });
     }
 
-    if (lastRefreshedAt) {
-      items.push({
-        id: `refresh-${lastRefreshedAt}`,
-        icon: "refresh",
-        tone: "neutral",
-        title: "Estado actualizado",
-        subtitle: isActive ? "Tu pase fue renovado exitosamente" : "Se volvio a consultar tu estado de pago",
-        time: formatTime(lastRefreshedAt),
-        ts: new Date(lastRefreshedAt).getTime() || 0,
-      });
-    }
-
     items.sort((a, b) => b.ts - a.ts);
     return items.slice(0, 5);
-  }, [status?.latestApprovedOrder, status?.latestOrder, lastRefreshedAt, isActive]);
+  }, [status?.latestApprovedOrder, status?.latestOrder]);
 
   return (
     <main className="pf-alumno-main pf-alumno-v2">
@@ -961,18 +943,6 @@ export default function AlumnoPagosClient() {
                 Gestiona tu pase mensual, paga por Mercado Pago o informa pago manual para revision.
               </p>
             </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            <ReliableActionButton
-              type="button"
-              onClick={() => void handleManualRefresh()}
-              disabled={statusRefreshLoading}
-              className="pf-a2-ghost-btn inline-flex items-center gap-2 rounded-2xl border px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              <IconRefresh className="h-4 w-4" />
-              Actualizar estado
-            </ReliableActionButton>
           </div>
 
           {noMetaBlocksMP && !paymentsHiddenForNative ? (
