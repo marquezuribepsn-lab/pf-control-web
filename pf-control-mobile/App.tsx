@@ -253,7 +253,11 @@ function withCacheBust(url: string, refreshSeed: number): string {
   }
 }
 
-function buildInPlaceRefreshScript(refreshSeed: number): string {
+// Al refrescar, en vez de recargar la pantalla actual, vuelve SIEMPRE al inicio
+// (la URL base enruta a cada usuario a su home segun su rol). Mantiene el mismo
+// cache-bust y flags nativos que la carga inicial de la app.
+function buildGoHomeRefreshScript(refreshSeed: number): string {
+  const serializedBase = JSON.stringify(PRODUCTION_URL);
   const serializedCacheTag = JSON.stringify(WEBVIEW_CACHE_TAG);
   const serializedSeed = JSON.stringify(String(refreshSeed));
   const serializedFlags = JSON.stringify({
@@ -264,7 +268,7 @@ function buildInPlaceRefreshScript(refreshSeed: number): string {
   return `
 (() => {
   try {
-    const parsed = new URL(String(window.location.href || ""));
+    const parsed = new URL(${serializedBase});
     parsed.searchParams.set("pfv", ${serializedCacheTag});
     parsed.searchParams.set("pfrefresh", ${serializedSeed});
 
@@ -286,7 +290,7 @@ function buildInPlaceRefreshScript(refreshSeed: number): string {
 
     window.location.replace(nextUrl);
   } catch (_error) {
-    window.location.reload();
+    window.location.replace(${serializedBase});
   }
 
   true;
@@ -525,11 +529,16 @@ export default function App() {
     const nextRefreshSeed = Date.now();
     beginBrandedLoading();
 
+    // Refrescar siempre vuelve al inicio (no se queda en la pantalla actual).
     if (!isWeb && webViewRef.current && typeof webViewRef.current.injectJavaScript === "function") {
-      webViewRef.current.injectJavaScript(buildInPlaceRefreshScript(nextRefreshSeed));
+      // Nativo: el inject navega el WebView al inicio; el postMessage posterior
+      // actualiza baseUrl solo, sin recargar dos veces.
+      webViewRef.current.injectJavaScript(buildGoHomeRefreshScript(nextRefreshSeed));
       return;
     }
 
+    // Fallback / web: recarga el iframe apuntando al inicio.
+    setBaseUrl(PRODUCTION_URL);
     setRefreshSeed(nextRefreshSeed);
     setWebViewKey((prev) => prev + 1);
   };
