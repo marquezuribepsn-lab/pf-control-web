@@ -1752,8 +1752,10 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   position: relative;
   box-shadow:
     0 26px 60px -26px rgba(2, 10, 24, 0.66),
-    0 0 0 1px rgba(27, 139, 243, 0.08),
-    inset 0 1px 0 rgba(95, 157, 231, 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 26px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .pf-a2-hero::before {
@@ -1768,17 +1770,35 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-card {
+  /* LED blanco: halo exterior suave + borde superior luminoso, para dar mas
+     brillo sin tapar contenido (todo via box-shadow, fuera del texto). */
   box-shadow:
     0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .pf-a2-kpi {
   box-shadow:
     0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
+}
+
+/* LED reactivo: al presionar (tap) el halo blanco se intensifica. */
+.pf-a2-card:active,
+.pf-a2-kpi:active,
+.pf-a2-hero:active {
+  box-shadow:
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 30px -4px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 /* Contenedor del portal del sheet: se monta en <body> para escapar del
@@ -1953,35 +1973,46 @@ select:-webkit-autofill {
 .pf-a2-solid-btn,
 .pf-a2-ghost-btn,
 .pf-a2-back-btn {
-  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease, box-shadow 180ms ease;
 }
 
 .pf-a2-solid-btn {
   color: #ffffff;
   border: 1px solid rgba(95, 157, 231, 0.55);
   background: linear-gradient(150deg, var(--pf-nv-bright) 0%, var(--pf-nv-deep) 100%);
-  box-shadow: 0 10px 22px -6px rgba(0, 61, 206, 0.5), 0 0 0 1px rgba(27, 139, 243, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 22px -6px rgba(0, 61, 206, 0.5), 0 0 16px -4px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
 
 .pf-a2-solid-btn:hover {
   transform: translateY(-1px);
   border-color: rgba(126, 178, 240, 0.85);
-  box-shadow: 0 14px 28px -6px rgba(0, 61, 206, 0.58), 0 0 18px rgba(27, 139, 243, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: 0 14px 28px -6px rgba(0, 61, 206, 0.58), 0 0 22px -2px rgba(255, 255, 255, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
+/* LED reactivo blanco al presionar */
 .pf-a2-solid-btn:active {
   transform: translateY(0);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 18px -6px rgba(0, 61, 206, 0.5), 0 0 30px -2px rgba(255, 255, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.34);
 }
 
 .pf-a2-ghost-btn {
   border-color: var(--pf-nv-border);
   color: var(--pf-nv-text);
   background: linear-gradient(170deg, rgba(17, 40, 74, 0.7), rgba(11, 31, 63, 0.66));
+  box-shadow: 0 0 16px -8px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .pf-a2-ghost-btn:hover {
   border-color: var(--pf-nv-border-hi);
   color: #ffffff;
+  box-shadow: 0 0 20px -6px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.pf-a2-ghost-btn:active {
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  box-shadow: 0 0 28px -4px rgba(255, 255, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .pf-a2-badge {
@@ -2627,10 +2658,24 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  /* LED blanco: halo exterior + borde superior luminoso para mas brillo. */
   box-shadow:
     0 26px 60px -26px rgba(2, 10, 24, 0.66),
-    0 0 0 1px rgba(27, 139, 243, 0.08),
-    inset 0 1px 0 rgba(95, 157, 231, 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
+}
+
+/* LED reactivo blanco al presionar las tarjetas del inicio */
+.pf-a3-coach-card:active,
+.pf-a3-panel-block:active {
+  box-shadow:
+    0 26px 60px -26px rgba(2, 10, 24, 0.66),
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 30px -4px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 /* ── Fundido de entrada de los paneles del inicio ─────────────────────────── */
@@ -3025,6 +3070,15 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   text-align: center;
   min-height: 78px;
   padding: 0.65rem 0.3rem 0.55rem;
+  box-shadow: 0 0 18px -8px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: box-shadow 200ms ease, border-color 200ms ease, transform 140ms ease;
+}
+
+/* LED reactivo blanco al presionar los accesos rapidos */
+.pf-a3-quick-item:active {
+  transform: translateY(1px) scale(0.985);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 28px -4px rgba(255, 255, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .pf-a3-quick-icon {
