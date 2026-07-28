@@ -1609,9 +1609,9 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   --pf-nv-card-hi: #16365f;   /* tarjeta destacada */
   --pf-nv-border: #294b60;    /* borde de tarjeta */
   --pf-nv-border-hi: #3a628a; /* borde highlight suave */
-  --pf-nv-text: #e5e6e9;      /* texto primario */
-  --pf-nv-text-2: #bbc3c9;    /* texto secundario */
-  --pf-nv-muted: #768596;     /* texto atenuado */
+  --pf-nv-text: #eef1f4;      /* texto primario */
+  --pf-nv-text-2: #d4dbe2;    /* texto secundario (mas brillante) */
+  --pf-nv-muted: #a6b4c4;     /* texto atenuado (mas brillante) */
   --pf-nv-accent: #025ce4;    /* azul acento */
   --pf-nv-bright: #1b8bf3;    /* azul brillante */
   --pf-nv-deep: #003dce;      /* azul profundo */
@@ -2230,8 +2230,8 @@ html.pf-mobile-webview:not(#_) .pf-a3-section-title {
   -webkit-text-fill-color: #f5f8fc !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-section-subtitle {
-  color: #9eabba !important;
-  -webkit-text-fill-color: #9eabba !important;
+  color: #c4cdd9 !important;
+  -webkit-text-fill-color: #c4cdd9 !important;
 }
 /* Resto de textos del inicio: tarjeta del coach, tarjetas de música y panel
    de peso/medidas. Mismo problema (tema claro pinta oscuro sobre fondo
@@ -2242,8 +2242,8 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-name {
   -webkit-text-fill-color: #f9fbfd !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-role {
-  color: #b4c6da !important;
-  -webkit-text-fill-color: #b4c6da !important;
+  color: #d0dae5 !important;
+  -webkit-text-fill-color: #d0dae5 !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-coach-meta-item p {
   color: #f5f8fc !important;
@@ -2254,12 +2254,12 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-title {
   -webkit-text-fill-color: #f2f6fa !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-artist {
-  color: #a4b9d0 !important;
-  -webkit-text-fill-color: #a4b9d0 !important;
+  color: #c7d2df !important;
+  -webkit-text-fill-color: #c7d2df !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-hint {
-  color: #95aac0 !important;
-  -webkit-text-fill-color: #95aac0 !important;
+  color: #bdc9d6 !important;
+  -webkit-text-fill-color: #bdc9d6 !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-weight-value {
   color: #f4f8fc !important;
@@ -2298,12 +2298,12 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-amber-200 {
   -webkit-text-fill-color: #fde68a !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-400 {
-  color: #94a3b8 !important;
-  -webkit-text-fill-color: #94a3b8 !important;
+  color: #b7c3d1 !important;
+  -webkit-text-fill-color: #b7c3d1 !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-300 {
-  color: #cbd5e1 !important;
-  -webkit-text-fill-color: #cbd5e1 !important;
+  color: #dbe3ec !important;
+  -webkit-text-fill-color: #dbe3ec !important;
 }
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .text-slate-200 {
   color: #e2e8f0 !important;
