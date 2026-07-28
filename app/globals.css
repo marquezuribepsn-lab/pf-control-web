@@ -6222,9 +6222,11 @@ video.pf-a3-routine-log-video-frame {
   transition: background-color 160ms ease;
 }
 
+/* Sin pastilla/circulo interno en el item activo: el indicador es el
+   rectangulo del boton (.pf-a2-dock-btn-active). */
 .pf-a2-dock-btn-active .pf-a2-dock-hit {
-  background: linear-gradient(160deg, rgba(27, 139, 243, 0.28), rgba(0, 61, 206, 0.2));
-  box-shadow: 0 0 0 1px rgba(27, 139, 243, 0.4), 0 0 18px rgba(27, 139, 243, 0.26);
+  background: transparent;
+  box-shadow: none;
 }
 
 .pf-a2-dock-icon-wrap {
