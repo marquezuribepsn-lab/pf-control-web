@@ -3874,6 +3874,13 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   position: relative;
 }
 
+/* Sin margenes verticales residuales entre los bloques, para que no quede
+   ninguna franja de fondo entre ellos. */
+.pf-a3-routine-shell > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .pf-a3-routine-pull-indicator {
   position: sticky;
   top: 0.24rem;
