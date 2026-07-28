@@ -7778,7 +7778,34 @@ video.pf-a3-routine-log-video-frame {
 .pf-a4-nutrition-screen {
   min-width: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  /* Superficie continua (mismo criterio que la pantalla de rutina): la caja
+     vive en el contenedor y los bloques interiores no llevan caja propia. */
+  overflow: hidden;
+  border-radius: 1.1rem;
+  border: 1px solid var(--pf-nv-border);
+  background: var(--pf-nv-card);
+  box-shadow:
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* Bloques interiores: sin caja ni separacion, solo un divisor sutil. */
+.pf-a4-nutrition-screen > * {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid rgba(41, 75, 96, 0.55) !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.pf-a4-nutrition-screen > *:last-child {
+  border-bottom: 0 !important;
 }
 
 .pf-a4-nutrition-screen > *,
