@@ -3868,7 +3868,9 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 .pf-a3-routine-shell {
   display: flex;
   flex-direction: column;
-  gap: 0.58rem;
+  /* Superficie continua: los bloques de rutina se pegan entre si (sin gap) y
+     se unen visualmente con los radios/bordes de abajo. */
+  gap: 0;
   position: relative;
 }
 
@@ -3905,15 +3907,13 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 .pf-a3-routine-overview {
   position: relative;
   /* Navy premium, igual que las tarjetas del inicio (antes gris casi negro). */
-  border-radius: 1.1rem;
+  /* Bloque superior de la superficie continua: radios solo arriba y sin borde
+     inferior, para fundirse con la tira de semana que sigue. */
+  border-radius: 1.1rem 1.1rem 0 0;
   border: 1px solid var(--pf-nv-border);
+  border-bottom: 0;
   background-color: var(--pf-nv-card);
   background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
   padding: 0.8rem;
   overflow: hidden;
 }
@@ -4101,14 +4101,12 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-routine-session-strip {
-  border-radius: 1.1rem;
+  /* Bloque intermedio: sin radios ni bordes horizontales, continua la superficie. */
+  border-radius: 0;
   border: 1px solid var(--pf-nv-border);
+  border-top: 0;
+  border-bottom: 0;
   background: var(--pf-nv-card);
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
   padding: 0.62rem 0.68rem 0.7rem;
   position: relative;
 }
@@ -4372,10 +4370,14 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-routine-session-card {
-  border-radius: 0.94rem;
-  border: 1px solid rgba(94, 109, 126, 0.38);
-  background: linear-gradient(165deg, rgba(11, 14, 18, 0.98), rgba(13, 18, 24, 0.96));
-  padding: 0.64rem;
+  /* Bloque de cierre de la superficie continua: radios solo abajo y sin borde
+     superior, con el navy del resto de la pantalla. */
+  border-radius: 0 0 1.1rem 1.1rem;
+  border: 1px solid var(--pf-nv-border);
+  border-top: 0;
+  background: var(--pf-nv-card);
+  box-shadow: 0 26px 60px -26px rgba(8, 15, 30, 0.6);
+  padding: 0.8rem;
 }
 
 .pf-a3-routine-session-head {
@@ -9094,14 +9096,14 @@ video.pf-a3-routine-log-video-frame {
   letter-spacing: 0.01em;
 }
 
+/* "Estas listo para entrenar" no va encajonado: sin borde, fondo ni sombra,
+   se apoya directamente sobre la superficie de la pantalla. */
 .pf-a3-routine-flow-card {
-  border: 1px solid var(--pf-nv-border);
-  background: var(--pf-nv-card);
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  margin: 0;
+  padding: 0.5rem 0.2rem 0.2rem;
 }
 
 .pf-a3-routine-flow-subtitle {
