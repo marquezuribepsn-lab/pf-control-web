@@ -2883,7 +2883,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-section-subtitle {
   margin: 0.26rem 0 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.84rem;
   line-height: 1.25;
   font-weight: 550;
@@ -3258,7 +3258,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-next-workout-sub {
   margin: 0.16rem 0 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.76rem;
   font-weight: 550;
   line-height: 1.25;
@@ -3340,7 +3340,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   border-radius: 999px;
   border: 0;
   background: rgba(255, 255, 255, 0.08);
-  color: #ccd6e3;
+  color: #dbe4ee;
 }
 
 .pf-a3-ring-picker-chips {
@@ -3413,7 +3413,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-ring-label {
   margin: 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.2;
@@ -3437,7 +3437,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   border-radius: 0.9rem;
   border: 1px solid transparent;
   background: transparent;
-  color: #ccd6e3;
+  color: #dbe4ee;
   padding: 0.4rem 0;
 }
 
@@ -3534,7 +3534,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-compact-card-title {
   margin: 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -3568,7 +3568,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-compact-weight-delta {
   margin: 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 1.34rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -3585,7 +3585,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-compact-card-sub {
   margin: 0.16rem 0 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.66rem;
   font-weight: 550;
 }
@@ -3600,7 +3600,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-compact-weight-imc span:first-child {
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -3678,7 +3678,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-activity-detail {
   margin: 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.66rem;
   font-weight: 550;
   overflow: hidden;
@@ -3696,7 +3696,7 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-activity-empty {
   margin: 0.72rem 0 0;
-  color: #ccd6e3;
+  color: #dbe4ee;
   font-size: 0.84rem;
   line-height: 1.35;
 }

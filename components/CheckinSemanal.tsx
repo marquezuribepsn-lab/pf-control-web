@@ -246,7 +246,7 @@ export default function CheckinSemanal({ alumnoNombre, compact = false }: Props)
               Check-in de esta semana registrado
             </p>
             {myCheckins[0] && (
-              <div className="mt-1 rounded-xl border border-white/8 bg-white/5 px-4 py-2 text-xs text-white/50">
+              <div className="mt-1 rounded-xl border border-white/8 bg-white/5 px-4 py-2 text-xs text-white/70">
                 Semana del {formatDate(myCheckins[0].semanaOf)} ·{" "}
                 {SENSACION_OPTS.find((o) => o.id === myCheckins[0].sensacion)?.emoji}{" "}
                 {myCheckins[0].sensacionLabel}
