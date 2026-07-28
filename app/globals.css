@@ -3904,12 +3904,17 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-routine-overview {
   position: relative;
-  border-radius: 0.96rem;
-  border: 1px solid rgba(134, 179, 225, 0.42);
-  background:
-    radial-gradient(120% 130% at 92% -24%, rgba(132, 177, 224, 0.34), transparent 48%),
-    linear-gradient(165deg, rgba(8, 11, 15, 0.98), rgba(11, 15, 21, 0.97) 52%, rgba(9, 12, 16, 0.98));
-  padding: 0.64rem;
+  /* Navy premium, igual que las tarjetas del inicio (antes gris casi negro). */
+  border-radius: 1.1rem;
+  border: 1px solid var(--pf-nv-border);
+  background-color: var(--pf-nv-card);
+  background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
+  box-shadow:
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  padding: 0.8rem;
   overflow: hidden;
 }
 
@@ -3944,12 +3949,12 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   border-bottom: 2px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: rgba(224, 230, 238, 0.7);
-  font-size: 0.74rem;
-  line-height: 1;
-  font-weight: 600;
+  color: var(--pf-nv-text-2);
+  font-size: 0.84rem;
+  line-height: 1.1;
+  font-weight: 650;
   letter-spacing: 0.01em;
-  padding: 0.16rem 0.42rem 0.44rem;
+  padding: 0.2rem 0.46rem 0.48rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4038,21 +4043,21 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-routine-overview-subtitle {
-  margin: 0.28rem 0 0;
+  margin: 0.3rem 0 0;
   max-width: 52ch;
-  color: #a5aeb9;
-  font-size: 0.82rem;
-  line-height: 1.2;
+  color: var(--pf-nv-text-2);
+  font-size: 0.9rem;
+  line-height: 1.25;
   font-weight: 600;
 }
 
 .pf-a3-routine-sync-label {
-  margin: 0.24rem 0 0;
-  color: #84f5cc;
-  font-size: 0.62rem;
-  line-height: 1.2;
+  margin: 0.28rem 0 0;
+  color: #8ef7d3;
+  font-size: 0.7rem;
+  line-height: 1.25;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -4070,19 +4075,19 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-routine-kpi {
-  border-radius: 0.74rem;
-  border: 1px solid rgba(119, 134, 151, 0.34);
-  background: rgba(14, 19, 25, 0.95);
-  padding: 0.48rem 0.52rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--pf-nv-border);
+  background: var(--pf-nv-card-2);
+  padding: 0.55rem 0.6rem;
 }
 
 .pf-a3-routine-kpi-label {
   margin: 0;
-  color: #96a1ad;
-  font-size: 0.57rem;
-  line-height: 1;
+  color: var(--pf-nv-text-2);
+  font-size: 0.66rem;
+  line-height: 1.1;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
@@ -4096,10 +4101,15 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 }
 
 .pf-a3-routine-session-strip {
-  border-radius: 0.84rem;
-  border: 1px solid rgba(63, 79, 97, 0.48);
-  background: rgba(11, 15, 19, 0.9);
-  padding: 0.5rem 0.56rem 0.58rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--pf-nv-border);
+  background: var(--pf-nv-card);
+  box-shadow:
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  padding: 0.62rem 0.68rem 0.7rem;
   position: relative;
 }
 
@@ -9084,11 +9094,21 @@ video.pf-a3-routine-log-video-frame {
   letter-spacing: 0.01em;
 }
 
+.pf-a3-routine-flow-card {
+  border: 1px solid var(--pf-nv-border);
+  background: var(--pf-nv-card);
+  box-shadow:
+    0 26px 60px -26px rgba(8, 15, 30, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 24px -6px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
 .pf-a3-routine-flow-subtitle {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: #b2bfce;
+  color: var(--pf-nv-text-2);
 }
 
 .pf-a3-routine-flow-cta {
