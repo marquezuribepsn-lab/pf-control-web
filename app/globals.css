@@ -2261,6 +2261,32 @@ html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-music-hint {
   color: #bdc9d6 !important;
   -webkit-text-fill-color: #bdc9d6 !important;
 }
+/* Tarjeta "Rutina de hoy": sus tres textos son <p>, por lo que
+   `html[data-pf-theme=light] .pf-training-shell p { color:#475569 !important }`
+   los pintaba gris oscuro sobre el fondo oscuro forzado del WebView (se veian
+   apagados). Faltaba el override; se agrega con el mismo patron que el resto. */
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-next-workout-kicker {
+  color: #a3e6ff !important;
+  -webkit-text-fill-color: #a3e6ff !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-next-workout-title {
+  color: #f7fafd !important;
+  -webkit-text-fill-color: #f7fafd !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-next-workout-sub {
+  color: #e9eff6 !important;
+  -webkit-text-fill-color: #e9eff6 !important;
+}
+/* Anillos/KPIs: son <span> (heredan por `span { color: inherit }`), se fijan
+   igual para que no dependan del color heredado del contenedor. */
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-ring-value {
+  color: #f7fafd !important;
+  -webkit-text-fill-color: #f7fafd !important;
+}
+html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-ring-label {
+  color: #dbe4ee !important;
+  -webkit-text-fill-color: #dbe4ee !important;
+}
 html.pf-mobile-webview:not(#_) .pf-a3-home-stack .pf-a3-weight-value {
   color: #f4f8fc !important;
   -webkit-text-fill-color: #f4f8fc !important;
