@@ -7179,8 +7179,16 @@ export default function AlumnoVisionClient({
 
   const categoryMeta = CATEGORY_COPY[activeCategory];
   const isRootCategory = activeCategory === "inicio";
+  // Las categorias que estan en la barra inferior (rutina/inicio/cuenta) se
+  // navegan desde ahi, por eso no llevan flecha de volver. El resto (progreso,
+  // musica, nutricion...) la conserva para no quedar sin salida.
+  const isDockCategory =
+    activeCategory === "inicio" || activeCategory === "rutina" || activeCategory === "cuenta";
+  const showBackButton = !isDockCategory;
   const heroTitle = categoryMeta.title;
-  const heroSubtitle = `Vista ${categoryMeta.short.toLowerCase()}. Usa la flecha para volver a la pantalla anterior.`;
+  const heroSubtitle = showBackButton
+    ? `Vista ${categoryMeta.short.toLowerCase()}. Usa la flecha para volver a la pantalla anterior.`
+    : `Vista ${categoryMeta.short.toLowerCase()}. Usa la barra inferior para cambiar de seccion.`;
 
   const backTargetCategory = useMemo<MainCategory>(() => {
     const history = categoryHistoryRef.current;
@@ -9051,28 +9059,30 @@ export default function AlumnoVisionClient({
           <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
-                <ReliableActionButton
-                  type="button"
-                  onClick={goToPreviousCategory}
-                  onPointerUp={() => goToPreviousCategory()}
-                  onTouchEnd={() => goToPreviousCategory()}
-                  data-nav-href={backTargetHref}
-                  className={`pf-a2-back-btn mt-0.5 ${isRoutineLogPanelOpen ? "pf-a2-back-btn-suspended" : ""}`}
-                  aria-label={backLabel}
-                  title={backLabel}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="h-4 w-4"
-                    aria-hidden="true"
+                {showBackButton ? (
+                  <ReliableActionButton
+                    type="button"
+                    onClick={goToPreviousCategory}
+                    onPointerUp={() => goToPreviousCategory()}
+                    onTouchEnd={() => goToPreviousCategory()}
+                    data-nav-href={backTargetHref}
+                    className={`pf-a2-back-btn mt-0.5 ${isRoutineLogPanelOpen ? "pf-a2-back-btn-suspended" : ""}`}
+                    aria-label={backLabel}
+                    title={backLabel}
                   >
-                    <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span className="sr-only">{backLabel}</span>
-                </ReliableActionButton>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className="sr-only">{backLabel}</span>
+                  </ReliableActionButton>
+                ) : null}
 
                 <div className="min-w-0">
                   <p className="pf-a2-eyebrow break-words">{categoryMeta.badge}</p>
@@ -12786,8 +12796,10 @@ export default function AlumnoVisionClient({
         </section>
       </div>
 
-      {isRootCategory ? (
-        <nav className="pf-a2-dock md:hidden" aria-label="Navegacion principal del alumno">
+      {/* La barra inferior queda visible en todas las pantallas del alumno, no
+          solo en el inicio: es la navegacion principal ahora que las vistas del
+          dock (rutina/cuenta) no llevan flecha de volver. */}
+      <nav className="pf-a2-dock md:hidden" aria-label="Navegacion principal del alumno">
           {homeDockItems.filter((item) => !isBlocked || item.key === "inicio" || item.key === "cuenta").map((item) => {
             const isActive = item.key === activeCategory;
             return (
@@ -12808,8 +12820,7 @@ export default function AlumnoVisionClient({
               </ReliableActionButton>
             );
           })}
-        </nav>
-      ) : null}
+      </nav>
     </main>
   );
 }
