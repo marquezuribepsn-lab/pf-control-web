@@ -8953,9 +8953,15 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-webview .pf-a2-card,
   html.pf-mobile-webview .pf-a2-kpi,
   html.pf-mobile-webview .pf-a2-hero,
+  html.pf-mobile-webview .pf-a3-coach-card,
+  html.pf-mobile-webview .pf-a3-panel-block,
+  html.pf-mobile-webview .pf-a3-rings-card,
   html.pf-mobile-fluid .pf-a2-card,
   html.pf-mobile-fluid .pf-a2-kpi,
-  html.pf-mobile-fluid .pf-a2-hero {
+  html.pf-mobile-fluid .pf-a2-hero,
+  html.pf-mobile-fluid .pf-a3-coach-card,
+  html.pf-mobile-fluid .pf-a3-panel-block,
+  html.pf-mobile-fluid .pf-a3-rings-card {
     /* Color sólido (sin degradado ni transparencia) para no reintroducir el
        parpadeo de scroll, ahora con el navy premium (v5) de las tarjetas. */
     background: var(--pf-nv-card) !important;

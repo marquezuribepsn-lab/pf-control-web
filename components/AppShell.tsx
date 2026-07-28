@@ -380,10 +380,43 @@ const isMobileLikeViewport = (): boolean => {
   return narrowViewport || tabletViewport || mobileUserAgent || mobileWebViewClass;
 };
 
+// Dentro del WebView nativo el fondo se fuerza oscuro siempre. Si el sistema
+// esta en modo claro, el mapeo de tema claro repinta los textos en tonos
+// oscuros -> texto oscuro sobre fondo oscuro = toda la app se ve apagada.
+// Por eso en el WebView el tema queda fijo en oscuro.
+const isNativeWebViewShell = (): boolean => {
+  if (typeof document === "undefined") return false;
+
+  try {
+    const root = document.documentElement;
+    if (
+      root.classList.contains("pf-mobile-webview") ||
+      root.classList.contains("pf-mobile-fluid") ||
+      root.classList.contains("pf-native-ios")
+    ) {
+      return true;
+    }
+
+    // La clase la agrega el cliente al montar; los marcadores del wrapper
+    // (query flags / storage / cookie) ya estan disponibles antes de eso.
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search || "");
+      if (params.has("pfnative") || params.has("pfv")) return true;
+      if (window.localStorage?.getItem("pfNativePlatform")) return true;
+    }
+
+    if (/(?:^|;\s*)pf_native=/.test(document.cookie || "")) return true;
+  } catch {
+    return false;
+  }
+
+  return false;
+};
+
 const applyThemeMode = (mode: ThemeMode) => {
   if (typeof document === "undefined") return;
 
-  const resolved = normalizeThemeMode(mode);
+  const resolved = isNativeWebViewShell() ? "dark" : normalizeThemeMode(mode);
   document.documentElement.setAttribute("data-pf-theme", resolved);
   document.documentElement.style.colorScheme = resolved;
 };
