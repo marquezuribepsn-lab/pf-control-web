@@ -8840,7 +8840,9 @@ video.pf-a3-routine-log-video-frame {
     width: 26px;
     height: 26px;
     border-color: transparent;
-    background: rgba(232, 238, 246, 0.1);
+    /* Sin fondo propio: el icono no lleva circulo alrededor, solo queda el
+       rectangulo del boton activo. */
+    background: transparent;
     box-shadow: none;
   }
 
@@ -8860,7 +8862,7 @@ video.pf-a3-routine-log-video-frame {
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active .pf-a2-dock-icon-wrap {
-    background: rgba(27, 139, 243, 0.22) !important;
+    background: transparent !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-label {
