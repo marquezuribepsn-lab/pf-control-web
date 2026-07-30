@@ -3298,7 +3298,18 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   letter-spacing: -0.005em;
 }
 
-/* Rediseño: los anillos van sueltos sobre el fondo, sin tarjeta. */
+/* Rediseño: en el inicio nada va encajonado salvo la tarjeta de entrenamiento;
+   el resto (acciones rapidas, dias, paneles) se apoya sobre el fondo. */
+.pf-a3-home-stack > .pf-a3-panel-block,
+.pf-a3-home-stack .pf-a3-panel-block:not(.pf-a3-next-workout) {
+  border: 0;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding-inline: 0.15rem;
+}
+
 .pf-a3-rings-card {
   margin-top: 0.7rem;
   padding: 0.2rem 0.1rem 0.4rem;
