@@ -1,6 +1,6 @@
 ﻿import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Sora, Space_Grotesk } from "next/font/google";
+import { Inter, Sora, Space_Grotesk } from "next/font/google";
 import { Prisma } from "@prisma/client";
 import PlayersProvider from "../components/PlayersProvider";
 import SessionsProvider from "../components/SessionsProvider";
@@ -25,6 +25,14 @@ const bodyFont = Space_Grotesk({
 const displayFont = Sora({
   subsets: ["latin"],
   variable: "--font-display",
+  display: "swap",
+});
+
+// Tipografia del rediseno del alumno (handoff de diseno): Inter.
+const alumnoFont = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-alumno",
   display: "swap",
 });
 
@@ -191,7 +199,7 @@ export default async function RootLayout({
   if (initialRole === "SUPERADMIN") {
     return (
       <html lang="es">
-        <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-[#080a0b] text-white`}>
+        <body className={`${bodyFont.variable} ${displayFont.variable} ${alumnoFont.variable} min-h-screen bg-[#080a0b] text-white`}>
           <AuthSessionProvider>
             {children}
           </AuthSessionProvider>
@@ -202,7 +210,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
-      <body className={`${bodyFont.variable} ${displayFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
+      <body className={`${bodyFont.variable} ${displayFont.variable} ${alumnoFont.variable} min-h-screen bg-slate-950 text-slate-100`}>
         <AuthSessionProvider>
           <PresenceBeacon />
           <div className="pf-root-atmosphere">

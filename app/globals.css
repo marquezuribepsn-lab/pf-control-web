@@ -1597,38 +1597,41 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
  * Login-inspired blue/cyan palette applied across all alumno screens.
  */
 .pf-alumno-v2 {
-  /* ── Paleta "navy premium" (rediseño alumno v5) ──────────────────────────
-     Dark navy con glow azul, look Apple-inspired. Estas variables --pf-nv-*
-     son la fuente de verdad de color; los tokens --pf-a2-* de abajo se
-     recablean a ellas para que todos los componentes queden consistentes. */
-  --pf-nv-bg-0: #021531;      /* fondo primario navy profundo */
-  --pf-nv-bg-1: #0b2848;      /* fondo secundario */
-  --pf-nv-depth: #023786;     /* acento de profundidad (glow) */
-  --pf-nv-card: #0b1f3f;      /* fondo de tarjeta */
-  --pf-nv-card-2: #11284a;    /* tarjeta secundaria */
-  --pf-nv-card-hi: #16365f;   /* tarjeta destacada */
-  --pf-nv-border: #294b60;    /* borde de tarjeta */
-  --pf-nv-border-hi: #3a628a; /* borde highlight suave */
-  --pf-nv-text: #eef1f4;      /* texto primario */
-  --pf-nv-text-2: #d4dbe2;    /* texto secundario (mas brillante) */
-  --pf-nv-muted: #b8c5d5;     /* texto atenuado (mas brillante) */
-  --pf-nv-accent: #025ce4;    /* azul acento */
-  --pf-nv-bright: #1b8bf3;    /* azul brillante */
-  --pf-nv-deep: #003dce;      /* azul profundo */
-  --pf-nv-soft: #5f9de7;      /* azul suave */
-  --pf-nv-green: #299d90;     /* verde estado ok */
-  --pf-nv-green-dark: #108873;/* verde ok oscuro */
-  --pf-nv-glow: rgba(27, 139, 243, 0.14);
+  /* ── Paleta del rediseño (handoff de diseño) ─────────────────────────────
+     Cyan + índigo sobre fondo casi negro. Estas variables --pf-nv-* son la
+     fuente de verdad de color; los tokens --pf-a2-* de abajo se recablean a
+     ellas para que todos los componentes queden consistentes. */
+  --pf-nv-bg-0: #05060b;      /* fondo primario */
+  --pf-nv-bg-1: #0a0b10;      /* fondo secundario */
+  --pf-nv-depth: #6366f1;     /* acento de profundidad (glow indigo) */
+  --pf-nv-card: #101219;      /* superficie de tarjeta (rgba(255,255,255,.04) resuelto) */
+  --pf-nv-card-2: #14161d;    /* tarjeta secundaria */
+  --pf-nv-card-hi: #1a1d26;   /* tarjeta destacada */
+  --pf-nv-border: rgba(255, 255, 255, 0.09);   /* borde de tarjeta */
+  --pf-nv-border-hi: rgba(255, 255, 255, 0.16);/* borde highlight */
+  --pf-nv-text: #f5f6fa;      /* texto primario */
+  --pf-nv-text-2: rgba(245, 246, 250, 0.66);   /* texto secundario */
+  --pf-nv-muted: rgba(245, 246, 250, 0.45);    /* texto atenuado */
+  --pf-nv-accent: #6366f1;    /* indigo acento */
+  --pf-nv-bright: #22d3ee;    /* cyan brillante */
+  --pf-nv-bright-soft: #67e8f9;/* cyan claro (eyebrows) */
+  --pf-nv-deep: #6366f1;      /* indigo profundo (fin del gradiente) */
+  --pf-nv-soft: #a5b4fc;      /* indigo suave (iconos) */
+  --pf-nv-green: #34d399;     /* verde estado ok */
+  --pf-nv-green-dark: #2dd4bf;/* teal */
+  --pf-nv-on-accent: #04121a; /* texto sobre gradiente cyan-indigo */
+  --pf-nv-gradient: linear-gradient(135deg, #22d3ee, #6366f1);
+  --pf-nv-glow: rgba(34, 211, 238, 0.14);
 
   /* Tokens --pf-a2-* recableados a la paleta navy (v5) */
   --pf-a2-bg-0: var(--pf-nv-bg-0);
   --pf-a2-bg-1: var(--pf-nv-card);
   --pf-a2-bg-2: var(--pf-nv-bg-1);
-  --pf-a2-stage-surface: rgba(11, 31, 63, 0.9);
-  --pf-a2-stage-border: rgba(58, 98, 138, 0.4);
-  --pf-a2-divider: rgba(41, 75, 96, 0.62);
-  --pf-a2-surface: rgba(11, 31, 63, 0.86);
-  --pf-a2-surface-soft: rgba(17, 40, 74, 0.84);
+  --pf-a2-stage-surface: rgba(255, 255, 255, 0.04);
+  --pf-a2-stage-border: rgba(255, 255, 255, 0.08);
+  --pf-a2-divider: rgba(255, 255, 255, 0.07);
+  --pf-a2-surface: rgba(255, 255, 255, 0.04);
+  --pf-a2-surface-soft: rgba(255, 255, 255, 0.06);
   --pf-a2-border: var(--pf-nv-border);
   --pf-a2-border-strong: var(--pf-nv-border-hi);
   --pf-a2-text: var(--pf-nv-text);
@@ -1637,17 +1640,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   --pf-a2-accent-main: var(--pf-nv-bright);
   --pf-a2-accent-soft: var(--pf-nv-soft);
   --pf-a2-accent-cold: var(--pf-nv-deep);
-  --pf-a2-accent-warm: #f97b34;
-  --pf-a2-accent-warm-soft: #ffa060;
-  --pf-a2-shadow: 0 18px 40px rgba(2, 10, 24, 0.55);
+  --pf-a2-accent-warm: #fb923c;
+  --pf-a2-accent-warm-soft: #fdba74;
+  --pf-a2-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
   position: relative;
   min-height: 100svh;
   color: var(--pf-a2-text);
-  font-family: var(--font-body), "Space Grotesk", sans-serif;
+  font-family: var(--font-alumno), "Inter", -apple-system, system-ui, sans-serif;
   background-color: var(--pf-nv-bg-0);
   background-image:
-    radial-gradient(120% 80% at 50% -10%, rgba(2, 55, 134, 0.45) 0%, rgba(2, 55, 134, 0.16) 32%, rgba(2, 21, 49, 0) 62%),
-    linear-gradient(168deg, var(--pf-nv-bg-0) 0%, #06203f 52%, var(--pf-nv-bg-1) 100%);
+    radial-gradient(600px 400px at 15% -5%, rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(500px 400px at 100% 0%, rgba(34, 211, 238, 0.12), transparent 55%);
   overflow-x: clip;
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
   /* Aisla el stacking context de esta pantalla: sin esto, las luces
@@ -1737,24 +1740,21 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
      fondo slate-950 translúcido con degradado azulado y esquinas más
      redondeadas, para que progreso/pagos/musica/cuenta se vean
      consistentes con la pantalla principal. */
+  /* Rediseño: superficie sutil (blanco al 4%) con borde fino, sin degradado. */
   min-width: 0;
   overflow: visible;
-  border-radius: 1.65rem !important;
+  border-radius: 1.25rem !important;
   border: 1px solid var(--pf-nv-border);
-  background-color: rgba(11, 31, 63, 0.72);
-  background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.04);
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--pf-a2-text);
 }
 
 .pf-a2-hero {
   position: relative;
-  box-shadow:
-    0 26px 60px -26px rgba(2, 10, 24, 0.66),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 26px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: none;
   transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
@@ -1770,22 +1770,12 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
 }
 
 .pf-a2-card {
-  /* LED blanco: halo exterior suave + borde superior luminoso, para dar mas
-     brillo sin tapar contenido (todo via box-shadow, fuera del texto). */
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: none;
   transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .pf-a2-kpi {
-  box-shadow:
-    0 26px 60px -26px rgba(8, 15, 30, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: none;
   transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
@@ -1925,13 +1915,14 @@ select:-webkit-autofill {
   letter-spacing: -0.015em;
 }
 
+/* Rediseño: los eyebrows van en cyan claro (TRAIN, BILLING, NUTR...). */
 .pf-a2-eyebrow {
   margin: 0;
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--pf-nv-muted);
+  color: var(--pf-nv-bright-soft);
 }
 
 .pf-a2-pill {
@@ -1976,24 +1967,25 @@ select:-webkit-autofill {
   transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease, box-shadow 180ms ease;
 }
 
+/* CTA principal del rediseño: gradiente cyan -> indigo, texto oscuro y
+   forma de pildora. */
 .pf-a2-solid-btn {
-  color: #ffffff;
-  border: 1px solid rgba(95, 157, 231, 0.55);
-  background: linear-gradient(150deg, var(--pf-nv-bright) 0%, var(--pf-nv-deep) 100%);
-  box-shadow: 0 10px 22px -6px rgba(0, 61, 206, 0.5), 0 0 16px -4px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  color: var(--pf-nv-on-accent);
+  font-weight: 700;
+  border: 0;
+  border-radius: 100px;
+  background: var(--pf-nv-gradient);
+  box-shadow: 0 10px 26px -10px rgba(34, 211, 238, 0.5);
 }
 
 .pf-a2-solid-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(126, 178, 240, 0.85);
-  box-shadow: 0 14px 28px -6px rgba(0, 61, 206, 0.58), 0 0 22px -2px rgba(255, 255, 255, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 14px 30px -10px rgba(34, 211, 238, 0.6);
 }
 
-/* LED reactivo blanco al presionar */
 .pf-a2-solid-btn:active {
-  transform: translateY(0);
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8px 18px -6px rgba(0, 61, 206, 0.5), 0 0 30px -2px rgba(255, 255, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  transform: scale(0.97);
+  box-shadow: 0 8px 20px -10px rgba(34, 211, 238, 0.5);
 }
 
 .pf-a2-ghost-btn {
@@ -2680,20 +2672,14 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
 
 .pf-a3-coach-card,
 .pf-a3-panel-block {
-  /* Rediseño inspirado en la tarjeta de /auth/login: borde blanco translúcido,
-     fondo slate-950 translúcido con vidrio esmerilado y esquinas más redondeadas. */
-  border-radius: 1.65rem;
+  /* Rediseño: superficie sutil (blanco al 4%) con borde fino, sin vidrio. */
+  border-radius: 1.25rem;
   border: 1px solid var(--pf-nv-border);
-  background-color: rgba(11, 31, 63, 0.72);
-  background-image: linear-gradient(168deg, rgba(22, 54, 95, 0.5), rgba(11, 31, 63, 0.28) 68%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* LED blanco: halo exterior + borde superior luminoso para mas brillo. */
-  box-shadow:
-    0 26px 60px -26px rgba(2, 10, 24, 0.66),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 0 24px -6px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.04);
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
@@ -3118,10 +3104,13 @@ html.pf-mobile-fluid:not(#_) .pf-a2-kpi [class*="bg-white/"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(27, 139, 243, 0.32);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 14px rgba(27, 139, 243, 0.14);
-  background: linear-gradient(160deg, rgba(27, 139, 243, 0.24), rgba(0, 61, 206, 0.18));
-  color: #7fb6f2;
+  /* Rediseño: circulo indigo plano, sin borde ni glow. */
+  width: 46px;
+  height: 46px;
+  border: 0;
+  box-shadow: none;
+  background: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
 }
 
 /* Set monocromo: mismo vidrio violeta y un único tinte lavanda para todos los
@@ -6194,9 +6183,9 @@ video.pf-a3-routine-log-video-frame {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   border-radius: 1.1rem;
-  border: 1px solid rgba(41, 75, 96, 0.7);
-  background: rgba(4, 24, 47, 0.96);
-  box-shadow: 0 -10px 26px -14px rgba(2, 10, 24, 0.7), inset 0 1px 0 rgba(95, 157, 231, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(8, 10, 16, 0.96);
+  box-shadow: 0 -10px 26px -14px rgba(0, 0, 0, 0.7);
   padding: 0.14rem 0.16rem calc(0.18rem + env(safe-area-inset-bottom));
   backdrop-filter: none;
   isolation: isolate;
@@ -6231,7 +6220,7 @@ video.pf-a3-routine-log-video-frame {
 }
 
 .pf-a2-dock-btn-active {
-  color: #7fb6f2;
+  color: #a5b4fc;
   background: transparent;
 }
 
@@ -7876,12 +7865,12 @@ video.pf-a3-routine-log-video-frame {
   html.pf-mobile-fluid .pf-training-shell main,
   html.pf-mobile-fluid .pf-alumno-main,
   html.pf-mobile-fluid .pf-alumno-main.pf-alumno-v2 {
-    background-color: #0a0c0f !important;
+    background-color: #05060b !important;
     background-image: none !important;
   }
 
   html.pf-mobile-webview .pf-alumno-main.pf-alumno-v2 {
-    background-color: #0a0c0f !important;
+    background-color: #05060b !important;
     background-image: none !important;
   }
 
@@ -7913,12 +7902,12 @@ video.pf-a3-routine-log-video-frame {
   }
 
   .pf-alumno-v2 {
-    background-color: #0a0c0f !important;
+    background-color: #05060b !important;
     background-image: none !important;
   }
 
   html.pf-mobile-fluid .pf-alumno-v2 {
-    background-color: #0a0c0f !important;
+    background-color: #05060b !important;
     background-image: none !important;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
@@ -8880,7 +8869,7 @@ video.pf-a3-routine-log-video-frame {
        sensación de que el "led" se pintaba encima de los íconos. Sólido
        100% opaco = la barra siempre tapa el brillo, sin importar el
        compositing del WebView. */
-    background: #04182f !important;
+    background: rgba(8, 10, 16, 0.96) !important;
     box-shadow: 0 -10px 26px -14px rgba(2, 10, 24, 0.7), inset 0 1px 0 rgba(95, 157, 231, 0.08) !important;
     backdrop-filter: none !important;
   }
@@ -8906,13 +8895,13 @@ video.pf-a3-routine-log-video-frame {
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active {
     color: #ffffff !important;
-    background: rgba(27, 139, 243, 0.18) !important;
-    box-shadow: inset 0 0 0 1px rgba(27, 139, 243, 0.4), 0 0 18px rgba(27, 139, 243, 0.28) !important;
+    background: rgba(99, 102, 241, 0.18) !important;
+    box-shadow: none !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active::after {
     background: var(--pf-nv-bright) !important;
-    box-shadow: 0 0 10px rgba(27, 139, 243, 0.7) !important;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5) !important;
   }
 
   html.pf-mobile-fluid .pf-a2-dock-btn-active .pf-a2-dock-icon-wrap {
