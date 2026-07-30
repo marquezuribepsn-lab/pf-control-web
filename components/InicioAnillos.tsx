@@ -189,7 +189,7 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
               </svg>
             }
             value={`${entrenos}/${ENTRENOS_META}`}
-            label="Entrenos esta semana"
+            label="Entrenos"
             ariaLabel="Marcar un entrenamiento de esta semana como completado"
             onClick={marcarEntreno}
           />
@@ -204,7 +204,7 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
               </svg>
             }
             value={`${vasos}/${AGUA_META}`}
-            label="Agua vasos hoy"
+            label="Agua"
             ariaLabel="Elegir cuantos vasos de agua tomaste hoy"
             onClick={toggleAguaPicker}
           />
@@ -219,7 +219,7 @@ export default function InicioAnillos({ onComenzarRutina }: { onComenzarRutina?:
               </svg>
             }
             value={formatHoras(horasSueno)}
-            label="Sueño esta noche"
+            label="Sueño"
             ariaLabel="Elegir cuantas horas dormiste anoche"
             onClick={toggleSuenoPicker}
           />

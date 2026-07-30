@@ -68,19 +68,16 @@ export default function FraseDelDia() {
   return (
     <section
       className="pf-frase-card"
+      // Rediseño: la frase va suelta sobre el fondo, sin tarjeta.
       style={{
         position: "relative",
         overflow: "hidden",
-        borderRadius: "1.1rem",
-        padding: "0.9rem 1rem",
-        border: "1px solid rgba(255, 255, 255, 0.12)",
-        backgroundColor: "rgba(2, 6, 23, 0.55)",
-        backgroundImage:
-          "linear-gradient(160deg, rgba(30, 64, 120, 0.42), rgba(8, 15, 30, 0.28) 70%)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        boxShadow:
-          "0 26px 60px -26px rgba(8, 15, 30, 0.6), 0 0 0 1px rgba(56, 189, 248, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        borderRadius: 0,
+        padding: "0.2rem 0.15rem",
+        border: 0,
+        backgroundColor: "transparent",
+        backgroundImage: "none",
+        boxShadow: "none",
         color: "#fff",
       }}
     >
