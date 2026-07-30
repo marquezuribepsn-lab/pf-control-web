@@ -1752,10 +1752,17 @@ html[data-pf-presence="unknown"] .pf-sidebar-avatar-dot {
   color: var(--pf-a2-text);
 }
 
+/* Rediseño: los encabezados de pantalla van sueltos sobre el fondo, sin caja. */
 .pf-a2-hero {
   position: relative;
-  box-shadow: none;
-  transition: box-shadow 220ms ease, border-color 220ms ease;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  padding-left: 0.15rem !important;
+  padding-right: 0.15rem !important;
+  padding-top: 0.2rem !important;
+  transition: none;
 }
 
 .pf-a2-hero::before {

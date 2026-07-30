@@ -946,9 +946,6 @@ export default function AlumnoPagosClient() {
               <h1 className="mt-1 break-words text-[clamp(1.35rem,4vw,2.2rem)] font-black text-white">
                 Centro de pagos
               </h1>
-              <p className="mt-2 max-w-2xl break-words text-sm text-slate-300">
-                Gestiona tu pase mensual, paga por Mercado Pago o informa pago manual para revision.
-              </p>
             </div>
           </div>
 
@@ -1027,6 +1024,8 @@ export default function AlumnoPagosClient() {
             </div>
           </div>
 
+          {/* Solo se muestra si hay contenido: QR de tienda o el aviso nativo. */}
+          {(canUseQrStore && !paymentsHiddenForNative) || showNativeFallback ? (
           <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
 
             {canUseQrStore && !paymentsHiddenForNative ? (
@@ -1098,6 +1097,7 @@ export default function AlumnoPagosClient() {
               </>
             ) : null}
           </article>
+          ) : null}
 
           {!paymentsHiddenForNative ? (
             <section>
