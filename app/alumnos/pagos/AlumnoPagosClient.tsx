@@ -818,6 +818,13 @@ export default function AlumnoPagosClient() {
   };
 
   const isActive = Boolean(status?.active);
+
+  // Ciclo de facturacion para la barra de progreso del pase (rediseño).
+  const cyclePeriod = Math.max(1, Number(status?.billing.periodDays) || 0);
+  const cycleRemaining =
+    typeof status?.daysRemaining === "number" ? Math.max(0, status.daysRemaining) : 0;
+  const cycleElapsed = Math.max(0, Math.min(cyclePeriod, cyclePeriod - cycleRemaining));
+  const cycleProgress = Math.round((cycleElapsed / cyclePeriod) * 100);
   // MP checkout requiere que el alumno tenga ficha de billing (clientKey) para que
   // el webhook pueda activar automáticamente el pase. Si aún no está vinculado,
   // se muestra un aviso en lugar de deshabilitar sin explicación.
@@ -976,94 +983,51 @@ export default function AlumnoPagosClient() {
         ) : null}
 
         <section className="grid gap-4">
-          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex min-w-0 items-start gap-3">
-                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${toneIconClasses(statusTone)}`}>
-                  <IconCheck className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <h2 className="text-xl font-black text-white">
-                    {loading ? "Consultando..." : resolveReasonLabel(status?.reason || "no-meta")}
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-300">
-                    {loading
-                      ? "Estamos consultando tu pase, espera unos segundos."
-                      : resolveReasonDetail(status?.reason || "no-meta")}
-                  </p>
-                </div>
-              </div>
-              <span className={`pf-a2-badge pf-a2-badge-${statusTone}`}>
-                {isActive ? "ACTIVO" : "INHABILITADO"}
-              </span>
+          {/* Tarjeta del pase (rediseño): degradado teal -> cyan -> indigo con
+              el estado, el vencimiento, el importe de renovacion y los dias. */}
+          <article className="pf-pay-pass">
+            <div className="pf-pay-pass-top">
+              <span className="pf-pay-pass-brand">PF Control · Pase</span>
+              <span className="pf-pay-pass-chip">PF</span>
             </div>
-
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
-                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
-                  <IconCalendar className="h-4 w-4 shrink-0 text-slate-400" />
-                  Pago al dia
-                </span>
-                <span className="shrink-0 text-sm font-semibold text-slate-100">
-                  {status?.paymentSummary?.isPaid ? "Si" : "No"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
-                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
-                  <IconCalendar className="h-4 w-4 shrink-0 text-slate-400" />
-                  Vigencia del plan
-                </span>
-                <span className="shrink-0 text-sm font-semibold text-slate-100">
-                  {formatDate(status?.paymentSummary?.planValidUntil || status?.billing.endDate)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2.5">
-                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
-                  <IconClock className="h-4 w-4 shrink-0 text-slate-400" />
-                  Ultimo pago
-                </span>
-                <span className="shrink-0 text-sm font-semibold text-slate-100">
-                  {formatDate(status?.paymentSummary?.latestPaymentAt)}
-                </span>
-              </div>
-            </div>
-
-            {status?.paymentSummary?.latestPaymentAt ? (
-              <p className="mt-3 text-xs text-slate-300">
-                Ultimo pago confirmado: {formatDate(status.paymentSummary.latestPaymentAt)}
-                {typeof status.paymentSummary.latestPaymentAmount === "number"
-                  ? ` · ${formatMoney(
-                      status.paymentSummary.latestPaymentAmount,
-                      status.paymentSummary.latestPaymentCurrency || status.billing.currency
-                    )}`
-                  : ""}
-                {status.paymentSummary.latestPaymentMethod
-                  ? ` · ${resolvePaymentMethodLabel(status.paymentSummary.latestPaymentMethod)}`
-                  : ""}
-              </p>
-            ) : null}
-
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-3.5">
-              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${toneIconClasses("ok")}`}>
-                <IconDollar className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/80">Monto de renovacion</p>
-                <p className="mt-0.5 text-xl font-black text-white">
+            <p className="pf-pay-pass-state">
+              {loading ? "Consultando..." : isActive ? "Activo" : "Inhabilitado"}
+            </p>
+            <p className="pf-pay-pass-sub">
+              {status?.paymentSummary?.planValidUntil || status?.billing.endDate
+                ? `Vence ${formatDate(status?.paymentSummary?.planValidUntil || status?.billing.endDate)}`
+                : "Sin vencimiento cargado"}
+            </p>
+            <div className="pf-pay-pass-foot">
+              <div>
+                <p className="pf-pay-pass-label">Renueva por</p>
+                <p className="pf-pay-pass-value">
                   {formatMoney(status?.billing.amount || 0, status?.billing.currency || "ARS")}
                 </p>
-                <p className="text-xs text-emerald-100/70">
-                  Periodo: {status?.billing.periodDays || 0} dias
-                  {typeof status?.daysRemaining === "number" ? ` · Restan ${status.daysRemaining} dias` : ""}
-                </p>
-                {status?.mercadoPago?.accountLabel ? (
-                  <p className="mt-1 text-xs text-emerald-100/60">
-                    Cuenta receptora: {status.mercadoPago.accountLabel}
-                  </p>
-                ) : null}
               </div>
-              <IconChevron className="h-4 w-4 shrink-0 text-emerald-200/50" />
+              <div className="text-right">
+                <p className="pf-pay-pass-label">Restan</p>
+                <p className="pf-pay-pass-value">
+                  {typeof status?.daysRemaining === "number" ? `${status.daysRemaining} dias` : "-"}
+                </p>
+              </div>
             </div>
+          </article>
+
+          {/* Ciclo de facturacion */}
+          <div className="pf-pay-cycle">
+            <div className="pf-pay-cycle-track">
+              <div className="pf-pay-cycle-fill" style={{ width: `${cycleProgress}%` }} />
+            </div>
+            <div className="pf-pay-cycle-legend">
+              <span>Ciclo de facturacion</span>
+              <span className="pf-pay-cycle-count">
+                {cycleElapsed}/{status?.billing.periodDays || 0} dias
+              </span>
+            </div>
+          </div>
+
+          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
 
             {canUseQrStore && !paymentsHiddenForNative ? (
               <section className="mt-4 rounded-xl border border-violet-300/30 bg-violet-500/10 p-3">
