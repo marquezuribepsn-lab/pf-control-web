@@ -2731,6 +2731,11 @@ export default function AlumnoVisionClient({
   const { ejercicios } = useEjercicios();
 
   const [activeCategory, setActiveCategory] = useState<MainCategory>(resolvedInitialCategory);
+  /** Pestaña interna de la pantalla Rutina. En el diseño nuevo "Nutrición" y
+   *  "Recuperación" son pestañas del plan de entrenamiento; Nutrición sigue
+   *  siendo una categoría propia (ruta /alumnos/nutricion) y Recuperación vive
+   *  acá porque no tiene datos propios todavía. */
+  const [routineTab, setRoutineTab] = useState<"entrenamiento" | "recuperacion">("entrenamiento");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [clientMeta, setClientMeta] = useState<ClienteMetaLite | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlanLite | null>(null);
@@ -9144,18 +9149,18 @@ export default function AlumnoVisionClient({
           ) : null}
           {activeCategory === "rutina" ? (
             <div
-              className="pf-a3-routine-shell"
+              className="pf-n-screen pf-n-screen-glow"
               onTouchStart={handleRoutineTouchStart}
               onTouchMove={handleRoutineTouchMove}
               onTouchEnd={handleRoutineTouchEnd}
               onTouchCancel={handleRoutineTouchEnd}
             >
               <div
-                className={`pf-a3-routine-pull-indicator ${
+                className={`pf-n-pull ${
                   routinePullRefreshing
-                    ? "pf-a3-routine-pull-indicator-refreshing"
+                    ? "pf-n-pull-refreshing"
                     : routinePullDistance >= ROUTINE_PULL_THRESHOLD
-                    ? "pf-a3-routine-pull-indicator-ready"
+                    ? "pf-n-pull-ready"
                     : ""
                 }`}
                 style={{
@@ -9167,158 +9172,180 @@ export default function AlumnoVisionClient({
                 {routinePullRefreshing
                   ? "Actualizando..."
                   : routinePullDistance >= ROUTINE_PULL_THRESHOLD
-                  ? "Solta para actualizar"
-                  : "Desliza para refrescar"}
+                  ? "Soltá para actualizar"
+                  : "Deslizá para refrescar"}
               </div>
 
-              <section className="pf-a3-routine-overview">
-                <div className="pf-a3-routine-nav" aria-label="Navegacion de entrenamiento">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("rutina")}
-                    className="pf-a3-routine-nav-btn pf-a3-routine-nav-btn-active"
-                  >
-                    Entrenamiento
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("nutricion")}
-                    data-nav-href="/alumnos/nutricion"
-                    className="pf-a3-routine-nav-btn"
-                  >
-                    Nutricion
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    onPointerUp={() => goToCategory("progreso")}
-                    data-nav-href="/alumnos/progreso"
-                    className="pf-a3-routine-nav-btn"
-                  >
-                    Recuperacion
-                  </ReliableActionButton>
+              <div className="pf-n-routine-head">
+                <p className="pf-n-eyebrow">Train</p>
+                <h1 className="pf-n-title">Plan de entrenamiento</h1>
+              </div>
+
+              <div className="pf-n-tabs" role="tablist" aria-label="Secciones del plan">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={routineTab === "entrenamiento"}
+                  className="pf-n-tab"
+                  onClick={() => setRoutineTab("entrenamiento")}
+                >
+                  <div className="pf-n-tab-text">Entrenamiento</div>
+                  <div className="pf-n-tab-underline" />
+                </button>
+                <ReliableActionButton
+                  type="button"
+                  role="tab"
+                  aria-selected={false}
+                  className="pf-n-tab"
+                  onClick={() => goToCategory("nutricion")}
+                  data-nav-href="/alumnos/nutricion"
+                >
+                  <div className="pf-n-tab-text">Nutrición</div>
+                  <div className="pf-n-tab-underline" />
+                </ReliableActionButton>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={routineTab === "recuperacion"}
+                  className="pf-n-tab"
+                  onClick={() => setRoutineTab("recuperacion")}
+                >
+                  <div className="pf-n-tab-text">Recuperación</div>
+                  <div className="pf-n-tab-underline" />
+                </button>
+              </div>
+
+              {routineTab === "recuperacion" ? (
+                <div className="pf-n-empty" style={{ marginTop: 6 }}>
+                  <span className="pf-n-empty-icon" style={{ background: "rgba(196,181,253,0.1)" }}>
+                    <svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M15 10.5A6 6 0 1 1 9.5 5A7.5 7.5 0 0 0 15 10.5Z" fill="#c4b5fd" />
+                    </svg>
+                  </span>
+                  <p className="pf-n-empty-title">Sin pautas de recuperación</p>
+                  <p className="pf-n-empty-text">Tu profesor todavía no cargó pautas para vos.</p>
                 </div>
+              ) : (
+                <>
+              <h2 className="pf-n-day-title">
+                {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento")}
+              </h2>
 
-                <div className="pf-a3-routine-overview-head">
-                  <div className="min-w-0">
-                    <h2 className="pf-a3-routine-overview-title">
-                      {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento").toUpperCase()}
-                    </h2>
-                    <p className="pf-a3-routine-overview-subtitle" suppressHydrationWarning>Actualizado el {routineUpdatedAtLabel}</p>
-                    <div className="pf-a3-routine-coach-row">
-                      <span className="pf-a3-routine-coach-avatar" aria-hidden="true">
-                        {getInitials(routineCoachLabel)}
-                      </span>
-                      <p className="pf-a3-routine-overview-kicker">{routineCoachLabel}</p>
-                    </div>
-                    <p className="pf-a3-routine-sync-label">{routineSyncStatusLabel}</p>
-                  </div>
+              <div className="pf-n-coach">
+                <span className="pf-n-coach-avatar" aria-hidden="true">
+                  {getInitials(routineCoachLabel)}
+                </span>
+                <span className="pf-n-coach-name">{routineCoachLabel}</span>
+              </div>
+              <p className="pf-n-sync" suppressHydrationWarning>
+                {routineSyncStatusLabel}
+              </p>
 
-                  <div className="pf-a3-routine-overview-actions">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => toggleRoutineQuickPanel("change")}
-                      className={`pf-a3-routine-icon-btn !border !border-emerald-200/65 !bg-emerald-500/30 transition-colors ${
-                        routineQuickPanel === "change"
-                          ? "!border-emerald-100 !bg-emerald-400/48"
-                          : ""
-                      }`}
-                      aria-label="Solicitar cambio de rutina"
-                      title="Solicitar cambio de rutina"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
-                        <path d="M4 6.5a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 6.5v6A2.5 2.5 0 0 1 17.5 15H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 12.5v-6Z" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M8 8.5h8M8 11.5h5" strokeLinecap="round" />
-                      </svg>
-                    </ReliableActionButton>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => toggleRoutineQuickPanel("sessions")}
-                      className={`pf-a3-routine-icon-btn !border !border-rose-200/65 !bg-rose-500/30 transition-colors ${
-                        routineQuickPanel === "sessions"
-                          ? "!border-rose-100 !bg-rose-400/48"
-                          : ""
-                      }`}
-                      aria-label="Ver sesiones finalizadas"
-                      title="Ver sesiones finalizadas"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
-                        <path d="M6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9A2.5 2.5 0 0 1 6.5 5Z" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M8 9h8M8 12h8M8 15h5" strokeLinecap="round" />
-                      </svg>
-                    </ReliableActionButton>
-
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => toggleRoutineQuickPanel("timer")}
-                      className={`pf-a3-routine-icon-btn !border !border-violet-200/65 !bg-violet-500/28 transition-colors ${
-                        activeRoutineActionScreen === "timer" || routineStopwatchRunning
-                          ? "!border-violet-100 !bg-violet-400/45"
-                          : ""
-                      }`}
-                      aria-label="Abrir cronómetro"
-                      title={routineStopwatchRunning ? "Cronómetro en marcha" : "Abrir cronómetro"}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <circle cx="12" cy="12" r="8" />
-                        <path d="M12 8v4l2.6 1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M9.2 3.5h5.6" strokeLinecap="round" />
-                      </svg>
-                    </ReliableActionButton>
-                  </div>
+              <div className="pf-n-stats">
+                <div className="pf-n-stat">
+                  <span className="pf-n-stat-value">{routineSummary.sessions}</span>
+                  <span className="pf-n-stat-label">Sesiones</span>
                 </div>
-
-                <div className="pf-a3-routine-kpi-grid">
-                  <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Sesiones asignadas</p>
-                    <p className="pf-a3-routine-kpi-value">{routineSummary.sessions}</p>
-                  </article>
-                  <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Total bloques</p>
-                    <p className="pf-a3-routine-kpi-value">{routineSummary.blocks}</p>
-                  </article>
-                  <article className="pf-a3-routine-kpi">
-                    <p className="pf-a3-routine-kpi-label">Total ejercicios</p>
-                    <p className="pf-a3-routine-kpi-value">{routineSummary.exercises}</p>
-                  </article>
+                <span className="pf-n-vrule" aria-hidden="true" />
+                <div className="pf-n-stat">
+                  <span className="pf-n-stat-value">{routineSummary.blocks}</span>
+                  <span className="pf-n-stat-label">Bloques</span>
                 </div>
-              </section>
+                <span className="pf-n-vrule" aria-hidden="true" />
+                <div className="pf-n-stat">
+                  <span className="pf-n-stat-value">{routineSummary.exercises}</span>
+                  <span className="pf-n-stat-label">Ejercicios</span>
+                </div>
+              </div>
+
+              {/* Acciones de la rutina (cambio de plan, sesiones finalizadas y
+                  cronómetro). No están en el handoff pero son funcionalidad real
+                  del alumno, así que van como chips secundarios. */}
+              <div className="pf-n-routine-tools">
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => toggleRoutineQuickPanel("change")}
+                  className={`pf-n-tool ${routineQuickPanel === "change" ? "pf-n-tool-active" : ""}`}
+                  aria-label="Solicitar cambio de rutina"
+                  title="Solicitar cambio de rutina"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
+                    <path
+                      d="M4 6.5a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 6.5v6A2.5 2.5 0 0 1 17.5 15H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 12.5v-6Z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M8 8.5h8M8 11.5h5" strokeLinecap="round" />
+                  </svg>
+                  Cambio
+                </ReliableActionButton>
+
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => toggleRoutineQuickPanel("sessions")}
+                  className={`pf-n-tool ${routineQuickPanel === "sessions" ? "pf-n-tool-active" : ""}`}
+                  aria-label="Ver sesiones finalizadas"
+                  title="Ver sesiones finalizadas"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" aria-hidden="true">
+                    <path
+                      d="M6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9A2.5 2.5 0 0 1 6.5 5Z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M8 9h8M8 12h8M8 15h5" strokeLinecap="round" />
+                  </svg>
+                  Sesiones
+                </ReliableActionButton>
+
+                <ReliableActionButton
+                  type="button"
+                  onClick={() => toggleRoutineQuickPanel("timer")}
+                  className={`pf-n-tool ${
+                    activeRoutineActionScreen === "timer" || routineStopwatchRunning ? "pf-n-tool-active" : ""
+                  }`}
+                  aria-label="Abrir cronómetro"
+                  title={routineStopwatchRunning ? "Cronómetro en marcha" : "Abrir cronómetro"}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M12 8v4l2.6 1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M9.2 3.5h5.6" strokeLinecap="round" />
+                  </svg>
+                  Cronómetro
+                </ReliableActionButton>
+              </div>
 
               {hasWeekPlanRoutine ? (
-                <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
-                  <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
+                <>
+                  <div className="pf-n-weekpick">
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(-1)}
                       disabled={!canGoPrevRoutineWeek || routineDayWeekLoading}
-                      className="pf-a3-routine-week-arrow"
+                      className="pf-n-round"
                       aria-label="Semana anterior"
                       title={canGoPrevRoutineWeek ? "Semana anterior" : "No hay semana anterior"}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      ‹
                     </ReliableActionButton>
-                    <p className="pf-a3-routine-week-label">{routineWeekLabel}</p>
+                    <span className="pf-n-weekpick-label">{routineWeekLabel}</span>
                     <ReliableActionButton
                       type="button"
                       onClick={() => handleRoutineWeekStep(1)}
                       disabled={!canGoNextRoutineWeek || routineDayWeekLoading}
-                      className="pf-a3-routine-week-arrow"
+                      className="pf-n-round"
                       aria-label="Semana siguiente"
                       title={canGoNextRoutineWeek ? "Semana siguiente" : "No hay semana siguiente"}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      ›
                     </ReliableActionButton>
                   </div>
 
-                  <div className="pf-a3-routine-session-scroll" aria-label="Dias de la semana">
+                  <div className="pf-n-days" aria-label="Días de la semana">
                     {routineDaysForSelectedWeek.map((day, dayIndex) => {
                       const isSelected = day.id === selectedRoutineDay?.id;
-                      const dayLabel = String(day.dia || "").trim() || `Dia ${dayIndex + 1}`;
+                      const dayLabel = String(day.dia || "").trim() || `Día ${dayIndex + 1}`;
 
                       return (
                         <ReliableActionButton
@@ -9326,9 +9353,7 @@ export default function AlumnoVisionClient({
                           type="button"
                           onClick={() => handleRoutineDaySelect(day.id)}
                           disabled={routineDayWeekLoading}
-                          className={`pf-a3-routine-session-chip ${
-                            isSelected ? "pf-a3-routine-session-chip-active" : ""
-                          }`}
+                          className={`pf-n-day ${isSelected ? "pf-n-day-active" : ""}`}
                           aria-label={`Abrir ${dayLabel}`}
                           title={dayLabel}
                         >
@@ -9337,36 +9362,20 @@ export default function AlumnoVisionClient({
                       );
                     })}
                   </div>
-                </section>
+                </>
               ) : effectiveRoutineSessions.length > 0 ? (
-                <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
-                  <div className="pf-a3-routine-week-nav" aria-label="Control de semanas">
-                    <ReliableActionButton
-                      type="button"
-                      disabled
-                      className="pf-a3-routine-week-arrow"
-                      aria-label="Semana anterior no disponible"
-                      title="No hay semana anterior"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                <>
+                  <div className="pf-n-weekpick">
+                    <ReliableActionButton type="button" disabled className="pf-n-round" aria-label="Semana anterior no disponible">
+                      ‹
                     </ReliableActionButton>
-                    <p className="pf-a3-routine-week-label">Semana 1</p>
-                    <ReliableActionButton
-                      type="button"
-                      disabled
-                      className="pf-a3-routine-week-arrow"
-                      aria-label="Semana siguiente no disponible"
-                      title="No hay semana siguiente"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <path d="m9.5 6 5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                    <span className="pf-n-weekpick-label">Semana 1</span>
+                    <ReliableActionButton type="button" disabled className="pf-n-round" aria-label="Semana siguiente no disponible">
+                      ›
                     </ReliableActionButton>
                   </div>
 
-                  <div className="pf-a3-routine-session-scroll" aria-label="Dias de la semana">
+                  <div className="pf-n-days" aria-label="Días de la semana">
                     {effectiveRoutineSessions.map((session, index) => {
                       const isSelected = session.id === selectedRoutineSessionId;
 
@@ -9376,20 +9385,17 @@ export default function AlumnoVisionClient({
                           type="button"
                           onClick={() => handleRoutineSessionSelect(session.id)}
                           disabled={routineDayWeekLoading}
-                          className={`pf-a3-routine-session-chip ${
-                            isSelected ? "pf-a3-routine-session-chip-active" : ""
-                          }`}
-                          aria-label={`Abrir ${session.titulo || `Sesion ${index + 1}`}`}
-                          title={session.titulo || `Sesion ${index + 1}`}
+                          className={`pf-n-day ${isSelected ? "pf-n-day-active" : ""}`}
+                          aria-label={`Abrir ${session.titulo || `Sesión ${index + 1}`}`}
+                          title={session.titulo || `Sesión ${index + 1}`}
                         >
-                          Dia {index + 1}
+                          Día {index + 1}
                         </ReliableActionButton>
                       );
                     })}
                   </div>
-                </section>
+                </>
               ) : null}
-
               {routineDayWeekLoading ? (
                 <section className="pf-a3-routine-empty pf-a3-routine-loading" aria-live="polite">
                   <div className="pf-a3-routine-loading-visual" aria-hidden="true">
@@ -10949,6 +10955,8 @@ export default function AlumnoVisionClient({
                 document.body
               )
                 : null}
+                </>
+              )}
             </div>
           ) : null}
 
