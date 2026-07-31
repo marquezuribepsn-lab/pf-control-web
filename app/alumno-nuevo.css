@@ -5285,3 +5285,42 @@ body:has(.pf-n) {
 .pf-n-routine-log-overlay-mobile {
   align-items: flex-end;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Helpers de color
+
+   Reemplazan a las utilidades de paleta de Tailwind (text-slate-400,
+   bg-emerald-500/10, border-rose-300/35 ...) que quedaban salpicadas en el
+   markup del alumno y arrastraban los colores del diseño viejo. Se mapean a
+   los tokens del handoff para que no haya dos paletas conviviendo.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-t { color: var(--n-fg); }
+.pf-n-t-70 { color: var(--n-fg-70); }
+.pf-n-t-45 { color: var(--n-fg-45); }
+.pf-n-t-35 { color: var(--n-fg-35); }
+
+.pf-n-t-green { color: var(--n-green); }
+.pf-n-t-cyan { color: var(--n-cyan-soft); }
+.pf-n-t-indigo { color: var(--n-indigo-pale); }
+.pf-n-t-orange { color: #fdba74; }
+.pf-n-t-red { color: #fca5a5; }
+
+.pf-n-bg-soft { background-color: var(--n-tile-bg); }
+.pf-n-bg-green { background-color: rgba(52, 211, 153, 0.12); }
+.pf-n-bg-cyan { background-color: rgba(34, 211, 238, 0.12); }
+.pf-n-bg-indigo { background-color: rgba(99, 102, 241, 0.14); }
+.pf-n-bg-orange { background-color: rgba(251, 146, 60, 0.12); }
+.pf-n-bg-red { background-color: rgba(248, 113, 113, 0.12); }
+
+.pf-n-bd { border-color: var(--n-card-border); }
+.pf-n-bd-green { border-color: rgba(52, 211, 153, 0.3); }
+.pf-n-bd-cyan { border-color: rgba(34, 211, 238, 0.3); }
+.pf-n-bd-indigo { border-color: rgba(99, 102, 241, 0.3); }
+.pf-n-bd-orange { border-color: rgba(251, 146, 60, 0.3); }
+.pf-n-bd-red { border-color: rgba(248, 113, 113, 0.3); }
+
+.pf-n-cycle-count {
+  font-weight: 700;
+  color: var(--n-fg-60);
+}

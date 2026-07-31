@@ -230,13 +230,13 @@ function splitMessage(msg: string): { title: string; subtitle: string } {
 function toneIconClasses(tone: "ok" | "warning" | "danger" | "neutral"): string {
   switch (tone) {
     case "ok":
-      return "border-emerald-300/35 bg-emerald-500/15 text-emerald-200";
+      return "pf-n-bd-green pf-n-bg-green pf-n-t-green";
     case "warning":
-      return "border-amber-300/35 bg-amber-500/15 text-amber-200";
+      return "pf-n-bd-orange pf-n-bg-orange pf-n-t-orange";
     case "danger":
-      return "border-rose-300/35 bg-rose-500/15 text-rose-200";
+      return "pf-n-bd-red pf-n-bg-red pf-n-t-red";
     default:
-      return "border-slate-300/25 bg-slate-500/15 text-slate-200";
+      return "pf-n-bd pf-n-bg-soft pf-n-t";
   }
 }
 
@@ -951,7 +951,7 @@ export default function AlumnoPagosClient() {
             <div className="min-w-0">
               <p className="font-semibold">{splitMessage(message).title}</p>
               {splitMessage(message).subtitle ? (
-                <p className="mt-0.5 text-xs text-emerald-100/75">{splitMessage(message).subtitle}</p>
+                <p className="mt-0.5 text-xs pf-n-t-green">{splitMessage(message).subtitle}</p>
               ) : null}
             </div>
           </section>
@@ -1016,15 +1016,15 @@ export default function AlumnoPagosClient() {
           <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
 
             {canUseQrStore && !paymentsHiddenForNative ? (
-              <section className="mt-4 rounded-xl border border-violet-300/30 bg-violet-500/10 p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-violet-100/90">QR tienda</p>
-                <h3 className="mt-1 text-sm font-black text-violet-100">
+              <section className="mt-4 rounded-xl border pf-n-bd-indigo pf-n-bg-indigo p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-indigo">QR tienda</p>
+                <h3 className="mt-1 text-sm font-black pf-n-t-indigo">
                   {status?.mercadoPago?.qrStore?.label || "Mercado Pago QR"}
                 </h3>
 
                 <div className="mt-3 flex flex-wrap items-start gap-3">
                   {status?.mercadoPago?.qrStore?.qrImageDataUrl ? (
-                    <div className="rounded-lg border border-white/20 bg-white/95 p-1.5">
+                    <div className="rounded-lg border pf-n-bd pf-n-bg-soft p-1.5">
                       <Image
                         src={status.mercadoPago.qrStore.qrImageDataUrl}
                         alt="QR para pagar con Mercado Pago"
@@ -1037,12 +1037,12 @@ export default function AlumnoPagosClient() {
                   ) : null}
 
                   <div className="min-w-[180px] flex-1 space-y-2">
-                    <p className="text-xs text-violet-50/90">
+                    <p className="text-xs pf-n-t-indigo">
                       Escanea este QR desde la app de Mercado Pago para pagar como en tienda.
                     </p>
 
                     {status?.mercadoPago?.qrStore?.notes ? (
-                      <p className="text-xs text-violet-100/90">{status.mercadoPago.qrStore.notes}</p>
+                      <p className="text-xs pf-n-t-indigo">{status.mercadoPago.qrStore.notes}</p>
                     ) : null}
 
                     {status?.mercadoPago?.qrStore?.paymentLink ? (
@@ -1050,7 +1050,7 @@ export default function AlumnoPagosClient() {
                         href={status.mercadoPago.qrStore.paymentLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex rounded-lg border border-violet-200/45 bg-violet-500/20 px-3 py-1.5 text-xs font-semibold text-violet-100"
+                        className="inline-flex rounded-lg border pf-n-bd-indigo pf-n-bg-indigo px-3 py-1.5 text-xs font-semibold pf-n-t-indigo"
                       >
                         Abrir link de pago
                       </a>
@@ -1062,14 +1062,14 @@ export default function AlumnoPagosClient() {
 
             {showNativeFallback ? (
               <>
-                <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-center">
+                <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border pf-n-bd pf-n-bg-soft p-4 text-center">
                   <PfPayLogo className="h-14 w-14" />
-                  <p className="text-sm text-slate-200">
+                  <p className="text-sm pf-n-t">
                     Para gestionar o renovar tu pase, ingresa a{" "}
-                    <span className="font-semibold text-white">pf-control.com</span> desde el
+                    <span className="font-semibold pf-n-t">pf-control.com</span> desde el
                     navegador de tu telefono o computadora.
                   </p>
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs pf-n-t-45">
                     Desde aqui podes consultar el estado de tu pase en cualquier momento.
                   </p>
                 </div>
@@ -1088,7 +1088,7 @@ export default function AlumnoPagosClient() {
 
           {!paymentsHiddenForNative ? (
             <section>
-              <h3 className="text-sm font-black text-white">Opciones de pago</h3>
+              <h3 className="text-sm font-black pf-n-t">Opciones de pago</h3>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <ReliableActionButton
                   type="button"
@@ -1096,14 +1096,14 @@ export default function AlumnoPagosClient() {
                   disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
                   className="pf-n-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border pf-n-bd bg-white">
                     <MercadoPagoLogo className="h-6 w-9" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold text-white">Mercado Pago</span>
-                    <span className="block text-xs text-slate-300">Paga de forma rapida y segura</span>
+                    <span className="block text-sm font-semibold pf-n-t">Mercado Pago</span>
+                    <span className="block text-xs pf-n-t-70">Paga de forma rapida y segura</span>
                   </span>
-                  <IconChevron className="h-4 w-4 shrink-0 text-slate-400" />
+                  <IconChevron className="h-4 w-4 shrink-0 pf-n-t-45" />
                 </ReliableActionButton>
 
                 <ReliableActionButton
@@ -1113,21 +1113,21 @@ export default function AlumnoPagosClient() {
                   className="pf-n-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
                   aria-haspopup="dialog"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-300/30 bg-violet-500/15 text-violet-200">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border pf-n-bd-indigo pf-n-bg-indigo pf-n-t-indigo">
                     <IconDocument className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold text-white">Pago manual</span>
-                    <span className="block text-xs text-slate-300">Transferencia o efectivo</span>
+                    <span className="block text-sm font-semibold pf-n-t">Pago manual</span>
+                    <span className="block text-xs pf-n-t-70">Transferencia o efectivo</span>
                   </span>
-                  <IconChevron className="h-4 w-4 shrink-0 text-slate-400" />
+                  <IconChevron className="h-4 w-4 shrink-0 pf-n-t-45" />
                 </ReliableActionButton>
               </div>
             </section>
           ) : null}
 
           <section>
-            <h3 className="text-sm font-black text-white">Actividad reciente</h3>
+            <h3 className="text-sm font-black pf-n-t">Actividad reciente</h3>
             <div className="mt-2 space-y-2">
               {activityItems.length > 0 ? (
                 activityItems.map((item) => (
@@ -1145,16 +1145,16 @@ export default function AlumnoPagosClient() {
                       )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-white">{item.title}</span>
-                      <span className="block text-xs text-slate-300">{item.subtitle}</span>
+                      <span className="block text-sm font-semibold pf-n-t">{item.title}</span>
+                      <span className="block text-xs pf-n-t-70">{item.subtitle}</span>
                     </span>
                     {item.time ? (
-                      <span className="shrink-0 text-xs text-slate-400">{item.time}</span>
+                      <span className="shrink-0 text-xs pf-n-t-45">{item.time}</span>
                     ) : null}
                   </div>
                 ))
               ) : (
-                <p className="pf-n-card rounded-2xl border p-3.5 text-xs text-slate-400">
+                <p className="pf-n-card rounded-2xl border p-3.5 text-xs pf-n-t-45">
                   Todavia no hay actividad reciente para mostrar.
                 </p>
               )}
@@ -1179,12 +1179,12 @@ export default function AlumnoPagosClient() {
           />
 
           <section className="pf-n-sheet relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-[1.6rem] border p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-[1.6rem] sm:pb-5">
-            <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-white/20 sm:hidden" />
+            <div className="mx-auto mb-4 h-1.5 w-11 rounded-full pf-n-bg-soft sm:hidden" />
 
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="pf-n-eyebrow">Pago manual</p>
-                <h2 id="manual-sheet-title" className="mt-1 text-xl font-black text-white">
+                <h2 id="manual-sheet-title" className="mt-1 text-xl font-black pf-n-t">
                   Informar pago
                 </h2>
               </div>
@@ -1199,7 +1199,7 @@ export default function AlumnoPagosClient() {
             </div>
 
             {/* Metodo: solo transferencia o efectivo */}
-            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-slate-400">Metodo de pago</p>
+            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] pf-n-t-45">Metodo de pago</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {(["transferencia", "efectivo"] as const).map((method) => {
                 const selected = manualMethod === method;
@@ -1211,8 +1211,8 @@ export default function AlumnoPagosClient() {
                     aria-pressed={selected}
                     className={`rounded-xl border px-3 py-3 text-sm font-semibold transition-all ${
                       selected
-                        ? "border-sky-300/60 bg-sky-500/20 text-white"
-                        : "border-white/12 bg-slate-900/50 text-slate-300"
+                        ? "pf-n-bd-cyan pf-n-bg-cyan pf-n-t"
+                        : "pf-n-bd pf-n-bg-soft pf-n-t-70"
                     }`}
                   >
                     {method === "transferencia" ? "Transferencia" : "Efectivo"}
@@ -1223,8 +1223,8 @@ export default function AlumnoPagosClient() {
 
             {/* Cuentas destino solo aplican a transferencia */}
             {manualMethod === "transferencia" ? (
-              <div className="mt-3 rounded-xl border border-white/15 bg-slate-950/45 p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+              <div className="mt-3 rounded-xl border pf-n-bd pf-n-bg-soft p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-45">
                   Cuentas destino
                 </p>
                 {Array.isArray(status?.transferAccounts) && status.transferAccounts.length > 0 ? (
@@ -1232,10 +1232,10 @@ export default function AlumnoPagosClient() {
                     {status.transferAccounts.map((account) => (
                       <article
                         key={account.id}
-                        className="rounded-lg border border-white/10 bg-slate-900/70 p-2.5 text-xs text-slate-200"
+                        className="rounded-lg border pf-n-bd pf-n-bg-soft p-2.5 text-xs pf-n-t"
                       >
-                        <p className="font-semibold text-slate-100">{account.label}</p>
-                        <p className="text-slate-300">
+                        <p className="font-semibold pf-n-t">{account.label}</p>
+                        <p className="pf-n-t-70">
                           {account.bankName || "Banco no definido"}
                           {account.accountType ? ` · ${account.accountType}` : ""}
                         </p>
@@ -1249,7 +1249,7 @@ export default function AlumnoPagosClient() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs pf-n-t-45">
                     El admin aun no cargo cuentas de transferencia visibles.
                   </p>
                 )}
@@ -1258,7 +1258,7 @@ export default function AlumnoPagosClient() {
 
             {/* Monto */}
             <label
-              className="mt-4 block text-[11px] uppercase tracking-[0.14em] text-slate-400"
+              className="mt-4 block text-[11px] uppercase tracking-[0.14em] pf-n-t-45"
               htmlFor="manual-amount"
             >
               Monto ({status?.billing.currency || "ARS"})
@@ -1272,36 +1272,36 @@ export default function AlumnoPagosClient() {
               value={manualAmount}
               onChange={(event) => setManualAmount(event.target.value)}
               placeholder="0"
-              className="pf-n-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2.5 text-base font-semibold text-slate-100 outline-none focus:border-sky-300/65"
+              className="pf-n-input mt-2 w-full rounded-xl border pf-n-bd pf-n-bg-soft px-3 py-2.5 text-base font-semibold pf-n-t outline-none focus:pf-n-bd-cyan"
             />
             {status?.billing.amount ? (
-              <p className="mt-1.5 text-xs text-slate-400">
+              <p className="mt-1.5 text-xs pf-n-t-45">
                 Monto de renovacion vigente:{" "}
                 {formatMoney(status.billing.amount, status.billing.currency)}
               </p>
             ) : null}
 
             {/* Comprobante */}
-            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-slate-400">
+            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] pf-n-t-45">
               Comprobante de pago
             </p>
             {manualFileUrl ? (
-              <div className="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-500/[0.08] p-3">
+              <div className="mt-2 rounded-xl border pf-n-bd-green pf-n-bg-green/[0.08] p-3">
                 {manualFileUrl.startsWith("data:application/pdf") ? (
-                  <p className="text-sm font-semibold text-emerald-100">PDF adjuntado</p>
+                  <p className="text-sm font-semibold pf-n-t-green">PDF adjuntado</p>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={manualFileUrl}
                     alt="Vista previa del comprobante"
-                    className="max-h-48 w-auto rounded-lg border border-white/10 object-contain"
+                    className="max-h-48 w-auto rounded-lg border pf-n-bd object-contain"
                   />
                 )}
-                <p className="mt-2 truncate text-xs text-slate-300">{manualFileName}</p>
+                <p className="mt-2 truncate text-xs pf-n-t-70">{manualFileName}</p>
                 <button
                   type="button"
                   onClick={() => void handleReceiptFileChange(null)}
-                  className="mt-2 text-xs font-semibold text-rose-300 underline underline-offset-2"
+                  className="mt-2 text-xs font-semibold pf-n-t-red underline underline-offset-2"
                 >
                   Quitar comprobante
                 </button>
@@ -1309,14 +1309,14 @@ export default function AlumnoPagosClient() {
             ) : (
               <label
                 htmlFor="manual-receipt-file"
-                className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-500/60 bg-slate-900/45 px-3 py-4 text-left transition-colors hover:border-sky-300/60"
+                className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed pf-n-bd pf-n-bg-soft px-3 py-4 text-left transition-colors hover:pf-n-bd-cyan"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-300/30 bg-sky-500/15 text-sky-200">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border pf-n-bd-cyan pf-n-bg-cyan pf-n-t-cyan">
                   <IconPaperclip className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-white">Adjuntar comprobante</span>
-                  <span className="block text-xs text-slate-400">Foto o PDF · JPG, PNG o PDF</span>
+                  <span className="block text-sm font-semibold pf-n-t">Adjuntar comprobante</span>
+                  <span className="block text-xs pf-n-t-45">Foto o PDF · JPG, PNG o PDF</span>
                 </span>
               </label>
             )}
@@ -1334,7 +1334,7 @@ export default function AlumnoPagosClient() {
 
             {/* Nota */}
             <label
-              className="mt-4 block text-[11px] uppercase tracking-[0.14em] text-slate-400"
+              className="mt-4 block text-[11px] uppercase tracking-[0.14em] pf-n-t-45"
               htmlFor="manual-note"
             >
               Nota opcional
@@ -1345,11 +1345,11 @@ export default function AlumnoPagosClient() {
               onChange={(event) => setManualNote(event.target.value)}
               placeholder="Referencia, numero de operacion o comentario"
               rows={3}
-              className="pf-n-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-300/65"
+              className="pf-n-input mt-2 w-full rounded-xl border pf-n-bd pf-n-bg-soft px-3 py-2 text-sm pf-n-t outline-none focus:pf-n-bd-cyan"
             />
 
             {manualFileError ? (
-              <p className="mt-3 rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+              <p className="mt-3 rounded-xl border pf-n-bd-red pf-n-bg-red px-3 py-2 text-xs pf-n-t-red">
                 {manualFileError}
               </p>
             ) : null}

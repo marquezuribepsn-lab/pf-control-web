@@ -11020,8 +11020,8 @@ export default function AlumnoVisionClient({
               <>
               <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
                 <p className="pf-n-eyebrow">Plan nutricional</p>
-                <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
-                <p className="mt-2 text-sm text-slate-300">
+                <h2 className="mt-1 text-xl font-black pf-n-t">Nutrición del alumno</h2>
+                <p className="mt-2 text-sm pf-n-t-70">
                   Espacio centrado en el plan nutricional asignado por el profesor.
                 </p>
 
@@ -11054,8 +11054,8 @@ export default function AlumnoVisionClient({
                   onClick={() => setNutritionTab("plan")}
                   className={`pf-n-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
                     nutritionTab === "plan"
-                      ? "border-violet-300/50 bg-violet-500/15 text-violet-100"
-                      : "border-white/10 bg-slate-950/40 text-slate-300"
+                      ? "pf-n-bd-indigo pf-n-bg-indigo pf-n-t-indigo"
+                      : "pf-n-bd pf-n-bg-soft pf-n-t-70"
                   }`}
                 >
                   Nutrición
@@ -11067,8 +11067,8 @@ export default function AlumnoVisionClient({
                   onClick={() => setNutritionTab("recetas")}
                   className={`pf-n-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
                     nutritionTab === "recetas"
-                      ? "border-amber-300/50 bg-amber-500/15 text-amber-100"
-                      : "border-white/10 bg-slate-950/40 text-slate-300"
+                      ? "pf-n-bd-orange pf-n-bg-orange pf-n-t-orange"
+                      : "pf-n-bd pf-n-bg-soft pf-n-t-70"
                   }`}
                 >
                   Recetas
@@ -11078,8 +11078,8 @@ export default function AlumnoVisionClient({
               {nutritionTab === "recetas" ? (
                 <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
                   <p className="pf-n-eyebrow">Recetas</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Recetas de tu plan</h2>
-                  <p className="mt-2 text-sm text-slate-300">
+                  <h2 className="mt-1 text-xl font-black pf-n-t">Recetas de tu plan</h2>
+                  <p className="mt-2 text-sm pf-n-t-70">
                     Cada comida pautada con sus ingredientes y aporte calórico, lista para cocinar.
                   </p>
 
@@ -11101,20 +11101,20 @@ export default function AlumnoVisionClient({
                           ) : null}
                           <div className="flex flex-1 flex-col p-3">
                             <div className="flex items-start justify-between gap-2">
-                              <h3 className="min-w-0 text-sm font-black text-slate-100">{recipe.title}</h3>
+                              <h3 className="min-w-0 text-sm font-black pf-n-t">{recipe.title}</h3>
                               <span className="pf-n-pill shrink-0">
                                 {formatCompactNumber(recipe.totalKcal)} kcal
                               </span>
                             </div>
 
                             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-                              <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                              <span className="rounded-full border pf-n-bd-green pf-n-bg-green px-2 py-0.5 font-semibold pf-n-t-green">
                                 P {formatCompactNumber(recipe.totalProtein)} g
                               </span>
-                              <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                              <span className="rounded-full border pf-n-bd-cyan pf-n-bg-cyan px-2 py-0.5 font-semibold pf-n-t-cyan">
                                 C {formatCompactNumber(recipe.totalCarbs)} g
                               </span>
-                              <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                              <span className="rounded-full border pf-n-bd-orange pf-n-bg-orange px-2 py-0.5 font-semibold pf-n-t-orange">
                                 G {formatCompactNumber(recipe.totalFat)} g
                               </span>
                             </div>
@@ -11123,10 +11123,10 @@ export default function AlumnoVisionClient({
                               {recipe.ingredients.map((ing) => (
                                 <li
                                   key={ing.id}
-                                  className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/35 px-2.5 py-1.5 text-xs text-slate-200"
+                                  className="flex items-center justify-between gap-2 rounded-lg border pf-n-bd pf-n-bg-soft px-2.5 py-1.5 text-xs pf-n-t"
                                 >
                                   <span className="min-w-0 truncate">{ing.label}</span>
-                                  <span className="shrink-0 text-slate-400">
+                                  <span className="shrink-0 pf-n-t-45">
                                     {ing.grams !== null && Number.isFinite(ing.grams)
                                       ? `${formatCompactNumber(ing.grams)} g · `
                                       : ""}
@@ -11140,7 +11140,7 @@ export default function AlumnoVisionClient({
                       ))}
                     </div>
                   ) : (
-                    <div className="pf-n-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                    <div className="pf-n-drawer mt-4 rounded-xl border pf-n-bd pf-n-bg-soft p-4 text-sm pf-n-t-70">
                       Todavía no hay recetas para mostrar. Aparecerán aquí cuando tu profesor cargue comidas en tu plan.
                     </div>
                   )}
@@ -11151,39 +11151,39 @@ export default function AlumnoVisionClient({
                 <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
                   <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
                     <p className="pf-n-eyebrow">Plan pautado</p>
-                    <h2 className="mt-1 text-xl font-black text-white">{nutritionPlan?.nombre || "Sin plan cargado"}</h2>
-                    <p className="mt-2 text-sm text-slate-300">
+                    <h2 className="mt-1 text-xl font-black pf-n-t">{nutritionPlan?.nombre || "Sin plan cargado"}</h2>
+                    <p className="mt-2 text-sm pf-n-t-70">
                       Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs pf-n-t-45">
                       Última asignación: {nutritionAssignedAt ? formatDateTime(nutritionAssignedAt) : "-"}
                     </p>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="pf-n-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
-                        <p className="mt-1 text-lg font-black text-white">{nutritionDailyGoalKcal} kcal</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-45">Calorías objetivo</p>
+                        <p className="mt-1 text-lg font-black pf-n-t">{nutritionDailyGoalKcal} kcal</p>
                       </div>
                       <div className="pf-n-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
-                        <p className="mt-1 text-lg font-black text-white">{nutritionPlanCaloriesFromMeals} kcal</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-45">Calorías del plan</p>
+                        <p className="mt-1 text-lg font-black pf-n-t">{nutritionPlanCaloriesFromMeals} kcal</p>
                       </div>
                     </div>
 
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <div className="pf-n-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas pautadas</p>
-                        <p className="mt-1 text-lg font-black text-white">{nutritionMealsDetailed.length}</p>
+                        <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-45">Comidas pautadas</p>
+                        <p className="mt-1 text-lg font-black pf-n-t">{nutritionMealsDetailed.length}</p>
                       </div>
                       <div className="pf-n-kpi rounded-xl border p-3">
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Macros objetivo</p>
-                        <p className="mt-1 text-sm font-black text-white">
+                        <p className="text-[11px] uppercase tracking-[0.14em] pf-n-t-45">Macros objetivo</p>
+                        <p className="mt-1 text-sm font-black pf-n-t">
                           {nutritionDailyGoalMacros.proteinas}P / {nutritionDailyGoalMacros.carbohidratos}C / {nutritionDailyGoalMacros.grasas}G
                         </p>
                       </div>
                     </div>
 
-                    <div className="pf-n-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
+                    <div className="pf-n-macro-donut mt-4 rounded-xl border pf-n-bd pf-n-bg-soft p-3 sm:p-4">
                       <p className="pf-n-eyebrow">Objetivo nutricional</p>
                       <div className="mt-3">
                         <MacroDonut
@@ -11210,13 +11210,13 @@ export default function AlumnoVisionClient({
                           macro.key === "P" ? "#f59e0b" : macro.key === "C" ? "#22d3ee" : "#7ba7d7";
                         return (
                           <div key={macro.key}>
-                            <div className="flex items-center justify-between text-xs text-slate-300">
+                            <div className="flex items-center justify-between text-xs pf-n-t-70">
                               <span>{macro.label}</span>
                               <span style={{ color: macroColor, fontWeight: 700 }}>
                                 {macro.grams} g · {macro.ratio}%
                               </span>
                             </div>
-                            <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                            <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full pf-n-bg-soft">
                               <div
                                 className="h-full rounded-full"
                                 style={{ width: `${Math.max(4, macro.ratio)}%`, background: macroColor }}
@@ -11228,19 +11228,19 @@ export default function AlumnoVisionClient({
                     </div>
 
                     {nutritionPlan ? (
-                      <div className="mt-4 rounded-xl border border-violet-300/25 bg-violet-500/[0.08] p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-100/90">
+                      <div className="mt-4 rounded-xl border pf-n-bd-indigo pf-n-bg-indigo/[0.08] p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] pf-n-t-indigo">
                           Guía útil del plan
                         </p>
 
                         {nutritionPlanTrainingSplit ? (
-                          <p className="mt-2 text-xs text-violet-50">
+                          <p className="mt-2 text-xs pf-n-t-indigo">
                             Ritmo semanal: {nutritionPlanTrainingSplit.trainingDays} con entrenamiento / {nutritionPlanTrainingSplit.restDays} de descanso
                           </p>
                         ) : null}
 
                         {nutritionPlanMealSchedule.length > 0 ? (
-                          <p className="mt-1 text-xs text-violet-50">
+                          <p className="mt-1 text-xs pf-n-t-indigo">
                             Horarios sugeridos: {nutritionPlanMealSchedule.join(" · ")}
                           </p>
                         ) : null}
@@ -11250,21 +11250,21 @@ export default function AlumnoVisionClient({
                             {nutritionPlanGuideRows.map((row) => (
                               <div
                                 key={row.label}
-                                className="rounded-lg border border-violet-200/20 bg-slate-950/30 px-3 py-2"
+                                className="rounded-lg border pf-n-bd-indigo pf-n-bg-soft px-3 py-2"
                               >
-                                <p className="text-[11px] uppercase tracking-[0.11em] text-violet-100/75">{row.label}</p>
-                                <p className="mt-1 text-sm font-semibold text-slate-100">{row.value}</p>
+                                <p className="text-[11px] uppercase tracking-[0.11em] pf-n-t-indigo">{row.label}</p>
+                                <p className="mt-1 text-sm font-semibold pf-n-t">{row.value}</p>
                               </div>
                             ))}
                           </div>
                         ) : null}
 
                         {nutritionPlan?.notas ? (
-                          <details className="mt-3 rounded-lg border border-violet-200/20 bg-slate-950/20 p-2">
-                            <summary className="cursor-pointer text-xs font-semibold text-violet-100/90">
+                          <details className="mt-3 rounded-lg border pf-n-bd-indigo pf-n-bg-soft p-2">
+                            <summary className="cursor-pointer text-xs font-semibold pf-n-t-indigo">
                               Ver detalle técnico
                             </summary>
-                            <p className="mt-2 whitespace-pre-wrap text-xs text-slate-300">{nutritionPlan.notas}</p>
+                            <p className="mt-2 whitespace-pre-wrap text-xs pf-n-t-70">{nutritionPlan.notas}</p>
                           </details>
                         ) : null}
                       </div>
@@ -11405,7 +11405,7 @@ export default function AlumnoVisionClient({
 
                   <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
                     <p className="pf-n-eyebrow">Distribucion</p>
-                    <h2 className="mt-1 text-xl font-black text-white">Comidas del plan</h2>
+                    <h2 className="mt-1 text-xl font-black pf-n-t">Comidas del plan</h2>
 
                     {nutritionMealsDetailed.length > 0 ? (
                       <div className="mt-4 space-y-3">
@@ -11419,22 +11419,22 @@ export default function AlumnoVisionClient({
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <h3 className="text-sm font-black text-slate-100">{mealName}</h3>
+                                    <h3 className="text-sm font-black pf-n-t">{mealName}</h3>
                                     {mealTime ? (
-                                      <span className="rounded-full border border-violet-200/35 bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100">
+                                      <span className="rounded-full border pf-n-bd-indigo pf-n-bg-indigo px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide pf-n-t-indigo">
                                         {mealTime}
                                       </span>
                                     ) : null}
                                   </div>
 
                                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
-                                    <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                                    <span className="rounded-full border pf-n-bd-green pf-n-bg-green px-2 py-0.5 font-semibold pf-n-t-green">
                                       P {formatCompactNumber(meal.totalProtein)} g
                                     </span>
-                                    <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                                    <span className="rounded-full border pf-n-bd-cyan pf-n-bg-cyan px-2 py-0.5 font-semibold pf-n-t-cyan">
                                       C {formatCompactNumber(meal.totalCarbs)} g
                                     </span>
-                                    <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                                    <span className="rounded-full border pf-n-bd-orange pf-n-bg-orange px-2 py-0.5 font-semibold pf-n-t-orange">
                                       G {formatCompactNumber(meal.totalFat)} g
                                     </span>
                                   </div>
@@ -11444,7 +11444,7 @@ export default function AlumnoVisionClient({
                               </div>
 
                               {meal.imageUrl ? (
-                                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-900/55">
+                                <div className="mt-2 overflow-hidden rounded-xl border pf-n-bd pf-n-bg-soft">
                                   <img
                                     src={meal.imageUrl}
                                     alt={meal.mealName || `Plato ${index + 1}`}
@@ -11467,36 +11467,36 @@ export default function AlumnoVisionClient({
                                   return (
                                     <article
                                       key={`${meal.mealId}-${item.id || itemIndex}`}
-                                      className="rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2.5"
+                                      className="rounded-lg border pf-n-bd pf-n-bg-soft px-3 py-2.5"
                                     >
                                       <div className="flex items-start justify-between gap-2">
-                                        <p className="min-w-0 text-sm font-semibold text-slate-100">{item.label}</p>
+                                        <p className="min-w-0 text-sm font-semibold pf-n-t">{item.label}</p>
 
                                         <div className="flex shrink-0 items-center gap-1.5">
                                           {gramsLabel ? (
-                                            <span className="rounded-full border border-slate-400/35 bg-slate-800/70 px-2 py-0.5 text-[11px] font-semibold text-slate-100">
+                                            <span className="rounded-full border pf-n-bd pf-n-bg-soft px-2 py-0.5 text-[11px] font-semibold pf-n-t">
                                               {gramsLabel}
                                             </span>
                                           ) : null}
 
-                                          <span className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-100">
+                                          <span className="rounded-full border pf-n-bd-red pf-n-bg-red px-2 py-0.5 text-[11px] font-semibold pf-n-t-red">
                                             {formatCompactNumber(item.calories)} kcal
                                           </span>
                                         </div>
                                       </div>
 
                                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-                                        <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-100">
+                                        <span className="rounded-full border pf-n-bd-green pf-n-bg-green px-2 py-0.5 font-semibold pf-n-t-green">
                                           P {formatCompactNumber(item.protein)} g
                                         </span>
-                                        <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
+                                        <span className="rounded-full border pf-n-bd-cyan pf-n-bg-cyan px-2 py-0.5 font-semibold pf-n-t-cyan">
                                           C {formatCompactNumber(item.carbs)} g
                                         </span>
-                                        <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
+                                        <span className="rounded-full border pf-n-bd-orange pf-n-bg-orange px-2 py-0.5 font-semibold pf-n-t-orange">
                                           G {formatCompactNumber(item.fat)} g
                                         </span>
                                         {item.water > 0 ? (
-                                          <span className="rounded-full border border-sky-300/30 bg-sky-500/10 px-2 py-0.5 font-semibold text-sky-100">
+                                          <span className="rounded-full border pf-n-bd-cyan pf-n-bg-cyan px-2 py-0.5 font-semibold pf-n-t-cyan">
                                             Agua {formatCompactNumber(item.water)} ml
                                           </span>
                                         ) : null}
@@ -11561,7 +11561,7 @@ export default function AlumnoVisionClient({
                         })}
                       </div>
                     ) : (
-                      <div className="pf-n-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                      <div className="pf-n-drawer mt-4 rounded-xl border pf-n-bd pf-n-bg-soft p-4 text-sm pf-n-t-70">
                         Aún no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una versión actualizada.
                       </div>
                     )}
@@ -11671,8 +11671,8 @@ export default function AlumnoVisionClient({
                   <div className="pf-n-nutrition-diary-head">
                     <div>
                       <p className="pf-n-eyebrow">Registro del alumno</p>
-                      <h2 className="mt-1 text-2xl font-black text-white">Hoy</h2>
-                      <p className="mt-1 text-sm text-slate-300">{formatDate(normalizedNutritionTrackerDate)}</p>
+                      <h2 className="mt-1 text-2xl font-black pf-n-t">Hoy</h2>
+                      <p className="mt-1 text-sm pf-n-t-70">{formatDate(normalizedNutritionTrackerDate)}</p>
                     </div>
 
                     <div className="pf-n-nutrition-tracker-date">
@@ -11768,13 +11768,13 @@ export default function AlumnoVisionClient({
 
                     <div className="pf-n-nutrition-summary-macros">
                       <div>
-                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                        <div className="flex items-center justify-between text-[11px] pf-n-t-70">
                           <span>Carbohidratos</span>
                           <span>
                             {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
                           </span>
                         </div>
-                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full pf-n-bg-soft">
                           <div
                             className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
@@ -11783,13 +11783,13 @@ export default function AlumnoVisionClient({
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                        <div className="flex items-center justify-between text-[11px] pf-n-t-70">
                           <span>Proteínas</span>
                           <span>
                             {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
                           </span>
                         </div>
-                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full pf-n-bg-soft">
                           <div
                             className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
@@ -11798,13 +11798,13 @@ export default function AlumnoVisionClient({
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-[11px] text-slate-300">
+                        <div className="flex items-center justify-between text-[11px] pf-n-t-70">
                           <span>Grasas</span>
                           <span>
                             {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
                           </span>
                         </div>
-                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full pf-n-bg-soft">
                           <div
                             className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
@@ -12175,31 +12175,31 @@ export default function AlumnoVisionClient({
                   ) : null}
 
                   {nutritionTrackerStatus ? (
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] pf-n-t-green">
                       {nutritionTrackerStatus}
                     </p>
                   ) : null}
 
                   {nutritionCustomFoodStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] pf-n-t-green">
                       {nutritionCustomFoodStatus}
                     </p>
                   ) : null}
 
                   {nutritionFoodSearchStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] pf-n-t-indigo">
                       {nutritionFoodSearchStatus}
                     </p>
                   ) : null}
 
                   {nutritionBarcodeStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] pf-n-t-indigo">
                       {nutritionBarcodeStatus}
                     </p>
                   ) : null}
 
                   {nutritionCalIaStatus ? (
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-violet-200">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] pf-n-t-indigo">
                       {nutritionCalIaStatus}
                     </p>
                   ) : null}
