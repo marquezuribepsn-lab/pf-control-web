@@ -2862,6 +2862,11 @@ export default function AlumnoVisionClient({
     emailVerified?: boolean;
   };
   const [accountPanelData, setAccountPanelData] = useState<AccountPanelData | null>(null);
+  /** Fila de Cuenta abierta para edición inline. En el diseño nuevo cada dato
+   *  es una fila que se despliega en un input, en vez de un formulario largo. */
+  const [accountEditingField, setAccountEditingField] = useState<
+    "nombre" | "edad" | "altura" | "telefono" | "direccion" | "email" | "password" | "foto" | null
+  >(null);
   const [accountPanelLoading, setAccountPanelLoading] = useState(false);
   const [accountPanelSaving, setAccountPanelSaving] = useState(false);
   const [accountPanelSigningOut, setAccountPanelSigningOut] = useState(false);
@@ -6796,6 +6801,32 @@ export default function AlumnoVisionClient({
     return Math.min(100, baseByLogs + baseByAnthro + baseByRoutine);
   }, [anthropometryEntries.length, routineSummary.sessions, shouldComputeProgressStats, weeklyLogs.length]);
 
+  /** Barras Lun-Dom de la pantalla Progreso: altura proporcional a la
+   *  cantidad de registros de ese día dentro de los últimos 7. */
+  const progressWeekBars = useMemo(() => {
+    const letters = ["L", "M", "X", "J", "V", "S", "D"];
+    const counts = new Array(7).fill(0) as number[];
+
+    for (const row of weeklyLogs) {
+      const timestamp = getTimestamp(row.createdAt || row.fecha);
+      if (!timestamp) continue;
+      const jsDay = new Date(timestamp).getDay(); // 0 = domingo
+      counts[jsDay === 0 ? 6 : jsDay - 1] += 1;
+    }
+
+    const max = Math.max(1, ...counts);
+    const todayJsDay = new Date().getDay();
+    const todayIndex = todayJsDay === 0 ? 6 : todayJsDay - 1;
+
+    return letters.map((letra, index) => ({
+      letra,
+      count: counts[index],
+      // 6px es el mínimo del handoff (barra "apagada"); 34px el tope.
+      height: counts[index] === 0 ? 6 : Math.round(6 + (counts[index] / max) * 28),
+      on: counts[index] > 0 || index === todayIndex,
+    }));
+  }, [weeklyLogs]);
+
   const profileShortName = useMemo(() => {
     const firstToken = String(profileDisplayName || "")
       .trim()
@@ -8814,14 +8845,17 @@ export default function AlumnoVisionClient({
     setSessionFeedbackRecordsRaw,
   ]);
 
+  // Iconos de la barra inferior, tomados del handoff (mancuerna / casa /
+  // persona), pintados con currentColor para que el estado activo los tinte.
   const homeDockItems: Array<{ key: MainCategory; label: string; icon: ReactNode }> = [
     {
       key: "rutina",
       label: "Rutina",
       icon: (
-        <svg viewBox="0 0 24 24" className="pf-a2-dock-icon" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-          <path d="M7 5.5h10M7 10h10M7 14.5h6" strokeLinecap="round" />
-          <rect x="4.5" y="3.5" width="15" height="17" rx="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <rect x="1" y="8" width="3" height="4" rx="1" fill="currentColor" />
+          <rect x="16" y="8" width="3" height="4" rx="1" fill="currentColor" />
+          <rect x="5" y="6" width="10" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
         </svg>
       ),
     },
@@ -8829,9 +8863,14 @@ export default function AlumnoVisionClient({
       key: "inicio",
       label: "Inicio",
       icon: (
-        <svg viewBox="0 0 24 24" className="pf-a2-dock-icon" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-          <path d="M4 11.5 12 5l8 6.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7.5 10.5V19h9v-8.5" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <path
+            d="M3 9L10 3L17 9V17H12V12H8V17H3V9Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
         </svg>
       ),
     },
@@ -8839,9 +8878,15 @@ export default function AlumnoVisionClient({
       key: "cuenta",
       label: "Cuenta",
       icon: (
-        <svg viewBox="0 0 24 24" className="pf-a2-dock-icon" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-          <path d="M5 17.5c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" strokeLinecap="round" />
-          <path d="M8.5 10a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="6.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          <path
+            d="M3 18C3 14 6 12 10 12C14 12 17 14 17 18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
         </svg>
       ),
     },
@@ -12167,485 +12212,731 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "progreso" ? (
-            <div className="space-y-4">
-              <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                  <p className="pf-a2-eyebrow">Ultima medicion</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Antropometria</h2>
-
-                  {latestAnthropometry ? (
-                    <>
-                      <p className="mt-2 text-xs text-slate-400">
-                        Registro del {formatDateTime(latestAnthropometry.createdAt)}
-                      </p>
-                      <div className="mt-3 grid grid-cols-2 gap-3">
-                        <div className="pf-a2-kpi rounded-xl border p-3">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Peso</p>
-                          <p className="mt-1 text-lg font-black text-white">
-                            {toNumber(latestAnthropometry.pesoKg) ?? "-"}
-                            {toNumber(latestAnthropometry.pesoKg) !== null ? " kg" : ""}
-                          </p>
-                        </div>
-                        <div className="pf-a2-kpi rounded-xl border p-3">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Agua</p>
-                          <p className="mt-1 text-lg font-black text-white">
-                            {toNumber(latestAnthropometry.aguaLitros) ?? "-"}
-                            {toNumber(latestAnthropometry.aguaLitros) !== null ? " L" : ""}
-                          </p>
-                        </div>
-                        <div className="pf-a2-kpi rounded-xl border p-3">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sueño</p>
-                          <p className="mt-1 text-lg font-black text-white">
-                            {toNumber(latestAnthropometry.suenoHoras) ?? "-"}
-                            {toNumber(latestAnthropometry.suenoHoras) !== null ? " h" : ""}
-                          </p>
-                        </div>
-                        <div className="pf-a2-kpi rounded-xl border p-3">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Actividad</p>
-                          <p className="mt-1 text-lg font-black text-white">
-                            {toNumber(latestAnthropometry.actividadNivel) ?? "-"}
-                            {toNumber(latestAnthropometry.actividadNivel) !== null ? "/10" : ""}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3 text-sm text-slate-200">
-                        {weightDelta === null
-                          ? "Aun no hay suficientes registros para calcular variacion de peso."
-                          : `Variacion de peso vs registro anterior: ${weightDelta >= 0 ? "+" : ""}${weightDelta} kg.`}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="mt-3 text-sm text-slate-300">No hay registros antropometricos todavia.</p>
-                  )}
-                </article>
-
-                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                  <p className="pf-a2-eyebrow">Consistencia semanal</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Ritmo de entreno</h2>
-                  <p className="mt-2 text-sm text-slate-300">
-                    En los ultimos 7 dias registraste {weeklyLogs.length} entradas de entrenamiento.
-                  </p>
-
-                  <div className="pf-a2-progress-track mt-3 h-2 overflow-hidden rounded-full bg-slate-700/70">
-                    <div
-                      className="pf-a2-progress-fill h-full rounded-full"
-                      style={{ width: `${Math.max(5, consistencyScore)}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">
-                    Score {consistencyScore}/100
-                  </p>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="pf-a2-kpi rounded-xl border p-3">
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Registros totales</p>
-                      <p className="mt-1 text-lg font-black text-white">{workoutLogs.length}</p>
-                    </div>
-                    <div className="pf-a2-kpi rounded-xl border p-3">
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Check-ins</p>
-                      <p className="mt-1 text-lg font-black text-white">{anthropometryEntries.length}</p>
-                    </div>
-                  </div>
-                </article>
+            <div className="pf-n-screen">
+              <div className="pf-n-detail-head">
+                <ReliableActionButton
+                  type="button"
+                  onClick={goToPreviousCategory}
+                  onPointerUp={() => goToPreviousCategory()}
+                  data-nav-href={backTargetHref}
+                  className="pf-n-back"
+                  aria-label={backLabel}
+                  title={backLabel}
+                >
+                  ‹
+                </ReliableActionButton>
+                <div>
+                  <p className="pf-n-eyebrow">Track</p>
+                  <h1 className="pf-n-title-sm">Evolución</h1>
+                </div>
               </div>
 
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Ultimos registros</p>
-                <h2 className="mt-1 text-xl font-black text-white">Historial de entreno</h2>
-
-                {workoutLogs.length === 0 ? (
-                  <p className="mt-3 text-sm text-slate-300">Todavia no hay cargas registradas.</p>
-                ) : (
-                  <div className="mt-3 space-y-2">
-                    {workoutLogs.slice(0, 8).map((log, index) => (
-                      <div
-                        key={log.id || `${log.sessionTitle || "log"}-${index}`}
-                        className="pf-a2-drawer rounded-xl border border-slate-600/45 bg-slate-900/45 px-3 py-2"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-slate-100">
-                            {log.sessionTitle || "Sesion"}
-                          </p>
-                          <p className="text-xs text-slate-400">{formatDateTime(log.createdAt || log.fecha)}</p>
-                        </div>
-                        <p className="mt-1 text-xs text-slate-300">
-                          {log.exerciseName || "Ejercicio"}
-                          {log.series ? ` · ${log.series} series` : ""}
-                          {log.repeticiones ? ` · ${log.repeticiones} reps` : ""}
-                          {toNumber(log.pesoKg) !== null ? ` · ${log.pesoKg} kg` : ""}
-                        </p>
-                        {log.blockTitle ? (
-                          <p className="mt-1 text-xs text-slate-400">Bloque: {log.blockTitle}</p>
-                        ) : null}
-                      </div>
-                    ))}
+              {/* Score de consistencia */}
+              <div className="pf-n-score">
+                <div className="pf-n-score-ring">
+                  <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">
+                    <circle cx="75" cy="75" r="64" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+                    <circle
+                      cx="75"
+                      cy="75"
+                      r="64"
+                      fill="none"
+                      stroke="url(#pfScoreGrad)"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(Math.max(0, Math.min(100, consistencyScore)) / 100) * (2 * Math.PI * 64)} ${
+                        2 * Math.PI * 64
+                      }`}
+                    />
+                    <defs>
+                      <linearGradient id="pfScoreGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stopColor="#22d3ee" />
+                        <stop offset="1" stopColor="#6366f1" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="pf-n-score-center">
+                    <span className="pf-n-score-value">{consistencyScore}</span>
+                    <span className="pf-n-score-scale">de 100</span>
                   </div>
-                )}
-              </article>
+                </div>
+
+                <p className="pf-n-score-title">Ritmo de entreno</p>
+                <p className="pf-n-score-sub">
+                  {weeklyLogs.length} {weeklyLogs.length === 1 ? "entrada" : "entradas"} en los últimos 7 días
+                </p>
+
+                <div className="pf-n-bars" aria-hidden="true">
+                  {progressWeekBars.map((bar, index) => (
+                    <div key={`bar-${index}`} className={`pf-n-bar-col ${bar.on ? "pf-n-bar-col-on" : ""}`}>
+                      <span
+                        className={`pf-n-bar ${bar.count > 0 ? "pf-n-bar-on" : ""}`}
+                        style={{ height: `${bar.height}px` }}
+                      />
+                      <span className="pf-n-bar-dow">{bar.letra}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pf-n-tile-row" style={{ marginBottom: 22 }}>
+                <div className="pf-n-tile">
+                  <p className="pf-n-tile-value">{workoutLogs.length}</p>
+                  <p className="pf-n-tile-label">Registros</p>
+                </div>
+                <div className="pf-n-tile">
+                  <p className="pf-n-tile-value">{anthropometryEntries.length}</p>
+                  <p className="pf-n-tile-label">Check-ins</p>
+                </div>
+              </div>
+
+              {/* Antropometría */}
+              <p className="pf-n-label">Antropometría</p>
+              {latestAnthropometry ? (
+                <div className="pf-n-card" style={{ marginBottom: 22, padding: 16 }}>
+                  <p className="pf-n-muted" style={{ marginBottom: 12 }}>
+                    Registro del {formatDateTime(latestAnthropometry.createdAt)}
+                  </p>
+
+                  <div className="pf-n-tile-row" style={{ marginBottom: 10 }}>
+                    <div className="pf-n-tile">
+                      <p className="pf-n-tile-value">
+                        {toNumber(latestAnthropometry.pesoKg) ?? "—"}
+                        {toNumber(latestAnthropometry.pesoKg) !== null ? <small> kg</small> : null}
+                      </p>
+                      <p className="pf-n-tile-label">Peso</p>
+                    </div>
+                    <div className="pf-n-tile">
+                      <p className="pf-n-tile-value">
+                        {toNumber(latestAnthropometry.aguaLitros) ?? "—"}
+                        {toNumber(latestAnthropometry.aguaLitros) !== null ? <small> L</small> : null}
+                      </p>
+                      <p className="pf-n-tile-label">Agua</p>
+                    </div>
+                  </div>
+
+                  <div className="pf-n-tile-row">
+                    <div className="pf-n-tile">
+                      <p className="pf-n-tile-value">
+                        {toNumber(latestAnthropometry.suenoHoras) ?? "—"}
+                        {toNumber(latestAnthropometry.suenoHoras) !== null ? <small> h</small> : null}
+                      </p>
+                      <p className="pf-n-tile-label">Sueño</p>
+                    </div>
+                    <div className="pf-n-tile">
+                      <p className="pf-n-tile-value">
+                        {toNumber(latestAnthropometry.actividadNivel) ?? "—"}
+                        {toNumber(latestAnthropometry.actividadNivel) !== null ? <small>/10</small> : null}
+                      </p>
+                      <p className="pf-n-tile-label">Actividad</p>
+                    </div>
+                  </div>
+
+                  <p className="pf-n-muted" style={{ marginTop: 12 }}>
+                    {weightDelta === null
+                      ? "Aún no hay suficientes registros para calcular variación de peso."
+                      : `Variación de peso vs registro anterior: ${weightDelta >= 0 ? "+" : ""}${weightDelta} kg.`}
+                  </p>
+                </div>
+              ) : (
+                /* El handoff muestra un botón "Registrar medición", pero el alumno
+                   solo lee antropometría: las mediciones las carga el profesor.
+                   Se deja el estado vacío sin acción para no ofrecer un botón muerto. */
+                <div className="pf-n-empty" style={{ marginBottom: 22 }}>
+                  <span className="pf-n-empty-icon">
+                    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+                      <path
+                        d="M4 4L16 16M4 8L8 4M12 16L16 12M6 6L4 4M14 14L16 16"
+                        stroke="rgba(245,246,250,0.5)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                  <p className="pf-n-empty-title">Sin mediciones todavía</p>
+                  <p className="pf-n-empty-text">Cuando tu profesor cargue peso y medidas vas a ver tu evolución acá.</p>
+                </div>
+              )}
+
+              {/* Historial de entreno */}
+              <p className="pf-n-label">Historial</p>
+              {workoutLogs.length === 0 ? (
+                <div className="pf-n-empty" style={{ marginBottom: 22 }}>
+                  <span className="pf-n-empty-icon">
+                    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+                      <rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke="rgba(245,246,250,0.5)" strokeWidth="1.5" />
+                      <path d="M6 8H14M6 11H14M6 14H10" stroke="rgba(245,246,250,0.5)" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <p className="pf-n-empty-title">Todavía no hay cargas registradas</p>
+                  <p className="pf-n-empty-text">Tus registros de entreno van a aparecer acá.</p>
+                </div>
+              ) : (
+                <div className="pf-n-card" style={{ marginBottom: 22 }}>
+                  {workoutLogs.slice(0, 8).map((log, index) => (
+                    <div key={log.id || `${log.sessionTitle || "log"}-${index}`} className="pf-n-log">
+                      <div className="pf-n-log-top">
+                        <p className="pf-n-log-title">{log.sessionTitle || "Sesión"}</p>
+                        <span className="pf-n-log-time">{formatDateTime(log.createdAt || log.fecha)}</span>
+                      </div>
+                      <p className="pf-n-log-meta">
+                        {log.exerciseName || "Ejercicio"}
+                        {log.series ? ` · ${log.series} series` : ""}
+                        {log.repeticiones ? ` · ${log.repeticiones} reps` : ""}
+                        {toNumber(log.pesoKg) !== null ? ` · ${log.pesoKg} kg` : ""}
+                      </p>
+                      {log.blockTitle ? <p className="pf-n-log-meta">Bloque: {log.blockTitle}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Check-in semanal: el handoff cuenta los check-ins en el KPI de
+                  arriba, así que la carga vive en esta pantalla. */}
+              <p className="pf-n-label">Check-in semanal</p>
+              <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
             </div>
           ) : null}
 
           {activeCategory === "cuenta" ? (
-            <div className="space-y-4">
-              {/* Rediseño: identidad suelta sobre el fondo (nombre grande,
-                  email y badge de rol), sin tarjeta. */}
-              <header className="pf-account-head">
-                <h2 className="pf-account-name">{accountPanelData?.nombreCompleto || "Cuenta"}</h2>
-                <p className="pf-account-mail">{accountPanelData?.email || "Cargando..."}</p>
+            <div className="pf-n-screen">
+              {/* Identidad suelta sobre el fondo: nombre grande, email y rol. */}
+              <div className="pf-n-identity">
+                <h1 className="pf-n-identity-name">{accountPanelData?.nombreCompleto || "Cuenta"}</h1>
+                <p className="pf-n-identity-mail">{accountPanelData?.email || "Cargando..."}</p>
                 {accountPanelData?.role ? (
-                  <span className="pf-account-role">Rol: {accountPanelData.role}</span>
+                  <span className="pf-n-identity-role">Rol: {accountPanelData.role}</span>
                 ) : null}
                 {accountPanelData && accountPanelData.emailVerified === false ? (
-                  <p className="mt-2 text-xs text-amber-300">Email no verificado.</p>
+                  <p className="pf-n-muted" style={{ marginTop: 10, color: "#fdba74" }}>
+                    Email no verificado.
+                  </p>
                 ) : null}
-              </header>
+              </div>
 
-              {accountPanelError ? (
-                <article className="rounded-[1rem] border border-rose-300/60 bg-rose-500/10 p-3 text-sm font-bold text-rose-200">
-                  {accountPanelError}
-                </article>
-              ) : null}
+              {accountPanelError ? <div className="pf-n-alert pf-n-alert-error">{accountPanelError}</div> : null}
+              {accountPanelMessage ? <div className="pf-n-alert pf-n-alert-ok">{accountPanelMessage}</div> : null}
 
-              {accountPanelMessage ? (
-                <article className="rounded-[1rem] border border-emerald-300/60 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-200">
-                  {accountPanelMessage}
-                </article>
-              ) : null}
-
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Datos personales</p>
-                <h3 className="mt-1 text-lg font-black text-white">Editar cuenta</h3>
-                <p className="mt-1 text-xs text-slate-400">
-                  Para cambiar email o contraseña te pedimos la contraseña actual.
-                </p>
-
-                <form onSubmit={saveAccountPanel} className="mt-4 grid gap-3">
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Nombre completo
-                    <input
-                      type="text"
-                      value={accountPanelNombre}
-                      onChange={(event) => setAccountPanelNombre(event.target.value)}
-                      placeholder="Nombre y apellido"
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                      required
-                    />
-                  </label>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                      Edad
-                      <input
-                        type="number"
-                        min={0}
-                        max={120}
-                        value={accountPanelEdad}
-                        onChange={(event) => setAccountPanelEdad(event.target.value)}
-                        className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                      />
-                    </label>
-                    <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                      Altura (cm)
-                      <input
-                        type="number"
-                        min={0}
-                        max={250}
-                        step={0.1}
-                        value={accountPanelAltura}
-                        onChange={(event) => setAccountPanelAltura(event.target.value)}
-                        className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                      />
-                    </label>
-                  </div>
-
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Teléfono
-                    <input
-                      type="tel"
-                      value={accountPanelTelefono}
-                      onChange={(event) => setAccountPanelTelefono(event.target.value)}
-                      placeholder="+54 ..."
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                    />
-                  </label>
-
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Dirección
-                    <input
-                      type="text"
-                      value={accountPanelDireccion}
-                      onChange={(event) => setAccountPanelDireccion(event.target.value)}
-                      placeholder="Calle y número"
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                    />
-                  </label>
-
-                  <div className="mt-2 border-t border-white/10 pt-3">
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Credenciales</p>
-                  </div>
-
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Email
-                    <input
-                      type="email"
-                      value={accountPanelEmail}
-                      onChange={(event) => setAccountPanelEmail(event.target.value)}
-                      placeholder="tuemail@dominio.com"
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                    />
-                  </label>
-
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Contraseña actual
-                    <input
-                      type="password"
-                      value={accountPanelCurrentPassword}
-                      onChange={(event) => setAccountPanelCurrentPassword(event.target.value)}
-                      placeholder="Obligatoria para cambiar email o contraseña"
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                    />
-                  </label>
-
-                  <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                    Nueva contraseña
-                    <input
-                      type="password"
-                      value={accountPanelNewPassword}
-                      onChange={(event) => setAccountPanelNewPassword(event.target.value)}
-                      placeholder="Opcional"
-                      className="rounded-lg border border-slate-600/60 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-100"
-                    />
-                  </label>
-
-                  <ReliableActionButton
-                    type="submit"
-                    disabled={accountPanelSaving || accountPanelLoading}
-                    className="pf-btn pf-btn--primary mt-2 disabled:opacity-70"
-                  >
-                    {accountPanelSaving ? "Guardando..." : "Guardar cambios"}
-                  </ReliableActionButton>
-                </form>
-              </article>
-
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Foto de perfil</p>
-                <h3 className="mt-1 text-lg font-black text-white">Imagen de cuenta</h3>
-                <p className="mt-2 text-xs text-slate-300">
-                  Elegí una imagen desde tu dispositivo. Se sincroniza con tu ficha en admin.
-                </p>
-
-                <div className="mt-3 flex items-center gap-3">
-                  {accountPanelSidebarImageDraft ? (
-                    <img
-                      src={accountPanelSidebarImageDraft}
-                      alt="Foto de perfil"
-                      className="h-16 w-16 rounded-full border border-violet-300/40 object-cover"
-                    />
-                  ) : (
-                    <div className="grid h-16 w-16 place-items-center rounded-full border border-slate-600/60 bg-slate-900/60 text-xs font-bold text-slate-400">
-                      Sin foto
-                    </div>
-                  )}
-                  <div className="flex flex-1 flex-wrap gap-2">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={() => accountPanelFileInputRef.current?.click()}
-                      className="rounded-lg border border-violet-300/60 bg-violet-500/10 px-3 py-1.5 text-xs font-bold text-violet-100"
-                    >
-                      Seleccionar imagen
-                    </ReliableActionButton>
-                    {accountPanelSidebarImageDraft ? (
-                      <ReliableActionButton
+              {/* Un solo <form>: los checks verdes son submit, así cada edición
+                  inline persiste con el mismo saveAccountPanel de antes. */}
+              <form onSubmit={saveAccountPanel}>
+                <p className="pf-n-label">Datos personales</p>
+                <div className="pf-n-card" style={{ marginBottom: 22 }}>
+                  {(
+                    [
+                      {
+                        key: "nombre" as const,
+                        label: "Nombre completo",
+                        value: accountPanelNombre,
+                        setValue: setAccountPanelNombre,
+                        placeholder: "Nombre y apellido",
+                        type: "text",
+                        width: 130,
+                        tint: "rgba(99,102,241,0.18)",
+                        icon: (
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <circle cx="10" cy="6.5" r="3.5" fill="none" stroke="#a5b4fc" strokeWidth="1.7" />
+                            <path
+                              d="M3 18C3 14 6 12 10 12C14 12 17 14 17 18"
+                              fill="none"
+                              stroke="#a5b4fc"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        ),
+                      },
+                      {
+                        key: "edad" as const,
+                        label: "Edad",
+                        value: accountPanelEdad,
+                        setValue: setAccountPanelEdad,
+                        placeholder: "",
+                        type: "number",
+                        width: 60,
+                        tint: "rgba(251,146,60,0.18)",
+                        icon: (
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <rect x="3" y="4" width="14" height="13" rx="2" fill="none" stroke="#fb923c" strokeWidth="1.6" />
+                            <path d="M3 8H17M7 2V5M13 2V5" stroke="#fb923c" strokeWidth="1.6" strokeLinecap="round" />
+                          </svg>
+                        ),
+                      },
+                      {
+                        key: "altura" as const,
+                        label: "Altura (cm)",
+                        value: accountPanelAltura,
+                        setValue: setAccountPanelAltura,
+                        placeholder: "",
+                        type: "number",
+                        width: 60,
+                        tint: "rgba(34,211,238,0.16)",
+                        icon: (
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <path
+                              d="M10 2V18M10 2L7 5M10 2L13 5M10 18L7 15M10 18L13 15"
+                              fill="none"
+                              stroke="#67e8f9"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ),
+                      },
+                      {
+                        key: "telefono" as const,
+                        label: "Teléfono",
+                        value: accountPanelTelefono,
+                        setValue: setAccountPanelTelefono,
+                        placeholder: "+54 ...",
+                        type: "tel",
+                        width: 120,
+                        tint: "rgba(52,211,153,0.16)",
+                        icon: (
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <path
+                              d="M5 3C5 3 7 3 8 5C8.5 6 7.5 7 7 7.5C7.5 9.5 9.5 11.5 11.5 12C12 11.5 13 10.5 14 11C16 12 16 14 16 14C16 16 14 17 12.5 16.7C7 15.5 4.5 13 3.3 7.5C3 6 4 3 5 3Z"
+                              fill="none"
+                              stroke="#34d399"
+                              strokeWidth="1.4"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ),
+                      },
+                      {
+                        key: "direccion" as const,
+                        label: "Dirección",
+                        value: accountPanelDireccion,
+                        setValue: setAccountPanelDireccion,
+                        placeholder: "Calle y número",
+                        type: "text",
+                        width: 130,
+                        tint: "rgba(196,181,253,0.18)",
+                        icon: (
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <path
+                              d="M10 2C6.7 2 4 4.6 4 8.1C4 12 10 18 10 18C10 18 16 12 16 8.1C16 4.6 13.3 2 10 2Z"
+                              fill="none"
+                              stroke="#c4b5fd"
+                              strokeWidth="1.5"
+                              strokeLinejoin="round"
+                            />
+                            <circle cx="10" cy="8" r="2.2" fill="none" stroke="#c4b5fd" strokeWidth="1.4" />
+                          </svg>
+                        ),
+                      },
+                    ]
+                  ).map((field) =>
+                    accountEditingField === field.key ? (
+                      <div key={field.key} className="pf-n-row-edit">
+                        <span className="pf-n-row-icon" style={{ background: field.tint }}>
+                          {field.icon}
+                        </span>
+                        <span className="pf-n-row-label">{field.label}</span>
+                        <input
+                          type={field.type}
+                          value={field.value}
+                          onChange={(event) => field.setValue(event.target.value)}
+                          placeholder={field.placeholder}
+                          className="pf-n-inline-input"
+                          style={{ width: field.width }}
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          className="pf-n-inline-ok"
+                          disabled={accountPanelSaving}
+                          onClick={() => setAccountEditingField(null)}
+                          aria-label={`Guardar ${field.label}`}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 20 20" aria-hidden="true">
+                            <path
+                              d="M4 10L8 14L16 5"
+                              fill="none"
+                              stroke="#34d399"
+                              strokeWidth="2.4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        key={field.key}
                         type="button"
-                        onClick={handleAccountPanelPhotoRemove}
-                        className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-100"
+                        className="pf-n-row"
+                        onClick={() => setAccountEditingField(field.key)}
                       >
-                        Quitar
-                      </ReliableActionButton>
-                    ) : null}
-                  </div>
+                        <span className="pf-n-row-icon" style={{ background: field.tint }}>
+                          {field.icon}
+                        </span>
+                        <span className="pf-n-row-label">{field.label}</span>
+                        <span className="pf-n-row-value">{field.value || "—"}</span>
+                        <span className="pf-n-row-chevron">›</span>
+                      </button>
+                    )
+                  )}
                 </div>
 
-                <input
-                  ref={accountPanelFileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAccountPanelPhotoChange}
-                />
+                <p className="pf-n-label">Credenciales</p>
+                <div className="pf-n-card" style={{ marginBottom: 22 }}>
+                  {accountEditingField === "email" ? (
+                    <div className="pf-n-row-block">
+                      <div className="pf-n-row-block-head">
+                        <span className="pf-n-row-icon" style={{ background: "rgba(96,165,250,0.16)" }}>
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <rect x="2" y="4" width="16" height="12" rx="2" fill="none" stroke="#60a5fa" strokeWidth="1.5" />
+                            <path
+                              d="M3 5.5L10 11L17 5.5"
+                              fill="none"
+                              stroke="#60a5fa"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                        <span className="pf-n-row-label">Email</span>
+                      </div>
+                      <input
+                        type="email"
+                        value={accountPanelEmail}
+                        onChange={(event) => setAccountPanelEmail(event.target.value)}
+                        placeholder="tuemail@dominio.com"
+                        className="pf-n-input"
+                        autoFocus
+                      />
+                      <input
+                        type="password"
+                        value={accountPanelCurrentPassword}
+                        onChange={(event) => setAccountPanelCurrentPassword(event.target.value)}
+                        placeholder="Contraseña actual"
+                        className="pf-n-input"
+                      />
+                      <p className="pf-n-hint">Requiere tu contraseña actual para confirmarse.</p>
+                      <button
+                        type="submit"
+                        className="pf-n-mini-cta"
+                        disabled={accountPanelSaving}
+                        onClick={() => setAccountEditingField(null)}
+                      >
+                        {accountPanelSaving ? "Guardando..." : "Listo"}
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" className="pf-n-row" onClick={() => setAccountEditingField("email")}>
+                      <span className="pf-n-row-icon" style={{ background: "rgba(96,165,250,0.16)" }}>
+                        <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                          <rect x="2" y="4" width="16" height="12" rx="2" fill="none" stroke="#60a5fa" strokeWidth="1.5" />
+                          <path
+                            d="M3 5.5L10 11L17 5.5"
+                            fill="none"
+                            stroke="#60a5fa"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span className="pf-n-row-label">Email</span>
+                      <span className="pf-n-row-value">{accountPanelEmail || "—"}</span>
+                      <span className="pf-n-row-chevron">›</span>
+                    </button>
+                  )}
 
-                {accountPanelSidebarImageDraft !== accountPanelSidebarImage ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <ReliableActionButton
-                      type="button"
-                      onClick={handleAccountPanelPhotoSave}
-                      disabled={accountPanelPhotoSaving}
-                      className="pf-btn pf-btn--primary !px-3 !py-2 !text-xs disabled:opacity-70"
-                    >
-                      {accountPanelPhotoSaving ? "Guardando..." : "Guardar foto"}
-                    </ReliableActionButton>
-                    <ReliableActionButton
-                      type="button"
-                      onClick={handleAccountPanelPhotoRevert}
-                      disabled={accountPanelPhotoSaving}
-                      className="rounded-lg border border-slate-500/60 bg-slate-800/60 px-3 py-2 text-xs font-bold text-slate-200 disabled:opacity-70"
-                    >
-                      Cancelar
-                    </ReliableActionButton>
+                  {accountEditingField === "password" ? (
+                    <div className="pf-n-row-block">
+                      <div className="pf-n-row-block-head">
+                        <span className="pf-n-row-icon" style={{ background: "rgba(255,255,255,0.08)" }}>
+                          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                            <rect x="5" y="9" width="10" height="8" rx="1.6" fill="none" stroke="rgba(245,246,250,0.65)" strokeWidth="1.5" />
+                            <path
+                              d="M7 9V6.5C7 4.6 8.3 3 10 3C11.7 3 13 4.6 13 6.5V9"
+                              fill="none"
+                              stroke="rgba(245,246,250,0.65)"
+                              strokeWidth="1.5"
+                            />
+                          </svg>
+                        </span>
+                        <span className="pf-n-row-label">Cambiar contraseña</span>
+                      </div>
+                      <input
+                        type="password"
+                        value={accountPanelCurrentPassword}
+                        onChange={(event) => setAccountPanelCurrentPassword(event.target.value)}
+                        placeholder="Contraseña actual"
+                        className="pf-n-input"
+                        autoFocus
+                      />
+                      <input
+                        type="password"
+                        value={accountPanelNewPassword}
+                        onChange={(event) => setAccountPanelNewPassword(event.target.value)}
+                        placeholder="Nueva contraseña"
+                        className="pf-n-input"
+                      />
+                      <button
+                        type="submit"
+                        className="pf-n-mini-cta"
+                        disabled={accountPanelSaving}
+                        onClick={() => setAccountEditingField(null)}
+                      >
+                        {accountPanelSaving ? "Guardando..." : "Guardar"}
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" className="pf-n-row" onClick={() => setAccountEditingField("password")}>
+                      <span className="pf-n-row-icon" style={{ background: "rgba(255,255,255,0.08)" }}>
+                        <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                          <rect x="5" y="9" width="10" height="8" rx="1.6" fill="none" stroke="rgba(245,246,250,0.65)" strokeWidth="1.5" />
+                          <path
+                            d="M7 9V6.5C7 4.6 8.3 3 10 3C11.7 3 13 4.6 13 6.5V9"
+                            fill="none"
+                            stroke="rgba(245,246,250,0.65)"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </span>
+                      <span className="pf-n-row-label">Contraseña</span>
+                      <span className="pf-n-row-value">••••••••</span>
+                      <span className="pf-n-row-chevron">›</span>
+                    </button>
+                  )}
+                </div>
+              </form>
+
+              {/* Foto de perfil: no está en el handoff, pero alimenta el avatar
+                  del Inicio, así que se conserva como una fila desplegable. */}
+              <p className="pf-n-label">Perfil</p>
+              <div className="pf-n-card" style={{ marginBottom: 22 }}>
+                {accountEditingField === "foto" ? (
+                  <div className="pf-n-row-block">
+                    <div className="pf-n-row-block-head">
+                      <span className="pf-n-row-icon" style={{ background: "rgba(196,181,253,0.18)" }}>
+                        <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                          <rect x="2.5" y="5" width="15" height="11" rx="2" fill="none" stroke="#c4b5fd" strokeWidth="1.5" />
+                          <circle cx="10" cy="10.5" r="3" fill="none" stroke="#c4b5fd" strokeWidth="1.5" />
+                        </svg>
+                      </span>
+                      <span className="pf-n-row-label">Foto de perfil</span>
+                    </div>
+
+                    <div className="pf-n-photo-row">
+                      {accountPanelSidebarImageDraft ? (
+                        <img src={accountPanelSidebarImageDraft} alt="Foto de perfil" className="pf-n-photo-preview" />
+                      ) : (
+                        <span className="pf-n-photo-preview pf-n-photo-preview-empty">Sin foto</span>
+                      )}
+                      <div className="pf-n-photo-actions">
+                        <ReliableActionButton
+                          type="button"
+                          onClick={() => accountPanelFileInputRef.current?.click()}
+                          className="pf-n-ghost"
+                        >
+                          Elegir imagen
+                        </ReliableActionButton>
+                        {accountPanelSidebarImageDraft ? (
+                          <ReliableActionButton type="button" onClick={handleAccountPanelPhotoRemove} className="pf-n-ghost">
+                            Quitar
+                          </ReliableActionButton>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <input
+                      ref={accountPanelFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="pf-n-sr"
+                      onChange={handleAccountPanelPhotoChange}
+                    />
+
+                    {accountPanelSidebarImageDraft !== accountPanelSidebarImage ? (
+                      <div className="pf-n-photo-actions" style={{ marginTop: 12 }}>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={handleAccountPanelPhotoSave}
+                          disabled={accountPanelPhotoSaving}
+                          className="pf-n-mini-cta"
+                        >
+                          {accountPanelPhotoSaving ? "Guardando..." : "Guardar foto"}
+                        </ReliableActionButton>
+                        <ReliableActionButton
+                          type="button"
+                          onClick={handleAccountPanelPhotoRevert}
+                          disabled={accountPanelPhotoSaving}
+                          className="pf-n-ghost"
+                        >
+                          Cancelar
+                        </ReliableActionButton>
+                      </div>
+                    ) : null}
+
+                    {accountPanelPhotoError ? (
+                      <p className="pf-n-hint" style={{ color: "#f87171", marginTop: 10 }}>
+                        {accountPanelPhotoError}
+                      </p>
+                    ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <button type="button" className="pf-n-row" onClick={() => setAccountEditingField("foto")}>
+                    <span className="pf-n-row-icon" style={{ background: "rgba(196,181,253,0.18)" }}>
+                      <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+                        <rect x="2.5" y="5" width="15" height="11" rx="2" fill="none" stroke="#c4b5fd" strokeWidth="1.5" />
+                        <circle cx="10" cy="10.5" r="3" fill="none" stroke="#c4b5fd" strokeWidth="1.5" />
+                      </svg>
+                    </span>
+                    <span className="pf-n-row-label">Foto de perfil</span>
+                    <span className="pf-n-row-value">{accountPanelSidebarImage ? "Cargada" : "Sin foto"}</span>
+                    <span className="pf-n-row-chevron">›</span>
+                  </button>
+                )}
+              </div>
 
-                {accountPanelPhotoError ? (
-                  <p className="mt-2 text-xs font-bold text-rose-300">{accountPanelPhotoError}</p>
-                ) : null}
-              </article>
-
+              {/* Chat con el profesor: tampoco está en el handoff, pero es el
+                  único canal de contacto del alumno, así que se conserva. */}
               {alumnoProfile?.nombre ? (
-                <ChatPanel
-                  myName={alumnoProfile.nombre}
-                  myRole="alumno"
-                  otherName="profe"
-                  compact
-                />
+                <>
+                  <p className="pf-n-label">Mensajes</p>
+                  <div style={{ marginBottom: 22 }}>
+                    <ChatPanel myName={alumnoProfile.nombre} myRole="alumno" otherName="profe" compact />
+                  </div>
+                </>
               ) : null}
 
-              <article className="rounded-[1.2rem] border border-rose-300/40 bg-rose-500/10 p-4 sm:p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-rose-200">Sesión</p>
-                <h3 className="mt-1 text-lg font-black text-rose-100">Cerrar sesión</h3>
-                <p className="mt-1 text-xs text-rose-100/80">
-                  Si terminaste de usar la app, cerrá tu sesión desde acá.
-                </p>
+              <div className="pf-n-card">
                 <ReliableActionButton
                   type="button"
                   onClick={handleSignOutPanel}
                   disabled={accountPanelSigningOut}
-                  className="mt-3 w-full rounded-xl border border-rose-200/60 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 disabled:opacity-70"
+                  className="pf-n-signout"
                 >
                   {accountPanelSigningOut ? "Cerrando sesión..." : "Cerrar sesión"}
                 </ReliableActionButton>
-              </article>
+              </div>
             </div>
           ) : null}
 
           {activeCategory === "musica" ? (
-            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="pf-a2-eyebrow">Playlists asignadas</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Musica para entrenar</h2>
-                  <p className="mt-2 text-sm text-slate-300">
-                    {musicCoachLine}
-                  </p>
-                  <p className={`mt-1 text-xs ${musicSyncLoaded ? "text-emerald-300" : "text-slate-400"}`}>
-                    {musicSyncLoaded
-                      ? "Sincronizado con los cambios del profesor/admin."
-                      : "Sincronizando playlists..."}
-                  </p>
-                </div>
-
+            <div className="pf-n-screen">
+              <div className="pf-n-detail-head">
                 <ReliableActionButton
                   type="button"
-                  onClick={loadStorageState}
-                  className="pf-a2-ghost-btn rounded-xl border px-4 py-2 text-sm font-semibold"
+                  onClick={goToPreviousCategory}
+                  onPointerUp={() => goToPreviousCategory()}
+                  data-nav-href={backTargetHref}
+                  className="pf-n-back"
+                  aria-label={backLabel}
+                  title={backLabel}
                 >
+                  ‹
+                </ReliableActionButton>
+                <div>
+                  <p className="pf-n-eyebrow">Flow</p>
+                  <h1 className="pf-n-title-sm">Playlists</h1>
+                </div>
+              </div>
+
+              <div className="pf-n-music-intro">
+                <p className="pf-n-music-line">{musicCoachLine}</p>
+                <ReliableActionButton type="button" onClick={loadStorageState} className="pf-n-music-refresh">
                   Actualizar
                 </ReliableActionButton>
               </div>
 
               {selectedMusicAssignment ? (
-                <div className="mt-4 overflow-hidden rounded-2xl border border-slate-500/35 bg-slate-950/55 p-3 sm:p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Vista previa</p>
-                      <h3 className="mt-1 break-words text-lg font-black text-white">
-                        {selectedMusicDisplayName}
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-300">
+                <>
+                  {/* Portada cuadrada con badge de plataforma y título encima. */}
+                  <div className="pf-n-cover">
+                    {showSelectedMusicCover && selectedMusicCoverUrl ? (
+                      <img
+                        src={selectedMusicCoverUrl}
+                        alt={selectedMusicDisplayName || "Portada de playlist"}
+                        loading="lazy"
+                        onError={() => setSelectedMusicCoverFailed(true)}
+                      />
+                    ) : (
+                      <span className="pf-n-cover-fallback" aria-hidden="true">
+                        <svg width="46" height="46" viewBox="0 0 20 20">
+                          <circle cx="5" cy="15" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                          <circle cx="15" cy="13" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                          <path d="M7.6 15V5.5L17.6 3.5V13" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                        </svg>
+                      </span>
+                    )}
+
+                    <span className="pf-n-cover-badge">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
+
+                    <div className="pf-n-cover-caption">
+                      <p className="pf-n-cover-title">{selectedMusicDisplayName}</p>
+                      <p className="pf-n-cover-sub">
                         Objetivo: {selectedMusicAssignment.objetivo || "General"}
                         {selectedMusicAssignment.diaSemana ? ` · ${selectedMusicAssignment.diaSemana}` : ""}
+                        {musicSyncLoaded ? " · Sincronizado con tu profesor" : ""}
                       </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="pf-a2-pill">{resolveMusicPlatformLabel(selectedMusicPlatform)}</span>
-                      <span className="pf-a2-pill">{resolveMusicContentTypeLabel(selectedMusicContentType)}</span>
-                    </div>
                   </div>
 
-                  <div className="mt-3 grid gap-3 lg:grid-cols-[190px,minmax(0,1fr)]">
-                    <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-900/70 lg:h-full">
-                      {showSelectedMusicCover && selectedMusicCoverUrl ? (
-                        <img
-                          src={selectedMusicCoverUrl}
-                          alt={selectedMusicDisplayName || "Portada de playlist"}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          onError={() => setSelectedMusicCoverFailed(true)}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/45 to-slate-900/75 p-3 text-left">
-                          <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/90">
-                            {resolveMusicPlatformLabel(selectedMusicPlatform)}
-                          </span>
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
-                              {resolveMusicContentTypeLabel(selectedMusicContentType)}
-                            </p>
-                            <p className="mt-1 line-clamp-2 text-xs font-semibold text-white/90">{selectedMusicDisplayName}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="overflow-hidden rounded-xl border border-white/10 bg-black/35 p-2">
-                      {selectedMusicPlayer.kind === "audio" ? (
-                        <audio
-                          controls
-                          preload="none"
-                          className="h-12 w-full"
-                          src={selectedMusicPlayer.src || undefined}
-                        />
-                      ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
-                        <iframe
-                          title={`music-player-featured-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
-                          src={selectedMusicPlayer.src}
-                          className={`w-full rounded-lg border border-white/10 ${
+                  {/* El handoff dibuja controles propios, pero acá el audio lo
+                      sirve el embed real de la plataforma con sus controles. */}
+                  <div className="pf-n-player-embed">
+                    {selectedMusicPlayer.kind === "audio" ? (
+                      <audio controls preload="none" src={selectedMusicPlayer.src || undefined} />
+                    ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
+                      <iframe
+                        title={`music-player-featured-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
+                        src={selectedMusicPlayer.src}
+                        style={{
+                          background: "#10151b",
+                          colorScheme: "dark",
+                          height:
                             selectedMusicPlatform === "SPOTIFY"
                               ? selectedMusicContentType === "SONG"
-                                ? "h-[152px]"
-                                : "h-[352px]"
-                              : "h-64 sm:h-72"
-                          }`}
-                          style={{ background: "#10151b", colorScheme: "dark" }}
-                          loading="lazy"
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        />
-                      ) : (
-                        <div className="flex h-28 items-center justify-center rounded-lg border border-slate-500/35 bg-slate-900/55 px-4 text-center text-xs text-slate-300">
-                          Esta plataforma no permite vista previa embebida. Usa &quot;Abrir playlist&quot; para escucharla.
-                        </div>
-                      )}
-                    </div>
+                                ? 152
+                                : 352
+                              : 260,
+                        }}
+                        loading="lazy"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      />
+                    ) : (
+                      <p className="pf-n-empty-text" style={{ padding: 16, textAlign: "center" }}>
+                        Esta playlist no se puede reproducir acá dentro.
+                      </p>
+                    )}
                   </div>
 
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedMusicAssignment.playlistUrl ? (
                     <ReliableActionButton
                       type="button"
                       onClick={() => openMusicPlaylistExternal(selectedMusicAssignment)}
-                      className="pf-a2-solid-btn inline-flex rounded-lg px-3 py-1.5 text-xs font-semibold"
+                      className="pf-n-ghost"
+                      style={{ width: "100%", marginBottom: 22 }}
                     >
                       {resolveMusicOpenActionLabel(selectedMusicPlatform)}
                     </ReliableActionButton>
-                  </div>
-                </div>
+                  ) : null}
+                </>
               ) : null}
 
+              <p className="pf-n-label">Asignadas por tu profesor</p>
               {musicAssignments.length === 0 ? (
-                <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
-                  No hay playlists asignadas por ahora.
+                <div className="pf-n-empty">
+                  <span className="pf-n-empty-icon">
+                    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
+                      <circle cx="5" cy="15" r="2.6" fill="none" stroke="rgba(245,246,250,0.5)" strokeWidth="1.5" />
+                      <circle cx="15" cy="13" r="2.6" fill="none" stroke="rgba(245,246,250,0.5)" strokeWidth="1.5" />
+                      <path d="M7.6 15V5.5L17.6 3.5V13" fill="none" stroke="rgba(245,246,250,0.5)" strokeWidth="1.5" />
+                    </svg>
+                  </span>
+                  <p className="pf-n-empty-title">Sin playlists asignadas</p>
+                  <p className="pf-n-empty-text">Cuando tu profesor te asigne música vas a verla acá.</p>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="pf-n-card">
                   {musicAssignments.map((assignment, index) => {
                     const assignmentId = resolveMusicAssignmentId(assignment, index);
                     const platform = resolveMusicPlatform(assignment.platform, assignment.playlistUrl);
@@ -12661,88 +12952,46 @@ export default function AlumnoVisionClient({
                             normalizedPlaylistUrl ? musicArtworkByUrl[normalizedPlaylistUrl] : "",
                           ])[0] || null;
                     const isSelected = selectedMusicAssignmentId === assignmentId;
-                    const openLabel = resolveMusicOpenActionLabel(platform);
 
                     return (
-                      <section
+                      <ReliableActionButton
                         key={assignmentId}
-                        className={`rounded-xl border p-3 ${
-                          isSelected
-                            ? "border-emerald-400/50 bg-emerald-500/10"
-                            : "pf-a2-kpi"
-                        }`}
+                        type="button"
+                        onClick={() => selectMusicAssignment(assignment, index)}
+                        className={`pf-n-pay-row ${isSelected ? "pf-n-pay-row-active" : ""}`}
+                        aria-current={isSelected ? "true" : undefined}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900/60">
-                            <MusicCoverImage
-                              src={coverUrl}
-                              alt={assignment.playlistName || "Portada"}
-                              imgClassName="h-full w-full object-cover"
-                              fallback={
-                                <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                                  Sin cover
-                                </div>
-                              }
-                            />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <h3 className="break-words text-sm font-black text-slate-100">
-                                {assignment.playlistName || "Playlist"}
-                              </h3>
-                              <span className="pf-a2-pill">{resolveMusicPlatformLabel(platform)}</span>
-                            </div>
-                            <p className="mt-1 text-xs text-slate-300">
-                              Objetivo: {assignment.objetivo || "General"}
-                              {assignment.diaSemana ? ` · ${assignment.diaSemana}` : ""}
-                            </p>
-                            {assignment.recommendedSongTitle ? (
-                              <p className="mt-1 text-xs text-slate-400">
-                                Recomendado: {assignment.recommendedSongTitle}
-                                {assignment.recommendedSongArtist
-                                  ? ` - ${assignment.recommendedSongArtist}`
-                                  : ""}
-                              </p>
-                            ) : null}
-                            <p className="mt-1 text-[11px] text-slate-500">
-                              Asignado: {formatDateTime(assignment.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <ReliableActionButton
-                            type="button"
-                            onClick={() => selectMusicAssignment(assignment, index)}
-                            className="pf-a2-solid-btn inline-flex rounded-lg px-3 py-1.5 text-xs font-semibold"
-                          >
-                            {isSelected ? "Seleccionada" : "Usar esta"}
-                          </ReliableActionButton>
-
-                          {assignment.playlistUrl ? (
-                            <ReliableActionButton
-                              type="button"
-                              onClick={() => openMusicPlaylistExternal(assignment)}
-                              className="pf-a2-ghost-btn inline-flex rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                            >
-                              {openLabel}
-                            </ReliableActionButton>
-                          ) : null}
-                        </div>
-                      </section>
+                        <span className="pf-n-track-cover">
+                          <MusicCoverImage
+                            src={coverUrl}
+                            alt={assignment.playlistName || "Portada"}
+                            imgClassName="pf-n-track-cover-img"
+                            fallback={<span className="pf-n-track-cover-empty">♪</span>}
+                          />
+                        </span>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span className="pf-n-pay-title" style={{ display: "block" }}>
+                            {assignment.playlistName || "Playlist"}
+                          </span>
+                          <span className="pf-n-pay-sub" style={{ display: "block" }}>
+                            {resolveMusicPlatformLabel(platform)} · Objetivo: {assignment.objetivo || "General"}
+                            {assignment.diaSemana ? ` · ${assignment.diaSemana}` : ""}
+                          </span>
+                        </span>
+                        <span className="pf-n-row-chevron">{isSelected ? "●" : "›"}</span>
+                      </ReliableActionButton>
                     );
                   })}
                 </div>
               )}
-            </article>
+            </div>
           ) : null}
       </div>
 
-      {/* La barra inferior queda visible en todas las pantallas del alumno, no
-          solo en el inicio: es la navegacion principal ahora que las vistas del
-          dock (rutina/cuenta) no llevan flecha de volver. */}
-      <nav className="pf-a2-dock md:hidden" aria-label="Navegacion principal del alumno">
+      {/* Barra inferior: Rutina / Inicio / Cuenta. Se oculta mientras el sheet
+          del ejercicio esta abierto, igual que en el handoff. */}
+      {isRoutineLogPanelOpen ? null : (
+        <nav className="pf-n-nav" aria-label="Navegacion principal del alumno">
           {homeDockItems.filter((item) => !isBlocked || item.key === "inicio" || item.key === "cuenta").map((item) => {
             const isActive = item.key === activeCategory;
             return (
@@ -12750,20 +12999,18 @@ export default function AlumnoVisionClient({
                 key={`dock-${item.key}`}
                 type="button"
                 onClick={() => goToCategory(item.key)}
-                className={`pf-a2-dock-btn ${isActive ? "pf-a2-dock-btn-active" : ""}`}
+                className="pf-n-nav-item"
                 aria-label={`Abrir ${item.label}`}
                 aria-current={isActive ? "page" : undefined}
                 title={item.label}
               >
-                <span className="pf-a2-dock-hit" aria-hidden="true">
-                  <span className="pf-a2-dock-icon-wrap">{item.icon}</span>
-                  <span className="pf-a2-dock-label">{item.label}</span>
-                </span>
-                <span className="sr-only">{item.label}</span>
+                {item.icon}
+                <span className="pf-n-nav-label">{item.label}</span>
               </ReliableActionButton>
             );
           })}
-      </nav>
+        </nav>
+      )}
     </main>
   );
 }

@@ -1935,6 +1935,69 @@ body:has(.pf-n) {
   overflow: hidden;
 }
 
+/* Avisos de guardado / error de la cuenta. */
+.pf-n-alert {
+  border-radius: var(--n-r-tile);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.pf-n-alert-error {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #fca5a5;
+}
+
+.pf-n-alert-ok {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: var(--n-green);
+}
+
+/* Foto de perfil dentro de Cuenta. */
+.pf-n-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pf-n-photo-preview {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--n-cyan);
+  flex-shrink: 0;
+}
+
+.pf-n-photo-preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--n-card-border);
+  background: var(--n-tile-bg);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  text-transform: uppercase;
+}
+
+.pf-n-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-n-photo-actions > * {
+  flex: 0 1 auto;
+  padding-inline: 14px;
+}
+
 .pf-n-signout {
   width: 100%;
   padding: 14px;
@@ -2041,6 +2104,44 @@ body:has(.pf-n) {
 
 .pf-n-bar-col-on .pf-n-bar-dow {
   color: var(--n-cyan-soft);
+}
+
+/* Fila del historial de entreno. */
+.pf-n-log {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--n-divider);
+}
+
+.pf-n-log:last-child {
+  border-bottom: none;
+}
+
+.pf-n-log-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.pf-n-log-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0;
+  min-width: 0;
+}
+
+.pf-n-log-time {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  flex-shrink: 0;
+}
+
+.pf-n-log-meta {
+  font-size: 11px;
+  color: var(--n-fg-45);
+  margin: 0;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2348,6 +2449,69 @@ body:has(.pf-n) {
   font-size: 11.5px;
   color: rgba(255, 255, 255, 0.65);
   margin: 0;
+}
+
+.pf-n-cover-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--n-fg-25);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(34, 211, 238, 0.1));
+}
+
+/* Reproductor real embebido (Spotify / YouTube / audio). */
+.pf-n-player-embed {
+  border-radius: var(--n-r-card);
+  overflow: hidden;
+  border: 1px solid var(--n-card-border);
+  background: rgba(0, 0, 0, 0.35);
+  margin-bottom: 14px;
+}
+
+.pf-n-player-embed iframe {
+  width: 100%;
+  border: none;
+  display: block;
+}
+
+.pf-n-player-embed audio {
+  width: 100%;
+  height: 48px;
+  display: block;
+}
+
+/* Fila de playlist en la lista de asignadas. */
+.pf-n-track-cover {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--n-tile-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-n-track-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-n-track-cover-empty {
+  font-size: 16px;
+  color: var(--n-fg-35);
+}
+
+.pf-n-pay-row-active {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.pf-n-pay-row-active .pf-n-row-chevron {
+  color: var(--n-cyan-soft);
 }
 
 .pf-n-player {
