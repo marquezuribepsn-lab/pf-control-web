@@ -9,7 +9,7 @@
  * botón de glow pulsante. 100% presentacional, datos de mentira.
  *
  * Nota: usa estilos inline + SVG inline (sin lucide-react, que no está instalado)
- * para no depender de la hoja .pf-a3-* real. Sirve como mesa de trabajo para
+ * para no depender de la hoja .pf-n-* real. Sirve como mesa de trabajo para
  * validar el diseño antes de portarlo al componente real del alumno.
  */
 

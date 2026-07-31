@@ -897,67 +897,54 @@ export default function AlumnoPagosClient() {
   }, [status?.latestApprovedOrder, status?.latestOrder]);
 
   return (
-    <main className="pf-alumno-main pf-alumno-v2">
-      <div className="pf-a2-shell pb-24 md:pb-8">
+    <main className="pf-n">
+      <div className="pf-n-stage">
         {statusRefreshLoading ? (
           <div
-            className="pf-a3-routine-log-overlay pf-a2-payments-loading-overlay"
+            className="pf-n-routine-log-overlay pf-n-payments-loading-overlay"
             role="status"
             aria-live="polite"
             aria-label="Actualizando estado de pagos"
           >
-            <section className="pf-a3-routine-empty pf-a3-routine-loading pf-a2-payments-loading-panel">
-              <div className="pf-a3-routine-loading-visual" aria-hidden="true">
-                <span className="pf-a3-routine-loading-ring" />
-                <span className="pf-a3-routine-loading-core">PF</span>
+            <section className="pf-n-routine-empty pf-n-routine-loading pf-n-payments-loading-panel">
+              <div className="pf-n-routine-loading-visual" aria-hidden="true">
+                <span className="pf-n-routine-loading-ring" />
+                <span className="pf-n-routine-loading-core">PF</span>
               </div>
-              <p className="pf-a3-routine-loading-brand">PF Control</p>
+              <p className="pf-n-routine-loading-brand">PF Control</p>
               <h2>Actualizando estado...</h2>
               <p>Sincronizando pagos y validaciones del centro.</p>
             </section>
           </div>
         ) : null}
 
-        <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
-          <div className="flex min-w-0 items-start gap-3">
-            <button
-              type="button"
-              onClick={() => { window.location.assign("/alumnos/inicio"); }}
-              className="pf-a2-back-btn mt-0.5"
-              aria-label="Volver al inicio"
-              title="Volver al inicio"
-              style={{ position: "relative", zIndex: 9999 }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="sr-only">Volver al inicio</span>
-            </button>
-
-            <div className="min-w-0">
-              <p className="pf-a2-eyebrow">BILLING</p>
-              <h1 className="mt-1 break-words text-[clamp(1.35rem,4vw,2.2rem)] font-black text-white">
-                Centro de pagos
-              </h1>
-            </div>
+        <div className="pf-n-detail-head">
+          <button
+            type="button"
+            onClick={() => { window.location.assign("/alumnos/inicio"); }}
+            className="pf-n-back"
+            aria-label="Volver al inicio"
+            title="Volver al inicio"
+          >
+            ‹
+          </button>
+          <div>
+            <p className="pf-n-eyebrow">Billing</p>
+            <h1 className="pf-n-title-sm">Centro de pagos</h1>
           </div>
+        </div>
 
-          {noMetaBlocksMP && !paymentsHiddenForNative ? (
-            <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-              El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno. Mientras tanto podes informar un pago manual abajo.
+        {noMetaBlocksMP && !paymentsHiddenForNative ? (
+          <div className="pf-n-gate">
+            <p className="pf-n-gate-text">
+              El pago con Mercado Pago requiere que el admin vincule tu cuenta al perfil de alumno.
+              Mientras tanto podes informar un pago manual abajo.
             </p>
-          ) : null}
-        </header>
+          </div>
+        ) : null}
 
         {message ? (
-          <section className="pf-a2-banner pf-a2-banner-ok flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
+          <section className="pf-n-banner pf-n-banner-ok flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
             <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${toneIconClasses("ok")}`}>
               <IconCheck className="h-4 w-4" />
             </span>
@@ -971,7 +958,7 @@ export default function AlumnoPagosClient() {
         ) : null}
 
         {error ? (
-          <section className="pf-a2-banner pf-a2-banner-danger flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
+          <section className="pf-n-banner pf-n-banner-danger flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
             <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${toneIconClasses("danger")}`}>
               <IconAlert className="h-4 w-4" />
             </span>
@@ -982,29 +969,29 @@ export default function AlumnoPagosClient() {
         <section className="grid gap-4">
           {/* Tarjeta del pase (rediseño): degradado teal -> cyan -> indigo con
               el estado, el vencimiento, el importe de renovacion y los dias. */}
-          <article className="pf-pay-pass">
-            <div className="pf-pay-pass-top">
-              <span className="pf-pay-pass-brand">PF Control · Pase</span>
-              <span className="pf-pay-pass-chip">PF</span>
+          <article className="pf-n-pass">
+            <div className="pf-n-pass-top">
+              <span className="pf-n-pass-brand">PF Control · Pase</span>
+              <span className="pf-n-pass-mark">PF</span>
             </div>
-            <p className="pf-pay-pass-state">
+            <p className="pf-n-pass-state">
               {loading ? "Consultando..." : isActive ? "Activo" : "Inhabilitado"}
             </p>
-            <p className="pf-pay-pass-sub">
+            <p className="pf-n-pass-owner">
               {status?.paymentSummary?.planValidUntil || status?.billing.endDate
                 ? `Vence ${formatDate(status?.paymentSummary?.planValidUntil || status?.billing.endDate)}`
                 : "Sin vencimiento cargado"}
             </p>
-            <div className="pf-pay-pass-foot">
+            <div className="pf-n-pass-foot">
               <div>
-                <p className="pf-pay-pass-label">Renueva por</p>
-                <p className="pf-pay-pass-value">
+                <p className="pf-n-pass-key">Renueva por</p>
+                <p className="pf-n-pass-val">
                   {formatMoney(status?.billing.amount || 0, status?.billing.currency || "ARS")}
                 </p>
               </div>
               <div className="text-right">
-                <p className="pf-pay-pass-label">Restan</p>
-                <p className="pf-pay-pass-value">
+                <p className="pf-n-pass-key">Restan</p>
+                <p className="pf-n-pass-val">
                   {typeof status?.daysRemaining === "number" ? `${status.daysRemaining} dias` : "-"}
                 </p>
               </div>
@@ -1012,13 +999,13 @@ export default function AlumnoPagosClient() {
           </article>
 
           {/* Ciclo de facturacion */}
-          <div className="pf-pay-cycle">
-            <div className="pf-pay-cycle-track">
-              <div className="pf-pay-cycle-fill" style={{ width: `${cycleProgress}%` }} />
+          <div className="pf-n-cycle">
+            <div className="pf-n-cycle-track">
+              <div className="pf-n-cycle-fill" style={{ width: `${cycleProgress}%` }} />
             </div>
-            <div className="pf-pay-cycle-legend">
+            <div className="pf-n-cycle-foot">
               <span>Ciclo de facturacion</span>
-              <span className="pf-pay-cycle-count">
+              <span className="pf-n-cycle-count">
                 {cycleElapsed}/{status?.billing.periodDays || 0} dias
               </span>
             </div>
@@ -1026,7 +1013,7 @@ export default function AlumnoPagosClient() {
 
           {/* Solo se muestra si hay contenido: QR de tienda o el aviso nativo. */}
           {(canUseQrStore && !paymentsHiddenForNative) || showNativeFallback ? (
-          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+          <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
 
             {canUseQrStore && !paymentsHiddenForNative ? (
               <section className="mt-4 rounded-xl border border-violet-300/30 bg-violet-500/10 p-3">
@@ -1089,7 +1076,7 @@ export default function AlumnoPagosClient() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <ReliableLink
                     href="/alumnos/inicio"
-                    className="pf-a2-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
+                    className="pf-n-ghost-btn inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold"
                   >
                     Ir a inicio
                   </ReliableLink>
@@ -1107,7 +1094,7 @@ export default function AlumnoPagosClient() {
                   type="button"
                   onClick={startCheckout}
                   disabled={!canPay || checkoutLoading || loading || statusRefreshLoading}
-                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
+                  className="pf-n-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white">
                     <MercadoPagoLogo className="h-6 w-9" />
@@ -1123,7 +1110,7 @@ export default function AlumnoPagosClient() {
                   type="button"
                   onClick={openManualSheet}
                   disabled={!canRequestManual || loading || statusRefreshLoading}
-                  className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
+                  className="pf-n-card flex items-center gap-3 rounded-2xl border p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-45"
                   aria-haspopup="dialog"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-300/30 bg-violet-500/15 text-violet-200">
@@ -1146,7 +1133,7 @@ export default function AlumnoPagosClient() {
                 activityItems.map((item) => (
                   <div
                     key={item.id}
-                    className="pf-a2-card flex items-center gap-3 rounded-2xl border p-3"
+                    className="pf-n-card flex items-center gap-3 rounded-2xl border p-3"
                   >
                     <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${toneIconClasses(item.tone)}`}>
                       {item.icon === "check" ? (
@@ -1167,7 +1154,7 @@ export default function AlumnoPagosClient() {
                   </div>
                 ))
               ) : (
-                <p className="pf-a2-card rounded-2xl border p-3.5 text-xs text-slate-400">
+                <p className="pf-n-card rounded-2xl border p-3.5 text-xs text-slate-400">
                   Todavia no hay actividad reciente para mostrar.
                 </p>
               )}
@@ -1179,7 +1166,7 @@ export default function AlumnoPagosClient() {
       {mounted && manualSheetOpen
         ? createPortal(
         <div
-          className="pf-alumno-v2 pf-a2-portal fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
+          className="pf-alumno-v2 pf-n-portal fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-labelledby="manual-sheet-title"
@@ -1191,12 +1178,12 @@ export default function AlumnoPagosClient() {
             className="absolute inset-0 h-full w-full cursor-default bg-black/65 backdrop-blur-sm"
           />
 
-          <section className="pf-a2-sheet relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-[1.6rem] border p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-[1.6rem] sm:pb-5">
+          <section className="pf-n-sheet relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-[1.6rem] border p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-[1.6rem] sm:pb-5">
             <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-white/20 sm:hidden" />
 
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="pf-a2-eyebrow">Pago manual</p>
+                <p className="pf-n-eyebrow">Pago manual</p>
                 <h2 id="manual-sheet-title" className="mt-1 text-xl font-black text-white">
                   Informar pago
                 </h2>
@@ -1205,7 +1192,7 @@ export default function AlumnoPagosClient() {
                 type="button"
                 onClick={closeManualSheet}
                 aria-label="Cerrar"
-                className="pf-a2-back-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+                className="pf-n-back-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
               >
                 <IconClose className="h-4 w-4" />
               </button>
@@ -1285,7 +1272,7 @@ export default function AlumnoPagosClient() {
               value={manualAmount}
               onChange={(event) => setManualAmount(event.target.value)}
               placeholder="0"
-              className="pf-a2-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2.5 text-base font-semibold text-slate-100 outline-none focus:border-sky-300/65"
+              className="pf-n-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2.5 text-base font-semibold text-slate-100 outline-none focus:border-sky-300/65"
             />
             {status?.billing.amount ? (
               <p className="mt-1.5 text-xs text-slate-400">
@@ -1358,7 +1345,7 @@ export default function AlumnoPagosClient() {
               onChange={(event) => setManualNote(event.target.value)}
               placeholder="Referencia, numero de operacion o comentario"
               rows={3}
-              className="pf-a2-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-300/65"
+              className="pf-n-input mt-2 w-full rounded-xl border border-slate-500/55 bg-slate-900/55 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-300/65"
             />
 
             {manualFileError ? (
@@ -1372,7 +1359,7 @@ export default function AlumnoPagosClient() {
                 type="button"
                 onClick={() => void submitManualPayment()}
                 disabled={manualSubmitting}
-                className="pf-a2-solid-btn inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                className="pf-n-solid-btn inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {manualSubmitting ? "Enviando..." : "Enviar informe"}
               </ReliableActionButton>
@@ -1380,7 +1367,7 @@ export default function AlumnoPagosClient() {
                 type="button"
                 onClick={closeManualSheet}
                 disabled={manualSubmitting}
-                className="pf-a2-ghost-btn rounded-2xl border px-4 py-3 text-sm font-semibold disabled:opacity-45"
+                className="pf-n-ghost-btn rounded-2xl border px-4 py-3 text-sm font-semibold disabled:opacity-45"
               >
                 Cancelar
               </button>

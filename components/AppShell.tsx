@@ -1776,7 +1776,7 @@ export default function AppShell({
       />
       {alumnosBootLoading ? (
         <div
-          className="pf-a3-routine-log-overlay pf-a3-routine-log-overlay-mobile z-[121]"
+          className="pf-n-routine-log-overlay pf-n-routine-log-overlay-mobile z-[121]"
           aria-live="polite"
           style={{
             position: "fixed",
@@ -1788,12 +1788,12 @@ export default function AppShell({
             padding: "16px",
           }}
         >
-          <section className="pf-a3-routine-empty pf-a3-routine-loading w-[min(420px,92vw)]">
-            <div className="pf-a3-routine-loading-visual" aria-hidden="true">
-              <span className="pf-a3-routine-loading-ring" />
-              <span className="pf-a3-routine-loading-core">PF</span>
+          <section className="pf-n-routine-empty pf-n-routine-loading w-[min(420px,92vw)]">
+            <div className="pf-n-routine-loading-visual" aria-hidden="true">
+              <span className="pf-n-routine-loading-ring" />
+              <span className="pf-n-routine-loading-core">PF</span>
             </div>
-            <p className="pf-a3-routine-loading-brand">PF Control</p>
+            <p className="pf-n-routine-loading-brand">PF Control</p>
             <h2>Cargando plataforma...</h2>
             <p>Preparando tu pantalla.</p>
           </section>

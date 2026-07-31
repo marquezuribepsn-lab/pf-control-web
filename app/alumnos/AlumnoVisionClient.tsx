@@ -9,7 +9,6 @@ import MacroDonut, { MacroSegment } from "@/components/MacroDonut";
 import FraseDelDia from "@/components/FraseDelDia";
 import InicioAnillos from "@/components/InicioAnillos";
 import InicioDiasSemana from "@/components/InicioDiasSemana";
-import InicioActividadReciente from "@/components/InicioActividadReciente";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
 import { useSessions } from "@/components/SessionsProvider";
@@ -88,12 +87,12 @@ function RoutineStepperField({
   };
 
   return (
-    <label className={`pf-a3-routine-log-field pf-a3-stepper-field ${className || ""}`}>
+    <label className={`pf-n-log-field pf-n-stepper-field ${className || ""}`}>
       <span>{label}</span>
-      <div className="pf-a3-stepper-row">
+      <div className="pf-n-stepper-row">
         <button
           type="button"
-          className="pf-a3-stepper-btn"
+          className="pf-n-stepper-btn"
           onClick={() => adjust(-step)}
           aria-label={`Restar ${step}`}
         >
@@ -107,7 +106,7 @@ function RoutineStepperField({
         />
         <button
           type="button"
-          className="pf-a3-stepper-btn"
+          className="pf-n-stepper-btn"
           onClick={() => adjust(step)}
           aria-label={`Sumar ${step}`}
         >
@@ -115,12 +114,12 @@ function RoutineStepperField({
         </button>
       </div>
       {quickAdds && quickAdds.length > 0 ? (
-        <div className="pf-a3-stepper-chips">
+        <div className="pf-n-stepper-chips">
           {quickAdds.map((amt) => (
             <button
               type="button"
               key={amt}
-              className="pf-a3-stepper-chip"
+              className="pf-n-stepper-chip"
               onClick={() => adjust(amt)}
             >
               +{amt}
@@ -888,7 +887,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     title: "Nena Sad",
     artist: "ORO600, Pablo C...",
     coverUrl: null,
-    accentClass: "pf-a3-music-card-fallback-a",
+    accentClass: "pf-n-music-card-fallback-a",
     playlistUrl: null,
     platform: "OTHER",
     contentType: "SONG",
@@ -898,7 +897,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     title: "Llueve",
     artist: "Wisin & Yandel",
     coverUrl: null,
-    accentClass: "pf-a3-music-card-fallback-b",
+    accentClass: "pf-n-music-card-fallback-b",
     playlistUrl: null,
     platform: "OTHER",
     contentType: "SONG",
@@ -908,7 +907,7 @@ const HOME_MUSIC_FALLBACK: HomeMusicCard[] = [
     title: "Diabolica",
     artist: "Cris MJ, Dei V",
     coverUrl: null,
-    accentClass: "pf-a3-music-card-fallback-c",
+    accentClass: "pf-n-music-card-fallback-c",
     playlistUrl: null,
     platform: "OTHER",
     contentType: "SONG",
@@ -6916,10 +6915,10 @@ export default function AlumnoVisionClient({
 
   const homeMusicCards = useMemo<HomeMusicCard[]>(() => {
     const accents = [
-      "pf-a3-music-card-fallback-a",
-      "pf-a3-music-card-fallback-b",
-      "pf-a3-music-card-fallback-c",
-      "pf-a3-music-card-fallback-d",
+      "pf-n-music-card-fallback-a",
+      "pf-n-music-card-fallback-b",
+      "pf-n-music-card-fallback-c",
+      "pf-n-music-card-fallback-d",
     ];
 
     const maxCards = isUltraMobile ? 3 : 8;
@@ -9442,17 +9441,17 @@ export default function AlumnoVisionClient({
                 </>
               ) : null}
               {routineDayWeekLoading ? (
-                <section className="pf-a3-routine-empty pf-a3-routine-loading" aria-live="polite">
-                  <div className="pf-a3-routine-loading-visual" aria-hidden="true">
-                    <span className="pf-a3-routine-loading-ring" />
-                    <span className="pf-a3-routine-loading-core">PF</span>
+                <section className="pf-n-routine-empty pf-n-routine-loading" aria-live="polite">
+                  <div className="pf-n-routine-loading-visual" aria-hidden="true">
+                    <span className="pf-n-routine-loading-ring" />
+                    <span className="pf-n-routine-loading-core">PF</span>
                   </div>
-                  <p className="pf-a3-routine-loading-brand">PF Control</p>
+                  <p className="pf-n-routine-loading-brand">PF Control</p>
                   <h2>Cargando ejercicios...</h2>
                   <p>Actualizando rutina del dia o semana seleccionada.</p>
                 </section>
               ) : !selectedRoutineEntry ? (
-                <section className="pf-a3-routine-empty">
+                <section className="pf-n-routine-empty">
                   <h2>{hasWeekPlanRoutine ? "Sin bloques para este día" : "No hay sesiones cargadas"}</h2>
                   <p>
                     {hasWeekPlanRoutine
@@ -9461,7 +9460,7 @@ export default function AlumnoVisionClient({
                   </p>
                 </section>
               ) : (
-                <article key={selectedRoutineEntry.sesion.id} className="pf-a3-routine-session-card">
+                <article key={selectedRoutineEntry.sesion.id} className="pf-n-routine-session-card">
                   {(() => {
                     if (todayRoutineCompletion) {
                       const completedDate = new Date(todayRoutineCompletion.completedAt);
@@ -9469,62 +9468,62 @@ export default function AlumnoVisionClient({
                         completedDate.getMonth() + 1
                       ).padStart(2, "0")}/${completedDate.getFullYear()}`;
                       return (
-                        <div className="pf-a3-routine-flow-card pf-a3-routine-exercise-group-linked">
-                          <div className="pf-a3-routine-flow-icon-ok" aria-hidden="true">
+                        <div className="pf-n-routine-flow-card pf-n-routine-exercise-group-linked">
+                          <div className="pf-n-routine-flow-icon-ok" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                               <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </div>
-                          <p className="pf-a3-routine-flow-title">Entrenamiento del {completedLabel} completado</p>
+                          <p className="pf-n-routine-flow-title">Entrenamiento del {completedLabel} completado</p>
                           <ReliableActionButton
                             type="button"
                             onClick={() => {
                               clearRoutineCompletionToday();
                               startGuidedTraining();
                             }}
-                            className="pf-a3-routine-flow-cta"
+                            className="pf-n-routine-flow-cta"
                           >
                             Repetir entrenamiento
                           </ReliableActionButton>
-                          <p className="pf-a3-routine-flow-subtitle">Ver registros de hoy</p>
+                          <p className="pf-n-routine-flow-subtitle">Ver registros de hoy</p>
                         </div>
                       );
                     }
                     return (
-                      <div className="pf-a3-routine-flow-card pf-a3-routine-exercise-group-linked">
+                      <div className="pf-n-routine-flow-card pf-n-routine-exercise-group-linked">
                         {guidedPausedState ? (
                           <>
-                            <p className="pf-a3-routine-flow-title">Entrenamiento en pausa</p>
-                            <p className="pf-a3-routine-flow-subtitle">
+                            <p className="pf-n-routine-flow-title">Entrenamiento en pausa</p>
+                            <p className="pf-n-routine-flow-subtitle">
                               Ejercicio {guidedPausedState.index + 1} de {guidedRoutineSteps.length} — retomás desde donde lo dejaste
                             </p>
                             <ReliableActionButton
                               type="button"
                               onClick={startGuidedTraining}
                               disabled={guidedRoutineSteps.length === 0}
-                              className="pf-a3-routine-flow-cta pf-a3-routine-flow-cta-resume"
+                              className="pf-n-routine-flow-cta pf-n-routine-flow-cta-resume"
                             >
                               Reanudar entrenamiento
                             </ReliableActionButton>
                             <button
                               type="button"
                               onClick={() => { setGuidedPausedState(null); }}
-                              className="pf-a3-routine-flow-discard-btn"
+                              className="pf-n-routine-flow-discard-btn"
                             >
                               Descartar y empezar de cero
                             </button>
                           </>
                         ) : (
                           <>
-                            <p className="pf-a3-routine-flow-title">Estás listo para entrenar</p>
-                            <p className="pf-a3-routine-flow-subtitle">
+                            <p className="pf-n-routine-flow-title">Estás listo para entrenar</p>
+                            <p className="pf-n-routine-flow-subtitle">
                               {guidedRoutineSteps.length} ejercicio{guidedRoutineSteps.length === 1 ? "" : "s"} en esta sesión
                             </p>
                             <ReliableActionButton
                               type="button"
                               onClick={startGuidedTraining}
                               disabled={guidedRoutineSteps.length === 0}
-                              className="pf-a3-routine-flow-cta"
+                              className="pf-n-routine-flow-cta"
                             >
                               Comenzar a entrenar
                             </ReliableActionButton>
@@ -9534,7 +9533,7 @@ export default function AlumnoVisionClient({
                     );
                   })()}
                   {false ? (
-                  <div className="pf-a3-routine-block-stack">
+                  <div className="pf-n-routine-block-stack">
                     {routineVisibleBlocks.map((block, blockIndex) => {
                       const blockKey = `${selectedRoutineEntry.sesion.id}-${block.id}`;
                       const isExpanded = true;
@@ -9546,12 +9545,12 @@ export default function AlumnoVisionClient({
                         );
 
                       return (
-                        <section key={blockKey} className="pf-a3-routine-block">
-                          {block.objetivo ? <p className="pf-a3-routine-block-note">{block.objetivo}</p> : null}
-                          {hasSupersetFlag ? <p className="pf-a3-routine-block-alert">Superserie</p> : null}
+                        <section key={blockKey} className="pf-n-routine-block">
+                          {block.objetivo ? <p className="pf-n-routine-block-note">{block.objetivo}</p> : null}
+                          {hasSupersetFlag ? <p className="pf-n-routine-block-alert">Superserie</p> : null}
 
                           {visibleExercises.length > 0 ? (
-                            <div className="pf-a3-routine-exercise-stack">
+                            <div className="pf-n-routine-exercise-stack">
                               {visibleExercises.map((exercise, index) => {
                                 const baseExerciseId = String(exercise.ejercicioId || `exercise-${index + 1}`);
                                 const baseExerciseDetail = exercise.ejercicioId
@@ -9613,18 +9612,18 @@ export default function AlumnoVisionClient({
                                 return (
                                   <div
                                     key={`${block.id}-group-${exercise.ejercicioId || index}`}
-                                    className={`pf-a3-routine-exercise-group ${
-                                      hasSuperSerieGroup ? "pf-a3-routine-exercise-group-linked" : ""
+                                    className={`pf-n-routine-exercise-group ${
+                                      hasSuperSerieGroup ? "pf-n-routine-exercise-group-linked" : ""
                                     }`}
                                   >
                                     {hasSuperSerieGroup ? (
-                                      <p className="pf-a3-routine-exercise-group-badge">
+                                      <p className="pf-n-routine-exercise-group-badge">
                                         <span>Super serie</span>
                                         <strong>{superSerieRows.length + 1} ejercicios fusionados</strong>
                                       </p>
                                     ) : null}
 
-                                    <div className="pf-a3-routine-exercise-group-stack">
+                                    <div className="pf-n-routine-exercise-group-stack">
                                       {rows.map((row) => {
                                         const rirMetric = row.metricas.find((metric) =>
                                           normalizePersonKey(metric.nombre).includes("rir")
@@ -9687,31 +9686,31 @@ export default function AlumnoVisionClient({
                                         return (
                                           <article
                                             key={`${block.id}-${row.rowKeySuffix}`}
-                                            className={`pf-a3-routine-exercise-row ${
+                                            className={`pf-n-routine-exercise-row ${
                                               row.isSuperSerie
-                                                ? "pf-a3-routine-exercise-row-superset"
-                                                : "pf-a3-routine-exercise-row-base"
+                                                ? "pf-n-routine-exercise-row-superset"
+                                                : "pf-n-routine-exercise-row-base"
                                             }`}
                                           >
-                                            <div className="pf-a3-routine-exercise-main">
+                                            <div className="pf-n-routine-exercise-main">
                                               <span
-                                                className={`pf-a3-routine-exercise-index ${
-                                                  row.isSuperSerie ? "pf-a3-routine-exercise-index-superset" : ""
+                                                className={`pf-n-routine-exercise-index ${
+                                                  row.isSuperSerie ? "pf-n-routine-exercise-index-superset" : ""
                                                 }`}
                                               >
                                                 {row.isSuperSerie ? "SS" : index + 1}
                                               </span>
                                               <span
-                                                className={`pf-a3-routine-exercise-thumb ${
+                                                className={`pf-n-routine-exercise-thumb ${
                                                   hasVideoPreview
-                                                    ? "pf-a3-routine-exercise-thumb-has-media"
+                                                    ? "pf-n-routine-exercise-thumb-has-media"
                                                     : ""
                                                 }`}
                                                 aria-hidden="true"
                                               >
                                                 {rowVideoSource.kind === "video" ? (
                                                   <video
-                                                    className="pf-a3-routine-exercise-thumb-media"
+                                                    className="pf-n-routine-exercise-thumb-media"
                                                     src={rowVideoSource.src}
                                                     muted
                                                     playsInline
@@ -9721,7 +9720,7 @@ export default function AlumnoVisionClient({
                                                   <img
                                                     src={rowYouTubeThumbnail}
                                                     alt=""
-                                                    className="pf-a3-routine-exercise-thumb-media"
+                                                    className="pf-n-routine-exercise-thumb-media"
                                                     loading="lazy"
                                                     decoding="async"
                                                   />
@@ -9730,7 +9729,7 @@ export default function AlumnoVisionClient({
                                                 )}
 
                                                 {hasVideoPreview ? (
-                                                  <span className="pf-a3-routine-exercise-thumb-play" aria-hidden="true">
+                                                  <span className="pf-n-routine-exercise-thumb-play" aria-hidden="true">
                                                     ▶
                                                   </span>
                                                 ) : null}
@@ -9739,50 +9738,50 @@ export default function AlumnoVisionClient({
                                                 <ReliableActionButton
                                                   type="button"
                                                   onClick={() => openRoutineExerciseLogPanel(exerciseLogTarget)}
-                                                  className="pf-a3-routine-exercise-name-btn"
+                                                  className="pf-n-routine-exercise-name-btn"
                                                   aria-label={`Registrar cargas de ${row.rowName}`}
                                                 >
-                                                  <p className="pf-a3-routine-exercise-name">
+                                                  <p className="pf-n-routine-exercise-name">
                                                     {row.rowHeadline}
                                                   </p>
                                                 </ReliableActionButton>
-                                                <p className="pf-a3-routine-exercise-desc">{rowDescription}</p>
+                                                <p className="pf-n-routine-exercise-desc">{rowDescription}</p>
                                               </div>
                                             </div>
 
-                                            <div className="pf-a3-routine-exercise-stats">
-                                              <div className="pf-a3-routine-exercise-stat">
+                                            <div className="pf-n-routine-exercise-stats">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>Series:</span>
                                                 <strong>{row.series || "S/D"}</strong>
                                               </div>
-                                              <div className="pf-a3-routine-exercise-stat">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>Rep.:</span>
                                                 <strong>{row.repeticiones || "S/D"}</strong>
                                               </div>
-                                              <div className="pf-a3-routine-exercise-stat">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>Desc.:</span>
                                                 <strong>{row.descanso || "S/D"}</strong>
                                               </div>
-                                              <div className="pf-a3-routine-exercise-stat">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>RIR:</span>
                                                 <strong>{rirMetric?.valor || "S/D"}</strong>
                                               </div>
-                                              <div className="pf-a3-routine-exercise-stat">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>Carga (Kg):</span>
                                                 <strong>{row.carga || "S/D"}</strong>
                                               </div>
-                                              <div className="pf-a3-routine-exercise-stat">
+                                              <div className="pf-n-routine-exercise-stat">
                                                 <span>Obs.:</span>
                                                 <strong>{row.observaciones || "S/D"}</strong>
                                               </div>
                                             </div>
 
                                             {rowTags.length > 0 ? (
-                                              <div className="pf-a3-routine-exercise-tags">
+                                              <div className="pf-n-tags">
                                                 {rowTags.map((tag, tagIndex) => (
                                                   <span
                                                     key={`${block.id}-${row.rowKeySuffix}-${tagIndex}`}
-                                                    className="pf-a3-routine-exercise-tag"
+                                                    className="pf-n-tag"
                                                   >
                                                     {tag}
                                                   </span>
@@ -9813,7 +9812,7 @@ export default function AlumnoVisionClient({
                           Math.min(previous + 2, selectedRoutineEntry.blocks.length)
                         )
                       }
-                      className="pf-a3-routine-more"
+                      className="pf-n-routine-more"
                     >
                       Cargar 2 bloques mas ({routineRemainingBlocks} restantes)
                     </ReliableActionButton>
@@ -9825,41 +9824,41 @@ export default function AlumnoVisionClient({
               {activeRoutineActionScreen !== "none" && activeRoutineActionScreen !== "timer" && typeof document !== "undefined"
                 ? createPortal(
                 <div
-                  className={`pf-a3-routine-log-overlay ${
-                    isUltraMobile ? "pf-a3-routine-log-overlay-mobile" : ""
-                  } pf-a3-routine-action-overlay`}
+                  className={`pf-n-log-overlay ${
+                    isUltraMobile ? "pf-n-log-overlay-mobile" : ""
+                  } pf-n-routine-action-overlay`}
                   role="dialog"
                   aria-modal="true"
                 >
                   <article
-                    className={`pf-a3-routine-log-panel ${
-                      isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
-                    } pf-a3-routine-action-panel ${
+                    className={`pf-n-log-panel ${
+                      isUltraMobile ? "pf-n-log-panel-mobile" : ""
+                    } pf-n-routine-action-panel ${
                       activeRoutineActionScreen === "change"
-                        ? "pf-a3-routine-action-panel-change"
+                        ? "pf-n-routine-action-panel-change"
                         : activeRoutineActionScreen === "sessions"
-                          ? "pf-a3-routine-action-panel-sessions"
-                          : "pf-a3-routine-action-panel-finalize"
+                          ? "pf-n-routine-action-panel-sessions"
+                          : "pf-n-routine-action-panel-finalize"
                     }`}
                   >
                     {routineActionScreenLoading ? (
                       <>
-                        <div className="pf-a3-routine-log-head">
+                        <div className="pf-n-log-head">
                           <div className="min-w-0">
-                            <p className="pf-a3-routine-log-kicker">Cargando</p>
-                            <h3 className="pf-a3-routine-log-title">
+                            <p className="pf-n-log-kicker">Cargando</p>
+                            <h3 className="pf-n-log-title">
                               {activeRoutineActionScreen === "change"
                                 ? "Solicitud de cambio"
                                 : activeRoutineActionScreen === "sessions"
                                   ? "Sesiones finalizadas"
                                   : "Finalizar sesión"}
                             </h3>
-                            <p className="pf-a3-routine-log-meta">Preparando pantalla.</p>
+                            <p className="pf-n-log-meta">Preparando pantalla.</p>
                           </div>
                           <ReliableActionButton
                             type="button"
                             onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-log-close"
+                            className="pf-n-log-close"
                             aria-label="Cerrar panel"
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -9868,23 +9867,23 @@ export default function AlumnoVisionClient({
                           </ReliableActionButton>
                         </div>
 
-                        <section className="pf-a3-routine-empty pf-a3-routine-loading pf-a3-routine-action-loading" aria-live="polite">
-                          <div className="pf-a3-routine-loading-visual" aria-hidden="true">
-                            <span className="pf-a3-routine-loading-ring" />
-                            <span className="pf-a3-routine-loading-core">PF</span>
+                        <section className="pf-n-routine-empty pf-n-routine-loading pf-n-routine-action-loading" aria-live="polite">
+                          <div className="pf-n-routine-loading-visual" aria-hidden="true">
+                            <span className="pf-n-routine-loading-ring" />
+                            <span className="pf-n-routine-loading-core">PF</span>
                           </div>
-                          <p className="pf-a3-routine-loading-brand">PF Control</p>
+                          <p className="pf-n-routine-loading-brand">PF Control</p>
                           <h2>Cargando panel...</h2>
                           <p>Actualizando vista de rutina.</p>
                         </section>
                       </>
                     ) : activeRoutineActionScreen === "change" ? (
                       <>
-                        <div className="pf-a3-routine-log-head">
+                        <div className="pf-n-log-head">
                           <div className="min-w-0">
-                            <p className="pf-a3-routine-log-kicker">Solicitud</p>
-                            <h3 className="pf-a3-routine-log-title">Solicitar cambio de rutina</h3>
-                            <p className="pf-a3-routine-log-meta">
+                            <p className="pf-n-log-kicker">Solicitud</p>
+                            <h3 className="pf-n-log-title">Solicitar cambio de rutina</h3>
+                            <p className="pf-n-log-meta">
                               Envia al profesor el motivo para ajustar este día o sesión.
                             </p>
                           </div>
@@ -9892,7 +9891,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-log-close"
+                            className="pf-n-log-close"
                             aria-label="Cerrar solicitud"
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -9905,40 +9904,40 @@ export default function AlumnoVisionClient({
                           value={routineChangeRequestDraft}
                           onChange={(event) => setRoutineChangeRequestDraft(event.target.value)}
                           rows={4}
-                          className="pf-a3-routine-action-textarea"
+                          className="pf-n-routine-action-textarea"
                           placeholder="Ej: esta variante me genera dolor en rodilla y necesito otra opción de ejercicio."
                         />
 
-                        <div className="pf-a3-routine-action-row">
-                          <span className="pf-a3-routine-action-counter">
+                        <div className="pf-n-routine-action-row">
+                          <span className="pf-n-routine-action-counter">
                             {routineChangeRequestDraft.trim().length} caracteres
                           </span>
                           <ReliableActionButton
                             type="button"
                             onClick={submitRoutineChangeRequest}
-                            className="pf-a3-routine-action-primary pf-a3-routine-action-primary-change"
+                            className="pf-n-routine-action-primary pf-n-routine-action-primary-change"
                           >
                             Enviar solicitud
                           </ReliableActionButton>
                         </div>
 
                         {routineChangeRequestStatus ? (
-                          <p className="pf-a3-routine-action-status">{routineChangeRequestStatus}</p>
+                          <p className="pf-n-routine-action-status">{routineChangeRequestStatus}</p>
                         ) : null}
 
                         {routineChangeRequests[0] ? (
-                          <p className="pf-a3-routine-action-meta">
+                          <p className="pf-n-routine-action-meta">
                             Última solicitud: {formatDateTime(routineChangeRequests[0].createdAt)} hs
                           </p>
                         ) : null}
                       </>
                     ) : activeRoutineActionScreen === "sessions" ? (
                       <>
-                        <div className="pf-a3-routine-log-head">
+                        <div className="pf-n-log-head">
                           <div className="min-w-0">
-                            <p className="pf-a3-routine-log-kicker">Historial</p>
-                            <h3 className="pf-a3-routine-log-title">Sesiones finalizadas</h3>
-                            <p className="pf-a3-routine-log-meta">
+                            <p className="pf-n-log-kicker">Historial</p>
+                            <h3 className="pf-n-log-title">Sesiones finalizadas</h3>
+                            <p className="pf-n-log-meta">
                               Historial de cierres diarios con feedback enviado.
                             </p>
                           </div>
@@ -9946,7 +9945,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-log-close"
+                            className="pf-n-log-close"
                             aria-label="Cerrar historial"
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -9956,15 +9955,15 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {routineSessionFeedbackHistory.length === 0 ? (
-                          <p className="pf-a3-routine-action-empty">Todavía no finalizaste sesiones con feedback.</p>
+                          <p className="pf-n-routine-action-empty">Todavía no finalizaste sesiones con feedback.</p>
                         ) : (
-                          <div className="pf-a3-routine-action-list">
+                          <div className="pf-n-routine-action-list">
                             {routineSessionFeedbackHistory.map((record) => (
                               <article
                                 key={record.id}
-                                className="pf-a3-routine-action-card"
+                                className="pf-n-routine-action-card"
                               >
-                                <div className="pf-a3-routine-action-card-head">
+                                <div className="pf-n-routine-action-card-head">
                                   <p>
                                     {record.dayName || record.sessionTitle || "Sesión"}
                                   </p>
@@ -9972,7 +9971,7 @@ export default function AlumnoVisionClient({
                                 </div>
 
                                 {record.answers.length > 0 ? (
-                                  <ul className="pf-a3-routine-action-answer-list">
+                                  <ul className="pf-n-routine-action-answer-list">
                                     {record.answers.map((answer) => (
                                       <li key={`${record.id}-${answer.questionId}-${answer.optionId}`}>
                                         {answer.questionPrompt}: <span>{answer.optionLabel}</span>
@@ -9980,10 +9979,10 @@ export default function AlumnoVisionClient({
                                     ))}
                                   </ul>
                                 ) : (
-                                  <p className="pf-a3-routine-action-meta">Sin respuestas cargadas.</p>
+                                  <p className="pf-n-routine-action-meta">Sin respuestas cargadas.</p>
                                 )}
 
-                                <p className="pf-a3-routine-action-meta">
+                                <p className="pf-n-routine-action-meta">
                                   Registros del día: {record.totalWorkoutLogs || 0} · Con molestia: {record.logsWithPain || 0}
                                 </p>
                               </article>
@@ -9993,11 +9992,11 @@ export default function AlumnoVisionClient({
                       </>
                     ) : (
                       <>
-                        <div className="pf-a3-routine-log-head">
+                        <div className="pf-n-log-head">
                           <div className="min-w-0">
-                            <p className="pf-a3-routine-log-kicker">Feedback</p>
-                            <h3 className="pf-a3-routine-log-title">Finalizar sesión</h3>
-                            <p className="pf-a3-routine-log-meta">
+                            <p className="pf-n-log-kicker">Feedback</p>
+                            <h3 className="pf-n-log-title">Finalizar sesión</h3>
+                            <p className="pf-n-log-meta">
                               Cierra el día y envía tu feedback al profesor.
                             </p>
                           </div>
@@ -10005,7 +10004,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={closeRoutineActionScreen}
-                            className="pf-a3-routine-log-close"
+                            className="pf-n-log-close"
                             aria-label="Cerrar finalización"
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -10048,12 +10047,12 @@ export default function AlumnoVisionClient({
 
                           if (totalSteps === 0 || !step) {
                             return (
-                              <div className="pf-a3-survey-empty">
+                              <div className="pf-n-survey-empty">
                                 <p>Sesión lista para cerrar.</p>
                                 <ReliableActionButton
                                   type="button"
                                   onClick={submitRoutineFinalize}
-                                  className="pf-a3-survey-finish-btn"
+                                  className="pf-n-survey-finish-btn"
                                 >
                                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="16" height="16" aria-hidden="true">
                                     <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -10065,32 +10064,32 @@ export default function AlumnoVisionClient({
                           }
 
                           return (
-                            <div key={currentStep} className="pf-a3-survey-step">
+                            <div key={currentStep} className="pf-n-survey-step">
                               {/* progress pips */}
-                              <div className="pf-a3-survey-progress">
+                              <div className="pf-n-survey-progress">
                                 {allSteps.map((_, i) => (
                                   <span
                                     key={i}
-                                    className={`pf-a3-survey-pip ${
+                                    className={`pf-n-survey-pip ${
                                       i < currentStep
-                                        ? "pf-a3-survey-pip-done"
+                                        ? "pf-n-survey-pip-done"
                                         : i === currentStep
-                                          ? "pf-a3-survey-pip-active"
-                                          : "pf-a3-survey-pip-pending"
+                                          ? "pf-n-survey-pip-active"
+                                          : "pf-n-survey-pip-pending"
                                     }`}
                                   />
                                 ))}
                               </div>
 
-                              <p className="pf-a3-survey-counter">
+                              <p className="pf-n-survey-counter">
                                 {currentStep + 1} / {totalSteps}
                               </p>
 
                               {step.kind === "measurement" ? (
                                 <>
-                                  <p className="pf-a3-survey-label">{step.catalog.nombre}</p>
+                                  <p className="pf-n-survey-label">{step.catalog.nombre}</p>
                                   {step.catalog.tipo === "scale" ? (
-                                    <div className="pf-a3-survey-scale-row">
+                                    <div className="pf-n-survey-scale-row">
                                       {Array.from(
                                         { length: (step.catalog.max ?? 10) - (step.catalog.min ?? 1) + 1 },
                                         (_, i) => {
@@ -10100,7 +10099,7 @@ export default function AlumnoVisionClient({
                                             <button
                                               key={v}
                                               type="button"
-                                              className={`pf-a3-survey-scale-btn ${isActive ? "pf-a3-survey-scale-btn-active" : ""}`}
+                                              className={`pf-n-survey-scale-btn ${isActive ? "pf-n-survey-scale-btn-active" : ""}`}
                                               onClick={() =>
                                                 autoAdvance(() =>
                                                   setRoutineFinalizeMeasurements((prev) => ({ ...prev, [step.catalog.id]: v }))
@@ -10114,14 +10113,14 @@ export default function AlumnoVisionClient({
                                       )}
                                     </div>
                                   ) : step.catalog.tipo === "select" ? (
-                                    <div className="pf-a3-survey-options-row">
+                                    <div className="pf-n-survey-options-row">
                                       {(step.catalog.opciones ?? []).map((opt) => {
                                         const isActive = String(routineFinalizeMeasurements[step.catalog.id] || "") === opt;
                                         return (
                                           <button
                                             key={opt}
                                             type="button"
-                                            className={`pf-a3-survey-option-btn ${isActive ? "pf-a3-survey-option-btn-active" : ""}`}
+                                            className={`pf-n-survey-option-btn ${isActive ? "pf-n-survey-option-btn-active" : ""}`}
                                             onClick={() =>
                                               autoAdvance(() =>
                                                 setRoutineFinalizeMeasurements((prev) => ({ ...prev, [step.catalog.id]: opt }))
@@ -10135,7 +10134,7 @@ export default function AlumnoVisionClient({
                                     </div>
                                   ) : step.catalog.tipo === "text" ? (
                                     <textarea
-                                      className="pf-a3-survey-textarea"
+                                      className="pf-n-survey-textarea"
                                       rows={3}
                                       placeholder="Opcional..."
                                       value={String(routineFinalizeMeasurements[step.catalog.id] || "")}
@@ -10149,7 +10148,7 @@ export default function AlumnoVisionClient({
                                   ) : (
                                     <input
                                       type="number"
-                                      className="pf-a3-survey-number"
+                                      className="pf-n-survey-number"
                                       placeholder={`${step.catalog.min ?? 1}–${step.catalog.max ?? 999}`}
                                       min={step.catalog.min}
                                       max={step.catalog.max}
@@ -10165,15 +10164,15 @@ export default function AlumnoVisionClient({
                                 </>
                               ) : (
                                 <>
-                                  <p className="pf-a3-survey-label">{step.question.prompt}</p>
-                                  <div className="pf-a3-survey-options-row">
+                                  <p className="pf-n-survey-label">{step.question.prompt}</p>
+                                  <div className="pf-n-survey-options-row">
                                     {step.question.options.map((option) => {
                                       const isActive = routineFinalizeAnswerByQuestionId[step.question.id] === option.id;
                                       return (
                                         <button
                                           key={option.id}
                                           type="button"
-                                          className={`pf-a3-survey-option-btn ${isActive ? "pf-a3-survey-option-btn-active" : ""}`}
+                                          className={`pf-n-survey-option-btn ${isActive ? "pf-n-survey-option-btn-active" : ""}`}
                                           onClick={() =>
                                             autoAdvance(() =>
                                               setRoutineFinalizeAnswerByQuestionId((prev) => ({
@@ -10191,12 +10190,12 @@ export default function AlumnoVisionClient({
                                 </>
                               )}
 
-                              <div className="pf-a3-survey-nav">
+                              <div className="pf-n-survey-nav">
                                 <button
                                   type="button"
                                   onClick={goPrev}
                                   disabled={currentStep === 0}
-                                  className="pf-a3-survey-nav-back"
+                                  className="pf-n-survey-nav-back"
                                   aria-label="Pregunta anterior"
                                 >
                                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" aria-hidden="true">
@@ -10207,7 +10206,7 @@ export default function AlumnoVisionClient({
                                   <ReliableActionButton
                                     type="button"
                                     onClick={submitRoutineFinalize}
-                                    className="pf-a3-survey-finish-btn"
+                                    className="pf-n-survey-finish-btn"
                                   >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="16" height="16" aria-hidden="true">
                                       <path d="M5 12.5l4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -10218,7 +10217,7 @@ export default function AlumnoVisionClient({
                                   <button
                                     type="button"
                                     onClick={goNext}
-                                    className="pf-a3-survey-nav-next"
+                                    className="pf-n-survey-nav-next"
                                   >
                                     Siguiente
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" aria-hidden="true">
@@ -10229,7 +10228,7 @@ export default function AlumnoVisionClient({
                               </div>
 
                               {routineFinalizeStatus ? (
-                                <p className="pf-a3-routine-action-status">{routineFinalizeStatus}</p>
+                                <p className="pf-n-routine-action-status">{routineFinalizeStatus}</p>
                               ) : null}
                             </div>
                           );
@@ -10248,8 +10247,8 @@ export default function AlumnoVisionClient({
                   ref={(node) => {
                     routineStopwatchFloatHostRef.current = node;
                   }}
-                  className={`pf-a3-routine-stopwatch-float ${
-                    routineStopwatchDragging ? "pf-a3-routine-stopwatch-float-dragging" : ""
+                  className={`pf-n-routine-stopwatch-float ${
+                    routineStopwatchDragging ? "pf-n-routine-stopwatch-float-dragging" : ""
                   }`}
                   style={
                     routineStopwatchFloatPosition
@@ -10266,22 +10265,22 @@ export default function AlumnoVisionClient({
                   onPointerCancel={handleRoutineStopwatchPointerCancel}
                   aria-live="polite"
                 >
-                  <p className="pf-a3-routine-stopwatch-display">{routineStopwatchDisplay}</p>
+                  <p className="pf-n-routine-stopwatch-display">{routineStopwatchDisplay}</p>
                   <p
-                    className={`pf-a3-routine-stopwatch-status ${
+                    className={`pf-n-routine-stopwatch-status ${
                       routineStopwatchRunning
-                        ? "pf-a3-routine-stopwatch-status-running"
+                        ? "pf-n-routine-stopwatch-status-running"
                         : ""
                     }`}
                   >
                     {routineStopwatchStatusShortLabel}
                   </p>
 
-                  <div className="pf-a3-routine-stopwatch-mini-actions">
+                  <div className="pf-n-routine-stopwatch-mini-actions">
                     <ReliableActionButton
                       type="button"
                       onClick={routineStopwatchRunning ? pauseRoutineStopwatch : startRoutineStopwatch}
-                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-play"
+                      className="pf-n-routine-stopwatch-mini-btn pf-n-routine-stopwatch-mini-btn-play"
                       aria-label={
                         routineStopwatchRunning
                           ? "Pausar cronómetro"
@@ -10313,7 +10312,7 @@ export default function AlumnoVisionClient({
                       type="button"
                       onClick={stopRoutineStopwatch}
                       disabled={!routineStopwatchRunning && routineStopwatchElapsedMs <= 0}
-                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-stop"
+                      className="pf-n-routine-stopwatch-mini-btn pf-n-routine-stopwatch-mini-btn-stop"
                       aria-label="Frenar cronómetro"
                       title="Frenar"
                     >
@@ -10325,7 +10324,7 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => setRoutineQuickPanel("none")}
-                      className="pf-a3-routine-stopwatch-mini-btn pf-a3-routine-stopwatch-mini-btn-close"
+                      className="pf-n-routine-stopwatch-mini-btn pf-n-routine-stopwatch-mini-btn-close"
                       aria-label="Ocultar cronómetro"
                       title="Ocultar"
                     >
@@ -10343,31 +10342,31 @@ export default function AlumnoVisionClient({
               {routineExerciseLogTarget && typeof document !== "undefined"
                 ? createPortal(
                 <div
-                  className={`pf-a3-routine-log-overlay ${
-                    isUltraMobile ? "pf-a3-routine-log-overlay-mobile" : ""
+                  className={`pf-n-log-overlay ${
+                    isUltraMobile ? "pf-n-log-overlay-mobile" : ""
                   }`}
                   role="dialog"
                   aria-modal="true"
                 >
                   <article
                     key={guidedTrainingMode ? guidedStepKey : undefined}
-                    className={`pf-a3-routine-log-panel ${
-                      isUltraMobile ? "pf-a3-routine-log-panel-mobile" : ""
+                    className={`pf-n-log-panel ${
+                      isUltraMobile ? "pf-n-log-panel-mobile" : ""
                     } ${
-                      routineExerciseVideoSource.kind !== "none" ? "pf-a3-routine-log-panel-has-video" : ""
+                      routineExerciseVideoSource.kind !== "none" ? "pf-n-log-panel-has-video" : ""
                     } ${
-                      guidedTrainingMode ? "pf-a3-guided-step-enter" : ""
+                      guidedTrainingMode ? "pf-n-guided-step-enter" : ""
                     }`}
                   >
-                    <div className="pf-a3-routine-log-head">
+                    <div className="pf-n-log-head">
                       <div className="min-w-0">
-                        <p className="pf-a3-routine-log-kicker">
+                        <p className="pf-n-log-kicker">
                           {guidedTrainingMode
                             ? `Ejercicio ${guidedTrainingIndex + 1} de ${guidedRoutineSteps.length}`
                             : "Registrar carga"}
                         </p>
-                        <h3 className="pf-a3-routine-log-title">{routineExerciseLogTarget.exerciseName}</h3>
-                        <p className="pf-a3-routine-log-meta">
+                        <h3 className="pf-n-log-title">{routineExerciseLogTarget.exerciseName}</h3>
+                        <p className="pf-n-log-meta">
                           {routineExerciseLogTarget.blockTitle
                             ? `${routineExerciseLogTarget.blockTitle} · `
                             : ""}
@@ -10379,7 +10378,7 @@ export default function AlumnoVisionClient({
                       <ReliableActionButton
                         type="button"
                         onClick={closeRoutineExerciseLogPanel}
-                        className="pf-a3-routine-log-close"
+                        className="pf-n-log-close"
                         aria-label="Cerrar registro"
                       >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -10388,37 +10387,37 @@ export default function AlumnoVisionClient({
                       </ReliableActionButton>
                     </div>
 
-                    <div className="pf-a3-routine-log-presets">
-                      <div className="pf-a3-routine-log-preset">
+                    <div className="pf-n-log-presets">
+                      <div className="pf-n-log-preset">
                         <span>Series</span>
                         <strong>{routineExerciseLogTarget.prescribedSeries || "S/D"}</strong>
                       </div>
-                      <div className="pf-a3-routine-log-preset">
+                      <div className="pf-n-log-preset">
                         <span>Rep.</span>
                         <strong>{routineExerciseLogTarget.prescribedRepeticiones || "S/D"}</strong>
                       </div>
-                      <div className="pf-a3-routine-log-preset">
+                      <div className="pf-n-log-preset">
                         <span>Desc.</span>
                         <strong>{routineExerciseLogTarget.prescribedDescanso || "S/D"}</strong>
                       </div>
-                      <div className="pf-a3-routine-log-preset">
+                      <div className="pf-n-log-preset">
                         <span>RIR</span>
                         <strong>{routineExerciseLogTarget.prescribedRir || "S/D"}</strong>
                       </div>
-                      <div className="pf-a3-routine-log-preset">
+                      <div className="pf-n-log-preset">
                         <span>Carga (kg)</span>
                         <strong>{routineExerciseLogTarget.prescribedCarga || "S/D"}</strong>
                       </div>
                     </div>
 
-                    <div className="pf-a3-routine-log-tabs" role="tablist" aria-label="Secciones del ejercicio">
+                    <div className="pf-n-log-tabs" role="tablist" aria-label="Secciones del ejercicio">
                       <ReliableActionButton
                         type="button"
                         role="tab"
                         aria-selected={routineExerciseLogView === "descripcion"}
                         onClick={() => setRoutineExerciseLogView("descripcion")}
-                        className={`pf-a3-routine-log-tab ${
-                          routineExerciseLogView === "descripcion" ? "pf-a3-routine-log-tab-active" : ""
+                        className={`pf-n-log-tab ${
+                          routineExerciseLogView === "descripcion" ? "pf-n-log-tab-active" : ""
                         }`}
                       >
                         Descripcion
@@ -10428,8 +10427,8 @@ export default function AlumnoVisionClient({
                         role="tab"
                         aria-selected={routineExerciseLogView === "registro"}
                         onClick={() => setRoutineExerciseLogView("registro")}
-                        className={`pf-a3-routine-log-tab ${
-                          routineExerciseLogView === "registro" ? "pf-a3-routine-log-tab-active" : ""
+                        className={`pf-n-log-tab ${
+                          routineExerciseLogView === "registro" ? "pf-n-log-tab-active" : ""
                         }`}
                       >
                         Nuevo registro
@@ -10439,8 +10438,8 @@ export default function AlumnoVisionClient({
                         role="tab"
                         aria-selected={routineExerciseLogView === "registros"}
                         onClick={() => setRoutineExerciseLogView("registros")}
-                        className={`pf-a3-routine-log-tab ${
-                          routineExerciseLogView === "registros" ? "pf-a3-routine-log-tab-active" : ""
+                        className={`pf-n-log-tab ${
+                          routineExerciseLogView === "registros" ? "pf-n-log-tab-active" : ""
                         }`}
                       >
                         Registros
@@ -10448,29 +10447,29 @@ export default function AlumnoVisionClient({
                     </div>
 
                     {routineExerciseVideoSource.kind !== "none" ? (
-                      <div className="pf-a3-routine-log-video-wrap">
+                      <div className="pf-n-log-video-wrap">
                         {routineExerciseVideoSource.kind === "iframe" ? (
                           <iframe
                             src={routineExerciseVideoSource.src}
                             title={`video-${routineExerciseLogTarget.exerciseKey}`}
-                            className="pf-a3-routine-log-video-frame"
+                            className="pf-n-log-video-frame"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           />
                         ) : routineExerciseVideoSource.kind === "video" ? (
                           <video
                             controls
-                            className="pf-a3-routine-log-video-frame"
+                            className="pf-n-log-video-frame"
                             src={routineExerciseVideoSource.src}
                           />
                         ) : (
-                          <div className="pf-a3-routine-log-video-empty">
+                          <div className="pf-n-log-video-empty">
                             Vista previa no disponible para este link.
                           </div>
                         )}
                         <ReliableActionButton
                           type="button"
                           onClick={() => openRoutineVideoExternal(routineExerciseVideoCandidate)}
-                          className="pf-a3-routine-log-link-btn"
+                          className="pf-n-log-link-btn"
                         >
                           {routineExerciseVideoCandidate.toLowerCase().includes("youtu")
                             ? "Abrir en YouTube"
@@ -10480,18 +10479,18 @@ export default function AlumnoVisionClient({
                     ) : null}
 
                     {routineExerciseLogView === "descripcion" ? (
-                      <section className="pf-a3-routine-log-pane">
-                        <p className="pf-a3-routine-log-description">
+                      <section className="pf-n-log-pane">
+                        <p className="pf-n-log-description">
                           {routineExerciseLogTarget.exerciseDescription || "Sin descripcion para este ejercicio."}
                         </p>
 
                         {Array.isArray(routineExerciseLogTarget.exerciseTags) &&
                         routineExerciseLogTarget.exerciseTags.length > 0 ? (
-                          <div className="pf-a3-routine-log-tag-row">
+                          <div className="pf-n-log-tag-row">
                             {routineExerciseLogTarget.exerciseTags.map((tag, index) => (
                               <span
                                 key={`${routineExerciseLogTarget.exerciseKey}-tag-${index}`}
-                                className="pf-a3-routine-exercise-tag"
+                                className="pf-n-tag"
                               >
                                 {tag}
                               </span>
@@ -10502,7 +10501,7 @@ export default function AlumnoVisionClient({
                     ) : null}
 
                     {routineExerciseLogView === "registro" ? (
-                      <section className="pf-a3-routine-log-pane pf-a3-routine-log-pane-registro">
+                      <section className="pf-n-log-pane pf-n-log-pane-registro">
                         {routineExerciseRecentLogs.length > 0 ? (() => {
                           const recentFour = routineExerciseRecentLogs.slice(0, 4);
                           const maxPeso = Math.max(...routineExerciseRecentLogs.map((l) => Number(l.pesoKg || 0)));
@@ -10566,8 +10565,8 @@ export default function AlumnoVisionClient({
                             </div>
                           );
                         })() : null}
-                        <div className="pf-a3-routine-log-grid">
-                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-fecha">
+                        <div className="pf-n-log-grid">
+                          <label className="pf-n-log-field pf-n-log-field-fecha">
                             <span>Fecha</span>
                             <input
                               type="date"
@@ -10581,7 +10580,7 @@ export default function AlumnoVisionClient({
                             />
                           </label>
                           <RoutineStepperField
-                            className="pf-a3-routine-log-field-series"
+                            className="pf-n-log-field-series"
                             label="Series"
                             value={routineExerciseLogDraft.series}
                             onChange={(next) =>
@@ -10596,7 +10595,7 @@ export default function AlumnoVisionClient({
                             placeholder={routineExerciseLogTarget.prescribedSeries || "0"}
                           />
                           <RoutineStepperField
-                            className="pf-a3-routine-log-field-repeticiones"
+                            className="pf-n-log-field-repeticiones"
                             label="Repeticiones"
                             value={routineExerciseLogDraft.repeticiones}
                             onChange={(next) =>
@@ -10611,7 +10610,7 @@ export default function AlumnoVisionClient({
                             placeholder={routineExerciseLogTarget.prescribedRepeticiones || "0"}
                           />
                           <RoutineStepperField
-                            className="pf-a3-routine-log-field-carga"
+                            className="pf-n-log-field-carga"
                             label="Carga (kg)"
                             value={routineExerciseLogDraft.pesoKg}
                             onChange={(next) =>
@@ -10628,7 +10627,7 @@ export default function AlumnoVisionClient({
                           />
                         </div>
 
-                        <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                        <label className="pf-n-log-field pf-n-log-field-full">
                           <span>Comentarios</span>
                           <textarea
                             rows={2}
@@ -10643,8 +10642,8 @@ export default function AlumnoVisionClient({
                           />
                         </label>
 
-                        <div className="pf-a3-routine-log-row">
-                          <label className="pf-a3-routine-log-check">
+                        <div className="pf-n-log-row">
+                          <label className="pf-n-log-check">
                             <input
                               type="checkbox"
                               checked={routineExerciseLogDraft.molestia}
@@ -10658,7 +10657,7 @@ export default function AlumnoVisionClient({
                             Reportar molestia
                           </label>
 
-                          <label className="pf-a3-routine-log-upload">
+                          <label className="pf-n-log-upload">
                             <input
                               type="file"
                               accept="video/mp4,video/webm,video/ogg,video/*"
@@ -10669,8 +10668,8 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {routineExerciseLogDraft.molestia ? (
-                          <div className="pf-a3-routine-log-pain-grid">
-                            <label className="pf-a3-routine-log-field">
+                          <div className="pf-n-log-pain-grid">
+                            <label className="pf-n-log-field">
                               <span>Ubicacion del dolor</span>
                               <input
                                 value={routineExerciseLogDraft.dolorUbicacion}
@@ -10684,7 +10683,7 @@ export default function AlumnoVisionClient({
                               />
                             </label>
 
-                            <label className="pf-a3-routine-log-field">
+                            <label className="pf-n-log-field">
                               <span>En que momento aparece</span>
                               <select
                                 value={routineExerciseLogDraft.dolorMomento}
@@ -10704,7 +10703,7 @@ export default function AlumnoVisionClient({
                               </select>
                             </label>
 
-                            <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                            <label className="pf-n-log-field pf-n-log-field-full">
                               <span>Que siente ahora</span>
                               <textarea
                                 rows={2}
@@ -10719,29 +10718,29 @@ export default function AlumnoVisionClient({
                               />
                             </label>
 
-                            <article className="pf-a3-routine-log-pain-recommendation">
-                              <p className="pf-a3-routine-log-pain-kicker">Recomendacion para seguir entrenando</p>
-                              <p className="pf-a3-routine-log-pain-text">{routinePainRecommendation}</p>
+                            <article className="pf-n-log-pain-recommendation">
+                              <p className="pf-n-log-pain-kicker">Recomendacion para seguir entrenando</p>
+                              <p className="pf-n-log-pain-text">{routinePainRecommendation}</p>
                             </article>
                           </div>
                         ) : null}
 
                         {routineExerciseLogDraft.videoFileName ? (
-                          <p className="pf-a3-routine-log-upload-note">
+                          <p className="pf-n-log-upload-note">
                             Archivo adjunto: {routineExerciseLogDraft.videoFileName}
                           </p>
                         ) : null}
 
                         {routineExerciseLogEditingId ? (
-                          <p className="pf-a3-routine-log-editing-hint">Estas editando un registro guardado.</p>
+                          <p className="pf-n-log-editing-hint">Estas editando un registro guardado.</p>
                         ) : null}
 
-                        <div className="pf-a3-routine-log-actions">
+                        <div className="pf-n-log-actions">
                           {routineExerciseLogEditingId ? (
                             <ReliableActionButton
                               type="button"
                               onClick={cancelRoutineExerciseLogEdit}
-                              className="pf-a3-routine-log-secondary-btn"
+                              className="pf-n-log-secondary-btn"
                               disabled={routineExerciseLogSaving}
                             >
                               Cancelar edicion
@@ -10751,7 +10750,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={saveRoutineExerciseLog}
-                            className="pf-a3-routine-log-primary-btn"
+                            className="pf-n-log-primary-btn"
                             disabled={routineExerciseLogSaving}
                           >
                             {routineExerciseLogSaving
@@ -10765,7 +10764,7 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {routineExerciseLogStatus ? (
-                          <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
+                          <p className="pf-n-log-status">{routineExerciseLogStatus}</p>
                         ) : null}
                       </section>
                     ) : null}
@@ -10773,8 +10772,8 @@ export default function AlumnoVisionClient({
                     {routineExerciseLogView === "registros" ? (
                       <>
                         {routineExerciseRecentLogs.length > 0 ? (
-                          <div className="pf-a3-routine-log-history">
-                            <p className="pf-a3-routine-log-history-title">Ultimos registros</p>
+                          <div className="pf-n-log-history">
+                            <p className="pf-n-log-history-title">Ultimos registros</p>
                             <ul>
                               {routineExerciseRecentLogs.map((log) => {
                                 const logRowId = String(log.id || "").trim();
@@ -10785,11 +10784,11 @@ export default function AlumnoVisionClient({
                                 return (
                                   <li
                                     key={String(log.id || `${log.createdAt || "log"}-${log.fecha || ""}`)}
-                                    className={`pf-a3-routine-log-history-item${
-                                      isEditingThisLog ? " pf-a3-routine-log-history-item-editing" : ""
+                                    className={`pf-n-log-history-item${
+                                      isEditingThisLog ? " pf-n-log-history-item-editing" : ""
                                     }`}
                                   >
-                                    <div className="pf-a3-routine-log-history-main">
+                                    <div className="pf-n-log-history-main">
                                       <span>
                                         {log.fecha
                                           ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
@@ -10801,11 +10800,11 @@ export default function AlumnoVisionClient({
                                     </div>
 
                                     {isEditingThisLog ? (
-                                      <div className="pf-a3-routine-log-history-edit pf-a3-routine-log-pane-registro">
-                                        <p className="pf-a3-routine-log-editing-hint">Modo edicion activo para este registro.</p>
+                                      <div className="pf-n-log-history-edit pf-n-log-pane-registro">
+                                        <p className="pf-n-log-editing-hint">Modo edicion activo para este registro.</p>
 
-                                        <div className="pf-a3-routine-log-grid pf-a3-routine-log-history-edit-grid">
-                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-fecha">
+                                        <div className="pf-n-log-grid pf-n-log-history-edit-grid">
+                                          <label className="pf-n-log-field pf-n-log-field-fecha">
                                             <span>Fecha</span>
                                             <input
                                               type="date"
@@ -10819,7 +10818,7 @@ export default function AlumnoVisionClient({
                                             />
                                           </label>
 
-                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-series">
+                                          <label className="pf-n-log-field pf-n-log-field-series">
                                             <span>Series</span>
                                             <input
                                               value={routineExerciseLogDraft.series}
@@ -10832,7 +10831,7 @@ export default function AlumnoVisionClient({
                                             />
                                           </label>
 
-                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-repeticiones">
+                                          <label className="pf-n-log-field pf-n-log-field-repeticiones">
                                             <span>Repeticiones</span>
                                             <input
                                               value={routineExerciseLogDraft.repeticiones}
@@ -10845,7 +10844,7 @@ export default function AlumnoVisionClient({
                                             />
                                           </label>
 
-                                          <label className="pf-a3-routine-log-field pf-a3-routine-log-field-carga">
+                                          <label className="pf-n-log-field pf-n-log-field-carga">
                                             <span>Carga (kg)</span>
                                             <input
                                               value={routineExerciseLogDraft.pesoKg}
@@ -10859,7 +10858,7 @@ export default function AlumnoVisionClient({
                                           </label>
                                         </div>
 
-                                        <label className="pf-a3-routine-log-field pf-a3-routine-log-field-full">
+                                        <label className="pf-n-log-field pf-n-log-field-full">
                                           <span>Comentarios</span>
                                           <textarea
                                             rows={2}
@@ -10874,10 +10873,10 @@ export default function AlumnoVisionClient({
                                           />
                                         </label>
 
-                                        <div className="pf-a3-routine-log-history-actions pf-a3-routine-log-history-edit-actions">
+                                        <div className="pf-n-log-history-actions pf-n-log-history-edit-actions">
                                           <ReliableActionButton
                                             type="button"
-                                            className="pf-a3-routine-log-secondary-btn"
+                                            className="pf-n-log-secondary-btn"
                                             onClick={cancelRoutineExerciseLogEdit}
                                             disabled={routineExerciseLogSaving}
                                           >
@@ -10886,7 +10885,7 @@ export default function AlumnoVisionClient({
 
                                           <ReliableActionButton
                                             type="button"
-                                            className="pf-a3-routine-log-primary-btn"
+                                            className="pf-n-log-primary-btn"
                                             onClick={saveRoutineExerciseLog}
                                             disabled={routineExerciseLogSaving}
                                           >
@@ -10895,10 +10894,10 @@ export default function AlumnoVisionClient({
                                         </div>
                                       </div>
                                     ) : (
-                                      <div className="pf-a3-routine-log-history-actions">
+                                      <div className="pf-n-log-history-actions">
                                         <ReliableActionButton
                                           type="button"
-                                          className="pf-a3-routine-log-history-btn"
+                                          className="pf-n-log-history-btn"
                                           onClick={() => editRoutineExerciseRecentLog(log)}
                                           disabled={routineExerciseLogSaving}
                                         >
@@ -10907,7 +10906,7 @@ export default function AlumnoVisionClient({
 
                                         <ReliableActionButton
                                           type="button"
-                                          className="pf-a3-routine-log-history-btn pf-a3-routine-log-history-btn-danger"
+                                          className="pf-n-log-history-btn pf-n-log-history-btn-danger"
                                           onClick={() => deleteRoutineExerciseRecentLog(log)}
                                           disabled={routineExerciseLogSaving}
                                         >
@@ -10921,32 +10920,32 @@ export default function AlumnoVisionClient({
                             </ul>
                           </div>
                         ) : (
-                          <div className="pf-a3-routine-log-history pf-a3-routine-log-history-empty">
+                          <div className="pf-n-log-history pf-n-log-history-empty">
                             Todavia no hay registros cargados para este ejercicio.
                           </div>
                         )}
 
                         {routineExerciseLogStatus ? (
-                          <p className="pf-a3-routine-log-status">{routineExerciseLogStatus}</p>
+                          <p className="pf-n-log-status">{routineExerciseLogStatus}</p>
                         ) : null}
                       </>
                     ) : null}
 
                     {guidedTrainingMode ? (
-                      <div className="pf-a3-guided-actions-bar">
-                        <div className="pf-a3-guided-progress">
+                      <div className="pf-n-guided-actions-bar">
+                        <div className="pf-n-guided-progress">
                           {guidedRoutineSteps.map((_, i) => (
                             <span
                               key={i}
-                              className={`pf-a3-guided-pip ${i < guidedTrainingIndex ? "pf-a3-guided-pip-done" : i === guidedTrainingIndex ? "pf-a3-guided-pip-active" : "pf-a3-guided-pip-pending"}`}
+                              className={`pf-n-guided-pip ${i < guidedTrainingIndex ? "pf-n-guided-pip-done" : i === guidedTrainingIndex ? "pf-n-guided-pip-active" : "pf-n-guided-pip-pending"}`}
                             />
                           ))}
                         </div>
-                        <div className="pf-a3-guided-btns">
+                        <div className="pf-n-guided-btns">
                           <ReliableActionButton
                             type="button"
                             onClick={exitGuidedTraining}
-                            className="pf-a3-guided-btn-pause"
+                            className="pf-n-guided-btn-pause"
                             aria-label="Pausar entrenamiento"
                             title="Pausar"
                           >
@@ -10959,7 +10958,7 @@ export default function AlumnoVisionClient({
                             <ReliableActionButton
                               type="button"
                               onClick={goBackGuidedTraining}
-                              className="pf-a3-guided-btn-back"
+                              className="pf-n-guided-btn-back"
                               aria-label="Ejercicio anterior"
                             >
                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" width="16" height="16">
@@ -10971,7 +10970,7 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={advanceGuidedTraining}
-                            className={`pf-a3-guided-btn-next ${guidedTrainingIndex >= guidedRoutineSteps.length - 1 ? "pf-a3-guided-btn-finish" : ""}`}
+                            className={`pf-n-guided-btn-next ${guidedTrainingIndex >= guidedRoutineSteps.length - 1 ? "pf-n-guided-btn-finish" : ""}`}
                           >
                             {guidedTrainingIndex >= guidedRoutineSteps.length - 1 ? (
                               <>
@@ -10983,7 +10982,7 @@ export default function AlumnoVisionClient({
                             ) : (
                               <>
                                 Siguiente
-                                <span className="pf-a3-guided-btn-counter">
+                                <span className="pf-n-guided-btn-counter">
                                   {guidedTrainingIndex + 1}/{guidedRoutineSteps.length}
                                 </span>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" width="14" height="14">
@@ -11006,31 +11005,31 @@ export default function AlumnoVisionClient({
           ) : null}
 
           {activeCategory === "nutricion" ? (
-            <div className="pf-a4-nutrition-screen space-y-4">
+            <div className="pf-n-nutrition-screen space-y-4">
               {nutritionInitialLoading ? (
-                <section className="pf-a3-routine-empty pf-a3-routine-loading" aria-live="polite">
-                  <div className="pf-a3-routine-loading-visual" aria-hidden="true">
-                    <span className="pf-a3-routine-loading-ring" />
-                    <span className="pf-a3-routine-loading-core">PF</span>
+                <section className="pf-n-routine-empty pf-n-routine-loading" aria-live="polite">
+                  <div className="pf-n-routine-loading-visual" aria-hidden="true">
+                    <span className="pf-n-routine-loading-ring" />
+                    <span className="pf-n-routine-loading-core">PF</span>
                   </div>
-                  <p className="pf-a3-routine-loading-brand">PF Control</p>
+                  <p className="pf-n-routine-loading-brand">PF Control</p>
                   <h2>Cargando nutrición...</h2>
                   <p>Preparando tu plan nutricional.</p>
                 </section>
               ) : (
               <>
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Plan nutricional</p>
+              <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
+                <p className="pf-n-eyebrow">Plan nutricional</p>
                 <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
                 <p className="mt-2 text-sm text-slate-300">
                   Espacio centrado en el plan nutricional asignado por el profesor.
                 </p>
 
-                <div className="pf-a4-nutrition-plan-quick-row mt-3">
+                <div className="pf-n-nutrition-plan-quick-row mt-3">
                   <ReliableActionButton
                     type="button"
                     onClick={openNutritionVariationActions}
-                    className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                    className="pf-n-nutrition-plan-action-btn pf-n-nutrition-plan-action-btn-quick"
                     disabled={!nutritionPlan?.id}
                   >
                     Solicitar cambio de plan
@@ -11039,7 +11038,7 @@ export default function AlumnoVisionClient({
                   <ReliableActionButton
                     type="button"
                     onClick={triggerQuickNutritionReplacement}
-                    className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick"
+                    className="pf-n-nutrition-plan-action-btn pf-n-nutrition-plan-action-btn-quick"
                     disabled={!nutritionQuickReplacementCandidate}
                   >
                     Sustituir alimento
@@ -11047,13 +11046,13 @@ export default function AlumnoVisionClient({
                 </div>
               </article>
 
-              <div className="pf-a4-nutrition-tabs flex gap-2" role="tablist" aria-label="Vistas de nutrición">
+              <div className="pf-n-nutrition-tabs flex gap-2" role="tablist" aria-label="Vistas de nutrición">
                 <button
                   type="button"
                   role="tab"
                   aria-selected={nutritionTab === "plan"}
                   onClick={() => setNutritionTab("plan")}
-                  className={`pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
+                  className={`pf-n-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
                     nutritionTab === "plan"
                       ? "border-violet-300/50 bg-violet-500/15 text-violet-100"
                       : "border-white/10 bg-slate-950/40 text-slate-300"
@@ -11066,7 +11065,7 @@ export default function AlumnoVisionClient({
                   role="tab"
                   aria-selected={nutritionTab === "recetas"}
                   onClick={() => setNutritionTab("recetas")}
-                  className={`pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
+                  className={`pf-n-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition ${
                     nutritionTab === "recetas"
                       ? "border-amber-300/50 bg-amber-500/15 text-amber-100"
                       : "border-white/10 bg-slate-950/40 text-slate-300"
@@ -11077,8 +11076,8 @@ export default function AlumnoVisionClient({
               </div>
 
               {nutritionTab === "recetas" ? (
-                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                  <p className="pf-a2-eyebrow">Recetas</p>
+                <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
+                  <p className="pf-n-eyebrow">Recetas</p>
                   <h2 className="mt-1 text-xl font-black text-white">Recetas de tu plan</h2>
                   <p className="mt-2 text-sm text-slate-300">
                     Cada comida pautada con sus ingredientes y aporte calórico, lista para cocinar.
@@ -11089,7 +11088,7 @@ export default function AlumnoVisionClient({
                       {nutritionRecipes.map((recipe) => (
                         <section
                           key={recipe.id}
-                          className="pf-a2-kpi flex flex-col overflow-hidden rounded-xl border"
+                          className="pf-n-kpi flex flex-col overflow-hidden rounded-xl border"
                         >
                           {recipe.imageUrl ? (
                             <img
@@ -11103,7 +11102,7 @@ export default function AlumnoVisionClient({
                           <div className="flex flex-1 flex-col p-3">
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="min-w-0 text-sm font-black text-slate-100">{recipe.title}</h3>
-                              <span className="pf-a2-pill shrink-0">
+                              <span className="pf-n-pill shrink-0">
                                 {formatCompactNumber(recipe.totalKcal)} kcal
                               </span>
                             </div>
@@ -11141,7 +11140,7 @@ export default function AlumnoVisionClient({
                       ))}
                     </div>
                   ) : (
-                    <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                    <div className="pf-n-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
                       Todavía no hay recetas para mostrar. Aparecerán aquí cuando tu profesor cargue comidas en tu plan.
                     </div>
                   )}
@@ -11150,8 +11149,8 @@ export default function AlumnoVisionClient({
 
               {nutritionTab === "plan" && nutritionPanelView === "plan" ? (
                 <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-                  <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                    <p className="pf-a2-eyebrow">Plan pautado</p>
+                  <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
+                    <p className="pf-n-eyebrow">Plan pautado</p>
                     <h2 className="mt-1 text-xl font-black text-white">{nutritionPlan?.nombre || "Sin plan cargado"}</h2>
                     <p className="mt-2 text-sm text-slate-300">
                       Objetivo: {nutritionPlan?.objetivo || clientMeta?.objNutricional || "No definido"}
@@ -11161,22 +11160,22 @@ export default function AlumnoVisionClient({
                     </p>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <div className="pf-a2-kpi rounded-xl border p-3">
+                      <div className="pf-n-kpi rounded-xl border p-3">
                         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionDailyGoalKcal} kcal</p>
                       </div>
-                      <div className="pf-a2-kpi rounded-xl border p-3">
+                      <div className="pf-n-kpi rounded-xl border p-3">
                         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionPlanCaloriesFromMeals} kcal</p>
                       </div>
                     </div>
 
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <div className="pf-a2-kpi rounded-xl border p-3">
+                      <div className="pf-n-kpi rounded-xl border p-3">
                         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas pautadas</p>
                         <p className="mt-1 text-lg font-black text-white">{nutritionMealsDetailed.length}</p>
                       </div>
-                      <div className="pf-a2-kpi rounded-xl border p-3">
+                      <div className="pf-n-kpi rounded-xl border p-3">
                         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Macros objetivo</p>
                         <p className="mt-1 text-sm font-black text-white">
                           {nutritionDailyGoalMacros.proteinas}P / {nutritionDailyGoalMacros.carbohidratos}C / {nutritionDailyGoalMacros.grasas}G
@@ -11184,8 +11183,8 @@ export default function AlumnoVisionClient({
                       </div>
                     </div>
 
-                    <div className="pf-a4-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
-                      <p className="pf-a2-eyebrow">Objetivo nutricional</p>
+                    <div className="pf-n-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
+                      <p className="pf-n-eyebrow">Objetivo nutricional</p>
                       <div className="mt-3">
                         <MacroDonut
                           centerValue={String(nutritionDailyGoalKcal)}
@@ -11217,7 +11216,7 @@ export default function AlumnoVisionClient({
                                 {macro.grams} g · {macro.ratio}%
                               </span>
                             </div>
-                            <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                            <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
                               <div
                                 className="h-full rounded-full"
                                 style={{ width: `${Math.max(4, macro.ratio)}%`, background: macroColor }}
@@ -11271,15 +11270,15 @@ export default function AlumnoVisionClient({
                       </div>
                     ) : null}
 
-                    <div ref={nutritionPlanActionsSectionRef} className="pf-a4-nutrition-plan-actions-card mt-4">
-                      <p className="pf-a4-nutrition-plan-actions-kicker">Variaciones del plan</p>
-                      <h3 className="pf-a4-nutrition-plan-actions-title">Solicitar cambio de comida</h3>
-                      <p className="pf-a4-nutrition-plan-actions-copy">
+                    <div ref={nutritionPlanActionsSectionRef} className="pf-n-nutrition-plan-actions-card mt-4">
+                      <p className="pf-n-nutrition-plan-actions-kicker">Variaciones del plan</p>
+                      <h3 className="pf-n-nutrition-plan-actions-title">Solicitar cambio de comida</h3>
+                      <p className="pf-n-nutrition-plan-actions-copy">
                         Envia una solicitud al profesor y pide un ajuste puntual del plan asignado.
                       </p>
 
-                      <div className="pf-a4-nutrition-plan-actions-grid mt-3">
-                        <label className="pf-a4-nutrition-plan-field">
+                      <div className="pf-n-nutrition-plan-actions-grid mt-3">
+                        <label className="pf-n-nutrition-plan-field">
                           <span>Comida</span>
                           <select
                             value={nutritionVariationMealId}
@@ -11294,7 +11293,7 @@ export default function AlumnoVisionClient({
                           </select>
                         </label>
 
-                        <label className="pf-a4-nutrition-plan-field">
+                        <label className="pf-n-nutrition-plan-field">
                           <span>Que variacion necesitas</span>
                           <textarea
                             rows={3}
@@ -11306,26 +11305,26 @@ export default function AlumnoVisionClient({
                         </label>
                       </div>
 
-                      <div className="pf-a4-nutrition-plan-actions-row mt-3">
+                      <div className="pf-n-nutrition-plan-actions-row mt-3">
                         <ReliableActionButton
                           type="button"
                           onClick={submitNutritionVariationRequest}
-                          className="pf-a4-nutrition-plan-action-btn"
+                          className="pf-n-nutrition-plan-action-btn"
                           disabled={!nutritionPlan?.id}
                         >
                           Pedir variacion al profesor
                         </ReliableActionButton>
 
-                        <span className="pf-a4-nutrition-plan-action-counter">
+                        <span className="pf-n-nutrition-plan-action-counter">
                           {String(nutritionVariationDraft || "").trim().length}/280
                         </span>
                       </div>
 
-                      <div className="pf-a4-nutrition-plan-actions-feedback">
-                        <p className="pf-a4-nutrition-plan-actions-status">
+                      <div className="pf-n-nutrition-plan-actions-feedback">
+                        <p className="pf-n-nutrition-plan-actions-status">
                           {nutritionVariationStatus || "Escribe el cambio y envia la solicitud."}
                         </p>
-                        <p className="pf-a4-nutrition-plan-actions-meta">
+                        <p className="pf-n-nutrition-plan-actions-meta">
                           {latestNutritionVariationRequest
                             ? `Ultima solicitud (${latestNutritionVariationRequest.mealName || "Plan general"}): ${formatDateTime(latestNutritionVariationRequest.createdAt)}`
                             : "Sin solicitudes enviadas todavia."}
@@ -11350,13 +11349,13 @@ export default function AlumnoVisionClient({
                     };
                     const dayList = activeNutritionWeek?.dias || [];
                     return (
-                      <section className="pf-a3-routine-session-strip pf-a3-routine-session-strip-week">
-                        <div className="pf-a3-routine-week-nav" aria-label="Control de semanas de nutrición">
+                      <section className="pf-n-routine-session-strip pf-n-routine-session-strip-week">
+                        <div className="pf-n-routine-week-nav" aria-label="Control de semanas de nutrición">
                           <ReliableActionButton
                             type="button"
                             onClick={() => stepWeek(-1)}
                             disabled={!canGoPrev}
-                            className="pf-a3-routine-week-arrow"
+                            className="pf-n-routine-week-arrow"
                             aria-label="Semana anterior"
                             title={canGoPrev ? "Semana anterior" : "No hay semana anterior"}
                           >
@@ -11364,12 +11363,12 @@ export default function AlumnoVisionClient({
                               <path d="m14.5 6-5 6 5 6" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </ReliableActionButton>
-                          <p className="pf-a3-routine-week-label">{activeNutritionWeek?.nombre || "Semana 1"}</p>
+                          <p className="pf-n-routine-week-label">{activeNutritionWeek?.nombre || "Semana 1"}</p>
                           <ReliableActionButton
                             type="button"
                             onClick={() => stepWeek(1)}
                             disabled={!canGoNext}
-                            className="pf-a3-routine-week-arrow"
+                            className="pf-n-routine-week-arrow"
                             aria-label="Semana siguiente"
                             title={canGoNext ? "Semana siguiente" : "No hay semana siguiente"}
                           >
@@ -11379,7 +11378,7 @@ export default function AlumnoVisionClient({
                           </ReliableActionButton>
                         </div>
 
-                        <div className="pf-a3-routine-session-scroll" aria-label="Días de la semana">
+                        <div className="pf-n-routine-session-scroll" aria-label="Días de la semana">
                           {dayList.map((day, dayIndex) => {
                             if (!day) return null;
                             const isSelected = day.id === activeNutritionDay?.id;
@@ -11389,8 +11388,8 @@ export default function AlumnoVisionClient({
                                 key={`nutrition-day-${day.id}`}
                                 type="button"
                                 onClick={() => setSelectedNutritionDayId(day.id ?? null)}
-                                className={`pf-a3-routine-session-chip ${
-                                  isSelected ? "pf-a3-routine-session-chip-active" : ""
+                                className={`pf-n-routine-session-chip ${
+                                  isSelected ? "pf-n-routine-session-chip-active" : ""
                                 }`}
                                 aria-label={`Abrir ${dayLabel}`}
                                 title={dayLabel}
@@ -11404,8 +11403,8 @@ export default function AlumnoVisionClient({
                     );
                   })()}
 
-                  <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                    <p className="pf-a2-eyebrow">Distribucion</p>
+                  <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
+                    <p className="pf-n-eyebrow">Distribucion</p>
                     <h2 className="mt-1 text-xl font-black text-white">Comidas del plan</h2>
 
                     {nutritionMealsDetailed.length > 0 ? (
@@ -11416,7 +11415,7 @@ export default function AlumnoVisionClient({
                           const mealTime = String(mealTimeMatch?.[1] || "").trim();
 
                           return (
-                            <section key={meal.mealId || `${meal.mealName || "meal"}-${index}`} className="pf-a2-kpi rounded-xl border p-3">
+                            <section key={meal.mealId || `${meal.mealName || "meal"}-${index}`} className="pf-n-kpi rounded-xl border p-3">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-2">
@@ -11441,7 +11440,7 @@ export default function AlumnoVisionClient({
                                   </div>
                                 </div>
 
-                                <span className="pf-a2-pill shrink-0">{formatCompactNumber(meal.totalKcal)} kcal</span>
+                                <span className="pf-n-pill shrink-0">{formatCompactNumber(meal.totalKcal)} kcal</span>
                               </div>
 
                               {meal.imageUrl ? (
@@ -11525,30 +11524,30 @@ export default function AlumnoVisionClient({
                                               fat: item.fat,
                                             })
                                           }
-                                          className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-inline"
+                                          className="pf-n-nutrition-plan-action-btn pf-n-nutrition-plan-action-btn-inline"
                                         >
                                           Reemplazo equivalente
                                         </ReliableActionButton>
 
                                         {replacement ? (
-                                          <span className="pf-a4-nutrition-replacement-badge">Sugerencia activa</span>
+                                          <span className="pf-n-nutrition-replacement-badge">Sugerencia activa</span>
                                         ) : null}
                                       </div>
 
                                       {replacement ? (
-                                        <div className="pf-a4-nutrition-replacement-card mt-2">
-                                          <p className="pf-a4-nutrition-replacement-title">
+                                        <div className="pf-n-nutrition-replacement-card mt-2">
+                                          <p className="pf-n-nutrition-replacement-title">
                                             Alternativa: {replacement.replacementLabel}
                                           </p>
-                                          <p className="pf-a4-nutrition-replacement-meta">
+                                          <p className="pf-n-nutrition-replacement-meta">
                                             {formatCompactNumber(replacement.replacementGrams)} g · {formatCompactNumber(replacement.replacementCalories)} kcal
                                           </p>
-                                          <div className="pf-a4-nutrition-replacement-macros">
+                                          <div className="pf-n-nutrition-replacement-macros">
                                             <span>P {formatCompactNumber(replacement.replacementProtein)} g</span>
                                             <span>C {formatCompactNumber(replacement.replacementCarbs)} g</span>
                                             <span>G {formatCompactNumber(replacement.replacementFat)} g</span>
                                           </div>
-                                          <p className="pf-a4-nutrition-replacement-source">
+                                          <p className="pf-n-nutrition-replacement-source">
                                             Original: {formatCompactNumber(replacement.sourceCalories)} kcal · {replacement.sourceItemLabel}
                                           </p>
                                         </div>
@@ -11562,7 +11561,7 @@ export default function AlumnoVisionClient({
                         })}
                       </div>
                     ) : (
-                      <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
+                      <div className="pf-n-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-4 text-sm text-slate-300">
                         Aún no tienes comidas cargadas en tu plan. Pide a tu profesor que te asigne una versión actualizada.
                       </div>
                     )}
@@ -11571,7 +11570,7 @@ export default function AlumnoVisionClient({
               ) : null}
 
               {nutritionPanelView === "registro" ? (
-                <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
+                <article className="pf-n-card rounded-[1.2rem] border p-4 sm:p-5">
                   <input
                     ref={nutritionBarcodeCaptureInputRef}
                     type="file"
@@ -11590,14 +11589,14 @@ export default function AlumnoVisionClient({
                   />
 
                   {nutritionLiveCaptureMode !== "none" ? (
-                    <div className="pf-a4-nutrition-camera-layer">
-                      <div className="pf-a4-nutrition-camera-sheet">
-                        <div className="pf-a4-nutrition-camera-head">
+                    <div className="pf-n-nutrition-camera-layer">
+                      <div className="pf-n-nutrition-camera-sheet">
+                        <div className="pf-n-nutrition-camera-head">
                           <div>
-                            <p className="pf-a4-nutrition-camera-kicker">
+                            <p className="pf-n-nutrition-camera-kicker">
                               {nutritionLiveCaptureMode === "barcode" ? "Escáner automático" : "Cámara CAL IA"}
                             </p>
-                            <h4 className="pf-a4-nutrition-camera-title">
+                            <h4 className="pf-n-nutrition-camera-title">
                               {nutritionLiveCaptureMode === "barcode"
                                 ? "Apunta al código para cargarlo automáticamente"
                                 : "Saca una foto y CAL IA estimará calorías"}
@@ -11607,42 +11606,42 @@ export default function AlumnoVisionClient({
                           <ReliableActionButton
                             type="button"
                             onClick={stopNutritionLiveCapture}
-                            className="pf-a3-nutrition-student-food-delete"
+                            className="pf-n-nutrition-student-food-delete"
                           >
                             Cerrar
                           </ReliableActionButton>
                         </div>
 
-                        <div className="pf-a4-nutrition-camera-preview">
+                        <div className="pf-n-nutrition-camera-preview">
                           <video
                             ref={nutritionLiveVideoRef}
                             autoPlay
                             muted
                             playsInline
-                            className="pf-a4-nutrition-camera-video"
+                            className="pf-n-nutrition-camera-video"
                           />
 
                           {nutritionLiveCaptureMode === "barcode" ? (
-                            <div className="pf-a4-nutrition-camera-scan-frame">
-                              <span className="pf-a4-nutrition-camera-scan-line" />
+                            <div className="pf-n-nutrition-camera-scan-frame">
+                              <span className="pf-n-nutrition-camera-scan-line" />
                             </div>
                           ) : null}
                         </div>
 
-                        <p className="pf-a4-nutrition-camera-status">
+                        <p className="pf-n-nutrition-camera-status">
                           {nutritionLiveCaptureStatus ||
                             (nutritionLiveCaptureMode === "barcode"
                               ? "Buscando código..."
                               : "Encuadra el plato completo para una mejor estimación.")}
                         </p>
 
-                        <div className="pf-a4-nutrition-camera-actions">
+                        <div className="pf-n-nutrition-camera-actions">
                           {nutritionLiveCaptureMode === "cal-ia" ? (
                             <ReliableActionButton
                               type="button"
                               onClick={captureNutritionCalIaFromLiveCamera}
                               disabled={!nutritionLiveCaptureReady || nutritionCalIaProcessing}
-                              className="pf-a2-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
+                              className="pf-n-solid-btn rounded-lg px-3 py-1.5 text-xs font-semibold"
                             >
                               {nutritionCalIaProcessing ? "Procesando..." : "Sacar foto y estimar"}
                             </ReliableActionButton>
@@ -11658,7 +11657,7 @@ export default function AlumnoVisionClient({
 
                               nutritionCalIaCaptureInputRef.current?.click();
                             }}
-                            className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                            className="pf-n-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                           >
                             {nutritionLiveCaptureMode === "barcode"
                               ? "Subir foto del código"
@@ -11669,23 +11668,23 @@ export default function AlumnoVisionClient({
                     </div>
                   ) : null}
 
-                  <div className="pf-a4-nutrition-diary-head">
+                  <div className="pf-n-nutrition-diary-head">
                     <div>
-                      <p className="pf-a2-eyebrow">Registro del alumno</p>
+                      <p className="pf-n-eyebrow">Registro del alumno</p>
                       <h2 className="mt-1 text-2xl font-black text-white">Hoy</h2>
                       <p className="mt-1 text-sm text-slate-300">{formatDate(normalizedNutritionTrackerDate)}</p>
                     </div>
 
-                    <div className="pf-a3-nutrition-tracker-date">
+                    <div className="pf-n-nutrition-tracker-date">
                       <ReliableActionButton
                         type="button"
                         onClick={() => handleNutritionTrackerDateShift(-1)}
-                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        className="pf-n-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                       >
                         Ayer
                       </ReliableActionButton>
 
-                      <label className="pf-a3-nutrition-tracker-date-input">
+                      <label className="pf-n-nutrition-tracker-date-input">
                         <span>Fecha</span>
                         <input
                           type="date"
@@ -11697,38 +11696,38 @@ export default function AlumnoVisionClient({
                       <ReliableActionButton
                         type="button"
                         onClick={() => handleNutritionTrackerDateShift(1)}
-                        className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                        className="pf-n-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                       >
                         Mañana
                       </ReliableActionButton>
                     </div>
                   </div>
 
-                  <div className="pf-a4-nutrition-diary-section-head mt-4">
-                    <h3 className="pf-a4-nutrition-diary-title">Resumen</h3>
+                  <div className="pf-n-nutrition-diary-section-head mt-4">
+                    <h3 className="pf-n-nutrition-diary-title">Resumen</h3>
                     <ReliableActionButton
                       type="button"
                       onClick={() => setNutritionShowTrackerDetails((previous) => !previous)}
-                      className="pf-a4-nutrition-diary-link"
+                      className="pf-n-nutrition-diary-link"
                     >
                       {nutritionShowTrackerDetails ? "Ocultar" : "Detalles"}
                     </ReliableActionButton>
                   </div>
 
-                  <article className="pf-a4-nutrition-summary-card mt-2">
-                    <div className="pf-a4-nutrition-summary-gauge">
+                  <article className="pf-n-nutrition-summary-card mt-2">
+                    <div className="pf-n-nutrition-summary-gauge">
                       <svg
-                        className="pf-a4-nutrition-summary-gauge-svg"
+                        className="pf-n-nutrition-summary-gauge-svg"
                         viewBox="0 0 204 112"
                         role="img"
                         aria-label="Contador calorico diario"
                       >
                         <path
-                          className="pf-a4-nutrition-summary-gauge-track"
+                          className="pf-n-nutrition-summary-gauge-track"
                           d="M 18 96 A 84 84 0 0 1 186 96"
                         />
                         <path
-                          className={`pf-a4-nutrition-summary-gauge-progress ${
+                          className={`pf-n-nutrition-summary-gauge-progress ${
                             nutritionDailyProgressRatio > 1.06
                               ? "is-over"
                               : nutritionDailyProgressRatio < 0.55
@@ -11743,31 +11742,31 @@ export default function AlumnoVisionClient({
                         />
                       </svg>
 
-                      <div className="pf-a4-nutrition-summary-gauge-center">
-                        <p className="pf-a4-nutrition-summary-gauge-kcal">{nutritionDailyConsumedKcal} kcal</p>
-                        <p className="pf-a4-nutrition-summary-gauge-goal">de {nutritionDailyGoalKcal} kcal</p>
-                        <p className="pf-a4-nutrition-summary-gauge-pct">{nutritionDailyProgressPct}%</p>
+                      <div className="pf-n-nutrition-summary-gauge-center">
+                        <p className="pf-n-nutrition-summary-gauge-kcal">{nutritionDailyConsumedKcal} kcal</p>
+                        <p className="pf-n-nutrition-summary-gauge-goal">de {nutritionDailyGoalKcal} kcal</p>
+                        <p className="pf-n-nutrition-summary-gauge-pct">{nutritionDailyProgressPct}%</p>
                       </div>
                     </div>
 
-                    <div className="pf-a4-nutrition-summary-metrics">
-                      <div className="pf-a4-nutrition-summary-metric">
-                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionDailyRemainingKcal}</p>
-                        <p className="pf-a4-nutrition-summary-metric-label">Restantes</p>
+                    <div className="pf-n-nutrition-summary-metrics">
+                      <div className="pf-n-nutrition-summary-metric">
+                        <p className="pf-n-nutrition-summary-metric-value">{nutritionDailyRemainingKcal}</p>
+                        <p className="pf-n-nutrition-summary-metric-label">Restantes</p>
                       </div>
-                      <div className="pf-a4-nutrition-summary-metric is-highlight">
-                        <p className="pf-a4-nutrition-summary-metric-value">{nutritionEstimatedBurnedKcal}</p>
-                        <p className="pf-a4-nutrition-summary-metric-label">Quemadas</p>
+                      <div className="pf-n-nutrition-summary-metric is-highlight">
+                        <p className="pf-n-nutrition-summary-metric-value">{nutritionEstimatedBurnedKcal}</p>
+                        <p className="pf-n-nutrition-summary-metric-label">Quemadas</p>
                       </div>
-                      <div className="pf-a4-nutrition-summary-metric">
-                        <p className="pf-a4-nutrition-summary-metric-value">
+                      <div className="pf-n-nutrition-summary-metric">
+                        <p className="pf-n-nutrition-summary-metric-value">
                           {nutritionDailyDoneMeals}/{nutritionMealsDetailed.length || 0}
                         </p>
-                        <p className="pf-a4-nutrition-summary-metric-label">Comidas</p>
+                        <p className="pf-n-nutrition-summary-metric-label">Comidas</p>
                       </div>
                     </div>
 
-                    <div className="pf-a4-nutrition-summary-macros">
+                    <div className="pf-n-nutrition-summary-macros">
                       <div>
                         <div className="flex items-center justify-between text-[11px] text-slate-300">
                           <span>Carbohidratos</span>
@@ -11775,9 +11774,9 @@ export default function AlumnoVisionClient({
                             {nutritionDailyConsumedMacros.carbohidratos} / {nutritionDailyGoalMacros.carbohidratos} g
                           </span>
                         </div>
-                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
                           <div
-                            className="pf-a2-progress-fill h-full rounded-full"
+                            className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.carbohidratos)}%` }}
                           />
                         </div>
@@ -11790,9 +11789,9 @@ export default function AlumnoVisionClient({
                             {nutritionDailyConsumedMacros.proteinas} / {nutritionDailyGoalMacros.proteinas} g
                           </span>
                         </div>
-                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
                           <div
-                            className="pf-a2-progress-fill h-full rounded-full"
+                            className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.proteinas)}%` }}
                           />
                         </div>
@@ -11805,9 +11804,9 @@ export default function AlumnoVisionClient({
                             {nutritionDailyConsumedMacros.grasas} / {nutritionDailyGoalMacros.grasas} g
                           </span>
                         </div>
-                        <div className="pf-a2-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
+                        <div className="pf-n-progress-track mt-1 h-2 overflow-hidden rounded-full bg-slate-700/70">
                           <div
-                            className="pf-a2-progress-fill h-full rounded-full"
+                            className="pf-n-progress-fill h-full rounded-full"
                             style={{ width: `${Math.max(4, nutritionDailyMacroProgress.grasas)}%` }}
                           />
                         </div>
@@ -11815,8 +11814,8 @@ export default function AlumnoVisionClient({
                     </div>
                   </article>
 
-                  <div className="pf-a4-nutrition-diary-section-head mt-4">
-                    <h3 className="pf-a4-nutrition-diary-title">Alimentación</h3>
+                  <div className="pf-n-nutrition-diary-section-head mt-4">
+                    <h3 className="pf-n-nutrition-diary-title">Alimentación</h3>
                     <ReliableActionButton
                       type="button"
                       onClick={() =>
@@ -11824,17 +11823,17 @@ export default function AlumnoVisionClient({
                           nutritionDiaryMealRows[0]?.mealId || DEFAULT_NUTRITION_MEAL_DISTRIBUTION[0].mealId
                         )
                       }
-                      className="pf-a4-nutrition-diary-link"
+                      className="pf-n-nutrition-diary-link"
                     >
                       Más
                     </ReliableActionButton>
                   </div>
 
-                  <div className="pf-a4-nutrition-meal-list mt-2">
+                  <div className="pf-n-nutrition-meal-list mt-2">
                     {nutritionDiaryMealRows.map((meal) => (
                       <article
                         key={`meal-row-${meal.mealId}`}
-                        className="pf-a4-nutrition-meal-row is-clickable"
+                        className="pf-n-nutrition-meal-row is-clickable"
                         role="button"
                         tabIndex={0}
                         onClick={() => openNutritionMealComposer(meal.mealId)}
@@ -11845,14 +11844,14 @@ export default function AlumnoVisionClient({
                           }
                         }}
                       >
-                        <div className="pf-a4-nutrition-meal-icon">{meal.icon}</div>
+                        <div className="pf-n-nutrition-meal-icon">{meal.icon}</div>
 
                         <div className="min-w-0">
-                          <p className="pf-a4-nutrition-meal-name">{meal.mealName}</p>
-                          <p className="pf-a4-nutrition-meal-kcal">
+                          <p className="pf-n-nutrition-meal-name">{meal.mealName}</p>
+                          <p className="pf-n-nutrition-meal-kcal">
                             {meal.consumedKcal} / {meal.goalKcal} kcal
                           </p>
-                          <p className="pf-a4-nutrition-meal-preview">
+                          <p className="pf-n-nutrition-meal-preview">
                             {meal.previewText || "Toca + para registrar alimentos."}
                           </p>
                         </div>
@@ -11860,7 +11859,7 @@ export default function AlumnoVisionClient({
                         <ReliableActionButton
                           type="button"
                           onClick={() => openNutritionMealComposer(meal.mealId)}
-                          className="pf-a4-nutrition-meal-plus"
+                          className="pf-n-nutrition-meal-plus"
                           aria-label={`Agregar alimento en ${meal.mealName}`}
                         >
                           +
@@ -11870,25 +11869,25 @@ export default function AlumnoVisionClient({
                   </div>
 
                   {nutritionActiveMealComposer ? (
-                    <div className="pf-a4-nutrition-meal-screen-layer">
-                      <article className="pf-a4-nutrition-composer pf-a4-nutrition-composer-screen">
-                        <div className="pf-a4-nutrition-composer-head">
+                    <div className="pf-n-nutrition-meal-screen-layer">
+                      <article className="pf-n-nutrition-composer pf-n-nutrition-composer-screen">
+                        <div className="pf-n-nutrition-composer-head">
                           <div>
-                            <p className="pf-a4-nutrition-composer-kicker">Pantalla de comida</p>
-                            <h3 className="pf-a4-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h3>
+                            <p className="pf-n-nutrition-composer-kicker">Pantalla de comida</p>
+                            <h3 className="pf-n-nutrition-composer-title">{nutritionActiveMealComposer.mealName}</h3>
                           </div>
 
                           <ReliableActionButton
                             type="button"
                             onClick={closeNutritionMealComposer}
-                            className="pf-a3-nutrition-student-food-delete"
+                            className="pf-n-nutrition-student-food-delete"
                           >
                             Volver
                           </ReliableActionButton>
                         </div>
 
-                        <div className="pf-a4-nutrition-composer-grid">
-                          <label className="pf-a3-nutrition-student-food-field">
+                        <div className="pf-n-nutrition-composer-grid">
+                          <label className="pf-n-nutrition-student-food-field">
                             <span>Buscar alimentos</span>
                             <input
                               value={nutritionFoodSearchQuery}
@@ -11897,7 +11896,7 @@ export default function AlumnoVisionClient({
                             />
                           </label>
 
-                          <label className="pf-a3-nutrition-student-food-field">
+                          <label className="pf-n-nutrition-student-food-field">
                             <span>Gramaje</span>
                             <input
                               type="number"
@@ -11910,37 +11909,37 @@ export default function AlumnoVisionClient({
                           </label>
                         </div>
 
-                        <div className="pf-a4-nutrition-composer-actions mt-2">
+                        <div className="pf-n-nutrition-composer-actions mt-2">
                           <ReliableActionButton
                             type="button"
                             onClick={triggerNutritionBarcodeCapture}
-                            className="pf-a3-nutrition-template-chip"
+                            className="pf-n-nutrition-template-chip"
                           >
                             Escáner automático
                           </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={triggerNutritionCalIaCapture}
-                            className="pf-a3-nutrition-template-chip"
+                            className="pf-n-nutrition-template-chip"
                           >
                             Cámara CAL IA
                           </ReliableActionButton>
                         </div>
 
                         {nutritionCalIaEstimate ? (
-                          <article className="pf-a4-nutrition-cal-ia-card mt-3">
-                            <div className="pf-a4-nutrition-cal-ia-preview">
+                          <article className="pf-n-nutrition-cal-ia-card mt-3">
+                            <div className="pf-n-nutrition-cal-ia-preview">
                               <img src={nutritionCalIaEstimate.previewUrl} alt="Estimación CAL IA" loading="lazy" />
                             </div>
                             <div>
-                              <p className="pf-a4-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
-                              <p className="pf-a4-nutrition-cal-ia-meta">
+                              <p className="pf-n-nutrition-cal-ia-title">{nutritionCalIaEstimate.entry.nombre}</p>
+                              <p className="pf-n-nutrition-cal-ia-meta">
                                 {nutritionCalIaEstimate.entry.gramos || 0} g · {nutritionCalIaEstimate.entry.calorias} kcal · {nutritionCalIaEstimate.entry.proteinas || 0}P / {nutritionCalIaEstimate.entry.carbohidratos || 0}C / {nutritionCalIaEstimate.entry.grasas || 0}G
                               </p>
                               <ReliableActionButton
                                 type="button"
                                 onClick={confirmNutritionCalIaEstimate}
-                                className="pf-a2-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                                className="pf-n-solid-btn mt-2 rounded-lg px-3 py-1.5 text-xs font-semibold"
                                 disabled={nutritionCalIaProcessing}
                               >
                                 {nutritionCalIaProcessing ? "Procesando..." : "Agregar estimación"}
@@ -11950,7 +11949,7 @@ export default function AlumnoVisionClient({
                         ) : null}
 
                         {nutritionFavoriteFoods.length > 0 ? (
-                          <div className="pf-a4-nutrition-favorites-row mt-3">
+                          <div className="pf-n-nutrition-favorites-row mt-3">
                             {nutritionFavoriteFoods.slice(0, 8).map((favorite) => (
                               <ReliableActionButton
                                 key={`nutrition-favorite-${favorite.id}`}
@@ -11971,7 +11970,7 @@ export default function AlumnoVisionClient({
                                     "search"
                                   )
                                 }
-                                className="pf-a4-nutrition-favorite-chip"
+                                className="pf-n-nutrition-favorite-chip"
                               >
                                 ★ {favorite.nombre}
                               </ReliableActionButton>
@@ -11979,11 +11978,11 @@ export default function AlumnoVisionClient({
                           </div>
                         ) : null}
 
-                        <div className="pf-a4-nutrition-search-results mt-3">
+                        <div className="pf-n-nutrition-search-results mt-3">
                           {nutritionFoodSearchLoading ? (
-                            <p className="pf-a4-nutrition-search-empty">Buscando alimentos...</p>
+                            <p className="pf-n-nutrition-search-empty">Buscando alimentos...</p>
                           ) : nutritionCombinedSearchResults.length === 0 ? (
-                            <p className="pf-a4-nutrition-search-empty">
+                            <p className="pf-n-nutrition-search-empty">
                               No hay resultados para este filtro. Prueba otro término o usa el escáner.
                             </p>
                           ) : (
@@ -11991,28 +11990,28 @@ export default function AlumnoVisionClient({
                               const isFavorite = nutritionFavoriteFoodIds.has(food.id);
 
                               return (
-                                <article key={`search-food-${food.id}`} className="pf-a4-nutrition-search-row">
+                                <article key={`search-food-${food.id}`} className="pf-n-nutrition-search-row">
                                   {food.imageUrl ? (
-                                    <div className="pf-a4-nutrition-search-thumb">
+                                    <div className="pf-n-nutrition-search-thumb">
                                       <img src={food.imageUrl} alt={food.nombre} loading="lazy" referrerPolicy="no-referrer" />
                                     </div>
                                   ) : (
-                                    <div className="pf-a4-nutrition-search-thumb pf-a4-nutrition-search-thumb-empty">FOOD</div>
+                                    <div className="pf-n-nutrition-search-thumb pf-n-nutrition-search-thumb-empty">FOOD</div>
                                   )}
 
                                   <div className="min-w-0">
-                                    <p className="pf-a4-nutrition-search-name">{food.nombre}</p>
-                                    <p className="pf-a4-nutrition-search-meta">
+                                    <p className="pf-n-nutrition-search-name">{food.nombre}</p>
+                                    <p className="pf-n-nutrition-search-meta">
                                       {food.kcalPer100g} kcal/100g · {food.proteinPer100g}P · {food.carbsPer100g}C · {food.fatPer100g}G
                                     </p>
-                                    <p className="pf-a4-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
+                                    <p className="pf-n-nutrition-search-source">{food.sourceLabel || "Catálogo"}</p>
                                   </div>
 
-                                  <div className="pf-a4-nutrition-search-actions">
+                                  <div className="pf-n-nutrition-search-actions">
                                     <ReliableActionButton
                                       type="button"
                                       onClick={() => toggleNutritionFavoriteFood(food)}
-                                      className={`pf-a4-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
+                                      className={`pf-n-nutrition-favorite-toggle ${isFavorite ? "is-active" : ""}`}
                                       aria-label={isFavorite ? `Quitar favorito ${food.nombre}` : `Guardar favorito ${food.nombre}`}
                                     >
                                       ★
@@ -12026,7 +12025,7 @@ export default function AlumnoVisionClient({
                                           food.sourceLabel?.toLowerCase().includes("barcode") ? "barcode" : "search"
                                         )
                                       }
-                                      className="pf-a4-nutrition-search-add"
+                                      className="pf-n-nutrition-search-add"
                                     >
                                       Agregar
                                     </ReliableActionButton>
@@ -12038,12 +12037,12 @@ export default function AlumnoVisionClient({
                         </div>
 
                         {nutritionActiveMealComposer.mealEntries.length > 0 ? (
-                          <div className="pf-a4-nutrition-meal-entry-list mt-3">
+                          <div className="pf-n-nutrition-meal-entry-list mt-3">
                             {nutritionActiveMealComposer.mealEntries.map((entry) => (
-                              <article key={`meal-entry-${entry.id}`} className="pf-a4-nutrition-meal-entry-row">
+                              <article key={`meal-entry-${entry.id}`} className="pf-n-nutrition-meal-entry-row">
                                 <div>
-                                  <p className="pf-a4-nutrition-meal-entry-name">{entry.nombre}</p>
-                                  <p className="pf-a4-nutrition-meal-entry-meta">
+                                  <p className="pf-n-nutrition-meal-entry-name">{entry.nombre}</p>
+                                  <p className="pf-n-nutrition-meal-entry-meta">
                                     {entry.porcion ? `${entry.porcion} · ` : ""}
                                     {entry.calorias} kcal · {entry.proteinas || 0}P / {entry.carbohidratos || 0}C / {entry.grasas || 0}G
                                   </p>
@@ -12051,7 +12050,7 @@ export default function AlumnoVisionClient({
                                 <ReliableActionButton
                                   type="button"
                                   onClick={() => removeNutritionCustomFood(entry.id)}
-                                  className="pf-a3-nutrition-student-food-delete"
+                                  className="pf-n-nutrition-student-food-delete"
                                 >
                                   Eliminar
                                 </ReliableActionButton>
@@ -12065,94 +12064,94 @@ export default function AlumnoVisionClient({
 
                   {nutritionShowTrackerDetails ? (
                     <section className="mt-4 space-y-3">
-                      <div className="pf-a3-nutrition-template-row">
-                        <span className="pf-a3-nutrition-template-label">Plantillas del día</span>
+                      <div className="pf-n-nutrition-template-row">
+                        <span className="pf-n-nutrition-template-label">Plantillas del día</span>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("full")}
-                          className="pf-a3-nutrition-template-chip"
+                          className="pf-n-nutrition-template-chip"
                         >
                           Día completo
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("training")}
-                          className="pf-a3-nutrition-template-chip"
+                          className="pf-n-nutrition-template-chip"
                         >
                           Día de entreno
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("rest")}
-                          className="pf-a3-nutrition-template-chip"
+                          className="pf-n-nutrition-template-chip"
                         >
                           Día de descanso
                         </ReliableActionButton>
                         <ReliableActionButton
                           type="button"
                           onClick={() => applyNutritionDayTemplate("clear")}
-                          className="pf-a3-nutrition-template-chip is-muted"
+                          className="pf-n-nutrition-template-chip is-muted"
                         >
                           Reiniciar día
                         </ReliableActionButton>
                       </div>
 
-                      <div className="pf-a3-nutrition-week-head">
+                      <div className="pf-n-nutrition-week-head">
                         <ReliableActionButton
                           type="button"
                           onClick={() => handleNutritionTrackerWeekShift(-1)}
-                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                          className="pf-n-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                         >
                           Semana anterior
                         </ReliableActionButton>
 
-                        <p className="pf-a3-nutrition-week-label">
+                        <p className="pf-n-nutrition-week-label">
                           Semana {formatDate(nutritionWeekStartDate)} - {formatDate(nutritionWeekEndDate)}
                         </p>
 
                         <ReliableActionButton
                           type="button"
                           onClick={() => handleNutritionTrackerWeekShift(1)}
-                          className="pf-a2-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                          className="pf-n-ghost-btn rounded-lg border px-3 py-1.5 text-xs font-semibold"
                         >
                           Semana siguiente
                         </ReliableActionButton>
                       </div>
 
-                      <div className="pf-a3-nutrition-streak-grid">
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Racha actual</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.current} días</p>
-                          <p className="pf-a3-nutrition-streak-note">
+                      <div className="pf-n-nutrition-streak-grid">
+                        <div className="pf-n-nutrition-streak-card">
+                          <p className="pf-n-nutrition-streak-title">Racha actual</p>
+                          <p className="pf-n-nutrition-streak-value">{nutritionStreakStats.current} días</p>
+                          <p className="pf-n-nutrition-streak-note">
                             Último check: {nutritionStreakStats.lastDate ? formatDate(nutritionStreakStats.lastDate) : "-"}
                           </p>
                         </div>
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Mejor racha</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionStreakStats.best} días</p>
-                          <p className="pf-a3-nutrition-streak-note">Histórico de adherencia</p>
+                        <div className="pf-n-nutrition-streak-card">
+                          <p className="pf-n-nutrition-streak-title">Mejor racha</p>
+                          <p className="pf-n-nutrition-streak-value">{nutritionStreakStats.best} días</p>
+                          <p className="pf-n-nutrition-streak-note">Histórico de adherencia</p>
                         </div>
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Días activos</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
-                          <p className="pf-a3-nutrition-streak-note">Dentro de esta semana</p>
+                        <div className="pf-n-nutrition-streak-card">
+                          <p className="pf-n-nutrition-streak-title">Días activos</p>
+                          <p className="pf-n-nutrition-streak-value">{nutritionWeeklyCompletedDays}/7</p>
+                          <p className="pf-n-nutrition-streak-note">Dentro de esta semana</p>
                         </div>
-                        <div className="pf-a3-nutrition-streak-card">
-                          <p className="pf-a3-nutrition-streak-title">Adherencia semanal</p>
-                          <p className="pf-a3-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
-                          <p className="pf-a3-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
+                        <div className="pf-n-nutrition-streak-card">
+                          <p className="pf-n-nutrition-streak-title">Adherencia semanal</p>
+                          <p className="pf-n-nutrition-streak-value">{nutritionWeeklyAdherencePct}%</p>
+                          <p className="pf-n-nutrition-streak-note">Promedio {nutritionWeeklyAverageKcal} kcal</p>
                         </div>
                       </div>
 
-                      <div className="pf-a3-nutrition-week-grid-wrap">
-                        <p className="pf-a3-nutrition-week-grid-title">Calendario nutricional semanal</p>
-                        <div className="pf-a3-nutrition-week-grid">
+                      <div className="pf-n-nutrition-week-grid-wrap">
+                        <p className="pf-n-nutrition-week-grid-title">Calendario nutricional semanal</p>
+                        <div className="pf-n-nutrition-week-grid">
                           {nutritionWeeklyHistory.map((day) => (
                             <ReliableActionButton
                               key={`nutri-week-${day.date}`}
                               type="button"
                               onClick={() => handleNutritionTrackerDateSelect(day.date)}
-                              className={`pf-a3-nutrition-weekday-card ${
+                              className={`pf-n-nutrition-weekday-card ${
                                 day.isSelected ? "is-selected" : ""
                               } ${
                                 day.status === "empty"
@@ -12164,10 +12163,10 @@ export default function AlumnoVisionClient({
                                       : "is-on-target"
                               }`}
                             >
-                              <span className="pf-a3-nutrition-weekday-name">{day.dayLabel}</span>
-                              <strong className="pf-a3-nutrition-weekday-day">{day.dayNumber}</strong>
-                              <span className="pf-a3-nutrition-weekday-meta">{day.totalEntries} registros</span>
-                              <span className="pf-a3-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
+                              <span className="pf-n-nutrition-weekday-name">{day.dayLabel}</span>
+                              <strong className="pf-n-nutrition-weekday-day">{day.dayNumber}</strong>
+                              <span className="pf-n-nutrition-weekday-meta">{day.totalEntries} registros</span>
+                              <span className="pf-n-nutrition-weekday-meta">{day.consumedKcal} kcal</span>
                             </ReliableActionButton>
                           ))}
                         </div>

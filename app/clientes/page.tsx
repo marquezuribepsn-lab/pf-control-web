@@ -8406,7 +8406,7 @@ export default function ClientesPage() {
                                                   <div
                                                     key={exercise.id}
                                                     className={`border-t border-white/12 pt-3 ${
-                                                      hasSuperSerieGroup ? "pf-a3-routine-exercise-group pf-a3-routine-exercise-group-linked" : ""
+                                                      hasSuperSerieGroup ? "pf-n-routine-exercise-group pf-n-routine-exercise-group-linked" : ""
                                                     }`}
                                                   >
                                                     <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-white/[0.025] px-2 py-1 text-[12px] font-semibold text-slate-200">

@@ -2691,3 +2691,2597 @@ body:has(.pf-n) {
     gap: 8px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Sheet del ejercicio (`pf-n-log-*`) y flujo guiado (`pf-n-guided-*`)
+
+   El DOM ya tenía la misma estructura que el handoff (cabecera, fila de
+   métricas prescritas, pestañas, video, panes), así que acá se le pone el
+   lenguaje visual nuevo en vez de reescribir el árbol.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-log-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(3, 4, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: pfFadeIn 0.25s ease both;
+}
+
+.pf-n-log-panel {
+  width: 100%;
+  max-width: 520px;
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 28px 28px 0 0;
+  background: var(--n-bg-sheet);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 20px calc(28px + env(safe-area-inset-bottom));
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+  color: var(--n-fg);
+  animation: pfModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pf-n-log-panel::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Cabecera */
+.pf-n-log-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pf-n-log-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.pf-n-log-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--n-fg);
+  margin: 0 0 4px;
+}
+
+.pf-n-log-meta {
+  font-size: 11.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+}
+
+.pf-n-log-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--n-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-log-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.pf-n-log-close:active {
+  transform: scale(0.9);
+}
+
+/* Fila de métricas prescritas */
+.pf-n-log-presets {
+  display: flex;
+  padding: 14px 0;
+  border-top: 1px solid var(--n-divider-strong);
+  border-bottom: 1px solid var(--n-divider-strong);
+  margin-bottom: 18px;
+}
+
+.pf-n-log-preset {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  border-right: 1px solid var(--n-divider-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pf-n-log-preset:last-child {
+  border-right: none;
+}
+
+.pf-n-log-preset span {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* La última métrica es la carga: el handoff la destaca en cyan. */
+.pf-n-log-preset:last-child span {
+  color: var(--n-cyan-soft);
+}
+
+.pf-n-log-preset strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--n-fg);
+}
+
+/* Pestañas */
+.pf-n-log-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--n-divider);
+  margin-bottom: 18px;
+}
+
+.pf-n-log-tab {
+  flex: 1;
+  padding: 8px 4px 10px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg-45);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.16s ease;
+}
+
+.pf-n-log-tab-active {
+  font-weight: 700;
+  color: var(--n-fg);
+  border-image: var(--n-grad-flat) 1;
+  border-bottom-color: var(--n-cyan);
+}
+
+/* Video del ejercicio */
+.pf-n-log-video-wrap {
+  margin-bottom: 16px;
+}
+
+.pf-n-log-video-frame {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  border: none;
+  background: #000;
+  display: block;
+}
+
+.pf-n-log-video-empty {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  color: var(--n-fg-40);
+  text-align: center;
+  padding: 16px;
+}
+
+.pf-n-log-link-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n-fg-70);
+  cursor: pointer;
+}
+
+/* Panes */
+.pf-n-log-pane {
+  display: block;
+}
+
+.pf-n-log-description {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--n-fg-70);
+  margin: 0 0 14px;
+}
+
+.pf-n-log-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pf-n-tag {
+  padding: 5px 10px;
+  border-radius: var(--n-r-pill);
+  background: rgba(99, 102, 241, 0.16);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--n-indigo-pale);
+}
+
+/* Campos de carga */
+.pf-n-log-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.pf-n-log-field {
+  flex: 1 1 40%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pf-n-log-field-full {
+  flex: 1 1 100%;
+}
+
+.pf-n-log-field input,
+.pf-n-log-field textarea,
+.pf-n-log-field select {
+  width: 100%;
+  padding: 0 0 11px;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  background: transparent;
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  outline: none;
+}
+
+.pf-n-log-field textarea {
+  min-height: 64px;
+  font-size: 12.5px;
+  font-weight: 400;
+  resize: none;
+  padding-top: 4px;
+}
+
+.pf-n-log-field input::placeholder,
+.pf-n-log-field textarea::placeholder {
+  color: var(--n-fg-35);
+  font-weight: 400;
+}
+
+/* Stepper (− valor +) */
+.pf-n-stepper-field .pf-n-stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.pf-n-stepper-field .pf-n-stepper-row input {
+  border-bottom: none;
+  padding-bottom: 0;
+  text-align: center;
+  font-size: 16.5px;
+  font-weight: 800;
+}
+
+.pf-n-stepper-field button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--n-fg);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-stepper-field button:active {
+  transform: scale(0.88);
+}
+
+/* Fila de acciones + checkbox de molestia */
+.pf-n-log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pf-n-log-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+  cursor: pointer;
+}
+
+.pf-n-log-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+
+.pf-n-log-check input[type="checkbox"]:checked {
+  background: var(--n-grad);
+  border-color: transparent;
+}
+
+.pf-n-log-check input[type="checkbox"]:checked::after {
+  content: "\2713";
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--n-on-accent);
+}
+
+.pf-n-log-upload {
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: rgba(52, 211, 153, 0.14);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n-green);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pf-n-log-upload-note {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 6px 0 0;
+  flex-basis: 100%;
+}
+
+/* Botonera */
+.pf-n-log-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pf-n-log-primary-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-grad);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-log-primary-btn:active {
+  transform: scale(0.97);
+}
+
+.pf-n-log-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pf-n-log-secondary-btn {
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-fg);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-log-secondary-btn:active {
+  transform: scale(0.96);
+}
+
+.pf-n-log-status {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-green);
+  margin: 10px 0 0;
+  flex-basis: 100%;
+}
+
+.pf-n-log-editing-hint {
+  font-size: 11px;
+  color: var(--n-cyan-soft);
+  margin: 0 0 10px;
+}
+
+/* Molestia reportada */
+.pf-n-log-pain-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pf-n-log-pain-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-orange);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.pf-n-log-pain-text {
+  font-size: 12.5px;
+  color: var(--n-fg-70);
+  margin: 0;
+}
+
+.pf-n-log-pain-recommendation {
+  border-radius: var(--n-r-tile);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  background: rgba(251, 146, 60, 0.1);
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #fdba74;
+  margin-bottom: 16px;
+}
+
+/* Historial dentro del sheet */
+.pf-n-log-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-n-log-history-empty {
+  font-size: 12px;
+  color: var(--n-fg-40);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.pf-n-log-history-item {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--n-divider);
+}
+
+.pf-n-log-history-item:last-child {
+  border-bottom: none;
+}
+
+.pf-n-log-history-item-editing {
+  background: rgba(34, 211, 238, 0.06);
+  border-radius: var(--n-r-tile);
+  padding-inline: 12px;
+}
+
+.pf-n-log-history-main {
+  min-width: 0;
+}
+
+.pf-n-log-history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-log-history-actions,
+.pf-n-log-history-edit-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pf-n-log-history-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--n-fg-70);
+  cursor: pointer;
+}
+
+.pf-n-log-history-btn-danger {
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+}
+
+.pf-n-log-history-edit {
+  margin-top: 10px;
+}
+
+.pf-n-log-history-edit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── Flujo guiado ────────────────────────────────────────────────────────── */
+
+.pf-n-guided-step-enter {
+  animation: pfModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pf-n-guided-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+
+.pf-n-guided-pip {
+  width: 14px;
+  height: 5px;
+  border-radius: var(--n-r-pill);
+  background: rgba(255, 255, 255, 0.1);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.pf-n-guided-pip-done {
+  background: var(--n-grad-flat);
+}
+
+.pf-n-guided-pip-active {
+  width: 22px;
+  background: var(--n-grad-flat);
+}
+
+.pf-n-guided-pip-pending {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pf-n-guided-actions-bar {
+  margin-top: 4px;
+}
+
+.pf-n-guided-btns {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.pf-n-guided-btn-pause,
+.pf-n-guided-btn-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-fg);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-guided-btn-pause:active,
+.pf-n-guided-btn-back:active {
+  transform: scale(0.96);
+}
+
+.pf-n-guided-btn-next,
+.pf-n-guided-btn-finish {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-grad);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-guided-btn-next:active,
+.pf-n-guided-btn-finish:active {
+  transform: scale(0.97);
+}
+
+.pf-n-guided-btn-counter {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* Chips de incremento rápido dentro del stepper (+0.5 / +5 / +10 ...). */
+.pf-n-stepper-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pf-n-stepper-chip {
+  flex: 1;
+  text-align: center;
+  padding: 8px 2px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--n-fg-70);
+  cursor: pointer;
+  letter-spacing: normal;
+  text-transform: none;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-stepper-chip:active {
+  transform: scale(0.93);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Primitivas heredadas del diseño viejo, reescritas con los tokens nuevos
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-shell,
+.pf-n-portal {
+  display: block;
+}
+
+.pf-n-kpi {
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+}
+
+.pf-n-drawer {
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+  color: var(--n-fg-70);
+}
+
+.pf-n-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--n-r-pill);
+  background: rgba(34, 211, 238, 0.12);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pf-n-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pf-n-solid-btn {
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-grad);
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-solid-btn:active {
+  transform: scale(0.97);
+}
+
+.pf-n-ghost-btn {
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--n-fg);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-ghost-btn:active {
+  transform: scale(0.97);
+}
+
+.pf-n-back-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  color: var(--n-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pf-n-hero-shell {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+}
+
+.pf-n-banner {
+  border-radius: var(--n-r-tile);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--n-card-border);
+  background: var(--n-card-bg);
+  color: var(--n-fg-85);
+}
+
+.pf-n-banner-ok {
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--n-green);
+}
+
+.pf-n-banner-danger {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+}
+
+.pf-n-progress-track {
+  height: 6px;
+  border-radius: var(--n-r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.pf-n-progress-fill {
+  height: 100%;
+  border-radius: var(--n-r-pill);
+  background: var(--n-grad-flat);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Rutina — bloques, ejercicios y estados
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-routine-session-card {
+  display: block;
+}
+
+.pf-n-routine-session-strip,
+.pf-n-routine-session-strip-week {
+  margin-bottom: 18px;
+}
+
+.pf-n-routine-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.pf-n-routine-week-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.pf-n-routine-week-arrow {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  color: var(--n-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pf-n-routine-week-arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pf-n-routine-week-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pf-n-routine-session-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pf-n-routine-session-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-n-routine-session-chip {
+  flex: 1;
+  min-width: 78px;
+  text-align: center;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg-soft);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg-60);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-routine-session-chip:active {
+  transform: scale(0.96);
+}
+
+.pf-n-routine-session-chip-active {
+  background: var(--n-grad);
+  font-weight: 700;
+  color: var(--n-on-accent);
+}
+
+/* Estado vacío / cargando */
+.pf-n-routine-empty {
+  border-radius: var(--n-r-card);
+  border: 1px dashed var(--n-dashed);
+  padding: 26px 22px;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.pf-n-routine-empty h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--n-fg-85);
+  margin: 0 0 4px;
+}
+
+.pf-n-routine-empty p {
+  font-size: 11.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.pf-n-routine-loading {
+  border-style: solid;
+  border-color: var(--n-card-border);
+  background: var(--n-card-bg);
+}
+
+.pf-n-routine-loading-visual {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+}
+
+.pf-n-routine-loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-top-color: var(--n-cyan);
+  animation: pfSpin 0.9s linear infinite;
+}
+
+@keyframes pfSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pf-n-routine-loading-core {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.04em;
+}
+
+.pf-n-routine-loading-brand {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.pf-n-routine-more {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg-70);
+  cursor: pointer;
+}
+
+/* Bloques */
+.pf-n-routine-block-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.pf-n-routine-block {
+  display: block;
+}
+
+.pf-n-routine-block-note {
+  font-size: 11.5px;
+  color: var(--n-fg-45);
+  margin: 4px 0 12px;
+  line-height: 1.45;
+}
+
+.pf-n-routine-block-alert {
+  border-radius: var(--n-r-tile);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  background: rgba(251, 146, 60, 0.1);
+  padding: 11px 13px;
+  font-size: 11.5px;
+  color: #fdba74;
+  margin-bottom: 12px;
+}
+
+/* Lista de ejercicios */
+.pf-n-routine-exercise-stack,
+.pf-n-routine-exercise-group-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-n-routine-exercise-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Superserie: los ejercicios enlazados comparten un borde izquierdo cyan. */
+.pf-n-routine-exercise-group-linked {
+  border-left: 2px solid rgba(34, 211, 238, 0.45);
+  padding-left: 10px;
+  margin: 8px 0;
+}
+
+.pf-n-routine-exercise-group-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: var(--n-r-pill);
+  background: rgba(34, 211, 238, 0.14);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pf-n-routine-exercise-row,
+.pf-n-routine-exercise-row-base {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--n-divider);
+  text-align: left;
+}
+
+.pf-n-routine-exercise-row-superset {
+  border-bottom-color: rgba(34, 211, 238, 0.14);
+}
+
+.pf-n-routine-exercise-index {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--n-indigo-pale);
+}
+
+.pf-n-routine-exercise-index-superset {
+  background: rgba(34, 211, 238, 0.16);
+  color: var(--n-cyan-soft);
+}
+
+.pf-n-routine-exercise-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-n-routine-exercise-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-routine-exercise-name-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pf-n-routine-exercise-desc {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.pf-n-routine-exercise-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pf-n-routine-exercise-stat {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+}
+
+.pf-n-routine-exercise-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.pf-n-routine-exercise-thumb-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-n-routine-exercise-thumb-has-media {
+  border-color: transparent;
+}
+
+.pf-n-routine-exercise-thumb-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(3, 4, 8, 0.35);
+  color: #fff;
+}
+
+/* Tarjeta de flujo (sesión completada / en pausa) */
+.pf-n-routine-flow-card {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.pf-n-routine-flow-icon-ok {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.16);
+  color: var(--n-green);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+}
+
+.pf-n-routine-flow-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-routine-flow-subtitle {
+  font-size: 12px;
+  color: var(--n-fg-45);
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.pf-n-routine-flow-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-grad);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-routine-flow-cta:active {
+  transform: scale(0.97);
+}
+
+.pf-n-routine-flow-cta-resume {
+  background: linear-gradient(135deg, #34d399, #22d3ee);
+}
+
+.pf-n-routine-flow-discard-btn {
+  margin-top: 10px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-fg-50);
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Cronómetro flotante
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-routine-stopwatch-float {
+  position: fixed;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--n-r-pill);
+  background: rgba(11, 13, 20, 0.92);
+  border: 1px solid var(--n-card-border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  touch-action: none;
+}
+
+.pf-n-routine-stopwatch-float-dragging {
+  cursor: grabbing;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.pf-n-routine-stopwatch-display {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--n-fg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.pf-n-routine-stopwatch-status {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pf-n-routine-stopwatch-status-running {
+  color: var(--n-green);
+}
+
+.pf-n-routine-stopwatch-mini-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.pf-n-routine-stopwatch-mini-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--n-ghost-bg);
+  color: var(--n-fg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.pf-n-routine-stopwatch-mini-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pf-n-routine-stopwatch-mini-btn-play {
+  background: var(--n-grad);
+  color: var(--n-on-accent);
+}
+
+.pf-n-routine-stopwatch-mini-btn-stop {
+  background: rgba(251, 146, 60, 0.18);
+  color: var(--n-orange);
+}
+
+.pf-n-routine-stopwatch-mini-btn-close {
+  background: rgba(248, 113, 113, 0.16);
+  color: #fca5a5;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Paneles de acción de rutina (cambio / sesiones / finalizar)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-routine-action-overlay {
+  align-items: flex-end;
+}
+
+.pf-n-routine-action-panel {
+  display: block;
+}
+
+.pf-n-routine-action-panel-change,
+.pf-n-routine-action-panel-sessions,
+.pf-n-routine-action-panel-finalize {
+  display: block;
+}
+
+.pf-n-routine-action-meta {
+  font-size: 11.5px;
+  color: var(--n-fg-45);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.pf-n-routine-action-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border-radius: var(--n-r-tile);
+  border: 1px solid var(--n-card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  resize: none;
+  margin-bottom: 12px;
+}
+
+.pf-n-routine-action-textarea::placeholder {
+  color: var(--n-fg-35);
+}
+
+.pf-n-routine-action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pf-n-routine-action-primary {
+  flex: 1;
+  min-width: 140px;
+  padding: 13px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-grad);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-routine-action-primary:active {
+  transform: scale(0.97);
+}
+
+.pf-n-routine-action-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pf-n-routine-action-primary-change {
+  background: linear-gradient(135deg, #34d399, #22d3ee);
+}
+
+.pf-n-routine-action-counter {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin-left: auto;
+}
+
+.pf-n-routine-action-status {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-green);
+  margin: 10px 0 0;
+}
+
+.pf-n-routine-action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-n-routine-action-card {
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 13px 15px;
+}
+
+.pf-n-routine-action-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.pf-n-routine-action-answer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--n-fg-60);
+}
+
+.pf-n-routine-action-empty {
+  text-align: center;
+  font-size: 12px;
+  color: var(--n-fg-40);
+  padding: 24px 0;
+}
+
+.pf-n-routine-action-loading {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--n-fg-45);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Encuesta post-sesión
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-survey-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.pf-n-survey-pip {
+  width: 14px;
+  height: 5px;
+  border-radius: var(--n-r-pill);
+  background: rgba(255, 255, 255, 0.1);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.pf-n-survey-pip-done {
+  background: var(--n-grad-flat);
+}
+
+.pf-n-survey-pip-active {
+  width: 22px;
+  background: var(--n-grad-flat);
+}
+
+.pf-n-survey-pip-pending {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pf-n-survey-step {
+  display: block;
+  animation: pfScreenIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pf-n-survey-number {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.pf-n-survey-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0 0 16px;
+  line-height: 1.35;
+}
+
+.pf-n-survey-options-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pf-n-survey-option-btn {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px solid var(--n-card-border);
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.pf-n-survey-option-btn:active {
+  transform: scale(0.98);
+}
+
+.pf-n-survey-option-btn-active {
+  border-color: transparent;
+  background: var(--n-grad);
+  color: var(--n-on-accent);
+  font-weight: 700;
+}
+
+.pf-n-survey-scale-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.pf-n-survey-scale-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  border: 1px solid var(--n-card-border);
+  border-radius: 12px;
+  background: var(--n-tile-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-fg-70);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-survey-scale-btn:active {
+  transform: scale(0.92);
+}
+
+.pf-n-survey-scale-btn-active {
+  border-color: transparent;
+  background: var(--n-grad);
+  color: var(--n-on-accent);
+}
+
+.pf-n-survey-textarea {
+  width: 100%;
+  min-height: 88px;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  background: transparent;
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  resize: none;
+  margin-bottom: 18px;
+}
+
+.pf-n-survey-textarea::placeholder {
+  color: var(--n-fg-35);
+}
+
+.pf-n-survey-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.pf-n-survey-nav-back {
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-fg);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pf-n-survey-nav-next,
+.pf-n-survey-finish-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--n-grad);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--n-on-accent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-survey-nav-next:active,
+.pf-n-survey-finish-btn:active {
+  transform: scale(0.97);
+}
+
+.pf-n-survey-nav-next:disabled,
+.pf-n-survey-finish-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pf-n-survey-counter {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+.pf-n-survey-empty {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Nutrición
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-nutrition-screen {
+  display: block;
+  animation: pfScreenIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Pestañas internas (Nutrición / Recetas): subrayado blanco, no gradiente. */
+.pf-n-nutrition-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--n-divider);
+  margin-bottom: 20px;
+}
+
+.pf-n-nutrition-tab {
+  flex: 1;
+  padding: 8px 4px 10px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg-45);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.pf-n-nutrition-tab[aria-selected="true"],
+.pf-n-nutrition-tab.is-active {
+  font-weight: 700;
+  color: var(--n-fg);
+  border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Resumen del día: gauge de kcal + macros */
+.pf-n-nutrition-summary-card {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-summary-gauge {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 16px;
+}
+
+.pf-n-nutrition-summary-gauge-svg {
+  transform: rotate(-90deg);
+}
+
+.pf-n-nutrition-summary-gauge-track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.pf-n-nutrition-summary-gauge-progress {
+  stroke: url(#pfScoreGrad);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+
+.pf-n-nutrition-summary-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-n-nutrition-summary-gauge-kcal {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--n-fg);
+  letter-spacing: -0.02em;
+}
+
+.pf-n-nutrition-summary-gauge-goal {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-n-nutrition-summary-gauge-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  margin-top: 2px;
+}
+
+.pf-n-nutrition-summary-macros {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.pf-n-nutrition-summary-metrics {
+  display: flex;
+  gap: 10px;
+}
+
+.pf-n-nutrition-summary-metric {
+  flex: 1;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+}
+
+.pf-n-nutrition-summary-metric-value {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-nutrition-summary-metric-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.pf-n-macro-donut {
+  flex-shrink: 0;
+}
+
+/* Racha */
+.pf-n-nutrition-streak-grid {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-streak-card {
+  flex: 1;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+}
+
+.pf-n-nutrition-streak-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--n-fg);
+  margin: 0 0 2px;
+}
+
+.pf-n-nutrition-streak-title {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.pf-n-nutrition-streak-note {
+  font-size: 10.5px;
+  color: var(--n-fg-35);
+  margin: 4px 0 0;
+}
+
+/* Selector de fecha del tracker */
+.pf-n-nutrition-tracker-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pf-n-nutrition-tracker-date-input {
+  padding: 9px 12px;
+  border-radius: var(--n-r-pill);
+  border: 1px solid var(--n-card-border);
+  background: var(--n-ghost-bg-soft);
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  color-scheme: dark;
+}
+
+/* Diario de comidas */
+.pf-n-nutrition-diary-head,
+.pf-n-nutrition-diary-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pf-n-nutrition-diary-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-nutrition-diary-link {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  cursor: pointer;
+}
+
+.pf-n-nutrition-meal-list,
+.pf-n-nutrition-meal-entry-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-n-nutrition-meal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 2px;
+  border: none;
+  border-bottom: 1px solid var(--n-divider);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pf-n-nutrition-meal-row:last-child {
+  border-bottom: none;
+}
+
+.pf-n-nutrition-meal-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--n-green);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.pf-n-nutrition-meal-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-nutrition-meal-preview {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 2px 0 0;
+}
+
+.pf-n-nutrition-meal-kcal {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--n-fg-70);
+  flex-shrink: 0;
+}
+
+.pf-n-nutrition-meal-plus {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--n-grad);
+  color: var(--n-on-accent);
+  font-size: 15px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pf-n-nutrition-meal-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--n-divider);
+}
+
+.pf-n-nutrition-meal-entry-row:last-child {
+  border-bottom: none;
+}
+
+.pf-n-nutrition-meal-entry-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-n-nutrition-meal-entry-meta {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Capas a pantalla completa (comida, compositor, cámara) */
+.pf-n-nutrition-meal-screen-layer,
+.pf-n-nutrition-composer-screen,
+.pf-n-nutrition-camera-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  background: var(--n-bg-deep);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+  animation: pfScreenIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pf-n-nutrition-composer,
+.pf-n-nutrition-camera-sheet {
+  display: block;
+}
+
+.pf-n-nutrition-composer-head,
+.pf-n-nutrition-camera-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-composer-kicker,
+.pf-n-nutrition-camera-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 3px;
+}
+
+.pf-n-nutrition-composer-title,
+.pf-n-nutrition-camera-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-nutrition-composer-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-composer-actions,
+.pf-n-nutrition-camera-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pf-n-nutrition-camera-video,
+.pf-n-nutrition-camera-preview {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--n-r-card);
+  background: #000;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.pf-n-nutrition-camera-scan-frame {
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgba(34, 211, 238, 0.6);
+  border-radius: var(--n-r-card);
+  pointer-events: none;
+}
+
+.pf-n-nutrition-camera-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--n-grad-flat);
+  animation: pfScan 2.2s ease-in-out infinite;
+}
+
+@keyframes pfScan {
+  0%,
+  100% {
+    top: 0;
+  }
+  50% {
+    top: 100%;
+  }
+}
+
+.pf-n-nutrition-camera-status {
+  font-size: 12px;
+  color: var(--n-fg-45);
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+/* Análisis de calorías por IA */
+.pf-n-nutrition-cal-ia-card {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.pf-n-nutrition-cal-ia-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0 0 4px;
+}
+
+.pf-n-nutrition-cal-ia-meta {
+  font-size: 11.5px;
+  color: var(--n-fg-45);
+  margin: 0;
+}
+
+.pf-n-nutrition-cal-ia-preview {
+  width: 100%;
+  border-radius: var(--n-r-tile);
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Buscador de alimentos */
+.pf-n-nutrition-search-results {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-n-nutrition-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--n-divider);
+}
+
+.pf-n-nutrition-search-row:last-child {
+  border-bottom: none;
+}
+
+.pf-n-nutrition-search-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--n-tile-bg);
+}
+
+.pf-n-nutrition-search-thumb-empty {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--n-card-border);
+  font-size: 14px;
+  color: var(--n-fg-35);
+}
+
+.pf-n-nutrition-search-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-nutrition-search-meta {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 2px 0 0;
+}
+
+.pf-n-nutrition-search-source {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--n-fg-35);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-n-nutrition-search-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pf-n-nutrition-search-add {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--n-grad);
+  color: var(--n-on-accent);
+  font-size: 15px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.pf-n-nutrition-search-empty {
+  font-size: 12px;
+  color: var(--n-fg-40);
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Favoritos */
+.pf-n-nutrition-favorites-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 14px;
+}
+
+.pf-n-nutrition-favorites-row::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-n-nutrition-favorite-chip {
+  padding: 7px 12px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-fg-70);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pf-n-nutrition-favorite-toggle {
+  border: none;
+  background: transparent;
+  color: var(--n-orange);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+}
+
+/* Plan asignado por el profesor */
+.pf-n-nutrition-plan-actions-card {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-plan-actions-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 3px;
+}
+
+.pf-n-nutrition-plan-actions-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--n-fg);
+  margin: 0 0 4px;
+}
+
+.pf-n-nutrition-plan-actions-copy,
+.pf-n-nutrition-plan-actions-meta {
+  font-size: 11.5px;
+  color: var(--n-fg-45);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.pf-n-nutrition-plan-actions-grid,
+.pf-n-nutrition-plan-actions-row,
+.pf-n-nutrition-plan-quick-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-n-nutrition-plan-action-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 11px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pf-n-nutrition-plan-action-btn:active {
+  transform: scale(0.97);
+}
+
+.pf-n-nutrition-plan-action-btn-quick {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 8px 14px;
+  font-size: 11px;
+}
+
+.pf-n-nutrition-plan-action-btn-inline {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 7px 12px;
+  font-size: 11px;
+}
+
+.pf-n-nutrition-plan-action-counter {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin-left: auto;
+  align-self: center;
+}
+
+.pf-n-nutrition-plan-actions-status,
+.pf-n-nutrition-plan-actions-feedback {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-green);
+  margin: 10px 0 0;
+}
+
+.pf-n-nutrition-plan-field {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--n-card-border);
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  margin-bottom: 10px;
+}
+
+.pf-n-nutrition-plan-field::placeholder {
+  color: var(--n-fg-35);
+}
+
+/* Sustituciones sugeridas */
+.pf-n-nutrition-replacement-card {
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 13px 15px;
+  margin-bottom: 10px;
+}
+
+.pf-n-nutrition-replacement-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-nutrition-replacement-meta,
+.pf-n-nutrition-replacement-macros {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+}
+
+.pf-n-nutrition-replacement-badge {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: var(--n-r-pill);
+  background: rgba(52, 211, 153, 0.14);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--n-green);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-n-nutrition-replacement-source {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--n-fg-35);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Plantillas de comida */
+.pf-n-nutrition-template-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 12px;
+}
+
+.pf-n-nutrition-template-row::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-n-nutrition-template-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.pf-n-nutrition-template-chip {
+  padding: 7px 12px;
+  border: none;
+  border-radius: var(--n-r-pill);
+  background: var(--n-ghost-bg);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-fg-70);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Alimentos propios del alumno */
+.pf-n-nutrition-student-food-field {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--n-card-border);
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+}
+
+.pf-n-nutrition-student-food-delete {
+  border: none;
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+  border-radius: var(--n-r-pill);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Vista semanal del plan */
+.pf-n-nutrition-week-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pf-n-nutrition-week-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.pf-n-nutrition-week-grid-wrap {
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 18px;
+}
+
+.pf-n-nutrition-week-grid-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-n-nutrition-week-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.pf-n-nutrition-week-grid-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0 0 12px;
+}
+
+.pf-n-nutrition-weekday-card {
+  flex: 0 0 132px;
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 12px;
+}
+
+.pf-n-nutrition-weekday-day {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.pf-n-nutrition-weekday-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-nutrition-weekday-meta {
+  font-size: 10.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Pagos — overlay de carga
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-payments-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(3, 4, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  animation: pfFadeIn 0.25s ease both;
+}
+
+.pf-n-payments-loading-panel {
+  border-radius: var(--n-r-card);
+  background: var(--n-bg-sheet);
+  border: 1px solid var(--n-card-border);
+  padding: 24px 28px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Varios
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-checkin-semanal {
+  border-radius: var(--n-r-card);
+  background: var(--n-card-bg);
+  border: 1px solid var(--n-card-border);
+  padding: 16px;
+}
+
+/* Fondos de portada cuando la playlist no trae imagen. */
+.pf-n-music-card-fallback-a {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(99, 102, 241, 0.18));
+}
+
+.pf-n-music-card-fallback-b {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.22), rgba(34, 211, 238, 0.16));
+}
+
+.pf-n-music-card-fallback-c {
+  background: linear-gradient(135deg, rgba(196, 181, 253, 0.22), rgba(99, 102, 241, 0.18));
+}
+
+.pf-n-music-card-fallback-d {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.2), rgba(248, 113, 113, 0.16));
+}
+
+/* Modificadores del sheet que solo ajustan ancho de campo. */
+.pf-n-log-field-fecha,
+.pf-n-log-field-series,
+.pf-n-log-field-repeticiones,
+.pf-n-log-field-carga {
+  flex: 1 1 40%;
+}
+
+.pf-n-log-pane-registro {
+  display: block;
+}
+
+.pf-n-log-panel-has-video,
+.pf-n-log-panel-mobile,
+.pf-n-log-overlay-mobile {
+  /* El panel nuevo ya es responsivo; estos modificadores quedan sin efecto
+     propio y se mantienen solo para no tocar la lógica que los aplica. */
+}
+
+.pf-n-routine-log-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(3, 4, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.pf-n-routine-log-overlay-mobile {
+  align-items: flex-end;
+}
