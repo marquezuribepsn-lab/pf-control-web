@@ -10784,3 +10784,37 @@ html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
   font-weight: 700;
   color: var(--pf-nv-text-2);
 }
+
+/* ── Cuenta (rediseño del handoff) ────────────────────────────────────────
+   Identidad del alumno suelta sobre el fondo: nombre grande, email y badge
+   de rol en pildora cyan. */
+.pf-account-head {
+  padding: 0.15rem 0.2rem 0.35rem;
+}
+
+.pf-account-name {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--pf-nv-text);
+}
+
+.pf-account-mail {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pf-nv-muted);
+}
+
+.pf-account-role {
+  display: inline-block;
+  margin-top: 0.55rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 100px;
+  background: rgba(34, 211, 238, 0.12);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pf-nv-bright-soft);
+}

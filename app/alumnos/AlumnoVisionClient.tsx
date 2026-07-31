@@ -9023,7 +9023,9 @@ export default function AlumnoVisionClient({
         />
       )}
       <div className="pf-a2-shell">
-        {isRootCategory ? (
+        {/* Cuenta trae su propia identidad (nombre + email + rol), no usa el
+            encabezado generico de categoria. */}
+        {activeCategory === "cuenta" ? null : isRootCategory ? (
           <header className="pf-a3-home-head">
             <div className="pf-a3-home-notif">
               <NotificationHub
@@ -12343,19 +12345,18 @@ export default function AlumnoVisionClient({
 
           {activeCategory === "cuenta" ? (
             <div className="space-y-4">
-              <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-                <p className="pf-a2-eyebrow">Mi cuenta</p>
-                <h2 className="mt-1 text-xl font-black text-white">{accountPanelData?.nombreCompleto || "Cuenta"}</h2>
-                <p className="mt-2 text-sm text-slate-300">
-                  {accountPanelData?.email || "Cargando..."}
-                </p>
+              {/* Rediseño: identidad suelta sobre el fondo (nombre grande,
+                  email y badge de rol), sin tarjeta. */}
+              <header className="pf-account-head">
+                <h2 className="pf-account-name">{accountPanelData?.nombreCompleto || "Cuenta"}</h2>
+                <p className="pf-account-mail">{accountPanelData?.email || "Cargando..."}</p>
                 {accountPanelData?.role ? (
-                  <p className="mt-1 text-xs text-slate-400">Rol: {accountPanelData.role}</p>
+                  <span className="pf-account-role">Rol: {accountPanelData.role}</span>
                 ) : null}
                 {accountPanelData && accountPanelData.emailVerified === false ? (
-                  <p className="mt-1 text-xs text-amber-300">Email no verificado.</p>
+                  <p className="mt-2 text-xs text-amber-300">Email no verificado.</p>
                 ) : null}
-              </article>
+              </header>
 
               {accountPanelError ? (
                 <article className="rounded-[1rem] border border-rose-300/60 bg-rose-500/10 p-3 text-sm font-bold text-rose-200">
