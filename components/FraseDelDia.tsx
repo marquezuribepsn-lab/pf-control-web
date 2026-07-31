@@ -2,10 +2,12 @@
 
 /**
  * FraseDelDia
- * Tarjeta motivacional del home del alumno con degradado magenta→violeta,
- * inspirada en la captura del "hub de notificaciones". Muestra una frase
- * distinta por día (determinística), con botón "Compartir" (Web Share API con
- * fallback a portapapeles) y "Ver completa" para expandir el texto largo.
+ * Frase motivacional del inicio del alumno. Muestra una frase distinta por día
+ * (determinística); al tocarla se expande para ver el autor y compartirla
+ * (Web Share API con fallback a portapapeles).
+ *
+ * Diseño: handoff "Rediseño PF Control Fitness" — la frase va suelta sobre el
+ * fondo, en itálica, precedida por una comilla cyan. Sin tarjeta.
  *
  * Es aditiva y autocontenida: no depende del estado del cliente ni del server.
  */
@@ -66,141 +68,22 @@ export default function FraseDelDia() {
   };
 
   return (
-    <section
-      className="pf-frase-card"
-      // Rediseño: la frase va suelta sobre el fondo, sin tarjeta.
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: 0,
-        padding: "0.2rem 0.15rem",
-        border: 0,
-        backgroundColor: "transparent",
-        backgroundImage: "none",
-        boxShadow: "none",
-        color: "#fff",
-      }}
-    >
+    <section aria-label="Frase del día">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          width: "100%",
-          border: 0,
-          background: "transparent",
-          padding: 0,
-          textAlign: "left",
-          cursor: "pointer",
-          color: "inherit",
-        }}
+        className="pf-n-quote"
+        style={{ width: "100%", border: 0, background: "transparent", textAlign: "left", cursor: "pointer" }}
       >
-        <span
-          aria-hidden="true"
-          style={{
-            flex: "0 0 auto",
-            width: "42px",
-            height: "42px",
-            borderRadius: "0.85rem",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#7dd3fc",
-            border: "1px solid rgba(125, 211, 252, 0.28)",
-            background: "linear-gradient(160deg, rgba(56, 189, 248, 0.18), rgba(37, 99, 235, 0.14))",
-            fontSize: "1.5rem",
-            fontWeight: 900,
-            fontFamily: "Georgia, serif",
-            lineHeight: 1,
-          }}
-        >
-          &rdquo;
-        </span>
-
-        <span style={{ flex: "1 1 auto", minWidth: 0 }}>
-          <span
-            style={{
-              display: "block",
-              fontSize: "10.5px",
-              fontWeight: 700,
-              letterSpacing: "0.11em",
-              textTransform: "uppercase",
-              color: "#7dd3fc",
-              marginBottom: "0.22rem",
-            }}
-          >
-            Frase del día
-          </span>
-          <span
-            style={{
-              display: expanded ? "block" : "-webkit-box",
-              WebkitLineClamp: expanded ? undefined : 2,
-              WebkitBoxOrient: expanded ? undefined : ("vertical" as const),
-              overflow: expanded ? "visible" : "hidden",
-              fontSize: "0.92rem",
-              fontWeight: 600,
-              lineHeight: 1.4,
-              fontStyle: "italic",
-              letterSpacing: "-0.008em",
-            }}
-          >
-            {quote.text}
-          </span>
-          {expanded && quote.author ? (
-            <span style={{ display: "block", marginTop: "0.4rem", fontSize: "11.5px", fontWeight: 700, opacity: 0.9 }}>
-              — {quote.author}
-            </span>
-          ) : null}
-        </span>
-
-        <span
-          aria-hidden="true"
-          style={{
-            flex: "0 0 auto",
-            display: "inline-flex",
-            transform: expanded ? "rotate(90deg)" : "none",
-            transition: "transform 180ms ease",
-            color: "#9db1c9",
-          }}
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
+        <p>{quote.text}</p>
       </button>
 
       <div className="pf-expand-wrap" data-open={expanded ? "true" : "false"}>
         <div className="pf-expand-inner">
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: "0.65rem",
-            }}
-          >
-            <button
-              type="button"
-              onClick={handleShare}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.34rem",
-                border: "1px solid rgba(125, 211, 252, 0.4)",
-                background: "rgba(56, 189, 248, 0.12)",
-                color: "#e0f2fe",
-                borderRadius: "999px",
-                padding: "0.3rem 0.7rem",
-                fontSize: "11.5px",
-                fontWeight: 700,
-                cursor: "pointer",
-                backdropFilter: "blur(4px)",
-              }}
-            >
+          <div className="pf-n-quote-more">
+            {quote.author ? <span className="pf-n-quote-author">— {quote.author}</span> : <span />}
+            <button type="button" onClick={handleShare} className="pf-n-quote-share">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="18" cy="5" r="2.6" />
                 <circle cx="6" cy="12" r="2.6" />

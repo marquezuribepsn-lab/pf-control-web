@@ -3,462 +3,445 @@
 /**
  * Sandbox de diseño del alumno (ruta pública, sin login).
  *
- * Reproduce los paneles reales del home del alumno con datos de mentira,
- * usando las MISMAS clases CSS (.pf-a3-*, .pf-alumno-v2) y los mismos
- * subcomponentes reales (FraseDelDia, PlanesDestacados). Sirve como mesa de
- * trabajo: acá se ve y se itera el diseño en vivo (sin necesidad de sesión) y
- * una vez aprobado el look, se porta a AlumnoVisionClient.
+ * Reproduce las pantallas del alumno con datos de mentira usando las MISMAS
+ * clases CSS que la vista real (.pf-n-*, ver `app/alumno-nuevo.css`). Sirve
+ * como mesa de trabajo: acá se ve y se itera el diseño en vivo sin necesidad
+ * de sesión, y una vez aprobado el look se porta a AlumnoVisionClient.
  *
- * No toca ni depende de la lógica real de datos/checkout; es 100% presentacional.
+ * Es 100% presentacional: no usa hooks de datos ni providers, así que puede
+ * renderizarse fuera del árbol autenticado.
  */
 
-import FraseDelDia from "@/components/FraseDelDia";
-import PlanesDestacados from "@/components/PlanesDestacados";
+import { useState } from "react";
 
-const MUSIC_CARDS = [
-  { id: "m1", title: "Beast Mode", artist: "Varios artistas", platform: "Spotify", type: "Playlist" },
-  { id: "m2", title: "Cardio Pump", artist: "Running Hits", platform: "Spotify", type: "Playlist" },
-  { id: "m3", title: "Focus Lift", artist: "Deep Gym", platform: "YouTube", type: "Video" },
-];
+const RING_C = 2 * Math.PI * 18;
+const HERO_C = 2 * Math.PI * 25;
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+function dash(pct: number, c: number): string {
+  return `${(Math.max(0, Math.min(100, pct)) / 100) * c} ${c}`;
 }
 
+const SEMANA = [
+  { dow: "L", num: 27 },
+  { dow: "M", num: 28 },
+  { dow: "X", num: 29, hoy: true },
+  { dow: "J", num: 30 },
+  { dow: "V", num: 31 },
+  { dow: "S", num: 1 },
+  { dow: "D", num: 2 },
+];
+
+type Pantalla = "inicio" | "rutina" | "cuenta";
+
 export default function SandboxDisenoAlumno() {
-  const noop = () => {};
+  const [pantalla, setPantalla] = useState<Pantalla>("inicio");
 
   return (
-    <main
-      className="pf-alumno-main pf-alumno-v2 pf-alumno-main-inicio"
-      data-pf-alumno-category="inicio"
-      style={{ minHeight: "100vh", background: "#080a0c" }}
-    >
-      <div style={{ maxWidth: 520, margin: "0 auto", padding: "0.9rem 0.9rem 3rem" }}>
+    <main className="pf-n" data-pf-alumno-category={pantalla}>
+      <div className="pf-n-stage">
         <div
           style={{
-            marginBottom: "0.9rem",
-            borderRadius: "0.8rem",
-            border: "1px dashed rgba(161, 194, 228, 0.4)",
-            background: "rgba(27, 37, 48, 0.5)",
-            padding: "0.55rem 0.75rem",
-            fontSize: "11.5px",
-            color: "#c3d9ef",
+            marginBottom: "18px",
+            borderRadius: "12px",
+            border: "1px dashed rgba(255,255,255,0.2)",
+            padding: "8px 12px",
+            fontSize: "11px",
+            color: "rgba(245,246,250,0.5)",
           }}
         >
-          Mesa de diseño — datos de ejemplo. Lo que quede acá se porta a los
-          paneles reales del alumno.
+          Mesa de diseño — datos de ejemplo.
         </div>
 
-        <div className="pf-a3-home-stack">
-          {/* Coach card */}
-          <article className="pf-a3-coach-card">
-            <div className="pf-a3-coach-top">
-              <div className="pf-a3-coach-identity">
-                <span className="pf-a3-coach-avatar" aria-hidden="true">
-                  VM
-                </span>
-                <div className="min-w-0">
-                  <p className="pf-a3-coach-name">Valentino Márquez</p>
-                  <p className="pf-a3-coach-role">Tu entrenador</p>
-                </div>
-              </div>
-              <span className="pf-a3-coach-star" aria-hidden="true">
-                ★
-              </span>
-            </div>
+        {pantalla === "inicio" ? <Inicio /> : null}
+        {pantalla === "rutina" ? <Rutina /> : null}
+        {pantalla === "cuenta" ? <Cuenta /> : null}
+      </div>
 
-            <div className="pf-a3-coach-meta-row">
-              <div className="pf-a3-coach-meta-item">
-                <p>12 clases</p>
-                <span>Membresía</span>
-              </div>
-              <div className="pf-a3-coach-meta-item">
-                <p>01 jul</p>
-                <span>Desde</span>
-              </div>
-              <div className="pf-a3-coach-meta-item">
-                <p>31 jul</p>
-                <span>Hasta</span>
-              </div>
-            </div>
-          </article>
-
-          {/* Música */}
-          <section className="pf-a3-panel-block">
-            <div className="pf-a3-section-head">
-              <div>
-                <h2 className="pf-a3-section-title">Música</h2>
-                <p className="pf-a3-section-subtitle">Playlist sugerida para hoy</p>
-              </div>
-              <button type="button" onClick={noop} className="pf-a3-link-btn">
-                Ver
-              </button>
-            </div>
-
-            <div className="pf-a3-music-scroll" role="list" aria-label="Playlists recomendadas">
-              {MUSIC_CARDS.map((track) => (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={noop}
-                  className="pf-a3-music-card pf-a3-music-card-action"
-                  role="listitem"
-                >
-                  <div className="pf-a3-music-cover">
-                    <div className="pf-a3-music-fallback-shell">
-                      <span className="pf-a3-music-fallback-platform">{track.platform}</span>
-                      <span className="pf-a3-music-fallback">{getInitials(track.title)}</span>
-                      <span className="pf-a3-music-fallback-type">{track.type}</span>
-                    </div>
-                  </div>
-                  <p className="pf-a3-music-title">{track.title}</p>
-                  <p className="pf-a3-music-artist">{track.artist}</p>
-                  <p className="pf-a3-music-hint">
-                    {track.platform} · {track.type}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Frase del día (componente real) */}
-          <FraseDelDia />
-
-          {/* Carga rápida */}
-          <section className="pf-a3-panel-block">
-            <div className="pf-a3-section-head">
-              <h2 className="pf-a3-section-title">Carga rápida</h2>
-              <button type="button" onClick={noop} className="pf-a3-link-btn">
-                Ver
-              </button>
-            </div>
-
-            <div className="pf-a3-quick-grid">
-              <button type="button" onClick={noop} className="pf-a3-quick-item">
-                <span className="pf-a3-quick-icon pf-a3-quick-icon-agua" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                    <path d="M12 3.8c2.7 3.1 5.2 6.2 5.2 9.2a5.2 5.2 0 1 1-10.4 0c0-3 2.5-6.1 5.2-9.2Z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span>Agua</span>
-              </button>
-
-              <button type="button" onClick={noop} className="pf-a3-quick-item">
-                <span className="pf-a3-quick-icon pf-a3-quick-icon-sueno" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                    <path d="M4 14h16M6 10h6m8 0h-4" strokeLinecap="round" />
-                    <path d="M5 14v3h2.5v-3M16.5 14v3H19v-3" strokeLinecap="round" strokeLinejoin="round" />
-                    <rect x="3.5" y="7" width="17" height="7" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span>Sueño</span>
-              </button>
-
-              <button type="button" onClick={noop} className="pf-a3-quick-item">
-                <span className="pf-a3-quick-icon pf-a3-quick-icon-progreso" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                    <path d="M5 17.5c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" strokeLinecap="round" />
-                    <path d="M8.5 10a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span>Progreso</span>
-              </button>
-
-              <button type="button" onClick={noop} className="pf-a3-quick-item">
-                <span className="pf-a3-quick-icon pf-a3-quick-icon-pagos" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                    <rect x="3.5" y="6" width="17" height="12" rx="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.5 10.5h11" strokeLinecap="round" />
-                    <circle cx="8" cy="14.2" r="0.8" fill="currentColor" stroke="none" />
-                  </svg>
-                </span>
-                <span>Pagos</span>
-              </button>
-            </div>
-          </section>
-
-          {/* Peso y medidas */}
-          <section className="pf-a3-panel-block pf-a3-panel-block-flat">
-            <div className="pf-a3-section-head">
-              <h2 className="pf-a3-section-title">Peso y medidas corporales</h2>
-              <div className="pf-a3-head-actions">
-                <button type="button" onClick={noop} className="pf-a3-icon-btn" aria-label="Actualizar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-4 w-4" aria-hidden="true">
-                    <path d="M20 12a8 8 0 1 1-2.3-5.6" strokeLinecap="round" />
-                    <path d="M20 5v4h-4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                <button type="button" onClick={noop} className="pf-a3-link-btn pf-a3-link-btn-strong">
-                  Progreso
-                </button>
-              </div>
-            </div>
-
-            <div className="pf-a3-weight-content">
-              <div className="pf-a3-weight-kpi-grid">
-                <div>
-                  <p className="pf-a3-weight-value">78.4</p>
-                  <p className="pf-a3-weight-unit">kg</p>
-                  <p className="pf-a3-weight-label">7 días</p>
-                </div>
-                <div>
-                  <p className="pf-a3-weight-value">79.1</p>
-                  <p className="pf-a3-weight-unit">kg</p>
-                  <p className="pf-a3-weight-label">15 días</p>
-                </div>
-                <div>
-                  <p className="pf-a3-weight-value">81.6</p>
-                  <p className="pf-a3-weight-unit">kg</p>
-                  <p className="pf-a3-weight-label">Histórico</p>
-                </div>
-              </div>
-
-              <div className="pf-a3-chart-wrap" aria-label="Evolución de peso">
-                <svg viewBox="0 0 300 170" className="pf-a3-weight-chart" preserveAspectRatio="none" role="img">
-                  <line x1="12" y1="148" x2="288" y2="148" className="pf-a3-chart-axis" />
-                  <line x1="12" y1="20" x2="12" y2="148" className="pf-a3-chart-axis" />
-                  <polyline points="12,40 70,58 128,52 186,82 244,96 288,120" className="pf-a3-chart-line" />
-                  <circle cx="288" cy="120" r="4" className="pf-a3-chart-dot" />
-                </svg>
-              </div>
-            </div>
-          </section>
-
-          {/* Planes / Pagos (componente real) */}
-          <PlanesDestacados daysRemaining={6} onSelectPlan={noop} canPay />
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────
-            Pantalla: Progreso (capa pf-a2). Reproduce el JSX real de
-            AlumnoVisionClient (activeCategory === "progreso") con datos de
-            ejemplo, para poder ver e iterar su diseño sin login. */}
-        <div
-          style={{
-            margin: "1.6rem 0 0.9rem",
-            borderRadius: "0.8rem",
-            border: "1px dashed rgba(161, 194, 228, 0.4)",
-            background: "rgba(27, 37, 48, 0.5)",
-            padding: "0.55rem 0.75rem",
-            fontSize: "11.5px",
-            color: "#c3d9ef",
-          }}
+      <nav className="pf-n-nav" aria-label="Navegación principal del alumno">
+        <button
+          type="button"
+          className="pf-n-nav-item"
+          aria-current={pantalla === "rutina" ? "page" : undefined}
+          onClick={() => setPantalla("rutina")}
         >
-          Pantalla: Progreso — misma capa pf-a2 de las vistas internas.
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-              <p className="pf-a2-eyebrow">Ultima medicion</p>
-              <h2 className="mt-1 text-xl font-black text-white">Antropometria</h2>
-
-              <p className="mt-2 text-xs text-slate-400">Registro del 6 jul 2026, 08:00</p>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Peso</p>
-                  <p className="mt-1 text-lg font-black text-white">78.4 kg</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Agua</p>
-                  <p className="mt-1 text-lg font-black text-white">2.5 L</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Sueño</p>
-                  <p className="mt-1 text-lg font-black text-white">7 h</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Actividad</p>
-                  <p className="mt-1 text-lg font-black text-white">6/10</p>
-                </div>
-              </div>
-
-              <div className="pf-a2-drawer mt-4 rounded-xl border border-slate-500/45 bg-slate-900/40 p-3 text-sm text-slate-200">
-                Variacion de peso vs registro anterior: -0.7 kg.
-              </div>
-            </article>
-
-            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-              <p className="pf-a2-eyebrow">Consistencia semanal</p>
-              <h2 className="mt-1 text-xl font-black text-white">Ritmo de entreno</h2>
-              <p className="mt-2 text-sm text-slate-300">
-                En los ultimos 7 dias registraste 4 entradas de entrenamiento.
-              </p>
-
-              <div className="pf-a2-progress-track mt-3 h-2 overflow-hidden rounded-full bg-slate-700/70">
-                <div className="pf-a2-progress-fill h-full rounded-full" style={{ width: "68%" }} />
-              </div>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">
-                Score 68/100
-              </p>
-
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Registros totales</p>
-                  <p className="mt-1 text-lg font-black text-white">12</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Check-ins</p>
-                  <p className="mt-1 text-lg font-black text-white">9</p>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-            <p className="pf-a2-eyebrow">Ultimos registros</p>
-            <h2 className="mt-1 text-xl font-black text-white">Historial de entreno</h2>
-
-            <div className="mt-3 space-y-2">
-              {[
-                { title: "Push A", ex: "Press banca", meta: "· 4 series · 8 reps · 60 kg", date: "5 jul 2026, 09:12", block: "Fuerza" },
-                { title: "Pull A", ex: "Remo con barra", meta: "· 4 series · 10 reps · 50 kg", date: "3 jul 2026, 08:40", block: "Espalda" },
-                { title: "Legs", ex: "Sentadilla", meta: "· 5 series · 6 reps · 80 kg", date: "1 jul 2026, 19:05", block: null },
-              ].map((log, index) => (
-                <div
-                  key={index}
-                  className="pf-a2-drawer rounded-xl border border-slate-600/45 bg-slate-900/45 px-3 py-2"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-100">{log.title}</p>
-                    <p className="text-xs text-slate-400">{log.date}</p>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-300">
-                    {log.ex} {log.meta}
-                  </p>
-                  {log.block ? <p className="mt-1 text-xs text-slate-400">Bloque: {log.block}</p> : null}
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────
-            Pantalla: Nutrición (capa pf-a2). Reproduce el JSX real de
-            AlumnoVisionClient (activeCategory === "nutricion") con datos de
-            ejemplo, para poder ver e iterar su diseño sin login. */}
-        <div
-          style={{
-            margin: "1.6rem 0 0.9rem",
-            borderRadius: "0.8rem",
-            border: "1px dashed rgba(161, 194, 228, 0.4)",
-            background: "rgba(27, 37, 48, 0.5)",
-            padding: "0.55rem 0.75rem",
-            fontSize: "11.5px",
-            color: "#c3d9ef",
-          }}
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+            <rect x="1" y="8" width="3" height="4" rx="1" fill="currentColor" />
+            <rect x="16" y="8" width="3" height="4" rx="1" fill="currentColor" />
+            <rect x="5" y="6" width="10" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          </svg>
+          <span className="pf-n-nav-label">Rutina</span>
+        </button>
+        <button
+          type="button"
+          className="pf-n-nav-item"
+          aria-current={pantalla === "inicio" ? "page" : undefined}
+          onClick={() => setPantalla("inicio")}
         >
-          Pantalla: Nutrición — misma capa pf-a2 de las vistas internas.
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              d="M3 9L10 3L17 9V17H12V12H8V17H3V9Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="pf-n-nav-label">Inicio</span>
+        </button>
+        <button
+          type="button"
+          className="pf-n-nav-item"
+          aria-current={pantalla === "cuenta" ? "page" : undefined}
+          onClick={() => setPantalla("cuenta")}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="10" cy="6.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            <path
+              d="M3 18C3 14 6 12 10 12C14 12 17 14 17 18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="pf-n-nav-label">Cuenta</span>
+        </button>
+      </nav>
+    </main>
+  );
+}
+
+function Inicio() {
+  return (
+    <div className="pf-n-screen">
+      <div className="pf-n-home-head">
+        <div>
+          <h1 className="pf-n-home-greeting">
+            Buenos días,
+            <br />
+            <span className="pf-n-home-name">Pablo</span>
+          </h1>
+          <p className="pf-n-home-subline">Preparado para comenzar a entrenar.</p>
         </div>
 
-        <div className="pf-a4-nutrition-screen space-y-4">
-          <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-            <p className="pf-a2-eyebrow">Plan nutricional</p>
-            <h2 className="mt-1 text-xl font-black text-white">Nutrición del alumno</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Espacio centrado en el plan nutricional asignado por el profesor.
-            </p>
-            <div className="pf-a4-nutrition-plan-quick-row mt-3">
-              <button type="button" className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick">
-                Solicitar cambio de plan
-              </button>
-              <button type="button" className="pf-a4-nutrition-plan-action-btn pf-a4-nutrition-plan-action-btn-quick">
-                Sustituir alimento
-              </button>
-            </div>
-          </article>
-
-          <div className="pf-a4-nutrition-tabs flex gap-2">
-            <button
-              type="button"
-              className="pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition border-violet-300/50 bg-violet-500/15 text-violet-100"
-            >
-              Nutrición
-            </button>
-            <button
-              type="button"
-              className="pf-a4-nutrition-tab flex-1 rounded-xl border px-3 py-2 text-sm font-black transition border-white/10 bg-slate-950/40 text-slate-300"
-            >
-              Recetas
-            </button>
-          </div>
-
-          <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-              <p className="pf-a2-eyebrow">Plan pautado</p>
-              <h2 className="mt-1 text-xl font-black text-white">Definición 2400 kcal</h2>
-              <p className="mt-2 text-sm text-slate-300">Objetivo: Recomposición corporal</p>
-              <p className="mt-1 text-xs text-slate-400">Última asignación: 5 jul 2026, 10:20</p>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías objetivo</p>
-                  <p className="mt-1 text-lg font-black text-white">2400 kcal</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Calorías del plan</p>
-                  <p className="mt-1 text-lg font-black text-white">2380 kcal</p>
-                </div>
-              </div>
-
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Comidas pautadas</p>
-                  <p className="mt-1 text-lg font-black text-white">5</p>
-                </div>
-                <div className="pf-a2-kpi rounded-xl border p-3">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Macros objetivo</p>
-                  <p className="mt-1 text-sm font-black text-white">180P / 240C / 70G</p>
-                </div>
-              </div>
-
-              <div className="pf-a4-macro-donut mt-4 rounded-xl border border-white/10 bg-slate-950/30 p-3 sm:p-4">
-                <p className="pf-a2-eyebrow">Objetivo nutricional</p>
-                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
-                  <span className="rounded-full border border-amber-300/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-100">
-                    P 180 g
-                  </span>
-                  <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 font-semibold text-cyan-100">
-                    C 240 g
-                  </span>
-                  <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-2 py-0.5 font-semibold text-violet-100">
-                    G 70 g
-                  </span>
-                </div>
-              </div>
-            </article>
-
-            <article className="pf-a2-card rounded-[1.2rem] border p-4 sm:p-5">
-              <p className="pf-a2-eyebrow">Comidas del día</p>
-              <h2 className="mt-1 text-xl font-black text-white">Distribución</h2>
-              <ul className="mt-4 space-y-2">
-                {[
-                  { name: "Desayuno", kcal: "520 kcal", detail: "Avena · huevos · fruta" },
-                  { name: "Almuerzo", kcal: "680 kcal", detail: "Pollo · arroz · verduras" },
-                  { name: "Merienda", kcal: "320 kcal", detail: "Yogur · frutos secos" },
-                  { name: "Cena", kcal: "560 kcal", detail: "Salmón · batata · ensalada" },
-                ].map((meal, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-600/60 bg-slate-900/40 px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-100">{meal.name}</p>
-                      <p className="text-xs text-slate-400">{meal.detail}</p>
-                    </div>
-                    <span className="pf-a2-pill shrink-0">{meal.kcal}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
+        <div className="pf-n-home-actions">
+          <span className="pf-n-avatar" aria-hidden="true">
+            <span className="pf-n-avatar-initials">PM</span>
+          </span>
+          <span className="pf-n-bell" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 20 20">
+              <path
+                d="M10 2C7 2 5 4.5 5 8V11L3 14H17L15 11V8C15 4.5 13 2 10 2Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              <circle cx="10" cy="17" r="1.5" fill="currentColor" />
+            </svg>
+            <span className="pf-n-bell-dot" />
+          </span>
         </div>
       </div>
-    </main>
+
+      <span className="pf-n-online">En línea</span>
+
+      <div className="pf-n-hero">
+        <div className="pf-n-hero-body">
+          <span className="pf-n-hero-ring" aria-hidden="true">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r="25" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="5" />
+              <circle
+                cx="30"
+                cy="30"
+                r="25"
+                fill="none"
+                stroke="#67e8f9"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={dash(0, HERO_C)}
+              />
+            </svg>
+            <span className="pf-n-hero-ring-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24">
+                <rect x="1" y="10" width="4" height="4" rx="1" fill="#fff" />
+                <rect x="19" y="10" width="4" height="4" rx="1" fill="#fff" />
+                <rect x="6" y="8" width="3" height="8" rx="1" fill="#fff" />
+                <rect x="15" y="8" width="3" height="8" rx="1" fill="#fff" />
+                <rect x="9" y="11" width="6" height="2" fill="#fff" />
+              </svg>
+            </span>
+          </span>
+          <div className="pf-n-hero-text">
+            <p className="pf-n-eyebrow">Tu entrenamiento</p>
+            <p className="pf-n-hero-title">Rutina de hoy</p>
+            <p className="pf-n-hero-meta">4 ejercicios · Lunes</p>
+          </div>
+        </div>
+        <button type="button" className="pf-n-cta">
+          Comenzar entrenamiento <span aria-hidden="true">›</span>
+        </button>
+      </div>
+
+      <div className="pf-n-rings">
+        <span className="pf-n-ring">
+          <span className="pf-n-ring-track">
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(129,140,248,0.2)" strokeWidth="4" />
+              <circle
+                cx="22"
+                cy="22"
+                r="18"
+                fill="none"
+                stroke="#818cf8"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={dash(0, RING_C)}
+              />
+            </svg>
+            <span className="pf-n-ring-icon" style={{ color: "#818cf8" }} aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <rect x="1" y="10" width="4" height="4" rx="1" fill="currentColor" />
+                <rect x="19" y="10" width="4" height="4" rx="1" fill="currentColor" />
+                <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+              </svg>
+            </span>
+          </span>
+          <span className="pf-n-ring-value">
+            0<span>/5</span>
+          </span>
+          <span className="pf-n-ring-label">Entrenos</span>
+        </span>
+
+        <span className="pf-n-vrule" aria-hidden="true" />
+
+        <span className="pf-n-ring">
+          <span className="pf-n-ring-track">
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(96,165,250,0.2)" strokeWidth="4" />
+              <circle
+                cx="22"
+                cy="22"
+                r="18"
+                fill="none"
+                stroke="#60a5fa"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={dash(0, RING_C)}
+              />
+            </svg>
+            <span className="pf-n-ring-icon" aria-hidden="true">
+              <span
+                style={{ width: 13, height: 13, borderRadius: "50%", background: "#60a5fa", opacity: 0.85, display: "block" }}
+              />
+            </span>
+          </span>
+          <span className="pf-n-ring-value">
+            0<span>/8</span>
+          </span>
+          <span className="pf-n-ring-label">Agua</span>
+        </span>
+
+        <span className="pf-n-vrule" aria-hidden="true" />
+
+        <span className="pf-n-ring">
+          <span className="pf-n-ring-track pf-n-ring-track-static">
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(196,181,253,0.25)" strokeWidth="4" strokeDasharray="3 4" />
+            </svg>
+            <span className="pf-n-ring-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 20 20">
+                <path d="M15 10.5A6 6 0 1 1 9.5 5A7.5 7.5 0 0 0 15 10.5Z" fill="#c4b5fd" />
+              </svg>
+            </span>
+          </span>
+          <span className="pf-n-ring-value">—</span>
+          <span className="pf-n-ring-label">Sueño</span>
+        </span>
+      </div>
+
+      <div className="pf-n-quote">
+        <p>Cuida tu cuerpo, es el único lugar que tienes para vivir.</p>
+      </div>
+
+      <h2 className="pf-n-heading">Acciones rápidas</h2>
+      <div className="pf-n-quick">
+        <button type="button" className="pf-n-quick-item">
+          <span className="pf-n-quick-icon" aria-hidden="true">
+            <svg width="19" height="19" viewBox="0 0 20 20">
+              <circle cx="10" cy="6.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <path
+                d="M3 18C3 14 6 12 10 12C14 12 17 14 17 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          <span className="pf-n-quick-label">Progreso</span>
+        </button>
+        <button type="button" className="pf-n-quick-item">
+          <span className="pf-n-quick-icon" aria-hidden="true">
+            <svg width="19" height="19" viewBox="0 0 20 20">
+              <rect x="2" y="5" width="16" height="11" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <rect x="2" y="8" width="16" height="2.4" fill="currentColor" />
+            </svg>
+          </span>
+          <span className="pf-n-quick-label">Pagos</span>
+        </button>
+        <button type="button" className="pf-n-quick-item">
+          <span className="pf-n-quick-icon" aria-hidden="true">
+            <svg width="19" height="19" viewBox="0 0 20 20">
+              <circle cx="5" cy="15" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <circle cx="15" cy="13" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M7.6 15V5.5L17.6 3.5V13" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            </svg>
+          </span>
+          <span className="pf-n-quick-label">Música</span>
+        </button>
+      </div>
+
+      <div className="pf-n-week">
+        {SEMANA.map((d) => (
+          <span key={d.dow} className={`pf-n-week-day${d.hoy ? " pf-n-week-day-today" : ""}`}>
+            <span className="pf-n-week-dow">{d.dow}</span>
+            <span className="pf-n-week-num">{d.num}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Rutina() {
+  return (
+    <div className="pf-n-screen pf-n-screen-glow">
+      <div className="pf-n-routine-head">
+        <p className="pf-n-eyebrow">Train</p>
+        <h1 className="pf-n-title">Plan de entrenamiento</h1>
+      </div>
+
+      <div className="pf-n-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" className="pf-n-tab">
+          <div className="pf-n-tab-text">Entrenamiento</div>
+          <div className="pf-n-tab-underline" />
+        </button>
+        <button type="button" role="tab" aria-selected="false" className="pf-n-tab">
+          <div className="pf-n-tab-text">Nutrición</div>
+          <div className="pf-n-tab-underline" />
+        </button>
+        <button type="button" role="tab" aria-selected="false" className="pf-n-tab">
+          <div className="pf-n-tab-text">Recuperación</div>
+          <div className="pf-n-tab-underline" />
+        </button>
+      </div>
+
+      <h2 className="pf-n-day-title">Lunes</h2>
+      <div className="pf-n-coach">
+        <span className="pf-n-coach-avatar">VM</span>
+        <span className="pf-n-coach-name">Valentino Marquez Uribe</span>
+      </div>
+      <p className="pf-n-sync">Última sincronización: 29/07/2026, 07:06 a. m.</p>
+
+      <div className="pf-n-stats">
+        <div className="pf-n-stat">
+          <span className="pf-n-stat-value">3</span>
+          <span className="pf-n-stat-label">Sesiones</span>
+        </div>
+        <span className="pf-n-vrule" />
+        <div className="pf-n-stat">
+          <span className="pf-n-stat-value">2</span>
+          <span className="pf-n-stat-label">Bloques</span>
+        </div>
+        <span className="pf-n-vrule" />
+        <div className="pf-n-stat">
+          <span className="pf-n-stat-value">8</span>
+          <span className="pf-n-stat-label">Ejercicios</span>
+        </div>
+      </div>
+
+      <div className="pf-n-weekpick">
+        <button type="button" className="pf-n-round">
+          ‹
+        </button>
+        <span className="pf-n-weekpick-label">Semana 1</span>
+        <button type="button" className="pf-n-round">
+          ›
+        </button>
+      </div>
+
+      <div className="pf-n-days">
+        <button type="button" className="pf-n-day pf-n-day-active">
+          Lunes
+        </button>
+        <button type="button" className="pf-n-day">
+          Martes
+        </button>
+        <button type="button" className="pf-n-day">
+          Miércoles
+        </button>
+      </div>
+
+      <div className="pf-n-ready">
+        <p className="pf-n-ready-title">Estás listo para entrenar</p>
+        <p className="pf-n-ready-sub">4 ejercicios en esta sesión</p>
+        <button type="button" className="pf-n-cta">
+          Comenzar a entrenar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Cuenta() {
+  return (
+    <div className="pf-n-screen">
+      <div className="pf-n-identity">
+        <h1 className="pf-n-identity-name">Pablo</h1>
+        <p className="pf-n-identity-mail">pablo.marquez.mda@gmail.com</p>
+        <span className="pf-n-identity-role">Rol: Cliente</span>
+      </div>
+
+      <p className="pf-n-label">Datos personales</p>
+      <div className="pf-n-card" style={{ marginBottom: 22 }}>
+        {[
+          { label: "Nombre completo", value: "Pablo", bg: "rgba(99,102,241,0.18)" },
+          { label: "Edad", value: "—", bg: "rgba(251,146,60,0.18)" },
+          { label: "Altura (cm)", value: "—", bg: "rgba(34,211,238,0.16)" },
+          { label: "Teléfono", value: "Agregar", bg: "rgba(52,211,153,0.16)" },
+          { label: "Dirección", value: "Agregar", bg: "rgba(196,181,253,0.18)" },
+        ].map((row) => (
+          <button key={row.label} type="button" className="pf-n-row">
+            <span className="pf-n-row-icon" style={{ background: row.bg }} />
+            <span className="pf-n-row-label">{row.label}</span>
+            <span className="pf-n-row-value">{row.value}</span>
+            <span className="pf-n-row-chevron">›</span>
+          </button>
+        ))}
+      </div>
+
+      <p className="pf-n-label">Credenciales</p>
+      <div className="pf-n-card" style={{ marginBottom: 22 }}>
+        <button type="button" className="pf-n-row">
+          <span className="pf-n-row-icon" style={{ background: "rgba(96,165,250,0.16)" }} />
+          <span className="pf-n-row-label">Email</span>
+          <span className="pf-n-row-value">pablo.marquez.mda@gmail.com</span>
+          <span className="pf-n-row-chevron">›</span>
+        </button>
+        <button type="button" className="pf-n-row">
+          <span className="pf-n-row-icon" style={{ background: "rgba(255,255,255,0.08)" }} />
+          <span className="pf-n-row-label">Contraseña</span>
+          <span className="pf-n-row-value">••••••••</span>
+          <span className="pf-n-row-chevron">›</span>
+        </button>
+      </div>
+
+      <div className="pf-n-card">
+        <button type="button" className="pf-n-signout">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
   );
 }

@@ -43,7 +43,7 @@ export default function InicioDiasSemana() {
   const eventDates = events.map((e) => new Date(e.timestamp));
 
   return (
-    <div className="pf-a3-days-strip" role="list" aria-label="Días de la semana">
+    <div className="pf-n-week" role="list" aria-label="Días de la semana">
       {DIAS.map((letra, i) => {
         const fecha = dates[i];
         const hasActivity = eventDates.some((ed) => sameDay(ed, fecha));
@@ -52,12 +52,16 @@ export default function InicioDiasSemana() {
           <span
             key={`${letra}-${i}`}
             role="listitem"
-            className={`pf-a3-day-chip${isToday ? " pf-a3-day-chip-active" : ""}`}
+            className={`pf-n-week-day${isToday ? " pf-n-week-day-today" : ""}`}
             aria-current={isToday ? "date" : undefined}
           >
-            <span className="pf-a3-day-chip-letter">{letra}</span>
-            <span className="pf-a3-day-chip-number">{fecha.getDate()}</span>
-            <span className={`pf-a3-day-chip-dot${hasActivity ? " pf-a3-day-chip-dot-on" : ""}`} aria-hidden="true" />
+            <span className="pf-n-week-dow">{letra}</span>
+            <span
+              className="pf-n-week-num"
+              style={!isToday && hasActivity ? { color: "var(--n-cyan-soft)", fontWeight: 700 } : undefined}
+            >
+              {fecha.getDate()}
+            </span>
           </span>
         );
       })}

@@ -9004,6 +9004,19 @@ export default function AlumnoVisionClient({
     }
   }, []);
 
+  /** Resumen de la rutina del día para la tarjeta hero del inicio
+   *  (ej. "4 ejercicios · Lunes"). Null cuando todavía no hay plan resuelto. */
+  const homeRoutineSummary = useMemo(() => {
+    if (!selectedRoutineDay) return null;
+    const bloques = selectedRoutineDay.entrenamiento?.bloques ?? [];
+    const total = bloques.reduce(
+      (acc, bloque) => acc + (Array.isArray(bloque.ejercicios) ? bloque.ejercicios.length : 0),
+      0
+    );
+    if (total === 0) return null;
+    return `${total} ejercicio${total === 1 ? "" : "s"} · ${selectedRoutineDay.dia}`;
+  }, [selectedRoutineDay]);
+
   const isBlocked = billingStatusLoaded && !!billingStatus && !billingStatus.active;
   const blockedGateMessage = isBlocked
     ? (!billingStatus!.paymentSummary.latestPaymentAt
@@ -9012,7 +9025,7 @@ export default function AlumnoVisionClient({
     : "";
 
   return (
-    <main className="pf-alumno-main pf-alumno-v2" data-pf-alumno-category={activeCategory}>
+    <main className="pf-n" data-pf-alumno-category={activeCategory}>
       {showOnboarding && (
         <OnboardingModal
           nombre={alumnoProfile?.nombre}
@@ -9022,191 +9035,113 @@ export default function AlumnoVisionClient({
           }}
         />
       )}
-      <div className="pf-a2-shell">
-        {/* Cuenta trae su propia identidad (nombre + email + rol), no usa el
-            encabezado generico de categoria. */}
-        {activeCategory === "cuenta" ? null : isRootCategory ? (
-          <header className="pf-a3-home-head">
-            <div className="pf-a3-home-notif">
-              <NotificationHub
-                studentName={profileDisplayName}
-                studentKey={nutritionTrackerOwnerKey}
-                derived={homeReminders}
-              />
-            </div>
-            <div className="pf-a3-home-intro">
-              <h1 className="pf-a3-home-student">
-                {resolveGreeting()}, <span className="pf-a3-home-name-accent">{profileShortName}</span>
-              </h1>
-              <p className="pf-a3-home-subline">Preparado para comenzar a entrenar.</p>
-            </div>
-
-            <div className="pf-a3-avatar-wrap" aria-hidden="true">
-              {studentAvatarSrc ? (
-                <img src={studentAvatarSrc} alt="Perfil alumno" className="pf-a3-avatar-image" loading="eager" />
-              ) : (
-                <span className="pf-a3-avatar-fallback">{studentAvatarInitials}</span>
-              )}
-              <span className="pf-a3-avatar-online-dot" />
-            </div>
-
-            <div className="pf-a3-home-status-row">
-              <span className="pf-a3-online-pill" aria-label="Estado en linea">
-                <span className="pf-a3-online-pill-dot" aria-hidden="true" />
-                En linea
-              </span>
-            </div>
-          </header>
-        ) : (
-          <header className="pf-a2-hero pf-a2-hero-shell rounded-[1.4rem] border px-4 py-5 sm:px-6 sm:py-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex min-w-0 items-start gap-3">
-                {showBackButton ? (
-                  <ReliableActionButton
-                    type="button"
-                    onClick={goToPreviousCategory}
-                    onPointerUp={() => goToPreviousCategory()}
-                    onTouchEnd={() => goToPreviousCategory()}
-                    data-nav-href={backTargetHref}
-                    className={`pf-a2-back-btn mt-0.5 ${isRoutineLogPanelOpen ? "pf-a2-back-btn-suspended" : ""}`}
-                    aria-label={backLabel}
-                    title={backLabel}
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    >
-                      <path d="M15 6 9 12l6 6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span className="sr-only">{backLabel}</span>
-                  </ReliableActionButton>
-                ) : null}
-
-                <div className="min-w-0">
-                  <p className="pf-a2-eyebrow break-words">{categoryMeta.badge}</p>
-                  <h1 className="mt-1 break-words text-[clamp(1.35rem,4vw,2.35rem)] font-black leading-tight text-white">
-                    {heroTitle}
+      <div className="pf-n-stage">
+          {activeCategory === "inicio" ? (
+            <div className="pf-n-screen">
+              <div className="pf-n-home-head">
+                <div>
+                  <h1 className="pf-n-home-greeting">
+                    {resolveGreeting()},
+                    <br />
+                    <span className="pf-n-home-name">{profileShortName}</span>
                   </h1>
-                  <p className="mt-2 max-w-2xl break-words text-sm text-slate-300">{heroSubtitle}</p>
+                  <p className="pf-n-home-subline">Preparado para comenzar a entrenar.</p>
+                </div>
+
+                <div className="pf-n-home-actions">
+                  <span className="pf-n-avatar" aria-hidden="true">
+                    {studentAvatarSrc ? (
+                      <img src={studentAvatarSrc} alt="" loading="eager" />
+                    ) : (
+                      <span className="pf-n-avatar-initials">{studentAvatarInitials}</span>
+                    )}
+                  </span>
+
+                  <NotificationHub
+                    studentName={profileDisplayName}
+                    studentKey={nutritionTrackerOwnerKey}
+                    derived={homeReminders}
+                  />
                 </div>
               </div>
 
-            </div>
+              <span className="pf-n-online">En línea</span>
 
-            <div className="pf-a2-tab-rail mt-4 hidden flex-nowrap gap-2 overflow-x-auto pb-1 md:flex">
-              {CATEGORIES.filter((c) => !isBlocked || c === "inicio").map((category) => {
-                const isActive = category === activeCategory;
-
-                return (
-                  <ReliableActionButton
-                    key={category}
-                    type="button"
-                    onClick={() => goToCategory(category)}
-                    className={`pf-a2-tab min-w-[124px] rounded-xl border px-3 py-2 text-left ${
-                      isActive ? "pf-a2-tab-active" : ""
-                    }`}
-                  >
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      {CATEGORY_COPY[category].badge}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-slate-100">
-                      {CATEGORY_COPY[category].title}
-                    </p>
-                  </ReliableActionButton>
-                );
-              })}
-            </div>
-          </header>
-        )}
-
-        <section className="pf-alumno-stage pb-2 md:pb-6">
-          {activeCategory === "inicio" ? (
-            <div className="pf-a3-home-stack">
-              {isBlocked && (
-                <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-4">
-                  <p className="text-sm font-bold text-amber-200">{blockedGateMessage}</p>
-                  <a
-                    href="/alumnos/pagos?pay=1"
-                    className="mt-3 flex items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 py-2.5 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 active:opacity-80"
-                  >
+              {isBlocked ? (
+                <div className="pf-n-gate">
+                  <p className="pf-n-gate-text">{blockedGateMessage}</p>
+                  <a href="/alumnos/pagos?pay=1" className="pf-n-cta">
                     Ver opciones de pago
                   </a>
                 </div>
+              ) : (
+                <>
+                  <InicioAnillos
+                    onComenzarRutina={() => goToCategory("rutina")}
+                    rutinaResumen={homeRoutineSummary}
+                  />
+
+                  <FraseDelDia />
+
+                  <h2 className="pf-n-heading">Acciones rápidas</h2>
+                  <div className="pf-n-quick">
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => goToCategory("progreso")}
+                      className="pf-n-quick-item"
+                    >
+                      <span className="pf-n-quick-icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 20 20">
+                          <circle cx="10" cy="6.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                          <path
+                            d="M3 18C3 14 6 12 10 12C14 12 17 14 17 18"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </span>
+                      <span className="pf-n-quick-label">Progreso</span>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={openPayments}
+                      onPointerUp={() => openPayments()}
+                      data-nav-href="/alumnos/pagos"
+                      className="pf-n-quick-item"
+                    >
+                      <span className="pf-n-quick-icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 20 20">
+                          <rect x="2" y="5" width="16" height="11" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                          <rect x="2" y="8" width="16" height="2.4" fill="currentColor" />
+                        </svg>
+                      </span>
+                      <span className="pf-n-quick-label">Pagos</span>
+                    </ReliableActionButton>
+
+                    <ReliableActionButton
+                      type="button"
+                      onClick={() => goToCategory("musica")}
+                      className="pf-n-quick-item"
+                    >
+                      <span className="pf-n-quick-icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 20 20">
+                          <circle cx="5" cy="15" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                          <circle cx="15" cy="13" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                          <path d="M7.6 15V5.5L17.6 3.5V13" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                        </svg>
+                      </span>
+                      <span className="pf-n-quick-label">Música</span>
+                    </ReliableActionButton>
+                  </div>
+
+                  <InicioDiasSemana />
+                </>
               )}
-
-              {!isBlocked && <InicioAnillos onComenzarRutina={() => goToCategory("rutina")} />}
-
-              {!isBlocked && <>
-                <FraseDelDia />
-
-              <section className="pf-a3-panel-block">
-                <div className="pf-a3-section-head">
-                  <h2 className="pf-a3-section-title">Acciones rápidas</h2>
-                </div>
-
-                <div className="pf-a3-quick-grid">
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("progreso")}
-                    className="pf-a3-quick-item"
-                  >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-progreso" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <path d="M5 17.5c1.6-3 4-4.5 7-4.5s5.4 1.5 7 4.5" strokeLinecap="round" />
-                        <path d="M8.5 10a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span>Progreso</span>
-                  </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={openPayments}
-                    onPointerUp={() => openPayments()}
-                    data-nav-href="/alumnos/pagos"
-                    className="pf-a3-quick-item"
-                  >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-pagos" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <rect x="3.5" y="6" width="17" height="12" rx="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M6.5 10.5h11" strokeLinecap="round" />
-                        <circle cx="8" cy="14.2" r="0.8" fill="currentColor" stroke="none" />
-                      </svg>
-                    </span>
-                    <span>Pagos</span>
-                  </ReliableActionButton>
-
-                  <ReliableActionButton
-                    type="button"
-                    onClick={() => goToCategory("musica")}
-                    className="pf-a3-quick-item"
-                  >
-                    <span className="pf-a3-quick-icon pf-a3-quick-icon-musica" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-6 w-6">
-                        <path d="M4 14.5v-3a8 8 0 0 1 16 0v3" strokeLinecap="round" />
-                        <rect x="3" y="13.5" width="4" height="6" rx="1.6" />
-                        <rect x="17" y="13.5" width="4" height="6" rx="1.6" />
-                      </svg>
-                    </span>
-                    <span>Música</span>
-                  </ReliableActionButton>
-                </div>
-              </section>
-
-              <InicioDiasSemana />
-
-              <CheckinSemanal alumnoNombre={alumnoProfile?.nombre} compact />
-
-              <InicioActividadReciente />
-              </>}
-
             </div>
           ) : null}
-
           {activeCategory === "rutina" ? (
             <div
               className="pf-a3-routine-shell"
@@ -12794,7 +12729,6 @@ export default function AlumnoVisionClient({
               )}
             </article>
           ) : null}
-        </section>
       </div>
 
       {/* La barra inferior queda visible en todas las pantallas del alumno, no

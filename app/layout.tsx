@@ -1,4 +1,7 @@
 ﻿import "./globals.css";
+// Vista de alumno — diseño nuevo (handoff "Rediseño PF Control Fitness").
+// Va después de globals.css para ganar en empates de especificidad.
+import "./alumno-nuevo.css";
 import type { Metadata, Viewport } from "next";
 import { Inter, Sora, Space_Grotesk } from "next/font/google";
 import { Prisma } from "@prisma/client";
