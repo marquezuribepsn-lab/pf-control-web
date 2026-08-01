@@ -12879,43 +12879,26 @@ export default function AlumnoVisionClient({
                     </div>
                   </div>
 
-                  {/* El handoff dibuja controles propios, pero acá el audio lo
-                      sirve el embed real de la plataforma con sus controles. */}
-                  <div className="pf-n-player-embed">
-                    {selectedMusicPlayer.kind === "audio" ? (
-                      <audio controls preload="none" src={selectedMusicPlayer.src || undefined} />
-                    ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
-                      <iframe
-                        title={`music-player-featured-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
-                        src={selectedMusicPlayer.src}
-                        style={{
-                          background: "#10151b",
-                          colorScheme: "dark",
-                          height:
-                            selectedMusicPlatform === "SPOTIFY"
-                              ? selectedMusicContentType === "SONG"
-                                ? 152
-                                : 352
-                              : 260,
-                        }}
-                        loading="lazy"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      />
-                    ) : (
-                      <p className="pf-n-empty-text" style={{ padding: 16, textAlign: "center" }}>
-                        Esta playlist no se puede reproducir acá dentro.
-                      </p>
-                    )}
-                  </div>
+                  {/* Solo se reproduce acá dentro el audio subido como archivo.
+                      Los embeds de plataforma (Spotify, YouTube...) se quitaron:
+                      renderizaban un panel en blanco dentro del WebView y el
+                      handoff tampoco los contempla. Para esas plataformas se abre
+                      la app nativa con el botón de abajo. */}
+                  {selectedMusicPlayer.kind === "audio" && selectedMusicPlayer.src ? (
+                    <div className="pf-n-player-embed">
+                      <audio controls preload="none" src={selectedMusicPlayer.src} />
+                    </div>
+                  ) : null}
 
                   {selectedMusicAssignment.playlistUrl ? (
                     <ReliableActionButton
                       type="button"
                       onClick={() => openMusicPlaylistExternal(selectedMusicAssignment)}
-                      className="pf-n-ghost"
-                      style={{ width: "100%", marginBottom: 22 }}
+                      className="pf-n-cta"
+                      style={{ marginBottom: 22 }}
                     >
                       {resolveMusicOpenActionLabel(selectedMusicPlatform)}
+                      <span aria-hidden="true">›</span>
                     </ReliableActionButton>
                   ) : null}
                 </>
