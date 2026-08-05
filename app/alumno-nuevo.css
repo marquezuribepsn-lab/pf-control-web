@@ -2865,8 +2865,15 @@ body:has(.pf-n) {
 }
 
 /* Video del ejercicio */
+/* Fondo negro DETRAS del iframe: mientras YouTube carga, el documento del
+   iframe todavia no pinto nada y se veia el blanco del canvas por defecto del
+   navegador. Con el contenedor en negro y `color-scheme: dark` en el iframe,
+   ese canvas arranca oscuro y la carga se disimula. */
 .pf-n-log-video-wrap {
   margin-bottom: 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
 }
 
 .pf-n-log-video-frame {
@@ -2875,6 +2882,7 @@ body:has(.pf-n) {
   border-radius: 18px;
   border: none;
   background: #000;
+  color-scheme: dark;
   display: block;
 }
 
@@ -2895,7 +2903,7 @@ body:has(.pf-n) {
 .pf-n-log-link-btn {
   display: inline-flex;
   align-items: center;
-  margin-top: 10px;
+  margin: 10px 12px 12px;
   padding: 8px 16px;
   border: none;
   border-radius: var(--n-r-pill);
@@ -3129,19 +3137,25 @@ body:has(.pf-n) {
 /* Botonera */
 .pf-n-log-actions {
   display: flex;
+  justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .pf-n-log-primary-btn {
-  flex: 1;
-  min-width: 140px;
-  padding: 14px;
+  flex: 0 1 auto;
+  min-width: 200px;
+  max-width: 100%;
+  height: 42px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--n-grad);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--n-on-accent);
   cursor: pointer;
@@ -3158,12 +3172,16 @@ body:has(.pf-n) {
 }
 
 .pf-n-log-secondary-btn {
-  padding: 14px 18px;
+  height: 42px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--n-ghost-bg);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--n-fg);
   cursor: pointer;
@@ -3342,21 +3360,31 @@ body:has(.pf-n) {
 
 .pf-n-guided-btn-pause,
 .pf-n-guided-btn-back {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 14px 18px;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--n-ghost-bg);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--n-fg);
   cursor: pointer;
   white-space: nowrap;
   transition: transform 0.12s ease;
+}
+
+.pf-n-guided-btn-pause svg,
+.pf-n-guided-btn-back svg,
+.pf-n-guided-btn-next svg,
+.pf-n-guided-btn-finish svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .pf-n-guided-btn-pause:active,
@@ -3367,16 +3395,18 @@ body:has(.pf-n) {
 .pf-n-guided-btn-next,
 .pf-n-guided-btn-finish {
   flex: 1;
-  display: flex;
+  min-width: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 14px;
+  height: 42px;
+  padding: 0 16px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--n-grad);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--n-on-accent);
   cursor: pointer;
@@ -4347,9 +4377,9 @@ body:has(.pf-n) {
 
 /* Atras: cuadrado fijo, solo el icono centrado. */
 .pf-n-survey-nav-back {
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -4374,17 +4404,17 @@ body:has(.pf-n) {
 .pf-n-survey-finish-btn {
   flex: 1;
   min-width: 0;
-  height: 48px;
+  height: 42px;
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--n-grad);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--n-on-accent);
   cursor: pointer;
