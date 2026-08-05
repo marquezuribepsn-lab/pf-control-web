@@ -69,11 +69,19 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 .pf-n {
-  position: relative;
-  /* Altura fija + overflow hidden: el shell se ancla al viewport y el que
-     scrollea es `.pf-n-stage`, igual que el marco de teléfono del handoff.
-     Con `min-height` el contenido empujaba la barra inferior fuera de vista. */
+  /* Anclado al viewport, no al contenedor.
+     El shell vive dentro del wrapper de AppShell, que le agrega padding
+     (`pb-8` = 32px) y un desplazamiento superior. Con posicionamiento normal
+     eso dejaba la barra inferior 18px por debajo del borde y un espacio de
+     32px entre la barra y el fin de la pantalla. Fijandolo al viewport, la
+     barra toca siempre el borde inferior sin importar el contenedor.
+     El unico que scrollea es `.pf-n-stage`. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 100dvh;
+  z-index: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -87,10 +95,17 @@
 }
 
 /* El fondo del documento acompaña al shell para que el overscroll de iOS no
-   descubra el tema claro global. */
+   descubra el tema claro global. `overflow:hidden` evita que el padding del
+   wrapper de AppShell genere scroll de pagina por detras del shell fijo. */
 .pf-n-root,
 body:has(.pf-n) {
   background: var(--n-bg-deep);
+  overflow: hidden;
+}
+
+html:has(.pf-n) {
+  background: var(--n-bg-deep);
+  overflow: hidden;
 }
 
 .pf-n *,
@@ -112,6 +127,17 @@ body:has(.pf-n) {
 .pf-n-stage::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+/* globals.css le aplica `pf-fade-up` a `.pf-training-shell main > div > main`,
+   que matchea justo a este shell. Esa animacion arranca en translateY(18px) y,
+   sobre un elemento fijo, lo despega del borde superior y empuja la barra
+   inferior fuera de la pantalla. Cada pantalla ya entra con `pfScreenIn`, asi
+   que aca no hace falta. */
+.pf-training-shell main > div > main.pf-n,
+main.pf-n {
+  animation: none;
+  transform: none;
 }
 
 /* Cada pantalla entra con el mismo fundido del handoff. */
