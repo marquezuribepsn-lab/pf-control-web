@@ -2886,6 +2886,74 @@ body:has(.pf-n) {
   display: block;
 }
 
+/* Miniatura sobre negro con boton de play. Es lo que se ve hasta que el
+   alumno toca: sin esto, el iframe de YouTube pintaba su canvas blanco
+   durante la carga y se veia el parpadeo. */
+.pf-n-log-video-poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: none;
+  border-radius: 18px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  display: block;
+  cursor: pointer;
+}
+
+.pf-n-log-video-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-n-log-video-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 4, 8, 0.28);
+}
+
+.pf-n-log-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  /* Circulo oscuro con borde claro: legible tanto sobre miniaturas claras
+     como oscuras, sin depender del contenido del frame. */
+  background: rgba(3, 4, 8, 0.55);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, background 0.16s ease;
+}
+
+.pf-n-log-video-play::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 15px solid #fff;
+  margin-left: 4px;
+}
+
+.pf-n-log-video-poster:active .pf-n-log-video-play {
+  transform: translate(-50%, -50%) scale(0.92);
+  background: rgba(3, 4, 8, 0.75);
+}
+
 .pf-n-log-video-empty {
   width: 100%;
   aspect-ratio: 16 / 10;
