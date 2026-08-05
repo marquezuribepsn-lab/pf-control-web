@@ -1296,18 +1296,6 @@ function resolveSpotifyEmbed(rawUrl: string): string | null {
 const YOUTUBE_EMBED_HOST = "https://www.youtube-nocookie.com/embed";
 const YOUTUBE_EMBED_PARAMS = "playsinline=1&rel=0&modestbranding=1";
 
-/** Miniatura oficial del video. `mqdefault` es 16:9 limpio (320x180);
- *  `hqdefault` trae bandas negras incrustadas y quedaban a la vista. */
-function buildYouTubePoster(videoId: string): string {
-  return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
-}
-
-function extractYouTubeId(embedUrl: string): string | null {
-  const match = embedUrl.match(/\/embed\/([^/?#]+)/i);
-  const id = match?.[1] || "";
-  return id && id !== "videoseries" ? id : null;
-}
-
 function buildYouTubeEmbedUrl(path: string, extraQuery = ""): string {
   const query = [extraQuery, YOUTUBE_EMBED_PARAMS].filter(Boolean).join("&");
   return `${YOUTUBE_EMBED_HOST}/${path}?${query}`;
@@ -2501,15 +2489,10 @@ function looksLikeDirectVideoUrl(rawUrl: string): boolean {
 }
 
 type RoutineExerciseVideoSource =
-  /** `poster` es la miniatura del video. Se muestra sobre fondo negro hasta
-   *  que el alumno toca para reproducir: montar el iframe de entrada hacia
-   *  que YouTube pintara su canvas blanco antes de dibujar el reproductor,
-   *  y ese parpadeo no se puede tapar desde afuera (color-scheme no se
-   *  propaga al documento embebido). */
-  | { kind: "iframe"; src: string; poster?: string | null }
-  | { kind: "video"; src: string; poster?: string | null }
-  | { kind: "external"; src: string; poster?: string | null }
-  | { kind: "none"; src: null; poster?: string | null };
+  | { kind: "iframe"; src: string }
+  | { kind: "video"; src: string }
+  | { kind: "external"; src: string }
+  | { kind: "none"; src: null };
 
 function resolveRoutineExerciseVideoSource(rawUrl: string): RoutineExerciseVideoSource {
   const raw = String(rawUrl || "").trim();
@@ -2535,8 +2518,7 @@ function resolveRoutineExerciseVideoSource(rawUrl: string): RoutineExerciseVideo
 
   const youtubeEmbed = resolveYouTubeEmbed(normalized);
   if (youtubeEmbed) {
-    const videoId = extractYouTubeId(youtubeEmbed);
-    return { kind: "iframe", src: youtubeEmbed, poster: videoId ? buildYouTubePoster(videoId) : null };
+    return { kind: "iframe", src: youtubeEmbed };
   }
 
   if (looksLikeDirectVideoUrl(normalized)) {
@@ -2862,10 +2844,11 @@ export default function AlumnoVisionClient({
     createRoutineExerciseLogDraft()
   );
   const [routineExerciseLogEditingId, setRoutineExerciseLogEditingId] = useState<string | null>(null);
-  /** El iframe del video se monta recien al tocar "reproducir". Antes se
-   *  montaba de entrada y YouTube pintaba su canvas blanco durante la carga:
-   *  ese parpadeo no se puede tapar desde el contenedor. */
-  const [routineVideoPlaying, setRoutineVideoPlaying] = useState(false);
+  /** El iframe carga solo (un toque para reproducir). Mientras carga, YouTube
+   *  pinta su canvas blanco dentro del iframe y eso no se puede estilar desde
+   *  afuera, asi que se tapa con una capa negra encima que se retira cuando el
+   *  documento termino de cargar. */
+  const [routineVideoLoaded, setRoutineVideoLoaded] = useState(false);
   const [routineExerciseLogStatus, setRoutineExerciseLogStatus] = useState<string>("");
   const [routineExerciseLogView, setRoutineExerciseLogView] = useState<RoutineExerciseLogView>("registro");
   const [routineExerciseLogSaving, setRoutineExerciseLogSaving] = useState(false);
@@ -7730,7 +7713,7 @@ export default function AlumnoVisionClient({
         setRoutineExerciseLogStatus("");
         setRoutineExerciseLogEditingId(null);
         setRoutineExerciseLogView("registro");
-        setRoutineVideoPlaying(false);
+        setRoutineVideoLoaded(false);
         setRoutineExerciseLogTarget(target);
         setRoutineExerciseLogDraft(guidedPausedState.draft);
       }
@@ -7979,7 +7962,7 @@ export default function AlumnoVisionClient({
     setRoutineExerciseLogStatus("");
     setRoutineExerciseLogEditingId(null);
     setRoutineExerciseLogView("registro");
-    setRoutineVideoPlaying(false);
+    setRoutineVideoLoaded(false);
     setRoutineExerciseLogTarget(target);
     setRoutineExerciseLogDraft(
       createRoutineExerciseLogDraft({
@@ -10502,40 +10485,27 @@ export default function AlumnoVisionClient({
                     {routineExerciseVideoSource.kind !== "none" ? (
                       <div className="pf-n-log-video-wrap">
                         {routineExerciseVideoSource.kind === "iframe" ? (
-                          routineVideoPlaying ? (
-                            /* Se monta recien al tocar, con autoplay: asi el
-                               parpadeo blanco de la carga de YouTube queda
-                               tapado por la miniatura hasta ese momento. */
+                          /* El iframe carga solo. La capa negra de encima tapa el
+                             blanco que pinta YouTube mientras carga y se retira
+                             sola al terminar; no intercepta toques. */
+                          <div className="pf-n-log-video-stage">
                             <iframe
-                              src={`${routineExerciseVideoSource.src}&autoplay=1`}
+                              key={routineExerciseVideoSource.src}
+                              src={routineExerciseVideoSource.src}
                               title={`video-${routineExerciseLogTarget.exerciseKey}`}
                               className="pf-n-log-video-frame"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                               allowFullScreen
                               referrerPolicy="origin-when-cross-origin"
+                              onLoad={() => setRoutineVideoLoaded(true)}
                             />
-                          ) : (
-                            <button
-                              type="button"
-                              className="pf-n-log-video-poster"
-                              onClick={() => setRoutineVideoPlaying(true)}
-                              aria-label="Reproducir video del ejercicio"
-                            >
-                              {routineExerciseVideoSource.poster ? (
-                                <img
-                                  src={routineExerciseVideoSource.poster}
-                                  alt=""
-                                  loading="lazy"
-                                  onError={(event) => {
-                                    // Si la miniatura no carga queda el fondo negro,
-                                    // nunca un hueco blanco.
-                                    event.currentTarget.style.display = "none";
-                                  }}
-                                />
-                              ) : null}
-                              <span className="pf-n-log-video-play" aria-hidden="true" />
-                            </button>
-                          )
+                            <span
+                              className={`pf-n-log-video-cover ${
+                                routineVideoLoaded ? "pf-n-log-video-cover-hidden" : ""
+                              }`}
+                              aria-hidden="true"
+                            />
+                          </div>
                         ) : routineExerciseVideoSource.kind === "video" ? (
                           <video
                             controls
