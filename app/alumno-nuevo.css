@@ -2957,6 +2957,7 @@ body:has(.pf-n) {
 
 .pf-n-log-field-full {
   flex: 1 1 100%;
+  margin-bottom: 18px;
 }
 
 .pf-n-log-field input,
@@ -3036,6 +3037,11 @@ body:has(.pf-n) {
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  min-width: 0;
+}
+
+.pf-n-log-row > * {
+  min-width: 0;
 }
 
 .pf-n-log-check {
@@ -3076,6 +3082,11 @@ body:has(.pf-n) {
 }
 
 .pf-n-log-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  max-width: 100%;
   padding: 9px 16px;
   border: none;
   border-radius: var(--n-r-pill);
@@ -3086,6 +3097,22 @@ body:has(.pf-n) {
   color: var(--n-green);
   cursor: pointer;
   white-space: nowrap;
+}
+
+/* El <input type="file"> nativo se renderizaba visible dentro de la etiqueta:
+   medía 269px y estiraba "Subir video" a 362px dentro de un contenedor de
+   350px, desbordando y pisando "Reportar molestia". La etiqueta ya hace de
+   boton, asi que el input va oculto pero accesible. */
+.pf-n-log-upload input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .pf-n-log-upload-note {
@@ -4304,26 +4331,45 @@ body:has(.pf-n) {
 
 .pf-n-survey-nav {
   display: flex;
+  align-items: stretch;
   gap: 10px;
 }
 
+/* Atras: cuadrado fijo, solo el icono centrado. */
 .pf-n-survey-nav-back {
-  padding: 14px 18px;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 14px;
   background: var(--n-ghost-bg);
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
   color: var(--n-fg);
   cursor: pointer;
-  white-space: nowrap;
 }
 
+.pf-n-survey-nav-back:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Siguiente / Guardar: el contenido es icono + texto. Sin display:flex el
+   boton quedaba en block, el icono caia debajo del texto y la altura se iba
+   a 63px sin centrar nada. */
 .pf-n-survey-nav-next,
 .pf-n-survey-finish-btn {
   flex: 1;
-  padding: 14px;
+  min-width: 0;
+  height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: none;
   border-radius: 14px;
   background: var(--n-grad);
@@ -4333,6 +4379,14 @@ body:has(.pf-n) {
   color: var(--n-on-accent);
   cursor: pointer;
   transition: transform 0.12s ease;
+}
+
+.pf-n-survey-nav-back svg,
+.pf-n-survey-nav-next svg,
+.pf-n-survey-finish-btn svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
 }
 
 .pf-n-survey-nav-next:active,

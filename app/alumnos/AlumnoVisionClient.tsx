@@ -1288,6 +1288,19 @@ function resolveSpotifyEmbed(rawUrl: string): string | null {
   }
 }
 
+/** Parametros necesarios para que el video se reproduzca DENTRO de la app.
+ *  `playsinline=1` es el critico: sin el, el WebView de iOS intenta abrir el
+ *  reproductor nativo a pantalla completa y el iframe queda en blanco.
+ *  Se usa el dominio -nocookie porque el estandar puede quedar bloqueado por
+ *  las politicas de cookies de terceros del WebView, con el mismo resultado. */
+const YOUTUBE_EMBED_HOST = "https://www.youtube-nocookie.com/embed";
+const YOUTUBE_EMBED_PARAMS = "playsinline=1&rel=0&modestbranding=1";
+
+function buildYouTubeEmbedUrl(path: string, extraQuery = ""): string {
+  const query = [extraQuery, YOUTUBE_EMBED_PARAMS].filter(Boolean).join("&");
+  return `${YOUTUBE_EMBED_HOST}/${path}?${query}`;
+}
+
 function resolveYouTubeEmbed(rawUrl: string): string | null {
   try {
     const parsed = new URL(normalizeMusicUrl(rawUrl));
@@ -1296,26 +1309,26 @@ function resolveYouTubeEmbed(rawUrl: string): string | null {
     const videoParam = parsed.searchParams.get("v") || "";
 
     if (listId) {
-      return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(listId)}`;
+      return buildYouTubeEmbedUrl("videoseries", `list=${encodeURIComponent(listId)}`);
     }
 
     if (host.includes("youtu.be")) {
       const shortId = parsed.pathname.replace(/^\//, "").split("/")[0];
-      if (shortId) return `https://www.youtube.com/embed/${shortId}`;
+      if (shortId) return buildYouTubeEmbedUrl(encodeURIComponent(shortId));
     }
 
     if (videoParam) {
-      return `https://www.youtube.com/embed/${videoParam}`;
+      return buildYouTubeEmbedUrl(encodeURIComponent(videoParam));
     }
 
     const shortsMatch = parsed.pathname.match(/\/shorts\/([^/?#]+)/i);
     if (shortsMatch?.[1]) {
-      return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+      return buildYouTubeEmbedUrl(encodeURIComponent(shortsMatch[1]));
     }
 
     const embedMatch = parsed.pathname.match(/\/embed\/([^/?#]+)/i);
     if (embedMatch?.[1]) {
-      return `https://www.youtube.com/embed/${embedMatch[1]}`;
+      return buildYouTubeEmbedUrl(encodeURIComponent(embedMatch[1]));
     }
 
     return null;
@@ -10465,32 +10478,44 @@ export default function AlumnoVisionClient({
                     {routineExerciseVideoSource.kind !== "none" ? (
                       <div className="pf-n-log-video-wrap">
                         {routineExerciseVideoSource.kind === "iframe" ? (
+                          /* El video se reproduce acá dentro: sin boton para salir
+                             a YouTube. `allowFullScreen` + `playsinline` en la URL
+                             son lo que evita que el WebView lo mande al reproductor
+                             nativo y deje el marco en blanco. */
                           <iframe
                             src={routineExerciseVideoSource.src}
                             title={`video-${routineExerciseLogTarget.exerciseKey}`}
                             className="pf-n-log-video-frame"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                            allowFullScreen
+                            referrerPolicy="origin-when-cross-origin"
+                            loading="eager"
                           />
                         ) : routineExerciseVideoSource.kind === "video" ? (
                           <video
                             controls
+                            playsInline
+                            preload="metadata"
                             className="pf-n-log-video-frame"
                             src={routineExerciseVideoSource.src}
                           />
                         ) : (
-                          <div className="pf-n-log-video-empty">
-                            Vista previa no disponible para este link.
-                          </div>
+                          /* Link que no se puede embeber (ni YouTube ni archivo
+                             directo). Es el unico caso donde queda la salida
+                             externa: si no, no habria forma de ver el video. */
+                          <>
+                            <div className="pf-n-log-video-empty">
+                              Este link no se puede reproducir acá dentro.
+                            </div>
+                            <ReliableActionButton
+                              type="button"
+                              onClick={() => openRoutineVideoExternal(routineExerciseVideoCandidate)}
+                              className="pf-n-log-link-btn"
+                            >
+                              Abrir video
+                            </ReliableActionButton>
+                          </>
                         )}
-                        <ReliableActionButton
-                          type="button"
-                          onClick={() => openRoutineVideoExternal(routineExerciseVideoCandidate)}
-                          className="pf-n-log-link-btn"
-                        >
-                          {routineExerciseVideoCandidate.toLowerCase().includes("youtu")
-                            ? "Abrir en YouTube"
-                            : "Abrir video"}
-                        </ReliableActionButton>
                       </div>
                     ) : null}
 
