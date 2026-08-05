@@ -16,9 +16,26 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",   // unsafe-eval requerido por Next.js dev
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
-      "font-src 'self'",
-      "connect-src 'self'",
+      // Portadas de playlists y miniaturas de video vienen de CDNs externos.
+      "img-src 'self' data: blob: https:",
+      // Video del ejercicio subido por el alumno (data:/blob:) y media externa.
+      "media-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+      // SIN esta directiva, `frame-src` cae por herencia a `child-src` y de ahi
+      // a `default-src 'self'`, que bloquea TODO iframe de terceros. Ese era el
+      // motivo por el que el video del ejercicio y el reproductor de musica se
+      // veian como un panel en blanco: el navegador nunca cargaba el embed.
+      [
+        "frame-src 'self'",
+        "https://www.youtube.com",
+        "https://youtube.com",
+        "https://www.youtube-nocookie.com",
+        "https://open.spotify.com",
+        "https://w.soundcloud.com",
+        "https://embed.music.apple.com",
+        "https://widget.deezer.com",
+      ].join(" "),
       "frame-ancestors 'none'",
     ].join("; "),
   },

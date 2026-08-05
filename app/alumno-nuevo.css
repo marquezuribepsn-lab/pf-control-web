@@ -3008,7 +3008,11 @@ body:has(.pf-n) {
   font-weight: 800;
 }
 
-.pf-n-stepper-field button {
+/* Acotado a la fila del stepper: sin el `.pf-n-stepper-row`, este selector
+   alcanzaba TAMBIEN a los chips de carga (+0.25, +0.5, ...) y los forzaba a
+   circulos de 28x28. Como gana en especificidad a `.pf-n-stepper-chip`, el
+   texto se desbordaba del pill y los chips se veian encimados. */
+.pf-n-stepper-field .pf-n-stepper-row button {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -3025,7 +3029,7 @@ body:has(.pf-n) {
   transition: transform 0.12s ease;
 }
 
-.pf-n-stepper-field button:active {
+.pf-n-stepper-field .pf-n-stepper-row button:active {
   transform: scale(0.88);
 }
 
@@ -3390,26 +3394,32 @@ body:has(.pf-n) {
 }
 
 /* Chips de incremento rápido dentro del stepper (+0.5 / +5 / +10 ...). */
+/* Los chips viven dentro de la columna CARGA, que ocupa ~40% del ancho: cinco
+   chips a `flex:1` quedaban de ~25px y el texto "+0.25" (que necesita ~32px)
+   se salia del pill y se pisaba con el siguiente. Ahora se dimensionan por
+   contenido y bajan de linea cuando no entran. */
 .pf-n-stepper-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
 }
 
 .pf-n-stepper-chip {
-  flex: 1;
+  flex: 0 0 auto;
   text-align: center;
-  padding: 8px 2px;
+  padding: 7px 11px;
   border: none;
   border-radius: var(--n-r-pill);
   background: var(--n-ghost-bg);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--n-fg-70);
   cursor: pointer;
   letter-spacing: normal;
   text-transform: none;
+  white-space: nowrap;
   transition: transform 0.12s ease;
 }
 
