@@ -466,7 +466,12 @@ type TrainingExercisePanelTarget = {
   dayName: string;
   blockId: string;
   blockTitle: string;
+  /** Id de la INSTANCIA del ejercicio dentro del bloque del plan. */
   exerciseId: string;
+  /** Id del ejercicio en el CATALOGO (`ejercicioId`). Es el que guarda el
+   *  alumno al registrar una carga, asi que es el que hay que usar para
+   *  cruzar con los registros. */
+  exerciseCatalogId: string;
   exerciseName: string;
   sessionId: string;
   sessionTitle: string;
@@ -3237,17 +3242,22 @@ export default function ClientesPage() {
   const selectedExerciseWorkoutLogs = useMemo(() => {
     if (!trainingExercisePanelTarget) return [];
 
+    const target = trainingExercisePanelTarget;
+    // El alumno guarda `exerciseId` con el id del CATALOGO (`ejercicioId`),
+    // no con el de la instancia dentro del bloque. Comparar solo contra
+    // `target.exerciseId` no matcheaba nunca y el historial salia vacio: el
+    // unico match posible quedaba por nombre, que falla en super-series
+    // (se guardan como "[Base] Combinado") y cuando el ejercicio no tiene
+    // meta en el catalogo. Se aceptan ambos ids.
+    const targetIds = [target.exerciseCatalogId, target.exerciseId]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+
     return selectedClientWorkoutLogs.filter((item) => {
-      const matchesExerciseId =
-        Boolean(trainingExercisePanelTarget.exerciseId) &&
-        Boolean(item.exerciseId) &&
-        item.exerciseId === trainingExercisePanelTarget.exerciseId;
-      const matchesExerciseName = namesLikelyMatch(
-        item.exerciseName || "",
-        trainingExercisePanelTarget.exerciseName
-      );
-      const matchesDay =
-        !trainingExercisePanelTarget.dayId || !item.dayId || item.dayId === trainingExercisePanelTarget.dayId;
+      const itemExerciseId = String(item.exerciseId || "").trim();
+      const matchesExerciseId = Boolean(itemExerciseId) && targetIds.includes(itemExerciseId);
+      const matchesExerciseName = namesLikelyMatch(item.exerciseName || "", target.exerciseName);
+      const matchesDay = !target.dayId || !item.dayId || item.dayId === target.dayId;
 
       return (matchesExerciseId || matchesExerciseName) && matchesDay;
     });
@@ -8360,6 +8370,7 @@ export default function ClientesPage() {
                                                   blockId: block.id,
                                                   blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
                                                   exerciseId: exercise.id,
+                                                  exerciseCatalogId: String(exercise.ejercicioId || ""),
                                                   exerciseName: exerciseMeta?.nombre || "Ejercicio",
                                                   sessionId: `plan-${selectedClient?.id || "cliente"}`,
                                                   sessionTitle:
@@ -9013,6 +9024,7 @@ export default function ClientesPage() {
                                                                   blockId: block.id,
                                                                   blockTitle: block.titulo || `Bloque ${blockIndex + 1}`,
                                                                   exerciseId: `${exercise.id}::${superKey}`,
+                                                                  exerciseCatalogId: String(superItem.ejercicioId || ""),
                                                                   exerciseName: superMeta?.nombre || "Ejercicio",
                                                                   sessionId: `plan-${selectedClient?.id || "cliente"}`,
                                                                   sessionTitle:

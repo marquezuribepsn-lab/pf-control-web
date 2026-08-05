@@ -2482,7 +2482,23 @@ type RoutineExerciseVideoSource =
   | { kind: "none"; src: null };
 
 function resolveRoutineExerciseVideoSource(rawUrl: string): RoutineExerciseVideoSource {
-  const normalized = normalizeMusicUrl(rawUrl);
+  const raw = String(rawUrl || "").trim();
+  if (!raw) {
+    return { kind: "none", src: null };
+  }
+
+  // Los videos subidos por el alumno llegan como data URL. No pueden pasar por
+  // normalizeMusicUrl, que le antepone "https://" a todo lo que no empiece con
+  // http y los deja como `https://data:video/...` — asi nunca se reconocian
+  // como reproducibles y caian en "Vista previa no disponible".
+  if (/^data:video\//i.test(raw)) {
+    return { kind: "video", src: raw };
+  }
+  if (/^blob:/i.test(raw)) {
+    return { kind: "video", src: raw };
+  }
+
+  const normalized = normalizeMusicUrl(raw);
   if (!normalized) {
     return { kind: "none", src: null };
   }

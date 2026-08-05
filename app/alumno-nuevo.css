@@ -8,7 +8,13 @@
    shell del alumno fija su propia paleta y no hereda el tema global.
    ========================================================================== */
 
-.pf-n {
+/* Los tokens van en :root, NO en .pf-n.
+   El sheet del ejercicio y los paneles de accion se montan con createPortal
+   sobre document.body, es decir fuera de .pf-n. Si los tokens vivieran en
+   .pf-n, dentro de esos portales cada var(--n-*) quedaria indefinida, las
+   declaraciones se descartarian y los paneles perderian fondo, color y borde
+   (se veian en blanco). Lo mismo aplica a `body:has(.pf-n)`. */
+:root {
   /* ── Fondo ───────────────────────────────────────────────────────────── */
   --n-bg: #05060b;
   --n-bg-deep: #050609;
@@ -4207,6 +4213,10 @@ body:has(.pf-n) {
 }
 
 .pf-n-survey-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
   padding: 13px 16px;
   border: 1px solid var(--n-card-border);
@@ -4225,11 +4235,20 @@ body:has(.pf-n) {
   transform: scale(0.98);
 }
 
+/* Seleccionada: verde solido + tilde. Tiene que quedar sin ninguna duda de
+   que la opcion quedo puesta, incluso despues de avanzar y volver. */
 .pf-n-survey-option-btn-active {
-  border-color: transparent;
-  background: var(--n-grad);
-  color: var(--n-on-accent);
+  border-color: #34d399;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #04160f;
   font-weight: 700;
+}
+
+.pf-n-survey-option-btn-active::after {
+  content: "\2713";
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
 .pf-n-survey-scale-row {
@@ -4257,9 +4276,11 @@ body:has(.pf-n) {
 }
 
 .pf-n-survey-scale-btn-active {
-  border-color: transparent;
-  background: var(--n-grad);
-  color: var(--n-on-accent);
+  border-color: #34d399;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #04160f;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
 }
 
 .pf-n-survey-textarea {
