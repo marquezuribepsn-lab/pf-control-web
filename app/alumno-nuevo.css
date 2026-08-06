@@ -653,7 +653,6 @@ main.pf-n {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  overflow: hidden;
   border: 2px solid var(--n-cyan);
   position: relative;
   flex-shrink: 0;
@@ -661,6 +660,32 @@ main.pf-n {
   align-items: center;
   justify-content: center;
   background: rgba(34, 211, 238, 0.12);
+}
+
+.pf-n-avatar img,
+.pf-n-avatar .pf-n-avatar-initials {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* Punto de conexion. Reemplaza a la pildora "En línea", que ocupaba una fila
+   entera del inicio. Verde con conexion, gris sin ella. */
+.pf-n-avatar-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--n-green);
+  border: 2.5px solid var(--n-bg);
+  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.35);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pf-n-avatar-dot-off {
+  background: var(--n-fg-35);
+  box-shadow: none;
 }
 
 .pf-n-avatar img {
@@ -728,29 +753,6 @@ main.pf-n {
   color: #06070c;
   font-size: 9px;
   box-shadow: 0 0 0 1.5px #06070c;
-}
-
-.pf-n-online {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--n-r-pill);
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.3);
-  margin-bottom: 18px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--n-green);
-  letter-spacing: 0.05em;
-}
-
-.pf-n-online::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--n-green);
 }
 
 /* ── Tarjeta "Rutina de hoy" ─────────────────────────────────────────────── */
@@ -2246,10 +2248,35 @@ main.pf-n {
 }
 
 .pf-n-pass-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 27px;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 4px;
+}
+
+/* Semaforo del pase, al lado del estado. Chico a proposito: es un indicador,
+   no un cartel. El anillo oscuro lo separa del degradado claro de la tarjeta. */
+.pf-n-pass-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(4, 18, 26, 0.22);
+}
+
+.pf-n-pass-dot-ok {
+  background: #15803d;
+}
+
+.pf-n-pass-dot-warn {
+  background: #ca8a04;
+}
+
+.pf-n-pass-dot-danger {
+  background: #b91c1c;
 }
 
 .pf-n-pass-owner {

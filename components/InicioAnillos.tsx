@@ -23,10 +23,8 @@ import { useHomeEvents } from "@/components/useHomeEvents";
 
 const AGUA_KEY = "pf-control-inicio-agua-v1";
 const SUENO_KEY = "pf-control-inicio-sueno-v1";
-const ENTRENOS_KEY = "pf-control-inicio-entrenos-v1";
 
 const AGUA_META = 8;
-const ENTRENOS_META = 5;
 const AGUA_OPTIONS = Array.from({ length: 13 }, (_, i) => i); // 0..12 vasos
 const SUENO_OPTIONS = Array.from({ length: 13 }, (_, i) => 4 + i * 0.5); // 4h..10h
 
@@ -36,19 +34,9 @@ const HERO_C = 2 * Math.PI * 25;
 
 type AguaState = { fecha: string; vasos: number };
 type SuenoState = { fecha: string; horas: number | null };
-type EntrenosState = { semana: string; completados: number };
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function mondayKey(): string {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
 }
 
 function formatHoras(h: number | null): string {
@@ -81,11 +69,17 @@ function Ring({
   value: string;
   suffix?: string;
   label: string;
-  onClick: () => void;
+  /** Sin onClick el anillo es informativo y no se renderiza como boton. */
+  onClick?: () => void;
   ariaLabel: string;
 }) {
+  const Wrapper = onClick ? "button" : "span";
   return (
-    <button type="button" onClick={onClick} className="pf-n-ring pf-n-quick-item" aria-label={ariaLabel}>
+    <Wrapper
+      {...(onClick ? { type: "button" as const, onClick } : {})}
+      className={`pf-n-ring${onClick ? " pf-n-quick-item" : ""}`}
+      aria-label={ariaLabel}
+    >
       <span className="pf-n-ring-track">
         <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
           <circle cx="22" cy="22" r="18" fill="none" stroke={trackColor} strokeWidth="4" />
@@ -109,20 +103,25 @@ function Ring({
         {suffix ? <span>{suffix}</span> : null}
       </span>
       <span className="pf-n-ring-label">{label}</span>
-    </button>
+    </Wrapper>
   );
 }
 
 export default function InicioAnillos({
   onComenzarRutina,
   rutinaResumen,
+  entrenosHechos = 0,
+  entrenosMeta = 0,
 }: {
   onComenzarRutina?: () => void;
   /** Ej. "4 ejercicios · Lunes". Si no hay rutina resuelta se omite. */
   rutinaResumen?: string | null;
+  /** Entrenamientos finalizados en la semana en curso. */
+  entrenosHechos?: number;
+  /** Dias de entrenamiento que el profe cargo en el plan de la semana. */
+  entrenosMeta?: number;
 }) {
   const today = todayKey();
-  const monday = mondayKey();
   const { addEvent } = useHomeEvents();
 
   const [aguaRaw, setAguaRaw] = useSharedState<AguaState>(
@@ -133,14 +132,8 @@ export default function InicioAnillos({
     { fecha: today, horas: null },
     { key: SUENO_KEY, legacyLocalStorageKey: SUENO_KEY, silentToasts: true }
   );
-  const [entrenosRaw, setEntrenosRaw] = useSharedState<EntrenosState>(
-    { semana: monday, completados: 0 },
-    { key: ENTRENOS_KEY, legacyLocalStorageKey: ENTRENOS_KEY, silentToasts: true }
-  );
-
   const vasos = aguaRaw?.fecha === today ? Math.max(0, aguaRaw.vasos || 0) : 0;
   const horasSueno = suenoRaw?.fecha === today ? suenoRaw.horas ?? null : null;
-  const entrenos = entrenosRaw?.semana === monday ? Math.max(0, entrenosRaw.completados || 0) : 0;
 
   const [activePicker, setActivePicker] = useState<"agua" | "sueno" | null>(null);
 
@@ -172,16 +165,9 @@ export default function InicioAnillos({
     [today, setSuenoRaw, addEvent]
   );
 
-  const marcarEntreno = useCallback(() => {
-    markManualSaveIntent(ENTRENOS_KEY);
-    setEntrenosRaw((prev) => {
-      const base = prev?.semana === monday ? prev.completados || 0 : 0;
-      return { semana: monday, completados: Math.min(ENTRENOS_META + 5, base + 1) };
-    });
-    addEvent("entreno", "Marcaste un entrenamiento como completado");
-  }, [monday, setEntrenosRaw, addEvent]);
-
-  const entrenosPct = (entrenos / ENTRENOS_META) * 100;
+  // El anillo de entrenos es informativo: se llena solo al finalizar cada dia
+  // de entrenamiento y se reinicia al empezar la semana. No se toca a mano.
+  const entrenosPct = entrenosMeta > 0 ? (entrenosHechos / entrenosMeta) * 100 : 0;
 
   return (
     <>
@@ -239,11 +225,14 @@ export default function InicioAnillos({
               <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
             </svg>
           }
-          value={String(entrenos)}
-          suffix={`/${ENTRENOS_META}`}
+          value={String(entrenosHechos)}
+          suffix={entrenosMeta > 0 ? `/${entrenosMeta}` : ""}
           label="Entrenos"
-          ariaLabel="Marcar un entrenamiento de esta semana como completado"
-          onClick={marcarEntreno}
+          ariaLabel={
+            entrenosMeta > 0
+              ? `${entrenosHechos} de ${entrenosMeta} entrenamientos de la semana`
+              : "Sin plan de entrenamiento cargado"
+          }
         />
         <span className="pf-n-vrule" aria-hidden="true" />
         <Ring

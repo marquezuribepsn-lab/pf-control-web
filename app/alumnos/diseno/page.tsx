@@ -125,8 +125,9 @@ function Inicio() {
         </div>
 
         <div className="pf-n-home-actions">
-          <span className="pf-n-avatar" aria-hidden="true">
+          <span className="pf-n-avatar" title="En línea">
             <span className="pf-n-avatar-initials">PM</span>
+            <span className="pf-n-avatar-dot" aria-hidden="true" />
           </span>
           <span className="pf-n-bell" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 20 20">
@@ -143,8 +144,6 @@ function Inicio() {
           </span>
         </div>
       </div>
-
-      <span className="pf-n-online">En línea</span>
 
       <div className="pf-n-hero">
         <div className="pf-n-hero-body">

@@ -658,11 +658,10 @@ export default function AlumnoPagosClient() {
     };
   }, [loadStatus, status]);
 
-  useEffect(() => {
-    if (!status?.active) return;
-
-    setMessage((previous) => previous || "Tu pase esta activo. Puedes revisar tu estado cuando quieras.");
-  }, [status?.active]);
+  // El aviso "Tu pase esta activo" se quito: repetia lo que ya dice la tarjeta
+  // y quedaba pegado encima de ella. El estado ahora se lee del indicador de
+  // color al lado de la palabra "Activo". El banner queda solo para feedback
+  // de acciones reales (pago recibido, pago pendiente, errores).
 
 
   const startCheckout = async () => {
@@ -818,6 +817,16 @@ export default function AlumnoPagosClient() {
   };
 
   const isActive = Boolean(status?.active);
+
+  /** Semaforo del pase: verde activo, amarillo por vencer (7 dias o menos),
+   *  rojo vencido. */
+  const passTone: "ok" | "warn" | "danger" = !isActive
+    ? "danger"
+    : typeof status?.daysRemaining === "number" && status.daysRemaining <= 7
+      ? "warn"
+      : "ok";
+  const passToneLabel =
+    passTone === "ok" ? "Pase activo" : passTone === "warn" ? "Pase próximo a vencer" : "Pase vencido";
 
   // Ciclo de facturacion para la barra de progreso del pase (rediseño).
   const cyclePeriod = Math.max(1, Number(status?.billing.periodDays) || 0);
@@ -976,6 +985,11 @@ export default function AlumnoPagosClient() {
             </div>
             <p className="pf-n-pass-state">
               {loading ? "Consultando..." : isActive ? "Activo" : "Inhabilitado"}
+              {loading ? null : (
+                <span className={`pf-n-pass-dot pf-n-pass-dot-${passTone}`} title={passToneLabel}>
+                  <span className="pf-n-sr">{passToneLabel}</span>
+                </span>
+              )}
             </p>
             <p className="pf-n-pass-owner">
               {status?.paymentSummary?.planValidUntil || status?.billing.endDate

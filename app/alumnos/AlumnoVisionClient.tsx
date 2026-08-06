@@ -9089,6 +9089,54 @@ export default function AlumnoVisionClient({
     }
   }, []);
 
+  /** Estado de conexion para el puntito del avatar. Reacciona de verdad a que
+   *  el dispositivo pierda o recupere la red, en vez de mostrar un "En linea"
+   *  fijo como antes. */
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const sync = () => setIsOnline(navigator.onLine);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
+
+  /** Anillo de ENTRENOS del inicio.
+   *  Meta: cantidad de dias de entrenamiento que el profe cargo en el plan de
+   *  la semana (antes era un 5 fijo).
+   *  Hechos: se derivan de los entrenamientos realmente finalizados dentro de
+   *  la semana en curso, no de un contador que el alumno tocaba a mano. Asi se
+   *  suma solo al terminar cada dia y se reinicia al empezar la semana. */
+  const weeklyTrainingRing = useMemo(() => {
+    const meta = routineDaysForSelectedWeek.length;
+
+    // Lunes 00:00 de la semana en curso.
+    const inicioSemana = new Date();
+    const diaJs = inicioSemana.getDay();
+    inicioSemana.setDate(inicioSemana.getDate() - (diaJs === 0 ? 6 : diaJs - 1));
+    inicioSemana.setHours(0, 0, 0, 0);
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 7);
+
+    const diasHechos = new Set<string>();
+    for (const entry of Array.isArray(trainingCompletions) ? trainingCompletions : []) {
+      const fecha = String(entry?.fecha || "").trim();
+      if (!fecha) continue;
+      const fechaDate = new Date(`${fecha}T00:00:00`);
+      if (Number.isNaN(fechaDate.getTime())) continue;
+      if (fechaDate < inicioSemana || fechaDate >= finSemana) continue;
+      // Un mismo dia contado una sola vez aunque se marque dos veces.
+      diasHechos.add(`${entry.dayId || ""}|${fecha}`);
+    }
+
+    return { hechos: diasHechos.size, meta };
+  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
+
   /** Resumen de la rutina del día para la tarjeta hero del inicio
    *  (ej. "4 ejercicios · Lunes"). Null cuando todavía no hay plan resuelto. */
   const homeRoutineSummary = useMemo(() => {
@@ -9134,12 +9182,20 @@ export default function AlumnoVisionClient({
                 </div>
 
                 <div className="pf-n-home-actions">
-                  <span className="pf-n-avatar" aria-hidden="true">
+                  <span
+                    className="pf-n-avatar"
+                    title={isOnline ? "En línea" : "Sin conexión"}
+                  >
                     {studentAvatarSrc ? (
                       <img src={studentAvatarSrc} alt="" loading="eager" />
                     ) : (
                       <span className="pf-n-avatar-initials">{studentAvatarInitials}</span>
                     )}
+                    <span
+                      className={`pf-n-avatar-dot ${isOnline ? "" : "pf-n-avatar-dot-off"}`}
+                      aria-hidden="true"
+                    />
+                    <span className="pf-n-sr">{isOnline ? "En línea" : "Sin conexión"}</span>
                   </span>
 
                   <NotificationHub
@@ -9149,8 +9205,6 @@ export default function AlumnoVisionClient({
                   />
                 </div>
               </div>
-
-              <span className="pf-n-online">En línea</span>
 
               {isBlocked ? (
                 <div className="pf-n-gate">
@@ -9164,6 +9218,8 @@ export default function AlumnoVisionClient({
                   <InicioAnillos
                     onComenzarRutina={() => goToCategory("rutina")}
                     rutinaResumen={homeRoutineSummary}
+                    entrenosHechos={weeklyTrainingRing.hechos}
+                    entrenosMeta={weeklyTrainingRing.meta}
                   />
 
                   <FraseDelDia />
