@@ -5496,13 +5496,6 @@ main.pf-n {
    Varios
    ══════════════════════════════════════════════════════════════════════════ */
 
-.pf-n-checkin-semanal {
-  border-radius: var(--n-r-card);
-  background: var(--n-card-bg);
-  border: 1px solid var(--n-card-border);
-  padding: 16px;
-}
-
 /* Fondos de portada cuando la playlist no trae imagen. */
 .pf-n-music-card-fallback-a {
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(99, 102, 241, 0.18));
@@ -5715,4 +5708,338 @@ main.pf-n {
 
 .pf-n-player-cover-hidden {
   opacity: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Check-in (dentro de Progreso)
+
+   Va suelto sobre el fondo, sin tarjeta: antes tenia una caja propia dentro
+   de otra caja y se veia encajonado.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-checkin {
+  display: block;
+}
+
+.pf-n-checkin-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pf-n-checkin-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-checkin-link {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.pf-n-checkin-q {
+  font-size: 12.5px;
+  color: var(--n-fg-70);
+  margin: 0 0 10px;
+}
+
+.pf-n-checkin-q span {
+  color: var(--n-fg-35);
+}
+
+/* Selector de sensación */
+.pf-n-checkin-moods {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.pf-n-checkin-mood {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 2px;
+  border: 1px solid var(--n-card-border);
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  font-family: inherit;
+  color: var(--n-fg-40);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.pf-n-checkin-mood:active {
+  transform: scale(0.95);
+}
+
+.pf-n-checkin-mood-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.pf-n-checkin-mood-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.pf-n-checkin-mood-active {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--n-fg);
+}
+
+/* Par de opciones sí / no */
+.pf-n-checkin-pair {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pf-n-checkin-opt {
+  flex: 1;
+  padding: 11px 8px;
+  border: 1px solid var(--n-card-border);
+  border-radius: var(--n-r-tile);
+  background: var(--n-tile-bg);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-fg-45);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.pf-n-checkin-opt:active {
+  transform: scale(0.97);
+}
+
+.pf-n-checkin-opt-ok {
+  border-color: rgba(52, 211, 153, 0.5);
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--n-green);
+}
+
+.pf-n-checkin-opt-alert {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+}
+
+.pf-n-checkin-textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--n-r-tile);
+  border: 1px solid var(--n-card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--n-fg);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  resize: none;
+  margin-bottom: 14px;
+}
+
+.pf-n-checkin-textarea::placeholder {
+  color: var(--n-fg-35);
+}
+
+.pf-n-checkin-cta {
+  margin-top: 4px;
+}
+
+.pf-n-checkin-more {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* Estado ya registrado */
+.pf-n-checkin-done {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.pf-n-checkin-done-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.16);
+  color: var(--n-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.pf-n-checkin-done-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+  margin: 0 0 4px;
+}
+
+.pf-n-checkin-done-meta {
+  font-size: 11.5px;
+  color: var(--n-fg-40);
+  margin: 0;
+}
+
+.pf-n-checkin-nivel {
+  border-radius: var(--n-r-tile);
+  border: 1px solid var(--n-card-border);
+  background: var(--n-tile-bg);
+  padding: 12px 14px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.pf-n-checkin-nivel-ok {
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.pf-n-checkin-nivel-medio {
+  border-color: rgba(251, 146, 60, 0.3);
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.pf-n-checkin-nivel-alto {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.pf-n-checkin-nivel-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--n-fg-85);
+  margin: 0 0 4px;
+}
+
+.pf-n-checkin-nivel-text {
+  font-size: 11.5px;
+  color: var(--n-fg-60);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.pf-n-checkin-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.pf-n-checkin-tag {
+  padding: 3px 9px;
+  border-radius: var(--n-r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--n-fg-60);
+}
+
+/* Historial */
+.pf-n-checkin-history {
+  margin-top: 16px;
+  border-top: 1px solid var(--n-divider);
+}
+
+.pf-n-checkin-hist-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--n-divider);
+}
+
+.pf-n-checkin-hist-item:last-child {
+  border-bottom: none;
+}
+
+.pf-n-checkin-hist-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pf-n-checkin-hist-date {
+  font-size: 11px;
+  color: var(--n-fg-40);
+}
+
+.pf-n-checkin-hist-mood {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--n-fg-70);
+  flex-shrink: 0;
+}
+
+.pf-n-checkin-hist-pain {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #fca5a5;
+  text-transform: uppercase;
+}
+
+.pf-n-checkin-hist-nivel {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--n-r-pill);
+  text-transform: uppercase;
+}
+
+.pf-n-checkin-hist-nivel-medio {
+  background: rgba(251, 146, 60, 0.18);
+  color: #fdba74;
+}
+
+.pf-n-checkin-hist-nivel-alto {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fca5a5;
+}
+
+.pf-n-checkin-hist-meta {
+  font-size: 11px;
+  color: var(--n-fg-40);
+  margin: 4px 0 0;
+}
+
+.pf-n-checkin-hist-resumen {
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--n-fg-35);
+  margin: 4px 0 0;
+}
+
+/* Link de video que no se puede embeber (ni YouTube ni archivo directo). */
+.pf-n-log-video-empty {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--n-fg-40);
 }
