@@ -3379,8 +3379,17 @@ main.pf-n {
 
 /* ── Flujo guiado ────────────────────────────────────────────────────────── */
 
+/* Entre ejercicios se encadena un fundido de salida y uno de entrada, en vez
+   del deslizamiento del bottom sheet: en pantalla completa el slide se leia
+   como si la pantalla entera saltara. */
 .pf-n-guided-step-enter {
-  animation: pfModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pfFadeIn 0.22s ease both;
+}
+
+.pf-n-guided-fading {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
 }
 
 .pf-n-guided-progress {
@@ -5502,4 +5511,108 @@ main.pf-n {
 .pf-n-cycle-count {
   font-weight: 700;
   color: var(--n-fg-60);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Entrenamiento guiado — pantalla completa y pausa
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Durante el entrenamiento el panel deja de ser una hoja sobre la rutina y
+   pasa a ser una pantalla propia: sin backdrop, sin margenes y sin esquinas. */
+.pf-n-log-overlay-full {
+  background: var(--n-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  align-items: stretch;
+}
+
+.pf-n-log-panel-full {
+  max-width: none;
+  max-height: none;
+  height: 100dvh;
+  border-radius: 0;
+  border-top: none;
+  box-shadow: none;
+  background: var(--n-bg);
+  padding-top: max(20px, env(safe-area-inset-top));
+  animation: none;
+}
+
+/* El fundido lo maneja `.pf-n-guided-step-enter`; el panel en si no se anima
+   para que no compitan dos animaciones sobre el mismo elemento. */
+.pf-n-log-panel-full.pf-n-guided-step-enter {
+  animation: pfFadeIn 0.22s ease both;
+}
+
+/* ── Pausa ───────────────────────────────────────────────────────────────── */
+
+.pf-n-guided-pause-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: rgba(3, 4, 8, 0.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: pfFadeIn 0.2s ease both;
+}
+
+.pf-n-guided-resume-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--n-fg);
+  cursor: pointer;
+}
+
+/* Circulo de play, como el de un video en pausa. */
+.pf-n-guided-resume-icon {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.14s ease, background 0.18s ease;
+}
+
+.pf-n-guided-resume-icon::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  border-left: 21px solid #fff;
+  margin-left: 6px;
+}
+
+.pf-n-guided-resume-btn:active .pf-n-guided-resume-icon {
+  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pf-n-guided-exit-btn {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-fg-50);
+  cursor: pointer;
+  padding: 8px 12px;
 }

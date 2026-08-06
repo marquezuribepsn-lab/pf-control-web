@@ -852,6 +852,8 @@ const NUTRITION_VARIATION_REQUESTS_KEY = "pf-control-nutricion-variaciones-v1";
 const WEEK_PLAN_KEY = "pf-control-semana-plan";
 const WORKOUT_LOGS_KEY = "pf-control-alumno-workout-logs-v1";
 const TRAINING_COMPLETIONS_KEY = "pf-control-alumno-entrenamiento-completados-v1";
+/** Duracion del fundido entre ejercicios del entrenamiento guiado. */
+const GUIDED_FADE_MS = 180;
 const ROUTINE_CHANGE_REQUESTS_KEY = "pf-control-routine-change-requests-v1";
 const SESSION_FEEDBACK_RECORDS_KEY = "pf-control-session-feedback-v1";
 const ANTHROPOMETRY_KEY = "pf-control-alumno-antropometria-v1";
@@ -2870,6 +2872,14 @@ export default function AlumnoVisionClient({
   type GuidedPausedState = { index: number; draft: RoutineExerciseLogDraft };
   const [guidedPausedState, setGuidedPausedState] = useState<GuidedPausedState | null>(null);
   const [guidedStepKey, setGuidedStepKey] = useState(0);
+  /** Pausa dentro del entrenamiento: el panel queda abierto con una capa
+   *  encima, como un video en pausa. Distinto de `guidedPausedState`, que es
+   *  salir del entrenamiento para retomarlo mas tarde desde Rutina. */
+  const [guidedPaused, setGuidedPaused] = useState(false);
+  /** Fundido de salida entre ejercicios. Mientras esta en true el contenido
+   *  del panel esta en opacidad 0; al terminar se cambia de ejercicio y el
+   *  nuevo entra con su propio fundido. */
+  const [guidedFading, setGuidedFading] = useState(false);
   const [routineActionScreenLoading, setRoutineActionScreenLoading] = useState(false);
   const [accountProfile, setAccountProfile] = useState<AccountProfileLite | null>(null);
   const [coachContact, setCoachContact] = useState<CoachContactLite | null>(null);
@@ -7753,11 +7763,17 @@ export default function AlumnoVisionClient({
     }
     const nextStep = guidedRoutineSteps[nextIndex];
     const target = buildGuidedExerciseTarget(nextStep);
-    setGuidedTrainingIndex(nextIndex);
-    setGuidedStepKey((k) => k + 1);
-    if (target) {
-      openLogPanelRef.current?.(target);
-    }
+    // Fundido de salida y recien despues el cambio de ejercicio, para que la
+    // transicion se vea encadenada en vez de un corte seco.
+    setGuidedFading(true);
+    window.setTimeout(() => {
+      setGuidedTrainingIndex(nextIndex);
+      setGuidedStepKey((k) => k + 1);
+      if (target) {
+        openLogPanelRef.current?.(target);
+      }
+      setGuidedFading(false);
+    }, GUIDED_FADE_MS);
   }, [
     buildGuidedExerciseTarget,
     guidedRoutineSteps,
@@ -7771,16 +7787,27 @@ export default function AlumnoVisionClient({
     const prevIndex = guidedTrainingIndex - 1;
     const prevStep = guidedRoutineSteps[prevIndex];
     const target = buildGuidedExerciseTarget(prevStep);
-    setGuidedTrainingIndex(prevIndex);
-    setGuidedStepKey((k) => k + 1);
-    if (target) {
-      openLogPanelRef.current?.(target);
-    }
+    setGuidedFading(true);
+    window.setTimeout(() => {
+      setGuidedTrainingIndex(prevIndex);
+      setGuidedStepKey((k) => k + 1);
+      if (target) {
+        openLogPanelRef.current?.(target);
+      }
+      setGuidedFading(false);
+    }, GUIDED_FADE_MS);
   }, [buildGuidedExerciseTarget, guidedRoutineSteps, guidedTrainingIndex, guidedTrainingMode]);
 
+  /** Pausa sin salir: el panel sigue abierto con la capa de "en pausa". */
+  const pauseGuidedTraining = useCallback(() => setGuidedPaused(true), []);
+  const resumeGuidedTraining = useCallback(() => setGuidedPaused(false), []);
+
+  /** Salir del entrenamiento guardando la posicion para retomarlo despues
+   *  desde la pantalla Rutina. */
   const exitGuidedTraining = useCallback(() => {
     setGuidedPausedState({ index: guidedTrainingIndex, draft: routineExerciseLogDraft });
     setGuidedTrainingMode(false);
+    setGuidedPaused(false);
     closeLogPanelRef.current?.();
   }, [guidedTrainingIndex, routineExerciseLogDraft]);
 
@@ -10436,7 +10463,7 @@ export default function AlumnoVisionClient({
                 <div
                   className={`pf-n-log-overlay ${
                     isUltraMobile ? "pf-n-log-overlay-mobile" : ""
-                  }`}
+                  } ${guidedTrainingMode ? "pf-n-log-overlay-full" : ""}`}
                   role="dialog"
                   aria-modal="true"
                 >
@@ -10447,9 +10474,32 @@ export default function AlumnoVisionClient({
                     } ${
                       routineExerciseVideoSource.kind !== "none" ? "pf-n-log-panel-has-video" : ""
                     } ${
-                      guidedTrainingMode ? "pf-n-guided-step-enter" : ""
-                    }`}
+                      /* En entrenamiento guiado el panel ocupa la pantalla
+                         entera: es una pantalla propia, no una hoja sobre la
+                         rutina. */
+                      guidedTrainingMode ? "pf-n-log-panel-full pf-n-guided-step-enter" : ""
+                    } ${guidedFading ? "pf-n-guided-fading" : ""}`}
                   >
+                    {guidedTrainingMode && guidedPaused ? (
+                      <div className="pf-n-guided-pause-layer">
+                        <button
+                          type="button"
+                          className="pf-n-guided-resume-btn"
+                          onClick={resumeGuidedTraining}
+                          aria-label="Retomar entrenamiento"
+                        >
+                          <span className="pf-n-guided-resume-icon" aria-hidden="true" />
+                          Retomar entrenamiento
+                        </button>
+                        <button
+                          type="button"
+                          className="pf-n-guided-exit-btn"
+                          onClick={exitGuidedTraining}
+                        >
+                          Salir del entrenamiento
+                        </button>
+                      </div>
+                    ) : null}
                     <div className="pf-n-log-head">
                       <div className="min-w-0">
                         <p className="pf-n-log-kicker">
@@ -11056,7 +11106,7 @@ export default function AlumnoVisionClient({
                         <div className="pf-n-guided-btns">
                           <ReliableActionButton
                             type="button"
-                            onClick={exitGuidedTraining}
+                            onClick={pauseGuidedTraining}
                             className="pf-n-guided-btn-pause"
                             aria-label="Pausar entrenamiento"
                             title="Pausar"
