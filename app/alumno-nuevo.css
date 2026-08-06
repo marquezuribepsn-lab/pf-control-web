@@ -6043,3 +6043,62 @@ main.pf-n {
   font-size: 11.5px;
   color: var(--n-fg-40);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Racha de entrenamiento
+
+   Fueguito en la esquina superior derecha de la tarjeta "Rutina de hoy", con
+   el numero de entrenamientos seguidos en el centro.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-streak {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 10px rgba(251, 146, 60, 0.45));
+  animation: pfStreakPulse 2.6s ease-in-out infinite;
+}
+
+.pf-n-streak svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* El numero va sobre la parte ancha de la llama, no en su centro geometrico. */
+.pf-n-streak-num {
+  position: relative;
+  z-index: 1;
+  /* Corrido hacia abajo: el numero va en el bulbo ancho de la llama, no en su
+     centro geometrico, que cae sobre la punta. */
+  margin-top: 9px;
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1;
+  color: #3b0a02;
+  letter-spacing: -0.02em;
+}
+
+@keyframes pfStreakPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-n-streak {
+    animation: none;
+  }
+}

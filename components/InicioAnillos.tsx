@@ -112,6 +112,7 @@ export default function InicioAnillos({
   rutinaResumen,
   entrenosHechos = 0,
   entrenosMeta = 0,
+  racha = 0,
 }: {
   onComenzarRutina?: () => void;
   /** Ej. "4 ejercicios · Lunes". Si no hay rutina resuelta se omite. */
@@ -120,6 +121,8 @@ export default function InicioAnillos({
   entrenosHechos?: number;
   /** Dias de entrenamiento que el profe cargo en el plan de la semana. */
   entrenosMeta?: number;
+  /** Entrenamientos seguidos completados. 0 = sin racha activa. */
+  racha?: number;
 }) {
   const today = todayKey();
   const { addEvent } = useHomeEvents();
@@ -173,6 +176,28 @@ export default function InicioAnillos({
     <>
       {/* ── Tarjeta "Rutina de hoy" ───────────────────────────────────────── */}
       <div className="pf-n-hero">
+        {racha > 0 ? (
+          <span
+            className="pf-n-streak"
+            title={`Racha de ${racha} ${racha === 1 ? "entrenamiento" : "entrenamientos"} seguidos`}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <defs>
+                <linearGradient id="pfStreakGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#fbbf24" />
+                  <stop offset="0.55" stopColor="#fb923c" />
+                  <stop offset="1" stopColor="#ef4444" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                fill="url(#pfStreakGrad)"
+              />
+            </svg>
+            <span className="pf-n-streak-num">{racha}</span>
+          </span>
+        ) : null}
+
         <div className="pf-n-hero-body">
           <span className="pf-n-hero-ring" aria-hidden="true">
             <svg width="60" height="60" viewBox="0 0 60 60">

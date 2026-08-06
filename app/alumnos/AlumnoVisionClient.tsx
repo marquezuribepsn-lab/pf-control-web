@@ -9195,6 +9195,52 @@ export default function AlumnoVisionClient({
     return { hechos: diasHechos.size, meta };
   }, [routineDaysForSelectedWeek.length, trainingCompletions]);
 
+  /** Racha de entrenamiento.
+   *  Cuenta cuantos dias de entrenamiento seguidos completo el alumno. No se
+   *  mide en dias de calendario porque nadie entrena los siete: se permite un
+   *  descanso entre sesiones proporcional a los dias que tenga cargados en el
+   *  plan (con 4 dias por semana se espera entrenar cada ~2, asi que se
+   *  toleran hasta 3 de descanso). Si la ultima sesion quedo mas lejos que ese
+   *  margen, la racha se corta y vuelve a 0. */
+  const trainingStreak = useMemo(() => {
+    const diasPlan = Math.max(1, routineDaysForSelectedWeek.length);
+    const margenDias = Math.ceil(7 / diasPlan) + 1;
+
+    const aDia = (valor: string): number | null => {
+      const fecha = new Date(`${valor}T00:00:00`);
+      const ms = fecha.getTime();
+      return Number.isNaN(ms) ? null : Math.floor(ms / 86400000);
+    };
+
+    const fechas = Array.from(
+      new Set(
+        (Array.isArray(trainingCompletions) ? trainingCompletions : [])
+          .map((entry) => String(entry?.fecha || "").trim())
+          .filter(Boolean)
+      )
+    )
+      .map(aDia)
+      .filter((d): d is number => d !== null)
+      .sort((a, b) => b - a);
+
+    if (fechas.length === 0) return 0;
+
+    const hoy = Math.floor(new Date().setHours(0, 0, 0, 0) / 86400000);
+    if (hoy - fechas[0] > margenDias) return 0;
+
+    let racha = 1;
+    for (let i = 1; i < fechas.length; i += 1) {
+      const salto = fechas[i - 1] - fechas[i];
+      if (salto > 0 && salto <= margenDias) {
+        racha += 1;
+      } else {
+        break;
+      }
+    }
+
+    return racha;
+  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
+
   /** Resumen de la rutina del día para la tarjeta hero del inicio
    *  (ej. "4 ejercicios · Lunes"). Null cuando todavía no hay plan resuelto. */
   const homeRoutineSummary = useMemo(() => {
@@ -9278,6 +9324,7 @@ export default function AlumnoVisionClient({
                     rutinaResumen={homeRoutineSummary}
                     entrenosHechos={weeklyTrainingRing.hechos}
                     entrenosMeta={weeklyTrainingRing.meta}
+                    racha={trainingStreak}
                   />
 
                   <FraseDelDia />
