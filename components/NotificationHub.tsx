@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSharedState } from "@/components/useSharedState";
 import type { ChatMessage } from "@/components/ChatPanel";
 
@@ -115,36 +116,40 @@ const STYLES = `
   box-shadow: 0 0 0 2px rgba(9, 13, 17,0.9);
 }
 
-/* El backdrop centra la tarjeta. */
+/* Pantalla completa con fundido, estilo iOS. El backdrop ya no centra una
+   tarjeta: el panel ocupa toda la pantalla, asi que no quedan bordes ni
+   esquinas de una caja flotando sobre el contenido. */
 .pf-notif-backdrop {
-  position: fixed; inset: 0; z-index: 2147482000; background: rgba(2, 3, 4, 0.72);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
-  opacity: 1; transition: opacity .18s ease;
+  position: fixed; inset: 0; z-index: 2147482000; background: #05060b;
+  opacity: 1; transition: opacity .24s ease;
 }
-.pf-notif-backdrop.pf-notif-closing { opacity: 0; }
+.pf-notif-backdrop.pf-notif-closing,
+.pf-notif-backdrop.pf-notif-entering { opacity: 0; }
 
 /* Estado en reposo VISIBLE: la entrada es una transicion, no una animacion con
    fill-mode:both, que si no arranca deja el panel invisible. */
 .pf-notif-panel {
-  position: relative; z-index: 2147482001;
-  /* 100% en vez de 94vw: el backdrop ya aporta 20px de padding a cada lado y
-     con 94vw el panel se los comia, dejando el texto pegado al borde. */
-  width: 420px; max-width: 100%; max-height: 86dvh;
+  position: fixed; inset: 0; z-index: 2147482001;
   display: flex; flex-direction: column;
-  background: #080a10; border: 1px solid rgba(56,189,248,0.14); border-radius: 22px;
-  padding: 26px; color: #eef2f7;
+  background: #080a10; border: 0; border-radius: 0; box-shadow: none;
+  color: #eef2f7;
   font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  opacity: 1; transform: translateY(0);
-  transition: transform .3s cubic-bezier(0.16,1,0.3,1), opacity .22s ease;
+  padding: max(22px, env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));
+  /* Estado en reposo visible; el fundido lo dan las clases de estado. */
+  opacity: 1; transform: scale(1);
+  transition: opacity .24s ease, transform .26s cubic-bezier(0.16,1,0.3,1);
 }
-.pf-notif-panel.pf-notif-closing { opacity: 0; transform: translateY(12px); }
+/* Entra y sale con un escalado minimo, como las hojas de iOS. */
+.pf-notif-panel.pf-notif-entering { opacity: 0; transform: scale(1.015); }
+.pf-notif-panel.pf-notif-closing { opacity: 0; transform: scale(0.985); }
+
+/* En pantallas anchas el contenido se centra a ancho de lectura. */
+.pf-notif-panel > * { width: 100%; max-width: 520px; margin-inline: auto; }
 
 .pf-notif-head { flex-shrink: 0; }
-.pf-notif-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
-.pf-notif-title { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+.pf-notif-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+.pf-notif-title { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
 .pf-notif-title small {
   display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: #38bdf8; margin-bottom: 6px; font-family: Inter, sans-serif;
@@ -186,8 +191,10 @@ const STYLES = `
 
 .pf-notif-list {
   flex: 1; min-height: 0; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 10px; padding-top: 14px;
+  display: flex; flex-direction: column; gap: 10px; padding-top: 16px;
+  scrollbar-width: none;
 }
+.pf-notif-list::-webkit-scrollbar { display: none; }
 .pf-notif-item {
   display: flex; gap: 14px; cursor: pointer;
   background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.06);
@@ -225,6 +232,7 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
 
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [entering, setEntering] = useState(true);
   const [tab, setTab] = useState<"todas" | NotifTipo>("todas");
   const [mounted, setMounted] = useState(false);
   const [localRead, setLocalRead] = useState<Set<string>>(new Set());
@@ -364,8 +372,29 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
     window.setTimeout(() => {
       setOpen(false);
       setClosing(false);
-    }, 200);
+      setEntering(true);
+    }, 240);
   }, []);
+
+  /* Fundido de entrada. Se monta con `entering` (opacidad 0) y se quita en el
+     siguiente frame. Se usan tres disparadores independientes (rAF, timeout 0
+     y una red de seguridad a 120ms) porque si ninguno corriera el panel
+     quedaria invisible, que es justo el problema que ya tuvimos con la
+     animacion CSS congelada. */
+  useEffect(() => {
+    if (!open) return;
+    let vivo = true;
+    const mostrar = () => { if (vivo) setEntering(false); };
+    const raf = requestAnimationFrame(mostrar);
+    const t0 = window.setTimeout(mostrar, 0);
+    const t1 = window.setTimeout(mostrar, 120);
+    return () => {
+      vivo = false;
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t0);
+      window.clearTimeout(t1);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -392,7 +421,10 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
       <button
         type="button"
         className="pf-notif-bell"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setEntering(true);
+          setOpen(true);
+        }}
         aria-label={`Notificaciones${showBadge ? ` (${unreadCount} sin leer)` : ""}`}
       >
         <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -402,7 +434,14 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
         {showBadge && <span className="pf-notif-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>}
       </button>
 
-      {open && (
+      {open && mounted && typeof document !== "undefined"
+        ? createPortal(
+        /* Va por portal a <body> a proposito. El panel es position:fixed, pero
+           un ancestro con `transform` crea un bloque contenedor para los fixed
+           y lo encierra: `.pf-n-screen` tiene la animacion pfScreenIn con
+           fill-mode both, asi que conserva el transform y recortaba el panel a
+           su caja (se veian los bordes de ese recuadro en vez de pantalla
+           completa). Desde <body> no hay ancestro que lo confine. */
         <>
           {/* `data-open` es obligatorio: globals.css tiene un candado que deja
               invisible y sin eventos a cualquier [role="dialog"] o
@@ -410,12 +449,12 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
               Sin esto el panel se montaba con opacity:0 y pointer-events:none,
               asi que la campana parecia no hacer nada. */}
           <div
-            className={`pf-notif-backdrop${closing ? " pf-notif-closing" : ""}`}
+            className={`pf-notif-backdrop${closing ? " pf-notif-closing" : ""}${entering ? " pf-notif-entering" : ""}`}
             data-open="true"
             onClick={closePanel}
           >
           <aside
-            className={`pf-notif-panel${closing ? " pf-notif-closing" : ""}`}
+            className={`pf-notif-panel${closing ? " pf-notif-closing" : ""}${entering ? " pf-notif-entering" : ""}`}
             data-open="true"
             role="dialog"
             aria-modal="true"
@@ -498,8 +537,10 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
             </div>
           </aside>
           </div>
-        </>
-      )}
+        </>,
+        document.body
+          )
+        : null}
     </div>
   );
 }
