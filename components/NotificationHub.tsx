@@ -61,10 +61,10 @@ type Props = {
   derived?: DerivedNotif[];
 };
 
-const TIPO_META: Record<NotifTipo, { label: string; icon: string; color: string }> = {
-  novedad: { label: "Novedad", icon: "✨", color: "#75a1d7" },
-  recordatorio: { label: "Recordatorio", icon: "⏰", color: "#f59e0b" },
-  mensaje: { label: "Mensaje", icon: "💬", color: "#5eaed2" },
+const TIPO_META: Record<NotifTipo, { label: string; icon: string; color: string; iconBg: string }> = {
+  novedad: { label: "Novedad", icon: "✨", color: "#75a1d7", iconBg: "rgba(56,189,248,0.14)" },
+  recordatorio: { label: "Recordatorio", icon: "⏰", color: "#f59e0b", iconBg: "rgba(248,113,113,0.14)" },
+  mensaje: { label: "Mensaje", icon: "💬", color: "#5eaed2", iconBg: "rgba(34,229,255,0.14)" },
 };
 
 function normalize(value: string): string {
@@ -95,6 +95,9 @@ function relativeTime(iso: string): string {
 }
 
 const STYLES = `
+/* Panel de notificaciones — diseño "PF Control v2 - Notificaciones".
+   Es una tarjeta centrada de 420px, no el cajon lateral de altura completa
+   que habia antes. */
 .pf-notif-root { position: relative; }
 .pf-notif-bell {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
@@ -111,70 +114,103 @@ const STYLES = `
   display: inline-flex; align-items: center; justify-content: center;
   box-shadow: 0 0 0 2px rgba(9, 13, 17,0.9);
 }
+
+/* El backdrop centra la tarjeta. */
 .pf-notif-backdrop {
-  position: fixed; inset: 0; z-index: 2147482000; background: rgba(4, 6, 8,0.55);
-  backdrop-filter: blur(2px);
+  position: fixed; inset: 0; z-index: 2147482000; background: rgba(2, 3, 4, 0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
   opacity: 1; transition: opacity .18s ease;
 }
 .pf-notif-backdrop.pf-notif-closing { opacity: 0; }
-/* El estado en reposo del panel es VISIBLE y la entrada se hace con una
-   transicion, no con una animacion de entrada con fill-mode:both. Con la
-   animacion, si por cualquier motivo no arranca (se la vio congelada en
-   currentTime 0), el relleno hacia atras dejaba el panel fuera de pantalla y
-   en opacidad 0: la campana parecia no hacer nada. Asi, el peor caso es que
-   aparezca sin deslizarse, nunca invisible. */
+
+/* Estado en reposo VISIBLE: la entrada es una transicion, no una animacion con
+   fill-mode:both, que si no arranca deja el panel invisible. */
 .pf-notif-panel {
-  position: fixed; z-index: 2147482001; top: 0; right: 0; height: 100dvh; width: min(420px, 100vw);
-  background: #0f151c; color: #edf3fa; display: flex; flex-direction: column;
-  border-left: 1px solid rgba(117, 161, 215,0.22); box-shadow: -20px 0 60px rgba(0,0,0,0.5);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  opacity: 1; transform: translateX(0);
-  transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1), opacity .2s ease;
+  position: relative; z-index: 2147482001;
+  /* 100% en vez de 94vw: el backdrop ya aporta 20px de padding a cada lado y
+     con 94vw el panel se los comia, dejando el texto pegado al borde. */
+  width: 420px; max-width: 100%; max-height: 86dvh;
+  display: flex; flex-direction: column;
+  background: #080a10; border: 1px solid rgba(56,189,248,0.14); border-radius: 22px;
+  padding: 26px; color: #eef2f7;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  opacity: 1; transform: translateY(0);
+  transition: transform .3s cubic-bezier(0.16,1,0.3,1), opacity .22s ease;
 }
-.pf-notif-panel.pf-notif-entering,
-.pf-notif-panel.pf-notif-closing { transform: translateX(100%); opacity: 0; }
-@media (prefers-reduced-motion: reduce) {
-  .pf-notif-backdrop, .pf-notif-panel { animation: none !important; }
+.pf-notif-panel.pf-notif-closing { opacity: 0; transform: translateY(12px); }
+
+.pf-notif-head { flex-shrink: 0; }
+.pf-notif-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+.pf-notif-title { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+.pf-notif-title small {
+  display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: #38bdf8; margin-bottom: 6px; font-family: Inter, sans-serif;
 }
-.pf-notif-head { padding: 18px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-.pf-notif-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.pf-notif-title { font-size: 18px; font-weight: 900; margin: 0; }
-.pf-notif-title small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #a1c2e4; margin-bottom: 2px; }
-.pf-notif-close { background: rgba(255,255,255,0.08); border: 0; color: #edf3fa; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 16px; }
-.pf-notif-close:hover { background: rgba(255,255,255,0.16); }
-.pf-notif-actions { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.pf-notif-markall { background: none; border: 0; color: #a1c2e4; font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 0; }
-.pf-notif-markall:disabled { color: #6f737c; cursor: default; }
-.pf-notif-tabs { display: flex; gap: 6px; padding: 12px 14px; overflow-x: auto; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.pf-notif-tab { flex: 0 0 auto; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #c4d6e9; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-.pf-notif-tab.is-active { background: linear-gradient(135deg,#5e90c9,#75a1d7); color: #fff; border-color: transparent; }
-.pf-notif-tab-count { margin-left: 6px; background: rgba(0,0,0,0.25); border-radius: 999px; padding: 0 6px; font-size: 10px; }
-.pf-notif-list { flex: 1; overflow-y: auto; padding: 8px 12px 20px; }
-.pf-notif-item { display: flex; gap: 12px; padding: 12px; border-radius: 14px; cursor: pointer; transition: background .15s ease; align-items: flex-start; }
-.pf-notif-item:hover { background: rgba(255,255,255,0.05); }
-.pf-notif-item.is-unread { background: rgba(94, 144, 201,0.1); }
-.pf-notif-item.is-unread:hover { background: rgba(94, 144, 201,0.16); }
-.pf-notif-ic { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; background: rgba(255,255,255,0.06); }
-.pf-notif-body { min-width: 0; flex: 1; }
-.pf-notif-body-top { display: flex; align-items: center; gap: 8px; }
-.pf-notif-ntitle { font-size: 14px; font-weight: 800; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pf-notif-time { margin-left: auto; font-size: 11px; color: #a0a4ab; flex: 0 0 auto; }
-.pf-notif-text { margin: 3px 0 0; font-size: 13px; color: #c4ced9; line-height: 1.4; }
+.pf-notif-close {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 0; color: #eef2f7;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .2s cubic-bezier(0.16,1,0.3,1), background .2s ease;
+}
+.pf-notif-close:hover { background: rgba(255,255,255,0.12); }
+.pf-notif-close:active { transform: scale(0.96); }
+
+.pf-notif-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.pf-notif-unread { font-size: 13.5px; color: rgba(226,232,240,0.45); }
+.pf-notif-markall { background: none; border: 0; color: #22e5ff; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; }
+.pf-notif-markall:disabled { color: rgba(226,232,240,0.3); cursor: default; }
+
+.pf-notif-tabs {
+  display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0;
+  padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  scrollbar-width: none;
+}
+.pf-notif-tabs::-webkit-scrollbar { display: none; }
+.pf-notif-tab {
+  flex-shrink: 0; display: flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 100px; border: 0; cursor: pointer;
+  background: rgba(255,255,255,0.05); color: rgba(226,232,240,0.6);
+  font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.pf-notif-tab.is-active { background: #22e5ff; color: #00131a; }
+.pf-notif-tab-count {
+  min-width: 19px; height: 19px; padding: 0 5px; border-radius: 100px;
+  background: rgba(255,255,255,0.1); color: #eef2f7;
+  font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.pf-notif-tab.is-active .pf-notif-tab-count { background: rgba(0,19,26,0.25); color: #00131a; }
+
+.pf-notif-list {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px; padding-top: 14px;
+}
+.pf-notif-item {
+  display: flex; gap: 14px; cursor: pointer;
+  background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 16px 18px;
+  transition: background .15s ease, border-color .15s ease;
+}
+.pf-notif-item:hover { background: rgba(255,255,255,0.06); }
+.pf-notif-item.is-unread { border-color: rgba(34,229,255,0.22); }
+.pf-notif-ic {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.pf-notif-body { flex: 1; min-width: 0; }
+.pf-notif-body-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+.pf-notif-ntitle { font-size: 14.5px; font-weight: 800; margin: 0; }
+.pf-notif-meta { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.pf-notif-time { font-size: 11.5px; color: rgba(226,232,240,0.4); }
+.pf-notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #22e5ff; box-shadow: 0 0 8px rgba(34,229,255,0.6); flex-shrink: 0; }
+.pf-notif-text { font-size: 13px; color: rgba(226,232,240,0.55); line-height: 1.5; margin: 0; }
 .pf-notif-text.is-collapsed { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pf-notif-dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #75a1d7; margin-top: 6px; }
-.pf-notif-empty { text-align: center; padding: 60px 20px; color: #8997a6; }
-.pf-notif-empty .pf-notif-empty-emoji { font-size: 34px; }
-.pf-notif-empty p { margin: 10px 0 0; font-size: 13px; }
-/* El panel es siempre oscuro (fondo #0f151c fijo), pero las reglas globales
-   de tema claro (html[data-pf-theme=light] .pf-training-shell h1..h5,p)
-   repintan estos títulos/textos en tonos oscuros con !important, dejándolos
-   ilegibles sobre el panel oscuro. Reforzamos aquí con el mismo truco de
-   especificidad (":not(#_)" agrega un componente de tipo ID) para ganar
-   siempre, sea cual sea el tema del dispositivo. */
-.pf-notif-panel:not(#_) .pf-notif-title { color: #edf3fa !important; }
-.pf-notif-panel:not(#_) .pf-notif-ntitle { color: #edf3fa !important; }
-.pf-notif-panel:not(#_) .pf-notif-text { color: #c4ced9 !important; }
-.pf-notif-panel:not(#_) .pf-notif-empty p { color: #8997a6 !important; }
+.pf-notif-empty { text-align: center; padding: 40px 0; font-size: 13.5px; color: rgba(226,232,240,0.4); }
+.pf-notif-empty-emoji { font-size: 30px; margin-bottom: 10px; }
+.pf-notif-empty p { margin: 0; }
 `;
 
 export default function NotificationHub({ studentName, studentKey, derived = [] }: Props) {
@@ -377,13 +413,14 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
             className={`pf-notif-backdrop${closing ? " pf-notif-closing" : ""}`}
             data-open="true"
             onClick={closePanel}
-          />
+          >
           <aside
             className={`pf-notif-panel${closing ? " pf-notif-closing" : ""}`}
             data-open="true"
             role="dialog"
             aria-modal="true"
             aria-label="Notificaciones"
+            onClick={(event) => event.stopPropagation()}
           >
             <div className="pf-notif-head">
               <div className="pf-notif-head-row">
@@ -392,11 +429,14 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
                   Notificaciones
                 </h2>
                 <button type="button" className="pf-notif-close" onClick={closePanel} aria-label="Cerrar">
-                  ✕
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="5" y1="5" x2="15" y2="15" />
+                    <line x1="15" y1="5" x2="5" y2="15" />
+                  </svg>
                 </button>
               </div>
               <div className="pf-notif-actions">
-                <span style={{ fontSize: 12, color: "#a0a4ab" }}>
+                <span className="pf-notif-unread">
                   {unreadCount > 0 ? `${unreadCount} sin leer` : "Todo al día"}
                 </span>
                 <button type="button" className="pf-notif-markall" onClick={markAll} disabled={unreadCount === 0}>
@@ -423,7 +463,7 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
               {visible.length === 0 ? (
                 <div className="pf-notif-empty">
                   <div className="pf-notif-empty-emoji">🔔</div>
-                  <p>No hay notificaciones acá.</p>
+                  <p>No hay notificaciones en esta categoría.</p>
                 </div>
               ) : (
                 visible.map((n) => {
@@ -438,23 +478,26 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
                         setExpanded(isExpanded ? null : n.id);
                       }}
                     >
-                      <span className="pf-notif-ic" style={{ color: meta.color }}>
+                      <span className="pf-notif-ic" style={{ background: meta.iconBg }}>
                         {meta.icon}
                       </span>
                       <div className="pf-notif-body">
                         <div className="pf-notif-body-top">
                           <p className="pf-notif-ntitle">{n.titulo}</p>
-                          <span className="pf-notif-time">{relativeTime(n.createdAt)}</span>
+                          <span className="pf-notif-meta">
+                            <span className="pf-notif-time">{relativeTime(n.createdAt)}</span>
+                            {!n.leido && <span className="pf-notif-dot" />}
+                          </span>
                         </div>
                         <p className={`pf-notif-text${isExpanded ? "" : " is-collapsed"}`}>{n.cuerpo}</p>
                       </div>
-                      {!n.leido && <span className="pf-notif-dot" />}
                     </div>
                   );
                 })
               )}
             </div>
           </aside>
+          </div>
         </>
       )}
     </div>
