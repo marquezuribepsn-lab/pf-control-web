@@ -1188,8 +1188,19 @@ main.pf-n {
   font-weight: 800;
   color: var(--n-fg);
   letter-spacing: -0.01em;
-  margin: 0 0 10px;
+  margin: 0 0 2px;
   text-transform: uppercase;
+}
+
+/* El dia queda como linea secundaria: el titulo pasa a ser el nombre que el
+   profe le da al template. */
+.pf-n-day-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--n-fg-45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
 }
 
 .pf-n-coach {

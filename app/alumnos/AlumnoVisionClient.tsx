@@ -7853,6 +7853,29 @@ export default function AlumnoVisionClient({
   const canGoNextRoutineWeek =
     selectedRoutineWeekIndex >= 0 && selectedRoutineWeekIndex < routineWeeks.length - 1;
 
+  /** Titulo de la pantalla Rutina: el nombre que el profesor le asigna al
+   *  template del dia (campo `planificacion` del plan semanal). Cuando no lo
+   *  cargo se cae al titulo de la sesion vinculada, al objetivo del dia y,
+   *  como ultimo recurso, al nombre de la semana. El nombre del dia ya se ve
+   *  en los chips de abajo, asi que no se usa como titulo. */
+  const routineTemplateTitle = useMemo(() => {
+    const planificacion = String(selectedRoutineDay?.planificacion || "").trim();
+    if (planificacion) return planificacion;
+
+    const dayName = String(selectedRoutineDay?.dia || "").trim();
+    const sessionTitle = String(selectedRoutineEntry?.sesion.titulo || "").trim();
+    // El titulo de sesion cae al nombre del dia cuando no hay template
+    // asignado; en ese caso no aporta nada y seguimos bajando.
+    if (sessionTitle && sessionTitle.toLowerCase() !== dayName.toLowerCase()) {
+      return sessionTitle;
+    }
+
+    const objetivo = String(selectedRoutineDay?.objetivo || "").trim();
+    if (objetivo) return objetivo;
+
+    return String(selectedRoutineWeek?.nombre || "").trim() || "Plan de entrenamiento";
+  }, [selectedRoutineDay, selectedRoutineEntry, selectedRoutineWeek]);
+
   const routineWeekLabel = useMemo(() => {
     if (!selectedRoutineWeek) {
       return "Semana 1";
@@ -9398,9 +9421,10 @@ export default function AlumnoVisionClient({
                 </div>
               ) : (
                 <>
-              <h2 className="pf-n-day-title">
-                {String(selectedRoutineEntry?.sesion.titulo || "Plan de entrenamiento")}
-              </h2>
+              <h2 className="pf-n-day-title">{routineTemplateTitle}</h2>
+              {selectedRoutineDay?.dia ? (
+                <p className="pf-n-day-sub">{selectedRoutineDay.dia}</p>
+              ) : null}
 
               <div className="pf-n-coach">
                 <span className="pf-n-coach-avatar" aria-hidden="true">

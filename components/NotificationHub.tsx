@@ -114,21 +114,25 @@ const STYLES = `
 .pf-notif-backdrop {
   position: fixed; inset: 0; z-index: 2147482000; background: rgba(4, 6, 8,0.55);
   backdrop-filter: blur(2px);
-  animation: pf-notif-fade-in .18s ease both;
+  opacity: 1; transition: opacity .18s ease;
 }
-.pf-notif-backdrop.pf-notif-closing { animation: pf-notif-fade-out .2s ease both; }
-@keyframes pf-notif-fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes pf-notif-fade-out { from { opacity: 1; } to { opacity: 0; } }
+.pf-notif-backdrop.pf-notif-closing { opacity: 0; }
+/* El estado en reposo del panel es VISIBLE y la entrada se hace con una
+   transicion, no con una animacion de entrada con fill-mode:both. Con la
+   animacion, si por cualquier motivo no arranca (se la vio congelada en
+   currentTime 0), el relleno hacia atras dejaba el panel fuera de pantalla y
+   en opacidad 0: la campana parecia no hacer nada. Asi, el peor caso es que
+   aparezca sin deslizarse, nunca invisible. */
 .pf-notif-panel {
   position: fixed; z-index: 2147482001; top: 0; right: 0; height: 100dvh; width: min(420px, 100vw);
   background: #0f151c; color: #edf3fa; display: flex; flex-direction: column;
   border-left: 1px solid rgba(117, 161, 215,0.22); box-shadow: -20px 0 60px rgba(0,0,0,0.5);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  animation: pf-notif-slide-in .24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  opacity: 1; transform: translateX(0);
+  transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1), opacity .2s ease;
 }
-.pf-notif-panel.pf-notif-closing { animation: pf-notif-slide-out .2s cubic-bezier(0.4, 0, 1, 1) both; }
-@keyframes pf-notif-slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes pf-notif-slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+.pf-notif-panel.pf-notif-entering,
+.pf-notif-panel.pf-notif-closing { transform: translateX(100%); opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .pf-notif-backdrop, .pf-notif-panel { animation: none !important; }
 }
@@ -364,12 +368,19 @@ export default function NotificationHub({ studentName, studentKey, derived = [] 
 
       {open && (
         <>
+          {/* `data-open` es obligatorio: globals.css tiene un candado que deja
+              invisible y sin eventos a cualquier [role="dialog"] o
+              [aria-modal] dentro de .pf-training-shell que no lo declare.
+              Sin esto el panel se montaba con opacity:0 y pointer-events:none,
+              asi que la campana parecia no hacer nada. */}
           <div
             className={`pf-notif-backdrop${closing ? " pf-notif-closing" : ""}`}
+            data-open="true"
             onClick={closePanel}
           />
           <aside
             className={`pf-notif-panel${closing ? " pf-notif-closing" : ""}`}
+            data-open="true"
             role="dialog"
             aria-modal="true"
             aria-label="Notificaciones"
