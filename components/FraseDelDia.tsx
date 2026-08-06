@@ -68,7 +68,7 @@ export default function FraseDelDia() {
   };
 
   return (
-    <section aria-label="Frase del día">
+    <section className="pf-n-quote-block" aria-label="Frase del día">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}

@@ -7811,6 +7811,11 @@ export default function AlumnoVisionClient({
     closeLogPanelRef.current?.();
   }, [guidedTrainingIndex, routineExerciseLogDraft]);
 
+  // Al cambiar de playlist vuelve la tapa negra hasta que cargue el embed nuevo.
+  useEffect(() => {
+    setMusicPlayerLoaded(false);
+  }, [selectedMusicPlayer.src]);
+
   const routineLastSyncLabel = useMemo(() => {
     if (!routineLastSyncAt) {
       return "Ultima sincronizacion: pendiente";
@@ -9115,6 +9120,9 @@ export default function AlumnoVisionClient({
       setAccountPanelSigningOut(false);
     }
   }, []);
+
+  /** Tapa negra del reproductor de musica mientras carga el embed. */
+  const [musicPlayerLoaded, setMusicPlayerLoaded] = useState(false);
 
   /** Estado de conexion para el puntito del avatar. Reacciona de verdad a que
    *  el dispositivo pierda o recupere la red, en vez de mostrar un "En linea"
@@ -13041,14 +13049,39 @@ export default function AlumnoVisionClient({
                     </div>
                   </div>
 
-                  {/* Solo se reproduce acá dentro el audio subido como archivo.
-                      Los embeds de plataforma (Spotify, YouTube...) se quitaron:
-                      renderizaban un panel en blanco dentro del WebView y el
-                      handoff tampoco los contempla. Para esas plataformas se abre
-                      la app nativa con el botón de abajo. */}
+                  {/* La musica se reproduce acá dentro. El embed se habia
+                      quitado porque salia en blanco, pero la causa real era la
+                      CSP propia, que sin `frame-src` bloqueaba todo iframe de
+                      terceros. Con eso corregido, el reproductor funciona.
+                      La capa negra tapa el blanco que pinta la plataforma
+                      mientras carga, igual que en el video del ejercicio. */}
                   {selectedMusicPlayer.kind === "audio" && selectedMusicPlayer.src ? (
                     <div className="pf-n-player-embed">
                       <audio controls preload="none" src={selectedMusicPlayer.src} />
+                    </div>
+                  ) : selectedMusicPlayer.kind === "iframe" && selectedMusicPlayer.src ? (
+                    <div className="pf-n-player-embed pf-n-player-stage">
+                      <iframe
+                        key={selectedMusicPlayer.src}
+                        title={`music-player-${resolveMusicAssignmentId(selectedMusicAssignment, 0)}`}
+                        src={selectedMusicPlayer.src}
+                        style={{
+                          height:
+                            selectedMusicPlatform === "SPOTIFY"
+                              ? selectedMusicContentType === "SONG"
+                                ? 152
+                                : 352
+                              : 260,
+                        }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        allowFullScreen
+                        referrerPolicy="origin-when-cross-origin"
+                        onLoad={() => setMusicPlayerLoaded(true)}
+                      />
+                      <span
+                        className={`pf-n-player-cover ${musicPlayerLoaded ? "pf-n-player-cover-hidden" : ""}`}
+                        aria-hidden="true"
+                      />
                     </div>
                   ) : null}
 
@@ -13056,11 +13089,10 @@ export default function AlumnoVisionClient({
                     <ReliableActionButton
                       type="button"
                       onClick={() => openMusicPlaylistExternal(selectedMusicAssignment)}
-                      className="pf-n-cta"
-                      style={{ marginBottom: 22 }}
+                      className="pf-n-ghost"
+                      style={{ width: "100%", marginBottom: 22 }}
                     >
                       {resolveMusicOpenActionLabel(selectedMusicPlatform)}
-                      <span aria-hidden="true">›</span>
                     </ReliableActionButton>
                   ) : null}
                 </>

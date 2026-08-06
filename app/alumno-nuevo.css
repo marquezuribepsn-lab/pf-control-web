@@ -975,13 +975,25 @@ main.pf-n {
   margin: 0;
 }
 
+/* Sin margen negativo: `.pf-expand-wrap` calcula el alto de la fila a partir
+   del contenido y recorta con overflow:hidden, asi que un margin-top negativo
+   dejaba el autor y el boton Compartir cortados al desplegar. El espaciado se
+   ajusta desde el contenedor. */
+.pf-n-quote-block {
+  margin-bottom: 22px;
+}
+
+.pf-n-quote-block .pf-n-quote {
+  margin-bottom: 8px;
+}
+
 .pf-n-quote-more {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 0 2px;
-  margin: -14px 0 22px;
+  padding: 2px 2px 4px;
+  margin: 0;
 }
 
 .pf-n-quote-author {
@@ -5615,4 +5627,23 @@ main.pf-n {
   color: var(--n-fg-50);
   cursor: pointer;
   padding: 8px 12px;
+}
+
+/* Reproductor de musica: misma tapa negra que el video del ejercicio, para que
+   no se vea el blanco que pinta la plataforma mientras carga el embed. */
+.pf-n-player-stage {
+  position: relative;
+}
+
+.pf-n-player-cover {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.pf-n-player-cover-hidden {
+  opacity: 0;
 }
