@@ -8,6 +8,8 @@ import NotificationHub, { DerivedNotif } from "@/components/NotificationHub";
 import MacroDonut, { MacroSegment } from "@/components/MacroDonut";
 import FraseDelDia from "@/components/FraseDelDia";
 import InicioAnillos from "@/components/InicioAnillos";
+import RachaPanel from "@/components/RachaPanel";
+import { calcularRacha } from "@/lib/racha";
 import InicioDiasSemana from "@/components/InicioDiasSemana";
 import { useAlumnos } from "@/components/AlumnosProvider";
 import { useEjercicios } from "@/components/EjerciciosProvider";
@@ -6923,8 +6925,73 @@ export default function AlumnoVisionClient({
   const coachEndLabel = useMemo(() => formatDateTag(clientMeta?.endDate), [clientMeta?.endDate]);
 
   // Recordatorios derivados para el hub de notificaciones (ej. vencimiento de plan).
+  /** Racha de entrenamiento. La logica vive en `lib/racha.ts` para poder
+   *  testearla aparte de la UI. */
+  const trainingStreak = useMemo(() => {
+    const fechas = (Array.isArray(trainingCompletions) ? trainingCompletions : [])
+      .map((entry) => String(entry?.fecha || "").trim())
+      .filter(Boolean);
+    return calcularRacha(fechas, routineDaysForSelectedWeek.length);
+  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
+
+  const [rachaPanelAbierto, setRachaPanelAbierto] = useState(false);
+
   const homeReminders = useMemo<DerivedNotif[]>(() => {
     const list: DerivedNotif[] = [];
+
+    // ── Racha ──────────────────────────────────────────────────────────────
+    // El id lleva la fecha para que se considere una notificacion distinta
+    // cada dia y no quede marcada como leida para siempre.
+    {
+      const hoyKey = new Date().toISOString().slice(0, 10);
+      const stampRacha = new Date();
+      stampRacha.setHours(10, 0, 0, 0);
+      const createdAt = stampRacha.toISOString();
+
+      if (trainingStreak.estado === "congelada") {
+        const quedan = trainingStreak.diasParaPerderla;
+        list.push({
+          id: `racha-congelada:${hoyKey}`,
+          tipo: "recordatorio",
+          titulo: `Tu racha de ${trainingStreak.dias} está congelada`,
+          cuerpo:
+            quedan > 0
+              ? `Entrená hoy y la recuperás. Si dejás pasar ${quedan} ${quedan === 1 ? "día" : "días"} más, vuelve a cero.`
+              : "Entrená hoy para recuperarla antes de que vuelva a cero.",
+          createdAt,
+          de: "Sistema",
+        });
+      } else if (
+        trainingStreak.estado === "perdida" &&
+        trainingStreak.diasDesdeUltimo !== null &&
+        trainingStreak.diasDesdeUltimo <= trainingStreak.margenDias * 3
+      ) {
+        // Solo se avisa la perdida cuando es reciente: despues deja de tener
+        // sentido recordarla todos los dias.
+        list.push({
+          id: `racha-perdida:${hoyKey}`,
+          tipo: "recordatorio",
+          titulo: "Perdiste tu racha",
+          cuerpo: "Pasaron demasiados días sin entrenar. Arrancá una nueva hoy mismo.",
+          createdAt,
+          de: "Sistema",
+        });
+      } else if (
+        trainingStreak.estado === "activa" &&
+        trainingStreak.diasDesdeUltimo !== null &&
+        trainingStreak.diasDesdeUltimo >= trainingStreak.margenDias
+      ) {
+        list.push({
+          id: `racha-riesgo:${hoyKey}`,
+          tipo: "recordatorio",
+          titulo: "No pierdas tu racha",
+          cuerpo: `Llevás ${trainingStreak.dias} ${trainingStreak.dias === 1 ? "entrenamiento" : "entrenamientos"} seguidos. Entrená hoy para mantenerla.`,
+          createdAt,
+          de: "Sistema",
+        });
+      }
+    }
+
     const end = String(clientMeta?.endDate || "").trim();
     if (end) {
       const endTime = new Date(end).getTime();
@@ -6955,7 +7022,7 @@ export default function AlumnoVisionClient({
       }
     }
     return list;
-  }, [clientMeta?.endDate, coachEndLabel]);
+  }, [clientMeta?.endDate, coachEndLabel, trainingStreak]);
 
   const homeMusicCards = useMemo<HomeMusicCard[]>(() => {
     const accents = [
@@ -9195,51 +9262,6 @@ export default function AlumnoVisionClient({
     return { hechos: diasHechos.size, meta };
   }, [routineDaysForSelectedWeek.length, trainingCompletions]);
 
-  /** Racha de entrenamiento.
-   *  Cuenta cuantos dias de entrenamiento seguidos completo el alumno. No se
-   *  mide en dias de calendario porque nadie entrena los siete: se permite un
-   *  descanso entre sesiones proporcional a los dias que tenga cargados en el
-   *  plan (con 4 dias por semana se espera entrenar cada ~2, asi que se
-   *  toleran hasta 3 de descanso). Si la ultima sesion quedo mas lejos que ese
-   *  margen, la racha se corta y vuelve a 0. */
-  const trainingStreak = useMemo(() => {
-    const diasPlan = Math.max(1, routineDaysForSelectedWeek.length);
-    const margenDias = Math.ceil(7 / diasPlan) + 1;
-
-    const aDia = (valor: string): number | null => {
-      const fecha = new Date(`${valor}T00:00:00`);
-      const ms = fecha.getTime();
-      return Number.isNaN(ms) ? null : Math.floor(ms / 86400000);
-    };
-
-    const fechas = Array.from(
-      new Set(
-        (Array.isArray(trainingCompletions) ? trainingCompletions : [])
-          .map((entry) => String(entry?.fecha || "").trim())
-          .filter(Boolean)
-      )
-    )
-      .map(aDia)
-      .filter((d): d is number => d !== null)
-      .sort((a, b) => b - a);
-
-    if (fechas.length === 0) return 0;
-
-    const hoy = Math.floor(new Date().setHours(0, 0, 0, 0) / 86400000);
-    if (hoy - fechas[0] > margenDias) return 0;
-
-    let racha = 1;
-    for (let i = 1; i < fechas.length; i += 1) {
-      const salto = fechas[i - 1] - fechas[i];
-      if (salto > 0 && salto <= margenDias) {
-        racha += 1;
-      } else {
-        break;
-      }
-    }
-
-    return racha;
-  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
 
   /** Resumen de la rutina del día para la tarjeta hero del inicio
    *  (ej. "4 ejercicios · Lunes"). Null cuando todavía no hay plan resuelto. */
@@ -9324,7 +9346,9 @@ export default function AlumnoVisionClient({
                     rutinaResumen={homeRoutineSummary}
                     entrenosHechos={weeklyTrainingRing.hechos}
                     entrenosMeta={weeklyTrainingRing.meta}
-                    racha={trainingStreak}
+                    racha={trainingStreak.dias}
+                    rachaEstado={trainingStreak.estado}
+                    onAbrirRacha={() => setRachaPanelAbierto(true)}
                   />
 
                   <FraseDelDia />
@@ -13234,6 +13258,10 @@ export default function AlumnoVisionClient({
             </div>
           ) : null}
       </div>
+
+      {rachaPanelAbierto ? (
+        <RachaPanel racha={trainingStreak} onClose={() => setRachaPanelAbierto(false)} />
+      ) : null}
 
       {/* Barra inferior: Rutina / Inicio / Cuenta. Se oculta mientras el sheet
           del ejercicio esta abierto, igual que en el handoff. */}

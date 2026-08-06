@@ -6061,9 +6061,24 @@ main.pf-n {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
   filter: drop-shadow(0 3px 10px rgba(251, 146, 60, 0.45));
   animation: pfStreakPulse 2.6s ease-in-out infinite;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.pf-n-streak:active {
+  transform: scale(0.92);
+}
+
+/* Congelada: se enfria y deja de latir. */
+.pf-n-streak-fria {
+  filter: grayscale(0.55) drop-shadow(0 3px 10px rgba(148, 163, 184, 0.35));
+  animation: none;
+  opacity: 0.8;
 }
 
 .pf-n-streak svg {
@@ -6101,4 +6116,215 @@ main.pf-n {
   .pf-n-streak {
     animation: none;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Pantalla de la racha
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pf-n-racha-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482100;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(600px 380px at 50% 0%, rgba(251, 146, 60, 0.16), transparent 65%),
+    var(--n-bg);
+  color: var(--n-fg);
+  padding: max(16px, env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom));
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.24s ease, transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pf-n-racha-layer > * {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.pf-n-racha-entering { opacity: 0; transform: scale(1.015); }
+.pf-n-racha-closing { opacity: 0; transform: scale(0.985); }
+
+.pf-n-racha-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pf-n-racha-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--n-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.pf-n-racha-hero {
+  text-align: center;
+  padding: 6px 0 22px;
+}
+
+.pf-n-racha-figura {
+  display: inline-flex;
+  filter: drop-shadow(0 10px 30px rgba(251, 146, 60, 0.35));
+  animation: pfStreakPulse 3s ease-in-out infinite;
+}
+
+.pf-n-racha-figura-fria {
+  filter: grayscale(0.55) drop-shadow(0 10px 30px rgba(148, 163, 184, 0.3));
+  animation: none;
+}
+
+.pf-n-racha-dias {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 6px 0 0;
+}
+
+.pf-n-racha-dias span {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--n-fg-45);
+  letter-spacing: 0;
+}
+
+.pf-n-racha-nombre {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-cyan-soft);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 4px 0 18px;
+}
+
+.pf-n-racha-estado {
+  border-radius: var(--n-r-tile);
+  border: 1px solid var(--n-card-border);
+  background: var(--n-tile-bg);
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.pf-n-racha-estado-ok {
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.pf-n-racha-estado-warn {
+  border-color: rgba(251, 146, 60, 0.32);
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.pf-n-racha-estado-off {
+  border-color: var(--n-card-border);
+  background: var(--n-tile-bg);
+}
+
+.pf-n-racha-estado-titulo {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0 0 3px;
+}
+
+.pf-n-racha-estado-texto {
+  font-size: 11.5px;
+  color: var(--n-fg-60);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.pf-n-racha-progreso {
+  margin-bottom: 24px;
+}
+
+.pf-n-racha-progreso-track {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--n-r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.pf-n-racha-progreso-fill {
+  height: 100%;
+  border-radius: var(--n-r-pill);
+  background: linear-gradient(90deg, #fbbf24, #fb923c, #ef4444);
+  transition: width 0.4s ease;
+}
+
+.pf-n-racha-progreso-texto {
+  font-size: 12px;
+  color: var(--n-fg-50);
+  margin: 0;
+  text-align: center;
+}
+
+.pf-n-racha-progreso-texto b {
+  color: var(--n-fg);
+  font-weight: 700;
+}
+
+.pf-n-racha-niveles {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+  border-radius: var(--n-r-card);
+  border: 1px solid var(--n-card-border);
+  overflow: hidden;
+}
+
+.pf-n-racha-nivel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--n-divider);
+  opacity: 0.55;
+}
+
+.pf-n-racha-nivel:last-child {
+  border-bottom: none;
+}
+
+.pf-n-racha-nivel-on {
+  opacity: 1;
+  background: rgba(251, 146, 60, 0.06);
+}
+
+.pf-n-racha-nivel-nombre {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--n-fg-85);
+}
+
+.pf-n-racha-nivel-dias {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n-fg-40);
+  flex-shrink: 0;
+}
+
+.pf-n-racha-reglas {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pf-n-racha-reglas li {
+  font-size: 12px;
+  color: var(--n-fg-60);
+  line-height: 1.5;
 }
