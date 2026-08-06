@@ -24,11 +24,17 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // El push puede indicar a donde ir (ej. el aviso de racha abre el inicio
+      // del alumno). Si no lo indica, se abre la raiz como antes.
+      const destino = (event.notification.data && event.notification.data.url) || "/";
       const existing = windowClients.find((client) => "focus" in client);
       if (existing) {
+        if ("navigate" in existing && destino !== "/") {
+          return existing.focus().then((c) => (c && c.navigate ? c.navigate(destino) : c));
+        }
         return existing.focus();
       }
-      return clients.openWindow("/");
+      return clients.openWindow(destino);
     })
   );
 });

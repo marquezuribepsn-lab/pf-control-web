@@ -9,6 +9,10 @@ type StoredSubscription = {
     p256dh?: string;
     auth?: string;
   };
+  /** Email del usuario dueño de la suscripción, en minúsculas.
+   *  Sin esto solo se puede hacer broadcast, y un aviso personal ("tu racha
+   *  está congelada") le llegaría a todos. */
+  userEmail?: string;
 };
 
 let vapidConfigured = false;
@@ -66,11 +70,30 @@ export async function removePushSubscription(endpoint: string) {
 }
 
 export async function sendPushNotificationToAll(payload: Record<string, unknown>) {
+  return enviarA(await getSubscriptions(), payload);
+}
+
+/** Envía solo a los dispositivos de un usuario. Devuelve cuántos recibieron. */
+export async function sendPushNotificationToUser(
+  userEmail: string,
+  payload: Record<string, unknown>
+): Promise<number> {
+  const email = String(userEmail || "").trim().toLowerCase();
+  if (!email) return 0;
+
+  const destinos = (await getSubscriptions()).filter(
+    (item) => String(item.userEmail || "").trim().toLowerCase() === email
+  );
+
+  await enviarA(destinos, payload);
+  return destinos.length;
+}
+
+async function enviarA(subscriptions: StoredSubscription[], payload: Record<string, unknown>) {
   if (!configureVapid()) {
     return;
   }
 
-  const subscriptions = await getSubscriptions();
   if (subscriptions.length === 0) {
     return;
   }
@@ -99,10 +122,9 @@ export async function sendPushNotificationToAll(payload: Record<string, unknown>
   );
 
   if (deadEndpoints.size > 0) {
-    const cleaned = subscriptions.filter(
-      (item) => !deadEndpoints.has(item.endpoint)
-    );
-    await saveSubscriptions(cleaned);
+    // Se limpia sobre la lista completa, no sobre el subconjunto enviado.
+    const todas = await getSubscriptions();
+    await saveSubscriptions(todas.filter((item) => !deadEndpoints.has(item.endpoint)));
   }
 }
 

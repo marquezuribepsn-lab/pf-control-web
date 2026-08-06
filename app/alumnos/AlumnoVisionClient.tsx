@@ -3004,6 +3004,10 @@ export default function AlumnoVisionClient({
     sessionId?: string;
     fecha: string;
     completedAt: string;
+    /** Identidad del alumno. El sync store es global: sin esto los registros
+     *  de todos los alumnos se mezclan en una sola lista. */
+    alumnoNombre?: string;
+    alumnoEmail?: string;
   };
   const [trainingCompletions, setTrainingCompletions] = useSharedState<TrainingCompletionLite[]>([], {
     key: TRAINING_COMPLETIONS_KEY,
@@ -6927,12 +6931,25 @@ export default function AlumnoVisionClient({
   // Recordatorios derivados para el hub de notificaciones (ej. vencimiento de plan).
   /** Racha de entrenamiento. La logica vive en `lib/racha.ts` para poder
    *  testearla aparte de la UI. */
+  /** Entrenamientos completados por ESTE alumno.
+   *  El sync store guarda una unica lista global, asi que hay que filtrar por
+   *  identidad. Los registros viejos no traen alumno y quedan afuera a
+   *  proposito: atribuirselos a quien esta mirando mezclaria alumnos. */
+  const myTrainingCompletions = useMemo(() => {
+    const email = String(profileEmail || "").trim().toLowerCase();
+    return (Array.isArray(trainingCompletions) ? trainingCompletions : []).filter((entry) => {
+      const entryEmail = String(entry?.alumnoEmail || "").trim().toLowerCase();
+      if (entryEmail && email) return entryEmail === email;
+      const entryNombre = String(entry?.alumnoNombre || "").trim();
+      if (entryNombre) return namesLikelyMatch(entryNombre, profileName);
+      return false;
+    });
+  }, [profileEmail, profileName, trainingCompletions]);
+
   const trainingStreak = useMemo(() => {
-    const fechas = (Array.isArray(trainingCompletions) ? trainingCompletions : [])
-      .map((entry) => String(entry?.fecha || "").trim())
-      .filter(Boolean);
+    const fechas = myTrainingCompletions.map((entry) => String(entry?.fecha || "").trim()).filter(Boolean);
     return calcularRacha(fechas, routineDaysForSelectedWeek.length);
-  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
+  }, [myTrainingCompletions, routineDaysForSelectedWeek.length]);
 
   const [rachaPanelAbierto, setRachaPanelAbierto] = useState(false);
 
@@ -7682,14 +7699,14 @@ export default function AlumnoVisionClient({
     const weekId = String(selectedRoutineEntry.weekId || "");
     const dayId = String(selectedRoutineEntry.dayId || "");
     return (
-      trainingCompletions.find(
+      myTrainingCompletions.find(
         (entry) =>
           entry.weekId === weekId &&
           entry.dayId === dayId &&
           entry.fecha === todayDateKey
       ) || null
     );
-  }, [selectedRoutineEntry, todayDateKey, trainingCompletions]);
+  }, [myTrainingCompletions, selectedRoutineEntry, todayDateKey]);
 
   const markRoutineCompletedToday = useCallback(() => {
     if (!selectedRoutineEntry) return;
@@ -7712,10 +7729,12 @@ export default function AlumnoVisionClient({
         sessionId: selectedRoutineEntry.sesion.id,
         fecha: todayDateKey,
         completedAt: new Date().toISOString(),
+        alumnoNombre: profileName,
+        alumnoEmail: profileEmail || undefined,
       };
       return [...filtered, next];
     });
-  }, [selectedRoutineEntry, setTrainingCompletions, todayDateKey]);
+  }, [profileEmail, profileName, selectedRoutineEntry, setTrainingCompletions, todayDateKey]);
 
   const clearRoutineCompletionToday = useCallback(() => {
     if (!selectedRoutineEntry) return;
@@ -9249,7 +9268,7 @@ export default function AlumnoVisionClient({
     finSemana.setDate(finSemana.getDate() + 7);
 
     const diasHechos = new Set<string>();
-    for (const entry of Array.isArray(trainingCompletions) ? trainingCompletions : []) {
+    for (const entry of myTrainingCompletions) {
       const fecha = String(entry?.fecha || "").trim();
       if (!fecha) continue;
       const fechaDate = new Date(`${fecha}T00:00:00`);
@@ -9260,7 +9279,7 @@ export default function AlumnoVisionClient({
     }
 
     return { hechos: diasHechos.size, meta };
-  }, [routineDaysForSelectedWeek.length, trainingCompletions]);
+  }, [myTrainingCompletions, routineDaysForSelectedWeek.length]);
 
 
   /** Resumen de la rutina del día para la tarjeta hero del inicio

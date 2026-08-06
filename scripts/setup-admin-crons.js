@@ -3,6 +3,7 @@
  *   - /api/admin/vencimientos      POST  (daily, 9 AM AR = 12:00 UTC)
  *   - /api/admin/checkin-reminder  POST  (every Monday, 10 AM AR = 13:00 UTC)
  *   - /api/admin/resumen-semanal   POST  (every Monday, 9 AM AR = 12:00 UTC)
+ *   - /api/admin/racha-reminder    POST  (daily, 7 PM AR = 22:00 UTC)
  *
  * Usage (on the VPS):
  *   CRON_SECRET=<your-cron-secret> NEXTAUTH_URL=https://pf-control.com node scripts/setup-admin-crons.js
@@ -94,6 +95,15 @@ function main() {
       url: `${baseUrl}/api/admin/resumen-semanal`,
       body: '{"sendWhatsApp":true}',
       log: `${logDir}/pf-resumen-semanal.log`,
+    },
+    {
+      // Todos los dias 7 PM AR = 22:00 UTC. A esa hora ya se sabe si el alumno
+      // entreno o no, y todavia le queda margen para hacerlo.
+      schedule: "0 22 * * *",
+      label: "racha-reminder",
+      url: `${baseUrl}/api/admin/racha-reminder`,
+      body: "{}",
+      log: `${logDir}/pf-racha-reminder.log`,
     },
   ];
 
