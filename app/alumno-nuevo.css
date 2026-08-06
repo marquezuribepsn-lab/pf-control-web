@@ -4172,12 +4172,36 @@ main.pf-n {
    Paneles de acción de rutina (cambio / sesiones / finalizar)
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* Cambio, sesiones y finalizar dejan de ser una hoja pegada al borde inferior
+   y pasan a ser un dialogo centrado sobre el fondo translucido. Ocupaban muy
+   poco alto abajo y se leian como una pantallita apretada. */
 .pf-n-routine-action-overlay {
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .pf-n-routine-action-panel {
   display: block;
+  width: 100%;
+  max-width: 460px;
+  max-height: 82dvh;
+  border-radius: 24px;
+  border: 1px solid var(--n-card-border);
+  padding: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  animation: pfDialogIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pfDialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .pf-n-routine-action-panel-change,
@@ -4266,11 +4290,45 @@ main.pf-n {
   gap: 10px;
 }
 
+/* Cada tarjeta es una sesion ya finalizada: se marca en verde para que se lea
+   de un vistazo cuales cerraste. */
 .pf-n-routine-action-card {
+  position: relative;
   border-radius: var(--n-r-tile);
-  background: var(--n-tile-bg);
-  border: 1px solid var(--n-card-border);
-  padding: 13px 15px;
+  background: rgba(52, 211, 153, 0.07);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  border-left: 3px solid var(--n-green);
+  padding: 13px 15px 13px 14px;
+}
+
+.pf-n-routine-action-card .pf-n-routine-action-card-head > p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  color: var(--n-fg);
+  margin: 0;
+}
+
+.pf-n-routine-action-card .pf-n-routine-action-card-head > p::before {
+  content: "\2713";
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--n-green);
+  color: #04160f;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-n-routine-action-card .pf-n-routine-action-card-head > span {
+  font-size: 10.5px;
+  color: var(--n-fg-45);
+  flex-shrink: 0;
 }
 
 .pf-n-routine-action-card-head {
