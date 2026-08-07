@@ -78,8 +78,7 @@ type Props = {
   onClose: () => void;
 };
 
-const PRINT_STYLES = `
-.pf-rutina-print-overlay {
+const PRINT_STYLES = `.pf-rutina-print-overlay {
   position: fixed; inset: 0; z-index: 2147483000;
   background: #525659; overflow: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;

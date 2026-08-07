@@ -77,18 +77,18 @@ function normalizeNombre(n: string | undefined): string {
 function AdherenciaBar({ pct }: { pct: number | null }) {
   const val = pct ?? 0;
   const color =
-    val >= 75 ? "bg-emerald-500" :
-    val >= 45 ? "bg-amber-500"   :
-                "bg-rose-500";
+    val >= 75 ? "pf-v2-s-ok" :
+    val >= 45 ? "pf-v2-s-warn"   :
+                "pf-v2-s-danger";
   return (
     <div className="flex items-center gap-2">
-      <div className="relative h-1.5 flex-1 rounded-full bg-white/10">
+      <div className="relative h-1.5 flex-1 rounded-full pf-v2-s-hi">
         <div
           className={`absolute inset-y-0 left-0 rounded-full transition-all ${color}`}
           style={{ width: `${Math.min(val, 100)}%` }}
         />
       </div>
-      <span className="w-10 text-right text-xs font-bold tabular-nums text-white/70">
+      <span className="w-10 text-right text-xs font-bold tabular-nums pf-v2-t-70">
         {pct !== null ? `${Math.round(val)}%` : "—"}
       </span>
     </div>
@@ -124,26 +124,26 @@ function SparkLine({ weeks }: { weeks: number[] }) {
 }
 
 function TrendChip({ t }: { t: AlumnoStats["tendencia"] }) {
-  if (t === "sube")     return <span className="text-emerald-400 text-xs font-bold">↑ sube</span>;
-  if (t === "baja")     return <span className="text-rose-400 text-xs font-bold">↓ baja</span>;
-  if (t === "estable")  return <span className="text-slate-400 text-xs">→ estable</span>;
-  return <span className="text-white/30 text-xs">sin datos</span>;
+  if (t === "sube")     return <span className="pf-v2-t-ok text-xs font-bold">↑ sube</span>;
+  if (t === "baja")     return <span className="pf-v2-t-danger text-xs font-bold">↓ baja</span>;
+  if (t === "estable")  return <span className="pf-v2-t-50 text-xs">→ estable</span>;
+  return <span className="pf-v2-t-40 text-xs">sin datos</span>;
 }
 
 function StatPill({
   label, value, tone = "slate",
 }: { label: string; value: string | number; tone?: "emerald" | "rose" | "amber" | "cyan" | "slate" }) {
   const colors: Record<string, string> = {
-    emerald: "text-emerald-300",
-    rose:    "text-rose-300",
-    amber:   "text-amber-300",
-    cyan:    "text-cyan-300",
-    slate:   "text-white/60",
+    emerald: "pf-v2-t-ok",
+    rose:    "pf-v2-t-danger",
+    amber:   "pf-v2-t-warn",
+    cyan:    "pf-v2-t-accent",
+    slate:   "pf-v2-t-70",
   };
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className={`text-base font-black tabular-nums ${colors[tone]}`}>{value}</span>
-      <span className="text-[10px] uppercase tracking-wide text-white/40">{label}</span>
+      <span className={`text-base font-black tabular-nums${colors[tone]}`}>{value}</span>
+      <span className="text-[10px] uppercase tracking-wide pf-v2-t-40">{label}</span>
     </div>
   );
 }
@@ -364,7 +364,7 @@ export default function AdherenciaPage() {
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 pf-v2-b-accent border-t-transparent" />
       </div>
     );
   }
@@ -372,15 +372,15 @@ export default function AdherenciaPage() {
   const isAdminOrCollaborator = role === "ADMIN" || role === "COLABORADOR" || role === "SUPERADMIN";
 
   return (
-    <main className="min-h-screen bg-[#080a0b] text-white">
+    <main className="min-h-screen pf-v2-s-deep pf-v2-t">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
 
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-black tracking-tight pf-v2-t">
             📊 Adherencia
           </h1>
-          <p className="mt-1 text-sm text-white/50">
+          <p className="mt-1 text-sm pf-v2-t-50">
             Actividad y cumplimiento de los últimos 30 días
           </p>
         </header>
@@ -395,21 +395,21 @@ export default function AdherenciaPage() {
               { label: "Con molestias", value: summary.conMolestias, tone: "amber" },
             ].map(({ label, value, tone }) => {
               const palette: Record<string, string> = {
-                cyan:    "border-cyan-300/30 bg-cyan-500/10",
-                emerald: "border-emerald-300/30 bg-emerald-500/10",
-                rose:    "border-rose-300/30 bg-rose-500/10",
-                amber:   "border-amber-300/30 bg-amber-500/10",
+                cyan:    "pf-v2-b-accent pf-v2-s-accent",
+                emerald: "pf-v2-b-ok pf-v2-s-ok",
+                rose:    "pf-v2-b-danger pf-v2-s-danger",
+                amber:   "pf-v2-b-warn pf-v2-s-warn",
               };
               const valColor: Record<string, string> = {
-                cyan:    "text-cyan-100",
-                emerald: "text-emerald-100",
-                rose:    "text-rose-100",
-                amber:   "text-amber-100",
+                cyan:    "pf-v2-t-accent",
+                emerald: "pf-v2-t-ok",
+                rose:    "pf-v2-t-danger",
+                amber:   "pf-v2-t-warn",
               };
               return (
                 <article key={label} className={`rounded-2xl border p-4 ${palette[tone]}`}>
-                  <p className="text-xs uppercase tracking-wide text-white/55">{label}</p>
-                  <p className={`mt-2 text-3xl font-black ${valColor[tone]}`}>{value}</p>
+                  <p className="text-xs uppercase tracking-wide pf-v2-t-50">{label}</p>
+                  <p className={`mt-2 text-3xl font-black${valColor[tone]}`}>{value}</p>
                 </article>
               );
             })}
@@ -425,19 +425,19 @@ export default function AdherenciaPage() {
               placeholder="Buscar alumno…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white placeholder-white/30 outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30"
+              className="h-9 rounded-xl border pf-v2-b pf-v2-s-hi px-3 text-sm pf-v2-t pf-v2-ph outline-none focus:ring-1"
             />
 
             {/* filter */}
-            <div className="flex rounded-xl border border-white/10 bg-white/5 p-0.5">
+            <div className="flex rounded-xl border pf-v2-b pf-v2-s-hi p-0.5">
               {(["todos", "activos", "atencion"] as FilterKey[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`rounded-[10px] px-3 py-1 text-xs font-semibold transition-all ${
                     filter === f
-                      ? "bg-cyan-500/20 text-cyan-300 shadow"
-                      : "text-white/40 hover:text-white/70"
+                      ? "pf-v2-s-accent pf-v2-t-accent shadow"
+                      : "pf-v2-t-40"
                   }`}
                 >
                   {f === "todos" ? "Todos" : f === "activos" ? "Activos" : "⚠ Atención"}
@@ -449,7 +449,7 @@ export default function AdherenciaPage() {
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="h-9 rounded-xl border border-white/10 bg-[#0e1012] px-3 text-sm text-white/70 outline-none focus:border-cyan-500/50"
+              className="h-9 rounded-xl border pf-v2-b pf-v2-s-deep px-3 text-sm pf-v2-t-70 outline-none"
             >
               <option value="adherencia">Ordenar: Necesitan atención</option>
               <option value="ultima">Ordenar: Última actividad</option>
@@ -462,15 +462,15 @@ export default function AdherenciaPage() {
 
         {/* Table / Cards */}
         {displayed.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/8 bg-white/3 py-16">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border pf-v2-b pf-v2-s-hi py-16">
             <span className="text-4xl">📭</span>
-            <p className="text-white/40">No hay datos de adherencia todavía.</p>
-            <p className="text-xs text-white/25">Los alumnos generan datos al registrar cargas y completar sesiones.</p>
+            <p className="pf-v2-t-40">No hay datos de adherencia todavía.</p>
+            <p className="text-xs pf-v2-t-40">Los alumnos generan datos al registrar cargas y completar sesiones.</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-white/8">
+          <div className="overflow-hidden rounded-2xl border pf-v2-b">
             {/* header row */}
-            <div className="hidden grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-white/8 bg-white/3 px-5 py-2.5 text-xs uppercase tracking-wide text-white/40 sm:grid">
+            <div className="hidden grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b pf-v2-b pf-v2-s-hi px-5 py-2.5 text-xs uppercase tracking-wide pf-v2-t-40 sm:grid">
               <span>Alumno</span>
               <span>Adherencia</span>
               <span>Registros</span>
@@ -488,21 +488,21 @@ export default function AdherenciaPage() {
                 <div
                   key={s.nombre}
                   className={`grid grid-cols-1 gap-2 px-5 py-4 sm:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] sm:gap-4 sm:py-3 ${
-                    idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"
-                  } ${needsAlert ? "border-l-2 border-rose-500/60" : ""}`}
+                    idx % 2 === 0 ? "bg-transparent" : "pf-v2-s"
+                  }${needsAlert ? "border-l-2 pf-v2-b-danger" : ""}`}
                 >
                   {/* nombre */}
                   <div className="flex items-center gap-2.5">
                     <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                      needsAlert ? "bg-rose-500/20 text-rose-300" :
-                      s.tendencia === "sube" ? "bg-emerald-500/20 text-emerald-300" :
-                      "bg-white/8 text-white/60"
+                      needsAlert ? "pf-v2-s-danger pf-v2-t-danger" :
+                      s.tendencia === "sube" ? "pf-v2-s-ok pf-v2-t-ok" :
+                      "pf-v2-s-hi pf-v2-t-70"
                     }`}>
                       {s.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-white leading-tight">{s.nombre}</p>
-                      <p className={`text-[10px] ${s.estado === "activo" ? "text-emerald-400/70" : "text-white/30"}`}>
+                      <p className="text-sm font-semibold pf-v2-t leading-tight">{s.nombre}</p>
+                      <p className={`text-[10px] ${s.estado === "activo" ? "pf-v2-t-ok" : "pf-v2-t-40"}`}>
                         {s.estado}
                       </p>
                     </div>
@@ -512,7 +512,7 @@ export default function AdherenciaPage() {
                   <div className="sm:flex sm:items-center">
                     <div className="w-full">
                       <div className="mb-0.5 flex items-center justify-between sm:justify-start sm:gap-2">
-                        <span className="text-xs text-white/40 sm:hidden">Adherencia</span>
+                        <span className="text-xs pf-v2-t-40 sm:hidden">Adherencia</span>
                       </div>
                       <AdherenciaBar pct={s.adherenciaPct} />
                     </div>
@@ -520,9 +520,9 @@ export default function AdherenciaPage() {
 
                   {/* registros */}
                   <div className="flex items-center justify-between sm:justify-start">
-                    <span className="text-xs text-white/40 sm:hidden">Registros 30d</span>
+                    <span className="text-xs pf-v2-t-40 sm:hidden">Registros 30d</span>
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-bold tabular-nums ${s.registros30d > 0 ? "text-white" : "text-white/30"}`}>
+                      <span className={`text-sm font-bold tabular-nums ${s.registros30d > 0 ? "pf-v2-t" : "pf-v2-t-40"}`}>
                         {s.registros30d}
                       </span>
                       <SparkLine weeks={s.semanas} />
@@ -531,9 +531,9 @@ export default function AdherenciaPage() {
 
                   {/* rpe */}
                   <div className="flex items-center justify-between sm:justify-start">
-                    <span className="text-xs text-white/40 sm:hidden">RPE prom.</span>
+                    <span className="text-xs pf-v2-t-40 sm:hidden">RPE prom.</span>
                     <span className={`text-sm font-bold tabular-nums ${
-                      highRpe ? "text-amber-400" : s.rpePromedio ? "text-white/80" : "text-white/25"
+                      highRpe ? "pf-v2-t-warn" : s.rpePromedio ? "pf-v2-t" : "pf-v2-t-40"
                     }`}>
                       {s.rpePromedio !== null ? `${s.rpePromedio}/10` : "—"}
                       {highRpe && " ⚠"}
@@ -542,9 +542,9 @@ export default function AdherenciaPage() {
 
                   {/* molestias */}
                   <div className="flex items-center justify-between sm:justify-start">
-                    <span className="text-xs text-white/40 sm:hidden">Molestias</span>
+                    <span className="text-xs pf-v2-t-40 sm:hidden">Molestias</span>
                     <span className={`text-sm font-bold tabular-nums ${
-                      hasPain ? "text-rose-400" : s.molestias30d > 0 ? "text-amber-400" : "text-white/30"
+                      hasPain ? "pf-v2-t-danger" : s.molestias30d > 0 ? "pf-v2-t-warn" : "pf-v2-t-40"
                     }`}>
                       {s.molestias30d > 0 ? `${s.molestias30d} 🚨` : "—"}
                     </span>
@@ -552,14 +552,14 @@ export default function AdherenciaPage() {
 
                   {/* tendencia */}
                   <div className="flex items-center justify-between sm:justify-start">
-                    <span className="text-xs text-white/40 sm:hidden">Tendencia</span>
+                    <span className="text-xs pf-v2-t-40 sm:hidden">Tendencia</span>
                     <TrendChip t={s.tendencia} />
                   </div>
 
                   {/* última actividad */}
                   <div className="flex items-center justify-between sm:justify-start">
-                    <span className="text-xs text-white/40 sm:hidden">Última actividad</span>
-                    <span className={`text-sm tabular-nums ${s.ultimaActividad ? "text-white/60" : "text-white/25"}`}>
+                    <span className="text-xs pf-v2-t-40 sm:hidden">Última actividad</span>
+                    <span className={`text-sm tabular-nums ${s.ultimaActividad ? "pf-v2-t-70" : "pf-v2-t-40"}`}>
                       {s.ultimaActividad
                         ? (() => {
                             const d = parseDate(s.ultimaActividad);
@@ -580,7 +580,7 @@ export default function AdherenciaPage() {
         )}
 
         {/* Legend */}
-        <div className="mt-6 flex flex-wrap gap-4 text-xs text-white/30">
+        <div className="mt-6 flex flex-wrap gap-4 text-xs pf-v2-t-40">
           <span>Barra roja = adherencia &lt;40%</span>
           <span>⚠ RPE = promedio ≥ 8/10</span>
           <span>🚨 Molestias = reportadas al registrar carga</span>

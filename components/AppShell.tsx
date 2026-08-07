@@ -26,8 +26,6 @@ import { getPendingSaveStatus, useSharedState } from "./useSharedState";
 type NavLink = {
   href: string;
   label: string;
-  icon: string;
-  tone: string;
   adminOnly?: boolean;
   clientOnly?: boolean;
   /** Seccion del sidebar v2: "menu", "extra" (sin titulo) o "grupos". */
@@ -89,9 +87,7 @@ type SidebarWidgetItem = {
   icon: string;
   value: string;
   detail: string;
-  toneClass: string;
 };
-
 
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
@@ -117,36 +113,6 @@ const ACCOUNT_SNAPSHOT_SYNC_MS = 120000;
 const APP_TRANSITION_MIN_MS = 350;
 const TRANSPARENT_PIXEL_DATA_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-
-const WIDGET_TONE_CLASS_BY_ID: Record<string, string> = {
-  "pending-saves": "border-amber-300/45 bg-gradient-to-br from-amber-500/20 via-slate-900/75 to-orange-500/22",
-  "payments-completed": "border-emerald-300/45 bg-gradient-to-br from-emerald-500/22 via-slate-900/75 to-cyan-500/20",
-  "payments-pending": "border-rose-300/45 bg-gradient-to-br from-rose-500/20 via-slate-900/75 to-amber-500/20",
-  "attendance-rate": "border-cyan-300/45 bg-gradient-to-br from-cyan-500/20 via-slate-900/75 to-blue-500/20",
-  "sessions-loaded": "border-violet-300/40 bg-gradient-to-br from-violet-500/20 via-slate-900/75 to-indigo-500/20",
-  "active-clients": "border-lime-300/40 bg-gradient-to-br from-lime-500/20 via-slate-900/75 to-emerald-500/20",
-};
-
-const TONE_RGB_BY_NAME: Record<string, string> = {
-  cyan: "56,189,248",
-  blue: "59,130,246",
-  violet: "139,92,246",
-  purple: "168,85,247",
-  teal: "20,184,166",
-  amber: "245,158,11",
-  orange: "249,115,22",
-  rose: "244,63,94",
-  red: "239,68,68",
-  emerald: "16,185,129",
-  lime: "132,204,22",
-  sky: "14,165,233",
-  indigo: "99,102,241",
-  slate: "100,116,139",
-  gray: "107,114,128",
-  fuchsia: "217,70,239",
-  pink: "236,72,153",
-  green: "34,197,94",
-};
 
 const COLABORADOR_ACCESS_HREFS = [
   "/plantel",
@@ -405,13 +371,13 @@ const isNativeWebViewShell = (): boolean => {
 };
 
 /**
- * El tema es oscuro y punto: los dos rediseños (panel v2 y vista de alumno)
- * definen una sola paleta. Se sigue marcando el atributo para que el CSS que
- * lo consulta no quede sin valor.
+ * El tema es oscuro y punto: los dos redisenos definen una sola paleta.
+ * `color-scheme` es lo unico que sigue haciendo falta — le dice al navegador
+ * que pinte scrollbars y controles nativos en oscuro. Ya no queda CSS que
+ * consulte `data-pf-theme`, asi que el atributo se dejo de escribir.
  */
 const applyDarkTheme = () => {
   if (typeof document === "undefined") return;
-  document.documentElement.setAttribute("data-pf-theme", "dark");
   document.documentElement.style.colorScheme = "dark";
 };
 
@@ -429,29 +395,6 @@ const applyScreenScale = (value: number) => {
 const normalizeSidebarImageValue = (value: string | null | undefined): string | null => {
   const normalized = String(value || "").trim();
   return normalized || null;
-};
-
-const resolveToneEndpointColor = (tone: string | undefined, endpoint: "from" | "to") => {
-  const match = String(tone || "").match(new RegExp(`\\b${endpoint}-([a-z]+)-\\d{2,3}\\b`, "i"));
-  const toneName = String(match?.[1] || "").toLowerCase();
-  const rgb = TONE_RGB_BY_NAME[toneName];
-  if (!rgb) {
-    return null;
-  }
-
-  return `rgba(${rgb},0.96)`;
-};
-
-const resolveSidebarLedColors = (tone: string | undefined) => {
-  const fallback = {
-    start: "rgba(232,154,127,0.96)",
-    end: "rgba(204,120,92,0.96)",
-  };
-
-  const start = resolveToneEndpointColor(tone, "from") || fallback.start;
-  const end = resolveToneEndpointColor(tone, "to") || fallback.end;
-
-  return { start, end };
 };
 
 export default function AppShell({
@@ -1523,10 +1466,6 @@ export default function AppShell({
 
     return visibleLinks[0] || null;
   }, [visibleLinks, allVisibleHrefs, normalizedPathname, optimisticNavHref]);
-  const sidebarLedColors = useMemo(
-    () => resolveSidebarLedColors(activeSidebarLink?.tone),
-    [activeSidebarLink?.tone]
-  );
 
   const sidebarOperationalStats = useMemo(() => {
     if (isClienteRole) {
@@ -1617,9 +1556,6 @@ export default function AppShell({
         href: resolveWidgetHref(option.href),
         label: option.label,
         icon: option.icon,
-        toneClass:
-          WIDGET_TONE_CLASS_BY_ID[option.id] ||
-          "border-cyan-300/35 bg-gradient-to-br from-cyan-500/16 via-slate-900/75 to-blue-500/16",
       };
 
       if (option.id === "pending-saves") {
@@ -1738,7 +1674,7 @@ export default function AppShell({
        fondo, y la vista de alumno tiene los suyos (pf-n-*). */
     <div
       className={`pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] ${
-        shouldRenderSidebar ? "pf-v2" : "bg-[#09090f] text-slate-100"
+        shouldRenderSidebar ? "pf-v2" : "pf-v2-s-deep pf-v2-t"
       }`}
     >
       {/* Fondo del handoff v2: cuatro manchas radiales con blur, ruido y
@@ -1786,7 +1722,7 @@ export default function AppShell({
       ) : null}
       {mobileOpen && shouldRenderSidebar ? (
         <div
-          className="fixed inset-0 z-[88] bg-slate-950/65 md:hidden"
+          className="fixed inset-0 z-[88] pf-v2-s-deep md:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -1958,23 +1894,23 @@ export default function AppShell({
       ) : null}
 
       {!isClienteRole && pendingSaveKeys.length > 0 && pendingPanelOpen ? (
-        <div className="fixed left-[60px] top-[56px] z-[92] w-[min(92vw,340px)] rounded-xl border border-amber-200/35 bg-slate-900/95 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">
+        <div className="fixed left-[60px] top-[56px] z-[92] w-[min(92vw,340px)] rounded-xl border pf-v2-b-warn pf-v2-s-deep p-3 pf-v2-t shadow-2xl backdrop-blur-md">
+          <p className="text-[11px] font-black uppercase tracking-[0.18em] pf-v2-t-warn">
             Modulos pendientes
           </p>
           <div className="mt-2 max-h-56 space-y-1 overflow-auto pr-1">
             {pendingSaveKeys.map((key) => (
-              <div key={key} className="rounded-md border border-white/10 bg-slate-800/80 px-2 py-1.5">
-                <p className="text-xs font-semibold text-slate-100">{formatPendingKeyLabel(key)}</p>
-                <p className="text-[10px] text-slate-400">{key}</p>
+              <div key={key} className="rounded-md border pf-v2-b pf-v2-s-deep px-2 py-1.5">
+                <p className="text-xs font-semibold pf-v2-t">{formatPendingKeyLabel(key)}</p>
+                <p className="text-[10px] pf-v2-t-50">{key}</p>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-slate-300">
+          <p className="mt-2 text-[11px] pf-v2-t-70">
             Recordatorio: los cambios se suben cuando presionas Guardar en cada pantalla.
           </p>
           {pendingBadgeSummary ? (
-            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-100">
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] pf-v2-t-warn">
               Resumen: {pendingBadgeSummary}
             </p>
           ) : null}
@@ -1988,22 +1924,22 @@ export default function AppShell({
               key={toast.id}
               className={`rounded-[1.2rem] border px-4 py-3 shadow-2xl backdrop-blur-xl ${
                 toast.phase === "enter" ? "pf-ios-toast-enter" : "pf-ios-toast-exit"
-              } ${
+              }${
                 toast.type === "success"
-                  ? "border-emerald-200/45 bg-gradient-to-r from-emerald-500/35 to-cyan-400/30 text-emerald-950"
+                  ? "pf-v2-b-ok pf-v2-t-ok"
                   : toast.type === "warning"
-                  ? "border-amber-200/45 bg-gradient-to-r from-amber-500/35 to-orange-400/30 text-amber-950"
-                  : "border-rose-200/40 bg-rose-500/25 text-rose-950"
+                  ? "pf-v2-b-warn pf-v2-t-warn"
+                  : "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger"
               }`}
             >
               <div className="flex items-start gap-3">
                 <div
                   className={`mt-0.5 h-7 w-7 shrink-0 rounded-full border text-center text-sm leading-7 ${
                     toast.type === "success"
-                      ? "border-emerald-100/70 bg-emerald-100/25"
+                      ? "pf-v2-b-ok pf-v2-s-ok"
                       : toast.type === "warning"
-                      ? "border-amber-100/70 bg-amber-100/25"
-                      : "border-rose-100/70 bg-rose-100/25"
+                      ? "pf-v2-b-warn pf-v2-s-warn"
+                      : "pf-v2-b-danger pf-v2-s-danger"
                   }`}
                 >
                   {toast.type === "success" ? "✓" : toast.type === "warning" ? "!" : "x"}
@@ -2013,8 +1949,8 @@ export default function AppShell({
                   <p className="mt-1 text-sm font-semibold leading-5">{toast.message}</p>
                 </div>
               </div>
-              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-black/20">
-                <div className="pf-ios-toast-progress h-full rounded-full bg-black/45" />
+              <div className="mt-2.5 h-[3px] overflow-hidden rounded-full pf-v2-s-deep">
+                <div className="pf-ios-toast-progress h-full rounded-full pf-v2-s-deep" />
               </div>
             </div>
           ))}
@@ -2022,25 +1958,25 @@ export default function AppShell({
       ) : null}
 
       {isClientePendingApproval ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/88 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-3xl border border-cyan-200/30 bg-slate-950/95 p-6 text-center shadow-[0_30px_80px_rgba(2,8,25,0.65)] sm:p-8">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-200/85">Cuenta pendiente</p>
-            <h2 className="mt-3 text-3xl font-black text-white">Espera a que tu profesor te de alta</h2>
-            <p className="mt-4 text-sm leading-7 text-slate-200/90">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center pf-v2-s-deep px-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-3xl border pf-v2-b-accent pf-v2-s-deep p-6 text-center sm:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.24em] pf-v2-t-accent">Cuenta pendiente</p>
+            <h2 className="mt-3 text-3xl font-black pf-v2-t">Espera a que tu profesor te de alta</h2>
+            <p className="mt-4 text-sm leading-7 pf-v2-t">
               Ya verificaste tu mail y puedes iniciar sesion, pero la plataforma queda bloqueada hasta que el profesor
               confirme tu alta.
             </p>
 
-            <div className="mt-5 rounded-2xl border border-amber-300/35 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-100">
+            <div className="mt-5 rounded-2xl border pf-v2-b-warn pf-v2-s-warn px-4 py-3 text-sm font-semibold pf-v2-t-warn">
               Estado actual: pendiente de alta
             </div>
 
             {profesorContactoLoading ? (
-              <p className="mt-4 text-sm text-cyan-100">Buscando contacto del profesor...</p>
+              <p className="mt-4 text-sm pf-v2-t-accent">Buscando contacto del profesor...</p>
             ) : null}
 
             {profesorContactoError ? (
-              <p className="mt-4 rounded-xl border border-rose-300/35 bg-rose-500/12 px-3 py-2 text-sm text-rose-100">
+              <p className="mt-4 rounded-xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-sm pf-v2-t-danger">
                 {profesorContactoError}
               </p>
             ) : null}
@@ -2050,7 +1986,7 @@ export default function AppShell({
                 href={pendingApprovalWhatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black pf-v2-t transition "
               >
                 Comunicarme con el profesor
               </a>
@@ -2058,7 +1994,7 @@ export default function AppShell({
               <button
                 type="button"
                 disabled
-                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-300"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border pf-v2-b-hi pf-v2-s-hi px-4 py-3 text-sm font-semibold pf-v2-t-70"
               >
                 Contacto del profesor no disponible
               </button>
@@ -2093,5 +2029,4 @@ export default function AppShell({
     </div>
   );
 }
-
 

@@ -562,7 +562,7 @@ export default function ConfiguracionPage() {
     return (
       <main className="mx-auto max-w-4xl p-6">
         <div className="pf-v2-card">
-          <p className="text-sm text-white/65">Cargando configuracion...</p>
+          <p className="text-sm pf-v2-t-70">Cargando configuracion...</p>
         </div>
       </main>
     );
@@ -591,7 +591,7 @@ export default function ConfiguracionPage() {
           </div>
           <div className="flex items-center gap-2">
             <label
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.04] shadow-inner"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border pf-v2-b-hi pf-v2-s-hi shadow-inner"
               style={{ boxShadow: `inset 0 0 0 3px ${accentColor}, 0 0 12px color-mix(in srgb, ${accentColor} 38%, transparent)` }}
               title="Elegir color personalizado"
             >
@@ -667,7 +667,7 @@ export default function ConfiguracionPage() {
             Reset menu lateral
           </ReliableActionButton>
 
-          <label className="cursor-pointer rounded-xl border border-cyan-300/45 px-4 py-2 text-center text-sm font-semibold text-cyan-100">
+          <label className="cursor-pointer rounded-xl border pf-v2-b-accent px-4 py-2 text-center text-sm font-semibold pf-v2-t-accent">
             Cambiar imagen sidebar
             <input
               type="file"
@@ -683,7 +683,7 @@ export default function ConfiguracionPage() {
             {sidebarImageDraft ? (
               <img src={sidebarImageDraft} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-white/[0.08] bg-[#0e1012] text-xs text-white/65">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg border pf-v2-b pf-v2-s-deep text-xs pf-v2-t-70">
                 Sin foto
               </div>
             )}
@@ -692,7 +692,7 @@ export default function ConfiguracionPage() {
                 type="button"
                 onClick={removeSidebarImage}
                 disabled={savingSidebarImage || !sidebarImageDraft}
-                className="rounded-lg border border-rose-300/45 px-3 py-1.5 text-xs font-semibold text-rose-100"
+                className="rounded-lg border pf-v2-b-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger"
               >
                 Quitar
               </ReliableActionButton>
@@ -709,7 +709,7 @@ export default function ConfiguracionPage() {
                   type="button"
                   onClick={revertSidebarImageDraft}
                   disabled={savingSidebarImage}
-                  className="rounded-lg border border-white/[0.1] px-3 py-1.5 text-xs font-semibold text-white"
+                  className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t"
                 >
                   Revertir
                 </ReliableActionButton>
@@ -718,16 +718,16 @@ export default function ConfiguracionPage() {
           </div>
 
           {!sidebarImageDraft ? (
-            <p className="mt-2 text-xs text-white/65">Todavia no tienes foto de perfil cargada.</p>
+            <p className="mt-2 text-xs pf-v2-t-70">Todavia no tienes foto de perfil cargada.</p>
           ) : null}
         </div>
 
         {sidebarImageDirty ? (
-          <p className="mt-2 text-xs text-amber-200">Hay cambios de foto pendientes de guardar.</p>
+          <p className="mt-2 text-xs pf-v2-t-warn">Hay cambios de foto pendientes de guardar.</p>
         ) : null}
 
         {sidebarImageError ? (
-          <p className="mt-2 text-xs text-rose-200">{sidebarImageError}</p>
+          <p className="mt-2 text-xs pf-v2-t-danger">{sidebarImageError}</p>
         ) : null}
 
         <div className="pf-v2-card" style={{ marginTop: 16, padding: 14 }}>
@@ -737,14 +737,14 @@ export default function ConfiguracionPage() {
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <label htmlFor="dock-label-mode" className="text-xs font-semibold text-white/75">
+            <label htmlFor="dock-label-mode" className="text-xs font-semibold pf-v2-t-70">
               Etiquetas del dock
             </label>
             <select
               id="dock-label-mode"
               value={dockLabelMode}
               onChange={(event) => cambiarModoEtiquetasDock(event.target.value as DockLabelMode)}
-              className="rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-1.5 text-xs font-semibold text-white/85"
+              className="rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-1.5 text-xs font-semibold pf-v2-t"
             >
               <option value="compact">Compactas</option>
               <option value="full">Completas</option>
@@ -753,15 +753,15 @@ export default function ConfiguracionPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-cyan-300/25 bg-white/[0.02]/65 p-3">
-          <p className="text-sm font-semibold text-cyan-100">Widget rotativo del sidebar</p>
+        <div className="mt-4 rounded-xl border pf-v2-b-accent pf-v2-s p-3">
+          <p className="text-sm font-semibold pf-v2-t-accent">Widget rotativo del sidebar</p>
           <p className="pf-v2-muted" style={{ marginTop: 6, fontSize: 12 }}>
             Configura el carrusel de indicadores operativos que aparece abajo del menu lateral.
           </p>
 
           <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
             <div>
-              <label className="text-xs font-semibold text-white/75">
+              <label className="text-xs font-semibold pf-v2-t-70">
                 Tiempo de transicion: {widgetTransitionSeconds}s
               </label>
               <input
@@ -774,7 +774,7 @@ export default function ConfiguracionPage() {
                 className="mt-2 w-full"
               />
             </div>
-            <div className="rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/65">
+            <div className="rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-xs pf-v2-t-70">
               {widgetSelectedCards.length} seleccionados
             </div>
           </div>
@@ -785,7 +785,7 @@ export default function ConfiguracionPage() {
               return (
                 <label
                   key={option.id}
-                  className="flex items-start gap-2 rounded-lg border border-white/[0.08] bg-[#0e1012] px-3 py-2 text-xs"
+                  className="flex items-start gap-2 rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-xs"
                 >
                   <input
                     type="checkbox"
@@ -794,16 +794,16 @@ export default function ConfiguracionPage() {
                     className="mt-0.5"
                   />
                   <span className="min-w-0">
-                    <span className="font-semibold text-white/85">
+                    <span className="font-semibold pf-v2-t">
                       {option.icon} {option.label}
                     </span>
-                    <span className="mt-0.5 block text-[11px] text-white/40">{option.hint}</span>
+                    <span className="mt-0.5 block text-[11px] pf-v2-t-40">{option.hint}</span>
                   </span>
                 </label>
               );
             })}
           </div>
-          <p className="mt-2 text-[11px] text-white/35">
+          <p className="mt-2 text-[11px] pf-v2-t-40">
             Debe quedar al menos una opcion marcada.
           </p>
         </div>
@@ -817,7 +817,7 @@ export default function ConfiguracionPage() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-white/75">
+            <label className="mb-2 block text-sm font-semibold pf-v2-t-70">
               Escala global: {scalePercent}%
             </label>
             <input
@@ -837,7 +837,7 @@ export default function ConfiguracionPage() {
               }}
               className="w-full"
             />
-            <p className="mt-2 text-xs text-white/40">
+            <p className="mt-2 text-xs pf-v2-t-40">
               Valor guardado: {Math.round(savedScale * 100)}%
             </p>
           </div>
@@ -872,7 +872,7 @@ export default function ConfiguracionPage() {
             <ReliableActionButton
               type="button"
               onClick={resetPantalla}
-              className="rounded-xl border border-rose-300/45 px-4 py-2 text-sm font-semibold text-rose-100"
+              className="rounded-xl border pf-v2-b-danger px-4 py-2 text-sm font-semibold pf-v2-t-danger"
             >
               Reset 100%
             </ReliableActionButton>
@@ -899,17 +899,17 @@ export default function ConfiguracionPage() {
           <ReliableActionButton
             type="button"
             onClick={solicitarPermisoNotificaciones}
-            className="rounded-xl border border-cyan-300/45 px-4 py-2 text-sm font-semibold text-cyan-100"
+            className="rounded-xl border pf-v2-b-accent px-4 py-2 text-sm font-semibold pf-v2-t-accent"
           >
             Permitir notificaciones
           </ReliableActionButton>
         </div>
 
-        <p className="mt-3 text-xs text-white/40">
+        <p className="mt-3 text-xs pf-v2-t-40">
           Estado del permiso: {permission === "unsupported" ? "No soportado" : permission}
         </p>
 
-        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
+        <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s p-4">
           <p style={{ fontSize: 13.5, fontWeight: 600 }}>Push remoto (tipo sistema)</p>
           <p className="pf-v2-muted" style={{ marginTop: 6, fontSize: 12 }}>
             Requiere HTTPS y VAPID configurado. Si lo activas, recibes aviso cuando se guarda cualquier cambio.
@@ -920,7 +920,7 @@ export default function ConfiguracionPage() {
               type="button"
               disabled={!pushSupported || !VAPID_PUBLIC_KEY || pushLoading}
               onClick={activarPushRemoto}
-              className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-xl pf-v2-s-accent-full px-4 py-2 text-sm font-bold pf-v2-t-on disabled:cursor-not-allowed disabled:opacity-40"
             >
               Activar push remoto
             </ReliableActionButton>
@@ -928,7 +928,7 @@ export default function ConfiguracionPage() {
               type="button"
               disabled={!pushSupported || pushLoading}
               onClick={desactivarPushRemoto}
-              className="rounded-xl border border-rose-300/45 px-4 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-xl border pf-v2-b-danger px-4 py-2 text-sm font-semibold pf-v2-t-danger disabled:cursor-not-allowed disabled:opacity-40"
             >
               Desactivar push
             </ReliableActionButton>
@@ -936,17 +936,17 @@ export default function ConfiguracionPage() {
               type="button"
               disabled={!pushSubscribed}
               onClick={enviarPruebaPush}
-              className="rounded-xl border border-emerald-300/45 px-4 py-2 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-xl border pf-v2-b-ok px-4 py-2 text-sm font-semibold pf-v2-t-ok disabled:cursor-not-allowed disabled:opacity-40"
             >
               Enviar prueba
             </ReliableActionButton>
           </div>
 
-          <p className="mt-2 text-xs text-white/40">
+          <p className="mt-2 text-xs pf-v2-t-40">
             Estado push: {pushSupported ? (pushSubscribed ? "Suscripto" : "No suscripto") : "No soportado"}
           </p>
           {!VAPID_PUBLIC_KEY ? (
-            <p className="mt-1 text-xs text-amber-300">
+            <p className="mt-1 text-xs pf-v2-t-warn">
               Falta NEXT_PUBLIC_VAPID_PUBLIC_KEY en variables de entorno.
             </p>
           ) : null}

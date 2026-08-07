@@ -402,10 +402,9 @@ export default function SesionesAIPlanner() {
 
     const weeksHtml = plan.weeks
       .map(
-        (week: TrainingPlanWeek) => `
-          <section style="margin:0 0 18px;padding:14px;border:1px solid #d0d8e8;border-radius:10px;">
-            <h3 style="margin:0 0 6px;font-size:16px;">Semana ${week.weekNumber} · ${week.phase}</h3>
-            <p style="margin:0 0 8px;font-size:12px;color:#334155;">${week.startDate} a ${week.endDate} · Carga ${week.adjustedLoad} · ${week.focus}</p>
+        (week: TrainingPlanWeek) => `<section style="margin:0 0 18px;padding:14px;border:1px solid #d0d8e8;border-radius:10px;">
+            <h3 style="margin:0 0 6px;font-size:16px;">Semana ${week.weekNumber}· ${week.phase}</h3>
+            <p style="margin:0 0 8px;font-size:12px;color:#334155;">${week.startDate}a ${week.endDate}· Carga ${week.adjustedLoad}· ${week.focus}</p>
             <p style="margin:0 0 8px;font-size:12px;color:#334155;"><b>Justificacion:</b> ${week.rationale}</p>
             <ul style="margin:0;padding-left:18px;">
               ${week.sessions
@@ -445,43 +444,43 @@ export default function SesionesAIPlanner() {
   };
 
   return (
-    <section className="mb-6 rounded-2xl border border-cyan-400/25 bg-slate-900/70 p-4">
+    <section className="mb-6 rounded-2xl border pf-v2-b-accent pf-v2-s-deep p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black text-cyan-200">Planificacion IA periodizada</h2>
-          <p className="text-xs text-slate-300">
+          <h2 className="text-lg font-black pf-v2-t-accent">Planificacion IA periodizada</h2>
+          <p className="text-xs pf-v2-t-70">
             Crea, extiende y recalcula planes con justificacion tecnica por semana, sesion y bloque.
           </p>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Tipo objetivo
-          <select value={targetType} onChange={(e) => setTargetType(e.target.value as "jugadoras" | "alumnos")} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+          <select value={targetType} onChange={(e) => setTargetType(e.target.value as "jugadoras" | "alumnos")} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm">
             <option value="alumnos">Alumnos</option>
             <option value="jugadoras">Jugadoras</option>
           </select>
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Nombre objetivo
-          <input value={targetName} onChange={(e) => setTargetName(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input value={targetName} onChange={(e) => setTargetName(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Deporte
-          <input value={sport} onChange={(e) => setSport(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input value={sport} onChange={(e) => setSport(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Categoria
-          <input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Nivel
-          <select value={level} onChange={(e) => setLevel(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm">
             {LEVEL_OPTIONS.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}
@@ -490,61 +489,61 @@ export default function SesionesAIPlanner() {
           </select>
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Edad minima
-          <input type="number" min={8} max={60} value={ageMin} onChange={(e) => setAgeMin(Number(e.target.value) || 8)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={8} max={60} value={ageMin} onChange={(e) => setAgeMin(Number(e.target.value) || 8)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Edad maxima
-          <input type="number" min={10} max={70} value={ageMax} onChange={(e) => setAgeMax(Number(e.target.value) || 10)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={10} max={70} value={ageMax} onChange={(e) => setAgeMax(Number(e.target.value) || 10)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Semanas
-          <input type="number" min={1} max={52} value={weeks} onChange={(e) => setWeeks(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={1} max={52} value={weeks} onChange={(e) => setWeeks(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Extender (+ semanas)
-          <input type="number" min={1} max={24} value={extendWeeks} onChange={(e) => setExtendWeeks(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={1} max={24} value={extendWeeks} onChange={(e) => setExtendWeeks(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Sesiones/semana
-          <input type="number" min={1} max={7} value={sessionsPerWeek} onChange={(e) => setSessionsPerWeek(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={1} max={7} value={sessionsPerWeek} onChange={(e) => setSessionsPerWeek(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
 
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Duracion (min)
-          <input type="number" min={30} max={180} value={sessionDurationMin} onChange={(e) => setSessionDurationMin(Number(e.target.value) || 60)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="number" min={30} max={180} value={sessionDurationMin} onChange={(e) => setSessionDurationMin(Number(e.target.value) || 60)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
       </div>
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Fecha inicio
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Notas
-          <input value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
       </div>
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Objetivos (coma o linea)
-          <textarea value={objectivesText} onChange={(e) => setObjectivesText(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <textarea value={objectivesText} onChange={(e) => setObjectivesText(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
-        <label className="text-xs text-slate-300">
+        <label className="text-xs pf-v2-t-70">
           Restricciones / contexto
-          <textarea value={constraintsText} onChange={(e) => setConstraintsText(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+          <textarea value={constraintsText} onChange={(e) => setConstraintsText(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
         </label>
       </div>
 
-      <div className="mt-3 rounded-xl border border-white/10 bg-slate-800/55 p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-200">Capacidades condicionales</p>
+      <div className="mt-3 rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t">Capacidades condicionales</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {CAPABILITY_OPTIONS.map((capability) => {
             const selected = selectedCapabilities.includes(capability);
@@ -555,8 +554,8 @@ export default function SesionesAIPlanner() {
                 onClick={() => toggleCapability(capability)}
                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                   selected
-                    ? "border-cyan-300/60 bg-cyan-500/15 text-cyan-100"
-                    : "border-white/20 bg-slate-900/60 text-slate-200 hover:border-cyan-300/40"
+                    ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                    : "pf-v2-b-hi pf-v2-s-deep pf-v2-t "
                 }`}
               >
                 {capability}
@@ -566,31 +565,31 @@ export default function SesionesAIPlanner() {
         </div>
       </div>
 
-      <div className="mt-3 rounded-xl border border-white/10 bg-slate-800/55 p-3">
+      <div className="mt-3 rounded-xl border pf-v2-b pf-v2-s-deep p-3">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-200">Fechas clave (calendario)</p>
-          <ReliableActionButton type="button" onClick={addEvent} className="rounded-md border border-cyan-300/40 px-2 py-1 text-xs font-semibold text-cyan-100">
+          <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t">Fechas clave (calendario)</p>
+          <ReliableActionButton type="button" onClick={addEvent} className="rounded-md border pf-v2-b-accent px-2 py-1 text-xs font-semibold pf-v2-t-accent">
             + Fecha
           </ReliableActionButton>
         </div>
         <div className="space-y-2">
           {events.map((event, index) => (
-            <div key={`event-${index}`} className="grid gap-2 rounded-lg border border-white/10 bg-slate-900/60 p-2 md:grid-cols-[1fr_1fr_2fr_1fr_auto]">
-              <input type="date" value={event.date} onChange={(e) => updateEvent(index, { date: e.target.value })} className="rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" />
-              <select value={event.type} onChange={(e) => updateEvent(index, { type: e.target.value as DraftEvent["type"] })} className="rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs">
+            <div key={`event-${index}`} className="grid gap-2 rounded-lg border pf-v2-b pf-v2-s-deep p-2 md:grid-cols-[1fr_1fr_2fr_1fr_auto]">
+              <input type="date" value={event.date} onChange={(e) => updateEvent(index, { date: e.target.value })} className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs" />
+              <select value={event.type} onChange={(e) => updateEvent(index, { type: e.target.value as DraftEvent["type"] })} className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs">
                 <option value="partido">Partido</option>
                 <option value="especial">Especial</option>
                 <option value="control">Control</option>
               </select>
-              <input value={event.description} onChange={(e) => updateEvent(index, { description: e.target.value })} placeholder="Descripcion del evento" className="rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs" />
-              <select value={event.importance} onChange={(e) => updateEvent(index, { importance: Number(e.target.value) || 3 })} className="rounded border border-white/20 bg-slate-800 px-2 py-1 text-xs">
+              <input value={event.description} onChange={(e) => updateEvent(index, { description: e.target.value })} placeholder="Descripcion del evento" className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs" />
+              <select value={event.importance} onChange={(e) => updateEvent(index, { importance: Number(e.target.value) || 3 })} className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs">
                 <option value={1}>Importancia 1</option>
                 <option value={2}>Importancia 2</option>
                 <option value={3}>Importancia 3</option>
                 <option value={4}>Importancia 4</option>
                 <option value={5}>Importancia 5</option>
               </select>
-              <ReliableActionButton type="button" onClick={() => removeEvent(index)} className="rounded border border-rose-300/40 px-2 py-1 text-xs text-rose-200">
+              <ReliableActionButton type="button" onClick={() => removeEvent(index)} className="rounded border pf-v2-b-danger px-2 py-1 text-xs pf-v2-t-danger">
                 quitar
               </ReliableActionButton>
             </div>
@@ -599,94 +598,94 @@ export default function SesionesAIPlanner() {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <ReliableActionButton type="button" onClick={() => callAi("create")} disabled={loadingAction !== null} className="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500 disabled:opacity-60">
+        <ReliableActionButton type="button" onClick={() => callAi("create")} disabled={loadingAction !== null} className="rounded-lg pf-v2-s-accent-full px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-60">
           {loadingAction === "create" ? "Generando..." : "Generar plan IA"}
         </ReliableActionButton>
-        <ReliableActionButton type="button" onClick={savePlanToLibrary} disabled={!plan || loadingAction !== null} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">
+        <ReliableActionButton type="button" onClick={savePlanToLibrary} disabled={!plan || loadingAction !== null} className="rounded-lg pf-v2-s-ok px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-60">
           Guardar plan en biblioteca
         </ReliableActionButton>
-        <ReliableActionButton type="button" onClick={() => callAi("extend")} disabled={loadingAction !== null || !plan} className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+        <ReliableActionButton type="button" onClick={() => callAi("extend")} disabled={loadingAction !== null || !plan} className="rounded-lg pf-v2-s-blue px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-60">
           {loadingAction === "extend" ? "Extendiendo..." : `Extender plan (+${extendWeeks} semanas)`}
         </ReliableActionButton>
-        <ReliableActionButton type="button" onClick={() => callAi("recalculate")} disabled={loadingAction !== null || !plan} className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-60">
+        <ReliableActionButton type="button" onClick={() => callAi("recalculate")} disabled={loadingAction !== null || !plan} className="rounded-lg pf-v2-s-warn px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-60">
           {loadingAction === "recalculate" ? "Recalculando..." : "Recalcular semana"}
         </ReliableActionButton>
-        <ReliableActionButton type="button" onClick={exportPlanPdf} disabled={!plan} className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-600 disabled:opacity-60">
+        <ReliableActionButton type="button" onClick={exportPlanPdf} disabled={!plan} className="rounded-lg pf-v2-s px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-60">
           Exportar PDF
         </ReliableActionButton>
       </div>
 
       {plan ? (
-        <div className="mt-3 grid gap-3 rounded-xl border border-white/10 bg-slate-900/60 p-3 md:grid-cols-3">
-          <label className="text-xs text-slate-300">
+        <div className="mt-3 grid gap-3 rounded-xl border pf-v2-b pf-v2-s-deep p-3 md:grid-cols-3">
+          <label className="text-xs pf-v2-t-70">
             Importar semana
-            <select value={weekToImport} onChange={(e) => setWeekToImport(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+            <select value={weekToImport} onChange={(e) => setWeekToImport(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm">
               {weekOptions.map((weekNumber) => (
                 <option key={`import-${weekNumber}`} value={weekNumber}>Semana {weekNumber}</option>
               ))}
             </select>
           </label>
           <div className="flex items-end gap-2 md:col-span-2">
-            <ReliableActionButton type="button" onClick={importSingleWeek} className="rounded-lg border border-emerald-300/40 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10">
+            <ReliableActionButton type="button" onClick={importSingleWeek} className="rounded-lg border pf-v2-b-ok px-3 py-2 text-sm font-semibold pf-v2-t-ok pf-v2-hover">
               Importar semana puntual
             </ReliableActionButton>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs pf-v2-t-70">
               Para evitar saturacion, asigna el plan completo desde Clientes &gt; Asignar entrenamiento.
             </p>
           </div>
 
           <div className="grid gap-2 md:grid-cols-3 md:col-span-3">
-            <label className="text-xs text-slate-300">
+            <label className="text-xs pf-v2-t-70">
               Semana a recalcular
-              <select value={weekToRecalculate} onChange={(e) => setWeekToRecalculate(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm">
+              <select value={weekToRecalculate} onChange={(e) => setWeekToRecalculate(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm">
                 {weekOptions.map((weekNumber) => (
                   <option key={`recalc-${weekNumber}`} value={weekNumber}>Semana {weekNumber}</option>
                 ))}
               </select>
             </label>
-            <label className="text-xs text-slate-300">
+            <label className="text-xs pf-v2-t-70">
               Wellness promedio (1-10)
-              <input type="number" min={1} max={10} value={recalcWellness} onChange={(e) => setRecalcWellness(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+              <input type="number" min={1} max={10} value={recalcWellness} onChange={(e) => setRecalcWellness(Number(e.target.value) || 1)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
             </label>
-            <label className="text-xs text-slate-300">
+            <label className="text-xs pf-v2-t-70">
               Delta carga externa (-30 a 30)
-              <input type="number" min={-30} max={30} value={recalcDelta} onChange={(e) => setRecalcDelta(Number(e.target.value) || 0)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+              <input type="number" min={-30} max={30} value={recalcDelta} onChange={(e) => setRecalcDelta(Number(e.target.value) || 0)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
             </label>
-            <label className="text-xs text-slate-300 md:col-span-3">
+            <label className="text-xs pf-v2-t-70 md:col-span-3">
               Nota del ajuste
-              <input value={recalcNote} onChange={(e) => setRecalcNote(e.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm" />
+              <input value={recalcNote} onChange={(e) => setRecalcNote(e.target.value)} className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm" />
             </label>
           </div>
         </div>
       ) : null}
 
-      {message ? <p className="mt-3 text-sm text-emerald-300">{message}</p> : null}
-      {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
+      {message ? <p className="mt-3 text-sm pf-v2-t-ok">{message}</p> : null}
+      {error ? <p className="mt-3 text-sm pf-v2-t-danger">{error}</p> : null}
 
       {plan ? (
-        <div className="mt-4 rounded-xl border border-white/10 bg-slate-800/60 p-3">
-          <p className="text-sm font-semibold text-slate-100">
+        <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+          <p className="text-sm font-semibold pf-v2-t">
             Plan {plan.id} · {plan.totalWeeks} semanas · {availableSessions} sesiones · {plan.sessionsPerWeek} por semana
           </p>
-          <p className="mt-1 text-xs text-slate-300">
+          <p className="mt-1 text-xs pf-v2-t-70">
             Objetivo: {plan.targetName} · Deporte: {plan.sport} · Categoria: {plan.category} · Edad {plan.ageMin}-{plan.ageMax}
           </p>
 
-          <div className="mt-3 rounded-lg border border-cyan-300/20 bg-slate-900/50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-200">Base cientifica</p>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-200">
+          <div className="mt-3 rounded-lg border pf-v2-b-accent pf-v2-s-deep p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-accent">Base cientifica</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs pf-v2-t">
               {plan.scientificBasis.map((line, idx) => (
                 <li key={`basis-${idx}`}>{line}</li>
               ))}
             </ul>
           </div>
 
-          <div className="mt-3 rounded-lg border border-white/10 bg-slate-900/50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-200">Progresion semanal</p>
+          <div className="mt-3 rounded-lg border pf-v2-b pf-v2-s-deep p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t">Progresion semanal</p>
             <div className="mt-2 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
               {progressionSummary.map((item) => (
-                <div key={`prog-${item.week}`} className="rounded-md border border-white/10 bg-slate-950/55 p-2 text-xs text-slate-300">
-                  <p className="font-semibold text-white">Semana {item.week}</p>
+                <div key={`prog-${item.week}`} className="rounded-md border pf-v2-b pf-v2-s-deep p-2 text-xs pf-v2-t-70">
+                  <p className="font-semibold pf-v2-t">Semana {item.week}</p>
                   <p>Fase: {item.phase}</p>
                   <p>Carga: {item.load}</p>
                 </div>
@@ -696,15 +695,15 @@ export default function SesionesAIPlanner() {
 
           <div className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             {plan.weeks.map((week) => (
-              <div key={`${plan.id}-${week.weekNumber}`} className="rounded-lg border border-white/10 bg-slate-900/60 p-2 text-xs text-slate-300">
-                <p className="font-semibold text-slate-100">Semana {week.weekNumber} · {week.phase}</p>
+              <div key={`${plan.id}-${week.weekNumber}`} className="rounded-lg border pf-v2-b pf-v2-s-deep p-2 text-xs pf-v2-t-70">
+                <p className="font-semibold pf-v2-t">Semana {week.weekNumber} · {week.phase}</p>
                 <p>{week.startDate} a {week.endDate}</p>
                 <p>Foco: {week.focus}</p>
                 <p>Carga: {week.adjustedLoad} (plan {week.plannedLoad})</p>
                 <p>Sesiones: {week.sessions.length}</p>
-                <p className="mt-1 text-[11px] text-slate-400">{week.rationale}</p>
+                <p className="mt-1 text-[11px] pf-v2-t-50">{week.rationale}</p>
                 {week.events.length > 0 ? (
-                  <p className="mt-1 text-[11px] text-amber-200">
+                  <p className="mt-1 text-[11px] pf-v2-t-warn">
                     Eventos: {week.events.map((event) => `${event.date} ${event.type}`).join(" · ")}
                   </p>
                 ) : null}
@@ -714,16 +713,16 @@ export default function SesionesAIPlanner() {
         </div>
       ) : null}
 
-      <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/55 p-3">
+      <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s-deep p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-100">Biblioteca de planes IA</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-sm font-semibold pf-v2-t">Biblioteca de planes IA</p>
+          <p className="text-xs pf-v2-t-50">
             {storedPlans.length} plan{storedPlans.length === 1 ? "" : "es"} guardado{storedPlans.length === 1 ? "" : "s"}
           </p>
         </div>
 
         {storedPlans.length === 0 ? (
-          <p className="mt-2 text-xs text-slate-300">
+          <p className="mt-2 text-xs pf-v2-t-70">
             Aun no guardaste planes. Genera un plan IA y presiona &quot;Guardar plan en biblioteca&quot;.
           </p>
         ) : (
@@ -732,11 +731,11 @@ export default function SesionesAIPlanner() {
               const isExpanded = expandedPlanId === item.id;
               const totalSessions = item.plan.weeks.reduce((acc, week) => acc + week.sessions.length, 0);
               return (
-                <article key={item.id} className="rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                <article key={item.id} className="rounded-lg border pf-v2-b pf-v2-s-deep p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-white">{item.nombre}</p>
-                      <p className="text-[11px] text-slate-300">
+                      <p className="text-sm font-semibold pf-v2-t">{item.nombre}</p>
+                      <p className="text-[11px] pf-v2-t-70">
                         {item.plan.totalWeeks} semanas · {totalSessions} sesiones · actualizado {new Date(item.updatedAt || 0).toLocaleDateString("es-AR")}
                       </p>
                     </div>
@@ -745,21 +744,21 @@ export default function SesionesAIPlanner() {
                       <ReliableActionButton
                         type="button"
                         onClick={() => loadPlanFromLibrary(item)}
-                        className="rounded-md border border-cyan-300/40 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                        className="rounded-md border pf-v2-b-accent px-2.5 py-1 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                       >
                         Abrir
                       </ReliableActionButton>
                       <ReliableActionButton
                         type="button"
                         onClick={() => setExpandedPlanId(isExpanded ? "" : item.id)}
-                        className="rounded-md border border-white/20 px-2.5 py-1 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                        className="rounded-md border pf-v2-b-hi px-2.5 py-1 text-xs font-semibold pf-v2-t pf-v2-hover"
                       >
                         {isExpanded ? "Ocultar" : "Ver detalle"}
                       </ReliableActionButton>
                       <ReliableActionButton
                         type="button"
                         onClick={() => deletePlanFromLibrary(item.id)}
-                        className="rounded-md border border-rose-300/40 px-2.5 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/10"
+                        className="rounded-md border pf-v2-b-danger px-2.5 py-1 text-xs font-semibold pf-v2-t-danger pf-v2-hover"
                       >
                         Eliminar
                       </ReliableActionButton>
@@ -771,21 +770,21 @@ export default function SesionesAIPlanner() {
                       {item.plan.weeks.map((week) => (
                         <details
                           key={`${item.id}-week-${week.weekNumber}`}
-                          className="rounded-md border border-white/10 bg-slate-950/50 p-2"
+                          className="rounded-md border pf-v2-b pf-v2-s-deep p-2"
                         >
-                          <summary className="cursor-pointer text-xs font-semibold text-cyan-100">
+                          <summary className="cursor-pointer text-xs font-semibold pf-v2-t-accent">
                             Semana {week.weekNumber} · {week.phase} · {week.sessions.length} sesiones
                           </summary>
-                          <div className="mt-2 space-y-2 text-xs text-slate-200">
+                          <div className="mt-2 space-y-2 text-xs pf-v2-t">
                             <p>{week.focus}</p>
-                            <p className="text-slate-300">{week.startDate} a {week.endDate}</p>
+                            <p className="pf-v2-t-70">{week.startDate} a {week.endDate}</p>
                             {week.sessions.map((session) => (
                               <div
                                 key={session.id}
-                                className="rounded border border-white/10 bg-slate-900/50 px-2 py-1"
+                                className="rounded border pf-v2-b pf-v2-s-deep px-2 py-1"
                               >
-                                <p className="font-semibold text-white">{session.title}</p>
-                                <p className="text-slate-300">{session.goal}</p>
+                                <p className="font-semibold pf-v2-t">{session.title}</p>
+                                <p className="pf-v2-t-70">{session.goal}</p>
                               </div>
                             ))}
                           </div>

@@ -117,21 +117,21 @@ export default function ChatPanel({ myName, myRole, otherName, compact = false }
   const containerHeight = compact ? "h-72" : "h-[420px]";
 
   return (
-    <div className="flex flex-col rounded-[1.2rem] border border-white/10 bg-[#080a0b] overflow-hidden">
+    <div className="flex flex-col rounded-[1.2rem] border pf-v2-b pf-v2-s-deep overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      <div className="flex items-center justify-between border-b pf-v2-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-base font-black text-white">
+          <span className="text-base font-black pf-v2-t">
             💬 Chat con {otherName === "profe" ? "el profe" : otherName}
           </span>
           {unreadCount > 0 && (
-            <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
+            <span className="rounded-full pf-v2-s-danger px-2 py-0.5 text-xs font-bold pf-v2-t">
               {unreadCount}
             </span>
           )}
         </div>
         {!loaded && (
-          <span className="text-xs text-slate-400">Cargando...</span>
+          <span className="text-xs pf-v2-t-50">Cargando...</span>
         )}
       </div>
 
@@ -139,7 +139,7 @@ export default function ChatPanel({ myName, myRole, otherName, compact = false }
       <div className={`flex-1 overflow-y-auto px-4 py-3 ${containerHeight} space-y-2`}>
         {loaded && messages.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-slate-400">Empezá la conversación 💬</p>
+            <p className="text-sm pf-v2-t-50">Empezá la conversación 💬</p>
           </div>
         )}
 
@@ -153,13 +153,13 @@ export default function ChatPanel({ myName, myRole, otherName, compact = false }
               <div
                 className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm font-medium ${
                   isMe
-                    ? "bg-cyan-600/80 text-white rounded-br-sm"
-                    : "bg-slate-800/80 text-slate-100 rounded-bl-sm"
+                    ? "pf-v2-s-accent pf-v2-t rounded-br-sm"
+                    : "pf-v2-s-deep pf-v2-t rounded-bl-sm"
                 }`}
               >
                 {msg.texto}
               </div>
-              <span className="text-[10px] text-slate-500 px-1">
+              <span className="text-[10px] pf-v2-t-40 px-1">
                 {isMe ? "Vos" : msg.de} · {formatTime(msg.createdAt)}
               </span>
             </div>
@@ -169,7 +169,7 @@ export default function ChatPanel({ myName, myRole, otherName, compact = false }
       </div>
 
       {/* Input area */}
-      <div className="border-t border-white/10 px-3 py-3">
+      <div className="border-t pf-v2-b px-3 py-3">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -179,13 +179,13 @@ export default function ChatPanel({ myName, myRole, otherName, compact = false }
             onKeyDown={handleKeyDown}
             placeholder="Escribí un mensaje..."
             disabled={!myName}
-            className="flex-1 rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/60"
+            className="flex-1 rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none "
           />
           <button
             type="button"
             onClick={sendMessage}
             disabled={!inputText.trim() || !myName}
-            className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-xl pf-v2-s-accent-full px-4 py-2 text-sm font-bold pf-v2-t transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Enviar
           </button>

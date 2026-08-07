@@ -1554,16 +1554,16 @@ function ClientePlanContent() {
 
   if (!selectedClient) {
     return (
-      <main className="mx-auto max-w-6xl p-6 text-slate-100">
-        <section className="rounded-3xl border border-amber-300/30 bg-amber-500/10 p-6">
-          <h1 className="text-2xl font-black text-white">Plan del cliente</h1>
-          <p className="mt-2 text-sm text-amber-100">
+      <main className="mx-auto max-w-6xl p-6 pf-v2-t">
+        <section className="rounded-3xl border pf-v2-b-warn pf-v2-s-warn p-6">
+          <h1 className="text-2xl font-black pf-v2-t">Plan del cliente</h1>
+          <p className="mt-2 text-sm pf-v2-t-warn">
             No se encontro el cliente solicitado o faltan parametros de navegacion.
           </p>
           <Link
             href="/clientes"
             prefetch
-            className="mt-4 inline-flex rounded-xl border border-amber-200/40 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-500/10"
+            className="mt-4 inline-flex rounded-xl border pf-v2-b-warn px-4 py-2 text-sm font-semibold pf-v2-t-warn pf-v2-hover"
           >
             Volver a Clientes
           </Link>
@@ -1573,23 +1573,23 @@ function ClientePlanContent() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl space-y-5 p-6 text-slate-100">
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/45 to-slate-900 p-6 shadow-[0_20px_70px_rgba(6,182,212,0.12)]">
-        <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute right-0 top-8 h-36 w-36 rounded-full bg-emerald-400/20 blur-3xl" />
+    <main className="mx-auto max-w-6xl space-y-5 p-6 pf-v2-t">
+      <section className="relative overflow-hidden rounded-3xl border pf-v2-b-accent p-6">
+        <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full pf-v2-s-accent blur-3xl" />
+        <div className="pointer-events-none absolute right-0 top-8 h-36 w-36 rounded-full pf-v2-s-ok blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">Vista dedicada</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">Plan de {selectedClient.nombre}</h1>
-            <p className="mt-2 text-sm text-slate-200/90">
+            <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">Vista dedicada</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight pf-v2-t">Plan de {selectedClient.nombre}</h1>
+            <p className="mt-2 text-sm pf-v2-t">
               Esta pantalla muestra el plan sin mezclarlo con la ficha general del cliente.
             </p>
           </div>
           <Link
             href={backHref}
             prefetch
-            className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2 text-sm font-semibold pf-v2-t transition pf-v2-hover"
           >
             Volver a ficha
           </Link>
@@ -1601,8 +1601,8 @@ function ClientePlanContent() {
             onClick={() => switchPlanTab("plan-entrenamiento")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-entrenamiento"
-                ? "border-cyan-200/55 bg-cyan-300 text-slate-950"
-                : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
             }`}
           >
             Plan entrenamiento
@@ -1612,8 +1612,8 @@ function ClientePlanContent() {
             onClick={() => switchPlanTab("plan-nutricional")}
             className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
               tab === "plan-nutricional"
-                ? "border-cyan-200/55 bg-cyan-300 text-slate-950"
-                : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
             }`}
           >
             Plan nutricional
@@ -1622,11 +1622,11 @@ function ClientePlanContent() {
       </section>
 
       {tab === "plan-entrenamiento" ? (
-        <section className="rounded-3xl border-2 border-cyan-300/30 bg-slate-900/75 p-5 shadow-[0_18px_48px_-28px_rgba(6,182,212,0.42)]">
+        <section className="rounded-3xl border-2 pf-v2-b-accent pf-v2-s-deep p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-xl font-black text-white">Plan de entrenamiento editable</h2>
-              <p className="mt-1 text-sm text-slate-300">
+              <h2 className="text-xl font-black pf-v2-t">Plan de entrenamiento editable</h2>
+              <p className="mt-1 text-sm pf-v2-t-70">
                 Edicion tipo template: semanas, dias, planificacion y objetivos en un flujo limpio.
               </p>
             </div>
@@ -1634,33 +1634,33 @@ function ClientePlanContent() {
               <Link
                 href="/semana"
                 prefetch
-                className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                className="rounded-lg border pf-v2-b-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
               >
                 Abrir Templates
               </Link>
               <ReliableActionButton
                 type="button"
                 onClick={addWeekToPlan}
-                className="rounded-lg border border-emerald-300/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/15"
+                className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok pf-v2-hover"
               >
                 Agregar semana
               </ReliableActionButton>
             </div>
           </div>
 
-          <section className="mb-4 rounded-2xl border border-cyan-300/25 bg-cyan-500/5 p-4">
+          <section className="mb-4 rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Modo template</p>
-                <h3 className="mt-1 text-lg font-black text-white">Edicion directa del template</h3>
-                <p className="mt-1 text-sm text-slate-300">
+                <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-accent">Modo template</p>
+                <h3 className="mt-1 text-lg font-black pf-v2-t">Edicion directa del template</h3>
+                <p className="mt-1 text-sm pf-v2-t-70">
                   Vista simplificada para trabajar solo estructura semanal, dias, planificacion y objetivos.
                 </p>
               </div>
               <Link
                 href="/semana"
                 prefetch
-                className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-1.5 text-xs font-semibold pf-v2-t pf-v2-hover"
               >
                 Ir a Templates
               </Link>
@@ -1669,31 +1669,31 @@ function ClientePlanContent() {
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-4">
-              <section className="rounded-2xl border border-cyan-300/25 bg-cyan-500/[0.06] p-4">
+              <section className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Entrenamiento</p>
-                    <p className="mt-1 text-sm text-slate-200/90">
+                    <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-accent">Entrenamiento</p>
+                    <p className="mt-1 text-sm pf-v2-t">
                       Estructura visual alineada con Templates para editar semana y dia en el mismo flujo.
                     </p>
                   </div>
                   <ReliableActionButton
                     type="button"
                     onClick={addWeekToPlan}
-                    className="rounded-lg border border-emerald-300/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                    className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok pf-v2-hover"
                   >
                     Agregar semana
                   </ReliableActionButton>
                 </div>
 
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-xl border border-white/10 bg-slate-900/45 p-3 text-xs text-slate-200">
-                    Semanas: <span className="font-semibold text-white">{trainingPlanStats.totalSemanas}</span>
+                  <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3 text-xs pf-v2-t">
+                    Semanas: <span className="font-semibold pf-v2-t">{trainingPlanStats.totalSemanas}</span>
                   </div>
-                  <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+                  <div className="rounded-xl border pf-v2-b-accent pf-v2-s-accent p-3 text-xs pf-v2-t-accent">
                     Dias: <span className="font-semibold">{trainingPlanStats.totalDias}</span>
                   </div>
-                  <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-3 text-xs text-emerald-100">
+                  <div className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-3 text-xs pf-v2-t-ok">
                     Dias con objetivo: <span className="font-semibold">{trainingPlanStats.diasConObjetivo}</span>
                   </div>
                 </div>
@@ -1706,8 +1706,8 @@ function ClientePlanContent() {
                       onClick={() => setSelectedWeekId(week.id)}
                       className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
                         selectedWeekId === week.id
-                          ? "border-cyan-200/70 bg-cyan-400/15 text-cyan-50"
-                          : "border-white/15 bg-slate-950/45 text-slate-100 hover:border-cyan-300/40"
+                          ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                          : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                       }`}
                     >
                       {week.nombre || "Semana"}
@@ -1717,15 +1717,15 @@ function ClientePlanContent() {
               </section>
 
               {selectedTrainingWeek ? (
-                <section className="space-y-4 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-4">
+                <section className="space-y-4 rounded-2xl border pf-v2-b-violet pf-v2-s-violet p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.12em] text-fuchsia-100/85">Semana seleccionada</p>
+                      <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-violet">Semana seleccionada</p>
                       <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full border border-white/20 bg-slate-900/50 px-2 py-0.5 text-slate-200">
+                        <span className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-2 py-0.5 pf-v2-t">
                           {selectedWeekStats.totalDias} dias
                         </span>
-                        <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-2 py-0.5 text-cyan-100">
+                        <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-0.5 pf-v2-t-accent">
                           {selectedWeekStats.diasConObjetivo} con objetivo
                         </span>
                       </div>
@@ -1734,7 +1734,7 @@ function ClientePlanContent() {
                       type="button"
                       onClick={() => removeWeekFromPlan(selectedTrainingWeek.id)}
                       disabled={(editableTrainingPlan?.semanas.length || 0) <= 1}
-                      className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
+                      className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger pf-v2-hover disabled:opacity-40"
                     >
                       Eliminar semana
                     </ReliableActionButton>
@@ -1742,36 +1742,36 @@ function ClientePlanContent() {
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="space-y-1">
-                      <span className="text-xs uppercase tracking-wide text-slate-300">Nombre semana</span>
+                      <span className="text-xs uppercase tracking-wide pf-v2-t-70">Nombre semana</span>
                       <input
                         value={selectedTrainingWeek.nombre}
                         onChange={(event) =>
                           updateWeekField(selectedTrainingWeek.id, "nombre", event.target.value)
                         }
-                        className="w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
+                        className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t"
                         placeholder="Semana 1"
                       />
                     </label>
                     <label className="space-y-1 md:col-span-1">
-                      <span className="text-xs uppercase tracking-wide text-slate-300">Objetivo semanal</span>
+                      <span className="text-xs uppercase tracking-wide pf-v2-t-70">Objetivo semanal</span>
                       <textarea
                         value={selectedTrainingWeek.objetivo || ""}
                         onChange={(event) =>
                           updateWeekField(selectedTrainingWeek.id, "objetivo", event.target.value)
                         }
-                        className="min-h-[84px] w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 py-2 text-sm text-white"
+                        className="min-h-[84px] w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t"
                         placeholder="Objetivo de la semana"
                       />
                     </label>
                   </div>
 
-                  <div className="rounded-xl border border-fuchsia-300/20 bg-slate-900/55 p-3">
+                  <div className="rounded-xl border pf-v2-b-violet pf-v2-s-deep p-3">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-bold text-white">Dias del template</p>
+                      <p className="text-sm font-bold pf-v2-t">Dias del template</p>
                       <ReliableActionButton
                         type="button"
                         onClick={() => addDayToWeek(selectedTrainingWeek.id)}
-                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                        className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-2.5 py-1 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                       >
                         Agregar dia
                       </ReliableActionButton>
@@ -1783,8 +1783,8 @@ function ClientePlanContent() {
                           key={day.id}
                           className={`rounded-xl border p-3 transition ${
                             selectedDayId === day.id
-                              ? "border-cyan-200/70 bg-cyan-500/10"
-                              : "border-white/10 bg-slate-950/40 hover:border-cyan-300/35"
+                              ? "pf-v2-b-accent pf-v2-s-accent"
+                              : "pf-v2-b pf-v2-s-deep"
                           }`}
                         >
                           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -1793,8 +1793,8 @@ function ClientePlanContent() {
                               onClick={() => setSelectedDayId(day.id)}
                               className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                                 selectedDayId === day.id
-                                  ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                  : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                  ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                  : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                               }`}
                             >
                               {day.dia || "Dia"}
@@ -1803,7 +1803,7 @@ function ClientePlanContent() {
                               type="button"
                               onClick={() => removeDayFromWeek(selectedTrainingWeek.id, day.id)}
                               disabled={selectedTrainingWeek.dias.length <= 1}
-                              className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/20 disabled:opacity-40"
+                              className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-2.5 py-1 text-xs font-semibold pf-v2-t-danger pf-v2-hover disabled:opacity-40"
                             >
                               Eliminar dia
                             </ReliableActionButton>
@@ -1811,18 +1811,18 @@ function ClientePlanContent() {
 
                           <div className="grid gap-2 md:grid-cols-1">
                             <label className="space-y-1">
-                              <span className="text-[11px] uppercase tracking-wide text-slate-300">Dia</span>
+                              <span className="text-[11px] uppercase tracking-wide pf-v2-t-70">Dia</span>
                               <input
                                 value={day.dia}
                                 onChange={(event) =>
                                   updateDayField(selectedTrainingWeek.id, day.id, "dia", event.target.value)
                                 }
-                                className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-2.5 py-2 text-sm text-white"
+                                className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-2.5 py-2 text-sm pf-v2-t"
                                 placeholder="Lunes"
                               />
                             </label>
                             <label className="space-y-1 md:col-span-2">
-                              <span className="text-[11px] uppercase tracking-wide text-slate-300">Planificacion</span>
+                              <span className="text-[11px] uppercase tracking-wide pf-v2-t-70">Planificacion</span>
                               <textarea
                                 value={day.planificacion || ""}
                                 onChange={(event) =>
@@ -1833,12 +1833,12 @@ function ClientePlanContent() {
                                     event.target.value
                                   )
                                 }
-                                className="min-h-[72px] w-full rounded-lg border border-white/15 bg-slate-900/70 px-2.5 py-2 text-sm text-white"
+                                className="min-h-[72px] w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-2.5 py-2 text-sm pf-v2-t"
                                 placeholder="Descripcion del entrenamiento del dia"
                               />
                             </label>
                             <label className="space-y-1 md:col-span-2">
-                              <span className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo del dia</span>
+                              <span className="text-[11px] uppercase tracking-wide pf-v2-t-70">Objetivo del dia</span>
                               <input
                                 value={day.objetivo || ""}
                                 onChange={(event) =>
@@ -1849,7 +1849,7 @@ function ClientePlanContent() {
                                     event.target.value
                                   )
                                 }
-                                className="w-full rounded-lg border border-white/15 bg-slate-900/70 px-2.5 py-2 text-sm text-white"
+                                className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-2.5 py-2 text-sm pf-v2-t"
                                 placeholder="Objetivo especifico del dia"
                               />
                             </label>
@@ -1859,23 +1859,23 @@ function ClientePlanContent() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-cyan-300/25 bg-cyan-500/[0.05] p-3">
-                    <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Resumen del dia</p>
+                  <div className="rounded-xl border pf-v2-b-accent pf-v2-s-accent p-3">
+                    <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-accent">Resumen del dia</p>
                     {!selectedTrainingDay ? (
-                      <p className="mt-2 rounded-lg border border-white/10 bg-slate-900/60 p-3 text-sm text-slate-300">
+                      <p className="mt-2 rounded-lg border pf-v2-b pf-v2-s-deep p-3 text-sm pf-v2-t-70">
                         Selecciona un dia para ver su resumen.
                       </p>
                     ) : (
                       <div className="mt-2 grid gap-2 md:grid-cols-2">
-                        <div className="rounded-lg border border-white/12 bg-slate-950/45 p-3">
-                          <p className="text-[11px] uppercase tracking-wide text-slate-400">Planificacion</p>
-                          <p className="mt-1 text-sm text-slate-100">
+                        <div className="rounded-lg border pf-v2-b-hi pf-v2-s-deep p-3">
+                          <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Planificacion</p>
+                          <p className="mt-1 text-sm pf-v2-t">
                             {selectedTrainingDay.planificacion || "Sin planificacion cargada."}
                           </p>
                         </div>
-                        <div className="rounded-lg border border-white/12 bg-slate-950/45 p-3">
-                          <p className="text-[11px] uppercase tracking-wide text-slate-400">Objetivo del dia</p>
-                          <p className="mt-1 text-sm text-slate-100">
+                        <div className="rounded-lg border pf-v2-b-hi pf-v2-s-deep p-3">
+                          <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Objetivo del dia</p>
+                          <p className="mt-1 text-sm pf-v2-t">
                             {selectedTrainingDay.objetivo || "Sin objetivo cargado."}
                           </p>
                         </div>
@@ -1884,39 +1884,39 @@ function ClientePlanContent() {
                   </div>
                 </section>
               ) : (
-                <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                   Crea o selecciona una semana para comenzar a editar la planificacion.
                 </p>
               )}
             </div>
 
-            <aside className="rounded-2xl border border-cyan-300/25 bg-cyan-500/[0.06] p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-cyan-100/85">Vista alumno</p>
-              <h3 className="mt-1 text-xl font-black text-white">Semana y dia actual</h3>
-              <p className="mt-1 text-sm text-slate-300">
+            <aside className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4">
+              <p className="text-xs uppercase tracking-[0.14em] pf-v2-t-accent">Vista alumno</p>
+              <h3 className="mt-1 text-xl font-black pf-v2-t">Semana y dia actual</h3>
+              <p className="mt-1 text-sm pf-v2-t-70">
                 Lo que edites aqui se refleja igual en la seccion Rutina del alumno.
               </p>
 
               {selectedTrainingWeek && selectedTrainingDay ? (
-                <div className="mt-3 space-y-2 rounded-xl border border-fuchsia-300/30 bg-fuchsia-500/10 p-3">
+                <div className="mt-3 space-y-2 rounded-xl border pf-v2-b-violet pf-v2-s-violet p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-lg font-black text-white">{selectedTrainingWeek.nombre}</p>
-                    <span className="rounded-lg border border-white/20 bg-white/5 px-2 py-0.5 text-xs text-slate-100">
+                    <p className="text-lg font-black pf-v2-t">{selectedTrainingWeek.nombre}</p>
+                    <span className="rounded-lg border pf-v2-b-hi pf-v2-s-hi px-2 py-0.5 text-xs pf-v2-t">
                       {selectedTrainingDay.dia}
                     </span>
                   </div>
                   {selectedTrainingWeek.objetivo ? (
-                    <p className="text-sm text-cyan-100">Objetivo semanal: {selectedTrainingWeek.objetivo}</p>
+                    <p className="text-sm pf-v2-t-accent">Objetivo semanal: {selectedTrainingWeek.objetivo}</p>
                   ) : null}
-                  <p className="text-sm text-slate-100">
+                  <p className="text-sm pf-v2-t">
                     {selectedTrainingDay.planificacion || "Sin planificacion"}
                   </p>
                   {selectedTrainingDay.objetivo ? (
-                    <p className="text-xs text-fuchsia-100/90">Objetivo del dia: {selectedTrainingDay.objetivo}</p>
+                    <p className="text-xs pf-v2-t-violet">Objetivo del dia: {selectedTrainingDay.objetivo}</p>
                   ) : null}
                 </div>
               ) : (
-                <p className="mt-3 rounded-xl border border-white/10 bg-slate-900/60 p-3 text-sm text-slate-300">
+                <p className="mt-3 rounded-xl border pf-v2-b pf-v2-s-deep p-3 text-sm pf-v2-t-70">
                   Sin semana o dia seleccionado.
                 </p>
               )}
@@ -1924,38 +1924,38 @@ function ClientePlanContent() {
           </div>
         </section>
       ) : (
-        <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-5 shadow-lg">
-          <h2 className="text-xl font-black text-white">Plan nutricional</h2>
+        <section className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-5 shadow-lg">
+          <h2 className="text-xl font-black pf-v2-t">Plan nutricional</h2>
           {selectedNutritionPlan ? (
             <>
-              <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-4">
+              <div className="mt-3 rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-emerald-100">Plan asignado</p>
-                    <p className="text-lg font-black text-white">{selectedNutritionPlan.nombre}</p>
+                    <p className="text-xs uppercase tracking-wide pf-v2-t-ok">Plan asignado</p>
+                    <p className="text-lg font-black pf-v2-t">{selectedNutritionPlan.nombre}</p>
                   </div>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs pf-v2-t-70">
                     Asignado: {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
                   </p>
                 </div>
                 <div className="mt-3 grid gap-3 md:grid-cols-4">
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Objetivo</p>
-                    <p className="font-bold text-cyan-100">{nutritionGoalLabel(selectedNutritionPlan.objetivo)}</p>
+                  <div className="rounded-lg border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Objetivo</p>
+                    <p className="font-bold pf-v2-t-accent">{nutritionGoalLabel(selectedNutritionPlan.objetivo)}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Kcal objetivo</p>
-                    <p className="font-bold text-white">{selectedNutritionPlan.targets.calorias}</p>
+                  <div className="rounded-lg border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Kcal objetivo</p>
+                    <p className="font-bold pf-v2-t">{selectedNutritionPlan.targets.calorias}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G objetivo</p>
-                    <p className="font-bold text-white">
+                  <div className="rounded-lg border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">P/C/G objetivo</p>
+                    <p className="font-bold pf-v2-t">
                       {selectedNutritionPlan.targets.proteinas} / {selectedNutritionPlan.targets.carbohidratos} / {selectedNutritionPlan.targets.grasas} g
                     </p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-slate-900/60 p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">P/C/G del plan</p>
-                    <p className="font-bold text-emerald-100">
+                  <div className="rounded-lg border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">P/C/G del plan</p>
+                    <p className="font-bold pf-v2-t-ok">
                       {selectedNutritionIntake.proteinas} / {selectedNutritionIntake.carbohidratos} / {selectedNutritionIntake.grasas} g
                     </p>
                   </div>
@@ -1964,21 +1964,21 @@ function ClientePlanContent() {
 
               <div className="mt-4 space-y-3">
                 {selectedNutritionPlan.comidas.length === 0 ? (
-                  <p className="rounded-xl border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
+                  <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                     El plan no tiene comidas cargadas todavia.
                   </p>
                 ) : (
                   selectedNutritionPlan.comidas.map((meal) => (
-                    <article key={meal.id} className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
-                      <p className="font-semibold text-white">{meal.nombre}</p>
+                    <article key={meal.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+                      <p className="font-semibold pf-v2-t">{meal.nombre}</p>
                       {meal.items.length === 0 ? (
-                        <p className="mt-1 text-xs text-slate-400">Sin alimentos cargados.</p>
+                        <p className="mt-1 text-xs pf-v2-t-50">Sin alimentos cargados.</p>
                       ) : (
                         <div className="mt-2 space-y-1 text-sm">
                           {meal.items.map((item) => {
                             const food = nutritionFoodsById.get(item.foodId);
                             return (
-                              <p key={item.id} className="text-slate-200">
+                              <p key={item.id} className="pf-v2-t">
                                 • {food?.nombre || "Alimento no encontrado"} - {item.gramos} g
                               </p>
                             );
@@ -1991,15 +1991,15 @@ function ClientePlanContent() {
               </div>
             </>
           ) : (
-            <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+            <div className="mt-3 rounded-xl border pf-v2-b-warn pf-v2-s-warn p-4 text-sm pf-v2-t-warn">
               <p className="font-semibold">Este cliente aun no tiene un plan nutricional asignado.</p>
-              <p className="mt-1 text-amber-50/90">
+              <p className="mt-1 pf-v2-t-warn">
                 Puedes asignarlo desde el modulo de nutricion para verlo aqui.
               </p>
               <Link
                 href="/categorias/Nutricion"
                 prefetch
-                className="mt-3 inline-flex rounded-lg border border-amber-200/40 px-3 py-1.5 text-xs font-semibold hover:bg-amber-500/10"
+                className="mt-3 inline-flex rounded-lg border pf-v2-b-warn px-3 py-1.5 text-xs font-semibold pf-v2-hover"
               >
                 Ir a Nutricion
               </Link>
@@ -2015,9 +2015,9 @@ export default function ClientePlanPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto max-w-6xl p-6 text-slate-100">
-          <section className="rounded-3xl border border-cyan-200/20 bg-slate-900/80 p-6">
-            <p className="text-sm text-slate-300">Cargando plan del cliente...</p>
+        <main className="mx-auto max-w-6xl p-6 pf-v2-t">
+          <section className="rounded-3xl border pf-v2-b-accent pf-v2-s-deep p-6">
+            <p className="text-sm pf-v2-t-70">Cargando plan del cliente...</p>
           </section>
         </main>
       }

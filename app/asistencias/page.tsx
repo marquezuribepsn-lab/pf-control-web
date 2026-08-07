@@ -474,7 +474,7 @@ export default function AsistenciasPage() {
             </div>
           </div>
 
-          <h3 className="text-lg font-bold text-white">Jornadas</h3>
+          <h3 className="text-lg font-bold pf-v2-t">Jornadas</h3>
           <div className="mt-3 space-y-2">
             {jornadasFiltradas.length === 0 ? (
               <p className="pf-v2-card pf-v2-muted" style={{ padding: "16px 14px" }}>
@@ -488,18 +488,14 @@ export default function AsistenciasPage() {
                     key={jornada.id}
                     className={`rounded-xl border px-3 py-3 transition ${
                       active
-                        ? "border-indigo-400/30 bg-indigo-500/10"
-                        : "border-white/[0.07] bg-white/[0.025]"
+                        ? "pf-v2-b-blue pf-v2-s-blue"
+                        : "pf-v2-b pf-v2-s"
                     }`}
-                    style={active ? {
-                      backgroundColor: `hsla(var(--hue,172),60%,50%,0.1)`,
-                      borderColor: `hsla(var(--hue,172),60%,55%,0.25)`
-                    } : undefined}
                   >
                     <ReliableActionButton
                       type="button"
                       onClick={() => setSelectedJornadaId(jornada.id)}
-                      className="w-full text-left text-white/85"
+                      className="w-full text-left pf-v2-t"
                     >
                       <p style={{ fontWeight: 600 }}>{jornada.titulo}</p>
                       <p className="pf-v2-muted" style={{ fontSize: 12 }}>
@@ -557,7 +553,7 @@ export default function AsistenciasPage() {
             <>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-xl font-black text-white">{selectedJornada.titulo}</h3>
+                  <h3 className="text-xl font-black pf-v2-t">{selectedJornada.titulo}</h3>
                   <p className="pf-v2-muted">
                     {selectedJornada.categoria} · {selectedJornada.fecha} · {selectedJornada.hora}
                   </p>
@@ -626,9 +622,9 @@ export default function AsistenciasPage() {
                               disabled={Boolean(selectedJornada.suspendida)}
                               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
                                 estado === "presente"
-                                  ? "bg-emerald-400 text-slate-950"
-                                  : "border border-emerald-300/40 text-emerald-100 hover:bg-emerald-500/10"
-                              } disabled:cursor-not-allowed disabled:opacity-45`}
+                                  ? "pf-v2-s-ok pf-v2-t"
+                                  : "border pf-v2-b-ok pf-v2-t-ok pf-v2-hover"
+                              }disabled:cursor-not-allowed disabled:opacity-45`}
                             >
                               Presente
                             </ReliableActionButton>
@@ -645,9 +641,9 @@ export default function AsistenciasPage() {
                               disabled={Boolean(selectedJornada.suspendida)}
                               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
                                 estado === "ausente"
-                                  ? "bg-rose-400 text-slate-950"
-                                  : "border border-rose-300/40 text-rose-100 hover:bg-rose-500/10"
-                              } disabled:cursor-not-allowed disabled:opacity-45`}
+                                  ? "pf-v2-s-danger pf-v2-t"
+                                  : "border pf-v2-b-danger pf-v2-t-danger pf-v2-hover"
+                              }disabled:cursor-not-allowed disabled:opacity-45`}
                             >
                               Ausente
                             </ReliableActionButton>
@@ -685,7 +681,7 @@ export default function AsistenciasPage() {
 
       {suspensionModalJornadaId ? (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center pf-v2-s-deep p-4"
           onClick={cerrarModalSuspension}
         >
           <div
@@ -693,11 +689,11 @@ export default function AsistenciasPage() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-lg font-bold text-amber-100">Suspender jornada</h3>
+              <h3 className="text-lg font-bold pf-v2-t-warn">Suspender jornada</h3>
               <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
-                className="rounded-lg border border-white/[0.1] px-3 py-1 text-xs font-semibold text-slate-200"
+                className="rounded-lg border pf-v2-b-hi px-3 py-1 text-xs font-semibold pf-v2-t"
               >
                 Cerrar
               </ReliableActionButton>
@@ -722,7 +718,7 @@ export default function AsistenciasPage() {
                 placeholder="Ej: lluvia intensa, cancha cerrada, protocolo medico..."
               />
               {suspensionError ? (
-                <p className="mt-1 text-xs font-semibold text-rose-200">{suspensionError}</p>
+                <p className="mt-1 text-xs font-semibold pf-v2-t-danger">{suspensionError}</p>
               ) : null}
             </div>
 

@@ -96,19 +96,19 @@ function RecordForm({
   }
 
   const inputCls =
-    "w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30";
+    "w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none focus:ring-1 ";
 
   return (
-    <div className="fixed inset-0 z-[130] overflow-y-auto bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[130] overflow-y-auto pf-v2-s-deep backdrop-blur-sm">
       <div className="flex min-h-full items-start justify-center px-4 py-10">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
-        <h3 className="mb-4 text-lg font-bold text-slate-100">
+      <div className="w-full max-w-lg rounded-2xl border pf-v2-b pf-v2-s-deep p-6 shadow-2xl">
+        <h3 className="mb-4 text-lg font-bold pf-v2-t">
           {initial?.id ? "Editar registro" : "Nuevo registro antropométrico"}
         </h3>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-400">Alumno</label>
+            <label className="mb-1 block text-xs font-medium pf-v2-t-50">Alumno</label>
             {alumnosNombres.length > 0 ? (
               <select value={alumno} onChange={(e) => setAlumno(e.target.value)} className={inputCls}>
                 {alumnosNombres.map((n) => (
@@ -121,7 +121,7 @@ function RecordForm({
           </div>
 
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-400">Fecha</label>
+            <label className="mb-1 block text-xs font-medium pf-v2-t-50">Fecha</label>
             <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={inputCls} />
           </div>
 
@@ -135,7 +135,7 @@ function RecordForm({
             { label: "Muslo (cm)", value: muslo, set: setMuslo },
           ].map(({ label, value, set }) => (
             <div key={label}>
-              <label className="mb-1 block text-xs font-medium text-slate-400">{label}</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">{label}</label>
               <input
                 type="number"
                 value={value}
@@ -149,21 +149,21 @@ function RecordForm({
           {/* Auto-calculated */}
           {imc !== null && (
             <div className="col-span-2 flex gap-3">
-              <div className="flex-1 rounded-lg bg-emerald-500/10 px-3 py-2">
-                <p className="text-xs text-slate-500">IMC calculado</p>
-                <p className="font-bold text-emerald-400">{imc.toFixed(1)} — {getImcCategory(imc).label}</p>
+              <div className="flex-1 rounded-lg pf-v2-s-ok px-3 py-2">
+                <p className="text-xs pf-v2-t-40">IMC calculado</p>
+                <p className="font-bold pf-v2-t-ok">{imc.toFixed(1)} — {getImcCategory(imc).label}</p>
               </div>
               {navyBf !== null && (
-                <div className="flex-1 rounded-lg bg-blue-500/10 px-3 py-2">
-                  <p className="text-xs text-slate-500">% Grasa (Navy)</p>
-                  <p className="font-bold text-blue-400">{Math.max(3, navyBf).toFixed(1)}%</p>
+                <div className="flex-1 rounded-lg pf-v2-s-blue px-3 py-2">
+                  <p className="text-xs pf-v2-t-40">% Grasa (Navy)</p>
+                  <p className="font-bold pf-v2-t-blue">{Math.max(3, navyBf).toFixed(1)}%</p>
                 </div>
               )}
             </div>
           )}
 
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-400">Notas</label>
+            <label className="mb-1 block text-xs font-medium pf-v2-t-50">Notas</label>
             <textarea
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
@@ -178,13 +178,13 @@ function RecordForm({
           <button
             onClick={handleSave}
             disabled={!alumno}
-            className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-40"
+            className="flex-1 rounded-lg pf-v2-s-ok py-2 text-sm font-semibold pf-v2-t transition-colors pf-v2-hover disabled:opacity-40"
           >
             Guardar
           </button>
           <button
             onClick={onCancel}
-            className="rounded-lg border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700"
+            className="rounded-lg border pf-v2-b pf-v2-s-deep px-4 py-2 text-sm pf-v2-t-70 pf-v2-hover"
           >
             Cancelar
           </button>
@@ -214,11 +214,11 @@ function AlumnoCard({
   const imcHistory = records.map((r) => r.imc).filter(Boolean) as number[];
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+    <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="font-semibold text-slate-100">{alumnoNombre}</h4>
-          <p className="text-xs text-slate-500">{records.length} registro{records.length !== 1 ? "s" : ""}</p>
+          <h4 className="font-semibold pf-v2-t">{alumnoNombre}</h4>
+          <p className="text-xs pf-v2-t-40">{records.length} registro{records.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex items-center gap-2">
           {weightHistory.length >= 2 && (
@@ -226,13 +226,13 @@ function AlumnoCard({
           )}
           <button
             onClick={onAdd}
-            className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20"
+            className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-medium pf-v2-t-ok pf-v2-hover"
           >
             + Registro
           </button>
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="rounded-lg border border-white/10 bg-slate-800 px-2 py-1.5 text-xs text-slate-400 hover:bg-slate-700"
+            className="rounded-lg border pf-v2-b pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t-50 pf-v2-hover"
           >
             {expanded ? "▲" : "▼"}
           </button>
@@ -243,7 +243,7 @@ function AlumnoCard({
       {last && (
         <div className="mt-3 flex flex-wrap gap-2">
           {last.pesoKg && (
-            <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
+            <span className="rounded-md pf-v2-s-deep px-2 py-1 text-xs pf-v2-t-70">
               ⚖️ {last.pesoKg} kg
             </span>
           )}
@@ -253,16 +253,16 @@ function AlumnoCard({
             </span>
           )}
           {last.grasaCorporalPct && (
-            <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
+            <span className="rounded-md pf-v2-s-deep px-2 py-1 text-xs pf-v2-t-70">
               🔬 {last.grasaCorporalPct.toFixed(1)}% grasa
             </span>
           )}
           {last.cinturaCm && (
-            <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
+            <span className="rounded-md pf-v2-s-deep px-2 py-1 text-xs pf-v2-t-70">
               📐 {last.cinturaCm} cm cintura
             </span>
           )}
-          <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-500">
+          <span className="rounded-md pf-v2-s-deep px-2 py-1 text-xs pf-v2-t-40">
             📅 {last.fecha}
           </span>
         </div>
@@ -273,7 +273,7 @@ function AlumnoCard({
         <div className="mt-3 space-y-3">
           {imcHistory.length >= 2 && (
             <div>
-              <p className="mb-1 text-xs text-slate-500">Tendencia IMC</p>
+              <p className="mb-1 text-xs pf-v2-t-40">Tendencia IMC</p>
               <Sparkline data={imcHistory} color="#a78bfa" />
             </div>
           )}
@@ -282,7 +282,7 @@ function AlumnoCard({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-slate-500">
+                <tr className="pf-v2-t-40">
                   <th className="pb-1 text-left">Fecha</th>
                   <th className="pb-1 text-right">Peso</th>
                   <th className="pb-1 text-right">IMC</th>
@@ -293,20 +293,20 @@ function AlumnoCard({
               </thead>
               <tbody>
                 {[...records].reverse().map((r) => (
-                  <tr key={r.id} className="border-t border-white/5">
-                    <td className="py-1.5 text-slate-300">{r.fecha}</td>
-                    <td className="py-1.5 text-right text-slate-300">{r.pesoKg ? `${r.pesoKg}` : "—"}</td>
+                  <tr key={r.id} className="border-t pf-v2-b">
+                    <td className="py-1.5 pf-v2-t-70">{r.fecha}</td>
+                    <td className="py-1.5 text-right pf-v2-t-70">{r.pesoKg ? `${r.pesoKg}` : "—"}</td>
                     <td className="py-1.5 text-right" style={{ color: r.imc ? getImcCategory(r.imc).color : "#64748b" }}>
                       {r.imc ? r.imc.toFixed(1) : "—"}
                     </td>
-                    <td className="py-1.5 text-right text-slate-300">{r.cinturaCm ?? "—"}</td>
-                    <td className="py-1.5 text-right text-slate-300">
+                    <td className="py-1.5 text-right pf-v2-t-70">{r.cinturaCm ?? "—"}</td>
+                    <td className="py-1.5 text-right pf-v2-t-70">
                       {r.grasaCorporalPct ? `${r.grasaCorporalPct.toFixed(1)}%` : "—"}
                     </td>
                     <td className="py-1.5 pl-2">
                       <button
                         onClick={() => onDelete(r.id)}
-                        className="text-slate-600 hover:text-red-400"
+                        className="pf-v2-t-40 "
                         title="Eliminar"
                       >
                         ✕
@@ -376,14 +376,14 @@ export default function TabRegistros({ anthropometry, setAnthropometry, alumnosN
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-slate-100">📏 Registros Antropométricos</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <h2 className="text-xl font-black pf-v2-t">📏 Registros Antropométricos</h2>
+          <p className="mt-1 text-sm pf-v2-t-50">
             Historial de medidas corporales, IMC y % grasa por alumno.
           </p>
         </div>
         <button
           onClick={() => { setShowForm(true); setFormAlumno(null); }}
-          className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          className="shrink-0 rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t transition-colors pf-v2-hover"
         >
           + Nuevo registro
         </button>
@@ -395,13 +395,13 @@ export default function TabRegistros({ anthropometry, setAnthropometry, alumnosN
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar alumno..."
-        className="w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
       />
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
-          <p className="text-slate-500">
+        <div className="rounded-2xl border border-dashed pf-v2-b p-10 text-center">
+          <p className="pf-v2-t-40">
             {search ? "No hay alumnos que coincidan." : "Aún no hay registros. Agrega el primero."}
           </p>
         </div>

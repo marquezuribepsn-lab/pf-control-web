@@ -34,17 +34,17 @@ function ScoreSlider({
   const isGoodHigh = label === "Bienestar";
   const color =
     isGoodHigh
-      ? num >= 7 ? "text-emerald-300" : num >= 4 ? "text-amber-300" : "text-red-300"
-      : num <= 3 ? "text-emerald-300" : num <= 6 ? "text-amber-300" : "text-red-300";
+      ? num >= 7 ? "pf-v2-t-ok" : num >= 4 ? "pf-v2-t-warn" : "pf-v2-t-danger"
+      : num <= 3 ? "pf-v2-t-ok" : num <= 6 ? "pf-v2-t-warn" : "pf-v2-t-danger";
 
   return (
-    <div className="rounded-xl border border-white/8 bg-white/4 p-4">
+    <div className="rounded-xl border pf-v2-b pf-v2-s-hi p-4">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <span className="text-sm font-medium text-slate-200">{icon} {label}</span>
-          <p className="text-xs text-slate-500">{hint}</p>
+          <span className="text-sm font-medium pf-v2-t">{icon} {label}</span>
+          <p className="text-xs pf-v2-t-40">{hint}</p>
         </div>
-        <span className={`text-2xl font-bold ${color}`}>{value}</span>
+        <span className={`text-2xl font-bold${color}`}>{value}</span>
       </div>
       <input
         type="range"
@@ -55,7 +55,7 @@ function ScoreSlider({
         className="h-2 w-full cursor-pointer accent-cyan-400"
         style={{ background: `linear-gradient(to right, rgb(34 211 238 / 0.7) ${pct}%, rgb(255 255 255 / 0.1) ${pct}%)` }}
       />
-      <div className="mt-1 flex justify-between text-xs text-slate-600">
+      <div className="mt-1 flex justify-between text-xs pf-v2-t-40">
         <span>{min}</span>
         <span>{max}</span>
       </div>
@@ -94,9 +94,9 @@ export default function NuevoWellnessPage() {
   }
 
   const AVAIL_OPTIONS = [
-    { value: "Disponible", label: "Disponible", color: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" },
-    { value: "Limitada", label: "Limitada", color: "border-amber-400/40 bg-amber-400/10 text-amber-300" },
-    { value: "No disponible", label: "No disponible", color: "border-red-400/40 bg-red-400/10 text-red-300" },
+    { value: "Disponible", label: "Disponible", color: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" },
+    { value: "Limitada", label: "Limitada", color: "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn" },
+    { value: "No disponible", label: "No disponible", color: "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger" },
   ];
 
   return (
@@ -123,13 +123,13 @@ export default function NuevoWellnessPage() {
           <div className="space-y-6">
             {/* Nombre */}
             <div className="pf-v2-card">
-              <h2 className="mb-4 text-base font-semibold text-slate-200">👤 Jugadora</h2>
+              <h2 className="mb-4 text-base font-semibold pf-v2-t">👤 Jugadora</h2>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Nombre completo</label>
+                <label className="mb-1.5 block text-sm font-medium pf-v2-t-70">Nombre completo</label>
                 <input
                   value={form.nombre}
                   onChange={(e) => updateField("nombre", e.target.value)}
-                  className="w-full rounded-xl border border-white/12 bg-white/6 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/30"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-3 pf-v2-t pf-v2-ph outline-none transition focus:ring-1"
                   placeholder="Ej: Sofía Gómez"
                   required
                 />
@@ -138,7 +138,7 @@ export default function NuevoWellnessPage() {
 
             {/* Scores */}
             <div className="pf-v2-card">
-              <h2 className="mb-4 text-base font-semibold text-slate-200">📊 Indicadores</h2>
+              <h2 className="mb-4 text-base font-semibold pf-v2-t">📊 Indicadores</h2>
               <div className="space-y-4">
                 {SCORE_FIELDS.map((f) => (
                   <ScoreSlider
@@ -157,11 +157,11 @@ export default function NuevoWellnessPage() {
 
             {/* Comentario */}
             <div className="pf-v2-card">
-              <h2 className="mb-4 text-base font-semibold text-slate-200">📝 Observaciones</h2>
+              <h2 className="mb-4 text-base font-semibold pf-v2-t">📝 Observaciones</h2>
               <textarea
                 value={form.comentario}
                 onChange={(e) => updateField("comentario", e.target.value)}
-                className="min-h-[120px] w-full rounded-xl border border-white/12 bg-white/6 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none transition focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/30"
+                className="min-h-[120px] w-full rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-3 pf-v2-t pf-v2-ph outline-none transition focus:ring-1"
                 placeholder="Notas del estado diario, lesiones, sensaciones, etc."
               />
             </div>
@@ -171,7 +171,7 @@ export default function NuevoWellnessPage() {
           <div className="space-y-6">
             {/* Disponibilidad */}
             <div className="pf-v2-card">
-              <h2 className="mb-4 text-base font-semibold text-slate-200">📍 Disponibilidad</h2>
+              <h2 className="mb-4 text-base font-semibold pf-v2-t">📍 Disponibilidad</h2>
               <div className="space-y-2">
                 {AVAIL_OPTIONS.map((opt) => (
                   <button
@@ -181,7 +181,7 @@ export default function NuevoWellnessPage() {
                     className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                       form.disponibilidad === opt.value
                         ? opt.color
-                        : "border-white/8 bg-white/3 text-slate-400 hover:border-white/16 hover:text-slate-200"
+                        : "pf-v2-b pf-v2-s-hi pf-v2-t-50"
                     }`}
                   >
                     {opt.value}
@@ -192,33 +192,33 @@ export default function NuevoWellnessPage() {
 
             {/* Resumen */}
             <div className="pf-v2-card">
-              <h2 className="mb-4 text-base font-semibold text-slate-200">📋 Resumen</h2>
+              <h2 className="mb-4 text-base font-semibold pf-v2-t">📋 Resumen</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Jugadora</span>
-                  <span className="font-medium text-slate-200">{form.nombre || "—"}</span>
+                  <span className="pf-v2-t-50">Jugadora</span>
+                  <span className="font-medium pf-v2-t">{form.nombre || "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Bienestar</span>
+                  <span className="pf-v2-t-50">Bienestar</span>
                   <span
                     className={`font-semibold ${
-                      Number(form.bienestar) >= 7 ? "text-emerald-300" : Number(form.bienestar) >= 4 ? "text-amber-300" : "text-red-300"
+                      Number(form.bienestar) >= 7 ? "pf-v2-t-ok" : Number(form.bienestar) >= 4 ? "pf-v2-t-warn" : "pf-v2-t-danger"
                     }`}
                   >
                     {form.bienestar}/10
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Fatiga</span>
-                  <span className="font-semibold text-slate-200">{form.fatiga}/10</span>
+                  <span className="pf-v2-t-50">Fatiga</span>
+                  <span className="font-semibold pf-v2-t">{form.fatiga}/10</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Dolor</span>
-                  <span className="font-semibold text-slate-200">{form.dolor}/10</span>
+                  <span className="pf-v2-t-50">Dolor</span>
+                  <span className="font-semibold pf-v2-t">{form.dolor}/10</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Disponibilidad</span>
-                  <span className="font-semibold text-slate-200">{form.disponibilidad}</span>
+                  <span className="pf-v2-t-50">Disponibilidad</span>
+                  <span className="font-semibold pf-v2-t">{form.disponibilidad}</span>
                 </div>
               </div>
 

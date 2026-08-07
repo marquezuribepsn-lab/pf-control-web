@@ -169,14 +169,14 @@ const STORAGE_KEY = "pf-control-home-config-v2";
 const HOME_EDIT_MODE_KEY = "pf-control-home-edit-mode-v1";
 
 const CATEGORY_GRADIENTS = [
-  "from-cyan-500 to-blue-600",
-  "from-emerald-500 to-teal-600",
-  "from-fuchsia-500 to-pink-600",
-  "from-amber-500 to-orange-600",
-  "from-violet-500 to-purple-600",
-  "from-lime-500 to-green-600",
-  "from-rose-500 to-red-600",
-  "from-sky-500 to-indigo-600",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
 ];
 
 const CATEGORY_ICONS = ["SP", "DF", "GO", "AC", "WN", "EN", "ST", "PW"];
@@ -207,43 +207,43 @@ const defaultConfig: HomeConfig = {
       label: "Plantel",
       href: "/clientes?seccion=plantel",
       desc: "Gestiona jugadoras y su estado deportivo.",
-      tone: "from-cyan-500 to-sky-600",
+      tone: "",
     },
     {
       label: "Templates",
       href: "/semana",
       desc: "Biblioteca de templates y objetivos de carga.",
-      tone: "from-emerald-500 to-teal-600",
+      tone: "",
     },
     {
       label: "Entrenamiento",
       href: "/sesiones",
       desc: "Gestiona sesiones y biblioteca de ejercicios en un solo modulo.",
-      tone: "from-blue-600 to-indigo-600",
+      tone: "",
     },
     {
       label: "Asistencias",
       href: "/asistencias",
       desc: "Controla jornadas, presentes y ausencias por categoria.",
-      tone: "from-teal-500 to-cyan-600",
+      tone: "",
     },
     {
       label: "Registros",
       href: "/registros",
       desc: "Seguimiento historico y reportes rapidos.",
-      tone: "from-violet-500 to-purple-600",
+      tone: "",
     },
     {
       label: "Categorias",
       href: "/categorias",
       desc: "Clasifica ejercicios por enfoque fisico.",
-      tone: "from-lime-500 to-green-600",
+      tone: "",
     },
     {
       label: "Equipos",
       href: "/equipos",
       desc: "Administra grupos y estructura de trabajo.",
-      tone: "from-rose-500 to-red-600",
+      tone: "",
     },
   ],
 };
@@ -385,7 +385,7 @@ export default function Home() {
                 label: "Asistencias",
                 href: "/asistencias",
                 desc: "Controla jornadas, presentes y ausencias por categoria.",
-                tone: "from-teal-500 to-cyan-600",
+                tone: "",
               },
             ];
 
@@ -488,7 +488,7 @@ export default function Home() {
           label: "Nuevo modulo",
           href: "/",
           desc: "Descripcion editable",
-          tone: "from-cyan-500 to-sky-600",
+          tone: "",
         },
       ],
     }));

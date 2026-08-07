@@ -3297,10 +3297,10 @@ export default function SemanaPage() {
 
   const toastStyle =
     toast?.kind === "warning"
-      ? "border-amber-300/40 bg-amber-500/15"
+      ? "pf-v2-b-warn pf-v2-s-warn"
       : toast?.kind === "error"
-      ? "border-rose-300/40 bg-rose-500/15"
-      : "border-emerald-300/40 bg-emerald-500/15";
+      ? "pf-v2-b-danger pf-v2-s-danger"
+      : "pf-v2-b-ok pf-v2-s-ok";
 
   const toastBadge =
     toast?.kind === "warning"
@@ -3371,24 +3371,23 @@ export default function SemanaPage() {
   ]);
 
   return (
-    <main className="relative mx-auto w-full max-w-[1820px] px-4 py-6 text-white/85 sm:px-6">
+    <main className="relative mx-auto w-full max-w-[1820px] px-4 py-6 pf-v2-t sm:px-6">
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,258),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
       {toast && (
         <div className="pointer-events-none fixed right-4 top-4 z-50 w-full max-w-xs">
           <div
             ref={toastRef}
-            className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-md transition-all duration-200 ease-out ${toastStyle} ${
+            className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-md transition-all duration-200 ease-out ${toastStyle}${
               toastPhase === "enter"
                 ? "translate-y-0 scale-100 opacity-100"
                 : "-translate-y-2 scale-95 opacity-0"
             }`}
           >
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold pf-v2-t">
               {toastBadge} {toast.message}
             </p>
           </div>
@@ -3396,7 +3395,7 @@ export default function SemanaPage() {
       )}
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold" style={{ color: `hsl(var(--hue,258),65%,65%)` }}>Templates de entrenamiento</h1>
+        <h1 className="text-3xl font-bold">Templates de entrenamiento</h1>
         <p className="pf-v2-muted">
           Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
         </p>
@@ -3404,29 +3403,29 @@ export default function SemanaPage() {
 
 
 
-      <section className="mt-6 rounded-[28px] border border-cyan-300/18 bg-white/[0.02]/24 p-5 shadow-[0_24px_56px_-46px_rgba(8,47,73,0.9)]">
+      <section className="mt-6 rounded-[28px] border pf-v2-b-accent pf-v2-s p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-white">
+              <h2 className="text-lg font-semibold tracking-tight pf-v2-t">
                 Templates + entrenamiento
               </h2>
-              <p className="text-xs text-white/65">
+              <p className="text-xs pf-v2-t-70">
                 Crea planes base con su entrenamiento integrado y reutilizable.
               </p>
-              <p className="mt-2 text-[11px] text-cyan-100/90">
+              <p className="mt-2 text-[11px] pf-v2-t-accent">
                 Usá "Buscar alumno" para ir a la ficha de entrenamiento de cualquier alumno.
               </p>
             </div>
 
-            <div className="inline-flex flex-wrap gap-1 rounded-2xl bg-white/[0.025] p-1 ring-1 ring-white/10">
+            <div className="inline-flex flex-wrap gap-1 rounded-2xl pf-v2-s p-1 ring-1">
               <ReliableActionButton
                 type="button"
                 onClick={iniciarNuevoTemplate}
                 className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   templatesTab === "nuevo"
-                    ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(103,232,249,0.8)]"
-                    : "text-white/65 hover:bg-cyan-500/10 hover:text-cyan-100"
+                    ? "pf-v2-s-accent pf-v2-t"
+                    : "pf-v2-t-70 pf-v2-hover"
                 }`}
               >
                 Nuevo template
@@ -3436,8 +3435,8 @@ export default function SemanaPage() {
                 onClick={() => setTemplatesTab("mis")}
                 className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   templatesTab === "mis"
-                    ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(103,232,249,0.8)]"
-                    : "text-white/65 hover:bg-cyan-500/10 hover:text-cyan-100"
+                    ? "pf-v2-s-accent pf-v2-t"
+                    : "pf-v2-t-70 pf-v2-hover"
                 }`}
               >
                 Mis templates
@@ -3447,8 +3446,8 @@ export default function SemanaPage() {
                 onClick={() => setTemplatesTab("buscar")}
                 className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   templatesTab === "buscar"
-                    ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-10px_rgba(103,232,249,0.8)]"
-                    : "text-white/65 hover:bg-cyan-500/10 hover:text-cyan-100"
+                    ? "pf-v2-s-accent pf-v2-t"
+                    : "pf-v2-t-70 pf-v2-hover"
                 }`}
               >
                 Buscar alumno
@@ -3458,13 +3457,13 @@ export default function SemanaPage() {
                 onClick={() => setTemplatesTab("motor")}
                 className={`relative rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   templatesTab === "motor"
-                    ? "bg-violet-400 text-slate-950 shadow-[0_8px_20px_-10px_rgba(167,139,250,0.8)]"
-                    : "text-violet-300/70 hover:bg-violet-500/10 hover:text-violet-200"
+                    ? "pf-v2-s-violet pf-v2-t"
+                    : "pf-v2-t-violet pf-v2-hover"
                 }`}
               >
                 ⚡ Motor IA
                 {motorBadgeCount > 0 && templatesTab !== "motor" && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-slate-900">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full pf-v2-s-warn text-[9px] font-black pf-v2-t">
                     {motorBadgeCount > 9 ? "9+" : motorBadgeCount}
                   </span>
                 )}
@@ -3477,7 +3476,7 @@ export default function SemanaPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Buscar template..."
-              className="w-full max-w-xs rounded-xl border border-cyan-300/20 bg-white/[0.025] px-3 py-2 text-sm text-white/85 placeholder:text-white/40"
+              className="w-full max-w-xs rounded-xl border pf-v2-b-accent pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
             />
           ) : templatesTab === "buscar" ? (
             <input
@@ -3485,20 +3484,20 @@ export default function SemanaPage() {
               onChange={(e) => setAlumnoSearch(e.target.value)}
               placeholder="Escribí el nombre del alumno..."
               autoFocus
-              className="w-full max-w-xs rounded-xl border border-cyan-300/20 bg-white/[0.025] px-3 py-2 text-sm text-white/85 placeholder:text-white/40"
+              className="w-full max-w-xs rounded-xl border pf-v2-b-accent pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
             />
           ) : null}
         </div>
 
         {templatesTab === "mis" ? (
-          <div className="mt-5 border-t border-white/[0.07] pt-5">
-            <h3 className="text-base font-semibold text-white">Biblioteca de templates</h3>
-            <p className="mt-1 text-xs text-white/65">
+          <div className="mt-5 border-t pf-v2-b pt-5">
+            <h3 className="text-base font-semibold pf-v2-t">Biblioteca de templates</h3>
+            <p className="mt-1 text-xs pf-v2-t-70">
               Gestiona y edita tus templates guardados.
             </p>
 
             {templatesFiltrados.length === 0 ? (
-              <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] bg-[#0e1012] p-4 text-sm text-white/65">
+              <div className="mt-3 rounded-xl border border-dashed pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                 No hay templates guardados con ese filtro.
               </div>
             ) : (
@@ -3525,14 +3524,14 @@ export default function SemanaPage() {
                       key={template.id}
                       className={`rounded-xl border p-4 transition ${
                         isSelected
-                          ? "border-cyan-200/60 bg-cyan-500/[0.08]"
-                          : "border-white/[0.07] bg-[#0e1012]/35 hover:border-cyan-300/30"
+                          ? "pf-v2-b-accent pf-v2-s-accent"
+                          : "pf-v2-b pf-v2-s-deep"
                       }`}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-base font-semibold text-white">{template.nombre}</p>
-                          <p className="mt-1 text-xs text-white/65">
+                          <p className="text-base font-semibold pf-v2-t">{template.nombre}</p>
+                          <p className="mt-1 text-xs pf-v2-t-70">
                             {template.descripcion || "Sin descripcion"}
                           </p>
 
@@ -3541,7 +3540,7 @@ export default function SemanaPage() {
                               {(template.etiquetas || []).map((tag) => (
                                 <span
                                   key={`${template.id}-${tag}`}
-                                  className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-100"
+                                  className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-1 text-[11px] pf-v2-t-accent"
                                 >
                                   {tag}
                                 </span>
@@ -3549,7 +3548,7 @@ export default function SemanaPage() {
                             </div>
                           ) : null}
 
-                          <p className="mt-2 text-[11px] text-white/40">
+                          <p className="mt-2 text-[11px] pf-v2-t-40">
                             {totalBloques} bloques · {totalDias} dias activos ·
                             actualizado {new Date(template.updatedAt || template.createdAt || 0).toLocaleString("es-AR")}
                           </p>
@@ -3561,8 +3560,8 @@ export default function SemanaPage() {
                             onClick={() => setSelectedTemplateId(template.id)}
                             className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                               isSelected
-                                ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                : "border-white/[0.1] bg-white/5 text-white/85 hover:bg-white/10"
+                                ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                             }`}
                           >
                             {isSelected ? "Viendo" : "Ver template"}
@@ -3571,21 +3570,21 @@ export default function SemanaPage() {
                             type="button"
                             onClick={() => asignarTemplateAAlumno(template.id)}
                             disabled={!alumnoDestinoActivo}
-                            className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             Asignar a alumno
                           </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={() => editarTemplate(template.id)}
-                            className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                            className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                           >
                             Editar
                           </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={() => eliminarPlantilla(template.id)}
-                            className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100"
+                            className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger"
                           >
                             Eliminar
                           </ReliableActionButton>
@@ -3597,16 +3596,16 @@ export default function SemanaPage() {
               </div>
 
               {selectedTemplate ? (
-                <section className="mt-5 rounded-2xl border-2 border-cyan-300/30 bg-cyan-500/[0.06] p-4">
+                <section className="mt-5 rounded-2xl border-2 pf-v2-b-accent pf-v2-s-accent p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Vista template</p>
-                      <h4 className="mt-1 text-lg font-black text-white">{selectedTemplate.nombre}</h4>
-                      <p className="mt-1 text-xs text-white/65">
+                      <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-accent">Vista template</p>
+                      <h4 className="mt-1 text-lg font-black pf-v2-t">{selectedTemplate.nombre}</h4>
+                      <p className="mt-1 text-xs pf-v2-t-70">
                         Previsualizacion solo lectura en categoria. No entra en modo edicion.
                       </p>
                     </div>
-                    <span className="rounded-full border border-white/[0.1] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/65">
+                    <span className="rounded-full border pf-v2-b-hi px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                       {(selectedTemplate.semanas || []).length} semanas
                     </span>
                   </div>
@@ -3619,8 +3618,8 @@ export default function SemanaPage() {
                         onClick={() => setTemplatePreviewWeekId(week.id)}
                         className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
                           templatePreviewWeekId === week.id
-                            ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                            : "border-white/[0.1] bg-white/5 text-white/85 hover:bg-white/10"
+                            ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                            : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                         }`}
                       >
                         {week.nombre || "Semana"}
@@ -3629,9 +3628,9 @@ export default function SemanaPage() {
                   </div>
 
                   {selectedTemplatePreviewWeek ? (
-                    <div className="mt-3 rounded-xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-3">
-                      <p className="text-sm font-semibold text-white">{selectedTemplatePreviewWeek.nombre}</p>
-                      <p className="mt-1 text-xs text-white/65">
+                    <div className="mt-3 rounded-xl border pf-v2-b-violet pf-v2-s-violet p-3">
+                      <p className="text-sm font-semibold pf-v2-t">{selectedTemplatePreviewWeek.nombre}</p>
+                      <p className="mt-1 text-xs pf-v2-t-70">
                         {selectedTemplatePreviewWeek.objetivo || "Sin objetivo semanal"}
                       </p>
 
@@ -3643,8 +3642,8 @@ export default function SemanaPage() {
                             onClick={() => setTemplatePreviewDayId(day.id)}
                             className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
                               templatePreviewDayId === day.id
-                                ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                : "border-white/[0.1] bg-white/5 text-white/85 hover:bg-white/10"
+                                ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                             }`}
                           >
                             {day.dia || "Dia"}
@@ -3655,16 +3654,16 @@ export default function SemanaPage() {
                   ) : null}
 
                   {selectedTemplatePreviewDay ? (
-                    <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
+                    <div className="mt-3 rounded-xl border pf-v2-b pf-v2-s p-3">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <p className="text-xs uppercase tracking-[0.12em] text-cyan-100/85">Dia</p>
-                          <p className="mt-1 text-base font-black text-white">{selectedTemplatePreviewDay.dia}</p>
-                          <p className="mt-1 text-sm text-white/75">
+                          <p className="text-xs uppercase tracking-[0.12em] pf-v2-t-accent">Dia</p>
+                          <p className="mt-1 text-base font-black pf-v2-t">{selectedTemplatePreviewDay.dia}</p>
+                          <p className="mt-1 text-sm pf-v2-t-70">
                             {selectedTemplatePreviewDay.planificacion || "Sin planificacion"}
                           </p>
                           {selectedTemplatePreviewDay.objetivo ? (
-                            <p className="mt-1 text-xs text-fuchsia-100/90">
+                            <p className="mt-1 text-xs pf-v2-t-violet">
                               Objetivo del dia: {selectedTemplatePreviewDay.objetivo}
                             </p>
                           ) : null}
@@ -3676,13 +3675,13 @@ export default function SemanaPage() {
                           {selectedTemplatePreviewDay.entrenamiento.bloques.map((block, blockIndex) => (
                             <article
                               key={`preview-block-${block.id || blockIndex}`}
-                              className="rounded-lg border border-white/[0.07] bg-[#0e1012] p-3"
+                              className="rounded-lg border pf-v2-b pf-v2-s-deep p-3"
                             >
-                              <p className="text-sm font-semibold text-white">
+                              <p className="text-sm font-semibold pf-v2-t">
                                 {block.titulo || `Bloque ${blockIndex + 1}`}
                               </p>
                               {block.objetivo ? (
-                                <p className="mt-1 text-xs text-white/65">{block.objetivo}</p>
+                                <p className="mt-1 text-xs pf-v2-t-70">{block.objetivo}</p>
                               ) : null}
 
                               {(block.ejercicios || []).length > 0 ? (
@@ -3694,22 +3693,22 @@ export default function SemanaPage() {
                                     return (
                                       <div
                                         key={`preview-exercise-${exercise.id || exerciseIndex}`}
-                                        className="rounded-md border border-white/[0.07] bg-white/[0.025] p-2"
+                                        className="rounded-md border pf-v2-b pf-v2-s p-2"
                                       >
-                                        <p className="text-xs font-semibold text-white">
+                                        <p className="text-xs font-semibold pf-v2-t">
                                           {getExerciseName(exercise.ejercicioId)}
                                         </p>
-                                        <p className="mt-1 text-[11px] text-white/65">
+                                        <p className="mt-1 text-[11px] pf-v2-t-70">
                                           {exercise.series || "-"} x {exercise.repeticiones || "-"} · Descanso {exercise.descanso || "-"} · Carga {exercise.carga || "-"}
                                         </p>
 
                                         {superSerieRows.length > 0 ? (
-                                          <div className="mt-2 space-y-1 border-t border-violet-300/25 pt-2">
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-100">Super serie</p>
+                                          <div className="mt-2 space-y-1 border-t pf-v2-b-violet pt-2">
+                                            <p className="text-[10px] font-semibold uppercase tracking-wide pf-v2-t-violet">Super serie</p>
                                             {superSerieRows.map((superItem, superIndex) => (
                                               <p
                                                 key={`preview-super-${superItem.id || superIndex}`}
-                                                className="text-[11px] text-violet-100/90"
+                                                className="text-[11px] pf-v2-t-violet"
                                               >
                                                 {getExerciseName(superItem.ejercicioId)} · {superItem.series || "-"} x {superItem.repeticiones || "-"} · Descanso {superItem.descanso || "-"}
                                               </p>
@@ -3721,13 +3720,13 @@ export default function SemanaPage() {
                                   })}
                                 </div>
                               ) : (
-                                <p className="mt-2 text-xs text-white/40">Sin ejercicios en este bloque.</p>
+                                <p className="mt-2 text-xs pf-v2-t-40">Sin ejercicios en este bloque.</p>
                               )}
                             </article>
                           ))}
                         </div>
                       ) : (
-                        <p className="mt-3 rounded-lg border border-white/[0.07] bg-[#0e1012] p-3 text-sm text-white/65">
+                        <p className="mt-3 rounded-lg border pf-v2-b pf-v2-s-deep p-3 text-sm pf-v2-t-70">
                           Este dia no tiene entrenamiento cargado.
                         </p>
                       )}
@@ -3740,18 +3739,18 @@ export default function SemanaPage() {
           </div>
         ) : templatesTab === "buscar" ? (
           /* ── Buscar por alumno ───────────────────────────────────────── */
-          <div className="mt-5 border-t border-white/[0.07] pt-5">
-            <h3 className="text-base font-semibold text-white">Buscar alumno</h3>
-            <p className="mt-1 text-xs text-white/65">
+          <div className="mt-5 border-t pf-v2-b pt-5">
+            <h3 className="text-base font-semibold pf-v2-t">Buscar alumno</h3>
+            <p className="mt-1 text-xs pf-v2-t-70">
               Escribí el nombre para ir directo a la ficha del alumno.
             </p>
 
             {alumnoSearch.trim() === "" ? (
-              <div className="mt-4 rounded-xl border border-dashed border-white/[0.08] bg-[#0e1012] p-5 text-center text-sm text-white/40">
+              <div className="mt-4 rounded-xl border border-dashed pf-v2-b pf-v2-s-deep p-5 text-center text-sm pf-v2-t-40">
                 Empezá a escribir para buscar un alumno.
               </div>
             ) : alumnosFiltrados.length === 0 ? (
-              <div className="mt-4 rounded-xl border border-dashed border-white/[0.08] bg-[#0e1012] p-5 text-center text-sm text-white/40">
+              <div className="mt-4 rounded-xl border border-dashed pf-v2-b pf-v2-s-deep p-5 text-center text-sm pf-v2-t-40">
                 No se encontró ningún alumno con ese nombre.
               </div>
             ) : (
@@ -3764,17 +3763,17 @@ export default function SemanaPage() {
                     <a
                       key={alumno.nombre}
                       href={href}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#0e1012]/35 px-4 py-3 transition hover:border-cyan-300/40 hover:bg-cyan-500/[0.06]"
+                      className="flex items-center justify-between gap-3 rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-3 transition pf-v2-hover"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-white">{alumno.nombre}</p>
-                        <p className="mt-0.5 text-xs text-white/50">
+                        <p className="truncate text-sm font-semibold pf-v2-t">{alumno.nombre}</p>
+                        <p className="mt-0.5 text-xs pf-v2-t-50">
                           {plan
                             ? `Plan activo · ${plan.semanas?.length ?? 0} semana${(plan.semanas?.length ?? 0) !== 1 ? "s" : ""}`
                             : "Sin plan cargado"}
                         </p>
                       </div>
-                      <span className="shrink-0 rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
+                      <span className="shrink-0 rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent">
                         Ver ficha →
                       </span>
                     </a>
@@ -3806,12 +3805,12 @@ export default function SemanaPage() {
             }))}
           />
         ) : (
-          <div className="mt-5 space-y-7 rounded-[28px] bg-white/[0.02]/8 px-2 py-3 sm:px-3 sm:py-4">
-            <div className="rounded-[18px] border-b border-cyan-300/25 pb-5">
-              <h2 className="text-2xl font-semibold text-white">{templateDraft.nombre || "NUEVO PLAN BLANCO"}</h2>
+          <div className="mt-5 space-y-7 rounded-[28px] pf-v2-s px-2 py-3 sm:px-3 sm:py-4">
+            <div className="rounded-[18px] border-b pf-v2-b-accent pb-5">
+              <h2 className="text-2xl font-semibold pf-v2-t">{templateDraft.nombre || "NUEVO PLAN BLANCO"}</h2>
 
               <div className="mt-3 space-y-3">
-                <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                   Titulo
                   <input
                     ref={templateNameInputRef}
@@ -3822,7 +3821,7 @@ export default function SemanaPage() {
                   />
                 </label>
 
-                <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                   Etiquetas
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                     <input
@@ -3834,7 +3833,7 @@ export default function SemanaPage() {
                     <ReliableActionButton
                       type="button"
                       onClick={agregarTemplateTag}
-                      className="rounded-xl border border-cyan-300/30 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100"
+                      className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-sm font-semibold pf-v2-t-accent"
                     >
                       + Agregar
                     </ReliableActionButton>
@@ -3849,7 +3848,7 @@ export default function SemanaPage() {
                       key={`draft-tag-${tag}`}
                       type="button"
                       onClick={() => eliminarTemplateTag(tag)}
-                      className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-100"
+                      className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-1 text-[11px] pf-v2-t-accent"
                     >
                       {tag} x
                     </ReliableActionButton>
@@ -3857,7 +3856,7 @@ export default function SemanaPage() {
                 </div>
               ) : null}
 
-              <label className="mt-3 block space-y-1 text-xs uppercase tracking-wide text-white/65">
+              <label className="mt-3 block space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                 Comentarios / descripcion
                 <textarea
                   value={templateDraft.descripcion || ""}
@@ -3871,8 +3870,8 @@ export default function SemanaPage() {
 
             <div className="space-y-5 rounded-[20px] bg-transparent p-0">
               <div className="hidden pb-5">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-200/85">Semanas</p>
-                <p className="mt-1 text-xs text-white/40">Estructura general del template.</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] pf-v2-t-accent">Semanas</p>
+                <p className="mt-1 text-xs pf-v2-t-40">Estructura general del template.</p>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {templateDraft.semanas.map((week) => (
@@ -3882,8 +3881,8 @@ export default function SemanaPage() {
                       onClick={() => setTemplateDraftWeekId(week.id)}
                       className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                         templateDraftWeekId === week.id
-                          ? "bg-cyan-300 text-slate-950 shadow-[0_8px_20px_-12px_rgba(34,211,238,0.9)]"
-                          : "bg-[#0e1012] text-white/75 hover:bg-[#0e1012]/70"
+                          ? "pf-v2-s-accent pf-v2-t"
+                          : "pf-v2-s-deep pf-v2-t-70 pf-v2-hover"
                       }`}
                     >
                       {week.nombre}
@@ -3892,7 +3891,7 @@ export default function SemanaPage() {
                   <ReliableActionButton
                     type="button"
                     onClick={agregarSemanaTemplate}
-                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                   >
                     + Semana
                   </ReliableActionButton>
@@ -3901,7 +3900,7 @@ export default function SemanaPage() {
                       type="button"
                       onClick={() => eliminarSemanaTemplate(templateDraftWeek.id)}
                       disabled={templateDraft.semanas.length <= 1}
-                      className="rounded-full border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:opacity-40"
+                      className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger disabled:opacity-40"
                     >
                       Eliminar semana
                     </ReliableActionButton>
@@ -3910,7 +3909,7 @@ export default function SemanaPage() {
 
                 {templateDraftWeek ? (
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                    <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                       Nombre semana
                       <input
                         value={templateDraftWeek.nombre}
@@ -3920,7 +3919,7 @@ export default function SemanaPage() {
                         className="pf-v2-input"
                       />
                     </label>
-                    <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                    <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                       Objetivo semanal
                       <input
                         value={templateDraftWeek.objetivo}
@@ -3935,9 +3934,9 @@ export default function SemanaPage() {
               </div>
 
               {templateDraftWeek ? (
-                <div className="mt-5 hidden border-t border-white/[0.07] pt-5">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-emerald-200/85">Dias</p>
-                  <p className="mt-1 text-xs text-white/40">Selecciona un dia y define su enfoque.</p>
+                <div className="mt-5 hidden border-t pf-v2-b pt-5">
+                  <p className="text-[11px] uppercase tracking-[0.16em] pf-v2-t-ok">Dias</p>
+                  <p className="mt-1 text-xs pf-v2-t-40">Selecciona un dia y define su enfoque.</p>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     {(templateDraftWeek.dias || []).map((day) => (
@@ -3947,8 +3946,8 @@ export default function SemanaPage() {
                         onClick={() => setTemplateDraftDayId(day.id)}
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                           templateDraftDayId === day.id
-                            ? "bg-emerald-300 text-slate-950 shadow-[0_8px_20px_-12px_rgba(16,185,129,0.9)]"
-                            : "bg-[#0e1012] text-white/75 hover:bg-[#0e1012]/70"
+                            ? "pf-v2-s-ok pf-v2-t"
+                            : "pf-v2-s-deep pf-v2-t-70 pf-v2-hover"
                         }`}
                       >
                         {day.dia}
@@ -3957,7 +3956,7 @@ export default function SemanaPage() {
                     <ReliableActionButton
                       type="button"
                       onClick={() => agregarDiaTemplate(templateDraftWeek.id)}
-                      className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                      className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                     >
                       + Dia
                     </ReliableActionButton>
@@ -3966,7 +3965,7 @@ export default function SemanaPage() {
                         type="button"
                         onClick={() => eliminarDiaTemplate(templateDraftWeek.id, templateDraftDay.id)}
                         disabled={templateDraftWeek.dias.length <= 1}
-                        className="rounded-full border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:opacity-40"
+                        className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger disabled:opacity-40"
                       >
                         Eliminar dia
                       </ReliableActionButton>
@@ -3976,7 +3975,7 @@ export default function SemanaPage() {
                   {templateDraftDay ? (
                     <div className="mt-3 space-y-3">
                       <div className="grid gap-3 md:grid-cols-3">
-                        <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                        <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                           Dia
                           <input
                             value={templateDraftDay.dia}
@@ -3988,10 +3987,10 @@ export default function SemanaPage() {
                                 e.target.value
                               )
                             }
-                            className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                            className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t"
                           />
                         </label>
-                        <label className="space-y-1 text-xs uppercase tracking-wide text-white/65 md:col-span-2">
+                        <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70 md:col-span-2">
                           Planificacion breve
                           <input
                             value={templateDraftDay.planificacion}
@@ -4003,12 +4002,12 @@ export default function SemanaPage() {
                                 e.target.value
                               )
                             }
-                            className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                            className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t"
                           />
                         </label>
                       </div>
 
-                      <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
+                      <label className="space-y-1 text-xs uppercase tracking-wide pf-v2-t-70">
                         Objetivo del dia
                         <textarea
                           value={templateDraftDay.objetivo || ""}
@@ -4021,25 +4020,25 @@ export default function SemanaPage() {
                             )
                           }
                           rows={2}
-                          className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                          className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t"
                         />
                       </label>
                     </div>
                   ) : (
-                    <p className="mt-3 text-xs text-white/40">
+                    <p className="mt-3 text-xs pf-v2-t-40">
                       Crea o selecciona un dia para editar su contenido.
                     </p>
                   )}
                 </div>
               ) : null}
 
-              <div className="mt-5 border-t border-cyan-300/20 pt-5">
+              <div className="mt-5 border-t pf-v2-b-accent pt-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-cyan-200/85">
+                    <p className="text-[11px] uppercase tracking-[0.16em] pf-v2-t-accent">
                       Entrenamiento
                     </p>
-                    <p className="mt-1 text-xs text-white/40">
+                    <p className="mt-1 text-xs pf-v2-t-40">
                       Bloques y ejercicios de la sesion del dia.
                     </p>
                   </div>
@@ -4048,7 +4047,7 @@ export default function SemanaPage() {
                     <ReliableActionButton
                       type="button"
                       onClick={() => agregarBloqueTemplate(templateDraftWeek.id, templateDraftDay.id)}
-                      className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100"
+                      className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent"
                     >
                       Nuevo bloque
                     </ReliableActionButton>
@@ -4056,7 +4055,7 @@ export default function SemanaPage() {
                 </div>
 
                 {!templateDraftWeek || !templateDraftDay ? (
-                  <p className="mt-3 text-xs text-white/40">
+                  <p className="mt-3 text-xs pf-v2-t-40">
                     Selecciona una semana y un dia para cargar el bloque de entrenamiento.
                   </p>
                 ) : !templateDraftDayEffectiveTraining ? (
@@ -4069,7 +4068,7 @@ export default function SemanaPage() {
                         (training) => training
                       )
                     }
-                    className="mt-3 rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100"
+                    className="mt-3 rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent"
                   >
                     Crear estructura de entrenamiento para este dia
                   </ReliableActionButton>
@@ -4087,7 +4086,7 @@ export default function SemanaPage() {
                         return (
                           <article
                             key={block.id}
-                            className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/[0.07] pt-5" : "pt-2"}`}
+                            className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t pf-v2-b pt-5" : "pt-2"}`}
                           >
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               {blockTitleEdit?.blockId === block.id ? (
@@ -4110,7 +4109,7 @@ export default function SemanaPage() {
                                         setBlockTitleEdit(null);
                                       }
                                     }}
-                                    className="w-full rounded-lg border border-cyan-300/35 bg-[#0e1012] px-3 py-2 text-sm text-white md:flex-1"
+                                    className="w-full rounded-lg border pf-v2-b-accent pf-v2-s-deep px-3 py-2 text-sm pf-v2-t md:flex-1"
                                     placeholder="Nombre bloque"
                                   />
                                   <ReliableActionButton
@@ -4122,20 +4121,20 @@ export default function SemanaPage() {
                                         block.id
                                       )
                                     }
-                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-100"
+                                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2.5 py-1 text-[11px] font-semibold pf-v2-t-accent"
                                   >
                                     Guardar
                                   </ReliableActionButton>
                                   <ReliableActionButton
                                     type="button"
                                     onClick={() => setBlockTitleEdit(null)}
-                                    className="rounded-full border border-white/[0.1] bg-[#0e1012] px-2.5 py-1 text-[11px] font-semibold text-white/75"
+                                    className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-2.5 py-1 text-[11px] font-semibold pf-v2-t-70"
                                   >
                                     Cancelar
                                   </ReliableActionButton>
                                 </div>
                               ) : (
-                                <p className="text-sm font-semibold text-white">{block.titulo}</p>
+                                <p className="text-sm font-semibold pf-v2-t">{block.titulo}</p>
                               )}
 
                               <div className="relative flex items-center gap-2">
@@ -4148,7 +4147,7 @@ export default function SemanaPage() {
                                       block.id
                                     )
                                   }
-                                  className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-100"
+                                  className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-1 text-[11px] font-semibold pf-v2-t-accent"
                                 >
                                   Agregar ejercicio
                                 </ReliableActionButton>
@@ -4160,20 +4159,20 @@ export default function SemanaPage() {
                                       current === block.id ? null : block.id
                                     );
                                   }}
-                                  className="h-7 w-7 rounded-full border border-white/[0.1] bg-[#0e1012] p-0 text-sm font-semibold text-white/85"
+                                  className="h-7 w-7 rounded-full border pf-v2-b-hi pf-v2-s-deep p-0 text-sm font-semibold pf-v2-t"
                                 >
                                   ⋯
                                 </ReliableActionButton>
 
                                 {blockMenuOpenId === block.id ? (
-                                  <div className="absolute right-0 top-10 z-20 min-w-[220px] rounded-xl border border-white/10 bg-[#111417]/95 p-2 shadow-2xl">
+                                  <div className="absolute right-0 top-10 z-20 min-w-[220px] rounded-xl border pf-v2-b pf-v2-s-deep p-2 shadow-2xl">
                                     <ReliableActionButton
                                       type="button"
                                       onClick={() => {
                                         setBlockMenuOpenId(null);
                                         setBlockTitleEdit({ blockId: block.id, value: block.titulo });
                                       }}
-                                      className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-white/85 hover:bg-white/10"
+                                      className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold pf-v2-t pf-v2-hover"
                                     >
                                       Editar nombre del bloque
                                     </ReliableActionButton>
@@ -4185,7 +4184,7 @@ export default function SemanaPage() {
                                           current === block.id ? null : block.id
                                         );
                                       }}
-                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-white/85 hover:bg-white/10"
+                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold pf-v2-t pf-v2-hover"
                                     >
                                       Configurar grilla plan
                                     </ReliableActionButton>
@@ -4205,7 +4204,7 @@ export default function SemanaPage() {
                                           block.id
                                         );
                                       }}
-                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-white/85 hover:bg-white/10"
+                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold pf-v2-t pf-v2-hover"
                                     >
                                       Duplicar bloque
                                     </ReliableActionButton>
@@ -4225,7 +4224,7 @@ export default function SemanaPage() {
                                           block.id
                                         );
                                       }}
-                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-200 hover:bg-rose-500/15"
+                                      className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-semibold pf-v2-t-danger pf-v2-hover"
                                     >
                                       Eliminar bloque
                                     </ReliableActionButton>
@@ -4235,11 +4234,11 @@ export default function SemanaPage() {
                             </div>
 
                             {blockGridConfigOpenId === block.id ? (
-                              <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-2 pl-3 pr-1.5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-white/65">
+                              <div className="mt-3 border-l-2 pf-v2-b-accent pf-v2-s-accent py-2 pl-3 pr-1.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-70">
                                   Configuracion grilla plan:
                                 </p>
-                                <p className="mt-1 text-xs text-white/40">
+                                <p className="mt-1 text-xs pf-v2-t-40">
                                   Series, repeticiones, descanso y carga kg son columnas base. El resto es
                                   opcional.
                                 </p>
@@ -4248,22 +4247,22 @@ export default function SemanaPage() {
                                   <input
                                     value="Series:"
                                     readOnly
-                                    className="w-full rounded border border-white/[0.1] bg-[#0e1012] px-2 py-1.5 text-xs text-white/75"
+                                    className="w-full rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t-70"
                                   />
                                   <input
                                     value="Repeticiones:"
                                     readOnly
-                                    className="w-full rounded border border-white/[0.1] bg-[#0e1012] px-2 py-1.5 text-xs text-white/75"
+                                    className="w-full rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t-70"
                                   />
                                   <input
                                     value="Descanso:"
                                     readOnly
-                                    className="w-full rounded border border-white/[0.1] bg-[#0e1012] px-2 py-1.5 text-xs text-white/75"
+                                    className="w-full rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t-70"
                                   />
                                   <input
                                     value="Carga kg:"
                                     readOnly
-                                    className="w-full rounded border border-white/[0.1] bg-[#0e1012] px-2 py-1.5 text-xs text-white/75"
+                                    className="w-full rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t-70"
                                   />
 
                                   {blockGridColumns.map((spec, specIndex) => (
@@ -4279,7 +4278,7 @@ export default function SemanaPage() {
                                             e.target.value
                                           )
                                         }
-                                        className="w-full rounded border border-white/[0.1] bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                        className="w-full rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                         placeholder={`Campo ${specIndex + 1}`}
                                       />
                                       <ReliableActionButton
@@ -4292,7 +4291,7 @@ export default function SemanaPage() {
                                             specIndex
                                           )
                                         }
-                                        className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                                        className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                                       >
                                         x
                                       </ReliableActionButton>
@@ -4310,14 +4309,14 @@ export default function SemanaPage() {
                                         block.id
                                       )
                                     }
-                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-xs font-semibold pf-v2-t-accent"
                                   >
                                     Nuevo
                                   </ReliableActionButton>
                                   <ReliableActionButton
                                     type="button"
                                     onClick={() => setBlockGridConfigOpenId(null)}
-                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-xs font-semibold pf-v2-t-accent"
                                   >
                                     Aceptar
                                   </ReliableActionButton>
@@ -4337,7 +4336,7 @@ export default function SemanaPage() {
                                     e.target.value
                                   )
                                 }
-                                className="w-full border-b border-white/[0.1] bg-transparent px-0 py-2 text-sm text-white placeholder:text-white/35 focus:border-white/[0.2] focus:outline-none"
+                                className="w-full border-b pf-v2-b-hi bg-transparent px-0 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                                 placeholder="Objetivo bloque"
                               />
                             </div>
@@ -4360,33 +4359,33 @@ export default function SemanaPage() {
                                     className={`relative px-1 py-2.5 ${
                                       hasSuperSerieGroup
                                         ? "bg-transparent"
-                                        : "border-b border-white/[0.07] last:border-b-0"
+                                        : "border-b pf-v2-b last:border-b-0"
                                     }`}
                                   >
                                     {hasSuperSerieGroup ? (
                                       <div className="mb-1.5 flex items-center gap-2">
-                                        <span className="h-5 w-[2px] rounded-full bg-violet-300/75" />
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-100">
+                                        <span className="h-5 w-[2px] rounded-full pf-v2-s-violet" />
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-violet">
                                           Super serie 🔥
                                         </p>
-                                        <span className="h-5 w-[2px] rounded-full bg-violet-300/45" />
+                                        <span className="h-5 w-[2px] rounded-full pf-v2-s-violet" />
                                       </div>
                                     ) : null}
 
                                     {hasSuperSerieGroup ? (
-                                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100/90">
+                                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide pf-v2-t-violet">
                                         Inicio super serie
                                       </p>
                                     ) : null}
 
                                     <div
-                                      className={`${exerciseRowGridClass} ${
+                                      className={`${exerciseRowGridClass}${
                                         hasSuperSerieGroup
-                                          ? "border-l-2 border-violet-300/35 pl-2.5 py-1.5"
+                                          ? "border-l-2 pf-v2-b-violet pl-2.5 py-1.5"
                                           : "pl-0.5"
                                       }`}
                                     >
-                                      <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.025]">
+                                      <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border pf-v2-b pf-v2-s">
                                         {thumb ? (
                                           <img
                                             src={thumb}
@@ -4394,14 +4393,14 @@ export default function SemanaPage() {
                                             className="h-full w-full object-cover"
                                           />
                                         ) : (
-                                          <div className="flex h-full items-center justify-center text-[10px] text-white/40">
+                                          <div className="flex h-full items-center justify-center text-[10px] pf-v2-t-40">
                                             Sin preview
                                           </div>
                                         )}
                                       </div>
 
                                       <label
-                                        className={`relative text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-1 ${
+                                        className={`relative text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-1 ${
                                           hasSuperSerieGroup ? "lg:col-span-1" : "lg:col-span-2"
                                         }`}
                                       >
@@ -4431,13 +4430,13 @@ export default function SemanaPage() {
                                             }
                                           }}
                                           placeholder="Seleccione ejercicio"
-                                          className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                          className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                         />
 
                                         {exerciseSelectorOpenId === exercise.id ? (
-                                          <div className="absolute left-0 top-[68px] z-20 max-h-72 w-full overflow-y-auto rounded-lg border border-white/[0.08] bg-[#0e1012]/95 p-1 shadow-2xl">
+                                          <div className="absolute left-0 top-[68px] z-20 max-h-72 w-full overflow-y-auto rounded-lg border pf-v2-b pf-v2-s-deep p-1 shadow-2xl">
                                             {selectorItems.length === 0 ? (
-                                              <p className="px-2 py-2 text-xs text-white/40">Sin resultados.</p>
+                                              <p className="px-2 py-2 text-xs pf-v2-t-40">Sin resultados.</p>
                                             ) : (
                                               selectorItems.map((item, itemIndex) => {
                                                 const optionThumb = getExerciseThumbnail(item.videoUrl);
@@ -4454,11 +4453,11 @@ export default function SemanaPage() {
                                                     }
                                                     className={`grid w-full grid-cols-[42px_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-1.5 text-left transition ${
                                                       itemIndex === 0
-                                                        ? "bg-cyan-500/20 text-cyan-100"
-                                                        : "text-white/75 hover:bg-white/10"
+                                                        ? "pf-v2-s-accent pf-v2-t-accent"
+                                                        : "pf-v2-t-70 pf-v2-hover"
                                                     }`}
                                                   >
-                                                    <div className="h-9 w-[42px] overflow-hidden rounded border border-white/[0.07] bg-[#0e1012]">
+                                                    <div className="h-9 w-[42px] overflow-hidden rounded border pf-v2-b pf-v2-s-deep">
                                                       {optionThumb ? (
                                                         <img
                                                           src={optionThumb}
@@ -4466,14 +4465,14 @@ export default function SemanaPage() {
                                                           className="h-full w-full object-cover"
                                                         />
                                                       ) : (
-                                                        <div className="flex h-full items-center justify-center text-[9px] text-white/40">
+                                                        <div className="flex h-full items-center justify-center text-[9px] pf-v2-t-40">
                                                           Sin
                                                         </div>
                                                       )}
                                                     </div>
                                                     <div>
                                                       <p className="line-clamp-1 text-xs font-semibold">{item.nombre}</p>
-                                                      <p className="text-[10px] text-white/40">
+                                                      <p className="text-[10px] pf-v2-t-40">
                                                         {itemIndex === 0
                                                           ? "Presione enter para asignar"
                                                           : item.categoria || "Ejercicio"}
@@ -4487,7 +4486,7 @@ export default function SemanaPage() {
                                         ) : null}
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                         Series
                                         <input
                                           value={exercise.series}
@@ -4501,11 +4500,11 @@ export default function SemanaPage() {
                                               event.target.value
                                             )
                                           }
-                                          className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                          className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                         Repeticiones
                                         <input
                                           value={exercise.repeticiones}
@@ -4519,11 +4518,11 @@ export default function SemanaPage() {
                                               event.target.value
                                             )
                                           }
-                                          className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                          className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                         Descanso
                                         <input
                                           value={exercise.descanso}
@@ -4537,11 +4536,11 @@ export default function SemanaPage() {
                                               event.target.value
                                             )
                                           }
-                                          className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                          className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                         />
                                       </label>
 
-                                      <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                      <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                         Carga (kg)
                                         <input
                                           value={exercise.carga}
@@ -4555,14 +4554,14 @@ export default function SemanaPage() {
                                               event.target.value
                                             )
                                           }
-                                          className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                          className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                         />
                                       </label>
 
                                       {optionalGridColumns.map((spec, specIndex) => (
                                         <label
                                           key={`${exercise.id}-optional-col-${spec.id}`}
-                                          className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1"
+                                          className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1"
                                         >
                                           {spec.nombre}
                                           <input
@@ -4577,7 +4576,7 @@ export default function SemanaPage() {
                                                 event.target.value
                                               )
                                             }
-                                            className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                            className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                             placeholder={`Campo ${specIndex + 1}`}
                                           />
                                         </label>
@@ -4595,7 +4594,7 @@ export default function SemanaPage() {
                                             exercise.id
                                           )
                                         }
-                                        className={`${hasSeriesBreakdown ? "text-rose-300" : "text-cyan-300"}`}
+                                        className={`${hasSeriesBreakdown ? "pf-v2-t-danger" : "pf-v2-t-accent"}`}
                                       >
                                         {hasSeriesBreakdown ? "Unificar serie" : "Desglosar serie"}
                                       </ReliableActionButton>
@@ -4610,7 +4609,7 @@ export default function SemanaPage() {
                                           )
                                         }
                                         disabled={!exercise.ejercicioId}
-                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                        className="pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-40"
                                       >
                                         Agregar ejercicio super-serie
                                       </ReliableActionButton>
@@ -4625,7 +4624,7 @@ export default function SemanaPage() {
                                           )
                                         }
                                         disabled={!exercise.ejercicioId}
-                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                        className="pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-40"
                                       >
                                         Ver pesos
                                       </ReliableActionButton>
@@ -4640,7 +4639,7 @@ export default function SemanaPage() {
                                           )
                                         }
                                         disabled={!exercise.ejercicioId}
-                                        className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                        className="pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-40"
                                       >
                                         Registrar peso
                                       </ReliableActionButton>
@@ -4654,15 +4653,15 @@ export default function SemanaPage() {
                                             exercise.id
                                           )
                                         }
-                                        className="text-rose-300"
+                                        className="pf-v2-t-danger"
                                       >
                                         Eliminar
                                       </ReliableActionButton>
                                     </div>
 
                                     {hasSeriesBreakdown ? (
-                                      <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-1.5 pl-2.5 pr-1.5">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-100">
+                                      <div className="mt-3 border-l-2 pf-v2-b-accent pf-v2-s-accent py-1.5 pl-2.5 pr-1.5">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-accent">
                                           Desglose de series
                                         </p>
                                         <div className="mt-2 space-y-2">
@@ -4671,7 +4670,7 @@ export default function SemanaPage() {
                                               key={setRow.id}
                                               className="grid gap-2 md:grid-cols-[auto_repeat(5,minmax(0,1fr))]"
                                             >
-                                              <span className="rounded-md border border-white/[0.08] bg-[#0e1012] px-2 py-2 text-xs text-white/75">
+                                              <span className="rounded-md border pf-v2-b pf-v2-s-deep px-2 py-2 text-xs pf-v2-t-70">
                                                 S{setRow.serie}
                                               </span>
                                               <input
@@ -4688,7 +4687,7 @@ export default function SemanaPage() {
                                                   )
                                                 }
                                                 placeholder="Rep"
-                                                className="rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                className="rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                               />
                                               <input
                                                 value={setRow.descanso}
@@ -4704,7 +4703,7 @@ export default function SemanaPage() {
                                                   )
                                                 }
                                                 placeholder="Desc"
-                                                className="rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                className="rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                               />
                                               <input
                                                 value={setRow.rir}
@@ -4720,7 +4719,7 @@ export default function SemanaPage() {
                                                   )
                                                 }
                                                 placeholder="RIR"
-                                                className="rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                className="rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                               />
                                               <input
                                                 value={setRow.cargaKg}
@@ -4736,7 +4735,7 @@ export default function SemanaPage() {
                                                   )
                                                 }
                                                 placeholder="Carga kg"
-                                                className="rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                className="rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                               />
                                               <input
                                                 value={setRow.observaciones}
@@ -4752,7 +4751,7 @@ export default function SemanaPage() {
                                                   )
                                                 }
                                                 placeholder="Obs"
-                                                className="rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                className="rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                               />
                                             </div>
                                           ))}
@@ -4772,10 +4771,10 @@ export default function SemanaPage() {
                                           return (
                                             <div
                                               key={superItem.id}
-                                              className="space-y-2 border-l-2 border-violet-300/35 py-1.5 pl-2.5"
+                                              className="space-y-2 border-l-2 pf-v2-b-violet py-1.5 pl-2.5"
                                             >
                                               <div className="grid gap-y-2 gap-x-1.5 md:grid-cols-[104px_minmax(0,1fr)] lg:grid-cols-[104px_minmax(0,1.35fr)_repeat(4,minmax(0,0.95fr))]">
-                                                <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border border-violet-200/20 bg-white/[0.025]">
+                                                <div className="h-[72px] w-[104px] overflow-hidden rounded-xl border pf-v2-b-violet pf-v2-s">
                                                   {superThumb ? (
                                                     <img
                                                       src={superThumb}
@@ -4783,13 +4782,13 @@ export default function SemanaPage() {
                                                       className="h-full w-full object-cover"
                                                     />
                                                   ) : (
-                                                    <div className="flex h-full items-center justify-center text-[10px] text-white/40">
+                                                    <div className="flex h-full items-center justify-center text-[10px] pf-v2-t-40">
                                                       Sin preview
                                                     </div>
                                                   )}
                                                 </div>
 
-                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 lg:col-span-1">
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 lg:col-span-1">
                                                   Ejercicio
                                                   <select
                                                     value={superItem.ejercicioId}
@@ -4804,7 +4803,7 @@ export default function SemanaPage() {
                                                         event.target.value
                                                       )
                                                     }
-                                                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                                                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                                                   >
                                                     <option value="">Seleccione ejercicio</option>
                                                     {ejercicios.map((item) => (
@@ -4815,7 +4814,7 @@ export default function SemanaPage() {
                                                   </select>
                                                 </label>
 
-                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                                   Series
                                                   <input
                                                     value={superItem.series}
@@ -4830,11 +4829,11 @@ export default function SemanaPage() {
                                                         event.target.value
                                                       )
                                                     }
-                                                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                                   />
                                                 </label>
 
-                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                                   Repeticiones
                                                   <input
                                                     value={superItem.repeticiones}
@@ -4849,11 +4848,11 @@ export default function SemanaPage() {
                                                         event.target.value
                                                       )
                                                     }
-                                                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                                   />
                                                 </label>
 
-                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                                   Descanso
                                                   <input
                                                     value={superItem.descanso}
@@ -4868,11 +4867,11 @@ export default function SemanaPage() {
                                                         event.target.value
                                                       )
                                                     }
-                                                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                                   />
                                                 </label>
 
-                                                <label className="text-[11px] font-semibold uppercase tracking-wide text-white/65 md:col-span-2 lg:col-span-1">
+                                                <label className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70 md:col-span-2 lg:col-span-1">
                                                   Carga (kg)
                                                   <input
                                                     value={superItem.carga}
@@ -4887,7 +4886,7 @@ export default function SemanaPage() {
                                                         event.target.value
                                                       )
                                                     }
-                                                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-xs text-white"
+                                                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-xs pf-v2-t"
                                                   />
                                                 </label>
                                               </div>
@@ -4896,7 +4895,7 @@ export default function SemanaPage() {
                                                 <ReliableActionButton
                                                   type="button"
                                                   disabled
-                                                  className="text-white/35 disabled:cursor-not-allowed disabled:opacity-70"
+                                                  className="pf-v2-t-40 disabled:cursor-not-allowed disabled:opacity-70"
                                                 >
                                                   Desglosar serie
                                                 </ReliableActionButton>
@@ -4911,7 +4910,7 @@ export default function SemanaPage() {
                                                     )
                                                   }
                                                   disabled={!superCanTrackWeight}
-                                                  className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                                  className="pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-40"
                                                 >
                                                   Ver pesos
                                                 </ReliableActionButton>
@@ -4926,7 +4925,7 @@ export default function SemanaPage() {
                                                     )
                                                   }
                                                   disabled={!superCanTrackWeight}
-                                                  className="text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                                                  className="pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-40"
                                                 >
                                                   Registrar peso
                                                 </ReliableActionButton>
@@ -4941,7 +4940,7 @@ export default function SemanaPage() {
                                                       superItem.id
                                                     )
                                                   }
-                                                  className="text-rose-300"
+                                                  className="pf-v2-t-danger"
                                                 >
                                                   Eliminar
                                                 </ReliableActionButton>
@@ -4953,7 +4952,7 @@ export default function SemanaPage() {
                                     ) : null}
 
                                     {hasSuperSerieGroup ? (
-                                      <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-violet-100/90">
+                                      <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide pf-v2-t-violet">
                                         Fin super serie
                                       </p>
                                     ) : null}
@@ -4970,11 +4969,11 @@ export default function SemanaPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-3 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02]/70 px-2.5 py-1.5 backdrop-blur-md relative">
+            <div className="sticky bottom-3 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-full border pf-v2-b pf-v2-s px-2.5 py-1.5 backdrop-blur-md relative">
               <ReliableActionButton
                 type="button"
                 onClick={guardarTemplateActual}
-                className="flex-1 rounded-xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-[0_12px_28px_-16px_rgba(74,222,128,0.75)] sm:flex-none"
+                className="flex-1 rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t sm:flex-none"
               >
                 Guardar template
               </ReliableActionButton>
@@ -4982,20 +4981,20 @@ export default function SemanaPage() {
               <ReliableActionButton
                 type="button"
                 onClick={() => setTemplateMenuOpen((prev) => !prev)}
-                className="rounded-full border border-white/[0.1] bg-[#0e1012]/85 px-3 py-2 text-sm font-semibold text-white/85"
+                className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t"
               >
                 ▾
               </ReliableActionButton>
 
               {templateMenuOpen ? (
-                <div className="absolute bottom-full left-0 z-20 mb-2 min-w-[260px] rounded-xl border border-white/10 bg-[#111417]/95 p-2 shadow-2xl">
+                <div className="absolute bottom-full left-0 z-20 mb-2 min-w-[260px] rounded-xl border pf-v2-b pf-v2-s-deep p-2 shadow-2xl">
                   <ReliableActionButton
                     type="button"
                     onClick={() => {
                       setTemplateMenuOpen(false);
                       templateNameInputRef.current?.focus();
                     }}
-                    className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/85 hover:bg-white/10"
+                    className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                   >
                     Editar nombre
                   </ReliableActionButton>
@@ -5005,7 +5004,7 @@ export default function SemanaPage() {
                       setFeedbackConfigOpen((prev) => !prev);
                       setTemplateMenuOpen(false);
                     }}
-                    className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/85 hover:bg-white/10"
+                    className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                   >
                     Configurar feedback post sesion
                   </ReliableActionButton>
@@ -5019,7 +5018,7 @@ export default function SemanaPage() {
                         notifyWarning("Guarda primero el template para poder eliminarlo");
                       }
                     }}
-                    className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15"
+                    className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-danger pf-v2-hover"
                   >
                     Eliminar
                   </ReliableActionButton>
@@ -5028,27 +5027,27 @@ export default function SemanaPage() {
             </div>
 
             {feedbackConfigOpen ? (
-              <div className="border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-3 pl-3 pr-1.5">
-                <p className="text-sm font-semibold text-white">Cuestionario de finalizacion</p>
-                <p className="mt-1 text-xs text-white/65">
+              <div className="border-l-2 pf-v2-b-accent pf-v2-s-accent py-3 pl-3 pr-1.5">
+                <p className="text-sm font-semibold pf-v2-t">Cuestionario de finalizacion</p>
+                <p className="mt-1 text-xs pf-v2-t-70">
                   Agrega, edita o elimina preguntas para el feedback post sesion.
                 </p>
 
                 <div className="mt-3 space-y-2">
                   {(templateDraft.feedbackQuestions || []).length === 0 ? (
-                    <p className="text-xs text-white/40">Sin preguntas configuradas.</p>
+                    <p className="text-xs pf-v2-t-40">Sin preguntas configuradas.</p>
                   ) : (
                     (templateDraft.feedbackQuestions || []).map((question, index) => (
                       <div key={`feedback-${index}`} className="flex flex-wrap gap-2">
                         <input
                           value={question}
                           onChange={(e) => actualizarFeedbackQuestion(index, e.target.value)}
-                          className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white md:flex-1"
+                          className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t md:flex-1"
                         />
                         <ReliableActionButton
                           type="button"
                           onClick={() => eliminarFeedbackQuestion(index)}
-                          className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-100"
+                          className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger"
                         >
                           Eliminar
                         </ReliableActionButton>
@@ -5062,12 +5061,12 @@ export default function SemanaPage() {
                     value={templateFeedbackInput}
                     onChange={(e) => setTemplateFeedbackInput(e.target.value)}
                     placeholder="Nueva pregunta..."
-                    className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white md:flex-1"
+                    className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t md:flex-1"
                   />
                   <ReliableActionButton
                     type="button"
                     onClick={agregarFeedbackQuestion}
-                    className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100"
+                    className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent"
                   >
                     + Agregar
                   </ReliableActionButton>
@@ -5080,7 +5079,7 @@ export default function SemanaPage() {
 
       {weightViewer ? (
         <section
-          className="fixed inset-0 z-40 flex items-start justify-center bg-white/[0.02]/85 p-4 sm:p-6"
+          className="fixed inset-0 z-40 flex items-start justify-center pf-v2-s p-4 sm:p-6"
           onClick={() => setWeightViewer(null)}
         >
           <div
@@ -5089,28 +5088,28 @@ export default function SemanaPage() {
           >
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-semibold text-white">Pesos</h2>
-                <p className="mt-1 text-xs text-white/65">
+                <h2 className="text-2xl font-semibold pf-v2-t">Pesos</h2>
+                <p className="mt-1 text-xs pf-v2-t-70">
                   {weightViewer.exerciseNombre} · {weightViewer.blockTitulo || "Bloque"}
                 </p>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={() => setWeightViewer(null)}
-                className="rounded-xl border border-white/[0.1] px-3 py-1.5 text-xs font-semibold text-white/75"
+                className="rounded-xl border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t-70"
               >
                 Cerrar
               </ReliableActionButton>
             </div>
 
             {weightViewerRows.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-[#111417] p-4 text-sm text-white/65">
+              <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                 No hay registros de peso para este ejercicio todavia.
               </p>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#111417]">
-                <table className="min-w-full text-xs text-white/75">
-                  <thead className="bg-white/[0.025] text-[11px] uppercase tracking-wide text-white/65">
+              <div className="overflow-x-auto rounded-xl border pf-v2-b pf-v2-s-deep">
+                <table className="min-w-full text-xs pf-v2-t-70">
+                  <thead className="pf-v2-s text-[11px] uppercase tracking-wide pf-v2-t-70">
                     <tr>
                       <th className="px-3 py-2 text-left">Fecha</th>
                       <th className="px-3 py-2 text-left">Nro. serie</th>
@@ -5125,7 +5124,7 @@ export default function SemanaPage() {
                     {weightViewerRows.map((row) => {
                       const isTemplateRow = templateWeightLogIds.has(row.id);
                       return (
-                        <tr key={row.id} className="border-t border-white/[0.07]">
+                        <tr key={row.id} className="border-t pf-v2-b">
                           <td className="px-3 py-2">{row.fecha || "-"}</td>
                           <td className="px-3 py-2">{row.nroSerie}</td>
                           <td className="px-3 py-2">{row.nroRep}</td>
@@ -5137,12 +5136,12 @@ export default function SemanaPage() {
                               <ReliableActionButton
                                 type="button"
                                 onClick={() => eliminarTemplatePeso(row.id)}
-                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                                className="rounded-md border pf-v2-b-danger pf-v2-s-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                               >
                                 Eliminar
                               </ReliableActionButton>
                             ) : (
-                              <span className="text-[11px] text-white/35">Sin accion</span>
+                              <span className="text-[11px] pf-v2-t-40">Sin accion</span>
                             )}
                           </td>
                         </tr>
@@ -5158,7 +5157,7 @@ export default function SemanaPage() {
 
       {weightRegister ? (
         <section
-          className="fixed inset-0 z-40 flex items-start justify-center bg-white/[0.02]/85 p-4 sm:p-6"
+          className="fixed inset-0 z-40 flex items-start justify-center pf-v2-s p-4 sm:p-6"
           onClick={() => setWeightRegister(null)}
         >
           <div
@@ -5167,29 +5166,29 @@ export default function SemanaPage() {
           >
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-semibold text-white">Registrar peso</h2>
-                <p className="mt-1 text-xs text-white/65">
+                <h2 className="text-2xl font-semibold pf-v2-t">Registrar peso</h2>
+                <p className="mt-1 text-xs pf-v2-t-70">
                   {weightRegister.exerciseNombre} · {weightRegister.blockTitulo || "Bloque"}
                 </p>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={() => setWeightRegister(null)}
-                className="rounded-xl border border-white/[0.1] px-3 py-1.5 text-xs font-semibold text-white/75"
+                className="rounded-xl border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t-70"
               >
                 Cerrar
               </ReliableActionButton>
             </div>
 
-            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+            <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
               <div className="mb-3 flex flex-wrap gap-2">
                 <ReliableActionButton
                   type="button"
                   onClick={() => setWeightRegisterScope("template")}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
                     weightRegisterScope === "template"
-                      ? "bg-cyan-300 text-slate-950"
-                      : "border border-white/[0.1] bg-white/5 text-white/75"
+                      ? "pf-v2-s-accent pf-v2-t"
+                      : "border pf-v2-b-hi pf-v2-s-hi pf-v2-t-70"
                   }`}
                 >
                   Solo template
@@ -5200,52 +5199,52 @@ export default function SemanaPage() {
                   disabled={!alumnoDestinoActivo}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
                     weightRegisterScope === "alumno"
-                      ? "bg-emerald-300 text-slate-950"
-                      : "border border-white/[0.1] bg-white/5 text-white/75"
-                  } disabled:cursor-not-allowed disabled:opacity-40`}
+                      ? "pf-v2-s-ok pf-v2-t"
+                      : "border pf-v2-b-hi pf-v2-s-hi pf-v2-t-70"
+                  }disabled:cursor-not-allowed disabled:opacity-40`}
                 >
                   Sincronizar con alumno
                 </ReliableActionButton>
               </div>
 
               <div className="grid gap-3 md:grid-cols-4">
-                <label className="text-xs uppercase tracking-wide text-white/65">
+                <label className="text-xs uppercase tracking-wide pf-v2-t-70">
                   Fecha del registro
                   <input
                     type="date"
                     value={weightForm.fecha}
                     onChange={(event) => setWeightForm((prev) => ({ ...prev, fecha: event.target.value }))}
-                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                   />
                 </label>
-                <label className="text-xs uppercase tracking-wide text-white/65">
+                <label className="text-xs uppercase tracking-wide pf-v2-t-70">
                   Nro serie
                   <input
                     value={weightForm.nroSerie}
                     onChange={(event) => setWeightForm((prev) => ({ ...prev, nroSerie: event.target.value }))}
-                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                   />
                 </label>
-                <label className="text-xs uppercase tracking-wide text-white/65">
+                <label className="text-xs uppercase tracking-wide pf-v2-t-70">
                   Nro rep
                   <input
                     value={weightForm.nroRep}
                     onChange={(event) => setWeightForm((prev) => ({ ...prev, nroRep: event.target.value }))}
-                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                   />
                 </label>
-                <label className="text-xs uppercase tracking-wide text-white/65">
+                <label className="text-xs uppercase tracking-wide pf-v2-t-70">
                   Peso
                   <input
                     value={weightForm.pesoKg}
                     onChange={(event) => setWeightForm((prev) => ({ ...prev, pesoKg: event.target.value }))}
-                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                   />
                 </label>
               </div>
 
               <div className="mt-3 grid gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-end">
-                <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/65">
+                <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide pf-v2-t-70">
                   Molestia?
                   <input
                     type="checkbox"
@@ -5257,28 +5256,28 @@ export default function SemanaPage() {
                   />
                 </label>
 
-                <label className="text-xs uppercase tracking-wide text-white/65">
+                <label className="text-xs uppercase tracking-wide pf-v2-t-70">
                   Comentario
                   <input
                     value={weightForm.comentario}
                     onChange={(event) => setWeightForm((prev) => ({ ...prev, comentario: event.target.value }))}
-                    className="mt-1 w-full rounded-md border border-white/[0.1] bg-[#0e1012] px-2 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-2 text-sm pf-v2-t"
                   />
                 </label>
 
                 <ReliableActionButton
                   type="button"
                   onClick={guardarRegistroPeso}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white"
+                  className="rounded-lg pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t"
                 >
                   Guardar
                 </ReliableActionButton>
               </div>
             </div>
 
-            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-[#111417]">
-              <table className="min-w-full text-xs text-white/75">
-                <thead className="bg-white/[0.025] text-[11px] uppercase tracking-wide text-white/65">
+            <div className="mt-4 overflow-x-auto rounded-xl border pf-v2-b pf-v2-s-deep">
+              <table className="min-w-full text-xs pf-v2-t-70">
+                <thead className="pf-v2-s text-[11px] uppercase tracking-wide pf-v2-t-70">
                   <tr>
                     <th className="px-3 py-2 text-left">Fecha</th>
                     <th className="px-3 py-2 text-left">Nro. serie</th>
@@ -5292,7 +5291,7 @@ export default function SemanaPage() {
                 <tbody>
                   {weightRegisterRows.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-3 text-white/40" colSpan={7}>
+                      <td className="px-3 py-3 pf-v2-t-40" colSpan={7}>
                         Sin registros para este ejercicio.
                       </td>
                     </tr>
@@ -5300,7 +5299,7 @@ export default function SemanaPage() {
                     weightRegisterRows.map((row) => {
                       const isTemplateRow = templateWeightLogIds.has(row.id);
                       return (
-                        <tr key={`register-row-${row.id}`} className="border-t border-white/[0.07]">
+                        <tr key={`register-row-${row.id}`} className="border-t pf-v2-b">
                           <td className="px-3 py-2">{row.fecha || "-"}</td>
                           <td className="px-3 py-2">{row.nroSerie}</td>
                           <td className="px-3 py-2">{row.nroRep}</td>
@@ -5312,12 +5311,12 @@ export default function SemanaPage() {
                               <ReliableActionButton
                                 type="button"
                                 onClick={() => eliminarTemplatePeso(row.id)}
-                                className="rounded-md border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                                className="rounded-md border pf-v2-b-danger pf-v2-s-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                               >
                                 Eliminar
                               </ReliableActionButton>
                             ) : (
-                              <span className="text-[11px] text-white/35">Sin accion</span>
+                              <span className="text-[11px] pf-v2-t-40">Sin accion</span>
                             )}
                           </td>
                         </tr>

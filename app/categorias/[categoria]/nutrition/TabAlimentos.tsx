@@ -96,38 +96,38 @@ function FoodRow({
   const marca = !isCustom ? (food as ArgentineFood).marca : undefined;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/5 bg-slate-800/40 px-4 py-2.5">
+    <div className="flex items-center gap-3 rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-2.5">
       <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium text-slate-200">{food.nombre}</p>
-        <p className="text-xs text-slate-500">
+        <p className="truncate text-sm font-medium pf-v2-t">{food.nombre}</p>
+        <p className="text-xs pf-v2-t-40">
           {categoria}
-          {marca && <span className="ml-1 text-slate-500">· {marca}</span>}
-          {isSuper && <span className="ml-1 rounded bg-blue-500/15 px-1 text-[10px] font-medium text-blue-400">Supermercado</span>}
-          {isCustom && <span className="ml-1 rounded bg-violet-500/15 px-1 text-[10px] font-medium text-violet-400">personalizado</span>}
+          {marca && <span className="ml-1 pf-v2-t-40">· {marca}</span>}
+          {isSuper && <span className="ml-1 rounded pf-v2-s-blue px-1 text-[10px] font-medium pf-v2-t-blue">Supermercado</span>}
+          {isCustom && <span className="ml-1 rounded pf-v2-s-violet px-1 text-[10px] font-medium pf-v2-t-violet">personalizado</span>}
         </p>
       </div>
       <div className="hidden shrink-0 grid-cols-4 gap-3 text-center text-xs sm:grid">
         <div>
-          <p className="font-semibold text-amber-400">{food.kcalPer100g}</p>
-          <p className="text-slate-500">kcal</p>
+          <p className="font-semibold pf-v2-t-warn">{food.kcalPer100g}</p>
+          <p className="pf-v2-t-40">kcal</p>
         </div>
         <div>
-          <p className="font-semibold text-emerald-400">{food.proteinPer100g}g</p>
-          <p className="text-slate-500">prot</p>
+          <p className="font-semibold pf-v2-t-ok">{food.proteinPer100g}g</p>
+          <p className="pf-v2-t-40">prot</p>
         </div>
         <div>
-          <p className="font-semibold text-blue-400">{food.carbsPer100g}g</p>
-          <p className="text-slate-500">carbs</p>
+          <p className="font-semibold pf-v2-t-blue">{food.carbsPer100g}g</p>
+          <p className="pf-v2-t-40">carbs</p>
         </div>
         <div>
-          <p className="font-semibold text-yellow-400">{food.fatPer100g}g</p>
-          <p className="text-slate-500">grasas</p>
+          <p className="font-semibold pf-v2-t-warn">{food.fatPer100g}g</p>
+          <p className="pf-v2-t-40">grasas</p>
         </div>
       </div>
       {onDelete && (
         <button
           onClick={onDelete}
-          className="ml-2 text-slate-600 hover:text-red-400"
+          className="ml-2 pf-v2-t-40 "
           title="Eliminar"
         >
           ✕
@@ -147,7 +147,7 @@ function AddFoodForm({ onSave, onCancel }: { onSave: (f: CustomFood) => void; on
   const [fat, setFat] = useState("");
 
   const inputCls =
-    "w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none";
+    "w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none";
 
   function handleSave() {
     if (!nombre.trim()) return;
@@ -165,27 +165,27 @@ function AddFoodForm({ onSave, onCancel }: { onSave: (f: CustomFood) => void; on
   }
 
   return (
-    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4">
-      <h4 className="mb-3 font-semibold text-slate-200">Agregar alimento personalizado</h4>
+    <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
+      <h4 className="mb-3 font-semibold pf-v2-t">Agregar alimento personalizado</h4>
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="mb-1 block text-xs font-medium text-slate-400">Nombre del alimento</label>
+          <label className="mb-1 block text-xs font-medium pf-v2-t-50">Nombre del alimento</label>
           <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Milanesa casera" className={inputCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">Kcal / 100g</label>
+          <label className="mb-1 block text-xs font-medium pf-v2-t-50">Kcal / 100g</label>
           <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="0" className={inputCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">Proteínas / 100g</label>
+          <label className="mb-1 block text-xs font-medium pf-v2-t-50">Proteínas / 100g</label>
           <input type="number" value={prot} onChange={(e) => setProt(e.target.value)} placeholder="0" className={inputCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">Carbohidratos / 100g</label>
+          <label className="mb-1 block text-xs font-medium pf-v2-t-50">Carbohidratos / 100g</label>
           <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="0" className={inputCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-400">Grasas / 100g</label>
+          <label className="mb-1 block text-xs font-medium pf-v2-t-50">Grasas / 100g</label>
           <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="0" className={inputCls} />
         </div>
       </div>
@@ -193,11 +193,11 @@ function AddFoodForm({ onSave, onCancel }: { onSave: (f: CustomFood) => void; on
         <button
           onClick={handleSave}
           disabled={!nombre.trim()}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+          className="rounded-lg pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-40"
         >
           Agregar
         </button>
-        <button onClick={onCancel} className="rounded-lg border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
+        <button onClick={onCancel} className="rounded-lg border pf-v2-b pf-v2-s-deep px-4 py-2 text-sm pf-v2-t-70 pf-v2-hover">
           Cancelar
         </button>
       </div>
@@ -300,17 +300,17 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-slate-100">🥗 Base de Alimentos</h2>
-          <p className="mt-1 text-sm text-slate-400">
-            <span className="text-slate-300">{argentineFoodsBase.length}</span> TCA-AR ·{" "}
-            <span className="text-blue-400">{supermarketFoods.length}</span> supermercados ·{" "}
-            <span className="text-violet-400">{customFoods.length}</span> personalizados ·{" "}
-            <span className="text-emerald-400">{filtered.length} coincidencias</span>
+          <h2 className="text-xl font-black pf-v2-t">🥗 Base de Alimentos</h2>
+          <p className="mt-1 text-sm pf-v2-t-50">
+            <span className="pf-v2-t-70">{argentineFoodsBase.length}</span> TCA-AR ·{" "}
+            <span className="pf-v2-t-blue">{supermarketFoods.length}</span> supermercados ·{" "}
+            <span className="pf-v2-t-violet">{customFoods.length}</span> personalizados ·{" "}
+            <span className="pf-v2-t-ok">{filtered.length} coincidencias</span>
           </p>
         </div>
         <button
           onClick={() => setShowAddForm((v) => !v)}
-          className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          className="shrink-0 rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t transition-colors pf-v2-hover"
         >
           + Alimento personalizado
         </button>
@@ -322,7 +322,7 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
       )}
 
       {/* Source filter tabs */}
-      <div className="flex gap-1.5 rounded-xl border border-white/5 bg-slate-900/40 p-1">
+      <div className="flex gap-1.5 rounded-xl border pf-v2-b pf-v2-s-deep p-1">
         {(
           [
             { id: "todos", label: "Todas las fuentes", icon: "🌐", count: allFoodsWithCat.length },
@@ -337,16 +337,16 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${
               sourceFilter === id
                 ? id === "super"
-                  ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                  ? "pf-v2-s-blue pf-v2-t-blue border pf-v2-b-blue"
                   : id === "custom"
-                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
-                  : "bg-slate-700/70 text-slate-200 border border-white/15"
-                : "text-slate-500 hover:text-slate-300"
+                  ? "pf-v2-s-violet pf-v2-t-violet border pf-v2-b-violet"
+                  : "pf-v2-s pf-v2-t border pf-v2-b-hi"
+                : "pf-v2-t-40 "
             }`}
           >
             <span>{icon}</span>
             <span className="hidden sm:inline">{label}</span>
-            <span className="text-slate-500">({count})</span>
+            <span className="pf-v2-t-40">({count})</span>
           </button>
         ))}
       </div>
@@ -364,13 +364,13 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
               onClick={() => handleCatChange(cat)}
               className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
                 selectedCat === cat
-                  ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
-                  : "border-white/10 bg-slate-800/50 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                  ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                  : "pf-v2-b pf-v2-s-deep pf-v2-t-50 "
               }`}
             >
               <span>{icon}</span>
               <span>{cat}</span>
-              <span className="text-slate-500">({count})</span>
+              <span className="pf-v2-t-40">({count})</span>
             </button>
           );
         })}
@@ -383,12 +383,12 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder={`Buscar en ${selectedCat === "Todos" ? "todos los alimentos" : selectedCat.toLowerCase()}...`}
-          className="flex-1 rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+          className="flex-1 rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
         />
         <select
           value={sortBy}
           onChange={(e) => { setSortBy(e.target.value as "nombre" | "kcal" | "prot"); setPage(0); }}
-          className="rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2.5 text-sm text-slate-100 focus:border-emerald-500/50 focus:outline-none"
+          className="rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
         >
           <option value="nombre">A → Z</option>
           <option value="kcal">Mayor kcal</option>
@@ -397,7 +397,7 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
       </div>
 
       {/* Column headers */}
-      <div className="hidden sm:flex items-center gap-3 px-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="hidden sm:flex items-center gap-3 px-4 text-xs font-semibold uppercase tracking-wide pf-v2-t-40">
         <span className="flex-1">Alimento</span>
         <div className="grid w-40 grid-cols-4 gap-3 text-center">
           <span>Kcal</span>
@@ -410,8 +410,8 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
 
       {/* List */}
       {paged.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
-          <p className="text-slate-500">No hay alimentos que coincidan.</p>
+        <div className="rounded-2xl border border-dashed pf-v2-b p-10 text-center">
+          <p className="pf-v2-t-40">No hay alimentos que coincidan.</p>
         </div>
       ) : (
         <div className="space-y-1">
@@ -429,7 +429,7 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
       {/* Pagination */}
       {pageCount > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs pf-v2-t-40">
             Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} de{" "}
             {filtered.length} alimentos · pág. {page + 1}/{pageCount}
           </p>
@@ -437,14 +437,14 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
             <button
               onClick={() => setPage(0)}
               disabled={page === 0}
-              className="rounded-lg border border-white/10 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-700 disabled:opacity-40"
+              className="rounded-lg border pf-v2-b pf-v2-s-deep px-2.5 py-1.5 text-xs pf-v2-t-70 pf-v2-hover disabled:opacity-40"
             >
               «
             </button>
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-700 disabled:opacity-40"
+              className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-1.5 text-sm pf-v2-t-70 pf-v2-hover disabled:opacity-40"
             >
               ←
             </button>
@@ -458,8 +458,8 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
                   onClick={() => setPage(p)}
                   className={`rounded-lg border px-3 py-1.5 text-xs transition-all ${
                     p === page
-                      ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
-                      : "border-white/10 bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                      : "pf-v2-b pf-v2-s-deep pf-v2-t-50 pf-v2-hover"
                   }`}
                 >
                   {p + 1}
@@ -469,14 +469,14 @@ export default function TabAlimentos({ customFoods, setCustomFoods }: Props) {
             <button
               onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
               disabled={page >= pageCount - 1}
-              className="rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-700 disabled:opacity-40"
+              className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-1.5 text-sm pf-v2-t-70 pf-v2-hover disabled:opacity-40"
             >
               →
             </button>
             <button
               onClick={() => setPage(pageCount - 1)}
               disabled={page >= pageCount - 1}
-              className="rounded-lg border border-white/10 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-700 disabled:opacity-40"
+              className="rounded-lg border pf-v2-b pf-v2-s-deep px-2.5 py-1.5 text-xs pf-v2-t-70 pf-v2-hover disabled:opacity-40"
             >
               »
             </button>

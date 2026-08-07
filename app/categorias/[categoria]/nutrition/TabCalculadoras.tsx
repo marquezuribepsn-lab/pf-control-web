@@ -37,14 +37,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-slate-400">{label}</label>
+      <label className="mb-1 block text-xs font-medium pf-v2-t-50">{label}</label>
       <div className="flex items-center gap-1.5">
         <input
           type="number" value={value} onChange={(e) => onChange(e.target.value)}
           min={min} max={max} placeholder={placeholder}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/20"
+          className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none focus:ring-1 "
         />
-        {unit && <span className="shrink-0 text-xs text-slate-500">{unit}</span>}
+        {unit && <span className="shrink-0 text-xs pf-v2-t-40">{unit}</span>}
       </div>
     </div>
   );
@@ -53,14 +53,14 @@ function Field({
 function SexToggle({ value, onChange }: { value: BiologicalSex; onChange: (v: BiologicalSex) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-slate-400">Sexo biológico</label>
+      <label className="mb-1 block text-xs font-medium pf-v2-t-50">Sexo biológico</label>
       <div className="flex gap-2">
         {(["femenino", "masculino"] as BiologicalSex[]).map((s) => (
           <button key={s} onClick={() => onChange(s)}
             className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${
               value === s
-                ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-                : "border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20"
+                ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                : "pf-v2-b pf-v2-s-deep pf-v2-t-50 "
             }`}
           >
             {s === "femenino" ? "♀ Femenino" : "♂ Masculino"}
@@ -79,9 +79,9 @@ function SelectField<T extends string>({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-slate-400">{label}</label>
+      <label className="mb-1 block text-xs font-medium pf-v2-t-50">{label}</label>
       <select value={value} onChange={(e) => onChange(e.target.value as T)}
-        className="w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 focus:border-emerald-500/50 focus:outline-none"
+        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none"
       >
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -101,8 +101,8 @@ function MethodPills<T extends string>({
         <button key={o.value} onClick={() => onChange(o.value)}
           className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
             value === o.value
-              ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
-              : "border-white/5 bg-slate-800/60 text-slate-500 hover:border-white/15 hover:text-slate-300"
+              ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+              : "pf-v2-b pf-v2-s-deep pf-v2-t-40 "
           }`}
         >
           {o.label}
@@ -119,21 +119,21 @@ function ResultRow({
 }) {
   return (
     <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${
-      accent ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-slate-800/50"
+      accent ? "pf-v2-s-ok border pf-v2-b-ok" : "pf-v2-s-deep"
     }`}>
       <div>
-        <p className="text-sm text-slate-300">{label}</p>
-        {sub && <p className="text-xs text-slate-500">{sub}</p>}
+        <p className="text-sm pf-v2-t-70">{label}</p>
+        {sub && <p className="text-xs pf-v2-t-40">{sub}</p>}
       </div>
-      <span className={`font-bold tabular-nums ${accent ? "text-emerald-400" : "text-slate-100"}`}>{value}</span>
+      <span className={`font-bold tabular-nums ${accent ? "pf-v2-t-ok" : "pf-v2-t"}`}>{value}</span>
     </div>
   );
 }
 
 function ResultCard({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-slate-900/50 p-4 space-y-3">
-      <h3 className="flex items-center gap-2 font-semibold text-slate-200">
+    <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4 space-y-3">
+      <h3 className="flex items-center gap-2 font-semibold pf-v2-t">
         <span>{icon}</span><span>{title}</span>
       </h3>
       {children}
@@ -143,7 +143,7 @@ function ResultCard({ icon, title, children }: { icon: string; title: string; ch
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{children}</p>
+    <p className="text-[10px] font-bold uppercase tracking-widest pf-v2-t-40">{children}</p>
   );
 }
 
@@ -154,11 +154,11 @@ function ImcGauge({ imc }: { imc: number }) {
   const pct = clamp(((imc - 10) / 35) * 100, 0, 100);
   return (
     <div>
-      <div className="mb-1 flex justify-between text-[10px] text-slate-600">
+      <div className="mb-1 flex justify-between text-[10px] pf-v2-t-40">
         <span>10</span><span>18.5</span><span>25</span><span>30</span><span>40+</span>
       </div>
-      <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-emerald-400 via-40% via-yellow-400 via-65% to-red-500">
-        <div className="absolute top-0 h-full w-1.5 rounded-full bg-white"
+      <div className="relative h-2.5 w-full overflow-hidden rounded-full via-40% via-65% ">
+        <div className="absolute top-0 h-full w-1.5 rounded-full pf-v2-s-hi"
           style={{ left: `${pct}%`, transform: "translateX(-50%)" }} />
       </div>
       <div className="mt-2 flex items-baseline gap-2">
@@ -182,9 +182,9 @@ function MacroPie({ p, c, g }: { p: number; c: number; g: number }) {
         background: `conic-gradient(#34d399 0% ${pPct}%, #60a5fa ${pPct}% ${pPct + cPct}%, #fbbf24 ${pPct + cPct}% 100%)`,
       }} />
       <div className="space-y-1 text-xs">
-        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-400" /><span className="text-slate-400">Prot {pPct.toFixed(0)}%</span></div>
-        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-400" /><span className="text-slate-400">Carbs {cPct.toFixed(0)}%</span></div>
-        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-400" /><span className="text-slate-400">Grasas {(100 - pPct - cPct).toFixed(0)}%</span></div>
+        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full pf-v2-s-ok" /><span className="pf-v2-t-50">Prot {pPct.toFixed(0)}%</span></div>
+        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full pf-v2-s-blue" /><span className="pf-v2-t-50">Carbs {cPct.toFixed(0)}%</span></div>
+        <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full pf-v2-s-warn" /><span className="pf-v2-t-50">Grasas {(100 - pPct - cPct).toFixed(0)}%</span></div>
       </div>
     </div>
   );
@@ -206,10 +206,10 @@ function GirthRow({ label, value, icon }: { label: string; value: string; icon: 
   const num = parseFloat(value);
   const hasValue = !isNaN(num) && num > 0;
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-slate-800/40 px-3 py-2">
+    <div className="flex items-center gap-2 rounded-lg pf-v2-s-deep px-3 py-2">
       <span className="text-base">{icon}</span>
-      <span className="flex-1 text-sm text-slate-400">{label}</span>
-      <span className={`font-semibold tabular-nums text-sm ${hasValue ? "text-slate-100" : "text-slate-600"}`}>
+      <span className="flex-1 text-sm pf-v2-t-50">{label}</span>
+      <span className={`font-semibold tabular-nums text-sm ${hasValue ? "pf-v2-t" : "pf-v2-t-40"}`}>
         {hasValue ? `${num} cm` : "—"}
       </span>
     </div>
@@ -361,8 +361,8 @@ export default function TabCalculadoras() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-slate-100">🧮 Calculadora Nutricional</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <h2 className="text-xl font-black pf-v2-t">🧮 Calculadora Nutricional</h2>
+        <p className="mt-1 text-sm pf-v2-t-50">
           Ingresá los datos y alterná entre métodos en cada sección.
         </p>
       </div>
@@ -373,8 +373,8 @@ export default function TabCalculadoras() {
         <div className="space-y-5">
 
           {/* Datos básicos */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 space-y-4">
-            <h3 className="font-semibold text-slate-200">Datos básicos</h3>
+          <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5 space-y-4">
+            <h3 className="font-semibold pf-v2-t">Datos básicos</h3>
             <SexToggle value={sexo} onChange={setSexo} />
             <div className="grid grid-cols-2 gap-3">
               <Field label="Edad"   value={edad}   onChange={setEdad}   min={10}  max={95}  unit="años" />
@@ -382,17 +382,17 @@ export default function TabCalculadoras() {
               <Field label="Altura" value={altura} onChange={setAltura} min={130} max={230} unit="cm"   />
               <Field label="% Grasa corporal" value={bodyfat} onChange={setBodyfat} min={2} max={60} unit="%" placeholder="Para Katch" />
             </div>
-            <div className="grid grid-cols-1 gap-3 border-t border-white/5 pt-3">
+            <div className="grid grid-cols-1 gap-3 border-t pf-v2-b pt-3">
               <SelectField label="Nivel de actividad" value={actividad} onChange={setActividad} options={actividadOptions} />
               <SelectField label="Objetivo"           value={objetivo}  onChange={setObjetivo}  options={objetivoOptions}  />
             </div>
           </div>
 
           {/* Circunferencias ISAK */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 space-y-4">
+          <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5 space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-200">Circunferencias ISAK</h3>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <h3 className="font-semibold pf-v2-t">Circunferencias ISAK</h3>
+              <p className="mt-0.5 text-xs pf-v2-t-40">
                 International Society for the Advancement of Kinanthropometry
               </p>
             </div>
@@ -456,9 +456,9 @@ export default function TabCalculadoras() {
               {(Object.entries(tmbValues) as [TmbMethod, number][])
                 .filter(([k]) => k !== tmbMethod)
                 .map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between rounded-lg bg-slate-800/40 px-3 py-1.5 text-xs">
-                    <span className="text-slate-500">{TMB_METHODS.find(m => m.value === k)!.label}</span>
-                    <span className="font-semibold text-slate-300">{v} kcal</span>
+                  <div key={k} className="flex items-center justify-between rounded-lg pf-v2-s-deep px-3 py-1.5 text-xs">
+                    <span className="pf-v2-t-40">{TMB_METHODS.find(m => m.value === k)!.label}</span>
+                    <span className="font-semibold pf-v2-t-70">{v} kcal</span>
                   </div>
                 ))}
             </div>
@@ -470,13 +470,13 @@ export default function TabCalculadoras() {
             <ResultRow label="TDEE con actividad y objetivo" value={`${activeTdee} kcal/día`} accent />
             <div className="grid grid-cols-3 gap-2 pt-1">
               {[
-                { label: "Proteínas",     value: targets.proteinas,     color: "text-emerald-400" },
-                { label: "Carbohidratos", value: targets.carbohidratos, color: "text-blue-400"    },
-                { label: "Grasas",        value: targets.grasas,        color: "text-amber-400"   },
+                { label: "Proteínas",     value: targets.proteinas,     color: "pf-v2-t-ok" },
+                { label: "Carbohidratos", value: targets.carbohidratos, color: "pf-v2-t-blue"    },
+                { label: "Grasas",        value: targets.grasas,        color: "pf-v2-t-warn"   },
               ].map(({ label, value, color }) => (
-                <div key={label} className="rounded-lg bg-slate-800/50 p-3 text-center">
+                <div key={label} className="rounded-lg pf-v2-s-deep p-3 text-center">
                   <p className={`text-xl font-black ${color}`}>{value}g</p>
-                  <p className="mt-0.5 text-xs text-slate-500">{label}</p>
+                  <p className="mt-0.5 text-xs pf-v2-t-40">{label}</p>
                 </div>
               ))}
             </div>
@@ -513,21 +513,21 @@ export default function TabCalculadoras() {
 
             {/* Índices derivados */}
             {(whr || whtr || navyBf) && (
-              <div className="border-t border-white/5 pt-3 space-y-2">
+              <div className="border-t pf-v2-b pt-3 space-y-2">
                 <SectionLabel>Índices derivados</SectionLabel>
 
                 {whr !== null && (() => {
                   const risk = getWhrRisk(sexo, whr);
                   return (
-                    <div className="flex items-center justify-between rounded-lg bg-slate-800/50 px-3 py-2.5">
+                    <div className="flex items-center justify-between rounded-lg pf-v2-s-deep px-3 py-2.5">
                       <div>
-                        <p className="text-sm text-slate-300">Índice Cintura-Cadera (ICC)</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-sm pf-v2-t-70">Índice Cintura-Cadera (ICC)</p>
+                        <p className="text-xs pf-v2-t-40">
                           {sexo === "masculino" ? "♂ riesgo: ≥ 0.90" : "♀ riesgo: ≥ 0.80"}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-100">{whr.toFixed(2)}</span>
+                        <span className="font-bold pf-v2-t">{whr.toFixed(2)}</span>
                         <RiskBadge label={risk.label} color={risk.color} />
                       </div>
                     </div>
@@ -537,13 +537,13 @@ export default function TabCalculadoras() {
                 {whtr !== null && (() => {
                   const risk = getWhtrRisk(whtr);
                   return (
-                    <div className="flex items-center justify-between rounded-lg bg-slate-800/50 px-3 py-2.5">
+                    <div className="flex items-center justify-between rounded-lg pf-v2-s-deep px-3 py-2.5">
                       <div>
-                        <p className="text-sm text-slate-300">Índice Cintura-Talla (ICT)</p>
-                        <p className="text-xs text-slate-500">Riesgo cardiovascular · límite: 0.50</p>
+                        <p className="text-sm pf-v2-t-70">Índice Cintura-Talla (ICT)</p>
+                        <p className="text-xs pf-v2-t-40">Riesgo cardiovascular · límite: 0.50</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-100">{whtr.toFixed(2)}</span>
+                        <span className="font-bold pf-v2-t">{whtr.toFixed(2)}</span>
                         <RiskBadge label={risk.label} color={risk.color} />
                       </div>
                     </div>
@@ -560,7 +560,7 @@ export default function TabCalculadoras() {
                 )}
 
                 {!navyBf && (
-                  <p className="rounded-lg bg-slate-800/40 px-3 py-2 text-xs text-slate-600">
+                  <p className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs pf-v2-t-40">
                     Completá cuello + cintura{sexo === "femenino" ? " + cadera" : ""} para calcular % grasa (Navy).
                   </p>
                 )}
@@ -568,7 +568,7 @@ export default function TabCalculadoras() {
             )}
 
             {(!whr && !whtr && !navyBf) && (
-              <p className="rounded-xl border border-dashed border-white/5 p-3 text-center text-xs text-slate-600">
+              <p className="rounded-xl border border-dashed pf-v2-b p-3 text-center text-xs pf-v2-t-40">
                 Completá las circunferencias para ver los índices derivados.
               </p>
             )}
@@ -585,10 +585,10 @@ export default function TabCalculadoras() {
                   { r: "25–29.9",   l: "Sobrepeso",  c: "#fbbf24" },
                   { r: "≥ 30",      l: "Obesidad",   c: "#f87171" },
                 ].map((row) => (
-                  <div key={row.r} className="flex items-center gap-1.5 rounded bg-slate-800/40 px-2 py-1">
+                  <div key={row.r} className="flex items-center gap-1.5 rounded pf-v2-s-deep px-2 py-1">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: row.c }} />
-                    <span className="text-slate-500 truncate">{row.r}</span>
-                    <span className="ml-auto shrink-0 text-slate-400">{row.l}</span>
+                    <span className="pf-v2-t-40 truncate">{row.r}</span>
+                    <span className="ml-auto shrink-0 pf-v2-t-50">{row.l}</span>
                   </div>
                 ))}
               </div>
@@ -606,9 +606,9 @@ export default function TabCalculadoras() {
                 {(Object.entries(idealValues) as [IdealMethod, number][])
                   .filter(([k]) => k !== idealMethod)
                   .map(([k, v]) => (
-                    <div key={k} className="flex items-center justify-between rounded-lg bg-slate-800/40 px-3 py-1.5 text-xs">
-                      <span className="text-slate-500">{IDEAL_METHODS.find(m => m.value === k)!.label}</span>
-                      <span className="font-semibold text-slate-300">{v} kg</span>
+                    <div key={k} className="flex items-center justify-between rounded-lg pf-v2-s-deep px-3 py-1.5 text-xs">
+                      <span className="pf-v2-t-40">{IDEAL_METHODS.find(m => m.value === k)!.label}</span>
+                      <span className="font-semibold pf-v2-t-70">{v} kg</span>
                     </div>
                   ))}
               </div>
@@ -618,10 +618,10 @@ export default function TabCalculadoras() {
           {/* Hidratación */}
           <ResultCard icon="💧" title="Hidratación diaria">
             <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-blue-500/25 bg-blue-500/8 px-6 py-4 text-center">
-                <p className="text-4xl font-black text-blue-300">{waterL}</p>
-                <p className="text-sm font-semibold text-blue-400">litros / día</p>
-                <p className="mt-0.5 text-xs text-slate-500">≈ {Math.round(waterL * 1000 / 250)} vasos</p>
+              <div className="rounded-xl border pf-v2-b-blue pf-v2-s-blue px-6 py-4 text-center">
+                <p className="text-4xl font-black pf-v2-t-blue">{waterL}</p>
+                <p className="text-sm font-semibold pf-v2-t-blue">litros / día</p>
+                <p className="mt-0.5 text-xs pf-v2-t-40">≈ {Math.round(waterL * 1000 / 250)} vasos</p>
               </div>
               <div className="flex-1 space-y-2">
                 <ResultRow label="Base (35 ml/kg)"     value={`${roundValue(pesoN * 35 / 1000)} L`} />

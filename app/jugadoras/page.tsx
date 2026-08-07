@@ -8,8 +8,8 @@ import { PlayersContext } from "../../components/PlayersProvider";
 import { CategoriesContext } from "../../components/CategoriesProvider";
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-3 text-white/85 placeholder:text-white/25 outline-none focus:border-cyan-400/40 focus:bg-[#111417] transition";
-const LABEL_CLS = "mb-1 block text-sm font-medium text-white/75";
+  "w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t pf-v2-ph outline-none transition";
+const LABEL_CLS = "mb-1 block text-sm font-medium pf-v2-t-70";
 
 export default function NuevaJugadoraPage() {
   const router = useRouter();
@@ -88,7 +88,7 @@ export default function NuevaJugadoraPage() {
       </section>
 
       {guardado && (
-        <div className="mb-4 rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
+        <div className="mb-4 rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm font-medium pf-v2-t-ok">
           ✅ Jugadora guardada correctamente. Redirigiendo…
         </div>
       )}

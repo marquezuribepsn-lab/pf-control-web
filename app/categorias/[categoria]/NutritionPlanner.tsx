@@ -874,8 +874,7 @@ export default function NutritionPlanner() {
           })
           .join("");
 
-        return `
-          <section style="margin-bottom:14px; padding:10px; border:1px solid #d6d8dc; border-radius:10px;">
+        return `<section style="margin-bottom:14px; padding:10px; border:1px solid #d6d8dc; border-radius:10px;">
             <h3 style="margin:0 0 8px; font-size:15px;">${escapeHtml(meal.nombre)}</h3>
             <ul style="margin:0; padding-left:18px;">${items || "<li>Sin items</li>"}</ul>
           </section>
@@ -902,8 +901,7 @@ export default function NutritionPlanner() {
       `Anamnesis: ${aiBrief.anamnesis.trim() || "Sin observaciones."}`,
     ].join(" ");
 
-    const html = `
-      <html>
+    const html = `<html>
         <head>
           <title>${escapeHtml(selectedPlan.nombre)}</title>
           <meta charset="utf-8" />
@@ -1021,22 +1019,20 @@ export default function NutritionPlanner() {
               </div>
               <div class="macro-grid">
                 <div class="macro"><strong>${selectedPlan.targets.calorias}</strong><br/>kcal</div>
-                <div class="macro"><strong>${selectedPlan.targets.proteinas} g</strong><br/>proteinas</div>
-                <div class="macro"><strong>${selectedPlan.targets.carbohidratos} g</strong><br/>carbohidratos</div>
-                <div class="macro"><strong>${selectedPlan.targets.grasas} g</strong><br/>grasas</div>
+                <div class="macro"><strong>${selectedPlan.targets.proteinas}g</strong><br/>proteinas</div>
+                <div class="macro"><strong>${selectedPlan.targets.carbohidratos}g</strong><br/>carbohidratos</div>
+                <div class="macro"><strong>${selectedPlan.targets.grasas}g</strong><br/>grasas</div>
               </div>
             </section>
 
             <section class="card">
               <p class="summary">
-            ${escapeHtml(mode === "paciente" ? patientSummary : professionalSummary)}
-              </p>
+            ${escapeHtml(mode === "paciente" ? patientSummary : professionalSummary)}</p>
             </section>
 
             <section class="card">
               <h2 style="margin:0 0 8px;">Distribucion de comidas</h2>
-              ${mealRows.replace(/<section style=\"margin-bottom:14px; padding:10px; border:1px solid #d6d8dc; border-radius:10px;\">/g, "<section class=\"meal\">")}
-            </section>
+              ${mealRows.replace(/<section style=\"margin-bottom:14px; padding:10px; border:1px solid #d6d8dc; border-radius:10px;\">/g, "<section class=\"meal\">")}</section>
 
             ${
               mode === "profesional"
@@ -1499,7 +1495,7 @@ export default function NutritionPlanner() {
 
   if (!selectedPlan) {
     return (
-      <div className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 text-slate-100 shadow-lg sm:p-6">
+      <div className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg sm:p-6">
         No hay plan nutricional activo.
       </div>
     );
@@ -1515,17 +1511,17 @@ export default function NutritionPlanner() {
     if (!detailPlan) {
       return (
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-2xl border border-white/15 bg-slate-900/80 p-4">
-            <h2 className="text-xl font-black text-slate-100">Detalle de plan nutricional</h2>
+          <div className="flex items-center justify-between rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4">
+            <h2 className="text-xl font-black pf-v2-t">Detalle de plan nutricional</h2>
             <ReliableActionButton
               type="button"
               onClick={goBackToClientList}
-              className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+              className="rounded-lg border pf-v2-b-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
             >
               Volver al listado
             </ReliableActionButton>
           </div>
-          <div className="rounded-2xl border border-white/15 bg-slate-900/75 p-4 text-slate-100 sm:p-6">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t sm:p-6">
             No se encontro el plan seleccionado para ese cliente.
           </div>
         </div>
@@ -1533,65 +1529,65 @@ export default function NutritionPlanner() {
     }
 
     return (
-      <div className="space-y-4 text-slate-100">
-        <section className="rounded-2xl border border-white/15 bg-slate-900/80 p-4 shadow-lg sm:p-5">
+      <div className="space-y-4 pf-v2-t">
+        <section className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-cyan-300">Ficha nutricional</p>
+              <p className="text-xs font-black uppercase tracking-wide pf-v2-t-accent">Ficha nutricional</p>
               <h2 className="mt-1 text-xl font-black sm:text-2xl">{detailAlumnoName || detailPlan.alumnoAsignado || "Alumno"}</h2>
-              <p className="mt-1 text-sm text-slate-300">{detailPlan.nombre}</p>
+              <p className="mt-1 text-sm pf-v2-t-70">{detailPlan.nombre}</p>
             </div>
             <ReliableActionButton
               type="button"
               onClick={goBackToClientList}
-              className="w-full rounded-lg border border-cyan-300/40 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10 sm:w-auto sm:py-1.5"
+              className="w-full rounded-lg border pf-v2-b-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent pf-v2-hover sm:w-auto sm:py-1.5"
             >
               Volver al listado
             </ReliableActionButton>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="rounded-xl bg-slate-950/70 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Objetivo</p>
+            <div className="rounded-xl pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Objetivo</p>
               <p className="text-sm font-bold">{detailPlan.objetivo}</p>
             </div>
-            <div className="rounded-xl bg-slate-950/70 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Calorias</p>
+            <div className="rounded-xl pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Calorias</p>
               <p className="text-sm font-bold">{detailPlan.targets.calorias} kcal</p>
             </div>
-            <div className="rounded-xl bg-slate-950/70 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Proteinas</p>
+            <div className="rounded-xl pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Proteinas</p>
               <p className="text-sm font-bold">{detailPlan.targets.proteinas} g</p>
             </div>
-            <div className="rounded-xl bg-slate-950/70 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Carbohidratos</p>
+            <div className="rounded-xl pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Carbohidratos</p>
               <p className="text-sm font-bold">{detailPlan.targets.carbohidratos} g</p>
             </div>
-            <div className="rounded-xl bg-slate-950/70 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Grasas</p>
+            <div className="rounded-xl pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Grasas</p>
               <p className="text-sm font-bold">{detailPlan.targets.grasas} g</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 shadow-lg sm:p-5">
+        <section className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-5">
           <h3 className="text-lg font-black">Plan completo de comidas</h3>
           <div className="mt-3 space-y-3">
             {detailPlan.comidas.map((meal) => (
-              <div key={meal.id} className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
-                <p className="text-sm font-bold text-cyan-100">{meal.nombre}</p>
+              <div key={meal.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                <p className="text-sm font-bold pf-v2-t-accent">{meal.nombre}</p>
                 {meal.items.length === 0 ? (
-                  <p className="mt-2 text-xs text-slate-400">Sin alimentos cargados.</p>
+                  <p className="mt-2 text-xs pf-v2-t-50">Sin alimentos cargados.</p>
                 ) : (
                   <div className="mt-2 space-y-1.5">
                     {meal.items.map((item) => {
                       const food = foodsById.get(item.foodId);
                       const totals = food ? foodTotals(food, item.gramos) : null;
                       return (
-                        <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-950/60 px-3 py-2 text-xs">
-                          <span className="min-w-0 flex-1 font-semibold text-slate-100">{food?.nombre || "Alimento"}</span>
-                          <span className="text-slate-300">{item.gramos} g</span>
-                          <span className="text-slate-300">{totals ? `${roundValue(totals.calorias)} kcal` : "Sin datos"}</span>
+                        <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                          <span className="min-w-0 flex-1 font-semibold pf-v2-t">{food?.nombre || "Alimento"}</span>
+                          <span className="pf-v2-t-70">{item.gramos} g</span>
+                          <span className="pf-v2-t-70">{totals ? `${roundValue(totals.calorias)} kcal` : "Sin datos"}</span>
                         </div>
                       );
                     })}
@@ -1602,9 +1598,9 @@ export default function NutritionPlanner() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
+        <section className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-5">
           <h3 className="text-lg font-black">Notas profesionales</h3>
-          <pre className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-white/10 bg-slate-950/50 p-3 text-xs text-slate-200">
+          <pre className="mt-2 whitespace-pre-wrap break-words rounded-xl border pf-v2-b pf-v2-s-deep p-3 text-xs pf-v2-t">
             {detailPlan.notas || "Sin notas registradas."}
           </pre>
         </section>
@@ -1614,20 +1610,20 @@ export default function NutritionPlanner() {
 
   if (isPlansViewMode) {
     return (
-      <div className="space-y-4 text-slate-100 sm:space-y-5">
-        <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
+      <div className="space-y-4 pf-v2-t sm:space-y-5">
+        <section className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Gestion de planes</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">Gestion de planes</p>
               <h2 className="mt-1 text-2xl font-black leading-none sm:text-3xl">Planes nutricionales</h2>
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="mt-2 text-sm pf-v2-t-70">
                 Administra tus planes en esta pantalla y vuelve a Nutricion para editar el plan seleccionado.
               </p>
             </div>
             <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(false)}
-              className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 sm:w-auto"
+              className="w-full rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t-accent sm:w-auto"
             >
               Volver a Nutricion
             </ReliableActionButton>
@@ -1635,24 +1631,24 @@ export default function NutritionPlanner() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg sm:p-5">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg sm:p-5">
             <h3 className="text-lg font-black">Listado de planes</h3>
-            <p className="mt-1 text-xs text-slate-300">Selecciona uno para editarlo en la pantalla principal.</p>
+            <p className="mt-1 text-xs pf-v2-t-70">Selecciona uno para editarlo en la pantalla principal.</p>
 
             <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
-                Total planes: <span className="font-black text-slate-100">{plans.length}</span>
+              <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+                Total planes: <span className="font-black pf-v2-t">{plans.length}</span>
               </p>
-              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
-                Con alumno: <span className="font-black text-slate-100">{plans.filter((plan) => Boolean(plan.alumnoAsignado)).length}</span>
+              <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+                Con alumno: <span className="font-black pf-v2-t">{plans.filter((plan) => Boolean(plan.alumnoAsignado)).length}</span>
               </p>
-              <p className="rounded-lg bg-slate-900/65 px-3 py-2 text-slate-200">
-                Sin alumno: <span className="font-black text-slate-100">{plans.filter((plan) => !plan.alumnoAsignado).length}</span>
+              <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+                Sin alumno: <span className="font-black pf-v2-t">{plans.filter((plan) => !plan.alumnoAsignado).length}</span>
               </p>
             </div>
 
-            <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/55">
-              <div className="hidden border-b border-white/10 bg-slate-950/70 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-300 md:grid md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2">
+            <div className="mt-3 overflow-hidden rounded-xl border pf-v2-b pf-v2-s-deep">
+              <div className="hidden border-b pf-v2-b pf-v2-s-deep px-3 py-2 text-[11px] font-bold uppercase tracking-wide pf-v2-t-70 md:grid md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2">
                 <span>Plan</span>
                 <span>Objetivo</span>
                 <span>Kcal</span>
@@ -1666,20 +1662,20 @@ export default function NutritionPlanner() {
                     key={plan.id}
                     type="button"
                     onClick={() => setSelectedPlanId(plan.id)}
-                    className={`grid w-full grid-cols-1 gap-1 border-b border-white/5 px-3 py-2 text-left text-xs transition last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2 ${
+                    className={`grid w-full grid-cols-1 gap-1 border-b pf-v2-b px-3 py-2 text-left text-xs transition last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_130px_110px_170px_170px] md:items-center md:gap-2 ${
                       selectedPlanId === plan.id
-                        ? "bg-cyan-500/15 text-cyan-50"
-                        : "text-slate-200 hover:bg-slate-800/70"
+                        ? "pf-v2-s-accent pf-v2-t-accent"
+                        : "pf-v2-t pf-v2-hover"
                     }`}
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-black text-white">{plan.nombre}</span>
-                      <span className="text-[11px] text-slate-400">Actualizado: {plan.updatedAt.slice(0, 10)}</span>
+                      <span className="block truncate text-sm font-black pf-v2-t">{plan.nombre}</span>
+                      <span className="text-[11px] pf-v2-t-50">Actualizado: {plan.updatedAt.slice(0, 10)}</span>
                     </span>
                     <span className="font-semibold capitalize">{plan.objetivo}</span>
                     <span className="font-semibold">{plan.targets.calorias}</span>
                     <span className="text-[11px]">P {plan.targets.proteinas} · C {plan.targets.carbohidratos} · G {plan.targets.grasas}</span>
-                    <span className="truncate text-cyan-100">{plan.alumnoAsignado || "Sin asignar"}</span>
+                    <span className="truncate pf-v2-t-accent">{plan.alumnoAsignado || "Sin asignar"}</span>
                   </ReliableActionButton>
                 ))}
               </div>
@@ -1687,22 +1683,22 @@ export default function NutritionPlanner() {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
-              <h3 className="text-sm font-black uppercase tracking-wide text-slate-200">Acciones</h3>
-              <p className="mt-2 truncate rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-slate-200">
-                Seleccionado: <span className="font-semibold text-white">{selectedPlan.nombre}</span>
+            <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
+              <h3 className="text-sm font-black uppercase tracking-wide pf-v2-t">Acciones</h3>
+              <p className="mt-2 truncate rounded-lg pf-v2-s-deep px-3 py-2 text-xs pf-v2-t">
+                Seleccionado: <span className="font-semibold pf-v2-t">{selectedPlan.nombre}</span>
               </p>
               <ReliableActionButton
                 type="button"
                 onClick={() => setIsPlansViewMode(false)}
-                className="mt-2 w-full rounded-xl border border-emerald-300/60 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-100"
+                className="mt-2 w-full rounded-xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-sm font-semibold pf-v2-t-ok"
               >
                 Editar plan seleccionado
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={addPlan}
-                className="mt-3 w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100"
+                className="mt-3 w-full rounded-xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-sm font-semibold pf-v2-t-accent"
               >
                 Nuevo plan
               </ReliableActionButton>
@@ -1710,14 +1706,14 @@ export default function NutritionPlanner() {
                 type="button"
                 onClick={() => deletePlan(selectedPlan.id)}
                 disabled={plans.length <= 1}
-                className="mt-2 w-full rounded-xl border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-200 disabled:opacity-50"
+                className="mt-2 w-full rounded-xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-sm font-semibold pf-v2-t-danger disabled:opacity-50"
               >
                 Eliminar plan actual
               </ReliableActionButton>
             </div>
 
-            <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 p-4 text-slate-100 shadow-lg">
-              <p className="text-xs font-black uppercase tracking-wide text-slate-200">Asignar a alumno</p>
+            <div className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4 pf-v2-t shadow-lg">
+              <p className="text-xs font-black uppercase tracking-wide pf-v2-t">Asignar a alumno</p>
               <select
                 value={selectedAlumnoForPlan}
                 onChange={(event) =>
@@ -1726,7 +1722,7 @@ export default function NutritionPlanner() {
                     [selectedPlan.id]: event.target.value,
                   }))
                 }
-                className="mt-2 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
+                className="mt-2 w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
               >
                 <option value="">Seleccionar alumno</option>
                 {alumnos.map((alumno) => (
@@ -1739,14 +1735,14 @@ export default function NutritionPlanner() {
                 type="button"
                 onClick={() => assignPlanToAlumno(selectedAlumnoForPlan, selectedPlan.id)}
                 disabled={!selectedAlumnoForPlan}
-                className="mt-2 w-full rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
+                className="mt-2 w-full rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent disabled:opacity-50"
               >
                 Asignar plan seleccionado
               </ReliableActionButton>
 
-              <div className="mt-3 space-y-1 text-xs text-slate-200">
+              <div className="mt-3 space-y-1 text-xs pf-v2-t">
                 {assignments.length === 0 ? (
-                  <p className="text-slate-300">Sin asignaciones todavia.</p>
+                  <p className="pf-v2-t-70">Sin asignaciones todavia.</p>
                 ) : (
                   assignments.slice(0, 10).map((assignment) => {
                     const assignedPlan = plans.find((plan) => plan.id === assignment.planId);
@@ -1766,11 +1762,11 @@ export default function NutritionPlanner() {
   }
 
   return (
-    <div className="space-y-4 text-slate-100 sm:space-y-5">
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-5">
+    <div className="space-y-4 pf-v2-t sm:space-y-5">
+      <section className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-lg font-black">Clientes con plan nutricional</h3>
-          <p className="text-xs text-slate-300">Busca un alumno y toca su fila para abrir el plan completo.</p>
+          <p className="text-xs pf-v2-t-70">Busca un alumno y toca su fila para abrir el plan completo.</p>
         </div>
 
         <div className="mb-3">
@@ -1778,22 +1774,22 @@ export default function NutritionPlanner() {
             value={clientSearch}
             onChange={(event) => setClientSearch(event.target.value)}
             placeholder="Buscar alumno por nombre"
-            className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+            className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph"
           />
         </div>
 
         {assignedClientRows.length === 0 ? (
-          <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+          <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
             Todavia no hay clientes con plan asignado.
           </p>
         ) : (
           <div className="space-y-2">
             {clientSearch.trim() === "" ? (
-              <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+              <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                 Escribe en el buscador para ver alumnos y abrir su plan.
               </p>
             ) : filteredAssignedClientRows.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+              <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
                 No hay resultados para ese buscador.
               </p>
             ) : (
@@ -1802,10 +1798,10 @@ export default function NutritionPlanner() {
                   key={`${row.alumnoNombre}-${row.planId}`}
                   type="button"
                   onClick={() => openClientPlanDetail(row.alumnoNombre, row.planId)}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-left transition hover:border-cyan-300/40 hover:bg-slate-800/80"
+                  className="w-full rounded-2xl border pf-v2-b pf-v2-s-deep p-3 text-left transition pf-v2-hover"
                 >
-                  <p className="truncate text-sm font-bold text-white">{row.alumnoNombre}</p>
-                  <p className="truncate text-xs text-slate-300">{row.planNombre}</p>
+                  <p className="truncate text-sm font-bold pf-v2-t">{row.alumnoNombre}</p>
+                  <p className="truncate text-xs pf-v2-t-70">{row.planNombre}</p>
                 </ReliableActionButton>
               ))
             )}
@@ -1813,26 +1809,26 @@ export default function NutritionPlanner() {
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-slate-900/75 p-4 shadow-lg sm:p-6">
+      <section className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-4 shadow-lg sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Categoria activa</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">Categoria activa</p>
             <h2 className="mt-1 text-2xl font-black leading-none sm:text-3xl">Nutricion</h2>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm pf-v2-t-70">
               Planificacion con formula Harris-Benedict, objetivos editables y distribucion diaria de macros.
             </p>
-            <p className="mt-1 text-xs font-semibold text-slate-300">
+            <p className="mt-1 text-xs font-semibold pf-v2-t-70">
               Tabla oficial cargada: {officialFoodsCount} alimentos TCA-AR para buscar y asignar por comida.
             </p>
             <a
               href="https://www.argentina.gob.ar/anmat/tabla-composicion-alimentos"
               target="_blank"
               rel="noreferrer"
-              className="mt-1 inline-block text-xs font-semibold text-cyan-300 underline"
+              className="mt-1 inline-block text-xs font-semibold pf-v2-t-accent underline"
             >
               Abrir referencia oficial de tabla argentina
             </a>
-            <p className="mt-2 text-xs text-slate-300">
+            <p className="mt-2 text-xs pf-v2-t-70">
               Los cambios se sincronizan de forma automatica. Usa Guardar cambios para forzar un guardado inmediato.
             </p>
           </div>
@@ -1840,28 +1836,28 @@ export default function NutritionPlanner() {
             <ReliableActionButton
               type="button"
               onClick={() => exportCurrentPlanPdf("paciente")}
-              className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 shadow-sm sm:w-auto"
+              className="w-full rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t-accent shadow-sm sm:w-auto"
             >
               PDF paciente
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => exportCurrentPlanPdf("profesional")}
-              className="w-full rounded-xl border border-indigo-300/60 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-100 shadow-sm sm:w-auto"
+              className="w-full rounded-xl border pf-v2-b-blue pf-v2-s-blue px-4 py-2 text-sm font-semibold pf-v2-t-blue shadow-sm sm:w-auto"
             >
               PDF profesional
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={saveNutritionChanges}
-              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto"
+              className="w-full rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t shadow-sm sm:w-auto"
             >
               Guardar cambios
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(true)}
-              className="w-full rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto"
+              className="w-full rounded-xl pf-v2-s-accent-full px-4 py-2 text-sm font-semibold pf-v2-t shadow-sm sm:w-auto"
             >
               Ver planes
             </ReliableActionButton>
@@ -1869,12 +1865,12 @@ export default function NutritionPlanner() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-cyan-300/35 bg-gradient-to-br from-cyan-500/15 via-slate-900/80 to-emerald-500/10 p-4 shadow-lg sm:p-5">
+      <section className="rounded-3xl border pf-v2-b-accent p-4 shadow-lg sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Asistente IA Nutricional</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">Asistente IA Nutricional</p>
             <h3 className="mt-1 text-xl font-black">Generacion rapida de plan integral</h3>
-            <p className="mt-1 text-xs text-slate-200">
+            <p className="mt-1 text-xs pf-v2-t">
               Completa anamnesis, salud, entrenamiento y gustos. Luego presiona crear para autogenerar objetivos,
               distribucion diaria y comidas base editables.
             </p>
@@ -1882,7 +1878,7 @@ export default function NutritionPlanner() {
           <ReliableActionButton
             type="button"
             onClick={generatePlanWithAI}
-            className="w-full rounded-xl border border-cyan-300/70 bg-cyan-500/20 px-4 py-2 text-sm font-black text-cyan-100 sm:w-auto"
+            className="w-full rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-black pf-v2-t-accent sm:w-auto"
           >
             Crear plan nutricional con IA
           </ReliableActionButton>
@@ -1890,11 +1886,11 @@ export default function NutritionPlanner() {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Sexo</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Sexo</span>
             <select
               value={aiBrief.sexo}
               onChange={(event) => updateAiBrief("sexo", event.target.value as BiologicalSex)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="femenino">Femenino</option>
               <option value="masculino">Masculino</option>
@@ -1902,38 +1898,38 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Edad</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Edad</span>
             <input
               value={aiBrief.edad}
               onChange={(event) => updateAiBrief("edad", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Peso kg</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Peso kg</span>
             <input
               value={aiBrief.pesoKg}
               onChange={(event) => updateAiBrief("pesoKg", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Altura cm</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Altura cm</span>
             <input
               value={aiBrief.alturaCm}
               onChange={(event) => updateAiBrief("alturaCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Actividad</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Actividad</span>
             <select
               value={aiBrief.actividad}
               onChange={(event) => updateAiBrief("actividad", event.target.value as ActivityLevel)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="sedentario">Sedentario</option>
               <option value="ligero">Ligero</option>
@@ -1944,11 +1940,11 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Objetivo</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Objetivo</span>
             <select
               value={aiBrief.objetivo}
               onChange={(event) => updateAiBrief("objetivo", event.target.value as NutritionGoal)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="mantenimiento">Mantenimiento</option>
               <option value="recomposicion">Recomposicion</option>
@@ -1958,11 +1954,11 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Sesiones por dia</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Sesiones por dia</span>
             <select
               value={aiBrief.trainingSessionsPerDay}
               onChange={(event) => updateAiBrief("trainingSessionsPerDay", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="1">1</option>
               <option value="2">2</option>
@@ -1971,11 +1967,11 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Tipo entrenamiento</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Tipo entrenamiento</span>
             <select
               value={aiBrief.trainingFocus}
               onChange={(event) => updateAiBrief("trainingFocus", event.target.value as TrainingFocus)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="fuerza">Fuerza</option>
               <option value="resistencia">Resistencia</option>
@@ -1985,11 +1981,11 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Horario de entrenamiento</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Horario de entrenamiento</span>
             <select
               value={aiBrief.trainingTime}
               onChange={(event) => updateAiBrief("trainingTime", event.target.value as TrainingTime)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="manana">Manana</option>
               <option value="mediodia">Mediodia</option>
@@ -1999,31 +1995,31 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Hora de despertar</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Hora de despertar</span>
             <input
               type="time"
               value={aiBrief.wakeUpTime}
               onChange={(event) => updateAiBrief("wakeUpTime", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Hora de dormir</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Hora de dormir</span>
             <input
               type="time"
               value={aiBrief.sleepTime}
               onChange={(event) => updateAiBrief("sleepTime", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Cantidad de comidas</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Cantidad de comidas</span>
             <select
               value={aiBrief.preferredMeals}
               onChange={(event) => updateAiBrief("preferredMeals", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             >
               <option value="3">3</option>
               <option value="4">4</option>
@@ -2033,83 +2029,83 @@ export default function NutritionPlanner() {
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Cintura (cm)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Cintura (cm)</span>
             <input
               value={aiBrief.cinturaCm}
               onChange={(event) => updateAiBrief("cinturaCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Cadera (cm)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Cadera (cm)</span>
             <input
               value={aiBrief.caderaCm}
               onChange={(event) => updateAiBrief("caderaCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Cuello (cm)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Cuello (cm)</span>
             <input
               value={aiBrief.cuelloCm}
               onChange={(event) => updateAiBrief("cuelloCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Brazo (cm)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Brazo (cm)</span>
             <input
               value={aiBrief.brazoCm}
               onChange={(event) => updateAiBrief("brazoCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Muslo (cm)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Muslo (cm)</span>
             <input
               value={aiBrief.musloCm}
               onChange={(event) => updateAiBrief("musloCm", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             />
           </label>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-cyan-300/25 bg-slate-900/65 p-4">
+        <div className="mt-4 rounded-2xl border pf-v2-b-accent pf-v2-s-deep p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">Templates</p>
-            <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-slate-200">
+            <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-accent">Templates</p>
+            <span className="rounded-full border pf-v2-b-hi pf-v2-s-hi px-2 py-0.5 text-[11px] pf-v2-t">
               {aiTemplates.length} guardados
             </span>
           </div>
 
           <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-            <div className="rounded-xl border border-white/15 bg-slate-950/45 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-300">Nuevo template</p>
+            <div className="rounded-xl border pf-v2-b-hi pf-v2-s-deep p-3">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Nuevo template</p>
               <input
                 value={aiTemplateName}
                 onChange={(event) => setAiTemplateName(event.target.value)}
                 placeholder="Nombre del template"
-                className="mt-2 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               />
               <ReliableActionButton
                 type="button"
                 onClick={saveCurrentAIBriefAsTemplate}
-                className="mt-2 w-full rounded-lg border border-emerald-300/50 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
+                className="mt-2 w-full rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-xs font-semibold pf-v2-t-ok"
               >
                 Guardar template
               </ReliableActionButton>
-              <p className="mt-2 text-[11px] text-slate-400">
+              <p className="mt-2 text-[11px] pf-v2-t-50">
                 Guarda el brief IA actual para reutilizarlo rapido.
               </p>
             </div>
 
             <div className="space-y-2">
               {aiTemplates.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-white/20 bg-slate-950/35 p-3 text-xs text-slate-300">
+                <div className="rounded-xl border border-dashed pf-v2-b-hi pf-v2-s-deep p-3 text-xs pf-v2-t-70">
                   Todavia no hay templates guardados.
                 </div>
               ) : (
@@ -2123,12 +2119,12 @@ export default function NutritionPlanner() {
                         onClick={() => setSelectedTemplateId(template.id)}
                         className={`rounded-xl border p-3 text-left transition ${
                           isSelected
-                            ? "border-cyan-200/55 bg-cyan-500/15"
-                            : "border-white/15 bg-slate-950/40 hover:border-cyan-300/35"
+                            ? "pf-v2-b-accent pf-v2-s-accent"
+                            : "pf-v2-b-hi pf-v2-s-deep "
                         }`}
                       >
-                        <p className="text-sm font-semibold text-white">{template.name}</p>
-                        <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-300">
+                        <p className="text-sm font-semibold pf-v2-t">{template.name}</p>
+                        <p className="mt-1 text-[11px] uppercase tracking-wide pf-v2-t-70">
                           Objetivo: {template.goal}
                         </p>
                       </ReliableActionButton>
@@ -2142,7 +2138,7 @@ export default function NutritionPlanner() {
                   type="button"
                   onClick={applySelectedTemplate}
                   disabled={!selectedTemplateId}
-                  className="rounded-lg border border-cyan-300/50 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-100 disabled:opacity-50"
+                  className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent disabled:opacity-50"
                 >
                   Aplicar template
                 </ReliableActionButton>
@@ -2150,7 +2146,7 @@ export default function NutritionPlanner() {
                   type="button"
                   onClick={deleteSelectedTemplate}
                   disabled={!selectedTemplateId}
-                  className="rounded-lg border border-rose-300/50 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-100 disabled:opacity-50"
+                  className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger disabled:opacity-50"
                 >
                   Eliminar template
                 </ReliableActionButton>
@@ -2161,57 +2157,57 @@ export default function NutritionPlanner() {
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Anamnesis / contexto clinico</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Anamnesis / contexto clinico</span>
             <textarea
               value={aiBrief.anamnesis}
               onChange={(event) => updateAiBrief("anamnesis", event.target.value)}
-              className="h-24 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="h-24 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               placeholder="Habitos, digestivo, energia, sueno, objetivos y antecedentes..."
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Medicamentos</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Medicamentos</span>
             <textarea
               value={aiBrief.medicamentos}
               onChange={(event) => updateAiBrief("medicamentos", event.target.value)}
-              className="h-24 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="h-24 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               placeholder="Dosis/frecuencia de medicacion relevante..."
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Alergias/intolerancias</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Alergias/intolerancias</span>
             <textarea
               value={aiBrief.alergias}
               onChange={(event) => updateAiBrief("alergias", event.target.value)}
-              className="h-20 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="h-20 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               placeholder="Lactosa, gluten, frutos secos, etc..."
             />
           </label>
 
           <label className="text-xs">
-            <span className="mb-1 block uppercase tracking-wide text-slate-300">Gustos / no gustos (coma separada)</span>
+            <span className="mb-1 block uppercase tracking-wide pf-v2-t-70">Gustos / no gustos (coma separada)</span>
             <input
               value={aiBrief.foodLikes}
               onChange={(event) => updateAiBrief("foodLikes", event.target.value)}
-              className="mb-2 w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="mb-2 w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               placeholder="pollo, arroz, banana, yogur"
             />
             <input
               value={aiBrief.foodDislikes}
               onChange={(event) => updateAiBrief("foodDislikes", event.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+              className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
               placeholder="no le gusta: pescado, legumbres"
             />
           </label>
         </div>
 
-        <div className="mt-3 rounded-xl border border-white/15 bg-slate-900/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">Patologias/metabolico</p>
+        <div className="mt-3 rounded-xl border pf-v2-b-hi pf-v2-s-deep p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-70">Patologias/metabolico</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {MEDICAL_OPTIONS.map((option) => (
-              <label key={option.id} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-2 py-1 text-xs">
+              <label key={option.id} className="inline-flex items-center gap-2 rounded-lg border pf-v2-b-hi px-2 py-1 text-xs">
                 <input
                   type="checkbox"
                   checked={aiBrief.enfermedades.includes(option.id)}
@@ -2225,26 +2221,26 @@ export default function NutritionPlanner() {
             const risk = calculateRiskProfile(aiBrief);
             return (
               <div className="mt-3 grid gap-2 md:grid-cols-4">
-                <p className="rounded-lg bg-slate-800/70 px-2 py-1 text-xs">IMC: <strong>{risk.imc}</strong></p>
-                <p className="rounded-lg bg-slate-800/70 px-2 py-1 text-xs">RCE: <strong>{risk.rce}</strong></p>
-                <p className="rounded-lg bg-slate-800/70 px-2 py-1 text-xs">RCC: <strong>{risk.rcc}</strong></p>
-                <p className="rounded-lg bg-slate-800/70 px-2 py-1 text-xs">Riesgo: <strong>{risk.riskLevel.toUpperCase()}</strong></p>
+                <p className="rounded-lg pf-v2-s-deep px-2 py-1 text-xs">IMC: <strong>{risk.imc}</strong></p>
+                <p className="rounded-lg pf-v2-s-deep px-2 py-1 text-xs">RCE: <strong>{risk.rce}</strong></p>
+                <p className="rounded-lg pf-v2-s-deep px-2 py-1 text-xs">RCC: <strong>{risk.rcc}</strong></p>
+                <p className="rounded-lg pf-v2-s-deep px-2 py-1 text-xs">Riesgo: <strong>{risk.riskLevel.toUpperCase()}</strong></p>
               </div>
             );
           })()}
-          {aiGenerationMessage ? <p className="mt-2 text-xs font-semibold text-emerald-200">{aiGenerationMessage}</p> : null}
+          {aiGenerationMessage ? <p className="mt-2 text-xs font-semibold pf-v2-t-ok">{aiGenerationMessage}</p> : null}
         </div>
       </section>
 
       <section className="space-y-4">
-        <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+        <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <label className="w-full text-sm sm:max-w-md">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">Plan activo</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide pf-v2-t-70">Plan activo</span>
               <select
                 value={selectedPlanId}
                 onChange={(event) => setSelectedPlanId(event.target.value)}
-                className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
               >
                 {plans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
@@ -2257,39 +2253,39 @@ export default function NutritionPlanner() {
             <ReliableActionButton
               type="button"
               onClick={() => setIsPlansViewMode(true)}
-              className="w-full rounded-xl border border-cyan-300/60 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 sm:w-auto"
+              className="w-full rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t-accent sm:w-auto"
             >
               Ver planes
             </ReliableActionButton>
           </div>
 
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-            <p className="rounded-lg bg-slate-900/60 px-3 py-2 text-slate-200">
-              <span className="font-semibold text-slate-100">Objetivo:</span> {selectedPlan.objetivo}
+            <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+              <span className="font-semibold pf-v2-t">Objetivo:</span> {selectedPlan.objetivo}
             </p>
-            <p className="rounded-lg bg-slate-900/60 px-3 py-2 text-slate-200">
-              <span className="font-semibold text-slate-100">Meta kcal:</span> {selectedPlan.targets.calorias}
+            <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+              <span className="font-semibold pf-v2-t">Meta kcal:</span> {selectedPlan.targets.calorias}
             </p>
-            <p className="rounded-lg bg-slate-900/60 px-3 py-2 text-slate-200">
-              <span className="font-semibold text-slate-100">Asignado:</span> {selectedPlan.alumnoAsignado || "Sin asignar"}
+            <p className="rounded-lg pf-v2-s-deep px-3 py-2 pf-v2-t">
+              <span className="font-semibold pf-v2-t">Asignado:</span> {selectedPlan.alumnoAsignado || "Sin asignar"}
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Nombre del plan</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Nombre del plan</span>
                 <input
                   value={selectedPlan.nombre}
                   onChange={(event) => updatePlan(selectedPlan.id, (plan) => ({ ...plan, nombre: event.target.value }))}
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 />
               </label>
 
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Sexo biologico</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Sexo biologico</span>
                 <select
                   value={selectedPlan.sexo}
                   onChange={(event) =>
@@ -2298,7 +2294,7 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 >
                   <option value="femenino">Femenino</option>
                   <option value="masculino">Masculino</option>
@@ -2306,7 +2302,7 @@ export default function NutritionPlanner() {
               </label>
 
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Edad</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Edad</span>
                 <input
                   type="number"
                   min={10}
@@ -2318,12 +2314,12 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 />
               </label>
 
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Peso (kg)</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Peso (kg)</span>
                 <input
                   type="number"
                   min={30}
@@ -2335,12 +2331,12 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 />
               </label>
 
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Altura (cm)</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Altura (cm)</span>
                 <input
                   type="number"
                   min={130}
@@ -2352,12 +2348,12 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 />
               </label>
 
               <label className="text-sm">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Nivel de actividad</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Nivel de actividad</span>
                 <select
                   value={selectedPlan.actividad}
                   onChange={(event) =>
@@ -2366,7 +2362,7 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 >
                   <option value="sedentario">Sedentario</option>
                   <option value="ligero">Ligero</option>
@@ -2377,7 +2373,7 @@ export default function NutritionPlanner() {
               </label>
 
               <label className="text-sm md:col-span-2 lg:col-span-3">
-                <span className="mb-1 block text-xs font-semibold uppercase text-slate-300">Objetivo</span>
+                <span className="mb-1 block text-xs font-semibold uppercase pf-v2-t-70">Objetivo</span>
                 <select
                   value={selectedPlan.objetivo}
                   onChange={(event) =>
@@ -2386,7 +2382,7 @@ export default function NutritionPlanner() {
                       return { ...next, targets: recomputeTargets(next) };
                     })
                   }
-                  className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-slate-100"
+                  className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                 >
                   <option value="mantenimiento">Mantenimiento</option>
                   <option value="recomposicion">Recomposicion corporal</option>
@@ -2397,37 +2393,37 @@ export default function NutritionPlanner() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl bg-slate-900 p-3 text-white">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Meta calorias</p>
+              <div className="rounded-xl pf-v2-s-deep p-3 pf-v2-t">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Meta calorias</p>
                 <p className="text-xl font-black">{selectedPlan.targets.calorias} kcal</p>
               </div>
-              <div className="rounded-xl bg-cyan-900 p-3 text-cyan-50">
-                <p className="text-[11px] uppercase tracking-wide text-cyan-200">Proteinas</p>
+              <div className="rounded-xl pf-v2-s-accent p-3 pf-v2-t-accent">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-accent">Proteinas</p>
                 <p className="text-xl font-black">{selectedPlan.targets.proteinas} g</p>
               </div>
-              <div className="rounded-xl bg-amber-900 p-3 text-amber-50">
-                <p className="text-[11px] uppercase tracking-wide text-amber-200">Carbohidratos</p>
+              <div className="rounded-xl pf-v2-s-warn p-3 pf-v2-t-warn">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-warn">Carbohidratos</p>
                 <p className="text-xl font-black">{selectedPlan.targets.carbohidratos} g</p>
               </div>
-              <div className="rounded-xl bg-emerald-900 p-3 text-emerald-50">
-                <p className="text-[11px] uppercase tracking-wide text-emerald-200">Grasas</p>
+              <div className="rounded-xl pf-v2-s-ok p-3 pf-v2-t-ok">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">Grasas</p>
                 <p className="text-xl font-black">{selectedPlan.targets.grasas} g</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-lg font-black">Programación por semana y día</h3>
               <ReliableActionButton
                 type="button"
                 onClick={() => addNutritionWeek(selectedPlan.id)}
-                className="rounded-lg border border-cyan-300/60 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
               >
                 + Agregar semana
               </ReliableActionButton>
             </div>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs pf-v2-t-70">
               Si el plan no tiene semanas cargadas, mostramos "Semana 1 / Día 1" por defecto. Al agregar la primera semana,
               las comidas existentes se trasladan al "Día 1" automáticamente.
             </p>
@@ -2458,8 +2454,8 @@ export default function NutritionPlanner() {
                           }}
                           className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold ${
                             isActive
-                              ? "border-cyan-300/70 bg-cyan-400/15 text-cyan-100"
-                              : "border-slate-500/60 bg-slate-700/60 text-slate-200"
+                              ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                              : "pf-v2-b pf-v2-s pf-v2-t"
                           }`}
                         >
                           {week.nombre}
@@ -2468,7 +2464,7 @@ export default function NutritionPlanner() {
                     })}
                   </div>
                   {activeWeek ? (
-                    <div className="rounded-xl border border-white/10 bg-slate-900/40 p-3">
+                    <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <input
                           value={activeWeek.nombre}
@@ -2477,7 +2473,7 @@ export default function NutritionPlanner() {
                             renameNutritionWeek(selectedPlan.id, activeWeek.id, event.target.value);
                           }}
                           disabled={isVirtualMode}
-                          className="flex-1 rounded-lg border border-white/20 bg-slate-700 px-2 py-1 text-sm text-slate-100 disabled:opacity-60"
+                          className="flex-1 rounded-lg border pf-v2-b-hi pf-v2-s px-2 py-1 text-sm pf-v2-t disabled:opacity-60"
                         />
                         <ReliableActionButton
                           type="button"
@@ -2488,7 +2484,7 @@ export default function NutritionPlanner() {
                               addNutritionDay(selectedPlan.id, activeWeek.id);
                             }
                           }}
-                          className="rounded-lg border border-violet-300/60 bg-violet-500/10 px-2.5 py-1 text-[11px] font-semibold text-violet-100"
+                          className="rounded-lg border pf-v2-b-violet pf-v2-s-violet px-2.5 py-1 text-[11px] font-semibold pf-v2-t-violet"
                         >
                           + Día
                         </ReliableActionButton>
@@ -2496,7 +2492,7 @@ export default function NutritionPlanner() {
                           <ReliableActionButton
                             type="button"
                             onClick={() => removeNutritionWeek(selectedPlan.id, activeWeek.id)}
-                            className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-200"
+                            className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-2.5 py-1 text-[11px] font-semibold pf-v2-t-danger"
                           >
                             Quitar semana
                           </ReliableActionButton>
@@ -2515,8 +2511,8 @@ export default function NutritionPlanner() {
                               }}
                               className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
                                 isActiveDay
-                                  ? "border-violet-300/70 bg-violet-500/15 text-violet-100"
-                                  : "border-slate-500/60 bg-slate-700/60 text-slate-200"
+                                  ? "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet"
+                                  : "pf-v2-b pf-v2-s pf-v2-t"
                               }`}
                             >
                               {day.nombre}
@@ -2531,12 +2527,12 @@ export default function NutritionPlanner() {
                             onChange={(event) =>
                               renameNutritionDay(selectedPlan.id, activeWeek.id, activeDay.id, event.target.value)
                             }
-                            className="flex-1 rounded-md border border-white/20 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                            className="flex-1 rounded-md border pf-v2-b-hi pf-v2-s px-2 py-1 text-xs pf-v2-t"
                           />
                           <ReliableActionButton
                             type="button"
                             onClick={() => removeNutritionDay(selectedPlan.id, activeWeek.id, activeDay.id)}
-                            className="rounded-md border border-rose-300/60 bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-200"
+                            className="rounded-md border pf-v2-b-danger pf-v2-s-danger px-2 py-0.5 text-[11px] font-semibold pf-v2-t-danger"
                           >
                             Quitar día
                           </ReliableActionButton>
@@ -2549,7 +2545,7 @@ export default function NutritionPlanner() {
             })()}
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black">
                 Comidas
@@ -2562,7 +2558,7 @@ export default function NutritionPlanner() {
               <ReliableActionButton
                 type="button"
                 onClick={() => addMeal(selectedPlan.id)}
-                className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-semibold"
+                className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold"
               >
                 Agregar comida
               </ReliableActionButton>
@@ -2570,7 +2566,7 @@ export default function NutritionPlanner() {
 
             <div className="mt-4 space-y-4">
               {getActiveMeals(selectedPlan, selectedAdminWeekId, selectedAdminDayId).map((meal) => (
-                <div key={meal.id} className="rounded-xl border border-white/10 bg-slate-700/55 p-3">
+                <div key={meal.id} className="rounded-xl border pf-v2-b pf-v2-s p-3">
                   {(() => {
                     const mealSearch = (mealFoodSearch[meal.id] || "").trim().toLowerCase();
                     const mealFoods = mealSearch
@@ -2591,12 +2587,12 @@ export default function NutritionPlanner() {
                           )
                         )
                       }
-                      className="flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
+                      className="flex-1 rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
                     />
                     <ReliableActionButton
                       type="button"
                       onClick={() => removeMeal(selectedPlan.id, meal.id)}
-                      className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200"
+                      className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger"
                     >
                       Quitar comida
                     </ReliableActionButton>
@@ -2611,7 +2607,7 @@ export default function NutritionPlanner() {
                       }))
                     }
                     placeholder="Buscar alimento para esta comida"
-                    className="mb-3 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                    className="mb-3 w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
                   />
 
                   <div className="space-y-2">
@@ -2628,7 +2624,7 @@ export default function NutritionPlanner() {
                                 foodId: event.target.value,
                               })
                             }
-                            className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 sm:col-span-2 lg:col-span-1"
+                            className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t sm:col-span-2 lg:col-span-1"
                           >
                             {mealFoods.map((foodOption) => (
                               <option key={foodOption.id} value={foodOption.id}>
@@ -2646,17 +2642,17 @@ export default function NutritionPlanner() {
                                 gramos: Math.max(1, parseNumber(event.target.value, item.gramos)),
                               })
                             }
-                            className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
+                            className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
                           />
 
-                          <p className="rounded-lg bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-200">
+                          <p className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs font-semibold pf-v2-t">
                             {totals ? `${roundValue(totals.calorias)} kcal` : "Sin datos"}
                           </p>
 
                           <ReliableActionButton
                             type="button"
                             onClick={() => removeMealItem(selectedPlan.id, meal.id, item.id)}
-                            className="rounded-lg border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200 sm:col-span-2 lg:col-span-1"
+                            className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger sm:col-span-2 lg:col-span-1"
                           >
                             Quitar
                           </ReliableActionButton>
@@ -2668,12 +2664,12 @@ export default function NutritionPlanner() {
                   <ReliableActionButton
                     type="button"
                     onClick={() => addFoodToMeal(selectedPlan.id, meal.id, mealFoods[0]?.id || allFoods[0].id)}
-                    className="mt-3 rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200"
+                    className="mt-3 rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                   >
                     Agregar alimento
                   </ReliableActionButton>
                   {mealFoods.length === 0 ? (
-                    <p className="mt-2 text-xs text-amber-200">No hay resultados para ese buscador en esta comida.</p>
+                    <p className="mt-2 text-xs pf-v2-t-warn">No hay resultados para ese buscador en esta comida.</p>
                   ) : null}
                       </>
                     );
@@ -2683,44 +2679,44 @@ export default function NutritionPlanner() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Ingesta kcal</p>
-                <p className="text-xl font-black text-slate-100">{planIntake.calorias}</p>
-                <p className={`text-xs ${caloriasDiff > 0 ? "text-amber-300" : "text-emerald-300"}`}>
+              <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Ingesta kcal</p>
+                <p className="text-xl font-black pf-v2-t">{planIntake.calorias}</p>
+                <p className={`text-xs ${caloriasDiff > 0 ? "pf-v2-t-warn" : "pf-v2-t-ok"}`}>
                   Diferencia: {caloriasDiff} kcal
                 </p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Proteinas</p>
-                <p className="text-xl font-black text-slate-100">{planIntake.proteinas} g</p>
+              <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Proteinas</p>
+                <p className="text-xl font-black pf-v2-t">{planIntake.proteinas} g</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Carbohidratos</p>
-                <p className="text-xl font-black text-slate-100">{planIntake.carbohidratos} g</p>
+              <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Carbohidratos</p>
+                <p className="text-xl font-black pf-v2-t">{planIntake.carbohidratos} g</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-slate-900/55 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-300">Grasas</p>
-                <p className="text-xl font-black text-slate-100">{planIntake.grasas} g</p>
+              <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">Grasas</p>
+                <p className="text-xl font-black pf-v2-t">{planIntake.grasas} g</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-slate-800/65 p-4 text-slate-100 shadow-lg">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4 pf-v2-t shadow-lg">
             <h3 className="text-lg font-black">Base de alimentos</h3>
-            <p className="text-xs text-slate-300">Busqueda sobre la tabla completa y alta de alimentos personalizados.</p>
+            <p className="text-xs pf-v2-t-70">Busqueda sobre la tabla completa y alta de alimentos personalizados.</p>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <div className="rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-3 py-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-200">Oficiales TCA-AR</p>
-                <p className="text-lg font-black text-emerald-100">{officialFoodsCount}</p>
+              <div className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-ok">Oficiales TCA-AR</p>
+                <p className="text-lg font-black pf-v2-t-ok">{officialFoodsCount}</p>
               </div>
-              <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/10 px-3 py-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200">Personalizados</p>
-                <p className="text-lg font-black text-cyan-100">{customFoods.length}</p>
+              <div className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-accent">Personalizados</p>
+                <p className="text-lg font-black pf-v2-t-accent">{customFoods.length}</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-slate-900/55 px-3 py-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">Resultados filtro</p>
-                <p className="text-lg font-black text-slate-100">{visibleFoodsCount}</p>
+              <div className="rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-70">Resultados filtro</p>
+                <p className="text-lg font-black pf-v2-t">{visibleFoodsCount}</p>
               </div>
             </div>
 
@@ -2729,12 +2725,12 @@ export default function NutritionPlanner() {
                 value={foodSearch}
                 onChange={(event) => setFoodSearch(event.target.value)}
                 placeholder="Buscar alimento por nombre o grupo"
-                className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <select
                 value={selectedFoodGroup}
                 onChange={(event) => setSelectedFoodGroup(event.target.value)}
-                className="w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100"
+                className="w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
               >
                 {availableFoodGroups.map((groupName) => (
                   <option key={groupName} value={groupName}>
@@ -2744,21 +2740,21 @@ export default function NutritionPlanner() {
               </select>
             </div>
 
-            <div className="mt-3 max-h-64 overflow-auto rounded-xl border border-white/10 bg-slate-900/60">
+            <div className="mt-3 max-h-64 overflow-auto rounded-xl border pf-v2-b pf-v2-s-deep">
               {filteredFoods.length === 0 ? (
-                <p className="px-3 py-4 text-sm text-slate-300">No hay alimentos para el filtro actual.</p>
+                <p className="px-3 py-4 text-sm pf-v2-t-70">No hay alimentos para el filtro actual.</p>
               ) : (
                 filteredFoods.map((food) => (
-                  <div key={food.id} className="grid gap-2 border-b border-white/5 px-3 py-2 text-sm last:border-b-0 sm:grid-cols-[1fr_auto] sm:gap-3">
+                  <div key={food.id} className="grid gap-2 border-b pf-v2-b px-3 py-2 text-sm last:border-b-0 sm:grid-cols-[1fr_auto] sm:gap-3">
                     <div>
                       <p className="font-semibold leading-tight">{food.nombre}</p>
-                      <p className="text-xs text-slate-300">{food.grupo} · {food.source}</p>
+                      <p className="text-xs pf-v2-t-70">{food.grupo} · {food.source}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-100 sm:justify-end">
-                      <span className="rounded-md bg-slate-700 px-2 py-0.5">{food.kcalPer100g} kcal</span>
-                      <span className="rounded-md bg-cyan-500/20 px-2 py-0.5 text-cyan-100">P {food.proteinPer100g}g</span>
-                      <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-amber-100">C {food.carbsPer100g}g</span>
-                      <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-emerald-100">G {food.fatPer100g}g</span>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold pf-v2-t sm:justify-end">
+                      <span className="rounded-md pf-v2-s px-2 py-0.5">{food.kcalPer100g} kcal</span>
+                      <span className="rounded-md pf-v2-s-accent px-2 py-0.5 pf-v2-t-accent">P {food.proteinPer100g}g</span>
+                      <span className="rounded-md pf-v2-s-warn px-2 py-0.5 pf-v2-t-warn">C {food.carbsPer100g}g</span>
+                      <span className="rounded-md pf-v2-s-ok px-2 py-0.5 pf-v2-t-ok">G {food.fatPer100g}g</span>
                     </div>
                   </div>
                 ))
@@ -2770,63 +2766,63 @@ export default function NutritionPlanner() {
                 value={newFoodName}
                 onChange={(event) => setNewFoodName(event.target.value)}
                 placeholder="Nombre alimento"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <input
                 value={newFoodGroup}
                 onChange={(event) => setNewFoodGroup(event.target.value)}
                 placeholder="Grupo"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <input
                 value={newFoodKcal}
                 onChange={(event) => setNewFoodKcal(event.target.value)}
                 placeholder="kcal/100g"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <input
                 value={newFoodProtein}
                 onChange={(event) => setNewFoodProtein(event.target.value)}
                 placeholder="proteina/100g"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <input
                 value={newFoodCarbs}
                 onChange={(event) => setNewFoodCarbs(event.target.value)}
                 placeholder="carbohidrato/100g"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
               <input
                 value={newFoodFat}
                 onChange={(event) => setNewFoodFat(event.target.value)}
                 placeholder="grasa/100g"
-                className="rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
               />
             </div>
 
             <ReliableActionButton
               type="button"
               onClick={addCustomFood}
-              className="mt-3 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+              className="mt-3 rounded-lg pf-v2-s-accent-full px-4 py-2 text-sm font-semibold pf-v2-t"
             >
               Agregar alimento personalizado
             </ReliableActionButton>
 
-            <div className="mt-5 rounded-xl border border-white/10 bg-slate-900/55 p-3">
-              <p className="text-xs font-black uppercase tracking-wide text-slate-200">Importacion masiva (CSV)</p>
-              <p className="mt-1 text-xs text-slate-300">
+            <div className="mt-5 rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+              <p className="text-xs font-black uppercase tracking-wide pf-v2-t">Importacion masiva (CSV)</p>
+              <p className="mt-1 text-xs pf-v2-t-70">
                 Formato: nombre,grupo,kcal,proteina,carbohidrato,grasa por cada fila.
               </p>
 
               <ReliableActionButton
                 type="button"
                 onClick={downloadCsvTemplate}
-                className="mt-2 rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-100"
+                className="mt-2 rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t"
               >
                 Descargar formato CSV
               </ReliableActionButton>
 
-              <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200">
+              <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent">
                 Subir archivo .csv
                 <input type="file" accept=".csv,text/csv" onChange={handleCsvFileUpload} className="hidden" />
               </label>
@@ -2834,18 +2830,18 @@ export default function NutritionPlanner() {
               <textarea
                 value={bulkFoodsInput}
                 onChange={(event) => setBulkFoodsInput(event.target.value)}
-                className="mt-2 h-28 w-full rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-400"
+                className="mt-2 h-28 w-full rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-xs pf-v2-t pf-v2-ph"
                 placeholder={"nombre,grupo,kcal,proteina,carbohidrato,grasa\nPollo cocido,Carnes,165,31,0,3.6\nArroz cocido,Cereales,130,2.4,28.2,0.3"}
               />
               <ReliableActionButton
                 type="button"
                 onClick={importFoodsFromCsv}
-                className="mt-2 rounded-lg border border-cyan-300/60 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200"
+                className="mt-2 rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
               >
                 Importar lote de alimentos
               </ReliableActionButton>
               {bulkImportMessage ? (
-                <p className="mt-2 text-xs font-semibold text-slate-200">{bulkImportMessage}</p>
+                <p className="mt-2 text-xs font-semibold pf-v2-t">{bulkImportMessage}</p>
               ) : null}
             </div>
 
@@ -2853,7 +2849,7 @@ export default function NutritionPlanner() {
               <ReliableActionButton
                 type="button"
                 onClick={saveNutritionChanges}
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm"
+                className="rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t shadow-sm"
               >
                 Guardar cambios de nutricion
               </ReliableActionButton>

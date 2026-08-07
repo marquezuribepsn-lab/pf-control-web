@@ -6,22 +6,22 @@ import { useDeportes } from "../../components/DeportesProvider";
 
 const SPORT_CARD_TONES = [
   {
-    border: "border-cyan-300/26",
-    glow: "from-cyan-500/16 via-blue-500/10 to-transparent",
-    badge: "border-cyan-200/45 bg-cyan-400/18 text-cyan-100",
-    edit: "text-cyan-200 hover:text-cyan-100",
+    border: "pf-v2-b-accent",
+    glow: "",
+    badge: "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent",
+    edit: "pf-v2-t-accent",
   },
   {
-    border: "border-emerald-300/24",
-    glow: "from-emerald-500/16 via-teal-500/10 to-transparent",
-    badge: "border-emerald-200/45 bg-emerald-400/16 text-emerald-100",
-    edit: "text-emerald-200 hover:text-emerald-100",
+    border: "pf-v2-b-ok",
+    glow: "",
+    badge: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok",
+    edit: "pf-v2-t-ok",
   },
   {
-    border: "border-violet-300/24",
-    glow: "from-violet-500/16 via-fuchsia-500/10 to-transparent",
-    badge: "border-violet-200/45 bg-violet-400/16 text-violet-100",
-    edit: "text-violet-200 hover:text-violet-100",
+    border: "pf-v2-b-violet",
+    glow: "",
+    badge: "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet",
+    edit: "pf-v2-t-violet",
   },
 ];
 
@@ -114,10 +114,10 @@ export default function DeportesPage() {
             <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Deportes</h1>
             <p className="pf-v2-muted" style={{ marginTop: 8 }}>Gestiona disciplinas y posiciones con una vista moderna enfocada en operación diaria.</p>
           </div>
-          <div className="pf-kpi pf-kpi--violet min-w-[180px] text-right">
-            <p className="pf-kpi__label">Total actual</p>
-            <p className="pf-kpi__value">{stats.total}</p>
-            <p className="pf-kpi__sub">deportes cargados</p>
+          <div className="pf-v2-card min-w-[180px] text-right">
+            <span className="pf-v2-stat-label">Total actual</span>
+            <strong className="pf-v2-stat-value">{stats.total}</strong>
+            <span className="pf-v2-stat-label">deportes cargados</span>
           </div>
         </div>
         <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -131,10 +131,10 @@ export default function DeportesPage() {
       <section className="pf-v2-card">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-white/90" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Agregar nuevo deporte</h2>
-            <p className="mt-1 text-xs text-white/40">Se crea como habilitado con lista de posiciones vacía.</p>
+            <h2 className="text-xl font-bold pf-v2-t">Agregar nuevo deporte</h2>
+            <p className="mt-1 text-xs pf-v2-t-40">Se crea como habilitado con lista de posiciones vacía.</p>
           </div>
-          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
+          <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-[11px] font-semibold pf-v2-t-accent">
             Total actual: {stats.total}
           </span>
         </div>
@@ -165,12 +165,12 @@ export default function DeportesPage() {
       <section className="pf-v2-card">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Buscador inteligente</h2>
-            <p className="mt-1 text-xs text-white/40">
+            <h2 className="pf-v2-h2">Buscador inteligente</h2>
+            <p className="mt-1 text-xs pf-v2-t-40">
               Busca por nombre de deporte o por cualquier posición (por ejemplo &quot;delantero&quot; o &quot;base&quot;).
             </p>
           </div>
-          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
+          <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-[11px] font-semibold pf-v2-t-accent">
             {deportesFiltrados.length} resultados
           </span>
         </div>
@@ -206,20 +206,20 @@ export default function DeportesPage() {
                   key={deporte.nombre}
                   className="pf-v2-card" style={{ position: "relative", overflow: "hidden" }}
                 >
-                  <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone.glow}`} />
+                  <div className={`pointer-events-none absolute inset-0${tone.glow}`} />
 
                   <div className="relative flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h2 className="truncate text-[1.65rem] font-black leading-tight text-white">{deporte.nombre}</h2>
-                      <p className="mt-1 text-xs text-slate-300">{deporte.posiciones.length} posiciones registradas</p>
+                      <h2 className="truncate text-[1.65rem] font-black leading-tight pf-v2-t">{deporte.nombre}</h2>
+                      <p className="mt-1 text-xs pf-v2-t-70">{deporte.posiciones.length} posiciones registradas</p>
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <ReliableActionButton
                         onClick={() => toggleDeporte(deporte.nombre)}
                         className={`rounded-full border px-3 py-1 text-[11px] font-bold ${
                           deporte.habilitado
-                            ? "border-emerald-200/45 bg-emerald-400/22 text-emerald-100"
-                            : "border-rose-200/45 bg-rose-500/24 text-rose-100"
+                            ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                            : "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger"
                         }`}
                       >
                         {deporte.habilitado ? "Habilitado" : "Deshabilitado"}
@@ -227,7 +227,7 @@ export default function DeportesPage() {
 
                       <ReliableActionButton
                         onClick={() => eliminarDeporte(deporte.nombre)}
-                        className="rounded-full border border-rose-300/40 bg-rose-500/90 px-3 py-1 text-[11px] font-bold text-white transition hover:bg-rose-500"
+                        className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-3 py-1 text-[11px] font-bold pf-v2-t transition pf-v2-hover"
                       >
                         Eliminar
                       </ReliableActionButton>
@@ -236,25 +236,25 @@ export default function DeportesPage() {
 
                   <div className="pf-v2-card mt-4">
                     <div className="mb-2 flex items-center justify-between">
-                      <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Posiciones</h3>
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone.badge}`}>
+                      <h3 className="text-xs font-black uppercase tracking-[0.16em] pf-v2-t-70">Posiciones</h3>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold${tone.badge}`}>
                         {deporte.posiciones.length}
                       </span>
                     </div>
 
                     {deporte.posiciones.length === 0 ? (
-                      <p className="text-xs text-slate-400">Todavía no agregaste posiciones para este deporte.</p>
+                      <p className="text-xs pf-v2-t-50">Todavía no agregaste posiciones para este deporte.</p>
                     ) : (
                       <ul className="space-y-1.5">
                         {deporte.posiciones.map((posicion, positionIndex) => (
                           <li
                             key={`${deporte.nombre}-${posicion}-${positionIndex}`}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.08] bg-[#0e1012] px-2.5 py-1.5 text-sm text-white/85"
+                            className="flex items-center justify-between gap-2 rounded-lg border pf-v2-b pf-v2-s-deep px-2.5 py-1.5 text-sm pf-v2-t"
                           >
                             <span className="truncate">{posicion}</span>
                             <ReliableActionButton
                               onClick={() => handleEliminarPosicion(deporte.nombre, posicion)}
-                              className="h-5 w-5 rounded-full bg-rose-500/22 text-center text-xs font-black leading-5 text-rose-200 hover:bg-rose-500/40"
+                              className="h-5 w-5 rounded-full pf-v2-s-danger text-center text-xs font-black leading-5 pf-v2-t-danger pf-v2-hover"
                               title="Eliminar posicion"
                             >
                               ×
@@ -277,7 +277,7 @@ export default function DeportesPage() {
                             }
                           }}
                           placeholder="Nueva posición"
-                          className="flex-1 rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                          className="flex-1 rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-xs pf-v2-t pf-v2-ph outline-none"
                         />
                         <ReliableActionButton
                           onClick={() => handleAgregarPosicion(deporte.nombre)}
@@ -290,7 +290,7 @@ export default function DeportesPage() {
 
                     <ReliableActionButton
                       onClick={() => setEditando(editando === deporte.nombre ? null : deporte.nombre)}
-                      className={`mt-3 text-xs font-semibold ${tone.edit}`}
+                      className={`mt-3 text-xs font-semibold${tone.edit}`}
                     >
                       {editando === deporte.nombre ? "Cancelar edición" : "Editar posiciones"}
                     </ReliableActionButton>
@@ -317,17 +317,17 @@ function StatTile({
   suffix?: string;
 }) {
   const palette = {
-    cyan: "border-cyan-300/35 bg-cyan-500/12 text-cyan-100",
-    emerald: "border-emerald-300/35 bg-emerald-500/12 text-emerald-100",
-    rose: "border-rose-300/35 bg-rose-500/12 text-rose-100",
-    violet: "border-violet-300/35 bg-violet-500/12 text-violet-100",
+    cyan: "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent",
+    emerald: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok",
+    rose: "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger",
+    violet: "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet",
   };
 
   return (
     <article className={`rounded-2xl border p-3 ${palette[tone]}`}>
-      <p className="text-[11px] uppercase tracking-[0.16em] text-white/35">{label}</p>
-      <p className="mt-1 text-2xl font-black text-white">{value}</p>
-      {suffix ? <p className="text-[10px] text-white/45">{suffix}</p> : null}
+      <p className="text-[11px] uppercase tracking-[0.16em] pf-v2-t-40">{label}</p>
+      <p className="mt-1 text-2xl font-black pf-v2-t">{value}</p>
+      {suffix ? <p className="text-[10px] pf-v2-t-50">{suffix}</p> : null}
     </article>
   );
 }

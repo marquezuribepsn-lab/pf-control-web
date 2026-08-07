@@ -1073,8 +1073,8 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       : null;
   const ContainerTag: "main" | "div" = embedded ? "div" : "main";
   const containerClassName = embedded
-    ? "w-full space-y-6 px-1 py-2 text-slate-100 lg:px-2"
-    : "mx-auto max-w-7xl space-y-6 p-6 text-slate-100";
+    ? "w-full space-y-6 px-1 py-2 pf-v2-t lg:px-2"
+    : "mx-auto max-w-7xl space-y-6 p-6 pf-v2-t";
 
   return (
     <ContainerTag className={containerClassName}>
@@ -1111,14 +1111,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               <ReliableActionButton
                 type="button"
                 onClick={() => setEntrenamientoSectionView("sesiones")}
-                className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2 text-sm font-semibold pf-v2-t transition pf-v2-hover"
               >
                 Ver sesiones
               </ReliableActionButton>
             ) : (
               <Link
                 href="/semana"
-                className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2 text-sm font-semibold pf-v2-t transition pf-v2-hover"
               >
                 Ver templates
               </Link>
@@ -1126,14 +1126,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
           </div>
         </div>
 
-        <div className="relative mt-4 inline-flex rounded-xl border border-white/15 bg-slate-950/60 p-1">
+        <div className="relative mt-4 inline-flex rounded-xl border pf-v2-b-hi pf-v2-s-deep p-1">
           <ReliableActionButton
             type="button"
             onClick={() => setEntrenamientoSectionView("sesiones")}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
               entrenamientoSection === "sesiones"
-                ? "bg-cyan-300 text-slate-950"
-                : "text-slate-200 hover:bg-white/10"
+                ? "pf-v2-s-accent pf-v2-t"
+                : "pf-v2-t pf-v2-hover"
             }`}
           >
             Sesiones
@@ -1143,8 +1143,8 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             onClick={() => setEntrenamientoSectionView("ejercicios")}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
               entrenamientoSection === "ejercicios"
-                ? "bg-emerald-300 text-slate-950"
-                : "text-slate-200 hover:bg-white/10"
+                ? "pf-v2-s-ok pf-v2-t"
+                : "pf-v2-t pf-v2-hover"
             }`}
           >
             Ejercicios
@@ -1152,27 +1152,27 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
         </div>
 
         <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-cyan-100">
+          <div className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-accent">
               {entrenamientoSection === "ejercicios" ? "Ejercicios cargados" : "Sesiones activas"}
             </p>
-            <p className="text-3xl font-black text-white">
+            <p className="text-3xl font-black pf-v2-t">
               {entrenamientoSection === "ejercicios" ? ejerciciosOrdenados.length : sesionesOperativas.totalSesiones}
             </p>
           </div>
-          <div className="rounded-2xl border border-emerald-200/25 bg-emerald-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-emerald-100">
+          <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">
               {entrenamientoSection === "ejercicios" ? "Categorias" : "Jornadas proximas"}
             </p>
-            <p className="text-3xl font-black text-white">
+            <p className="text-3xl font-black pf-v2-t">
               {entrenamientoSection === "ejercicios" ? totalCategoriasBiblioteca : sesionesOperativas.jornadasProximas}
             </p>
           </div>
-          <div className="rounded-2xl border border-lime-200/25 bg-lime-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-lime-100">
+          <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">
               {entrenamientoSection === "ejercicios" ? "Con video" : "Asistencia"}
             </p>
-            <p className="text-3xl font-black text-white">
+            <p className="text-3xl font-black pf-v2-t">
               {entrenamientoSection === "ejercicios"
                 ? ejerciciosOrdenados.filter((item) => String(item.videoUrl || "").trim().length > 0).length
                 : tasaAsistencia === null
@@ -1180,11 +1180,11 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 : `${tasaAsistencia}%`}
             </p>
           </div>
-          <div className="rounded-2xl border border-white/20 bg-slate-900/70 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-slate-300">
+          <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-70">
               {entrenamientoSection === "ejercicios" ? "Sin video" : "Plantel / Alumnos"}
             </p>
-            <p className="text-3xl font-black text-white">
+            <p className="text-3xl font-black pf-v2-t">
               {entrenamientoSection === "ejercicios"
                 ? ejerciciosOrdenados.filter((item) => String(item.videoUrl || "").trim().length === 0).length
                 : `${sesionesOperativas.totalJugadoras}/${sesionesOperativas.totalAlumnos}`}
@@ -1198,19 +1198,19 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       <section className="grid gap-3 md:grid-cols-3">
         <Link
           href="/asistencias"
-          className="rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-left text-sm font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-500/20"
+          className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent px-4 py-3 text-left text-sm font-semibold pf-v2-t-accent transition hover:-translate-y-0.5 pf-v2-hover"
         >
           Abrir asistencias
         </Link>
         <Link
           href="/clientes?seccion=plantel"
-          className="rounded-2xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
+          className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-left text-sm font-semibold pf-v2-t-ok transition hover:-translate-y-0.5 pf-v2-hover"
         >
           Abrir plantel
         </Link>
         <Link
           href="/registros"
-          className="rounded-2xl border border-violet-300/35 bg-violet-500/10 px-4 py-3 text-left text-sm font-semibold text-violet-100 transition hover:-translate-y-0.5 hover:bg-violet-500/20"
+          className="rounded-2xl border pf-v2-b-violet pf-v2-s-violet px-4 py-3 text-left text-sm font-semibold pf-v2-t-violet transition hover:-translate-y-0.5 pf-v2-hover"
         >
           Ver registros
         </Link>
@@ -1219,25 +1219,25 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       <SesionesAIPlanner />
 
       {mostrarFormulario && editandoSesion && (
-        <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">
             {editandoSesion ? "Editar Sesión" : "Nueva Sesión"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-slate-200">Título</label>
+                <label className="block text-sm font-medium pf-v2-t">Título</label>
                 <input
                   type="text"
                   value={formData.titulo}
                   onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                  className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-200">Asignar a</label>
+                <label className="block text-sm font-medium pf-v2-t">Asignar a</label>
                 <select
                   value={formData.asignacionTipo}
                   onChange={(e) =>
@@ -1248,7 +1248,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       alumnoAsignado: "",
                     })
                   }
-                  className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                  className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                 >
                   <option value="jugadoras">Jugadoras</option>
                   <option value="alumnos">Alumno/a</option>
@@ -1258,7 +1258,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               {formData.asignacionTipo === "jugadoras" ? (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-200">Categoría</label>
+                    <label className="block text-sm font-medium pf-v2-t">Categoría</label>
                     <select
                       value={formData.categoriaAsignada}
                       onChange={(e) =>
@@ -1268,7 +1268,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                           jugadoraAsignada: "",
                         })
                       }
-                      className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                      className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                       required
                     >
                       <option value="">Seleccionar categoría</option>
@@ -1283,7 +1283,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-200">
+                    <label className="block text-sm font-medium pf-v2-t">
                       Jugadora (opcional)
                     </label>
                     <select
@@ -1291,7 +1291,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       onChange={(e) =>
                         setFormData({ ...formData, jugadoraAsignada: e.target.value })
                       }
-                      className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                      className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                     >
                       <option value="">Todas las jugadoras de la categoría</option>
                       {jugadorasFiltradas.map((jugadora) => (
@@ -1304,11 +1304,11 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 </>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-slate-200">Alumno/a</label>
+                  <label className="block text-sm font-medium pf-v2-t">Alumno/a</label>
                   <select
                     value={formData.alumnoAsignado}
                     onChange={(e) => setFormData({ ...formData, alumnoAsignado: e.target.value })}
-                    className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                    className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                     required
                   >
                     <option value="">Seleccionar alumno/a</option>
@@ -1323,28 +1323,28 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-200">Objetivo</label>
+              <label className="block text-sm font-medium pf-v2-t">Objetivo</label>
               <textarea
                 value={formData.objetivo}
                 onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                 rows={3}
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-slate-200">Duración (minutos)</label>
+                <label className="block text-sm font-medium pf-v2-t">Duración (minutos)</label>
                 <input
                   type="number"
                   value={formData.duracion}
                   onChange={(e) => setFormData({ ...formData, duracion: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 text-white"
+                  className="mt-1 block w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-3 py-2 pf-v2-t"
                   placeholder="60"
                   required
                 />
               </div>
-              <div className="rounded-xl border border-white/15 bg-slate-800 p-3 text-sm text-slate-200">
+              <div className="rounded-xl border pf-v2-b-hi pf-v2-s-deep p-3 text-sm pf-v2-t">
                 Los bloques se editan al guardar la sesión con el botón &quot;Cargar bloques&quot;.
               </div>
             </div>
@@ -1352,14 +1352,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             <div className="flex gap-2">
               <ReliableActionButton
                 type="submit"
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-xl pf-v2-s-blue px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
               >
                 {editandoSesion ? "Actualizar" : "Crear"}
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={resetForm}
-                className="rounded-xl border border-white/20 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800"
+                className="rounded-xl border pf-v2-b-hi px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
               >
                 Cancelar
               </ReliableActionButton>
@@ -1369,19 +1369,19 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       )}
 
       {editandoBloquesId && (
-        <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/90 p-5">
+        <div className="mb-6 rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="pf-v2-h2">Editor de bloques</h2>
             <div className="flex gap-2">
               <ReliableActionButton
                 onClick={addBlock}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white"
+                className="rounded-lg pf-v2-s-blue px-3 py-1.5 text-sm font-semibold pf-v2-t"
               >
                 + Bloque
               </ReliableActionButton>
               <ReliableActionButton
                 onClick={saveBlocks}
-                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white"
+                className="rounded-lg pf-v2-s-ok px-3 py-1.5 text-sm font-semibold pf-v2-t"
               >
                 Guardar bloques
               </ReliableActionButton>
@@ -1391,7 +1391,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   setBloquesDraft([]);
                   setBusquedasEjercicio({});
                 }}
-                className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-slate-100"
+                className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-sm pf-v2-t"
               >
                 Cerrar
               </ReliableActionButton>
@@ -1400,16 +1400,16 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
 
           <div className="grid gap-3">
             {bloquesDraft.length === 0 && (
-              <p className="text-sm text-slate-300">Todavía no hay bloques. Agrega el primero.</p>
+              <p className="text-sm pf-v2-t-70">Todavía no hay bloques. Agrega el primero.</p>
             )}
 
             {bloquesDraft.map((bloque, index) => (
-              <div key={bloque.id} className="rounded-xl border border-white/10 bg-slate-800 p-4 shadow-sm">
+              <div key={bloque.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-semibold text-slate-100">Bloque {index + 1}</p>
+                  <p className="text-sm font-semibold pf-v2-t">Bloque {index + 1}</p>
                   <ReliableActionButton
                     onClick={() => removeBlock(index)}
-                    className="text-xs font-semibold text-red-600"
+                    className="text-xs font-semibold pf-v2-t-danger"
                   >
                     Eliminar bloque
                   </ReliableActionButton>
@@ -1417,29 +1417,29 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 <input
                   value={bloque.titulo}
                   onChange={(e) => updateBlockField(index, "titulo", e.target.value)}
-                  className="mb-2 w-full rounded-md border border-white/20 bg-slate-700 px-3 py-2 text-white"
+                  className="mb-2 w-full rounded-md border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                   placeholder="Título del bloque"
                 />
                 <textarea
                   value={bloque.objetivo}
                   onChange={(e) => updateBlockField(index, "objetivo", e.target.value)}
-                  className="w-full rounded-md border border-white/20 bg-slate-700 px-3 py-2 text-white"
+                  className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                   placeholder="Objetivo del bloque"
                   rows={2}
                 />
 
-                <div className="mt-3 rounded-lg border border-white/10 bg-slate-900/70 p-3">
+                <div className="mt-3 rounded-lg border pf-v2-b pf-v2-s-deep p-3">
                   <label className="pf-v2-field-label">
                     Buscar ejercicio
                   </label>
                   <input
                     value={busquedasEjercicio[bloque.id] || ""}
                     onChange={(e) => updateBusqueda(bloque.id, e.target.value)}
-                    className="mb-2 w-full rounded-md border border-white/20 bg-slate-700 px-3 py-2 text-white"
+                    className="mb-2 w-full rounded-md border pf-v2-b-hi pf-v2-s px-3 py-2 pf-v2-t"
                     placeholder="Ej: sentadilla, sprint, core"
                   />
 
-                  <div className="max-h-36 overflow-y-auto rounded-md border border-white/10">
+                  <div className="max-h-36 overflow-y-auto rounded-md border pf-v2-b">
                     {(() => {
                       const query = (busquedasEjercicio[bloque.id] || "").trim().toLowerCase();
                       const filtered = ejercicios
@@ -1449,13 +1449,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       if (filtered.length === 0 && query.length > 0) {
                         return (
                           <div className="p-3">
-                            <p className="mb-2 text-xs text-slate-300">
+                            <p className="mb-2 text-xs pf-v2-t-70">
                               No encontramos ese ejercicio en tu biblioteca.
                             </p>
                             <ReliableActionButton
                               type="button"
                               onClick={() => openQuickExerciseEditor(index, busquedasEjercicio[bloque.id] || "")}
-                              className="w-full rounded-md border border-emerald-300/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-200"
+                              className="w-full rounded-md border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-sm font-semibold pf-v2-t-ok"
                             >
                               Crear ejercicio nuevo
                             </ReliableActionButton>
@@ -1466,12 +1466,12 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       return filtered.map((ej) => (
                         <div
                           key={`${bloque.id}-${ej.id}`}
-                          className="flex items-center justify-between border-b border-white/10 px-3 py-2"
+                          className="flex items-center justify-between border-b pf-v2-b px-3 py-2"
                         >
                           <ReliableActionButton
                             type="button"
                             onClick={() => addExerciseToBlock(index, ej.id)}
-                            className="flex-1 text-left text-sm text-slate-100 hover:text-cyan-200"
+                            className="flex-1 text-left text-sm pf-v2-t"
                           >
                             {ej.nombre}
                           </ReliableActionButton>
@@ -1479,14 +1479,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                             <ReliableActionButton
                               type="button"
                               onClick={() => openQuickExerciseEditor(index, "", ej.id)}
-                              className="text-[11px] font-semibold text-amber-200"
+                              className="text-[11px] font-semibold pf-v2-t-warn"
                             >
                               Editar
                             </ReliableActionButton>
                             <ReliableActionButton
                               type="button"
                               onClick={() => addExerciseToBlock(index, ej.id)}
-                              className="text-[11px] font-semibold text-slate-300"
+                              className="text-[11px] font-semibold pf-v2-t-70"
                             >
                               + agregar
                             </ReliableActionButton>
@@ -1499,7 +1499,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   <ReliableActionButton
                     type="button"
                     onClick={() => openQuickExerciseEditor(index, busquedasEjercicio[bloque.id] || "")}
-                    className="mt-2 w-full rounded-md border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200"
+                    className="mt-2 w-full rounded-md border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent"
                   >
                     Nuevo ejercicio rapido
                   </ReliableActionButton>
@@ -1508,7 +1508,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     {(bloque.ejercicios || []).map((ejercicioAsignado, exerciseIndex) => (
                       <div
                         key={`${bloque.id}-${exerciseIndex}`}
-                        className="rounded-md border border-white/10 bg-slate-800 p-3"
+                        className="rounded-md border pf-v2-b pf-v2-s-deep p-3"
                       >
                         <div className="mb-2 flex items-center justify-between">
                           <ReliableActionButton
@@ -1520,22 +1520,22 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                                 setExerciseDetailId(ejercicioAsignado.ejercicioId);
                               }
                             }}
-                            className="text-left text-sm font-semibold text-slate-100 underline-offset-2 hover:text-cyan-300 hover:underline transition-colors"
+                            className="text-left text-sm font-semibold pf-v2-t underline-offset-2 hover:underline transition-colors"
                           >
                             {getExerciseName(ejercicioAsignado.ejercicioId)}
                           </ReliableActionButton>
                           <ReliableActionButton
                             type="button"
                             onClick={() => removeExerciseFromBlock(index, exerciseIndex)}
-                            className="text-xs font-semibold text-red-400"
+                            className="text-xs font-semibold pf-v2-t-danger"
                           >
                             Quitar
                           </ReliableActionButton>
                         </div>
 
                         <div className="mt-2 flex flex-wrap items-end gap-2">
-                          <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                          <div className="rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2">
+                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                               Series
                             </label>
                             <input
@@ -1545,13 +1545,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               onChange={(e) =>
                                 updateExerciseField(index, exerciseIndex, "series", e.target.value)
                               }
-                              className="w-20 rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                              className="w-20 rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                               placeholder="3"
                             />
                           </div>
 
-                          <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                          <div className="rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2">
+                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                               Reps
                             </label>
                             <input
@@ -1559,13 +1559,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               onChange={(e) =>
                                 updateExerciseField(index, exerciseIndex, "repeticiones", e.target.value)
                               }
-                              className="w-24 rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                              className="w-24 rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                               placeholder="8-12"
                             />
                           </div>
 
-                          <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                          <div className="rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2">
+                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                               Carga
                             </label>
                             <input
@@ -1573,13 +1573,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               onChange={(e) =>
                                 updateExerciseField(index, exerciseIndex, "carga", e.target.value)
                               }
-                              className="w-28 rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                              className="w-28 rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                               placeholder="70% 1RM o 42 kg"
                             />
                           </div>
 
-                          <div className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2">
-                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                          <div className="rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2">
+                            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                               Descanso
                             </label>
                             <input
@@ -1587,7 +1587,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               onChange={(e) =>
                                 updateExerciseField(index, exerciseIndex, "descanso", e.target.value)
                               }
-                              className="w-24 rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                              className="w-24 rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                               placeholder="60s"
                             />
                           </div>
@@ -1595,7 +1595,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                           {(ejercicioAsignado.metricas || []).map((medicion, measurementIndex) => (
                             <div
                               key={`${bloque.id}-${exerciseIndex}-${measurementIndex}`}
-                              className="rounded-md border border-white/15 bg-slate-700/70 px-2 py-2"
+                              className="rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2"
                             >
                               <div className="mb-1 flex items-center justify-between gap-2">
                                 <input
@@ -1609,7 +1609,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                                       e.target.value
                                     )
                                   }
-                                  className="w-20 rounded border border-white/20 bg-slate-700 px-2 py-1 text-[10px] text-white"
+                                  className="w-20 rounded border pf-v2-b-hi pf-v2-s px-2 py-1 text-[10px] pf-v2-t"
                                   placeholder="RIR"
                                 />
                                 <ReliableActionButton
@@ -1617,7 +1617,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                                   onClick={() =>
                                     removeMeasurementFromExercise(index, exerciseIndex, measurementIndex)
                                   }
-                                  className="text-[10px] font-semibold text-red-300"
+                                  className="text-[10px] font-semibold pf-v2-t-danger"
                                 >
                                   x
                                 </ReliableActionButton>
@@ -1633,7 +1633,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                                     e.target.value
                                   )
                                 }
-                                className="w-20 rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                                className="w-20 rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                 placeholder="2"
                               />
                             </div>
@@ -1642,7 +1642,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                           <ReliableActionButton
                             type="button"
                             onClick={() => addMeasurementToExercise(index, exerciseIndex)}
-                            className="rounded-md border border-cyan-400/40 px-2 py-2 text-sm font-bold text-cyan-300"
+                            className="rounded-md border pf-v2-b-accent px-2 py-2 text-sm font-bold pf-v2-t-accent"
                             title="Agregar métrica"
                           >
                             +
@@ -1659,7 +1659,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               e.target.value
                             )
                           }
-                          className="mt-2 w-full rounded-md border border-white/20 bg-slate-700 px-2 py-2 text-sm text-white"
+                          className="mt-2 w-full rounded-md border pf-v2-b-hi pf-v2-s px-2 py-2 text-sm pf-v2-t"
                           placeholder="Observaciones"
                           rows={2}
                         />
@@ -1676,37 +1676,37 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
 
       <div className="grid gap-4">
         {sesiones.map((sesion) => (
-          <div key={sesion.id} className="rounded-2xl border border-white/15 bg-slate-900/80 p-5 shadow-sm">
+          <div key={sesion.id} className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-5 shadow-sm">
             <div className="mb-3 flex items-start justify-between">
               <div className="flex-1">
                 <h2 className="text-xl font-semibold">{sesion.titulo}</h2>
-                <p className="mt-1 text-sm text-slate-300">{sesion.objetivo}</p>
+                <p className="mt-1 text-sm pf-v2-t-70">{sesion.objetivo}</p>
               </div>
               <div className="flex gap-1">
                 <ReliableActionButton
                   onClick={() => handleEdit(sesion)}
-                  className="rounded p-1 text-slate-300 hover:bg-slate-700 hover:text-white"
+                  className="rounded p-1 pf-v2-t-70 pf-v2-hover"
                   title="Editar sesión"
                 >
                   Editar
                 </ReliableActionButton>
                 <ReliableActionButton
                   onClick={() => startBlockEdit(sesion)}
-                  className="rounded p-1 text-cyan-300 hover:bg-slate-700"
+                  className="rounded p-1 pf-v2-t-accent pf-v2-hover"
                   title="Cargar bloques"
                 >
                   Bloques
                 </ReliableActionButton>
                 <ReliableActionButton
                   onClick={() => openAutomation(sesion)}
-                  className="rounded p-1 text-emerald-300 hover:bg-slate-700"
+                  className="rounded p-1 pf-v2-t-ok pf-v2-hover"
                   title="Automatizar cargas"
                 >
                   Progresion
                 </ReliableActionButton>
                 <ReliableActionButton
                   onClick={() => handleDelete(sesion.id)}
-                  className="rounded p-1 text-slate-300 hover:bg-red-900/40 hover:text-red-300"
+                  className="rounded p-1 pf-v2-t-70 pf-v2-hover"
                   title="Eliminar"
                 >
                   Eliminar
@@ -1715,8 +1715,8 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-xs text-slate-300">Asignación</p>
+              <div className="rounded-xl pf-v2-s-deep p-3">
+                <p className="text-xs pf-v2-t-70">Asignación</p>
                 <p className="font-medium">
                   {sesion.asignacionTipo === "alumnos"
                     ? `Alumno/a: ${sesion.alumnoAsignado || "-"}`
@@ -1724,50 +1724,50 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-xs text-slate-300">Jugadora puntual</p>
+              <div className="rounded-xl pf-v2-s-deep p-3">
+                <p className="text-xs pf-v2-t-70">Jugadora puntual</p>
                 <p className="font-medium">{sesion.jugadoraAsignada || "Todas"}</p>
               </div>
 
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-xs text-slate-300">Duración</p>
+              <div className="rounded-xl pf-v2-s-deep p-3">
+                <p className="text-xs pf-v2-t-70">Duración</p>
                 <p className="font-medium">{sesion.duracion} min</p>
               </div>
 
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-xs text-slate-300">Bloques</p>
+              <div className="rounded-xl pf-v2-s-deep p-3">
+                <p className="text-xs pf-v2-t-70">Bloques</p>
                 <p className="font-medium">{sesion.bloques.length}</p>
               </div>
 
-              <div className="rounded-xl bg-slate-800 p-3">
-                <p className="text-xs text-slate-300">Prescripciones</p>
+              <div className="rounded-xl pf-v2-s-deep p-3">
+                <p className="text-xs pf-v2-t-70">Prescripciones</p>
                 <p className="font-medium">{sesion.prescripciones?.length || 0}</p>
               </div>
             </div>
 
             {automatizandoSesionId === sesion.id ? (
-              <div className="mt-4 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-4">
+              <div className="mt-4 rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-emerald-200">
+                    <p className="text-sm font-semibold pf-v2-t-ok">
                       Motor de progresion individual
                     </p>
-                    <p className="mt-1 text-xs text-slate-300">
+                    <p className="mt-1 text-xs pf-v2-t-70">
                       Ajusta intensidad y volumen solo para las personas que selecciones. La sesion base no se rompe: se guardan prescripciones individuales encima.
                     </p>
                   </div>
                   <ReliableActionButton
                     type="button"
                     onClick={() => setAutomatizandoSesionId(null)}
-                    className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-200"
+                    className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t"
                   >
                     Cerrar
                   </ReliableActionButton>
                 </div>
 
                 <div className="mt-4 grid gap-3 lg:grid-cols-[1.4fr_0.8fr]">
-                  <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                       Personas objetivo
                     </p>
                     <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -1781,8 +1781,8 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                             key={personaKey}
                             className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-3 text-sm transition ${
                               isChecked
-                                ? "border-emerald-300/40 bg-emerald-400/10"
-                                : "border-white/10 bg-slate-900/70"
+                                ? "pf-v2-b-ok pf-v2-s-ok"
+                                : "pf-v2-b pf-v2-s-deep"
                             }`}
                           >
                             <input
@@ -1792,11 +1792,11 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                               className="mt-1"
                             />
                             <div>
-                              <p className="font-semibold text-white">{persona.nombre}</p>
-                              <p className="text-xs text-slate-300">
+                              <p className="font-semibold pf-v2-t">{persona.nombre}</p>
+                              <p className="text-xs pf-v2-t-70">
                                 Perfil {persona.tipo === "alumnos" ? "alumno/a" : "jugadora"} | Readiness {readiness}%
                               </p>
-                              <p className="text-[11px] text-slate-400">
+                              <p className="text-[11px] pf-v2-t-50">
                                 {persona.peso ? `${persona.peso} kg` : "Peso -"} | {persona.altura ? `${persona.altura} cm` : "Altura -"}
                               </p>
                             </div>
@@ -1811,18 +1811,18 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                       Ajuste semanal
                     </p>
 
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                       Preset tecnico
                     </label>
                     <select
                       value={selectedPresetId}
                       onChange={(e) => applyPreset(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                     >
                       {AUTOMATION_PRESETS.map((preset) => (
                         <option key={preset.id} value={preset.id}>
@@ -1831,12 +1831,12 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       ))}
                       <option value="custom">Personalizado</option>
                     </select>
-                    <p className="mt-2 text-xs text-slate-300">
+                    <p className="mt-2 text-xs pf-v2-t-70">
                       {AUTOMATION_PRESETS.find((preset) => preset.id === selectedPresetId)?.description ||
                         "Ajuste manual libre para que no dependas de presets cerrados."}
                     </p>
 
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                       Intensidad (%)
                     </label>
                     <input
@@ -1846,10 +1846,10 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                         setSelectedPresetId("custom");
                         setIntensidadDelta(Number(e.target.value) || 0);
                       }}
-                      className="mt-1 w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                     />
 
-                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    <label className="mt-3 block text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                       Volumen (%)
                     </label>
                     <input
@@ -1859,49 +1859,49 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                         setSelectedPresetId("custom");
                         setVolumenDelta(Number(e.target.value) || 0);
                       }}
-                      className="mt-1 w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                     />
 
-                    <p className="mt-3 text-xs text-slate-300">
+                    <p className="mt-3 text-xs pf-v2-t-70">
                       Intensidad mueve carga y %1RM. Volumen ajusta series, reps y descanso sugerido.
                     </p>
 
                     {automationPreview ? (
-                      <div className="mt-4 rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">
+                      <div className="mt-4 rounded-xl border pf-v2-b-accent pf-v2-s-accent p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-accent">
                           Preview tecnico
                         </p>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                          <div className="rounded-lg bg-slate-900/70 px-3 py-2 text-xs">
-                            <p className="text-slate-400">Personas seleccionadas</p>
-                            <p className="font-semibold text-white">{automationPreview.selectedCount}</p>
+                          <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                            <p className="pf-v2-t-50">Personas seleccionadas</p>
+                            <p className="font-semibold pf-v2-t">{automationPreview.selectedCount}</p>
                           </div>
-                          <div className="rounded-lg bg-slate-900/70 px-3 py-2 text-xs">
-                            <p className="text-slate-400">Readiness promedio</p>
-                            <p className="font-semibold text-emerald-200">{automationPreview.avgReadiness}%</p>
+                          <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                            <p className="pf-v2-t-50">Readiness promedio</p>
+                            <p className="font-semibold pf-v2-t-ok">{automationPreview.avgReadiness}%</p>
                           </div>
-                          <div className="rounded-lg bg-slate-900/70 px-3 py-2 text-xs">
-                            <p className="text-slate-400">Ejercicios recalculados</p>
-                            <p className="font-semibold text-white">{automationPreview.totalExercises}</p>
+                          <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                            <p className="pf-v2-t-50">Ejercicios recalculados</p>
+                            <p className="font-semibold pf-v2-t">{automationPreview.totalExercises}</p>
                           </div>
-                          <div className="rounded-lg bg-slate-900/70 px-3 py-2 text-xs">
-                            <p className="text-slate-400">%1RM medio</p>
-                            <p className="font-semibold text-white">
+                          <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                            <p className="pf-v2-t-50">%1RM medio</p>
+                            <p className="font-semibold pf-v2-t">
                               {automationPreview.avgPercent1RM ? `${automationPreview.avgPercent1RM}%` : "Estimado"}
                             </p>
                           </div>
                         </div>
-                        <p className="mt-2 text-xs text-slate-300">
+                        <p className="mt-2 text-xs pf-v2-t-70">
                           Tonelaje total estimado: {automationPreview.totalTonnage.toLocaleString("es-AR")} kg
                         </p>
                         <div className="mt-2 grid gap-2">
                           {automationPreview.sampleAdjustments.map((sample, index) => (
                             <div
                               key={`${sample.persona}-${sample.ejercicio}-${index}`}
-                              className="rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-xs"
+                              className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-xs"
                             >
-                              <p className="font-semibold text-white">{sample.persona}</p>
-                              <p className="text-slate-300">
+                              <p className="font-semibold pf-v2-t">{sample.persona}</p>
+                              <p className="pf-v2-t-70">
                                 {sample.ejercicio} · {sample.reps} · {sample.carga}
                               </p>
                             </div>
@@ -1914,7 +1914,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       type="button"
                       onClick={() => applyAutomation(sesion)}
                       disabled={personasSeleccionadas.length === 0 || sesion.bloques.length === 0}
-                      className="mt-4 w-full rounded-xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-4 w-full rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Aplicar automatizacion
                     </ReliableActionButton>
@@ -1924,41 +1924,41 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             ) : null}
 
             {sesion.prescripciones && sesion.prescripciones.length > 0 ? (
-              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <div className="mt-4 rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                   Prescripciones individuales guardadas
                 </p>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   {sesion.prescripciones.map((prescripcion) => (
                     <div
                       key={prescripcion.id}
-                      className="rounded-xl border border-white/10 bg-slate-900/70 p-3"
+                      className="rounded-xl border pf-v2-b pf-v2-s-deep p-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-semibold text-white">{prescripcion.personaNombre}</p>
-                          <p className="text-xs text-slate-300">{prescripcion.resumen}</p>
+                          <p className="font-semibold pf-v2-t">{prescripcion.personaNombre}</p>
+                          <p className="text-xs pf-v2-t-70">{prescripcion.resumen}</p>
                         </div>
                         <ReliableActionButton
                           type="button"
                           onClick={() => removePrescription(sesion, prescripcion.id)}
-                          className="rounded-lg border border-rose-300/30 px-2 py-1 text-[11px] font-semibold text-rose-200"
+                          className="rounded-lg border pf-v2-b-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                         >
                           Quitar
                         </ReliableActionButton>
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                        <div className="rounded-lg bg-slate-800 px-3 py-2 text-xs">
-                          <p className="text-slate-400">Readiness</p>
-                          <p className="font-semibold text-emerald-200">{prescripcion.readinessScore}%</p>
+                        <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                          <p className="pf-v2-t-50">Readiness</p>
+                          <p className="font-semibold pf-v2-t-ok">{prescripcion.readinessScore}%</p>
                         </div>
-                        <div className="rounded-lg bg-slate-800 px-3 py-2 text-xs">
-                          <p className="text-slate-400">Bloques</p>
-                          <p className="font-semibold text-white">{prescripcion.bloques.length}</p>
+                        <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                          <p className="pf-v2-t-50">Bloques</p>
+                          <p className="font-semibold pf-v2-t">{prescripcion.bloques.length}</p>
                         </div>
-                        <div className="rounded-lg bg-slate-800 px-3 py-2 text-xs">
-                          <p className="text-slate-400">Actualizada</p>
-                          <p className="font-semibold text-white">
+                        <div className="rounded-lg pf-v2-s-deep px-3 py-2 text-xs">
+                          <p className="pf-v2-t-50">Actualizada</p>
+                          <p className="font-semibold pf-v2-t">
                             {new Date(prescripcion.createdAt).toLocaleDateString("es-AR")}
                           </p>
                         </div>
@@ -1973,11 +1973,11 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       </div>
       </>
       ) : (
-      <section className="rounded-3xl border border-white/15 bg-slate-900/80 p-5 shadow-sm">
+      <section className="rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-5 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-black text-white">Biblioteca de ejercicios</h2>
-            <p className="text-sm text-slate-300">
+            <h2 className="text-2xl font-black pf-v2-t">Biblioteca de ejercicios</h2>
+            <p className="text-sm pf-v2-t-70">
               Gestiona ejercicios dentro del modulo Entrenamiento.
             </p>
           </div>
@@ -1991,23 +1991,23 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
         </div>
 
         {ejerciciosOrdenados.length === 0 ? (
-          <p className="rounded-xl border border-white/10 bg-slate-950/60 p-4 text-sm text-slate-300">
+          <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
             No hay ejercicios cargados todavia.
           </p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {ejerciciosOrdenados.map((ejercicio) => (
-              <article key={ejercicio.id} className="rounded-2xl border border-white/10 bg-slate-900/65 p-4">
+              <article key={ejercicio.id} className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-base font-bold text-white">{ejercicio.nombre}</p>
-                    <p className="mt-1 text-xs text-cyan-100">{ejercicio.categoria || "Sin categoria"}</p>
+                    <p className="text-base font-bold pf-v2-t">{ejercicio.nombre}</p>
+                    <p className="mt-1 text-xs pf-v2-t-accent">{ejercicio.categoria || "Sin categoria"}</p>
                   </div>
                   <div className="flex gap-1">
                     <ReliableActionButton
                       type="button"
                       onClick={() => openQuickExerciseEditor(null, "", ejercicio.id)}
-                      className="rounded-lg border border-white/20 px-2 py-1 text-[11px] font-semibold text-slate-200"
+                      className="rounded-lg border pf-v2-b-hi px-2 py-1 text-[11px] font-semibold pf-v2-t"
                     >
                       Editar
                     </ReliableActionButton>
@@ -2018,7 +2018,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                           eliminarEjercicio(ejercicio.id);
                         }
                       }}
-                      className="rounded-lg border border-rose-300/30 px-2 py-1 text-[11px] font-semibold text-rose-200"
+                      className="rounded-lg border pf-v2-b-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                     >
                       Eliminar
                     </ReliableActionButton>
@@ -2026,10 +2026,10 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 </div>
 
                 {ejercicio.objetivo ? (
-                  <p className="mt-2 text-xs text-slate-300">Objetivo: {ejercicio.objetivo}</p>
+                  <p className="mt-2 text-xs pf-v2-t-70">Objetivo: {ejercicio.objetivo}</p>
                 ) : null}
                 {ejercicio.descripcion ? (
-                  <p className="mt-1 line-clamp-3 text-xs text-slate-400">{ejercicio.descripcion}</p>
+                  <p className="mt-1 line-clamp-3 text-xs pf-v2-t-50">{ejercicio.descripcion}</p>
                 ) : null}
 
                 {(ejercicio.gruposMusculares || []).length > 0 ? (
@@ -2037,7 +2037,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     {(ejercicio.gruposMusculares || []).slice(0, 4).map((grupo) => (
                       <span
                         key={`${ejercicio.id}-${grupo}`}
-                        className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-100"
+                        className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-0.5 text-[10px] font-semibold pf-v2-t-accent"
                       >
                         {grupo}
                       </span>
@@ -2049,7 +2049,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   <ReliableActionButton
                     type="button"
                     onClick={() => setExerciseDetailId(ejercicio.id)}
-                    className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                    className="rounded-lg border pf-v2-b-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                   >
                     Ver detalle
                   </ReliableActionButton>
@@ -2066,9 +2066,9 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
         const embedUrl = detailEx?.videoUrl ? getYouTubeEmbedUrl(detailEx.videoUrl) : null;
         const isDirectVideo = detailEx?.videoUrl ? isDirectVideoFile(detailEx.videoUrl) : false;
         return (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 p-4">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center pf-v2-s-deep p-4">
             <div
-              className="w-full max-w-2xl rounded-2xl border border-white/15 bg-slate-900 shadow-2xl"
+              className="w-full max-w-2xl rounded-2xl border pf-v2-b-hi pf-v2-s-deep shadow-2xl"
               onTouchStart={(e) => setExerciseDetailTouchStartY(e.changedTouches[0]?.clientY ?? null)}
               onTouchEnd={(e) => {
                 if (exerciseDetailTouchStartY === null) return;
@@ -2080,17 +2080,17 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 }
               }}
             >
-              <div className="flex justify-center border-b border-white/10 px-6 pt-2">
-                <span className="h-1.5 w-12 rounded-full bg-slate-600" aria-hidden="true" />
+              <div className="flex justify-center border-b pf-v2-b px-6 pt-2">
+                <span className="h-1.5 w-12 rounded-full pf-v2-s" aria-hidden="true" />
               </div>
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-6 py-4">
-                <h2 className="text-lg font-bold text-white">
+              <div className="flex items-center justify-between gap-3 border-b pf-v2-b px-6 py-4">
+                <h2 className="text-lg font-bold pf-v2-t">
                   {detailEx?.nombre ?? "Ejercicio"}
                 </h2>
                 <ReliableActionButton
                   type="button"
                   onClick={() => setExerciseDetailId(null)}
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800"
+                  className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t pf-v2-hover"
                 >
                   Cerrar
                 </ReliableActionButton>
@@ -2099,7 +2099,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               <div className="max-h-[80vh] overflow-y-auto p-6 space-y-4">
                 {detailEx?.videoUrl ? (
                   isDirectVideo ? (
-                    <div className="w-full overflow-hidden rounded-xl border border-white/10">
+                    <div className="w-full overflow-hidden rounded-xl border pf-v2-b">
                       <video
                         src={detailEx.videoUrl}
                         controls
@@ -2109,7 +2109,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       />
                     </div>
                   ) : embedUrl ? (
-                    <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10">
+                    <div className="aspect-video w-full overflow-hidden rounded-xl border pf-v2-b">
                       <iframe
                         src={embedUrl}
                         title={detailEx.nombre}
@@ -2121,7 +2121,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                       />
                     </div>
                   ) : (
-                    <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10">
+                    <div className="aspect-video w-full overflow-hidden rounded-xl border pf-v2-b">
                       <iframe
                         src={detailEx.videoUrl}
                         title={detailEx.nombre}
@@ -2134,28 +2134,28 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     </div>
                   )
                 ) : (
-                  <div className="flex flex-col items-center gap-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-6 py-8 text-center">
+                  <div className="flex flex-col items-center gap-3 rounded-xl border pf-v2-b-warn pf-v2-s-warn px-6 py-8 text-center">
                     <span className="text-3xl">🎯</span>
-                    <p className="text-base font-semibold text-amber-200">
+                    <p className="text-base font-semibold pf-v2-t-warn">
                       Consulta al profe la ejecucion correcta
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs pf-v2-t-50">
                       Este ejercicio no tiene video de referencia cargado aun.
                     </p>
                   </div>
                 )}
 
                 {(detailEx?.objetivo || detailEx?.descripcion || (detailEx?.gruposMusculares?.length ?? 0) > 0) && (
-                  <div className="space-y-2 rounded-xl border border-white/10 bg-slate-800/60 p-4">
+                  <div className="space-y-2 rounded-xl border pf-v2-b pf-v2-s-deep p-4">
                     {detailEx?.objetivo && (
-                      <p className="text-xs text-slate-300">
-                        <span className="font-semibold text-slate-100">Objetivo: </span>
+                      <p className="text-xs pf-v2-t-70">
+                        <span className="font-semibold pf-v2-t">Objetivo: </span>
                         {detailEx.objetivo}
                       </p>
                     )}
                     {detailEx?.descripcion && (
-                      <p className="text-xs text-slate-300">
-                        <span className="font-semibold text-slate-100">Descripcion: </span>
+                      <p className="text-xs pf-v2-t-70">
+                        <span className="font-semibold pf-v2-t">Descripcion: </span>
                         {detailEx.descripcion}
                       </p>
                     )}
@@ -2164,7 +2164,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                         {detailEx!.gruposMusculares!.map((g) => (
                           <span
                             key={g}
-                            className="rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-200"
+                            className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-0.5 text-[10px] font-semibold pf-v2-t-accent"
                           >
                             {g}
                           </span>
@@ -2180,21 +2180,21 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       })() : null}
 
       {quickExerciseOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4">
-          <div className="mt-8 w-full max-w-3xl rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto pf-v2-s-deep p-4">
+          <div className="mt-8 w-full max-w-3xl rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold pf-v2-t">
                   {quickExerciseEditId ? "Editar ejercicio" : "Nuevo ejercicio rapido"}
                 </h2>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs pf-v2-t-70">
                   Crea o edita ejercicios sin salir de Entrenamiento.
                 </p>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={resetQuickExercise}
-                className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-slate-200"
+                className="rounded-lg border pf-v2-b-hi px-3 py-1.5 text-xs font-semibold pf-v2-t"
               >
                 Cerrar
               </ReliableActionButton>
@@ -2211,7 +2211,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     onChange={(e) =>
                       setQuickExerciseForm((prev) => ({ ...prev, nombre: e.target.value }))
                     }
-                    className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                    className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                     placeholder="Ej: Hip thrust unilateral"
                     required
                   />
@@ -2225,7 +2225,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     onChange={(e) =>
                       setQuickExerciseForm((prev) => ({ ...prev, categoria: e.target.value }))
                     }
-                    className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                    className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                     required
                   >
                     {categoriasEjercicios.map((categoria) => (
@@ -2246,7 +2246,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   onChange={(e) =>
                     setQuickExerciseForm((prev) => ({ ...prev, objetivo: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                   placeholder="Ej: Desarrollar fuerza de cadera y estabilizacion"
                 />
               </div>
@@ -2261,7 +2261,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                     setQuickExerciseForm((prev) => ({ ...prev, descripcion: e.target.value }))
                   }
                   rows={3}
-                  className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                   placeholder="Indicaciones tecnicas y puntos de control"
                 />
               </div>
@@ -2275,13 +2275,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   onChange={(e) =>
                     setQuickExerciseForm((prev) => ({ ...prev, videoUrl: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
                   placeholder="https://youtube.com/..."
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide pf-v2-t-50">
                   Grupos musculares involucrados
                 </label>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -2292,8 +2292,8 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                         key={group}
                         className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
                           active
-                            ? "border-cyan-300/40 bg-cyan-500/10 text-cyan-100"
-                            : "border-white/10 bg-slate-800 text-slate-200"
+                            ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                            : "pf-v2-b pf-v2-s-deep pf-v2-t"
                         }`}
                       >
                         <input
@@ -2312,7 +2312,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 <ReliableActionButton
                   type="button"
                   onClick={resetQuickExercise}
-                  className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-200"
+                  className="rounded-xl border pf-v2-b-hi px-4 py-2 text-sm font-semibold pf-v2-t"
                 >
                   Cancelar
                 </ReliableActionButton>

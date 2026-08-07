@@ -26,19 +26,19 @@ export function AdminRunningLoaderCard({
   return (
     <div
       className={mergeClassNames(
-        "flex items-center gap-3 rounded-xl border border-cyan-300/35 bg-slate-950/80 px-4 py-3 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]",
+        "flex items-center gap-3 rounded-xl border pf-v2-b-accent pf-v2-s-deep px-4 py-3 ",
         className
       )}
     >
       <div className="relative h-12 w-12 shrink-0">
-        <span className="absolute inset-0 rounded-full border-2 border-cyan-200/25" />
+        <span className="absolute inset-0 rounded-full border-2 pf-v2-b-accent" />
         <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-200 border-r-cyan-300/70 animate-spin" />
         <span
-          className="absolute inset-[4px] rounded-full border border-cyan-200/30 border-l-transparent animate-spin"
+          className="absolute inset-[4px] rounded-full border pf-v2-b-accent border-l-transparent animate-spin"
           style={{ animationDirection: "reverse", animationDuration: "1.7s" }}
         />
 
-        <span className="absolute inset-0 flex items-center justify-center text-cyan-100">
+        <span className="absolute inset-0 flex items-center justify-center pf-v2-t-accent">
           <svg
             viewBox="0 0 24 24"
             className="h-6 w-6"
@@ -59,8 +59,8 @@ export function AdminRunningLoaderCard({
       </div>
 
       <div className="min-w-[160px]">
-        <p className="text-sm font-semibold text-cyan-100">{message}</p>
-        <p className="text-xs text-cyan-100/75">{detail}</p>
+        <p className="text-sm font-semibold pf-v2-t-accent">{message}</p>
+        <p className="text-xs pf-v2-t-accent">{detail}</p>
       </div>
     </div>
   );
@@ -87,7 +87,7 @@ export default function AdminRunningLoaderOverlay({
       className={mergeClassNames(
         positionClass,
         "z-[120] flex items-center justify-center pf-dialog-fade-overlay",
-        "bg-slate-950/60 backdrop-blur-sm",
+        "pf-v2-s-deep backdrop-blur-sm",
         backdropClassName,
         className
       )}

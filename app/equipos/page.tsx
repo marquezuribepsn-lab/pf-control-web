@@ -16,19 +16,19 @@ type EquipoFormData = {
 
 const CARD_TONES = [
   {
-    border: "border-cyan-300/26",
-    glow: "from-cyan-500/16 via-blue-500/10 to-transparent",
-    badge: "border-cyan-200/45 bg-cyan-400/16 text-cyan-100",
+    border: "pf-v2-b-accent",
+    glow: "",
+    badge: "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent",
   },
   {
-    border: "border-emerald-300/24",
-    glow: "from-emerald-500/16 via-teal-500/10 to-transparent",
-    badge: "border-emerald-200/45 bg-emerald-400/16 text-emerald-100",
+    border: "pf-v2-b-ok",
+    glow: "",
+    badge: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok",
   },
   {
-    border: "border-violet-300/24",
-    glow: "from-violet-500/16 via-fuchsia-500/10 to-transparent",
-    badge: "border-violet-200/45 bg-violet-400/16 text-violet-100",
+    border: "pf-v2-b-violet",
+    glow: "",
+    badge: "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet",
   },
 ];
 
@@ -186,7 +186,7 @@ export default function EquiposPage() {
 
       {mostrarFormulario && (
         <section className="pf-v2-card">
-          <h2 className="mb-4 text-xl font-bold text-white/90" style={{ color: `hsl(var(--hue,243),65%,65%)` }}>
+          <h2 className="mb-4 text-xl font-bold pf-v2-t">
             {editandoEquipo ? "Editar equipo" : "Nuevo equipo"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -232,13 +232,13 @@ export default function EquiposPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/75">
+              <label className="block text-sm font-medium pf-v2-t-70">
                 Descripción
               </label>
               <textarea
                 value={formData.descripcion}
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                className="mt-1 block w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                className="mt-1 block w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2.5 pf-v2-t pf-v2-ph outline-none"
                 rows={3}
               />
             </div>
@@ -264,10 +264,10 @@ export default function EquiposPage() {
       <section className="pf-v2-card">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,243),65%,65%)` }}>Buscador de equipos</h2>
-            <p className="mt-1 text-xs text-white/40">Filtra por nombre, categoría, temporada o descripción.</p>
+            <h2 className="pf-v2-h2">Buscador de equipos</h2>
+            <p className="mt-1 text-xs pf-v2-t-40">Filtra por nombre, categoría, temporada o descripción.</p>
           </div>
-          <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
+          <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-[11px] font-semibold pf-v2-t-accent">
             {equiposFiltrados.length} resultados
           </span>
         </div>
@@ -303,45 +303,45 @@ export default function EquiposPage() {
                   key={equipo.id}
                   className="pf-v2-card" style={{ position: "relative", overflow: "hidden" }}
                 >
-                  <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone.glow}`} />
+                  <div className={`pointer-events-none absolute inset-0${tone.glow}`} />
 
                   <div className="relative flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Link
                         href={`/equipos/${encodeURIComponent(equipo.nombre)}`}
-                        className="block truncate text-[1.55rem] font-black leading-tight text-white hover:text-cyan-100"
+                        className="block truncate text-[1.55rem] font-black leading-tight pf-v2-t"
                       >
                         {equipo.nombre}
                       </Link>
-                      <p className="mt-1 text-xs text-slate-300">{equipo.jugadoras} jugadoras asociadas</p>
+                      <p className="mt-1 text-xs pf-v2-t-70">{equipo.jugadoras} jugadoras asociadas</p>
                     </div>
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone.badge}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold${tone.badge}`}>
                       {equipo.temporada}
                     </span>
                   </div>
 
                   <div className="relative mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-white/[0.1] bg-[#0e1012] px-2.5 py-1 text-[11px] font-semibold text-white/75">
+                    <span className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-2.5 py-1 text-[11px] font-semibold pf-v2-t-70">
                       {equipo.categoria}
                     </span>
                   </div>
 
                   {equipo.descripcion ? (
-                    <p className="relative mt-3 line-clamp-2 text-sm text-white/65">{equipo.descripcion}</p>
+                    <p className="relative mt-3 line-clamp-2 text-sm pf-v2-t-70">{equipo.descripcion}</p>
                   ) : (
-                    <p className="relative mt-3 text-sm text-white/40">Sin descripción cargada.</p>
+                    <p className="relative mt-3 text-sm pf-v2-t-40">Sin descripción cargada.</p>
                   )}
 
                   <div className="relative mt-4 grid grid-cols-2 gap-2">
                     <Link
                       href={`/equipos/${encodeURIComponent(equipo.nombre)}`}
-                      className="rounded-xl border border-cyan-300/35 bg-cyan-500/16 px-3 py-2 text-center text-xs font-semibold text-cyan-100 transition hover:bg-cyan-500/24"
+                      className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-center text-xs font-semibold pf-v2-t-accent transition pf-v2-hover"
                     >
                       Ver equipo
                     </Link>
                     <Link
                       href={`/equipos/${encodeURIComponent(equipo.nombre)}/sesiones`}
-                      className="rounded-xl border border-emerald-300/35 bg-emerald-500/16 px-3 py-2 text-center text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/24"
+                      className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-center text-xs font-semibold pf-v2-t-ok transition pf-v2-hover"
                     >
                       Sesiones
                     </Link>
@@ -353,7 +353,7 @@ export default function EquiposPage() {
                     </ReliableActionButton>
                     <ReliableActionButton
                       onClick={() => handleDelete(equipo.id)}
-                      className="rounded-xl border border-rose-300/35 bg-rose-500/16 px-3 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-500/24"
+                      className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger pf-v2-hover"
                     >
                       Eliminar
                     </ReliableActionButton>
@@ -380,17 +380,17 @@ function StatTile({
   suffix?: string;
 }) {
   const palette = {
-    cyan: "border-cyan-300/35 bg-cyan-500/12 text-cyan-100",
-    emerald: "border-emerald-300/35 bg-emerald-500/12 text-emerald-100",
-    violet: "border-violet-300/35 bg-violet-500/12 text-violet-100",
-    amber: "border-amber-300/35 bg-amber-500/12 text-amber-100",
+    cyan: "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent",
+    emerald: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok",
+    violet: "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet",
+    amber: "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn",
   };
 
   return (
     <article className={`rounded-2xl border p-3 ${palette[tone]}`}>
-      <p className="text-[11px] uppercase tracking-[0.16em] text-white/35">{label}</p>
-      <p className="mt-1 text-2xl font-black text-white">{value}</p>
-      {suffix ? <p className="text-[10px] text-white/45">{suffix}</p> : null}
+      <p className="text-[11px] uppercase tracking-[0.16em] pf-v2-t-40">{label}</p>
+      <p className="mt-1 text-2xl font-black pf-v2-t">{value}</p>
+      {suffix ? <p className="text-[10px] pf-v2-t-50">{suffix}</p> : null}
     </article>
   );
 }

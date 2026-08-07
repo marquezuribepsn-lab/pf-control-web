@@ -309,16 +309,16 @@ export default function CuentaPage() {
     }
   };
 
-  const pageTextClass = "text-slate-100";
-  const mutedTextClass = "text-slate-300";
-  const sectionClass = "min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg";
-  const inputClass = "box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60";
+  const pageTextClass = "pf-v2-t";
+  const mutedTextClass = "pf-v2-t-70";
+  const sectionClass = "min-w-0 overflow-hidden rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-lg";
+  const inputClass = "box-border w-full max-w-full rounded-2xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none transition";
 
   if (loading) {
     return (
       <main className={`pf-account-theme-scope mx-auto max-w-5xl p-6 ${pageTextClass}`}>
         <div className={sectionClass}>
-          <p className={`text-sm ${mutedTextClass}`}>Cargando cuenta...</p>
+          <p className={`text-sm${mutedTextClass}`}>Cargando cuenta...</p>
         </div>
       </main>
     );
@@ -328,19 +328,19 @@ export default function CuentaPage() {
     <main className={`pf-account-theme-scope mx-auto max-w-5xl p-6 ${pageTextClass}`}>
       <div className="mb-6">
         <h1 className="text-3xl font-black">Cuenta</h1>
-        <p className={`mt-1 text-sm ${mutedTextClass}`}>
+        <p className={`mt-1 text-sm${mutedTextClass}`}>
           Revisa tus datos, actualiza tu acceso y reenvía el mail de verificación cuando lo necesites.
         </p>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-rose-400/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
+        <div className="mb-4 rounded-2xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {error}
         </div>
       )}
 
       {message && (
-        <div className="mb-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100">
+        <div className="mb-4 rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">
           {message}
         </div>
       )}
@@ -350,9 +350,9 @@ export default function CuentaPage() {
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <h2 className="pf-v2-h2">Datos del profesor / admin</h2>
-              <p className={`mt-1 text-sm ${mutedTextClass}`}>Estos son los datos que hoy existen guardados para tu usuario.</p>
+              <p className={`mt-1 text-sm${mutedTextClass}`}>Estos son los datos que hoy existen guardados para tu usuario.</p>
             </div>
-            <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${account?.emailVerified ? "bg-emerald-500/20 text-emerald-200" : "bg-amber-500/20 text-amber-200"}`}>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${account?.emailVerified ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-warn pf-v2-t-warn"}`}>
               {account?.emailVerified ? "Verificado" : "Sin verificar"}
             </span>
           </div>
@@ -376,14 +376,14 @@ export default function CuentaPage() {
           </div>
 
           {!account?.emailVerified && (
-            <div className="mt-5 rounded-2xl border border-amber-400/25 bg-amber-500/10 p-4">
-              <p className="text-sm text-amber-100">
+            <div className="mt-5 rounded-2xl border pf-v2-b-warn pf-v2-s-warn p-4">
+              <p className="text-sm pf-v2-t-warn">
                 Tu email todavía no está verificado. Si no encontrás el mensaje, podés reenviarlo ahora.
               </p>
               <ReliableActionButton
                 onClick={handleResendVerification}
                 disabled={sendingVerification}
-                className="mt-3 rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-3 rounded-xl pf-v2-s-warn px-4 py-2 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {sendingVerification ? "Enviando..." : "Enviar mail de verificación"}
               </ReliableActionButton>
@@ -393,13 +393,13 @@ export default function CuentaPage() {
 
         <section className={sectionClass}>
           <h2 className="pf-v2-h2">Editar cuenta</h2>
-          <p className={`mt-1 text-sm ${mutedTextClass}`}>
+          <p className={`mt-1 text-sm${mutedTextClass}`}>
             Los datos personales se guardan directo. Para cambiar email o contraseña te pedimos la contraseña actual.
           </p>
 
           <form className="pf-account-form mt-5 grid min-w-0 gap-4" onSubmit={handleSave} noValidate>
             <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"} xl:col-span-2`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}xl:col-span-2`}>
                 Nombre completo
                 <input
                   type="text"
@@ -411,7 +411,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
                 Edad
                 <input
                   type="number"
@@ -425,7 +425,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
                 Fecha de nacimiento
                 <DateInput
                   value={fechaNacimiento}
@@ -434,7 +434,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
                 Altura (cm)
                 <input
                   type="number"
@@ -449,12 +449,12 @@ export default function CuentaPage() {
               </label>
 
               {/* ── Teléfono ─────────────────────────────────────────── */}
-              <div className={`flex min-w-0 flex-col gap-2 text-sm font-medium xl:col-span-2 ${"text-slate-200"}`}>
+              <div className={`flex min-w-0 flex-col gap-2 text-sm font-medium xl:col-span-2 ${"pf-v2-t"}`}>
                 {/* Etiqueta */}
                 <span className="flex items-center gap-2">
                   Teléfono
                   {phoneVerified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
+                    <span className="inline-flex items-center gap-1 rounded-full pf-v2-s-ok px-2.5 py-0.5 text-xs font-bold pf-v2-t-ok">
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.5L4 8L8.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       Verificado
                     </span>
@@ -473,7 +473,7 @@ export default function CuentaPage() {
                     }}
                     style={{ width: "96px", flexShrink: 0 }}
                     className={`cursor-pointer rounded-2xl border px-2 py-3 text-sm outline-none transition ${
-                      "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
+                      "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                     }`}
                   >
                     {COUNTRY_CODES.map((c) => (
@@ -492,7 +492,7 @@ export default function CuentaPage() {
                     placeholder="2257 613518"
                     style={{ flex: 1, minWidth: 0 }}
                     className={`rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-                      "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
+                      "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                     }`}
                   />
                 </div>
@@ -500,9 +500,9 @@ export default function CuentaPage() {
                 {/* Paso 1 — botón enviar código */}
                 {phoneLocal.replace(/\D/g, "").length >= 6 && !phoneVerified && !phoneCodeSent && (
                   <div className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
-                    "border-cyan-400/20 bg-cyan-500/10"
+                    "pf-v2-b-accent pf-v2-s-accent"
                   }`}>
-                    <p className={`text-xs ${"text-slate-300"}`}>
+                    <p className={`text-xs ${"pf-v2-t-70"}`}>
                       Código de 6 dígitos a tu email
                     </p>
                     <ReliableActionButton
@@ -511,7 +511,7 @@ export default function CuentaPage() {
                       disabled={phoneSending}
                       reliabilityMode="off"
                       className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold whitespace-nowrap transition disabled:opacity-60 ${
-                        "bg-cyan-500 text-white hover:bg-cyan-400"
+                        "pf-v2-s-accent-full pf-v2-t pf-v2-hover"
                       }`}
                     >
                       {phoneSending ? "Enviando..." : "Enviar código"}
@@ -522,9 +522,9 @@ export default function CuentaPage() {
                 {/* Paso 2 — ingresar el código */}
                 {phoneCodeSent && !phoneVerified && (
                   <div className={`rounded-2xl border p-4 ${
-                    "border-emerald-400/20 bg-emerald-500/10"
+                    "pf-v2-b-ok pf-v2-s-ok"
                   }`}>
-                    <p className={`mb-3 text-xs ${"text-emerald-300/90"}`}>
+                    <p className={`mb-3 text-xs ${"pf-v2-t-ok"}`}>
                       Revisá tu email e ingresá el código:
                     </p>
                     {/* Fila: input + Confirmar */}
@@ -538,7 +538,7 @@ export default function CuentaPage() {
                         onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         style={{ flex: 1, minWidth: 0 }}
                         className={`rounded-2xl border px-3 py-3 text-center text-lg font-black tracking-[0.25em] outline-none transition ${
-                          "border-emerald-400/30 bg-slate-950/70 text-slate-100 focus:border-emerald-400"
+                          "pf-v2-b-ok pf-v2-s-deep pf-v2-t"
                         }`}
                         placeholder="000000"
                       />
@@ -548,7 +548,7 @@ export default function CuentaPage() {
                         disabled={phoneVerifying || phoneCode.replace(/\D/g, "").length !== 6}
                         reliabilityMode="off"
                         style={{ flexShrink: 0 }}
-                        className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white whitespace-nowrap transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-xl pf-v2-s-ok px-4 py-3 text-sm font-bold pf-v2-t whitespace-nowrap transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {phoneVerifying ? "Verificando…" : "Confirmar"}
                       </ReliableActionButton>
@@ -561,7 +561,7 @@ export default function CuentaPage() {
                         disabled={phoneSending}
                         reliabilityMode="off"
                         className={`text-xs font-semibold underline-offset-2 hover:underline disabled:opacity-50 transition ${
-                          "text-slate-400"
+                          "pf-v2-t-50"
                         }`}
                       >
                         {phoneSending ? "Enviando…" : "Reenviar código"}
@@ -571,7 +571,7 @@ export default function CuentaPage() {
                 )}
               </div>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"} xl:col-span-2`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}xl:col-span-2`}>
                 Direccion
                 <input
                   type="text"
@@ -583,11 +583,11 @@ export default function CuentaPage() {
               </label>
             </div>
 
-            <div className={`mt-1 border-t pt-4 ${"border-white/10"}`}>
-              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${"text-slate-400"}`}>Credenciales</p>
+            <div className={`mt-1 border-t pt-4 ${"pf-v2-b"}`}>
+              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${"pf-v2-t-50"}`}>Credenciales</p>
             </div>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
               Email
               <input
                 type="email"
@@ -598,7 +598,7 @@ export default function CuentaPage() {
               />
             </label>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
               Contraseña actual
               <input
                 type="password"
@@ -609,7 +609,7 @@ export default function CuentaPage() {
               />
             </label>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"pf-v2-t"}`}>
               Nueva contraseña
               <input
                 type="password"
@@ -629,24 +629,24 @@ export default function CuentaPage() {
             </ReliableActionButton>
           </form>
 
-          <div className="mt-6 rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
-            <p className="text-sm font-semibold text-rose-100">Sesion</p>
-            <p className="mt-1 text-xs text-rose-100/90">
+          <div className="mt-6 rounded-2xl border pf-v2-b-danger pf-v2-s-danger p-4">
+            <p className="text-sm font-semibold pf-v2-t-danger">Sesion</p>
+            <p className="mt-1 text-xs pf-v2-t-danger">
               Si terminaste de usar el sistema, cerrá tu sesion desde aca.
             </p>
             <ReliableActionButton
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="mt-3 rounded-xl border border-rose-200/60 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 transition hover:bg-rose-500/35 disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-3 rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-2 text-sm font-bold pf-v2-t-danger transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-70"
             >
               {signingOut ? "Cerrando sesion..." : "Cerrar sesion"}
             </ReliableActionButton>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-red-400/40 bg-red-600/10 p-4">
-            <p className="text-sm font-semibold text-red-200">Eliminar cuenta</p>
-            <p className="mt-1 text-xs text-red-200/90">
+          <div className="mt-4 rounded-2xl border pf-v2-b-danger pf-v2-s-danger p-4">
+            <p className="text-sm font-semibold pf-v2-t-danger">Eliminar cuenta</p>
+            <p className="mt-1 text-xs pf-v2-t-danger">
               Borra de forma permanente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.
             </p>
 
@@ -659,13 +659,13 @@ export default function CuentaPage() {
                   setError(null);
                   setMessage(null);
                 }}
-                className="mt-3 rounded-xl border border-red-300/60 bg-red-600/25 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-600/40"
+                className="mt-3 rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-2 text-sm font-bold pf-v2-t-danger transition pf-v2-hover"
               >
                 Eliminar mi cuenta
               </ReliableActionButton>
             ) : (
               <div className="mt-3 grid gap-3">
-                <p className="text-xs font-semibold text-red-100">
+                <p className="text-xs font-semibold pf-v2-t-danger">
                   Ingresá tu contraseña actual para confirmar:
                 </p>
                 <input
@@ -681,7 +681,7 @@ export default function CuentaPage() {
                     type="button"
                     onClick={handleDeleteAccount}
                     disabled={deleting}
-                    className="rounded-xl border border-red-300/60 bg-red-600/80 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-2 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {deleting ? "Eliminando..." : "Confirmar eliminación"}
                   </ReliableActionButton>
@@ -692,7 +692,7 @@ export default function CuentaPage() {
                       setDeletePassword("");
                     }}
                     disabled={deleting}
-                    className="rounded-xl border border-white/20 bg-slate-900/30 px-4 py-2 text-sm font-bold text-slate-200 transition hover:bg-slate-900/50 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     Cancelar
                   </ReliableActionButton>
@@ -710,7 +710,7 @@ function InfoCard({ label, value, mono = false }: { label: string; value: string
   return (
     <div className="pf-v2-card" style={{ padding: 16 }}>
       <span className="pf-v2-stat-label">{label}</span>
-      <p className={`mt-2 break-all text-sm text-slate-100 ${mono ? "font-mono" : ""}`}>{value}</p>
+      <p className={`mt-2 break-all text-sm pf-v2-t ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   );
 }

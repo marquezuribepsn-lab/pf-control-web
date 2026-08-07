@@ -97,8 +97,8 @@ export default function TabAlumnos({
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-slate-100">👥 Alumnos y Asignaciones</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <h2 className="text-xl font-black pf-v2-t">👥 Alumnos y Asignaciones</h2>
+        <p className="mt-1 text-sm pf-v2-t-50">
           Asignación de planes nutricionales a cada alumno.
         </p>
       </div>
@@ -109,26 +109,26 @@ export default function TabAlumnos({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar alumno..."
-        className="w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
       />
 
       {/* Summary chips */}
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full border border-white/10 bg-slate-800/60 px-3 py-1 text-xs text-slate-400">
+        <span className="rounded-full border pf-v2-b pf-v2-s-deep px-3 py-1 text-xs pf-v2-t-50">
           {allAlumnos.length} alumnos
         </span>
-        <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">
+        <span className="rounded-full border pf-v2-b-ok pf-v2-s-ok px-3 py-1 text-xs pf-v2-t-ok">
           {assignments.length} con plan asignado
         </span>
-        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-400">
+        <span className="rounded-full border pf-v2-b-warn pf-v2-s-warn px-3 py-1 text-xs pf-v2-t-warn">
           {allAlumnos.length - assignments.length} sin plan
         </span>
       </div>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
-          <p className="text-slate-500">No hay alumnos que coincidan.</p>
+        <div className="rounded-2xl border border-dashed pf-v2-b p-10 text-center">
+          <p className="pf-v2-t-40">No hay alumnos que coincidan.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -140,21 +140,21 @@ export default function TabAlumnos({
             return (
               <div
                 key={nombre}
-                className="rounded-2xl border border-white/10 bg-slate-900/60 p-4"
+                className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   {/* Left: name + last record */}
                   <div>
-                    <h4 className="font-semibold text-slate-100">{nombre}</h4>
+                    <h4 className="font-semibold pf-v2-t">{nombre}</h4>
                     {last && (
                       <div className="mt-1 flex flex-wrap gap-2">
                         {last.pesoKg && (
-                          <span className="text-xs text-slate-500">⚖️ {last.pesoKg} kg</span>
+                          <span className="text-xs pf-v2-t-40">⚖️ {last.pesoKg} kg</span>
                         )}
                         {last.imc && (
-                          <span className="text-xs text-slate-500">IMC {last.imc.toFixed(1)}</span>
+                          <span className="text-xs pf-v2-t-40">IMC {last.imc.toFixed(1)}</span>
                         )}
-                        <span className="text-xs text-slate-600">📅 {last.fecha}</span>
+                        <span className="text-xs pf-v2-t-40">📅 {last.fecha}</span>
                       </div>
                     )}
                   </div>
@@ -163,16 +163,16 @@ export default function TabAlumnos({
                   <div className="flex items-center gap-2">
                     {assignedPlan ? (
                       <>
-                        <div className="rounded-lg border border-white/10 bg-slate-800/60 px-3 py-1.5 text-sm">
-                          <p className="text-xs text-slate-500">Plan asignado</p>
-                          <p className="font-medium text-slate-200">{assignedPlan.nombre}</p>
+                        <div className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-1.5 text-sm">
+                          <p className="text-xs pf-v2-t-40">Plan asignado</p>
+                          <p className="font-medium pf-v2-t">{assignedPlan.nombre}</p>
                           <p className={`text-xs ${GOAL_COLORS[assignedPlan.objetivo]}`}>
                             {GOAL_LABELS[assignedPlan.objetivo]}
                           </p>
                         </div>
                         <button
                           onClick={() => handleUnassign(nombre)}
-                          className="rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/20"
+                          className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-2.5 py-1.5 text-xs font-medium pf-v2-t-danger pf-v2-hover"
                           title="Desasignar plan"
                         >
                           Desasignar
@@ -180,7 +180,7 @@ export default function TabAlumnos({
                       </>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500">Sin plan asignado</span>
+                        <span className="text-xs pf-v2-t-40">Sin plan asignado</span>
                         {planes.length > 0 && (
                           <AssignPlanDropdown
                             planes={planes}
@@ -194,7 +194,7 @@ export default function TabAlumnos({
 
                 {/* If assigned: show plan targets */}
                 {assignedPlan && (
-                  <div className="mt-3 flex flex-wrap gap-3 border-t border-white/5 pt-3 text-xs text-slate-500">
+                  <div className="mt-3 flex flex-wrap gap-3 border-t pf-v2-b pt-3 text-xs pf-v2-t-40">
                     <span>🔥 {assignedPlan.targets.calorias} kcal</span>
                     <span>💪 {assignedPlan.targets.proteinas}g prot</span>
                     <span>🍞 {assignedPlan.targets.carbohidratos}g carbs</span>
@@ -241,19 +241,19 @@ function AssignPlanDropdown({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20"
+        className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-medium pf-v2-t-ok pf-v2-hover"
       >
         {label} ▾
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-8 z-40 min-w-[200px] rounded-xl border border-white/10 bg-slate-800 py-1 shadow-xl">
+          <div className="absolute right-0 top-8 z-40 min-w-[200px] rounded-xl border pf-v2-b pf-v2-s-deep py-1 shadow-xl">
             {planes.map((p) => (
               <button
                 key={p.id}
                 onClick={() => { onAssign(p.id); setOpen(false); }}
-                className="block w-full px-4 py-2 text-left text-sm text-slate-200 hover:bg-slate-700"
+                className="block w-full px-4 py-2 text-left text-sm pf-v2-t pf-v2-hover"
               >
                 {p.nombre}
               </button>

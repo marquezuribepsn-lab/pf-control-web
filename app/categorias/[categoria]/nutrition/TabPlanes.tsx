@@ -38,7 +38,7 @@ type Props = Pick<
 >;
 
 const INPUT_CLS =
-  "w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30";
+  "w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none focus:ring-1 ";
 
 // ─── MacroBar ─────────────────────────────────────────────────────────────────
 
@@ -60,12 +60,12 @@ function MacroBar({
   return (
     <div>
       <div className="mb-1 flex justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
-        <span className={over ? "text-red-400" : "text-slate-300"}>
+        <span className="pf-v2-t-50">{label}</span>
+        <span className={over ? "pf-v2-t-danger" : "pf-v2-t-70"}>
           {value.toFixed(0)}/{target.toFixed(0)} {unit}
         </span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
+      <div className="h-1.5 w-full overflow-hidden rounded-full pf-v2-s">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, backgroundColor: over ? "#f87171" : color }}
@@ -95,12 +95,12 @@ function FoodSearch({
   }, [q, foodMap]);
 
   return (
-    <div className="fixed inset-0 z-[130] overflow-y-auto bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[130] overflow-y-auto pf-v2-s-deep backdrop-blur-sm">
       <div className="flex min-h-full items-start justify-center px-4 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border pf-v2-b pf-v2-s-deep p-5 shadow-2xl">
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="font-semibold text-slate-200">Buscar alimento</h4>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300">✕</button>
+          <h4 className="font-semibold pf-v2-t">Buscar alimento</h4>
+          <button onClick={onClose} className="pf-v2-t-40 ">✕</button>
         </div>
         <input
           autoFocus
@@ -112,19 +112,19 @@ function FoodSearch({
         />
         <div className="mt-3 space-y-1 max-h-72 overflow-y-auto">
           {results.length === 0 && q.length > 1 && (
-            <p className="py-4 text-center text-sm text-slate-500">Sin resultados para "{q}"</p>
+            <p className="py-4 text-center text-sm pf-v2-t-40">Sin resultados para "{q}"</p>
           )}
           {results.map((food) => (
             <button
               key={food.id}
               onClick={() => onSelect(food)}
-              className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left hover:bg-slate-800"
+              className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left pf-v2-hover"
             >
               <div>
-                <p className="text-sm text-slate-200">{food.nombre}</p>
-                <p className="text-xs text-slate-500">{food.grupo}</p>
+                <p className="text-sm pf-v2-t">{food.nombre}</p>
+                <p className="text-xs pf-v2-t-40">{food.grupo}</p>
               </div>
-              <div className="text-right text-xs text-slate-400">
+              <div className="text-right text-xs pf-v2-t-50">
                 <p>{food.kcalPer100g} kcal</p>
                 <p>{food.proteinPer100g}g p</p>
               </div>
@@ -205,21 +205,21 @@ function PlanForm({
   }
 
   return (
-    <div className="fixed inset-0 z-[130] overflow-y-auto bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[130] overflow-y-auto pf-v2-s-deep backdrop-blur-sm">
       <div className="flex min-h-full items-start justify-center px-4 py-10">
-      <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
-        <h3 className="mb-4 text-lg font-bold text-slate-100">
+      <div className="w-full max-w-2xl rounded-2xl border pf-v2-b pf-v2-s-deep p-6 shadow-2xl">
+        <h3 className="mb-4 text-lg font-bold pf-v2-t">
           {initial ? "Editar plan" : "Nuevo plan nutricional"}
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Col 1 */}
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Nombre del plan</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Nombre del plan</label>
               <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Plan de masa muscular" className={INPUT_CLS} />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Alumno asignado</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Alumno asignado</label>
               {alumnosNombres.length > 0 ? (
                 <select value={alumno} onChange={(e) => setAlumno(e.target.value)} className={INPUT_CLS}>
                   <option value="">— Sin asignar —</option>
@@ -232,10 +232,10 @@ function PlanForm({
 
             {/* Sexo */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Sexo biológico</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Sexo biológico</label>
               <div className="flex gap-2">
                 {(["femenino", "masculino"] as BiologicalSex[]).map((s) => (
-                  <button key={s} onClick={() => setSexo(s)} className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${sexo === s ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300" : "border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20"}`}>
+                  <button key={s} onClick={() => setSexo(s)} className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${sexo === s ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" : "pf-v2-b pf-v2-s-deep pf-v2-t-50 "}`}>
                     {s === "femenino" ? "♀ Femenino" : "♂ Masculino"}
                   </button>
                 ))}
@@ -249,19 +249,19 @@ function PlanForm({
                 { label: "Altura", value: altura, set: setAltura, unit: "cm" },
               ].map(({ label, value, set, unit }) => (
                 <div key={label}>
-                  <label className="mb-1 block text-xs font-medium text-slate-400">{label}</label>
+                  <label className="mb-1 block text-xs font-medium pf-v2-t-50">{label}</label>
                   <div className="flex items-center gap-1">
                     <input type="number" value={value} onChange={(e) => set(e.target.value)} className={INPUT_CLS} />
-                    <span className="shrink-0 text-xs text-slate-500">{unit}</span>
+                    <span className="shrink-0 text-xs pf-v2-t-40">{unit}</span>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Medidas corporales */}
-            <div className="rounded-xl border border-white/5 bg-slate-800/30 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                📐 Medidas corporales <span className="normal-case font-normal text-slate-600">(opcional)</span>
+            <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide pf-v2-t-40">
+                📐 Medidas corporales <span className="normal-case font-normal pf-v2-t-40">(opcional)</span>
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -270,7 +270,7 @@ function PlanForm({
                   { label: "Cuello", value: cuello, set: setCuello },
                 ].map(({ label, value, set }) => (
                   <div key={label}>
-                    <label className="mb-1 block text-xs text-slate-500">{label}</label>
+                    <label className="mb-1 block text-xs pf-v2-t-40">{label}</label>
                     <div className="flex items-center gap-1">
                       <input
                         type="number"
@@ -279,13 +279,13 @@ function PlanForm({
                         placeholder="—"
                         className={INPUT_CLS}
                       />
-                      <span className="shrink-0 text-xs text-slate-600">cm</span>
+                      <span className="shrink-0 text-xs pf-v2-t-40">cm</span>
                     </div>
                   </div>
                 ))}
               </div>
               {cintura && cuello && altura && (
-                <p className="mt-2 text-xs text-blue-400">
+                <p className="mt-2 text-xs pf-v2-t-blue">
                   % Grasa est.: {Math.max(3, (() => {
                     const c = parseNum(cintura, 0), ca = parseNum(cadera, 0), cu = parseNum(cuello, 0), a = parseNum(altura, 165);
                     if (sexo === "masculino") return 495 / (1.0324 - 0.19077 * Math.log10(c - cu) + 0.15456 * Math.log10(a)) - 450;
@@ -296,8 +296,8 @@ function PlanForm({
             </div>
 
             {/* Condiciones médicas */}
-            <div className="rounded-xl border border-white/5 bg-slate-800/30 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide pf-v2-t-40">
                 🩺 Condiciones médicas
               </p>
               <div className="flex flex-wrap gap-2">
@@ -308,8 +308,8 @@ function PlanForm({
                     onClick={() => toggleCondicion(c)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
                       condiciones.includes(c)
-                        ? "border-rose-500/40 bg-rose-500/15 text-rose-300"
-                        : "border-white/10 bg-slate-800/60 text-slate-400 hover:border-white/20 hover:text-slate-300"
+                        ? "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger"
+                        : "pf-v2-b pf-v2-s-deep pf-v2-t-50 "
                     }`}
                   >
                     {condiciones.includes(c) ? "✓ " : ""}{c}
@@ -317,7 +317,7 @@ function PlanForm({
                 ))}
               </div>
               {condiciones.length > 0 && (
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs pf-v2-t-40">
                   Se aplicarán ajustes metabólicos en el cálculo de objetivos.
                 </p>
               )}
@@ -327,7 +327,7 @@ function PlanForm({
           {/* Col 2 */}
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Nivel de actividad</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Nivel de actividad</label>
               <select value={actividad} onChange={(e) => setActividad(e.target.value as ActivityLevel)} className={INPUT_CLS}>
                 {(Object.entries(ACTIVITY_LABELS) as [ActivityLevel, string][]).map(([v, l]) => (
                   <option key={v} value={v}>{l}</option>
@@ -336,7 +336,7 @@ function PlanForm({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Objetivo</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Objetivo</label>
               <select value={objetivo} onChange={(e) => setObjetivo(e.target.value as NutritionGoal)} className={INPUT_CLS}>
                 {(Object.entries(GOAL_LABELS) as [NutritionGoal, string][]).map(([v, l]) => (
                   <option key={v} value={v}>{l}</option>
@@ -346,34 +346,34 @@ function PlanForm({
 
             {!initial && (
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-400">Número de comidas</label>
+                <label className="mb-1 block text-xs font-medium pf-v2-t-50">Número de comidas</label>
                 <input type="number" value={mealCount} onChange={(e) => setMealCount(Number(e.target.value))} min={1} max={7} className={INPUT_CLS} />
               </div>
             )}
 
             {/* Targets preview */}
-            <div className="rounded-xl border border-white/5 bg-slate-800/40 p-3">
-              <p className="mb-2 text-xs font-medium text-slate-500">Objetivos calculados</p>
+            <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+              <p className="mb-2 text-xs font-medium pf-v2-t-40">Objetivos calculados</p>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-slate-900/60 py-2 text-center"><p className="text-lg font-black text-amber-400">{targets.calorias}</p><p className="text-slate-500">kcal</p></div>
-                <div className="rounded-lg bg-slate-900/60 py-2 text-center"><p className="text-lg font-black text-emerald-400">{targets.proteinas}g</p><p className="text-slate-500">proteínas</p></div>
-                <div className="rounded-lg bg-slate-900/60 py-2 text-center"><p className="text-lg font-black text-blue-400">{targets.carbohidratos}g</p><p className="text-slate-500">carbos</p></div>
-                <div className="rounded-lg bg-slate-900/60 py-2 text-center"><p className="text-lg font-black text-yellow-400">{targets.grasas}g</p><p className="text-slate-500">grasas</p></div>
+                <div className="rounded-lg pf-v2-s-deep py-2 text-center"><p className="text-lg font-black pf-v2-t-warn">{targets.calorias}</p><p className="pf-v2-t-40">kcal</p></div>
+                <div className="rounded-lg pf-v2-s-deep py-2 text-center"><p className="text-lg font-black pf-v2-t-ok">{targets.proteinas}g</p><p className="pf-v2-t-40">proteínas</p></div>
+                <div className="rounded-lg pf-v2-s-deep py-2 text-center"><p className="text-lg font-black pf-v2-t-blue">{targets.carbohidratos}g</p><p className="pf-v2-t-40">carbos</p></div>
+                <div className="rounded-lg pf-v2-s-deep py-2 text-center"><p className="text-lg font-black pf-v2-t-warn">{targets.grasas}g</p><p className="pf-v2-t-40">grasas</p></div>
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-400">Notas</label>
+              <label className="mb-1 block text-xs font-medium pf-v2-t-50">Notas</label>
               <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={3} className={`${INPUT_CLS} resize-none`} placeholder="Observaciones, restricciones..." />
             </div>
           </div>
         </div>
 
         <div className="mt-5 flex gap-2">
-          <button onClick={handleSave} disabled={!nombre.trim()} className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40">
+          <button onClick={handleSave} disabled={!nombre.trim()} className="flex-1 rounded-lg pf-v2-s-ok py-2 text-sm font-semibold pf-v2-t pf-v2-hover disabled:opacity-40">
             {initial ? "Guardar cambios" : "Crear plan"}
           </button>
-          <button onClick={onCancel} className="rounded-lg border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
+          <button onClick={onCancel} className="rounded-lg border pf-v2-b pf-v2-s-deep px-4 py-2 text-sm pf-v2-t-70 pf-v2-hover">
             Cancelar
           </button>
         </div>
@@ -432,7 +432,7 @@ function MealEditor({
   };
 
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-800/40">
+    <div className="rounded-xl border pf-v2-b pf-v2-s-deep">
       {showFoodSearch && (
         <FoodSearch
           foodMap={foodMap}
@@ -452,24 +452,24 @@ function MealEditor({
             value={meal.nombre}
             onChange={(e) => handleRenameMeal(e.target.value)}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 bg-transparent text-sm font-semibold text-slate-200 focus:outline-none"
+            className="flex-1 bg-transparent text-sm font-semibold pf-v2-t focus:outline-none"
           />
         </button>
-        <span className="shrink-0 text-xs font-medium text-amber-400">{nutrients.calorias} kcal</span>
+        <span className="shrink-0 text-xs font-medium pf-v2-t-warn">{nutrients.calorias} kcal</span>
         <button
           onClick={() => setShowFoodSearch(true)}
-          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400 hover:bg-emerald-500/20"
+          className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-2 py-1 text-xs pf-v2-t-ok pf-v2-hover"
         >
           + Alimento
         </button>
-        <button onClick={onDeleteMeal} className="text-slate-600 hover:text-red-400 text-xs">✕</button>
+        <button onClick={onDeleteMeal} className="pf-v2-t-40 text-xs">✕</button>
       </div>
 
       {/* Expanded items */}
       {expanded && (
-        <div className="border-t border-white/5 px-3 pb-3">
+        <div className="border-t pf-v2-b px-3 pb-3">
           {meal.items.length === 0 ? (
-            <p className="py-3 text-center text-xs text-slate-500">Sin alimentos. Agregá uno.</p>
+            <p className="py-3 text-center text-xs pf-v2-t-40">Sin alimentos. Agregá uno.</p>
           ) : (
             <div className="mt-2 space-y-2">
               {meal.items.map((item) => {
@@ -482,10 +482,10 @@ function MealEditor({
                   grasas: roundValue((food.fatPer100g * item.gramos) / 100),
                 };
                 return (
-                  <div key={item.id} className="flex items-center gap-2 rounded-lg bg-slate-900/50 px-3 py-2">
+                  <div key={item.id} className="flex items-center gap-2 rounded-lg pf-v2-s-deep px-3 py-2">
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-xs font-medium text-slate-200">{food.nombre}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="truncate text-xs font-medium pf-v2-t">{food.nombre}</p>
+                      <p className="text-xs pf-v2-t-40">
                         {n.calorias} kcal · {n.proteinas}g P · {n.carbohidratos}g C · {n.grasas}g G
                       </p>
                     </div>
@@ -495,10 +495,10 @@ function MealEditor({
                         value={item.gramos}
                         onChange={(e) => handleUpdateGramos(item.id, Number(e.target.value))}
                         min={1}
-                        className="w-16 rounded-lg border border-white/10 bg-slate-800 px-2 py-1 text-center text-xs text-slate-100 focus:outline-none"
+                        className="w-16 rounded-lg border pf-v2-b pf-v2-s-deep px-2 py-1 text-center text-xs pf-v2-t focus:outline-none"
                       />
-                      <span className="text-xs text-slate-500">g</span>
-                      <button onClick={() => handleRemoveItem(item.id)} className="text-slate-600 hover:text-red-400 ml-1">✕</button>
+                      <span className="text-xs pf-v2-t-40">g</span>
+                      <button onClick={() => handleRemoveItem(item.id)} className="pf-v2-t-40 ml-1">✕</button>
                     </div>
                   </div>
                 );
@@ -602,30 +602,30 @@ ${plan.notas ? `\n**Notas del plan:** ${plan.notas}` : ""}
   }
 
   return (
-    <div className="fixed inset-0 z-[130] overflow-y-auto bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[130] overflow-y-auto pf-v2-s-deep backdrop-blur-sm">
       <div className="flex min-h-full items-start justify-center px-4 py-10">
-        <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+        <div className="w-full max-w-2xl rounded-2xl border pf-v2-b pf-v2-s-deep p-6 shadow-2xl">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-slate-100">🤖 Mejorar plan con IA</h3>
-              <p className="text-xs text-slate-400 mt-0.5">{plan.nombre}</p>
+              <h3 className="text-lg font-bold pf-v2-t">🤖 Mejorar plan con IA</h3>
+              <p className="text-xs pf-v2-t-50 mt-0.5">{plan.nombre}</p>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-slate-300 text-lg">✕</button>
+            <button onClick={onClose} className="pf-v2-t-40 text-lg">✕</button>
           </div>
 
           {/* Resumen del plan actual */}
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { label: "Calorías actuales", val: `${intake.calorias}`, target: `/ ${plan.targets.calorias}`, color: "text-amber-400" },
-              { label: "Proteínas", val: `${intake.proteinas}g`, target: `/ ${plan.targets.proteinas}g`, color: "text-emerald-400" },
-              { label: "Carbos", val: `${intake.carbohidratos}g`, target: `/ ${plan.targets.carbohidratos}g`, color: "text-blue-400" },
-              { label: "Grasas", val: `${intake.grasas}g`, target: `/ ${plan.targets.grasas}g`, color: "text-yellow-400" },
+              { label: "Calorías actuales", val: `${intake.calorias}`, target: `/ ${plan.targets.calorias}`, color: "pf-v2-t-warn" },
+              { label: "Proteínas", val: `${intake.proteinas}g`, target: `/ ${plan.targets.proteinas}g`, color: "pf-v2-t-ok" },
+              { label: "Carbos", val: `${intake.carbohidratos}g`, target: `/ ${plan.targets.carbohidratos}g`, color: "pf-v2-t-blue" },
+              { label: "Grasas", val: `${intake.grasas}g`, target: `/ ${plan.targets.grasas}g`, color: "pf-v2-t-warn" },
             ].map(({ label, val, target, color }) => (
-              <div key={label} className="rounded-xl bg-slate-800/50 p-2.5 text-center">
-                <p className="text-xs text-slate-500">{label}</p>
+              <div key={label} className="rounded-xl pf-v2-s-deep p-2.5 text-center">
+                <p className="text-xs pf-v2-t-40">{label}</p>
                 <p className={`font-bold ${color}`}>{val}</p>
-                <p className="text-xs text-slate-600">{target} objetivo</p>
+                <p className="text-xs pf-v2-t-40">{target} objetivo</p>
               </div>
             ))}
           </div>
@@ -633,13 +633,13 @@ ${plan.notas ? `\n**Notas del plan:** ${plan.notas}` : ""}
           {/* Prompt */}
           <div className="mb-4">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-medium text-slate-400">Prompt generado — copialo y pegalo en Claude o ChatGPT</p>
+              <p className="text-xs font-medium pf-v2-t-50">Prompt generado — copialo y pegalo en Claude o ChatGPT</p>
               <button
                 onClick={handleCopy}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                   copied
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "border border-white/10 bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    ? "pf-v2-s-ok pf-v2-t-ok"
+                    : "border pf-v2-b pf-v2-s-deep pf-v2-t-70 pf-v2-hover"
                 }`}
               >
                 {copied ? "✓ Copiado!" : "📋 Copiar prompt"}
@@ -649,14 +649,14 @@ ${plan.notas ? `\n**Notas del plan:** ${plan.notas}` : ""}
               readOnly
               value={prompt}
               rows={16}
-              className="w-full resize-none rounded-xl border border-white/5 bg-slate-800/40 p-3 font-mono text-xs text-slate-300 focus:outline-none"
+              className="w-full resize-none rounded-xl border pf-v2-b pf-v2-s-deep p-3 font-mono text-xs pf-v2-t-70 focus:outline-none"
             />
           </div>
 
           {/* Tips */}
-          <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-3">
-            <p className="text-xs font-semibold text-violet-400 mb-1">💡 Cómo usarlo</p>
-            <ol className="space-y-0.5 text-xs text-slate-400 list-decimal list-inside">
+          <div className="rounded-xl border pf-v2-b-violet pf-v2-s-violet p-3">
+            <p className="text-xs font-semibold pf-v2-t-violet mb-1">💡 Cómo usarlo</p>
+            <ol className="space-y-0.5 text-xs pf-v2-t-50 list-decimal list-inside">
               <li>Copiá el prompt con el botón de arriba.</li>
               <li>Abrí Claude.ai, ChatGPT o cualquier IA.</li>
               <li>Pegá el prompt y envialo.</li>
@@ -736,41 +736,41 @@ function PlanDetail({
 
       {/* Back */}
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="text-sm text-slate-400 hover:text-slate-200">
+        <button onClick={onBack} className="text-sm pf-v2-t-50 ">
           ← Volver
         </button>
-        <h2 className="text-xl font-black text-slate-100">{plan.nombre}</h2>
+        <h2 className="text-xl font-black pf-v2-t">{plan.nombre}</h2>
       </div>
 
       {/* Plan meta */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className={`rounded-full border px-3 py-1 text-xs font-medium ${GOAL_BG_COLORS[plan.objetivo]} ${GOAL_COLORS[plan.objetivo]}`}>
+        <span className={`rounded-full border px-3 py-1 text-xs font-medium ${GOAL_BG_COLORS[plan.objetivo]}${GOAL_COLORS[plan.objetivo]}`}>
           {GOAL_LABELS[plan.objetivo]}
         </span>
         {plan.alumnoAsignado && (
-          <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs text-blue-400">
+          <span className="rounded-full border pf-v2-b-blue pf-v2-s-blue px-3 py-1 text-xs pf-v2-t-blue">
             👤 {plan.alumnoAsignado}
           </span>
         )}
-        <span className="text-xs text-slate-500">
+        <span className="text-xs pf-v2-t-40">
           {plan.pesoKg} kg · {plan.alturaCm} cm · {plan.edad} años
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
           <button
             onClick={() => setShowIAImprover(true)}
-            className="rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold text-violet-300 hover:bg-violet-500/20 transition-colors"
+            className="rounded-lg border pf-v2-b-violet pf-v2-s-violet px-3 py-1.5 text-xs font-semibold pf-v2-t-violet pf-v2-hover transition-colors"
           >
             🤖 Mejorar con IA
           </button>
           <button
             onClick={() => setShowEditForm(true)}
-            className="rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700"
+            className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-1.5 text-xs pf-v2-t-70 pf-v2-hover"
           >
             Editar meta
           </button>
           <button
             onClick={onDelete}
-            className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/20"
+            className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs pf-v2-t-danger pf-v2-hover"
           >
             Eliminar plan
           </button>
@@ -778,10 +778,10 @@ function PlanDetail({
       </div>
 
       {/* Macro targets + intake */}
-      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+      <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-200">Progreso diario</h3>
-          <span className="text-xs text-slate-500">{intake.calorias} / {plan.targets.calorias} kcal</span>
+          <h3 className="font-semibold pf-v2-t">Progreso diario</h3>
+          <span className="text-xs pf-v2-t-40">{intake.calorias} / {plan.targets.calorias} kcal</span>
         </div>
         <div className="space-y-2">
           <MacroBar value={intake.calorias} target={plan.targets.calorias} color="#f59e0b" label="Calorías" unit="kcal" />
@@ -794,10 +794,10 @@ function PlanDetail({
       {/* Meals */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-200">Comidas ({plan.comidas.length})</h3>
+          <h3 className="font-semibold pf-v2-t">Comidas ({plan.comidas.length})</h3>
           <button
             onClick={handleAddMeal}
-            className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20"
+            className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-medium pf-v2-t-ok pf-v2-hover"
           >
             + Añadir comida
           </button>
@@ -818,9 +818,9 @@ function PlanDetail({
 
       {/* Notes */}
       {plan.notas && (
-        <div className="rounded-xl border border-white/10 bg-slate-800/40 p-4">
-          <p className="text-xs font-medium text-slate-500 mb-1">Notas</p>
-          <p className="text-sm text-slate-300 whitespace-pre-wrap">{plan.notas}</p>
+        <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+          <p className="text-xs font-medium pf-v2-t-40 mb-1">Notas</p>
+          <p className="text-sm pf-v2-t-70 whitespace-pre-wrap">{plan.notas}</p>
         </div>
       )}
     </div>
@@ -841,11 +841,11 @@ function PlanCard({
   return (
     <div
       onClick={onSelect}
-      className="group cursor-pointer rounded-2xl border border-white/10 bg-slate-900/60 p-4 transition-all hover:border-emerald-500/30 hover:bg-slate-900/80"
+      className="group cursor-pointer rounded-2xl border pf-v2-b pf-v2-s-deep p-4 transition-all pf-v2-hover"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h4 className="truncate font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors">
+          <h4 className="truncate font-semibold pf-v2-t transition-colors">
             {plan.nombre}
           </h4>
           <div className="mt-1 flex flex-wrap gap-2">
@@ -853,36 +853,36 @@ function PlanCard({
               {GOAL_LABELS[plan.objetivo]}
             </span>
             {plan.alumnoAsignado && (
-              <span className="text-xs text-slate-500">👤 {plan.alumnoAsignado}</span>
+              <span className="text-xs pf-v2-t-40">👤 {plan.alumnoAsignado}</span>
             )}
           </div>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="shrink-0 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="shrink-0 pf-v2-t-40 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           ✕
         </button>
       </div>
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
-        <div className="rounded-lg bg-slate-800/60 py-1.5">
-          <p className="font-bold text-amber-400">{plan.targets.calorias}</p>
-          <p className="text-slate-500">kcal</p>
+        <div className="rounded-lg pf-v2-s-deep py-1.5">
+          <p className="font-bold pf-v2-t-warn">{plan.targets.calorias}</p>
+          <p className="pf-v2-t-40">kcal</p>
         </div>
-        <div className="rounded-lg bg-slate-800/60 py-1.5">
-          <p className="font-bold text-emerald-400">{plan.targets.proteinas}g</p>
-          <p className="text-slate-500">prot</p>
+        <div className="rounded-lg pf-v2-s-deep py-1.5">
+          <p className="font-bold pf-v2-t-ok">{plan.targets.proteinas}g</p>
+          <p className="pf-v2-t-40">prot</p>
         </div>
-        <div className="rounded-lg bg-slate-800/60 py-1.5">
-          <p className="font-bold text-blue-400">{plan.targets.carbohidratos}g</p>
-          <p className="text-slate-500">carbs</p>
+        <div className="rounded-lg pf-v2-s-deep py-1.5">
+          <p className="font-bold pf-v2-t-blue">{plan.targets.carbohidratos}g</p>
+          <p className="pf-v2-t-40">carbs</p>
         </div>
-        <div className="rounded-lg bg-slate-800/60 py-1.5">
-          <p className="font-bold text-yellow-400">{plan.targets.grasas}g</p>
-          <p className="text-slate-500">grasas</p>
+        <div className="rounded-lg pf-v2-s-deep py-1.5">
+          <p className="font-bold pf-v2-t-warn">{plan.targets.grasas}g</p>
+          <p className="pf-v2-t-40">grasas</p>
         </div>
       </div>
-      <p className="mt-2 text-xs text-slate-600">
+      <p className="mt-2 text-xs pf-v2-t-40">
         {plan.comidas.length} comidas · actualizado {new Date(plan.updatedAt).toLocaleDateString("es-AR")}
       </p>
     </div>
@@ -994,14 +994,14 @@ export default function TabPlanes({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-slate-100">📋 Planes Nutricionales</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <h2 className="text-xl font-black pf-v2-t">📋 Planes Nutricionales</h2>
+          <p className="mt-1 text-sm pf-v2-t-50">
             {planes.length} plan{planes.length !== 1 ? "es" : ""} creado{planes.length !== 1 ? "s" : ""}
           </p>
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          className="shrink-0 rounded-xl pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t transition-colors pf-v2-hover"
         >
           + Nuevo plan
         </button>
@@ -1012,12 +1012,12 @@ export default function TabPlanes({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar plan o alumno..."
-        className="w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
       />
 
       {filteredPlanes.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
-          <p className="text-slate-500">
+        <div className="rounded-2xl border border-dashed pf-v2-b p-10 text-center">
+          <p className="pf-v2-t-40">
             {search ? "No hay planes que coincidan." : "Aún no hay planes. ¡Creá el primero!"}
           </p>
         </div>

@@ -86,23 +86,23 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
   }, [jornadas]);
 
   return (
-    <section className={embedded ? "rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg" : ""}>
+    <section className={embedded ? "rounded-3xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-lg" : ""}>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">Clientes · Vista integrada</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] pf-v2-t-accent">Clientes · Vista integrada</p>
           <h2 className="text-3xl font-black">Plantel</h2>
-          <p className="text-sm text-slate-300">Gestion de jugadoras con contexto de asistencias y jornadas.</p>
+          <p className="text-sm pf-v2-t-70">Gestion de jugadoras con contexto de asistencias y jornadas.</p>
         </div>
         <div className="flex gap-2">
           <Link
             href="/asistencias"
-            className="rounded-xl border border-cyan-300/35 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+            className="rounded-xl border pf-v2-b-accent px-3 py-2 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
           >
             Asistencias
           </Link>
           <Link
             href="/registros"
-            className="rounded-xl border border-violet-300/35 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/10"
+            className="rounded-xl border pf-v2-b-violet px-3 py-2 text-xs font-semibold pf-v2-t-violet pf-v2-hover"
           >
             Registros
           </Link>
@@ -110,31 +110,31 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
       </div>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4">
-          <p className="text-xs uppercase tracking-wide text-cyan-100">Jugadoras</p>
-          <p className="text-3xl font-black text-white">{stats.totalJugadoras}</p>
+        <div className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent p-4">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-accent">Jugadoras</p>
+          <p className="text-3xl font-black pf-v2-t">{stats.totalJugadoras}</p>
         </div>
-        <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 p-4">
-          <p className="text-xs uppercase tracking-wide text-emerald-100">Jornadas activas</p>
-          <p className="text-3xl font-black text-white">{stats.jornadasActivas}</p>
+        <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-ok">Jornadas activas</p>
+          <p className="text-3xl font-black pf-v2-t">{stats.jornadasActivas}</p>
         </div>
-        <div className="rounded-2xl border border-lime-300/30 bg-lime-500/10 p-4">
-          <p className="text-xs uppercase tracking-wide text-lime-100">Presentes</p>
-          <p className="text-3xl font-black text-white">{stats.presentes}</p>
+        <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-4">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-ok">Presentes</p>
+          <p className="text-3xl font-black pf-v2-t">{stats.presentes}</p>
         </div>
-        <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
-          <p className="text-xs uppercase tracking-wide text-rose-100">Ausentes</p>
-          <p className="text-3xl font-black text-white">{stats.ausentes}</p>
+        <div className="rounded-2xl border pf-v2-b-danger pf-v2-s-danger p-4">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-danger">Ausentes</p>
+          <p className="text-3xl font-black pf-v2-t">{stats.ausentes}</p>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-slate-900/75 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-300">Presentismo</p>
-          <p className="text-3xl font-black text-white">{stats.presentismo}%</p>
+        <div className="rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-4">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-70">Presentismo</p>
+          <p className="text-3xl font-black pf-v2-t">{stats.presentismo}%</p>
         </div>
       </section>
 
       <section className="grid gap-4">
         {jugadoras.length === 0 && (
-          <p className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-300">
+          <p className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
             No hay jugadoras cargadas en el plantel.
           </p>
         )}
@@ -142,7 +142,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
         {jugadoras.map((jugadora) => (
           <div
             key={jugadora.nombre}
-            className="rounded-2xl border border-white/10 bg-slate-900/70 p-5"
+            className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
@@ -152,7 +152,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                       type="text"
                       value={nuevoNombre}
                       onChange={(e) => setNuevoNombre(e.target.value)}
-                      className="w-full rounded-lg border border-white/20 bg-slate-800 px-3 py-2 text-lg font-semibold text-white"
+                      className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-lg font-semibold pf-v2-t"
                       placeholder="Nuevo nombre"
                     />
                     <div className="mt-2 flex gap-2">
@@ -165,7 +165,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                           setEditando(null);
                           setNuevoNombre("");
                         }}
-                        className="rounded-lg bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500"
+                        className="rounded-lg pf-v2-s-ok px-3 py-1 text-sm pf-v2-t pf-v2-hover"
                       >
                         Guardar
                       </ReliableActionButton>
@@ -174,27 +174,27 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                           setEditando(null);
                           setNuevoNombre("");
                         }}
-                        className="rounded-lg border border-white/20 px-3 py-1 text-sm text-slate-200 hover:bg-white/10"
+                        className="rounded-lg border pf-v2-b-hi px-3 py-1 text-sm pf-v2-t pf-v2-hover"
                       >
                         Cancelar
                       </ReliableActionButton>
                     </div>
                   </div>
                 ) : (
-                  <h2 className="text-lg font-semibold text-white">{jugadora.nombre}</h2>
+                  <h2 className="text-lg font-semibold pf-v2-t">{jugadora.nombre}</h2>
                 )}
 
-                <p className="text-sm text-slate-300">{jugadora.posicion}</p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="text-sm pf-v2-t-70">{jugadora.posicion}</p>
+                <p className="mt-1 text-xs pf-v2-t-50">
                   {jugadora.categoria} · {jugadora.club}
                 </p>
-                <p className="mt-2 text-xs text-cyan-100">
+                <p className="mt-2 text-xs pf-v2-t-accent">
                   Proximas jornadas en su categoria: {proximasJornadasByCategoria.get(jugadora.categoria || "") || 0}
                 </p>
               </div>
 
               <div className="flex flex-col items-end gap-2">
-                <div className="text-right text-sm text-slate-300">
+                <div className="text-right text-sm pf-v2-t-70">
                   <p>Wellness: {jugadora.wellness}</p>
                   <p>Carga: {jugadora.carga}</p>
                   <p>
@@ -204,7 +204,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                 <div className="flex flex-wrap justify-end gap-2">
                   <Link
                     href={`/asistencias?categoria=${encodeURIComponent(jugadora.categoria || "")}`}
-                    className="rounded-lg border border-cyan-300/35 px-3 py-1 text-sm text-cyan-100 hover:bg-cyan-500/10"
+                    className="rounded-lg border pf-v2-b-accent px-3 py-1 text-sm pf-v2-t-accent pf-v2-hover"
                   >
                     Asistencia
                   </Link>
@@ -213,7 +213,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                       setEditando(jugadora.nombre);
                       setNuevoNombre(jugadora.nombre);
                     }}
-                    className="rounded-lg border border-white/20 px-3 py-1 text-sm text-slate-100 hover:bg-white/10"
+                    className="rounded-lg border pf-v2-b-hi px-3 py-1 text-sm pf-v2-t pf-v2-hover"
                   >
                     Editar
                   </ReliableActionButton>
@@ -223,7 +223,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
                         eliminarJugadora(jugadora.nombre);
                       }
                     }}
-                    className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
+                    className="rounded-lg pf-v2-s-danger px-3 py-1 text-sm pf-v2-t pf-v2-hover"
                   >
                     Eliminar
                   </ReliableActionButton>
@@ -232,7 +232,7 @@ export default function PlantelPanel({ embedded = false }: PlantelPanelProps) {
             </div>
 
             {(jugadora.objetivo || jugadora.observaciones) && (
-              <div className="mt-4 rounded-xl border border-white/10 bg-slate-800/60 p-3 text-sm text-slate-200">
+              <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s-deep p-3 text-sm pf-v2-t">
                 <p>
                   <span className="font-medium">Objetivo:</span> {jugadora.objetivo || "-"}
                 </p>

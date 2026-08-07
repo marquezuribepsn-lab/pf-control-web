@@ -1463,31 +1463,31 @@ const tabVisualConfig: Partial<
     badge: "Intake",
     title: "Mapa inicial del cliente",
     hint: "Sintetiza antecedentes, limitaciones y contexto para decisiones mas rapidas.",
-    accent: "border-fuchsia-300/35 bg-fuchsia-500/10",
+    accent: "pf-v2-b-violet pf-v2-s-violet",
   },
   recetas: {
     badge: "Nutricion",
     title: "Biblioteca de recetas aplicables",
     hint: "Registra alternativas practicas y reemplazos por disponibilidad o preferencia.",
-    accent: "border-amber-300/35 bg-amber-500/10",
+    accent: "pf-v2-b-warn pf-v2-s-warn",
   },
   notas: {
     badge: "Coaching",
     title: "Bitacora profesional",
     hint: "Documenta avances, fricciones y acuerdos para sostener adherencia.",
-    accent: "border-cyan-300/35 bg-cyan-500/10",
+    accent: "pf-v2-b-accent pf-v2-s-accent",
   },
   documentos: {
     badge: "Recursos",
     title: "Repositorio de soporte",
     hint: "Centraliza links, archivos clave y evidencia compartida con el cliente.",
-    accent: "border-indigo-300/35 bg-indigo-500/10",
+    accent: "pf-v2-b-blue pf-v2-s-blue",
   },
   chequeos: {
     badge: "Control",
     title: "Panel de chequeos periodicos",
     hint: "Anota mediciones y cumplimiento para detectar desvio temprano.",
-    accent: "border-emerald-300/35 bg-emerald-500/10",
+    accent: "pf-v2-b-ok pf-v2-s-ok",
   },
 };
 
@@ -1571,7 +1571,7 @@ function PortalMenu({
             }
           : { position: "fixed", top: -9999, left: -9999 }
       }
-      className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border border-white/15 bg-[#0e1012] p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
+      className={`z-[200] flex min-w-[220px] origin-top flex-col gap-0.5 rounded-xl border pf-v2-b-hi pf-v2-s-deep p-2 shadow-2xl transition-[opacity,transform] duration-200 ease-out ${
         open
           ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
           : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -5693,19 +5693,18 @@ export default function ClientesPage() {
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,142),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
       <section className="pf-v2-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex rounded-xl border border-white/15 bg-white/[0.025] p-1">
+          <div className="inline-flex rounded-xl border pf-v2-b-hi pf-v2-s p-1">
             <ReliableActionButton
               type="button"
               onClick={() => setClientesSectionView("clientes")}
               className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
                 clientesSection === "clientes"
-                  ? "bg-cyan-300 text-slate-950"
-                  : "text-slate-200 hover:bg-white/10"
+                  ? "pf-v2-s-accent pf-v2-t"
+                  : "pf-v2-t pf-v2-hover"
               }`}
             >
               Clientes
@@ -5715,14 +5714,14 @@ export default function ClientesPage() {
               onClick={() => setClientesSectionView("plantel")}
               className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
                 clientesSection === "plantel"
-                  ? "bg-emerald-300 text-slate-950"
-                  : "text-slate-200 hover:bg-white/10"
+                  ? "pf-v2-s-ok pf-v2-t"
+                  : "pf-v2-t pf-v2-hover"
               }`}
             >
               Plantel
             </ReliableActionButton>
           </div>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs pf-v2-t-70">
             Plantel ahora vive dentro del modulo Clientes.
           </p>
         </div>
@@ -5734,16 +5733,16 @@ export default function ClientesPage() {
         <>
       {!isDetailMode ? (
       <section className="pf-clientes-hero">
-        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -top-14 h-44 w-44 rounded-full pf-v2-s-accent blur-3xl" />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full pf-v2-s-ok blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80" style={{ color: `hsl(var(--hue,142),65%,65%)` }}>
+            <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">
               Hub comercial y operativo
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-4xl">Clientes</h1>
-            <p className="mt-2 text-sm text-slate-200/90">
+            <h1 className="mt-2 text-3xl font-black tracking-tight pf-v2-t md:text-4xl">Clientes</h1>
+            <p className="mt-2 text-sm pf-v2-t">
               Gestion integral de fichas, pagos y planes en una vista mas clara y moderna.
             </p>
           </div>
@@ -5753,7 +5752,7 @@ export default function ClientesPage() {
               <ReliableActionButton
                 type="button"
                 onClick={closeClientDetail}
-                className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-black pf-v2-t transition hover:-translate-y-0.5 pf-v2-hover"
               >
                 Volver al listado
               </ReliableActionButton>
@@ -5762,14 +5761,14 @@ export default function ClientesPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={() => { setCrearOpen(true); resetForm(); }}
-                  className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                  className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-sm font-black pf-v2-t transition hover:-translate-y-0.5 pf-v2-hover"
                 >
                   + Crear cliente
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="button"
                   onClick={() => router.push("/registros")}
-                  className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                  className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2 text-sm font-semibold pf-v2-t transition pf-v2-hover"
                 >
                   Ver registros
                 </ReliableActionButton>
@@ -5780,16 +5779,16 @@ export default function ClientesPage() {
 
         <div className="relative mt-5 grid gap-3 md:grid-cols-3">
           <div className="pf-stat-card pf-stat-card--activos">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-200/70">Activos</p>
-            <p className="mt-1 text-3xl font-black text-white">{resumen.activos}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest pf-v2-t-ok">Activos</p>
+            <p className="mt-1 text-3xl font-black pf-v2-t">{resumen.activos}</p>
           </div>
           <div className="pf-stat-card pf-stat-card--fin">
-            <p className="text-xs font-semibold uppercase tracking-widest text-rose-200/70">Finalizados</p>
-            <p className="mt-1 text-3xl font-black text-white">{resumen.finalizados}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest pf-v2-t-danger">Finalizados</p>
+            <p className="mt-1 text-3xl font-black pf-v2-t">{resumen.finalizados}</p>
           </div>
           <div className="pf-stat-card pf-stat-card--total">
-            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200/70">Total</p>
-            <p className="mt-1 text-3xl font-black text-white">{resumen.total}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest pf-v2-t-accent">Total</p>
+            <p className="mt-1 text-3xl font-black pf-v2-t">{resumen.total}</p>
           </div>
         </div>
       </section>
@@ -5808,19 +5807,19 @@ export default function ClientesPage() {
         <div className="absolute inset-0" onClick={() => { setCrearOpen(false); resetForm(); }} />
 
         {/* Wizard panel — centrado, ancho generoso */}
-        <div className="pf-modal-panel relative mx-auto w-full max-w-3xl min-h-screen flex flex-col justify-start px-6 pt-10 pb-16 sm:min-h-0 sm:my-12 sm:rounded-2xl sm:shadow-[0_40px_100px_rgba(0,0,0,0.7)]"
+        <div className="pf-modal-panel relative mx-auto w-full max-w-3xl min-h-screen flex flex-col justify-start px-6 pt-10 pb-16 sm:min-h-0 sm:my-12 sm:rounded-2xl"
           style={{ background: "#0a0c14" }}
         >
 
           {/* ── Título ── */}
           {(crearStep === 1 || crearStep === 3) && (
-            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest text-white sm:text-4xl">
+            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest pf-v2-t sm:text-4xl">
               NUEVO CLIENTE
             </h1>
           )}
           {crearStep === 2 && <div className="mb-8 h-px" />}
           {crearStep === 4 && (
-            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest text-white sm:text-4xl">
+            <h1 className="mb-8 text-3xl font-black uppercase tracking-widest pf-v2-t sm:text-4xl">
               NUEVO CLIENTE
             </h1>
           )}
@@ -5868,8 +5867,8 @@ export default function ClientesPage() {
                         )}
                       </div>
                       {/* Label */}
-                      <p className="mt-2 text-center text-xs font-bold text-white">{s.label}</p>
-                      <p className="mt-0.5 hidden text-center text-[10px] text-slate-500 sm:block">{s.desc}</p>
+                      <p className="mt-2 text-center text-xs font-bold pf-v2-t">{s.label}</p>
+                      <p className="mt-0.5 hidden text-center text-[10px] pf-v2-t-40 sm:block">{s.desc}</p>
                     </div>
                   );
                 })}
@@ -5881,15 +5880,15 @@ export default function ClientesPage() {
           {crearStep === 1 && (
             <div className="space-y-6">
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-slate-400">
-                  EMAIL <span className="text-cyan-400">(*)</span>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest pf-v2-t-50">
+                  EMAIL <span className="pf-v2-t-accent">(*)</span>
                 </label>
                 <input
                   type="email"
                   autoFocus
                   value={crearMeta.email}
                   onChange={(e) => setCrearMeta((p) => ({ ...p, email: e.target.value }))}
-                  className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-4 py-3 text-sm pf-v2-t pf-v2-ph focus:outline-none focus:ring-1"
                   placeholder="Ingrese el email"
                 />
               </div>
@@ -5901,41 +5900,41 @@ export default function ClientesPage() {
             <div className="space-y-8">
               {/* Datos personales */}
               <div>
-                <h3 className="mb-4 text-base font-bold text-white">Datos personales</h3>
+                <h3 className="mb-4 text-base font-bold pf-v2-t">Datos personales</h3>
                 <div className="space-y-4">
                   {/* Nombre / Primer apellido / Segundo apellido */}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        NOMBRE <span className="text-cyan-400">(*)</span>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                        NOMBRE <span className="pf-v2-t-accent">(*)</span>
                       </label>
                       <input
                         autoFocus
                         required
                         value={form.nombre}
                         onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Ingrese el nombre"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        PRIMER APELLIDO <span className="text-cyan-400">(*)</span>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                        PRIMER APELLIDO <span className="pf-v2-t-accent">(*)</span>
                       </label>
                       <input
                         required
                         value={crearMeta.apellido}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, apellido: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Ingrese el apellido paterno"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">SEGUNDO APELLIDO</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">SEGUNDO APELLIDO</label>
                       <input
                         value={crearMeta.segundoApellido}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, segundoApellido: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Ingrese el apellido materno"
                       />
                     </div>
@@ -5944,30 +5943,30 @@ export default function ClientesPage() {
                   {/* Email (readonly) / Nacimiento / Sexo */}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        EMAIL <span className="text-cyan-400">(*)</span>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                        EMAIL <span className="pf-v2-t-accent">(*)</span>
                       </label>
                       <input
                         readOnly
                         value={crearMeta.email}
-                        className="w-full rounded-lg border border-white/[0.06] bg-[#0e1012] px-3 py-2.5 text-sm text-slate-400 focus:outline-none cursor-default"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t-50 focus:outline-none cursor-default"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        FECHA NACIMIENTO <span className="text-cyan-400">(*)</span>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                        FECHA NACIMIENTO <span className="pf-v2-t-accent">(*)</span>
                       </label>
                       <DateInput
                         value={form.fechaNacimiento}
                         onChange={(v) => setForm((p) => ({ ...p, fechaNacimiento: v }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 pr-8 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 pr-8 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        SEXO <span className="text-cyan-400">(*)</span>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                        SEXO <span className="pf-v2-t-accent">(*)</span>
                       </label>
-                      <div className="flex rounded-lg border border-white/10 overflow-hidden text-sm font-bold">
+                      <div className="flex rounded-lg border pf-v2-b overflow-hidden text-sm font-bold">
                         <button
                           type="button"
                           onClick={() => setCrearMeta((p) => ({ ...p, sexo: "masculino" }))}
@@ -5991,32 +5990,32 @@ export default function ClientesPage() {
                   {/* Altura / Cod. país / Teléfono */}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">ALTURA</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">ALTURA</label>
                       <div className="flex items-center gap-1">
                         <input
                           value={form.altura}
                           onChange={(e) => setForm((p) => ({ ...p, altura: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                          className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                           placeholder="Ingrese la altura"
                         />
-                        <span className="text-xs text-slate-500 shrink-0">cm</span>
+                        <span className="text-xs pf-v2-t-40 shrink-0">cm</span>
                       </div>
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">COD. TELÉFONO PAÍS</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">COD. TELÉFONO PAÍS</label>
                       <input
                         value={crearMeta.codigoPais}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, codigoPais: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="+54"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TELÉFONO</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">TELÉFONO</label>
                       <input
                         value={crearMeta.telefono}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, telefono: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Ingrese el Nro. de contacto"
                       />
                     </div>
@@ -6026,25 +6025,25 @@ export default function ClientesPage() {
 
               {/* Domicilio */}
               <div>
-                <h3 className="mb-4 text-base font-bold text-white">Domicilio</h3>
+                <h3 className="mb-4 text-base font-bold pf-v2-t">Domicilio</h3>
                 <div className="space-y-4">
                   {/* País / Provincia */}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PAÍS</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">PAÍS</label>
                       <input
                         value={crearMeta.pais}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, pais: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="País"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PROV. / ESTADO / DISTRITO</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">PROV. / ESTADO / DISTRITO</label>
                       <input
                         value={crearMeta.provincia}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, provincia: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Provincia / Estado"
                       />
                     </div>
@@ -6052,29 +6051,29 @@ export default function ClientesPage() {
                   {/* Calle / Número / Piso / Depto */}
                   <div className="grid grid-cols-4 gap-3">
                     <div className="col-span-2">
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">CALLE</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">CALLE</label>
                       <input
                         value={crearMeta.calle}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, calle: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Calle"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">NÚMERO</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">NÚMERO</label>
                       <input
                         value={crearMeta.numero}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, numero: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Número"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">PISO</label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">PISO</label>
                       <input
                         value={crearMeta.piso}
                         onChange={(e) => setCrearMeta((p) => ({ ...p, piso: e.target.value }))}
-                        className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                        className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                         placeholder="Piso"
                       />
                     </div>
@@ -6090,22 +6089,22 @@ export default function ClientesPage() {
               {/* Tipo de cliente */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TIPO DE CLIENTE</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">TIPO DE CLIENTE</label>
                   <select
                     value={form.practicaDeporte}
                     onChange={(e) => setForm((p) => ({ ...p, practicaDeporte: e.target.value as "si" | "no" }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                   >
                     <option value="si">Jugadora / deportista</option>
                     <option value="no">Alumno/a general</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">ESTADO</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">ESTADO</label>
                   <select
                     value={form.estado}
                     onChange={(e) => setForm((p) => ({ ...p, estado: e.target.value as ClienteEstado }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                   >
                     <option value="activo">Activo</option>
                     <option value="finalizado">Finalizado</option>
@@ -6115,14 +6114,14 @@ export default function ClientesPage() {
 
               {/* Categoría / Plan */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  CATEGORÍA <span className="text-cyan-400">(*)</span>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">
+                  CATEGORÍA <span className="pf-v2-t-accent">(*)</span>
                 </label>
                 {planesDisponibles.filter((p) => p.activo).length > 0 ? (
                   <select
                     value={crearMeta.categoriaPlan}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                   >
                     <option value="">Seleccione</option>
                     {planesDisponibles.filter((p) => p.activo).map((p) => (
@@ -6133,7 +6132,7 @@ export default function ClientesPage() {
                   <input
                     value={crearMeta.categoriaPlan}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, categoriaPlan: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                     placeholder="Ej: Plan mensual, Plan semanal..."
                   />
                 )}
@@ -6142,21 +6141,21 @@ export default function ClientesPage() {
               {/* Fechas inicio / fin */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">FECHA INICIO</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">FECHA INICIO</label>
                   <input
                     type="date"
                     value={crearMeta.startDate}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, startDate: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none [color-scheme:dark]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">FECHA FIN</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">FECHA FIN</label>
                   <input
                     type="date"
                     value={crearMeta.endDate}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, endDate: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none [color-scheme:dark]"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none [color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -6164,11 +6163,11 @@ export default function ClientesPage() {
               {/* Tipo asesoría / Modalidad */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">TIPO ASESORÍA</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">TIPO ASESORÍA</label>
                   <select
                     value={crearMeta.tipoAsesoria}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                   >
                     <option value="entrenamiento">Entrenamiento</option>
                     <option value="nutricion">Nutrición</option>
@@ -6176,11 +6175,11 @@ export default function ClientesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">MODALIDAD</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">MODALIDAD</label>
                   <select
                     value={crearMeta.modalidad}
                     onChange={(e) => setCrearMeta((p) => ({ ...p, modalidad: e.target.value as ClienteMeta["modalidad"] }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                   >
                     <option value="presencial">Presencial</option>
                     <option value="virtual">Virtual</option>
@@ -6196,42 +6195,42 @@ export default function ClientesPage() {
               {/* Deporte (si aplica) */}
               {form.practicaDeporte === "si" && (
                 <div>
-                  <h3 className="mb-4 text-base font-bold text-white">Deporte y club</h3>
+                  <h3 className="mb-4 text-base font-bold pf-v2-t">Deporte y club</h3>
                   <div className="space-y-3">
                     <input
                       value={form.club}
                       onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
-                      className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                      className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                       placeholder="Club o institución"
                     />
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">DEPORTE</label>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">DEPORTE</label>
                         <select
                           value={form.deporte}
                           onChange={(e) => setForm((p) => ({ ...p, deporte: e.target.value, posicion: "" }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                         >
                           {deportesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">CATEGORÍA</label>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">CATEGORÍA</label>
                         <select
                           value={form.categoria}
                           onChange={(e) => setForm((p) => ({ ...p, categoria: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                         >
                           <option value="">Categoría</option>
                           {categoriasOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">POSICIÓN</label>
+                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">POSICIÓN</label>
                         <select
                           value={form.posicion}
                           onChange={(e) => setForm((p) => ({ ...p, posicion: e.target.value }))}
-                          className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white focus:outline-none"
+                          className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                         >
                           <option value="">Posición</option>
                           {posicionesOptions.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -6243,11 +6242,11 @@ export default function ClientesPage() {
               )}
               {form.practicaDeporte === "no" && (
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">LUGAR (gimnasio / institución)</label>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">LUGAR (gimnasio / institución)</label>
                   <input
                     value={form.club}
                     onChange={(e) => setForm((p) => ({ ...p, club: e.target.value }))}
-                    className="w-full rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                    className="w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                     placeholder="Club, gimnasio o institución (opcional)"
                   />
                 </div>
@@ -6255,22 +6254,22 @@ export default function ClientesPage() {
 
               {/* Objetivo / Observaciones */}
               <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">OBJETIVO</label>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">OBJETIVO</label>
                 <textarea
                   value={form.objetivo}
                   onChange={(e) => setForm((p) => ({ ...p, objetivo: e.target.value }))}
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full resize-none rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                   placeholder="Objetivo principal del cliente..."
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">OBSERVACIONES</label>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider pf-v2-t-40">OBSERVACIONES</label>
                 <textarea
                   value={form.observaciones}
                   onChange={(e) => setForm((p) => ({ ...p, observaciones: e.target.value }))}
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-white/10 bg-[#0e1012] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full resize-none rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t pf-v2-ph focus:outline-none"
                   placeholder="Observaciones, notas internas..."
                 />
               </div>
@@ -6283,7 +6282,7 @@ export default function ClientesPage() {
             <ReliableActionButton
               type="button"
               onClick={() => { setCrearOpen(false); resetForm(); }}
-              className="rounded-lg border border-red-500/70 px-5 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+              className="rounded-lg border pf-v2-b-danger px-5 py-2.5 text-sm font-semibold pf-v2-t-danger transition pf-v2-hover"
             >
               Cancelar
             </ReliableActionButton>
@@ -6293,7 +6292,7 @@ export default function ClientesPage() {
               <ReliableActionButton
                 type="button"
                 onClick={() => setCrearStep((s) => s - 1)}
-                className="rounded-lg border border-cyan-500/60 px-5 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/10"
+                className="rounded-lg border pf-v2-b-accent px-5 py-2.5 text-sm font-semibold pf-v2-t-accent transition pf-v2-hover"
               >
                 Atrás
               </ReliableActionButton>
@@ -6304,7 +6303,7 @@ export default function ClientesPage() {
               <ReliableActionButton
                 type="button"
                 onClick={() => { if (!form.nombre.trim()) { setCrearStep(2); return; } submitCliente(); }}
-                className="rounded-lg px-5 py-2.5 text-sm font-black text-white transition hover:brightness-110"
+                className="rounded-lg px-5 py-2.5 text-sm font-black pf-v2-t transition hover:brightness-110"
                 style={{ background: "hsl(142,60%,40%)" }}
               >
                 Guardar
@@ -6320,7 +6319,7 @@ export default function ClientesPage() {
                   if (crearStep === 2 && (!form.nombre.trim() || !crearMeta.apellido.trim())) return;
                   setCrearStep((s) => s + 1);
                 }}
-                className="rounded-lg border border-cyan-500/60 px-6 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/10"
+                className="rounded-lg border pf-v2-b-accent px-6 py-2.5 text-sm font-semibold pf-v2-t-accent transition pf-v2-hover"
               >
                 Siguiente
               </ReliableActionButton>
@@ -6328,7 +6327,7 @@ export default function ClientesPage() {
               <ReliableActionButton
                 type="button"
                 onClick={() => { if (!form.nombre.trim()) { setCrearStep(2); return; } submitCliente(); }}
-                className="rounded-lg px-6 py-2.5 text-sm font-black text-white transition hover:brightness-110"
+                className="rounded-lg px-6 py-2.5 text-sm font-black pf-v2-t transition hover:brightness-110"
                 style={{ background: "hsl(142,60%,40%)" }}
               >
                 Guardar
@@ -6341,16 +6340,16 @@ export default function ClientesPage() {
       )}
 
       {!isDetailMode && isAdmin ? (
-      <section className="mb-6 rounded-2xl border border-cyan-300/25 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_50%,rgba(2,6,23,0.96)_100%)] p-5 shadow-[0_20px_60px_rgba(2,10,26,0.45)]">
+      <section className="mb-6 rounded-2xl border pf-v2-b-accent bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_50%,rgba(2,6,23,0.96)_100%)] p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-100/85" style={{ color: `hsl(var(--hue,142),65%,65%)` }}>Admin</p>
-            <h2 className="mt-1 text-xl font-black text-white">Nuevos ingresantes</h2>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="text-xs font-black uppercase tracking-[0.24em] pf-v2-t-accent">Admin</p>
+            <h2 className="mt-1 text-xl font-black pf-v2-t">Nuevos ingresantes</h2>
+            <p className="mt-1 text-sm pf-v2-t-70">
               Esta vista replica el alta pendiente para que puedas activarlos tambien desde Clientes.
             </p>
           </div>
-          <div className="rounded-xl border border-cyan-300/30 bg-cyan-500/15 px-3 py-2 text-sm font-bold text-cyan-100">
+          <div className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2 text-sm font-bold pf-v2-t-accent">
             {ingresantesLoading ? 'Cargando...' : `Pendientes: ${ingresantesPendientes.length}`}
           </div>
         </div>
@@ -6359,8 +6358,8 @@ export default function ClientesPage() {
           <div
             className={`mt-3 rounded-xl border px-3 py-2 text-sm font-semibold ${
               ingresantesMessage.type === 'success'
-                ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100'
-                : 'border-rose-300/35 bg-rose-500/15 text-rose-100'
+                ? 'pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok'
+                : 'pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger'
             }`}
           >
             {ingresantesMessage.text}
@@ -6368,7 +6367,7 @@ export default function ClientesPage() {
         ) : null}
 
         {ingresantesPendientes.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-3 text-sm text-slate-300">
+          <p className="mt-3 rounded-xl border pf-v2-b pf-v2-s px-3 py-3 text-sm pf-v2-t-70">
             No hay ingresantes pendientes de alta en este momento.
           </p>
         ) : (
@@ -6377,13 +6376,13 @@ export default function ClientesPage() {
               const nombre = resolveIngresanteDisplayName(ingresante);
               return (
                 <article key={`ingresante-${ingresante.id}`} className="pf-v2-card">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
-                  <p className="mt-1 text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
-                  <p className="text-xs text-slate-300">{ingresante.email}</p>
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-accent">Nuevo ingresante</p>
+                  <p className="mt-1 text-sm font-black pf-v2-t">{nombre.nombreCompleto || 'Sin nombre'}</p>
+                  <p className="text-xs pf-v2-t-70">{ingresante.email}</p>
+                  <p className="mt-1 text-[11px] pf-v2-t-50">
                     Telefono: {String(ingresante.signupProfile?.telefono || ingresante.telefono || 'Sin dato')}
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] pf-v2-t-50">
                     Nacimiento: {String(ingresante.signupProfile?.fechaNacimiento || ingresante.fechaNacimiento || 'Sin dato')}
                   </p>
 
@@ -6392,14 +6391,14 @@ export default function ClientesPage() {
                       type="button"
                       onClick={() => void darAltaIngresante(ingresante)}
                       disabled={ingresantesActionId === ingresante.id}
-                      className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-bold pf-v2-t-ok transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {ingresantesActionId === ingresante.id ? 'Dando alta...' : 'Dar de Alta'}
                     </ReliableActionButton>
 
                     <Link
                       href="/admin/usuarios"
-                      className="rounded-lg border border-cyan-300/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-500/25"
+                      className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-bold pf-v2-t-accent transition pf-v2-hover"
                     >
                       Abrir panel de Admin
                     </Link>
@@ -6415,7 +6414,7 @@ export default function ClientesPage() {
       {!isDetailMode ? (
       <section className="pf-v2-card mb-6">
         <h2 className="pf-v2-h2">Registrar pago</h2>
-        <p className="mt-1 text-sm text-slate-300">
+        <p className="mt-1 text-sm pf-v2-t-70">
           Al registrar un pago, se renueva automaticamente la asesoria por 30 dias (configurable por cliente).
         </p>
 
@@ -6424,7 +6423,7 @@ export default function ClientesPage() {
             required
             value={pagoForm.clientId}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, clientId: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
           >
             <option value="">Cliente</option>
             {clientes
@@ -6442,7 +6441,7 @@ export default function ClientesPage() {
             type="date"
             value={pagoForm.fecha}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, fecha: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
           />
 
           <input
@@ -6452,14 +6451,14 @@ export default function ClientesPage() {
             step="0.01"
             value={pagoForm.importe}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, importe: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
             placeholder="Importe"
           />
 
           <select
             value={pagoForm.moneda}
             onChange={(e) => setPagoForm((prev) => ({ ...prev, moneda: e.target.value }))}
-            className="rounded-xl border border-white/20 bg-[#0e1012] px-3 py-2 text-sm"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm"
           >
             <option value="ARS">ARS</option>
             <option value="USD">USD</option>
@@ -6474,17 +6473,17 @@ export default function ClientesPage() {
         </form>
 
         <div className="mt-4 grid gap-2">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
+          <p className="text-xs uppercase tracking-wide pf-v2-t-50">
             Ultimos pagos ({pagos.length})
           </p>
           {pagos.slice(0, 5).map((pago) => (
             <div
               key={pago.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-3 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border pf-v2-b pf-v2-s p-3 text-sm"
             >
-              <p className="font-semibold text-slate-100">{pago.clientName}</p>
-              <p className="text-slate-300">{new Date(pago.fecha).toLocaleDateString("es-AR")}</p>
-              <p className="font-bold text-emerald-200">
+              <p className="font-semibold pf-v2-t">{pago.clientName}</p>
+              <p className="pf-v2-t-70">{new Date(pago.fecha).toLocaleDateString("es-AR")}</p>
+              <p className="font-bold pf-v2-t-ok">
                 {pago.moneda} {pago.importe.toLocaleString("es-AR")}
               </p>
             </div>
@@ -6507,9 +6506,9 @@ export default function ClientesPage() {
           data-layout-lock="clientes-list-panel"
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex rounded-xl border border-white/15 bg-white/[0.025] p-1">
-              <ReliableActionButton type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "bg-emerald-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Activos</ReliableActionButton>
-              <ReliableActionButton type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "bg-rose-400 text-slate-950" : "text-slate-200 hover:bg-white/10"}`}>Finalizados</ReliableActionButton>
+            <div className="inline-flex rounded-xl border pf-v2-b-hi pf-v2-s p-1">
+              <ReliableActionButton type="button" onClick={() => setVista("activo")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "activo" ? "pf-v2-s-ok pf-v2-t" : "pf-v2-t pf-v2-hover"}`}>Activos</ReliableActionButton>
+              <ReliableActionButton type="button" onClick={() => setVista("finalizado")} className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${vista === "finalizado" ? "pf-v2-s-danger pf-v2-t" : "pf-v2-t pf-v2-hover"}`}>Finalizados</ReliableActionButton>
             </div>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente, club o categoria" className="pf-filter-input max-w-sm text-sm" />
           </div>
@@ -6547,79 +6546,79 @@ export default function ClientesPage() {
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("todos")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "todos" ? "border-cyan-300/70 bg-cyan-500/20 text-cyan-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "todos" ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Todos ({planStatusSummary.total})
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan" ? "border-emerald-300/70 bg-emerald-500/20 text-emerald-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan" ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Con plan ({planStatusSummary.conPlan})
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("sin-plan")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan" ? "border-rose-300/70 bg-rose-500/20 text-rose-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan" ? "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Sin plan ({planStatusSummary.sinPlan})
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan-entrenamiento")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-entrenamiento" ? "border-lime-300/70 bg-lime-500/20 text-lime-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-entrenamiento" ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Entrenamiento ({planStatusSummary.conEntrenamiento})
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("con-plan-nutricional")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-nutricional" ? "border-sky-300/70 bg-sky-500/20 text-sky-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "con-plan-nutricional" ? "pf-v2-b-blue pf-v2-s-blue pf-v2-t-blue" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Nutricional ({planStatusSummary.conNutricional})
             </ReliableActionButton>
             <ReliableActionButton
               type="button"
               onClick={() => setPlanFilter("sin-plan-nutricional")}
-              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan-nutricional" ? "border-slate-300/70 bg-slate-600/30 text-slate-100" : "border-white/20 text-slate-200 hover:bg-white/10"}`}
+              className={`rounded-full border px-2.5 py-1 font-semibold ${filtroPlan === "sin-plan-nutricional" ? "pf-v2-b pf-v2-s pf-v2-t" : "pf-v2-b-hi pf-v2-t pf-v2-hover"}`}
             >
               Sin nutricional ({planStatusSummary.sinNutricional})
             </ReliableActionButton>
           </div>
 
           <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">Total visibles</p>
-              <p className="text-xl font-black text-white">{clientesFiltrados.length}</p>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Total visibles</p>
+              <p className="text-xl font-black pf-v2-t">{clientesFiltrados.length}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-emerald-200">Con plan</p>
-              <p className="text-xl font-black text-emerald-100">{planStatusSummary.conPlan}</p>
+            <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">Con plan</p>
+              <p className="text-xl font-black pf-v2-t-ok">{planStatusSummary.conPlan}</p>
             </div>
-            <div className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-cyan-200">Nutricional</p>
-              <p className="text-xl font-black text-cyan-100">{planStatusSummary.conNutricional}</p>
+            <div className="rounded-2xl border pf-v2-b-accent pf-v2-s-accent px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-accent">Nutricional</p>
+              <p className="text-xl font-black pf-v2-t-accent">{planStatusSummary.conNutricional}</p>
             </div>
-            <div className="rounded-2xl border border-lime-300/20 bg-lime-500/10 px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-lime-200">En linea</p>
-              <p className="text-xl font-black text-lime-100">{presenceSummary.online}</p>
+            <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">En linea</p>
+              <p className="text-xl font-black pf-v2-t-ok">{presenceSummary.online}</p>
             </div>
-            <div className="rounded-2xl border border-rose-300/20 bg-rose-500/10 px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-rose-200">Sin plan</p>
-              <p className="text-xl font-black text-rose-100">{planStatusSummary.sinPlan}</p>
+            <div className="rounded-2xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t-danger">Sin plan</p>
+              <p className="text-xl font-black pf-v2-t-danger">{planStatusSummary.sinPlan}</p>
             </div>
-            <div className="rounded-2xl border border-slate-300/20 bg-slate-500/10 px-3 py-2.5">
-              <p className="text-[11px] uppercase tracking-wide text-slate-200">Con actividad</p>
-              <p className="text-xl font-black text-slate-100">{presenceSummary.withLastSeen}</p>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide pf-v2-t">Con actividad</p>
+              <p className="text-xl font-black pf-v2-t">{presenceSummary.withLastSeen}</p>
             </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-cyan-300/15 bg-white/[0.025] p-3 backdrop-blur-sm">
+          <div className="space-y-3 rounded-2xl border pf-v2-b-accent pf-v2-s p-3 backdrop-blur-sm">
             {!alumnosLoaded ? (
-              <p className="rounded-xl border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-300">Cargando clientes...</p>
+              <p className="rounded-xl border pf-v2-b pf-v2-s p-4 text-sm pf-v2-t-70">Cargando clientes...</p>
             ) : clientesFiltrados.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-300">No hay clientes en este apartado.</p>
+              <p className="rounded-xl border pf-v2-b pf-v2-s p-4 text-sm pf-v2-t-70">No hay clientes en este apartado.</p>
             ) : (
               clientesFiltrados.map((cliente) => {
                 const active = cliente.id === selectedClientId;
@@ -6633,10 +6632,10 @@ export default function ClientesPage() {
                     ? "En linea"
                     : "Desconectado";
                 const presenceTone = !presenceEmail
-                  ? "bg-slate-700/60 text-slate-300"
+                  ? "pf-v2-s pf-v2-t-70"
                   : presenceSnapshot?.isOnline
-                    ? "bg-emerald-500/20 text-emerald-100"
-                    : "bg-slate-700/60 text-slate-200";
+                    ? "pf-v2-s-ok pf-v2-t-ok"
+                    : "pf-v2-s pf-v2-t";
                 const presenceLastSeenLabel = !presenceEmail
                   ? "Agrega email para monitorear"
                   : formatPresenceLastSeen(presenceSnapshot?.lastSeenAt || null);
@@ -6660,12 +6659,12 @@ export default function ClientesPage() {
                               <img
                                 src={photo}
                                 alt={cliente.nombre}
-                                className="h-10 w-10 rounded-full border border-cyan-300/35 object-cover"
+                                className="h-10 w-10 rounded-full border pf-v2-b-accent object-cover"
                               />
                             );
                           }
                           return (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/35 bg-cyan-500/15 text-xs font-black text-cyan-100">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full border pf-v2-b-accent pf-v2-s-accent text-xs font-black pf-v2-t-accent">
                               {cliente.nombre
                                 .split(" ")
                                 .filter(Boolean)
@@ -6678,35 +6677,35 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="min-w-[140px] flex-1">
-                        <p className="truncate text-sm font-bold text-white">{cliente.nombre}</p>
-                        <p className="truncate text-xs text-slate-300">{cliente.club || "Sin club"}</p>
+                        <p className="truncate text-sm font-bold pf-v2-t">{cliente.nombre}</p>
+                        <p className="truncate text-xs pf-v2-t-70">{cliente.club || "Sin club"}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${presenceTone}`}>
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold${presenceTone}`}>
                             <span
-                              className={`h-2 w-2 rounded-full ${presenceSnapshot?.isOnline ? "bg-emerald-300 shadow-[0_0_0_2px_rgba(16,185,129,0.26)]" : "bg-slate-400"}`}
+                              className={`h-2 w-2 rounded-full ${presenceSnapshot?.isOnline ? "pf-v2-s-ok" : "pf-v2-s"}`}
                             />
                             {presenceLabel}
                           </span>
-                          <span className="text-[10px] text-slate-400">{presenceLastSeenLabel}</span>
+                          <span className="text-[10px] pf-v2-t-50">{presenceLastSeenLabel}</span>
                         </div>
                       </div>
 
                       <div className="flex shrink-0 items-center">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${cliente.tipo === "jugadora" ? "bg-cyan-500/20 text-cyan-100" : "bg-lime-500/20 text-lime-100"}`}>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${cliente.tipo === "jugadora" ? "pf-v2-s-accent pf-v2-t-accent" : "pf-v2-s-ok pf-v2-t-ok"}`}>
                           {cliente.tipo === "jugadora" ? "Jugadora" : "Alumno/a"}
                         </span>
                       </div>
 
-                      <div className="min-w-[110px] text-xs text-slate-200">
+                      <div className="min-w-[110px] text-xs pf-v2-t">
                         <p className="truncate">{cliente.categoria || cliente.deporte || "-"}</p>
                       </div>
 
                       <div className="flex min-w-[180px] flex-wrap items-center gap-1.5">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sesionesCount > 0 ? "bg-emerald-500/20 text-emerald-100" : "bg-rose-500/20 text-rose-100"}`}>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sesionesCount > 0 ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-danger pf-v2-t-danger"}`}>
                           {sesionesCount > 0 ? `Con plan (${sesionesCount})` : "Sin plan"}
                         </span>
                         <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${nutritionStatus?.hasPlan ? "bg-cyan-500/20 text-cyan-100" : "bg-slate-700/60 text-slate-300"}`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${nutritionStatus?.hasPlan ? "pf-v2-s-accent pf-v2-t-accent" : "pf-v2-s pf-v2-t-70"}`}
                           title={nutritionStatus?.hasPlan ? nutritionStatus.planName : "Sin plan nutricional"}
                         >
                           {nutritionStatus?.hasPlan ? "Nutri: con plan" : "Nutri: sin plan"}
@@ -6714,13 +6713,13 @@ export default function ClientesPage() {
                       </div>
 
                       <div className="min-w-[120px] text-[11px]">
-                        <p className="truncate text-slate-300">{meta.endDate || "Sin vencimiento"}</p>
-                        <p className="truncate text-slate-400">{lastPayment ? `${lastPayment.moneda} ${lastPayment.importe.toLocaleString("es-AR")}` : "Sin pagos"}</p>
+                        <p className="truncate pf-v2-t-70">{meta.endDate || "Sin vencimiento"}</p>
+                        <p className="truncate pf-v2-t-50">{lastPayment ? `${lastPayment.moneda} ${lastPayment.importe.toLocaleString("es-AR")}` : "Sin pagos"}</p>
                       </div>
 
                       <div className="min-w-[220px] max-w-[320px]">
                         {etiquetasCliente.length === 0 ? (
-                          <span className="inline-flex rounded-full border border-slate-500/50 bg-[#0e1012]/70 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                          <span className="inline-flex rounded-full border pf-v2-b pf-v2-s-deep px-2.5 py-1 text-[11px] font-semibold pf-v2-t-70">
                             Sin etiquetas
                           </span>
                         ) : (
@@ -6728,7 +6727,7 @@ export default function ClientesPage() {
                             {etiquetasCliente.slice(0, 3).map((tag) => (
                               <span
                                 key={tag.id}
-                                className="max-w-[120px] truncate rounded-full border border-white/20 px-2.5 py-1 text-[11px] font-bold text-white shadow-[0_2px_10px_rgba(15,23,42,0.35)]"
+                                className="max-w-[120px] truncate rounded-full border pf-v2-b-hi px-2.5 py-1 text-[11px] font-bold pf-v2-t"
                                 style={{ backgroundColor: tag.color || "#2196f3" }}
                                 title={tag.texto}
                               >
@@ -6736,7 +6735,7 @@ export default function ClientesPage() {
                               </span>
                             ))}
                             {etiquetasCliente.length > 3 ? (
-                              <span className="rounded-full border border-cyan-300/40 bg-cyan-500/15 px-2 py-1 text-[11px] font-bold text-cyan-100">
+                              <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-1 text-[11px] font-bold pf-v2-t-accent">
                                 +{etiquetasCliente.length - 3}
                               </span>
                             ) : null}
@@ -6764,60 +6763,60 @@ export default function ClientesPage() {
         {isDetailMode ? (
         <div className="pf-v2-card">
           {!selectedClient || !selectedMeta || !datosDraft ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 text-sm text-slate-300">Selecciona un cliente para abrir su ficha.</div>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s p-5 text-sm pf-v2-t-70">Selecciona un cliente para abrir su ficha.</div>
           ) : (
             <>
-              <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
+              <div className="mb-3 rounded-2xl border pf-v2-b pf-v2-s p-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Ficha del cliente</p>
-                    <h2 className="text-lg font-bold text-white">{selectedClient.nombre}</h2>
-                    <p className="text-xs text-slate-300">{selectedClient.tipo === "jugadora" ? "Perfil de jugadora" : "Perfil de alumno"}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-50">Ficha del cliente</p>
+                    <h2 className="text-lg font-bold pf-v2-t">{selectedClient.nombre}</h2>
+                    <p className="text-xs pf-v2-t-70">{selectedClient.tipo === "jugadora" ? "Perfil de jugadora" : "Perfil de alumno"}</p>
                   </div>
                   <div className="inline-flex items-center gap-2">
                     <ReliableActionButton
                       type="button"
                       onClick={() => openWhatsapp(selectedClient)}
                       disabled={!selectedMeta.telefono}
-                      className="rounded-lg border border-emerald-300/40 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/10 disabled:opacity-40"
+                      className="rounded-lg border pf-v2-b-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok pf-v2-hover disabled:opacity-40"
                     >
                       WhatsApp
                     </ReliableActionButton>
                     <ReliableActionButton
                       type="button"
                       onClick={closeClientDetail}
-                      className="rounded-lg border border-cyan-300/40 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                      className="rounded-lg border pf-v2-b-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                     >
                       Volver al listado
                     </ReliableActionButton>
                   </div>
                 </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-slate-800/95 via-slate-800/75 to-slate-700/60 p-4">
+              <div className="rounded-2xl border pf-v2-b p-4">
                 <div className="grid gap-3 md:grid-cols-6">
                   <div>
-                    <p className="text-xs text-slate-300">Cliente:</p>
-                    <p className="text-2xl font-black text-white">{selectedClient.nombre}</p>
+                    <p className="text-xs pf-v2-t-70">Cliente:</p>
+                    <p className="text-2xl font-black pf-v2-t">{selectedClient.nombre}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Ultimo Chequeo:</p>
-                    <p className="font-bold text-white">{selectedMeta.lastCheck}</p>
+                    <p className="text-xs pf-v2-t-70">Ultimo Chequeo:</p>
+                    <p className="font-bold pf-v2-t">{selectedMeta.lastCheck}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Proximo chequeo:</p>
-                    <p className="font-bold text-white">{selectedMeta.nextCheck}</p>
+                    <p className="text-xs pf-v2-t-70">Proximo chequeo:</p>
+                    <p className="font-bold pf-v2-t">{selectedMeta.nextCheck}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Altura:</p>
-                    <p className="font-bold text-white">{selectedClient.altura || "SIN DATOS"}</p>
+                    <p className="text-xs pf-v2-t-70">Altura:</p>
+                    <p className="font-bold pf-v2-t">{selectedClient.altura || "SIN DATOS"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Obj. Nutricional:</p>
-                    <p className="font-bold text-white">{selectedMeta.objNutricional || "SIN DATOS"}</p>
+                    <p className="text-xs pf-v2-t-70">Obj. Nutricional:</p>
+                    <p className="font-bold pf-v2-t">{selectedMeta.objNutricional || "SIN DATOS"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-300">Plan nutricional:</p>
-                    <p className="font-bold text-white">
+                    <p className="text-xs pf-v2-t-70">Plan nutricional:</p>
+                    <p className="font-bold pf-v2-t">
                       {selectedNutritionPlan ? selectedNutritionPlan.nombre : "SIN PLAN"}
                     </p>
                   </div>
@@ -6835,17 +6834,17 @@ export default function ClientesPage() {
                         setDetailTabId(tab.id);
                         pushUrlWithoutReload(buildClientDetailHref(selectedClient.id, tab.id));
                       }}
-                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-[rgba(97,206,112,0.55)] bg-[rgba(97,206,112,0.10)] text-white shadow-[0_0_0_1px_rgba(97,206,112,0.15)]" : "border-white/[0.09] bg-[#0e1012] text-white/70 hover:border-white/[0.18] hover:bg-white/[0.03]"}`}
+                      className={`pf-cliente-tab-card group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition ${activeTab === tab.id ? "pf-cliente-tab-active border-[rgba(97,206,112,0.55)] bg-[rgba(97,206,112,0.10)] pf-v2-t" : "pf-v2-b pf-v2-s-deep pf-v2-t-70 pf-v2-hover"}`}
                       style={{ animationDelay: `${Math.min(index, 8) * 42}ms` }}
                     >
                       {activeTab === tab.id ? (
-                        <span className="absolute inset-y-2 left-1 w-1 rounded-full bg-cyan-100/90" />
+                        <span className="absolute inset-y-2 left-1 w-1 rounded-full pf-v2-s-accent" />
                       ) : null}
                       <span className="relative flex items-start gap-2">
                         <span className="mt-0.5 text-base leading-none">{tab.icon}</span>
                         <span>
                           <span className="block text-sm font-bold leading-tight">{tab.label}</span>
-                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-300 group-hover:text-cyan-100">
+                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide pf-v2-t-70">
                             Vista dedicada
                           </span>
                         </span>
@@ -6854,7 +6853,7 @@ export default function ClientesPage() {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02]/35 p-2">
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border pf-v2-b pf-v2-s p-2">
                   {/* Etiquetas chips visualización */}
                   <div className="w-full lg:w-auto">
                     <EtiquetasChips etiquetas={etiquetas} />
@@ -6891,13 +6890,13 @@ export default function ClientesPage() {
                       value={etiquetaCrear.texto}
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, texto: e.target.value }))}
                       placeholder="Nueva etiqueta"
-                      className="rounded border border-white/20 bg-[#0e1012] px-2 py-1 text-xs"
+                      className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs"
                     />
                     <input
                       type="color"
                       value={etiquetaCrear.color}
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, color: e.target.value }))}
-                      className="w-8 h-8 border border-white/20"
+                      className="w-8 h-8 border pf-v2-b-hi"
                     />
                     <ReliableActionButton type="submit" className="pf-v2-btn !rounded !px-2 !py-1 !text-xs">+</ReliableActionButton>
                   </form>
@@ -6906,7 +6905,7 @@ export default function ClientesPage() {
                     value={etiquetaSearch}
                     onChange={(e) => setEtiquetaSearch(e.target.value)}
                     placeholder="Buscar por etiqueta"
-                    className="rounded border border-white/20 bg-[#0e1012] px-2 py-1 text-xs"
+                    className="rounded border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-xs"
                   />
                 </div>
               </div>
@@ -6915,7 +6914,7 @@ export default function ClientesPage() {
                 className={
                   activeTab === "plan-entrenamiento"
                     ? "mt-4"
-                    : "mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5 xl:p-6"
+                    : "mt-4 rounded-2xl border pf-v2-b pf-v2-s p-5 xl:p-6"
                 }
               >
                 {activeTab === "datos" ? (
@@ -6926,45 +6925,45 @@ export default function ClientesPage() {
                     <div className="space-y-3">
 
                       {/* PERFIL HEADER */}
-                      <div className="relative overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0e1012] p-4 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
+                      <div className="relative overflow-hidden rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(97,206,112,0.05),transparent_60%)]" />
                         <div className="relative flex items-center gap-3.5">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#61ce70] to-[#38a169] text-lg font-black text-white shadow-[0_0_16px_rgba(97,206,112,0.35)]">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-black pf-v2-t">
                             {(datosDraft.nombre?.[0] || "?").toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/40">
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-40">
                               {selectedClient.tipo === "jugadora" ? "Jugadora" : "Alumno"}
                             </p>
-                            <h3 className="truncate text-base font-black leading-tight text-white">
+                            <h3 className="truncate text-base font-black leading-tight pf-v2-t">
                               {[datosDraft.nombre, selectedMeta.apellido].filter(Boolean).join(" ") || "Sin nombre"}
                             </h3>
-                            <p className="truncate text-[11px] text-slate-500">{selectedMeta.email || "Sin email"}</p>
+                            <p className="truncate text-[11px] pf-v2-t-40">{selectedMeta.email || "Sin email"}</p>
                           </div>
-                          <span className={`ml-auto shrink-0 rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${selectedClient.estado === "activo" ? "bg-emerald-500/15 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.25)]" : "bg-rose-500/15 text-rose-400 shadow-[0_0_10px_rgba(239,68,68,0.25)]"}`}>
+                          <span className={`ml-auto shrink-0 rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${selectedClient.estado === "activo" ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-danger pf-v2-t-danger"}`}>
                             {selectedClient.estado}
                           </span>
                         </div>
                       </div>
 
                       {/* IDENTIDAD Y CONTACTO */}
-                      <div className="overflow-hidden rounded-2xl border border-indigo-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-indigo-400 shadow-[0_0_7px_rgba(99,102,241,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-indigo-300/75">Identidad y contacto</p>
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-blue pf-v2-s-deep">
+                        <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full pf-v2-s-blue" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-blue">Identidad y contacto</p>
                         </div>
                         <div className="space-y-0 px-3 py-2">
                           {[
-                            { label: "Nombre", node: <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Nacimiento", node: <DateInput value={datosDraft?.fechaNacimiento || ""} onChange={(v) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: v } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 pr-8 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
-                            { label: "Pais", node: <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} placeholder="Argentina" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Nombre", node: <input value={datosDraft.nombre} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Apellido", node: <input value={selectedMeta.apellido} onChange={(e) => setMetaPatch(selectedClient.id, { apellido: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "2do apellido", node: <input value={selectedMeta.segundoApellido} onChange={(e) => setMetaPatch(selectedClient.id, { segundoApellido: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Nacimiento", node: <DateInput value={datosDraft?.fechaNacimiento || ""} onChange={(v) => setDatosDraft((prev) => prev ? { ...prev, fechaNacimiento: v } : prev)} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 pr-8 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Telefono", node: <input value={selectedMeta.telefono} onChange={(e) => setMetaPatch(selectedClient.id, { telefono: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Cod. pais", node: <input value={selectedMeta.codigoPais} onChange={(e) => setMetaPatch(selectedClient.id, { codigoPais: e.target.value })} placeholder="+54" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
+                            { label: "Pais", node: <input value={selectedMeta.pais} onChange={(e) => setMetaPatch(selectedClient.id, { pais: e.target.value })} placeholder="Argentina" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" /> },
                           ].map(({ label, node }) => (
                             <div key={label} className="py-1.5">
-                              <p className="mb-1 text-[10px] font-medium text-slate-500">{label}</p>
+                              <p className="mb-1 text-[10px] font-medium pf-v2-t-40">{label}</p>
                               {node}
                             </div>
                           ))}
@@ -6972,24 +6971,24 @@ export default function ClientesPage() {
                       </div>
 
                       {/* UBICACION Y PERFIL FISICO */}
-                      <div className="overflow-hidden rounded-2xl border border-violet-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-violet-400 shadow-[0_0_7px_rgba(139,92,246,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300/75">Ubicacion y perfil fisico</p>
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-violet pf-v2-s-deep">
+                        <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full pf-v2-s-violet" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-violet">Ubicacion y perfil fisico</p>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           {[
-                            { label: "Provincia", node: <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Calle", node: <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Numero", node: <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Piso", node: <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Depto", node: <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Sexo", node: <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none"><option value="masculino" className="bg-[#0e1012]">Masculino</option><option value="femenino" className="bg-[#0e1012]">Femenino</option></select> },
-                            { label: "Altura (cm)", node: <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
-                            { label: "Peso (kg)", node: <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-semibold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" /> },
+                            { label: "Provincia", node: <input value={selectedMeta.provincia} onChange={(e) => setMetaPatch(selectedClient.id, { provincia: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Calle", node: <input value={selectedMeta.calle} onChange={(e) => setMetaPatch(selectedClient.id, { calle: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Numero", node: <input value={selectedMeta.numero} onChange={(e) => setMetaPatch(selectedClient.id, { numero: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Piso", node: <input value={selectedMeta.piso} onChange={(e) => setMetaPatch(selectedClient.id, { piso: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Depto", node: <input value={selectedMeta.depto} onChange={(e) => setMetaPatch(selectedClient.id, { depto: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Sexo", node: <select value={selectedMeta.sexo} onChange={(e) => setMetaPatch(selectedClient.id, { sexo: e.target.value as "masculino" | "femenino" })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none"><option value="masculino" className="pf-v2-s-deep">Masculino</option><option value="femenino" className="pf-v2-s-deep">Femenino</option></select> },
+                            { label: "Altura (cm)", node: <input value={datosDraft.altura} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, altura: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-ph focus:outline-none" /> },
+                            { label: "Peso (kg)", node: <input value={datosDraft.peso} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, peso: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-ph focus:outline-none" /> },
                           ].map(({ label, node }) => (
                             <div key={label} className="py-1.5">
-                              <p className="mb-1 text-[10px] font-medium text-slate-500">{label}</p>
+                              <p className="mb-1 text-[10px] font-medium pf-v2-t-40">{label}</p>
                               {node}
                             </div>
                           ))}
@@ -7002,59 +7001,59 @@ export default function ClientesPage() {
                     <div className="space-y-3">
 
                       {/* VIGENCIA DEL PLAN */}
-                      <div className="overflow-hidden rounded-2xl border border-fuchsia-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-fuchsia-400 shadow-[0_0_7px_rgba(217,70,239,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-300/75">Vigencia del plan</p>
-                          <p className="ml-auto text-[9px] text-slate-600">inicio → fin de asesoria</p>
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-violet pf-v2-s-deep">
+                        <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full pf-v2-s-violet" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-violet">Vigencia del plan</p>
+                          <p className="ml-auto text-[9px] pf-v2-t-40">inicio → fin de asesoria</p>
                         </div>
                         <div className="grid grid-cols-3 gap-2 p-3">
                           <div>
-                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Inicio</p>
-                            <input type="date" value={selectedMeta.startDate} onChange={(e) => setMetaPatch(selectedClient.id, { startDate: e.target.value })} className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
+                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] pf-v2-t-40">Inicio</p>
+                            <input type="date" value={selectedMeta.startDate} onChange={(e) => setMetaPatch(selectedClient.id, { startDate: e.target.value })} className="w-full rounded-lg pf-v2-s-deep px-2 py-2 text-xs font-bold pf-v2-t-violet focus:outline-none [color-scheme:dark]" />
                           </div>
                           <div>
-                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Fin</p>
-                            <input type="date" value={selectedMeta.endDate} onChange={(e) => setMetaPatch(selectedClient.id, { endDate: e.target.value })} className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 focus:bg-white/[0.09] focus:outline-none [color-scheme:dark]" />
+                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] pf-v2-t-40">Fin</p>
+                            <input type="date" value={selectedMeta.endDate} onChange={(e) => setMetaPatch(selectedClient.id, { endDate: e.target.value })} className="w-full rounded-lg pf-v2-s-deep px-2 py-2 text-xs font-bold pf-v2-t-violet focus:outline-none [color-scheme:dark]" />
                           </div>
                           <div>
-                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Categoria</p>
-                            <input value={selectedMeta.categoriaPlan} onChange={(e) => setMetaPatch(selectedClient.id, { categoriaPlan: e.target.value })} placeholder="—" className="w-full rounded-lg bg-[#111417] px-2 py-2 text-xs font-bold text-fuchsia-200 placeholder:text-slate-700 focus:bg-white/[0.09] focus:outline-none" />
+                            <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] pf-v2-t-40">Categoria</p>
+                            <input value={selectedMeta.categoriaPlan} onChange={(e) => setMetaPatch(selectedClient.id, { categoriaPlan: e.target.value })} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-2 py-2 text-xs font-bold pf-v2-t-violet pf-v2-ph focus:outline-none" />
                           </div>
                         </div>
                       </div>
 
                       {/* ACCESO Y CONTRASEÑA (solo admin) */}
                       {isAdmin && (
-                        <div className="overflow-hidden rounded-2xl border border-cyan-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                          <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                            <span className="h-3 w-[3px] rounded-full bg-cyan-400 shadow-[0_0_7px_rgba(34,211,238,1)]" />
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300/75">Acceso y contraseña</p>
+                        <div className="overflow-hidden rounded-2xl border pf-v2-b-accent pf-v2-s-deep">
+                          <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                            <span className="h-3 w-[3px] rounded-full pf-v2-s-accent-full" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-accent">Acceso y contraseña</p>
                           </div>
                           <div className="space-y-3 p-3">
                             <div>
-                              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Email de acceso</p>
+                              <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] pf-v2-t-40">Email de acceso</p>
                               <input
                                 type="email"
                                 value={selectedMeta.email}
                                 onChange={(e) => setMetaPatch(selectedClient.id, { email: e.target.value })}
                                 placeholder="email@ejemplo.com"
                                 autoComplete="off"
-                                className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-cyan-100 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]"
+                                className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-bold pf-v2-t-accent pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]"
                               />
                             </div>
-                            <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-500">
+                            <p className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-[10px] leading-relaxed pf-v2-t-40">
                               Podés cambiar el email de login del alumno y/o definirle una contraseña nueva. Por seguridad, la contraseña actual no puede verse (se guarda cifrada). Si solo querés cambiar el email, dejá la contraseña vacía.
                             </p>
                             <div>
-                              <p className="mb-1 text-[10px] font-medium text-slate-500">Nueva contraseña <span className="text-slate-600">(opcional)</span></p>
+                              <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Nueva contraseña <span className="pf-v2-t-40">(opcional)</span></p>
                               <input
                                 type="text"
                                 value={passwordNuevaAlumno}
                                 onChange={(e) => setPasswordNuevaAlumno(e.target.value)}
                                 placeholder="Mínimo 6 caracteres"
                                 autoComplete="off"
-                                className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-700 focus:bg-white/[0.09] focus:outline-none"
+                                className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-bold pf-v2-t pf-v2-ph focus:outline-none"
                               />
                             </div>
                             <div className="grid grid-cols-2 gap-2">
@@ -7062,7 +7061,7 @@ export default function ClientesPage() {
                                 type="button"
                                 disabled={guardandoPassword || !selectedClientEmail.trim()}
                                 onClick={() => void blanquearPasswordAlumno({ generar: false })}
-                                className="rounded-lg bg-gradient-to-r from-cyan-500 to-sky-500 py-2.5 text-xs font-black text-white shadow-[0_0_16px_rgba(34,211,238,0.35)] transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="rounded-lg py-2.5 text-xs font-black pf-v2-t transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 {guardandoPassword ? "Guardando..." : "Establecer accesos"}
                               </button>
@@ -7070,18 +7069,18 @@ export default function ClientesPage() {
                                 type="button"
                                 disabled={guardandoPassword || !selectedClientEmail.trim()}
                                 onClick={() => void blanquearPasswordAlumno({ generar: true })}
-                                className="rounded-lg border border-cyan-500/40 bg-[#111417] py-2.5 text-xs font-black text-cyan-200 transition hover:bg-white/[0.06] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="rounded-lg border pf-v2-b-accent pf-v2-s-deep py-2.5 text-xs font-black pf-v2-t-accent transition pf-v2-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 Generar automática
                               </button>
                             </div>
                             {passwordActualAlumno ? (
-                              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/[0.08] px-3 py-2.5">
-                                <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300/80">
+                              <div className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-2.5">
+                                <p className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] pf-v2-t-ok">
                                   {passwordGeneradaAlumno ? "Contraseña nueva" : "Contraseña actual (definida por vos)"}
                                 </p>
                                 <div className="flex items-center gap-2">
-                                  <code className="flex-1 select-all break-all rounded bg-[#0e1012] px-2 py-1.5 text-sm font-black text-emerald-200">
+                                  <code className="flex-1 select-all break-all rounded pf-v2-s-deep px-2 py-1.5 text-sm font-black pf-v2-t-ok">
                                     {passwordActualAlumno}
                                   </code>
                                   <button
@@ -7092,15 +7091,15 @@ export default function ClientesPage() {
                                         window.dispatchEvent(new CustomEvent("pf-inline-toast", { detail: { type: "success", message: "Contraseña copiada al portapapeles." } }));
                                       }
                                     }}
-                                    className="shrink-0 rounded-md border border-emerald-500/40 px-2.5 py-1.5 text-[10px] font-black text-emerald-200 transition hover:bg-emerald-500/20"
+                                    className="shrink-0 rounded-md border pf-v2-b-ok px-2.5 py-1.5 text-[10px] font-black pf-v2-t-ok transition pf-v2-hover"
                                   >
                                     Copiar
                                   </button>
                                 </div>
-                                <p className="mt-1.5 text-[9px] text-emerald-400/60">Visible solo para el admin. Se actualiza cada vez que la blanqueás.</p>
+                                <p className="mt-1.5 text-[9px] pf-v2-t-ok">Visible solo para el admin. Se actualiza cada vez que la blanqueás.</p>
                               </div>
                             ) : (
-                              <p className="rounded-lg border border-white/[0.06] bg-[#111417] px-3 py-2 text-[10px] leading-relaxed text-slate-600">
+                              <p className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-[10px] leading-relaxed pf-v2-t-40">
                                 Todavía no definiste una contraseña para este alumno. Si la eligió él mismo, no puede mostrarse; blanqueala para poder verla.
                               </p>
                             )}
@@ -7109,37 +7108,37 @@ export default function ClientesPage() {
                       )}
 
                       {/* TIPO DE ASESORIA */}
-                      <div className="overflow-hidden rounded-2xl border border-sky-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-sky-400 shadow-[0_0_7px_rgba(14,165,233,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300/75">Tipo de asesoria</p>
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-blue pf-v2-s-deep">
+                        <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full pf-v2-s-blue" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-blue">Tipo de asesoria</p>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Tipo</p>
-                            <select value={selectedMeta.tipoAsesoria} onChange={(e) => setMetaPatch(selectedClient.id, { tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="entrenamiento" className="bg-[#0e1012]">Entrenamiento</option>
-                              <option value="nutricion" className="bg-[#0e1012]">Nutricion</option>
-                              <option value="completa" className="bg-[#0e1012]">Completa</option>
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Tipo</p>
+                            <select value={selectedMeta.tipoAsesoria} onChange={(e) => setMetaPatch(selectedClient.id, { tipoAsesoria: e.target.value as ClienteMeta["tipoAsesoria"] })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              <option value="entrenamiento" className="pf-v2-s-deep">Entrenamiento</option>
+                              <option value="nutricion" className="pf-v2-s-deep">Nutricion</option>
+                              <option value="completa" className="pf-v2-s-deep">Completa</option>
                             </select>
                           </div>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Modalidad</p>
-                            <select value={selectedMeta.modalidad} onChange={(e) => setMetaPatch(selectedClient.id, { modalidad: e.target.value as ClienteMeta["modalidad"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="virtual" className="bg-[#0e1012]">Virtual</option>
-                              <option value="presencial" className="bg-[#0e1012]">Presencial</option>
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Modalidad</p>
+                            <select value={selectedMeta.modalidad} onChange={(e) => setMetaPatch(selectedClient.id, { modalidad: e.target.value as ClienteMeta["modalidad"] })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              <option value="virtual" className="pf-v2-s-deep">Virtual</option>
+                              <option value="presencial" className="pf-v2-s-deep">Presencial</option>
                             </select>
                           </div>
                           <div className="col-span-2 py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Colaboradores</p>
-                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                              <textarea value={selectedMeta.colaboradores} onChange={(e) => setMetaPatch(selectedClient.id, { colaboradores: e.target.value })} placeholder="Colaboradores asignados..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Colaboradores</p>
+                            <div className="rounded-xl border pf-v2-b-blue pf-v2-s-deep px-3 py-2.5">
+                              <textarea value={selectedMeta.colaboradores} onChange={(e) => setMetaPatch(selectedClient.id, { colaboradores: e.target.value })} placeholder="Colaboradores asignados..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed pf-v2-t-70 pf-v2-ph focus:outline-none" />
                             </div>
                           </div>
                           <div className="col-span-2 py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Chats / Notas internas</p>
-                            <div className="rounded-xl border border-sky-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                              <textarea value={selectedMeta.chats} onChange={(e) => setMetaPatch(selectedClient.id, { chats: e.target.value })} placeholder="Notas de seguimiento..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Chats / Notas internas</p>
+                            <div className="rounded-xl border pf-v2-b-blue pf-v2-s-deep px-3 py-2.5">
+                              <textarea value={selectedMeta.chats} onChange={(e) => setMetaPatch(selectedClient.id, { chats: e.target.value })} placeholder="Notas de seguimiento..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed pf-v2-t-70 pf-v2-ph focus:outline-none" />
                             </div>
                           </div>
                         </div>
@@ -7150,57 +7149,57 @@ export default function ClientesPage() {
                   </div>{/* fin grid 2 cols */}
 
                   {/* ── CONTEXTO DEPORTIVO — full width ── */}
-                  <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                      <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
-                      <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Contexto deportivo</p>
+                  <div className="overflow-hidden rounded-2xl border pf-v2-b-ok pf-v2-s-deep">
+                    <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                      <span className="h-3 w-[3px] rounded-full pf-v2-s-ok" />
+                      <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-ok">Contexto deportivo</p>
                     </div>
                     <div className="grid gap-x-4 gap-y-0 px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
                       <div className="py-1.5">
-                        <p className="mb-1 text-[10px] font-medium text-slate-500">Club</p>
-                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                        <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Club</p>
+                        <input value={datosDraft.club} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, club: e.target.value } : prev)} placeholder="—" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" />
                       </div>
                       <div className="py-1.5">
-                        <p className="mb-1 text-[10px] font-medium text-slate-500">Objetivo</p>
-                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                        <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Objetivo</p>
+                        <input value={datosDraft.objetivo} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, objetivo: e.target.value } : prev)} placeholder="Objetivo principal" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none" />
                       </div>
                       {selectedClient.tipo === "jugadora" ? (
                         <>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Deporte</p>
-                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              {deportesOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Deporte</p>
+                            <select value={datosDraft.deporte} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, deporte: e.target.value, posicion: "" } : prev)} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              {deportesOptions.map((item) => <option key={item} value={item} className="pf-v2-s-deep">{item}</option>)}
                             </select>
                           </div>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Posicion</p>
-                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="" className="bg-[#0e1012]">Sin posicion</option>
-                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Posicion</p>
+                            <select value={datosDraft.posicion} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, posicion: e.target.value } : prev)} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              <option value="" className="pf-v2-s-deep">Sin posicion</option>
+                              {(deportes.find((dep) => dep.nombre === datosDraft.deporte)?.posiciones || []).map((item) => <option key={item} value={item} className="pf-v2-s-deep">{item}</option>)}
                             </select>
                           </div>
                         </>
                       ) : (
                         <div className="py-1.5 sm:col-span-2">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales sobre el contexto del cliente..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                          <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Observaciones</p>
+                          <div className="rounded-xl border pf-v2-b-ok pf-v2-s-deep px-3 py-2.5">
+                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales sobre el contexto del cliente..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed pf-v2-t-70 pf-v2-ph focus:outline-none" />
                           </div>
                         </div>
                       )}
                     </div>
                     {selectedClient.tipo === "jugadora" && (
-                      <div className="grid gap-x-4 gap-y-0 border-t border-white/[0.04] px-4 py-3 sm:grid-cols-2">
+                      <div className="grid gap-x-4 gap-y-0 border-t pf-v2-b px-4 py-3 sm:grid-cols-2">
                         <div className="py-1.5">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Categoria</p>
-                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                            {categoriasOptions.map((item) => <option key={item} value={item} className="bg-[#0e1012]">{item}</option>)}
+                          <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Categoria</p>
+                          <select value={datosDraft.categoria} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, categoria: e.target.value } : prev)} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                            {categoriasOptions.map((item) => <option key={item} value={item} className="pf-v2-s-deep">{item}</option>)}
                           </select>
                         </div>
                         <div className="py-1.5">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Observaciones</p>
-                          <div className="rounded-xl border border-emerald-500/[0.12] bg-[#0e1012] px-3 py-2.5">
-                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed text-slate-300 placeholder:text-slate-600 focus:outline-none" />
+                          <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Observaciones</p>
+                          <div className="rounded-xl border pf-v2-b-ok pf-v2-s-deep px-3 py-2.5">
+                            <textarea value={datosDraft.observaciones} onChange={(e) => setDatosDraft((prev) => prev ? { ...prev, observaciones: e.target.value } : prev)} placeholder="Notas adicionales..." rows={2} className="w-full resize-none bg-transparent text-sm leading-relaxed pf-v2-t-70 pf-v2-ph focus:outline-none" />
                           </div>
                         </div>
                       </div>
@@ -7208,7 +7207,7 @@ export default function ClientesPage() {
                   </div>
 
                   {/* GUARDAR — full width */}
-                  <ReliableActionButton type="button" onClick={saveDatosGenerales} className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 py-3 text-sm font-black text-white shadow-[0_0_22px_rgba(139,92,246,0.4)] transition hover:opacity-90 active:scale-[0.98]">
+                  <ReliableActionButton type="button" onClick={saveDatosGenerales} className="w-full rounded-xl py-3 text-sm font-black pf-v2-t transition hover:opacity-90 active:scale-[0.98]">
                     Guardar cambios
                   </ReliableActionButton>
 
@@ -7217,38 +7216,38 @@ export default function ClientesPage() {
                   <div className="space-y-4">
                   <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
                       {/* RENOVACION AUTOMATICA */}
-                      <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                          <span className="h-3 w-[3px] rounded-full bg-amber-400 shadow-[0_0_7px_rgba(245,158,11,1)]" />
-                          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300/75">Renovacion automatica</p>
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-warn pf-v2-s-deep">
+                        <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                          <span className="h-3 w-[3px] rounded-full pf-v2-s-warn" />
+                          <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-warn">Renovacion automatica</p>
                         </div>
                         <div className="flex items-center justify-between px-4 py-3">
-                          <p className="text-[11px] text-slate-400">Extiende la fecha de fin al registrar pago.</p>
+                          <p className="text-[11px] pf-v2-t-50">Extiende la fecha de fin al registrar pago.</p>
                           <label className="flex cursor-pointer items-center">
                             <input type="checkbox" checked={selectedMeta.autoRenewPlan} onChange={(e) => setMetaPatch(selectedClient.id, { autoRenewPlan: e.target.checked })} className="sr-only" />
-                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.45)]" : "bg-[#0e1012]"}`}>
-                              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${selectedMeta.autoRenewPlan ? "translate-x-5" : "translate-x-0.5"}`} />
+                            <div className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${selectedMeta.autoRenewPlan ? "pf-v2-s-warn" : "pf-v2-s-deep"}`}>
+                              <span className={`absolute top-0.5 h-5 w-5 rounded-full pf-v2-s-hi shadow-md transition-transform duration-200 ${selectedMeta.autoRenewPlan ? "translate-x-5" : "translate-x-0.5"}`} />
                             </div>
                           </label>
                         </div>
                         <div className="px-3 pb-3">
-                          <p className="mb-1 text-[10px] font-medium text-slate-500">Plazo (dias)</p>
-                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white focus:bg-white/[0.09] focus:outline-none" />
+                          <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Plazo (dias)</p>
+                          <input type="number" min={1} max={365} value={selectedMeta.renewalDays} onChange={(e) => setMetaPatch(selectedClient.id, { renewalDays: Math.max(1, Math.min(365, Number(e.target.value || 30))) })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-bold pf-v2-t focus:outline-none" />
                         </div>
                       </div>
 
                       {/* ASIGNAR PLAN */}
                       {isAdmin && planesDisponibles.filter((p) => p.activo).length > 0 && (
-                        <div className="overflow-hidden rounded-2xl border border-rose-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                          <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                            <span className="h-3 w-[3px] rounded-full bg-rose-400 shadow-[0_0_7px_rgba(239,68,68,1)]" />
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-rose-300/75">Asignar plan</p>
+                        <div className="overflow-hidden rounded-2xl border pf-v2-b-danger pf-v2-s-deep">
+                          <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                            <span className="h-3 w-[3px] rounded-full pf-v2-s-danger" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-danger">Asignar plan</p>
                           </div>
                           <div className="space-y-3 p-3">
-                            <select value={planSeleccionado} onChange={(e) => setPlanSeleccionado(e.target.value)} className="w-full rounded-lg bg-[#111417] px-3 py-2.5 text-sm text-white focus:outline-none">
+                            <select value={planSeleccionado} onChange={(e) => setPlanSeleccionado(e.target.value)} className="w-full rounded-lg pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none">
                               <option value="">Seleccionar plan...</option>
                               {planesDisponibles.filter((p) => p.activo).map((p) => (
-                                <option key={p.id} value={p.id} className="bg-[#0e1012]">
+                                <option key={p.id} value={p.id} className="pf-v2-s-deep">
                                   {p.nombre} — {p.moneda} {p.precio.toLocaleString("es-AR")} / {p.duracionDias} días
                                 </option>
                               ))}
@@ -7262,7 +7261,7 @@ export default function ClientesPage() {
                                   if (!plan) return;
                                   void asignarPlanDirecto(selectedClient, plan, { cobrar: false });
                                 }}
-                                className="rounded-xl bg-emerald-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500/90 disabled:opacity-40 active:scale-[0.97]"
+                                className="rounded-xl pf-v2-s-ok py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:opacity-40 active:scale-[0.97]"
                               >
                                 Sin cobrar
                               </button>
@@ -7274,7 +7273,7 @@ export default function ClientesPage() {
                                   if (!plan) return;
                                   void asignarPlanDirecto(selectedClient, plan, { cobrar: true });
                                 }}
-                                className="rounded-xl bg-rose-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500/90 disabled:opacity-40 active:scale-[0.97]"
+                                className="rounded-xl pf-v2-s-danger py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:opacity-40 active:scale-[0.97]"
                               >
                                 Cobrar y registrar
                               </button>
@@ -7285,33 +7284,33 @@ export default function ClientesPage() {
 
                       {/* ── COBRO POR MERCADO PAGO ── */}
                       {isAdmin && (
-                        <div className="overflow-hidden rounded-2xl border border-[#009ee3]/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                          <div className="flex items-center gap-2.5 border-b border-white/[0.05] px-4 py-2.5">
-                            <span className="h-3 w-[3px] rounded-full bg-[#009ee3] shadow-[0_0_7px_rgba(0,158,227,0.9)]" />
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#009ee3]/80">Cobro Mercado Pago</p>
+                        <div className="overflow-hidden rounded-2xl border pf-v2-b pf-v2-s-deep">
+                          <div className="flex items-center gap-2.5 border-b pf-v2-b px-4 py-2.5">
+                            <span className="h-3 w-[3px] rounded-full pf-v2-s-deep" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t">Cobro Mercado Pago</p>
                           </div>
                           <div className="space-y-2.5 p-3">
                             {/* Email del alumno que se usará */}
-                            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-2 text-xs">
-                              <span className="text-slate-500">Email del alumno:</span>
+                            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border pf-v2-b pf-v2-s px-2.5 py-2 text-xs">
+                              <span className="pf-v2-t-40">Email del alumno:</span>
                               {selectedMeta.email
-                                ? <span className="font-semibold text-slate-200">{selectedMeta.email}</span>
-                                : <span className="font-semibold text-amber-400">⚠ Sin email — configuralo en la pestaña Datos</span>
+                                ? <span className="font-semibold pf-v2-t">{selectedMeta.email}</span>
+                                : <span className="font-semibold pf-v2-t-warn">⚠ Sin email — configuralo en la pestaña Datos</span>
                               }
                             </div>
 
                             {planesDisponibles.filter((p) => p.activo).length === 0 ? (
-                              <p className="text-xs text-amber-300/90">Sin planes activos. Creá uno en Admin › Pagos.</p>
+                              <p className="text-xs pf-v2-t-warn">Sin planes activos. Creá uno en Admin › Pagos.</p>
                             ) : (
                               <>
                                 <select
                                   value={mpPlanSeleccionado}
                                   onChange={(e) => { setMpPlanSeleccionado(e.target.value); setMpCheckoutUrl(null); setMpCheckoutError(""); }}
-                                  className="w-full rounded-lg bg-[#111417] px-3 py-2.5 text-sm text-white focus:outline-none"
+                                  className="w-full rounded-lg pf-v2-s-deep px-3 py-2.5 text-sm pf-v2-t focus:outline-none"
                                 >
-                                  <option value="" className="bg-[#0e1012]">Seleccioná un plan...</option>
+                                  <option value="" className="pf-v2-s-deep">Seleccioná un plan...</option>
                                   {planesDisponibles.filter((p) => p.activo).map((p) => (
-                                    <option key={p.id} value={p.id} className="bg-[#0e1012]">
+                                    <option key={p.id} value={p.id} className="pf-v2-s-deep">
                                       {p.nombre} — {p.moneda} {p.precio.toLocaleString("es-AR")} / {p.duracionDias} días
                                     </option>
                                   ))}
@@ -7320,7 +7319,7 @@ export default function ClientesPage() {
                                   type="button"
                                   disabled={mpCheckoutLoading || !mpPlanSeleccionado || !selectedMeta.email}
                                   onClick={() => void generarLinkMP()}
-                                  className="w-full rounded-xl bg-[#009ee3] py-2.5 text-sm font-bold text-white shadow-[0_0_14px_rgba(0,158,227,0.35)] transition hover:bg-[#008dcc] disabled:opacity-40 active:scale-[0.97]"
+                                  className="w-full rounded-xl pf-v2-s-deep py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:opacity-40 active:scale-[0.97]"
                                 >
                                   {mpCheckoutLoading ? "Generando..." : "🔗 Generar link de pago MP"}
                                 </button>
@@ -7328,18 +7327,18 @@ export default function ClientesPage() {
                             )}
 
                             {mpCheckoutError && (
-                              <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{mpCheckoutError}</p>
+                              <p className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs pf-v2-t-danger">{mpCheckoutError}</p>
                             )}
 
                             {mpCheckoutUrl && (
-                              <div className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
-                                <p className="text-[10px] font-black uppercase tracking-wide text-emerald-300">✓ Link generado — compartilo con el alumno</p>
-                                <p className="break-all rounded-lg bg-black/40 px-2 py-2 text-[11px] font-mono leading-relaxed text-emerald-200">{mpCheckoutUrl}</p>
+                              <div className="space-y-2 rounded-xl border pf-v2-b-ok pf-v2-s-ok p-3">
+                                <p className="text-[10px] font-black uppercase tracking-wide pf-v2-t-ok">✓ Link generado — compartilo con el alumno</p>
+                                <p className="break-all rounded-lg pf-v2-s-deep px-2 py-2 text-[11px] font-mono leading-relaxed pf-v2-t-ok">{mpCheckoutUrl}</p>
                                 <div className="flex flex-wrap gap-2">
                                   <button
                                     type="button"
                                     onClick={() => { void navigator.clipboard.writeText(mpCheckoutUrl); }}
-                                    className="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                                    className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok transition pf-v2-hover"
                                   >
                                     Copiar link
                                   </button>
@@ -7347,7 +7346,7 @@ export default function ClientesPage() {
                                     href={mpCheckoutUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                                    className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok transition pf-v2-hover"
                                   >
                                     Ir al checkout →
                                   </a>
@@ -7371,33 +7370,33 @@ export default function ClientesPage() {
                           gratis: "Pase libre",
                         };
                         return (
-                          <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                            <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-2.5">
+                          <div className="overflow-hidden rounded-2xl border pf-v2-b-ok pf-v2-s-deep">
+                            <div className="flex items-center justify-between border-b pf-v2-b px-4 py-2.5">
                               <div className="flex items-center gap-2.5">
-                                <span className="h-3 w-[3px] rounded-full bg-emerald-400 shadow-[0_0_7px_rgba(16,185,129,1)]" />
-                                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/75">Confirmar pago / Habilitar pase</p>
+                                <span className="h-3 w-[3px] rounded-full pf-v2-s-ok" />
+                                <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-ok">Confirmar pago / Habilitar pase</p>
                               </div>
-                              <span className={`rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${paseActivo ? "bg-emerald-500/15 text-emerald-400 shadow-[0_0_9px_rgba(16,185,129,0.25)]" : "bg-amber-500/15 text-amber-400 shadow-[0_0_9px_rgba(245,158,11,0.25)]"}`}>
+                              <span className={`rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${paseActivo ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-warn pf-v2-t-warn"}`}>
                                 {paseActivo ? "✓ Pase habilitado" : "⏳ Sin habilitar"}
                               </span>
                             </div>
                             <div className="space-y-3 p-3">
-                              <p className="text-[11px] leading-relaxed text-slate-400">
-                                Registrá cómo pagó el alumno para <span className="font-semibold text-slate-200">habilitar el pase</span> y renovar la vigencia
-                                {selectedMeta.importe ? <> (<span className="font-semibold text-slate-200">{selectedMeta.moneda} {Number(selectedMeta.importe).toLocaleString("es-AR")}</span>)</> : null}.
+                              <p className="text-[11px] leading-relaxed pf-v2-t-50">
+                                Registrá cómo pagó el alumno para <span className="font-semibold pf-v2-t">habilitar el pase</span> y renovar la vigencia
+                                {selectedMeta.importe ? <> (<span className="font-semibold pf-v2-t">{selectedMeta.moneda} {Number(selectedMeta.importe).toLocaleString("es-AR")}</span>)</> : null}.
                               </p>
                               <div className="grid grid-cols-2 gap-2">
                                 <button
                                   type="button"
                                   onClick={() => void confirmarPagoDatos(selectedClient, "transferencia")}
-                                  className="flex items-center justify-center gap-1.5 rounded-xl bg-sky-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-sky-500/90 active:scale-[0.97]"
+                                  className="flex items-center justify-center gap-1.5 rounded-xl pf-v2-s-blue py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover active:scale-[0.97]"
                                 >
                                   🏦 Transferencia
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => void confirmarPagoDatos(selectedClient, "efectivo")}
-                                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600/75 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500/90 active:scale-[0.97]"
+                                  className="flex items-center justify-center gap-1.5 rounded-xl pf-v2-s-ok py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover active:scale-[0.97]"
                                 >
                                   💵 Efectivo
                                 </button>
@@ -7405,27 +7404,27 @@ export default function ClientesPage() {
                               <button
                                 type="button"
                                 onClick={() => void confirmarPagoDatos(selectedClient, "gratis")}
-                                className="w-full rounded-xl border border-violet-400/40 bg-violet-600/20 py-2.5 text-sm font-bold text-violet-100 transition hover:bg-violet-600/35 active:scale-[0.97]"
+                                className="w-full rounded-xl border pf-v2-b-violet pf-v2-s-violet py-2.5 text-sm font-bold pf-v2-t-violet transition pf-v2-hover active:scale-[0.97]"
                               >
                                 🎟 Dar pase libre (sin cobro)
                               </button>
 
                               {/* Historial de pagos del alumno */}
-                              <div className="mt-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5">
-                                <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Historial de pagos</p>
+                              <div className="mt-1 rounded-xl border pf-v2-b pf-v2-s p-2.5">
+                                <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] pf-v2-t-40">Historial de pagos</p>
                                 {historial.length === 0 ? (
-                                  <p className="px-1 py-1.5 text-[11px] text-slate-500">Todavía no hay pagos registrados.</p>
+                                  <p className="px-1 py-1.5 text-[11px] pf-v2-t-40">Todavía no hay pagos registrados.</p>
                                 ) : (
                                   <ul className="space-y-1.5">
                                     {historial.map((p) => (
-                                      <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg bg-black/25 px-2.5 py-1.5">
+                                      <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg pf-v2-s-deep px-2.5 py-1.5">
                                         <div className="flex min-w-0 flex-col">
-                                          <span className="text-[11px] font-semibold text-slate-200">
+                                          <span className="text-[11px] font-semibold pf-v2-t">
                                             {p.metodo ? metodoLabel[p.metodo] : "Pago"}
                                           </span>
-                                          <span className="text-[10px] text-slate-500">{p.fecha}</span>
+                                          <span className="text-[10px] pf-v2-t-40">{p.fecha}</span>
                                         </div>
-                                        <span className={`shrink-0 text-[11px] font-black ${p.importe > 0 ? "text-emerald-300" : "text-violet-300"}`}>
+                                        <span className={`shrink-0 text-[11px] font-black ${p.importe > 0 ? "pf-v2-t-ok" : "pf-v2-t-violet"}`}>
                                           {p.importe > 0 ? `${p.moneda} ${p.importe.toLocaleString("es-AR")}` : "Sin cobro"}
                                         </span>
                                       </li>
@@ -7439,56 +7438,56 @@ export default function ClientesPage() {
                       })()}
 
                       {/* DETALLE DE PAGOS */}
-                      <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-[#0e1012] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.8)]">
-                        <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-2.5">
+                      <div className="overflow-hidden rounded-2xl border pf-v2-b-warn pf-v2-s-deep">
+                        <div className="flex items-center justify-between border-b pf-v2-b px-4 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <span className="h-3 w-[3px] rounded-full bg-yellow-400 shadow-[0_0_7px_rgba(234,179,8,1)]" />
-                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-yellow-300/75">Detalle de pagos</p>
+                            <span className="h-3 w-[3px] rounded-full pf-v2-s-warn" />
+                            <p className="text-[9px] font-black uppercase tracking-[0.22em] pf-v2-t-warn">Detalle de pagos</p>
                           </div>
-                          <span className={`rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${selectedMeta.pagoEstado === "confirmado" ? "bg-emerald-500/15 text-emerald-400 shadow-[0_0_9px_rgba(16,185,129,0.25)]" : "bg-amber-500/15 text-amber-400 shadow-[0_0_9px_rgba(245,158,11,0.25)]"}`}>
+                          <span className={`rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-widest ${selectedMeta.pagoEstado === "confirmado" ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-warn pf-v2-t-warn"}`}>
                             {selectedMeta.pagoEstado === "confirmado" ? "✓ Confirmado" : "⏳ Pendiente"}
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-0 px-3 py-2">
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Moneda</p>
-                            <select value={selectedMeta.moneda} onChange={(e) => setMetaPatch(selectedClient.id, { moneda: e.target.value })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="ARS" className="bg-[#0e1012]">ARS</option>
-                              <option value="USD" className="bg-[#0e1012]">USD</option>
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Moneda</p>
+                            <select value={selectedMeta.moneda} onChange={(e) => setMetaPatch(selectedClient.id, { moneda: e.target.value })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              <option value="ARS" className="pf-v2-s-deep">ARS</option>
+                              <option value="USD" className="pf-v2-s-deep">USD</option>
                             </select>
                           </div>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Estado</p>
-                            <select value={selectedMeta.pagoEstado} onChange={(e) => setMetaPatch(selectedClient.id, { pagoEstado: e.target.value as ClienteMeta["pagoEstado"] })} className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 focus:outline-none">
-                              <option value="confirmado" className="bg-[#0e1012]">Pago confirmado</option>
-                              <option value="pendiente" className="bg-[#0e1012]">Pago pendiente</option>
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Estado</p>
+                            <select value={selectedMeta.pagoEstado} onChange={(e) => setMetaPatch(selectedClient.id, { pagoEstado: e.target.value as ClienteMeta["pagoEstado"] })} className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none">
+                              <option value="confirmado" className="pf-v2-s-deep">Pago confirmado</option>
+                              <option value="pendiente" className="pf-v2-s-deep">Pago pendiente</option>
                             </select>
                           </div>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Importe</p>
-                            <input value={selectedMeta.importe} onChange={(e) => setMetaPatch(selectedClient.id, { importe: e.target.value })} placeholder="0" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Importe</p>
+                            <input value={selectedMeta.importe} onChange={(e) => setMetaPatch(selectedClient.id, { importe: e.target.value })} placeholder="0" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-bold pf-v2-t pf-v2-ph focus:outline-none" />
                           </div>
                           <div className="py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Saldo</p>
-                            <input value={selectedMeta.saldo} onChange={(e) => setMetaPatch(selectedClient.id, { saldo: e.target.value })} placeholder="0" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm font-bold text-white placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none" />
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Saldo</p>
+                            <input value={selectedMeta.saldo} onChange={(e) => setMetaPatch(selectedClient.id, { saldo: e.target.value })} placeholder="0" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm font-bold pf-v2-t pf-v2-ph focus:outline-none" />
                           </div>
                           <div className="col-span-2 py-1.5">
-                            <p className="mb-1 text-[10px] font-medium text-slate-500">Email pagador</p>
-                            <input value={selectedMeta.emailPagador} onChange={(e) => setMetaPatch(selectedClient.id, { emailPagador: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg bg-[#111417] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:bg-white/[0.09] focus:outline-none [&:-webkit-autofill]:shadow-[inset_0_0_0_999px_#111827] [&:-webkit-autofill]:[color:white]" />
+                            <p className="mb-1 text-[10px] font-medium pf-v2-t-40">Email pagador</p>
+                            <input value={selectedMeta.emailPagador} onChange={(e) => setMetaPatch(selectedClient.id, { emailPagador: e.target.value })} placeholder="email@ejemplo.com" className="w-full rounded-lg pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none [&:-webkit-autofill]:[color:white]" />
                           </div>
                         </div>
                       </div>
                   </div>
                   </div>
                 ) : activeTab === "plan-entrenamiento" ? (
-                  <div className="rounded-[30px] border border-cyan-300/32 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 shadow-[0_28px_70px_-46px_rgba(34,211,238,0.55)] sm:px-5 lg:px-7 lg:py-6">
+                  <div className="rounded-[30px] border pf-v2-b-accent bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 sm:px-5 lg:px-7 lg:py-6">
                     <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.14em] text-cyan-100/85">
+                        <p className="text-xs uppercase tracking-[0.14em] pf-v2-t-accent">
                           {canEditTrainingPlan ? "Vista admin" : "Vista cliente"}
                         </p>
-                        <h3 className="mt-1 text-xl font-black text-white">Plan de entrenamiento</h3>
-                        <p className="mt-1 text-sm text-slate-200/90">
+                        <h3 className="mt-1 text-xl font-black pf-v2-t">Plan de entrenamiento</h3>
+                        <p className="mt-1 text-sm pf-v2-t">
                           {canEditTrainingPlan
                             ? "Edicion directa estilo templates: semanas, dias, bloques y ejercicios en la misma pantalla."
                             : "Lectura completa del plan semanal con estructura de template."}
@@ -7499,7 +7498,7 @@ export default function ClientesPage() {
                         <ReliableActionButton
                           type="button"
                           onClick={() => setShowAssignPlanModal(true)}
-                          className="rounded-lg border border-cyan-300/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/10"
+                          className="rounded-lg border pf-v2-b-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                         >
                           📋 Asignar template
                         </ReliableActionButton>
@@ -7507,7 +7506,7 @@ export default function ClientesPage() {
                           type="button"
                           onClick={reloadTrainingPlanOnly}
                           disabled={trainingPlanReloading}
-                          className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20 disabled:opacity-60"
+                          className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover disabled:opacity-60"
                         >
                           {trainingPlanReloading ? "Recargando plan..." : "Recargar plan"}
                         </ReliableActionButton>
@@ -7515,10 +7514,10 @@ export default function ClientesPage() {
                           type="button"
                           onClick={syncTrainingPlanWithAlumnoProfile}
                           disabled={!selectedClientTrainingPlan}
-                          className={`relative rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 ${hasUnsavedTrainingChanges ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.35)] hover:bg-emerald-500/30" : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"}`}
+                          className={`relative rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 ${hasUnsavedTrainingChanges ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok pf-v2-hover" : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"}`}
                         >
                           {hasUnsavedTrainingChanges && (
-                            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,1)]" />
+                            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full pf-v2-s-ok" />
                           )}
                           Actualizar planilla
                         </ReliableActionButton>
@@ -7526,7 +7525,7 @@ export default function ClientesPage() {
                           <ReliableActionButton
                             type="button"
                             onClick={() => setSaveAsTemplateModal({ name: `Template — ${selectedClient?.nombre || ""}`.trim() })}
-                            className="rounded-lg border border-fuchsia-300/30 bg-fuchsia-500/8 px-3 py-1.5 text-xs font-semibold text-fuchsia-200 hover:bg-fuchsia-500/18"
+                            className="rounded-lg border pf-v2-b-violet pf-v2-s-violet px-3 py-1.5 text-xs font-semibold pf-v2-t-violet pf-v2-hover"
                           >
                             💾 Guardar como template
                           </ReliableActionButton>
@@ -7536,7 +7535,7 @@ export default function ClientesPage() {
                             <ReliableActionButton
                               type="button"
                               onClick={() => setPrintMenuOpen((v) => !v)}
-                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                              className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                             >
                               🖨️ Imprimir ▾
                             </ReliableActionButton>
@@ -7548,12 +7547,12 @@ export default function ClientesPage() {
                                   onClick={() => setPrintMenuOpen(false)}
                                   className="fixed inset-0 z-40 cursor-default"
                                 />
-                                <div className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-xl border border-white/12 bg-[#1c2027] py-1 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.9)]">
+                                <div className="absolute right-0 z-50 mt-1 w-52 overflow-hidden rounded-xl border pf-v2-b-hi pf-v2-s-deep py-1">
                                   <button
                                     type="button"
                                     disabled={!selectedTrainingDay}
                                     onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("dia"); }}
-                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="block w-full px-4 py-2.5 text-left text-sm pf-v2-t pf-v2-hover disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     Día actual
                                   </button>
@@ -7561,16 +7560,16 @@ export default function ClientesPage() {
                                     type="button"
                                     disabled={!selectedTrainingWeek}
                                     onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("semana"); }}
-                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="block w-full px-4 py-2.5 text-left text-sm pf-v2-t pf-v2-hover disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     Semana completa
                                   </button>
-                                  <div className="my-1 h-px bg-white/10" />
+                                  <div className="my-1 h-px pf-v2-s-hi" />
                                   <button
                                     type="button"
                                     disabled={!selectedTrainingDay}
                                     onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("dia-blanco"); }}
-                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="block w-full px-4 py-2.5 text-left text-sm pf-v2-t pf-v2-hover disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     Día (en blanco)
                                   </button>
@@ -7578,7 +7577,7 @@ export default function ClientesPage() {
                                     type="button"
                                     disabled={!selectedTrainingWeek}
                                     onClick={() => { setPrintMenuOpen(false); setRutinaPrintMode("semana-blanco"); }}
-                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="block w-full px-4 py-2.5 text-left text-sm pf-v2-t pf-v2-hover disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     Semana (en blanco)
                                   </button>
@@ -7589,7 +7588,7 @@ export default function ClientesPage() {
                         )}
                       </div>
 
-                      <p className="w-full text-[11px] text-slate-300/85">
+                      <p className="w-full text-[11px] pf-v2-t-70">
                         Recargar plan actualiza solo esta seccion. Recargar el navegador actualiza toda la pagina.
                       </p>
                     </div>
@@ -7607,13 +7606,13 @@ export default function ClientesPage() {
                     )}
 
                     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full border border-white/15 bg-[#0e1012] px-3 py-1 text-slate-100">
-                        Semanas: <span className="font-bold text-white">{trainingPreviewStats.totalSemanas}</span>
+                      <span className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-3 py-1 pf-v2-t">
+                        Semanas: <span className="font-bold pf-v2-t">{trainingPreviewStats.totalSemanas}</span>
                       </span>
-                      <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-cyan-100">
+                      <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 pf-v2-t-accent">
                         Dias: <span className="font-bold">{trainingPreviewStats.totalDias}</span>
                       </span>
-                      <span className="rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-fuchsia-100">
+                      <span className="rounded-full border pf-v2-b-violet pf-v2-s-violet px-3 py-1 pf-v2-t-violet">
                         Bloques: <span className="font-bold">{trainingPreviewStats.totalBloques}</span>
                       </span>
                     </div>
@@ -7621,21 +7620,21 @@ export default function ClientesPage() {
                     {!selectedClientTrainingPlan ? (
                       <div className="pf-v2-card">
                         <p className="text-2xl mb-2">🏋</p>
-                        <p className="text-sm font-medium text-slate-200">Sin plan de entrenamiento</p>
-                        <p className="mt-1 text-xs text-slate-400">Asigná un template o creá uno desde cero.</p>
+                        <p className="text-sm font-medium pf-v2-t">Sin plan de entrenamiento</p>
+                        <p className="mt-1 text-xs pf-v2-t-50">Asigná un template o creá uno desde cero.</p>
                         {canEditTrainingPlan ? (
                           <div className="mt-4 flex justify-center gap-2">
                             <ReliableActionButton
                               type="button"
                               onClick={() => setShowAssignPlanModal(true)}
-                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-4 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/20"
+                              className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-4 py-2 text-xs font-semibold pf-v2-t-accent pf-v2-hover"
                             >
                               📋 Asignar template
                             </ReliableActionButton>
                             <ReliableActionButton
                               type="button"
                               onClick={createTrainingPlanForSelectedClient}
-                              className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                              className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-4 py-2 text-xs font-semibold pf-v2-t-ok pf-v2-hover"
                             >
                               + Crear desde cero
                             </ReliableActionButton>
@@ -7644,9 +7643,9 @@ export default function ClientesPage() {
                       </div>
                     ) : canEditTrainingPlan ? (
                       <div className="space-y-4">
-                        <div className="space-y-4 border-t border-cyan-300/18 pt-4">
-                          <section className="space-y-2 border-l-2 border-cyan-300/45 pl-3">
-                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-100">Semanas</p>
+                        <div className="space-y-4 border-t pf-v2-b-accent pt-4">
+                          <section className="space-y-2 border-l-2 pf-v2-b-accent pl-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-accent">Semanas</p>
                             <div className="flex flex-wrap items-center gap-2.5 pb-1 pr-1">
                               {allTrainingWeeks.map((week, weekIndex) => {
                                 const weekLabel = String(week.nombre || `Semana ${weekIndex + 1}`);
@@ -7689,7 +7688,7 @@ export default function ClientesPage() {
                                           setTrainingWeekInlineEdit(null);
                                         }
                                       }}
-                                      className="h-10 min-w-[138px] rounded-2xl border border-cyan-200/70 bg-[#0e1012]/85 px-3.5 py-1.5 text-sm font-bold text-cyan-100 outline-none focus:border-cyan-100"
+                                      className="h-10 min-w-[138px] rounded-2xl border pf-v2-b-accent pf-v2-s-deep px-3.5 py-1.5 text-sm font-bold pf-v2-t-accent outline-none"
                                     />
                                   );
                                 }
@@ -7712,10 +7711,10 @@ export default function ClientesPage() {
                                       title="Doble click para editar"
                                       className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                         isWeekHidden
-                                          ? "border-slate-600/55 bg-[#0e1012]/90 text-slate-300 hover:border-slate-500/70"
+                                          ? "pf-v2-b pf-v2-s-deep pf-v2-t-70"
                                           : trainingPreviewWeekId === week.id
-                                          ? "border-cyan-100/90 bg-cyan-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(34,211,238,0.95)]"
-                                          : "border-slate-500/45 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:bg-[#0e1012]/80"
+                                          ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                          : "pf-v2-b pf-v2-s-deep pf-v2-t pf-v2-hover"
                                       }`}
                                     >
                                       <span className="inline-flex items-center gap-1.5">
@@ -7728,8 +7727,8 @@ export default function ClientesPage() {
                                       onClick={(e) => toggleTrainingWeekMenu(week.id, e)}
                                       className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                         weekMenuOpen
-                                          ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
-                                          : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
+                                          ? "pf-v2-b-accent pf-v2-s pf-v2-t-accent"
+                                          : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                                       }`}
                                       aria-label={`Opciones de ${weekLabel}`}
                                     >
@@ -7747,7 +7746,7 @@ export default function ClientesPage() {
                                             startTrainingWeekInlineEdit(week.id, weekLabel);
                                             setTrainingStructureMenu(null);
                                           }}
-                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                         >
                                           Editar nombre
                                         </ReliableActionButton>
@@ -7755,7 +7754,7 @@ export default function ClientesPage() {
                                           type="button"
                                           onClick={() => moveTrainingWeek(week.id, -1)}
                                           disabled={weekVisibilityIndex <= 0}
-                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                         >
                                           Mover a la izquierda
                                         </ReliableActionButton>
@@ -7763,14 +7762,14 @@ export default function ClientesPage() {
                                           type="button"
                                           onClick={() => moveTrainingWeek(week.id, 1)}
                                           disabled={weekVisibilityIndex >= weekVisibilitySize - 1}
-                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                         >
                                           Mover a la derecha
                                         </ReliableActionButton>
                                         <ReliableActionButton
                                           type="button"
                                           onClick={() => duplicateTrainingWeek(week.id)}
-                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                         >
                                           Duplicar
                                         </ReliableActionButton>
@@ -7778,7 +7777,7 @@ export default function ClientesPage() {
                                           <ReliableActionButton
                                             type="button"
                                             onClick={() => showTrainingWeek(week.id)}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-100 hover:bg-emerald-500/15"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-ok pf-v2-hover"
                                           >
                                             Mostrar semana
                                           </ReliableActionButton>
@@ -7787,7 +7786,7 @@ export default function ClientesPage() {
                                             type="button"
                                             onClick={() => hideTrainingWeek(week.id)}
                                             disabled={visibleTrainingWeeks.length <= 1}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                           >
                                             Ocultar semana
                                           </ReliableActionButton>
@@ -7799,7 +7798,7 @@ export default function ClientesPage() {
                                             removeTrainingWeek(week.id);
                                           }}
                                           disabled={allTrainingWeeks.length <= 1}
-                                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15 disabled:opacity-40"
+                                          className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-danger pf-v2-hover disabled:opacity-40"
                                         >
                                           Eliminar
                                         </ReliableActionButton>
@@ -7811,7 +7810,7 @@ export default function ClientesPage() {
                                 type="button"
                                 onClick={addTrainingWeek}
                                 reliabilityMode="off"
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/60 bg-cyan-500/20 text-lg font-black text-cyan-100 hover:bg-cyan-500/32"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border pf-v2-b-accent pf-v2-s-accent text-lg font-black pf-v2-t-accent pf-v2-hover"
                                 aria-label="Agregar semana"
                               >
                                 +
@@ -7819,8 +7818,8 @@ export default function ClientesPage() {
                             </div>
                           </section>
 
-                          <section className="space-y-2 border-l-2 border-emerald-300/45 border-t border-white/10 pl-3 pt-3">
-                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">Dias</p>
+                          <section className="space-y-2 border-l-2 pf-v2-b-ok border-t pf-v2-b pl-3 pt-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-ok">Dias</p>
                             {selectedTrainingWeek ? (
                               <div className="flex flex-wrap items-center gap-2.5 pb-1 pr-1">
                                 {allTrainingDays.map((day, dayIndex) => {
@@ -7869,7 +7868,7 @@ export default function ClientesPage() {
                                             setTrainingDayInlineEdit(null);
                                           }
                                         }}
-                                        className="h-10 min-w-[128px] rounded-2xl border border-emerald-200/70 bg-[#0e1012]/85 px-3.5 py-1.5 text-sm font-bold text-emerald-100 outline-none focus:border-emerald-100"
+                                        className="h-10 min-w-[128px] rounded-2xl border pf-v2-b-ok pf-v2-s-deep px-3.5 py-1.5 text-sm font-bold pf-v2-t-ok outline-none"
                                       />
                                     );
                                   }
@@ -7898,10 +7897,10 @@ export default function ClientesPage() {
                                         title="Doble click para editar"
                                         className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                                           isDayHidden
-                                            ? "border-slate-600/55 bg-[#0e1012]/90 text-slate-300 hover:border-slate-500/70"
+                                            ? "pf-v2-b pf-v2-s-deep pf-v2-t-70"
                                             : trainingPreviewDayId === day.id
-                                            ? "border-emerald-100/90 bg-emerald-300/95 text-slate-950 shadow-[0_14px_28px_-18px_rgba(16,185,129,0.95)]"
-                                            : "border-slate-500/45 bg-[#0e1012] text-slate-100 hover:border-emerald-300/55 hover:bg-[#0e1012]/80"
+                                            ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t"
+                                            : "pf-v2-b pf-v2-s-deep pf-v2-t pf-v2-hover"
                                         }`}
                                       >
                                         <span className="inline-flex items-center gap-1.5">
@@ -7914,8 +7913,8 @@ export default function ClientesPage() {
                                         onClick={(e) => toggleTrainingDayMenu(selectedTrainingWeek.id, day.id, e)}
                                         className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                           dayMenuOpen
-                                            ? "border-emerald-300/70 bg-slate-700/95 text-emerald-100"
-                                            : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-emerald-300/55 hover:text-emerald-100"
+                                            ? "pf-v2-b-ok pf-v2-s pf-v2-t-ok"
+                                            : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                                         }`}
                                         aria-label={`Opciones de ${dayLabel}`}
                                       >
@@ -7937,7 +7936,7 @@ export default function ClientesPage() {
                                               );
                                               setTrainingStructureMenu(null);
                                             }}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                           >
                                             Editar nombre
                                           </ReliableActionButton>
@@ -7947,7 +7946,7 @@ export default function ClientesPage() {
                                               moveTrainingDay(selectedTrainingWeek.id, day.id, -1)
                                             }
                                             disabled={dayVisibilityIndex <= 0}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                           >
                                             Mover a la izquierda
                                           </ReliableActionButton>
@@ -7957,7 +7956,7 @@ export default function ClientesPage() {
                                               moveTrainingDay(selectedTrainingWeek.id, day.id, 1)
                                             }
                                             disabled={dayVisibilityIndex >= dayVisibilitySize - 1}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                           >
                                             Mover a la derecha
                                           </ReliableActionButton>
@@ -7966,7 +7965,7 @@ export default function ClientesPage() {
                                             onClick={() =>
                                               duplicateTrainingDay(selectedTrainingWeek.id, day.id)
                                             }
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                           >
                                             Duplicar
                                           </ReliableActionButton>
@@ -7974,7 +7973,7 @@ export default function ClientesPage() {
                                             <ReliableActionButton
                                               type="button"
                                               onClick={() => showTrainingDay(selectedTrainingWeek.id, day.id)}
-                                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-100 hover:bg-emerald-500/15"
+                                              className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-ok pf-v2-hover"
                                             >
                                               Mostrar dia
                                             </ReliableActionButton>
@@ -7983,7 +7982,7 @@ export default function ClientesPage() {
                                               type="button"
                                               onClick={() => hideTrainingDay(selectedTrainingWeek.id, day.id)}
                                               disabled={visibleTrainingDays.length <= 1}
-                                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10 disabled:opacity-40"
+                                              className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover disabled:opacity-40"
                                             >
                                               Ocultar dia
                                             </ReliableActionButton>
@@ -7995,7 +7994,7 @@ export default function ClientesPage() {
                                               removeTrainingDay(selectedTrainingWeek.id, day.id);
                                             }}
                                             disabled={allTrainingDays.length <= 1}
-                                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15 disabled:opacity-40"
+                                            className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-danger pf-v2-hover disabled:opacity-40"
                                           >
                                             Eliminar
                                           </ReliableActionButton>
@@ -8007,29 +8006,29 @@ export default function ClientesPage() {
                                   type="button"
                                   onClick={() => addTrainingDay(selectedTrainingWeek.id)}
                                   reliabilityMode="off"
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/20 text-lg font-black text-emerald-100 hover:bg-emerald-500/32"
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border pf-v2-b-ok pf-v2-s-ok text-lg font-black pf-v2-t-ok pf-v2-hover"
                                   aria-label="Agregar dia"
                                 >
                                   +
                                 </ReliableActionButton>
                               </div>
                             ) : (
-                              <p className="text-sm text-slate-300">Selecciona una semana para ver los dias.</p>
+                              <p className="text-sm pf-v2-t-70">Selecciona una semana para ver los dias.</p>
                             )}
                           </section>
                         </div>
 
                         {selectedTrainingWeek ? (
-                          <section className="space-y-4 border-t border-cyan-300/18 pt-4">
+                          <section className="space-y-4 border-t pf-v2-b-accent pt-4">
                             {selectedTrainingDay ? (
                                 <div className="space-y-3 pt-2">
-                                  <section className="rounded-2xl border border-emerald-300/25 bg-emerald-500/[0.07] p-3">
+                                  <section className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok p-3">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                       <div>
-                                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-100">
+                                        <p className="text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-ok">
                                           Feedback post sesion
                                         </p>
-                                        <p className="mt-1 text-xs text-emerald-50/90">
+                                        <p className="mt-1 text-xs pf-v2-t-ok">
                                           Este cuestionario se muestra al alumno al finalizar el dia.
                                           {selectedTrainingDayFeedbackConfig?.enabled
                                             ? " · Activo."
@@ -8046,7 +8045,7 @@ export default function ClientesPage() {
                                             selectedTrainingDayFeedbackConfig
                                           )
                                         }
-                                        className="rounded-full border border-emerald-300/45 bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-50 hover:bg-emerald-500/30"
+                                        className="rounded-full border pf-v2-b-ok pf-v2-s-ok px-3 py-1 text-xs font-bold pf-v2-t-ok pf-v2-hover"
                                       >
                                         {selectedTrainingDayFeedbackConfig?.enabled
                                           ? "Editar feedback"
@@ -8066,8 +8065,8 @@ export default function ClientesPage() {
                                                 key={m.id}
                                                 className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                                                   m.obligatoria
-                                                    ? "border-amber-300/60 bg-amber-500/15 text-amber-100"
-                                                    : "border-emerald-300/40 bg-emerald-500/12 text-emerald-100"
+                                                    ? "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"
+                                                    : "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
                                                 }`}
                                               >
                                                 {catalog.nombre}
@@ -8076,7 +8075,7 @@ export default function ClientesPage() {
                                             );
                                           })}
                                         {selectedTrainingDayFeedbackConfig.maxPerDay ? (
-                                          <span className="rounded-full border border-cyan-300/40 bg-cyan-500/12 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-100">
+                                          <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2.5 py-0.5 text-[11px] font-semibold pf-v2-t-accent">
                                             Máx/día: {selectedTrainingDayFeedbackConfig.maxPerDay}
                                           </span>
                                         ) : null}
@@ -8084,13 +8083,13 @@ export default function ClientesPage() {
                                     ) : null}
                                   </section>
 
-                                  <div className="mt-1 border-t border-cyan-300/18 pt-4">
+                                  <div className="mt-1 border-t pf-v2-b-accent pt-4">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                       <div>
-                                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-100/95">
+                                        <p className="text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-accent">
                                           Entrenamiento
                                         </p>
-                                        <p className="mt-1 text-sm text-slate-100">
+                                        <p className="mt-1 text-sm pf-v2-t">
                                           Bloques y ejercicios del plan completo del dia.
                                         </p>
                                       </div>
@@ -8099,7 +8098,7 @@ export default function ClientesPage() {
                                         <ReliableActionButton
                                           type="button"
                                           onClick={() => addTrainingBlock(selectedTrainingWeek.id, selectedTrainingDay.id)}
-                                          className="rounded-full border border-cyan-300/45 bg-cyan-500/15 px-3.5 py-2 text-sm font-semibold text-cyan-100"
+                                          className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3.5 py-2 text-sm font-semibold pf-v2-t-accent"
                                         >
                                           Nuevo bloque
                                         </ReliableActionButton>
@@ -8110,7 +8109,7 @@ export default function ClientesPage() {
                                       <ReliableActionButton
                                         type="button"
                                         onClick={() => addTrainingBlock(selectedTrainingWeek.id, selectedTrainingDay.id)}
-                                        className="mt-3 rounded-full border border-cyan-300/45 bg-cyan-500/15 px-3.5 py-2 text-sm font-semibold text-cyan-100"
+                                        className="mt-3 rounded-full border pf-v2-b-accent pf-v2-s-accent px-3.5 py-2 text-sm font-semibold pf-v2-t-accent"
                                       >
                                         Crear estructura de entrenamiento para este dia
                                       </ReliableActionButton>
@@ -8126,7 +8125,7 @@ export default function ClientesPage() {
                                           return (
                                             <article
                                               key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
-                                              className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t border-white/12 pt-5" : "pt-2"}`}
+                                              className={`relative px-0.5 ${blockIndex > 0 ? "mt-4 border-t pf-v2-b-hi pt-5" : "pt-2"}`}
                                             >
                                             <div className="flex flex-wrap items-start justify-between gap-2">
                                               {trainingBlockEditingId === block.id ? (
@@ -8148,14 +8147,14 @@ export default function ClientesPage() {
                                                       (event.target as HTMLInputElement).blur();
                                                     }
                                                   }}
-                                                  className="min-w-[220px] flex-1 rounded-lg border border-white/20 bg-slate-700 px-3 py-2 text-sm text-white"
+                                                  className="min-w-[220px] flex-1 rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
                                                   placeholder={`Bloque ${blockIndex + 1}`}
                                                   autoFocus
                                                 />
                                               ) : (
                                                 <h3
                                                   id={`training-block-title-${selectedTrainingWeek.id}-${selectedTrainingDay.id}-${block.id}`}
-                                                  className="min-w-[220px] flex-1 px-1 py-2 text-base font-bold text-white"
+                                                  className="min-w-[220px] flex-1 px-1 py-2 text-base font-bold pf-v2-t"
                                                 >
                                                   {block.titulo || `Bloque ${blockIndex + 1}`}
                                                 </h3>
@@ -8171,7 +8170,7 @@ export default function ClientesPage() {
                                                       block.id
                                                     )
                                                   }
-                                                  className="rounded-full border border-cyan-300/45 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100"
+                                                  className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2.5 py-1 text-xs font-semibold pf-v2-t-accent"
                                                 >
                                                   Agregar ejercicio
                                                 </ReliableActionButton>
@@ -8194,8 +8193,8 @@ export default function ClientesPage() {
                                                     }}
                                                     className={`h-7 w-7 rounded-full border p-0 text-sm font-semibold transition ${
                                                       blockMenuOpen
-                                                        ? "border-cyan-300/70 bg-slate-700/95 text-cyan-100"
-                                                        : "border-white/20 bg-[#0e1012] text-slate-100 hover:border-cyan-300/55 hover:text-cyan-100"
+                                                        ? "pf-v2-b-accent pf-v2-s pf-v2-t-accent"
+                                                        : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
                                                     }`}
                                                     aria-label={`Opciones de ${block.titulo || `Bloque ${blockIndex + 1}`}`}
                                                   >
@@ -8216,7 +8215,7 @@ export default function ClientesPage() {
                                                           block.id
                                                         )
                                                       }
-                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                                     >
                                                       Editar nombre del bloque
                                                     </ReliableActionButton>
@@ -8228,7 +8227,7 @@ export default function ClientesPage() {
                                                         );
                                                         setTrainingBlockMenu(null);
                                                       }}
-                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                                     >
                                                       Configurar grilla plan
                                                     </ReliableActionButton>
@@ -8241,7 +8240,7 @@ export default function ClientesPage() {
                                                           block.id
                                                         )
                                                       }
-                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/10"
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t pf-v2-hover"
                                                     >
                                                       Duplicar bloque
                                                     </ReliableActionButton>
@@ -8255,7 +8254,7 @@ export default function ClientesPage() {
                                                           block.id
                                                         );
                                                       }}
-                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-200 hover:bg-rose-500/15"
+                                                      className="w-full rounded-lg px-3 py-2 text-left text-sm pf-v2-t-danger pf-v2-hover"
                                                     >
                                                       Eliminar bloque
                                                     </ReliableActionButton>
@@ -8266,11 +8265,11 @@ export default function ClientesPage() {
 
 
                                             {trainingBlockGridConfigOpenId === block.id ? (
-                                              <div className="mt-3 border-l-2 border-cyan-300/35 bg-cyan-500/[0.04] py-2 pl-3 pr-1.5">
-                                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">
+                                              <div className="mt-3 border-l-2 pf-v2-b-accent pf-v2-s-accent py-2 pl-3 pr-1.5">
+                                                <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-70">
                                                   Configuracion grilla plan:
                                                 </p>
-                                                <p className="mt-1 text-xs text-slate-400">
+                                                <p className="mt-1 text-xs pf-v2-t-50">
                                                   Series, repeticiones, descanso y carga kg son columnas base. El resto es opcional.
                                                 </p>
 
@@ -8278,22 +8277,22 @@ export default function ClientesPage() {
                                                   <input
                                                     value="Series:"
                                                     readOnly
-                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                    className="w-full rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                                   />
                                                   <input
                                                     value="Repeticiones:"
                                                     readOnly
-                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                    className="w-full rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                                   />
                                                   <input
                                                     value="Descanso:"
                                                     readOnly
-                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                    className="w-full rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                                   />
                                                   <input
                                                     value="Carga kg:"
                                                     readOnly
-                                                    className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
+                                                    className="w-full rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                                   />
 
                                                   {blockGridColumns.map((metric, metricIndex) => (
@@ -8312,7 +8311,7 @@ export default function ClientesPage() {
                                                             event.target.value
                                                           )
                                                         }
-                                                        className="w-full rounded border border-white/20 bg-slate-700 px-2 py-1.5 text-xs text-white"
+                                                        className="w-full rounded border pf-v2-b-hi pf-v2-s px-2 py-1.5 text-xs pf-v2-t"
                                                       />
                                                       <ReliableActionButton
                                                         type="button"
@@ -8324,7 +8323,7 @@ export default function ClientesPage() {
                                                             metricIndex
                                                           )
                                                         }
-                                                        className="rounded-full border border-rose-300/35 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-100"
+                                                        className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-2 py-1 text-[11px] font-semibold pf-v2-t-danger"
                                                       >
                                                         x
                                                       </ReliableActionButton>
@@ -8342,14 +8341,14 @@ export default function ClientesPage() {
                                                         block.id
                                                       )
                                                     }
-                                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-xs font-semibold pf-v2-t-accent"
                                                   >
                                                     Nuevo
                                                   </ReliableActionButton>
                                                   <ReliableActionButton
                                                     type="button"
                                                     onClick={() => setTrainingBlockGridConfigOpenId(null)}
-                                                    className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100"
+                                                    className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-xs font-semibold pf-v2-t-accent"
                                                   >
                                                     Aceptar
                                                   </ReliableActionButton>
@@ -8416,18 +8415,18 @@ export default function ClientesPage() {
                                                 return (
                                                   <div
                                                     key={exercise.id}
-                                                    className={`border-t border-white/12 pt-3 ${
+                                                    className={`border-t pf-v2-b-hi pt-3 ${
                                                       hasSuperSerieGroup ? "pf-n-routine-exercise-group pf-n-routine-exercise-group-linked" : ""
                                                     }`}
                                                   >
-                                                    <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-white/[0.025] px-2 py-1 text-[12px] font-semibold text-slate-200">
+                                                    <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md pf-v2-s px-2 py-1 text-[12px] font-semibold pf-v2-t">
                                                       {exerciseLatestSummary ? (
                                                         <>
                                                           <span className="inline-flex items-center gap-1">
                                                             <span aria-hidden>📅</span>
                                                             {formatLatestSessionDate(exerciseLatestSummary.fechaDate, exerciseLatestSummary.fecha)}
                                                             {exerciseLatestSummary.fechaDate ? (
-                                                              <span className="text-slate-400"> ({formatLatestSessionRelative(exerciseLatestSummary.fechaDate)})</span>
+                                                              <span className="pf-v2-t-50"> ({formatLatestSessionRelative(exerciseLatestSummary.fechaDate)})</span>
                                                             ) : null}
                                                           </span>
                                                           <span className="inline-flex items-center gap-1">
@@ -8448,12 +8447,12 @@ export default function ClientesPage() {
                                                           </span>
                                                         </>
                                                       ) : (
-                                                        <span className="inline-flex items-center gap-1 text-slate-400">
+                                                        <span className="inline-flex items-center gap-1 pf-v2-t-50">
                                                           <span aria-hidden>📅</span>
                                                           Sin registros aún
                                                         </span>
                                                       )}
-                                                      <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-[#0e1012]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                      <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border pf-v2-b pf-v2-s-deep p-3 text-[12px] font-normal pf-v2-t shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
                                                         {exerciseLatestSummary ? (
                                                           <>
                                                             <p className="font-bold">
@@ -8476,12 +8475,12 @@ export default function ClientesPage() {
                                                             <p>
                                                               Molestia: <strong>{exerciseLatestSummary.molestia ? "Sí" : "No"}</strong>
                                                             </p>
-                                                            <p className="mt-2 text-[11px] text-slate-300">
+                                                            <p className="mt-2 text-[11px] pf-v2-t-70">
                                                               Volumen total (tonelaje): suma de (peso × reps) de todas las series de ese día. Ej: 20×10 + 25×8 = 400 kg·rep.
                                                             </p>
                                                           </>
                                                         ) : (
-                                                          <p className="text-slate-300">
+                                                          <p className="pf-v2-t-70">
                                                             Este ejercicio todavía no tiene registros de carga. Cuando el alumno registre series desde la app, aparecerán acá.
                                                           </p>
                                                         )}
@@ -8492,7 +8491,7 @@ export default function ClientesPage() {
                                                         className="grid gap-2"
                                                         style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                       >
-                                                      <div className="overflow-hidden rounded-xl border border-white/12 bg-[#0e1012]">
+                                                      <div className="overflow-hidden rounded-xl border pf-v2-b-hi pf-v2-s-deep">
                                                         {exerciseMeta?.videoUrl ? (
                                                           <button
                                                             type="button"
@@ -8519,25 +8518,25 @@ export default function ClientesPage() {
                                                                     if (fallback) fallback.style.display = "flex";
                                                                   }}
                                                                 />
-                                                                <span className="absolute inset-0 hidden items-center justify-center gap-1 bg-[#111] text-[10px] font-bold text-cyan-300">
+                                                                <span className="absolute inset-0 hidden items-center justify-center gap-1 pf-v2-s-deep text-[10px] font-bold pf-v2-t-accent">
                                                                   ▶ Ver video
                                                                 </span>
-                                                                <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity bg-black/40 text-white text-lg">
+                                                                <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity pf-v2-s-deep pf-v2-t text-lg">
                                                                   ▶
                                                                 </span>
                                                               </>
                                                             ) : (
-                                                              <span className="flex h-[66px] w-full items-center justify-center gap-1.5 bg-gradient-to-br from-cyan-900/40 to-[#0e1012] text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300 transition group-hover/prev:from-cyan-800/50">
+                                                              <span className="flex h-[66px] w-full items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-accent transition">
                                                                 ▶ Ver video
                                                               </span>
                                                             )}
                                                           </button>
                                                         ) : (
-                                                          <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 bg-white/3">
+                                                          <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 pf-v2-s-hi">
                                                             <span className="text-xl leading-none">
                                                               {exerciseMeta ? "🏋" : "❓"}
                                                             </span>
-                                                            <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                                            <span className="text-[9px] font-semibold uppercase tracking-[0.12em] pf-v2-t-40">
                                                               {exerciseMeta ? "Sin video" : "Sin ejercicio"}
                                                             </span>
                                                           </div>
@@ -8545,7 +8544,7 @@ export default function ClientesPage() {
                                                       </div>
 
                                                       <label className="space-y-1">
-                                                        <span className="text-xs font-bold text-slate-100">Ejercicio</span>
+                                                        <span className="text-xs font-bold pf-v2-t">Ejercicio</span>
                                                         <select
                                                           value={exercise.ejercicioId || ""}
                                                           onChange={(event) => {
@@ -8567,10 +8566,10 @@ export default function ClientesPage() {
                                                               event.target.value
                                                             );
                                                           }}
-                                                            className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                            className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                         >
                                                           <option value="">Seleccione ejercicio</option>
-                                                          <option value="__create_new__" className="font-bold text-cyan-200">+ Nuevo ejercicio</option>
+                                                          <option value="__create_new__" className="font-bold pf-v2-t-accent">+ Nuevo ejercicio</option>
                                                           {ejercicios.map((exerciseOption) => (
                                                             <option key={exerciseOption.id} value={exerciseOption.id}>
                                                               {exerciseOption.nombre}
@@ -8580,7 +8579,7 @@ export default function ClientesPage() {
                                                       </label>
 
                                                       <label className="space-y-1">
-                                                        <span className="text-xs font-bold text-slate-100">Series</span>
+                                                        <span className="text-xs font-bold pf-v2-t">Series</span>
                                                         <input
                                                           value={exercise.series || ""}
                                                           onChange={(event) =>
@@ -8593,12 +8592,12 @@ export default function ClientesPage() {
                                                               event.target.value
                                                             )
                                                           }
-                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                          className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                         />
                                                       </label>
 
                                                       <label className="space-y-1">
-                                                        <span className="text-xs font-bold text-slate-100">Repeticiones</span>
+                                                        <span className="text-xs font-bold pf-v2-t">Repeticiones</span>
                                                         <input
                                                           value={exercise.repeticiones || ""}
                                                           onChange={(event) =>
@@ -8611,12 +8610,12 @@ export default function ClientesPage() {
                                                               event.target.value
                                                             )
                                                           }
-                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                          className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                         />
                                                       </label>
 
                                                       <label className="space-y-1">
-                                                        <span className="text-xs font-bold text-slate-100">Descanso</span>
+                                                        <span className="text-xs font-bold pf-v2-t">Descanso</span>
                                                         <input
                                                           value={exercise.descanso || ""}
                                                           onChange={(event) =>
@@ -8629,12 +8628,12 @@ export default function ClientesPage() {
                                                               event.target.value
                                                             )
                                                           }
-                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                          className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                         />
                                                       </label>
 
                                                       <label className="space-y-1">
-                                                        <span className="text-xs font-bold text-slate-100">Carga (kg)</span>
+                                                        <span className="text-xs font-bold pf-v2-t">Carga (kg)</span>
                                                         <input
                                                           value={exercise.carga || ""}
                                                           onChange={(event) =>
@@ -8647,7 +8646,7 @@ export default function ClientesPage() {
                                                               event.target.value
                                                             )
                                                           }
-                                                          className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                          className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                         />
                                                       </label>
 
@@ -8656,7 +8655,7 @@ export default function ClientesPage() {
                                                           key={`${exercise.id}-metric-${metricIndex}`}
                                                           className="space-y-1"
                                                         >
-                                                          <span className="text-xs font-bold text-slate-100">
+                                                          <span className="text-xs font-bold pf-v2-t">
                                                             {metric.nombre || `Campo ${metricIndex + 1}`}
                                                           </span>
                                                           <input
@@ -8674,7 +8673,7 @@ export default function ClientesPage() {
                                                                 event.target.value
                                                               )
                                                             }
-                                                            className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                            className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                           />
                                                         </label>
                                                       ))}
@@ -8682,7 +8681,7 @@ export default function ClientesPage() {
                                                     </div>
 
                                                     <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                                                      <span className="text-cyan-200">Desglosar serie</span>
+                                                      <span className="pf-v2-t-accent">Desglosar serie</span>
                                                       <ReliableActionButton
                                                         type="button"
                                                         onClick={() =>
@@ -8693,7 +8692,7 @@ export default function ClientesPage() {
                                                             exercise.id
                                                           )
                                                         }
-                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                        className="pf-v2-t-accent"
                                                       >
                                                         Agregar ejercicio super-serie
                                                       </ReliableActionButton>
@@ -8702,21 +8701,21 @@ export default function ClientesPage() {
                                                         onClick={() =>
                                                           openTrainingExercisePanel("configuracion", actionTarget)
                                                         }
-                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                        className="pf-v2-t-accent"
                                                       >
                                                         Configuración
                                                       </ReliableActionButton>
                                                       <ReliableActionButton
                                                         type="button"
                                                         onClick={() => openTrainingExercisePanel("ver-pesos", actionTarget)}
-                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                        className="pf-v2-t-accent"
                                                       >
                                                         Ver pesos
                                                       </ReliableActionButton>
                                                       <ReliableActionButton
                                                         type="button"
                                                         onClick={() => openTrainingExercisePanel("registrar-peso", actionTarget)}
-                                                        className="text-cyan-200 hover:text-cyan-100"
+                                                        className="pf-v2-t-accent"
                                                       >
                                                         Registrar peso
                                                       </ReliableActionButton>
@@ -8730,7 +8729,7 @@ export default function ClientesPage() {
                                                             exercise.id
                                                           )
                                                         }
-                                                        className="text-rose-200 hover:text-rose-100"
+                                                        className="pf-v2-t-danger"
                                                       >
                                                         Eliminar
                                                       </ReliableActionButton>
@@ -8758,18 +8757,18 @@ export default function ClientesPage() {
                                                             null;
 
                                                           return (
-                                                            <div key={superKey} className="border-t border-cyan-300/20 pt-3">
-                                                              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200">
+                                                            <div key={superKey} className="border-t pf-v2-b-accent pt-3">
+                                                              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] pf-v2-t-accent">
                                                                 Super serie
                                                               </p>
-                                                              <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-white/[0.025] px-2 py-1 text-[12px] font-semibold text-slate-200">
+                                                              <div className="group relative mb-2 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md pf-v2-s px-2 py-1 text-[12px] font-semibold pf-v2-t">
                                                                 {superLatestSummary ? (
                                                                   <>
                                                                     <span className="inline-flex items-center gap-1">
                                                                       <span aria-hidden>📅</span>
                                                                       {formatLatestSessionDate(superLatestSummary.fechaDate, superLatestSummary.fecha)}
                                                                       {superLatestSummary.fechaDate ? (
-                                                                        <span className="text-slate-400"> ({formatLatestSessionRelative(superLatestSummary.fechaDate)})</span>
+                                                                        <span className="pf-v2-t-50"> ({formatLatestSessionRelative(superLatestSummary.fechaDate)})</span>
                                                                       ) : null}
                                                                     </span>
                                                                     <span className="inline-flex items-center gap-1">
@@ -8790,12 +8789,12 @@ export default function ClientesPage() {
                                                                     </span>
                                                                   </>
                                                                 ) : (
-                                                                  <span className="inline-flex items-center gap-1 text-slate-400">
+                                                                  <span className="inline-flex items-center gap-1 pf-v2-t-50">
                                                                     <span aria-hidden>📅</span>
                                                                     Sin registros aún
                                                                   </span>
                                                                 )}
-                                                                <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border border-slate-700/80 bg-[#0e1012]/98 p-3 text-[12px] font-normal text-slate-100 shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
+                                                                <div className="invisible absolute left-0 top-full z-30 mt-1 w-[min(380px,90vw)] rounded-lg border pf-v2-b pf-v2-s-deep p-3 text-[12px] font-normal pf-v2-t shadow-xl opacity-0 transition group-hover:visible group-hover:opacity-100">
                                                                   {superLatestSummary ? (
                                                                     <>
                                                                       <p className="font-bold">
@@ -8818,12 +8817,12 @@ export default function ClientesPage() {
                                                                       <p>
                                                                         Molestia: <strong>{superLatestSummary.molestia ? "Sí" : "No"}</strong>
                                                                       </p>
-                                                                      <p className="mt-2 text-[11px] text-slate-300">
+                                                                      <p className="mt-2 text-[11px] pf-v2-t-70">
                                                                         Volumen total (tonelaje): suma de (peso × reps) de todas las series de ese día. Ej: 20×10 + 25×8 = 400 kg·rep.
                                                                       </p>
                                                                     </>
                                                                   ) : (
-                                                                    <p className="text-slate-300">
+                                                                    <p className="pf-v2-t-70">
                                                                       Este ejercicio todavía no tiene registros de carga. Cuando el alumno registre series desde la app, aparecerán acá.
                                                                     </p>
                                                                   )}
@@ -8834,7 +8833,7 @@ export default function ClientesPage() {
                                                                   className="grid gap-2"
                                                                   style={{ gridTemplateColumns: exerciseRowGridTemplateColumns, minWidth: `${exerciseRowMinWidth}px` }}
                                                                 >
-                                                                  <div className="overflow-hidden rounded-xl border border-white/12 bg-[#0e1012]">
+                                                                  <div className="overflow-hidden rounded-xl border pf-v2-b-hi pf-v2-s-deep">
                                                                     {superMeta?.videoUrl ? (
                                                                       <button
                                                                         type="button"
@@ -8861,25 +8860,25 @@ export default function ClientesPage() {
                                                                                 if (fallback) fallback.style.display = "flex";
                                                                               }}
                                                                             />
-                                                                            <span className="absolute inset-0 hidden items-center justify-center gap-1 bg-[#111] text-[10px] font-bold text-cyan-300">
+                                                                            <span className="absolute inset-0 hidden items-center justify-center gap-1 pf-v2-s-deep text-[10px] font-bold pf-v2-t-accent">
                                                                               ▶ Ver video
                                                                             </span>
-                                                                            <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity bg-black/40 text-white text-lg">
+                                                                            <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/prev:opacity-100 transition-opacity pf-v2-s-deep pf-v2-t text-lg">
                                                                               ▶
                                                                             </span>
                                                                           </>
                                                                         ) : (
-                                                                          <span className="flex h-[66px] w-full items-center justify-center gap-1.5 bg-gradient-to-br from-cyan-900/40 to-[#0e1012] text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-300">
+                                                                          <span className="flex h-[66px] w-full items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-accent">
                                                                             ▶ Ver video
                                                                           </span>
                                                                         )}
                                                                       </button>
                                                                     ) : (
-                                                                      <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 bg-white/3">
+                                                                      <div className="flex h-[66px] w-full flex-col items-center justify-center gap-1 pf-v2-s-hi">
                                                                         <span className="text-xl leading-none">
                                                                           {superMeta ? "🏋" : "❓"}
                                                                         </span>
-                                                                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                                                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] pf-v2-t-40">
                                                                           {superMeta ? "Sin video" : "Sin ejercicio"}
                                                                         </span>
                                                                       </div>
@@ -8887,7 +8886,7 @@ export default function ClientesPage() {
                                                                   </div>
 
                                                                   <label className="space-y-1">
-                                                                    <span className="text-xs font-bold text-slate-100">Ejercicio</span>
+                                                                    <span className="text-xs font-bold pf-v2-t">Ejercicio</span>
                                                                     <select
                                                                       value={superItem.ejercicioId || ""}
                                                                       onChange={(event) => {
@@ -8910,10 +8909,10 @@ export default function ClientesPage() {
                                                                           event.target.value
                                                                         );
                                                                       }}
-                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                      className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                                     >
                                                                       <option value="">Seleccione ejercicio</option>
-                                                                      <option value="__create_new__" className="font-bold text-cyan-200">+ Nuevo ejercicio</option>
+                                                                      <option value="__create_new__" className="font-bold pf-v2-t-accent">+ Nuevo ejercicio</option>
                                                                       {ejercicios.map((exerciseOption) => (
                                                                         <option key={exerciseOption.id} value={exerciseOption.id}>
                                                                           {exerciseOption.nombre}
@@ -8923,7 +8922,7 @@ export default function ClientesPage() {
                                                                   </label>
 
                                                                   <label className="space-y-1">
-                                                                    <span className="text-xs font-bold text-slate-100">Series</span>
+                                                                    <span className="text-xs font-bold pf-v2-t">Series</span>
                                                                     <input
                                                                       value={superItem.series || ""}
                                                                       onChange={(event) =>
@@ -8937,12 +8936,12 @@ export default function ClientesPage() {
                                                                           event.target.value
                                                                         )
                                                                       }
-                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                      className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                                     />
                                                                   </label>
 
                                                                   <label className="space-y-1">
-                                                                    <span className="text-xs font-bold text-slate-100">Repeticiones</span>
+                                                                    <span className="text-xs font-bold pf-v2-t">Repeticiones</span>
                                                                     <input
                                                                       value={superItem.repeticiones || ""}
                                                                       onChange={(event) =>
@@ -8956,12 +8955,12 @@ export default function ClientesPage() {
                                                                           event.target.value
                                                                         )
                                                                       }
-                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                      className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                                     />
                                                                   </label>
 
                                                                   <label className="space-y-1">
-                                                                    <span className="text-xs font-bold text-slate-100">Descanso</span>
+                                                                    <span className="text-xs font-bold pf-v2-t">Descanso</span>
                                                                     <input
                                                                       value={superItem.descanso || ""}
                                                                       onChange={(event) =>
@@ -8975,12 +8974,12 @@ export default function ClientesPage() {
                                                                           event.target.value
                                                                         )
                                                                       }
-                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                      className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                                     />
                                                                   </label>
 
                                                                   <label className="space-y-1">
-                                                                    <span className="text-xs font-bold text-slate-100">Carga</span>
+                                                                    <span className="text-xs font-bold pf-v2-t">Carga</span>
                                                                     <input
                                                                       value={superItem.carga || ""}
                                                                       onChange={(event) =>
@@ -8994,7 +8993,7 @@ export default function ClientesPage() {
                                                                           event.target.value
                                                                         )
                                                                       }
-                                                                      className="w-full rounded-md border border-white/15 bg-slate-700 px-2.5 py-1.5 text-sm text-white"
+                                                                      className="w-full rounded-md border pf-v2-b-hi pf-v2-s px-2.5 py-1.5 text-sm pf-v2-t"
                                                                     />
                                                                   </label>
 
@@ -9003,13 +9002,13 @@ export default function ClientesPage() {
                                                                       key={`${superKey}-metric-${metricIndex}`}
                                                                       className="space-y-1"
                                                                     >
-                                                                      <span className="text-xs font-bold text-slate-100">
+                                                                      <span className="text-xs font-bold pf-v2-t">
                                                                         {metric.nombre || `Campo ${metricIndex + 1}`}
                                                                       </span>
                                                                       <input
                                                                         value={(superMetricas[metricIndex] as any)?.valor || ""}
                                                                         readOnly
-                                                                        className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2.5 py-1.5 text-sm text-white opacity-70"
+                                                                        className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2.5 py-1.5 text-sm pf-v2-t opacity-70"
                                                                       />
                                                                     </label>
                                                                   ))}
@@ -9037,27 +9036,27 @@ export default function ClientesPage() {
                                                                 };
                                                                 return (
                                                                   <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                                                                    <span className="text-cyan-200">Desglosar serie</span>
+                                                                    <span className="pf-v2-t-accent">Desglosar serie</span>
                                                                     <ReliableActionButton
                                                                       type="button"
                                                                       onClick={() =>
                                                                         openTrainingExercisePanel("configuracion", superActionTarget)
                                                                       }
-                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                      className="pf-v2-t-accent"
                                                                     >
                                                                       Configuración
                                                                     </ReliableActionButton>
                                                                     <ReliableActionButton
                                                                       type="button"
                                                                       onClick={() => openTrainingExercisePanel("ver-pesos", superActionTarget)}
-                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                      className="pf-v2-t-accent"
                                                                     >
                                                                       Ver pesos
                                                                     </ReliableActionButton>
                                                                     <ReliableActionButton
                                                                       type="button"
                                                                       onClick={() => openTrainingExercisePanel("registrar-peso", superActionTarget)}
-                                                                      className="text-cyan-200 hover:text-cyan-100"
+                                                                      className="pf-v2-t-accent"
                                                                     >
                                                                       Registrar peso
                                                                     </ReliableActionButton>
@@ -9072,7 +9071,7 @@ export default function ClientesPage() {
                                                                           superKey
                                                                         )
                                                                       }
-                                                                      className="text-rose-200 hover:text-rose-100"
+                                                                      className="pf-v2-t-danger"
                                                                     >
                                                                       Eliminar
                                                                     </ReliableActionButton>
@@ -9086,9 +9085,9 @@ export default function ClientesPage() {
                                                     ) : null}
 
                                                     {panelOpenForExercise ? (
-                                                      <div className="mt-3 rounded-xl border border-cyan-300/25 bg-[#0e1012] p-3">
+                                                      <div className="mt-3 rounded-xl border pf-v2-b-accent pf-v2-s-deep p-3">
                                                         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                                                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-100">
+                                                          <p className="text-xs font-semibold uppercase tracking-[0.12em] pf-v2-t-accent">
                                                             {trainingExercisePanelMode === "configuracion"
                                                               ? "Configuracion"
                                                               : trainingExercisePanelMode === "ver-pesos"
@@ -9098,7 +9097,7 @@ export default function ClientesPage() {
                                                           <ReliableActionButton
                                                             type="button"
                                                             onClick={closeTrainingExercisePanel}
-                                                            className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white hover:bg-white/15"
+                                                            className="rounded-md border pf-v2-b-hi pf-v2-s-hi px-2.5 py-1 text-xs font-semibold pf-v2-t pf-v2-hover"
                                                           >
                                                             Cerrar
                                                           </ReliableActionButton>
@@ -9136,7 +9135,7 @@ export default function ClientesPage() {
                                                                   );
                                                                   setTrainingRecordStatus("Preset 3x10 aplicado.");
                                                                 }}
-                                                                className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-100"
+                                                                className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-2.5 py-1 text-xs font-semibold pf-v2-t-accent"
                                                               >
                                                                 Aplicar 3x10
                                                               </ReliableActionButton>
@@ -9169,7 +9168,7 @@ export default function ClientesPage() {
                                                                   );
                                                                   setTrainingRecordStatus("Preset 5x5 aplicado.");
                                                                 }}
-                                                                className="rounded-lg border border-fuchsia-300/35 bg-fuchsia-500/10 px-2.5 py-1 text-xs font-semibold text-fuchsia-100"
+                                                                className="rounded-lg border pf-v2-b-violet pf-v2-s-violet px-2.5 py-1 text-xs font-semibold pf-v2-t-violet"
                                                               >
                                                                 Aplicar 5x5
                                                               </ReliableActionButton>
@@ -9210,12 +9209,12 @@ export default function ClientesPage() {
                                                                   );
                                                                   setTrainingRecordStatus("Configuracion limpiada.");
                                                                 }}
-                                                                className="rounded-lg border border-rose-300/35 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-100"
+                                                                className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-2.5 py-1 text-xs font-semibold pf-v2-t-danger"
                                                               >
                                                                 Limpiar valores
                                                               </ReliableActionButton>
                                                             </div>
-                                                            <p className="text-xs text-slate-300">
+                                                            <p className="text-xs pf-v2-t-70">
                                                               Usa presets rapidos para estandarizar la carga sin salir del formato template.
                                                             </p>
                                                           </div>
@@ -9223,19 +9222,19 @@ export default function ClientesPage() {
 
                                                         {trainingExercisePanelMode === "ver-pesos" ? (
                                                           selectedExerciseWorkoutLogs.length === 0 ? (
-                                                            <p className="text-sm text-slate-300">
+                                                            <p className="text-sm pf-v2-t-70">
                                                               Todavia no hay registros de peso para este ejercicio.
                                                             </p>
                                                           ) : (
                                                             <div className="space-y-2">
-                                                              <p className="text-xs text-cyan-100">
+                                                              <p className="text-xs pf-v2-t-accent">
                                                                 Maximo registrado: {selectedExerciseTopWeight.toLocaleString("es-AR")} kg · {selectedExerciseWorkoutLogs.length} registro/s
                                                               </p>
-                                                              <ul className="space-y-1 text-xs text-slate-200">
+                                                              <ul className="space-y-1 text-xs pf-v2-t">
                                                                 {selectedExerciseWorkoutLogs.slice(0, 8).map((log) => (
                                                                   <li
                                                                     key={log.id}
-                                                                    className="rounded-md border border-white/10 bg-white/[0.025] px-2 py-1"
+                                                                    className="rounded-md border pf-v2-b pf-v2-s px-2 py-1"
                                                                   >
                                                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                                                       <span>
@@ -9243,19 +9242,19 @@ export default function ClientesPage() {
                                                                           ? new Date(`${log.fecha}T00:00:00`).toLocaleDateString("es-AR")
                                                                           : "Sin fecha"}
                                                                       </span>
-                                                                      <span className="font-semibold text-cyan-100">
+                                                                      <span className="font-semibold pf-v2-t-accent">
                                                                         {Number(log.pesoKg || 0).toLocaleString("es-AR")} kg · {log.series} x {log.repeticiones || "-"}
                                                                       </span>
                                                                     </div>
 
                                                                     {log.molestia ? (
-                                                                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-rose-200">
+                                                                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] pf-v2-t-danger">
                                                                         Molestia reportada
                                                                       </p>
                                                                     ) : null}
 
                                                                     {log.comentarios ? (
-                                                                      <p className="mt-1 text-[11px] text-slate-300">{log.comentarios}</p>
+                                                                      <p className="mt-1 text-[11px] pf-v2-t-70">{log.comentarios}</p>
                                                                     ) : null}
 
                                                                     {log.videoDataUrl || log.videoUrl ? (
@@ -9264,7 +9263,7 @@ export default function ClientesPage() {
                                                                           <video
                                                                             controls
                                                                             src={log.videoDataUrl}
-                                                                            className="h-24 w-full rounded border border-white/10 bg-black/45"
+                                                                            className="h-24 w-full rounded border pf-v2-b pf-v2-s-deep"
                                                                           />
                                                                         ) : null}
 
@@ -9278,12 +9277,12 @@ export default function ClientesPage() {
                                                                                 "noopener,noreferrer"
                                                                               )
                                                                             }
-                                                                            className="rounded border border-cyan-300/45 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-100"
+                                                                            className="rounded border pf-v2-b-accent pf-v2-s-accent px-2 py-0.5 text-[11px] font-semibold pf-v2-t-accent"
                                                                           >
                                                                             Abrir video
                                                                           </ReliableActionButton>
                                                                           {log.videoFileName ? (
-                                                                            <span className="text-[10px] text-slate-400">{log.videoFileName}</span>
+                                                                            <span className="text-[10px] pf-v2-t-50">{log.videoFileName}</span>
                                                                           ) : null}
                                                                         </div>
                                                                       </div>
@@ -9299,7 +9298,7 @@ export default function ClientesPage() {
                                                           <div className="space-y-2">
                                                             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                                                               <label className="space-y-1">
-                                                                <span className="text-xs font-semibold text-slate-200">Fecha</span>
+                                                                <span className="text-xs font-semibold pf-v2-t">Fecha</span>
                                                                 <input
                                                                   type="date"
                                                                   value={trainingRecordDraft.fecha}
@@ -9309,11 +9308,11 @@ export default function ClientesPage() {
                                                                       fecha: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
-                                                                <span className="text-xs font-semibold text-slate-200">Series</span>
+                                                                <span className="text-xs font-semibold pf-v2-t">Series</span>
                                                                 <input
                                                                   value={trainingRecordDraft.series}
                                                                   onChange={(event) =>
@@ -9322,11 +9321,11 @@ export default function ClientesPage() {
                                                                       series: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
-                                                                <span className="text-xs font-semibold text-slate-200">Repeticiones</span>
+                                                                <span className="text-xs font-semibold pf-v2-t">Repeticiones</span>
                                                                 <input
                                                                   value={trainingRecordDraft.repeticiones}
                                                                   onChange={(event) =>
@@ -9335,11 +9334,11 @@ export default function ClientesPage() {
                                                                       repeticiones: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                                                 />
                                                               </label>
                                                               <label className="space-y-1">
-                                                                <span className="text-xs font-semibold text-slate-200">Peso (kg)</span>
+                                                                <span className="text-xs font-semibold pf-v2-t">Peso (kg)</span>
                                                                 <input
                                                                   value={trainingRecordDraft.pesoKg}
                                                                   onChange={(event) =>
@@ -9348,13 +9347,13 @@ export default function ClientesPage() {
                                                                       pesoKg: event.target.value,
                                                                     }))
                                                                   }
-                                                                  className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                                                  className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                                                 />
                                                               </label>
                                                             </div>
 
                                                             <label className="block space-y-1">
-                                                              <span className="text-xs font-semibold text-slate-200">Comentario</span>
+                                                              <span className="text-xs font-semibold pf-v2-t">Comentario</span>
                                                               <input
                                                                 value={trainingRecordDraft.comentarios}
                                                                 onChange={(event) =>
@@ -9363,12 +9362,12 @@ export default function ClientesPage() {
                                                                     comentarios: event.target.value,
                                                                   }))
                                                                 }
-                                                                className="w-full rounded-md border border-white/15 bg-[#0e1012] px-2 py-1.5 text-xs text-white"
+                                                                className="w-full rounded-md border pf-v2-b-hi pf-v2-s-deep px-2 py-1.5 text-xs pf-v2-t"
                                                                 placeholder="Sensaciones, tecnica, observaciones"
                                                               />
                                                             </label>
 
-                                                            <label className="inline-flex items-center gap-2 text-xs text-slate-200">
+                                                            <label className="inline-flex items-center gap-2 text-xs pf-v2-t">
                                                               <input
                                                                 type="checkbox"
                                                                 checked={trainingRecordDraft.molestia}
@@ -9386,7 +9385,7 @@ export default function ClientesPage() {
                                                             <ReliableActionButton
                                                               type="button"
                                                               onClick={saveTrainingWeightRecord}
-                                                              className="rounded-lg border border-cyan-300/35 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-100"
+                                                              className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent"
                                                             >
                                                               Guardar registro
                                                             </ReliableActionButton>
@@ -9394,7 +9393,7 @@ export default function ClientesPage() {
                                                         ) : null}
 
                                                         {trainingRecordStatus ? (
-                                                          <p className="mt-2 text-xs text-cyan-100">{trainingRecordStatus}</p>
+                                                          <p className="mt-2 text-xs pf-v2-t-accent">{trainingRecordStatus}</p>
                                                         ) : null}
                                                       </div>
                                                     ) : null}
@@ -9413,7 +9412,7 @@ export default function ClientesPage() {
                                                     block.id
                                                   )
                                                 }
-                                                className="rounded-full border border-rose-300/35 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-100 hover:bg-rose-500/20"
+                                                className="rounded-full border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger pf-v2-hover"
                                               >
                                                 Eliminar bloque
                                               </ReliableActionButton>
@@ -9426,13 +9425,13 @@ export default function ClientesPage() {
                                   </div>
                                 </div>
                               ) : (
-                                <p className="border-l-2 border-white/20 pl-3 text-sm text-slate-300">
+                                <p className="border-l-2 pf-v2-b-hi pl-3 text-sm pf-v2-t-70">
                                   Selecciona un dia para editarlo.
                                 </p>
                               )}
 
-                            <label className="block space-y-1 border-t border-cyan-300/15 pt-3">
-                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-200">Objetivo semanal</span>
+                            <label className="block space-y-1 border-t pf-v2-b-accent pt-3">
+                              <span className="text-xs font-semibold uppercase tracking-wide pf-v2-t">Objetivo semanal</span>
                               <textarea
                                 value={selectedTrainingWeek.objetivo || ""}
                                 onChange={(event) =>
@@ -9442,13 +9441,13 @@ export default function ClientesPage() {
                                     event.target.value
                                   )
                                 }
-                                className="min-h-[72px] w-full border-b border-white/20 bg-transparent px-0 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/60"
+                                className="min-h-[72px] w-full border-b pf-v2-b-hi bg-transparent px-0 py-2 text-sm pf-v2-t outline-none pf-v2-ph"
                                 placeholder="Objetivo de la semana"
                               />
                             </label>
                             </section>
                           ) : (
-                            <p className="border-l-2 border-white/20 pl-3 text-sm text-slate-300">
+                            <p className="border-l-2 pf-v2-b-hi pl-3 text-sm pf-v2-t-70">
                               Selecciona una semana para comenzar a editar el plan.
                             </p>
                           )}
@@ -9463,8 +9462,8 @@ export default function ClientesPage() {
                               onClick={() => selectTrainingPreviewWeek(week.id)}
                               className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
                                 trainingPreviewWeekId === week.id
-                                  ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                  : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                  ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                  : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                               }`}
                             >
                               {week.nombre || "Semana"}
@@ -9473,10 +9472,10 @@ export default function ClientesPage() {
                         </div>
 
                         {selectedTrainingWeek ? (
-                          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.02]/35 p-4">
+                          <div className="space-y-3 rounded-2xl border pf-v2-b pf-v2-s p-4">
                             <div>
-                              <p className="text-sm font-black text-white">{selectedTrainingWeek.nombre}</p>
-                              <p className="text-xs text-slate-300">
+                              <p className="text-sm font-black pf-v2-t">{selectedTrainingWeek.nombre}</p>
+                              <p className="text-xs pf-v2-t-70">
                                 {selectedTrainingWeek.objetivo || "Sin objetivo semanal"}
                               </p>
                             </div>
@@ -9489,8 +9488,8 @@ export default function ClientesPage() {
                                   onClick={() => selectTrainingPreviewDay(day.id)}
                                   className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${
                                     trainingPreviewDayId === day.id
-                                      ? "border-cyan-200/70 bg-cyan-300 text-slate-950"
-                                      : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                      ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t"
+                                      : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                                   }`}
                                 >
                                   {day.dia || "Dia"}
@@ -9499,26 +9498,26 @@ export default function ClientesPage() {
                             </div>
 
                             {selectedTrainingDay ? (
-                              <div className="space-y-2 border-t border-white/10 pt-3">
+                              <div className="space-y-2 border-t pf-v2-b pt-3">
                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                   <div>
-                                    <p className="text-sm font-bold text-white">{selectedTrainingDay.dia}</p>
-                                    <p className="text-sm text-slate-200">
+                                    <p className="text-sm font-bold pf-v2-t">{selectedTrainingDay.dia}</p>
+                                    <p className="text-sm pf-v2-t">
                                       {selectedTrainingDay.planificacion || "Sin planificacion"}
                                     </p>
                                     {selectedTrainingDay.objetivo ? (
-                                      <p className="text-xs text-fuchsia-100/90">
+                                      <p className="text-xs pf-v2-t-violet">
                                         Objetivo del dia: {selectedTrainingDay.objetivo}
                                       </p>
                                     ) : null}
                                   </div>
-                                  <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                                  <span className="rounded-full border pf-v2-b-hi px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide pf-v2-t-70">
                                     {selectedTrainingDayBlockSummary} ejercicios
                                   </span>
                                 </div>
 
                                 {selectedTrainingDayFeedbackConfig?.enabled ? (
-                                  <div className="rounded-xl border border-emerald-300/25 bg-emerald-500/[0.07] p-2.5 text-xs text-emerald-100">
+                                  <div className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-2.5 text-xs pf-v2-t-ok">
                                     {selectedTrainingDayFeedbackConfig.title || "Feedback post sesion"} · {selectedTrainingDayFeedbackQuestions.length} preguntas
                                   </div>
                                 ) : null}
@@ -9528,15 +9527,15 @@ export default function ClientesPage() {
                                     {selectedTrainingDayBlocks.map((block, blockIndex) => (
                                       <article
                                         key={block.id || `${selectedTrainingDay.id}-block-${blockIndex}`}
-                                        className="border-l-2 border-cyan-300/25 pl-3"
+                                        className="border-l-2 pf-v2-b-accent pl-3"
                                       >
-                                        <p className="text-sm font-semibold text-white">
+                                        <p className="text-sm font-semibold pf-v2-t">
                                           {block.titulo || `Bloque ${blockIndex + 1}`}
                                         </p>
                                         {(block.ejercicios || []).length === 0 ? (
-                                          <p className="text-xs text-slate-400">Sin ejercicios.</p>
+                                          <p className="text-xs pf-v2-t-50">Sin ejercicios.</p>
                                         ) : (
-                                          <ul className="mt-1 space-y-1 text-xs text-slate-200">
+                                          <ul className="mt-1 space-y-1 text-xs pf-v2-t">
                                             {(block.ejercicios || []).map((exercise) => {
                                               const exerciseMeta =
                                                 ejercicios.find((item) => item.id === exercise.ejercicioId) || null;
@@ -9552,7 +9551,7 @@ export default function ClientesPage() {
                                     ))}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-slate-300">Este dia no tiene bloques cargados.</p>
+                                  <p className="text-sm pf-v2-t-70">Este dia no tiene bloques cargados.</p>
                                 )}
                               </div>
                             ) : null}
@@ -9562,13 +9561,13 @@ export default function ClientesPage() {
                     )}
                   </div>
                 ) : activeTab === "plan-nutricional" ? (
-                  <div className="rounded-[30px] border border-emerald-300/28 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 shadow-[0_28px_70px_-46px_rgba(16,185,129,0.45)] sm:px-5 lg:px-7 lg:py-6">
+                  <div className="rounded-[30px] border pf-v2-b-ok bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),rgba(15,23,42,0.88)_45%,rgba(2,6,23,0.96)_100%)] px-4 py-5 sm:px-5 lg:px-7 lg:py-6">
                     {/* Header */}
                     <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.14em] text-emerald-100/85">Plan nutricional</p>
-                        <h3 className="mt-1 text-xl font-black text-white">Nutrición personalizada</h3>
-                        <p className="mt-1 text-sm text-slate-200/90">
+                        <p className="text-xs uppercase tracking-[0.14em] pf-v2-t-ok">Plan nutricional</p>
+                        <h3 className="mt-1 text-xl font-black pf-v2-t">Nutrición personalizada</h3>
+                        <p className="mt-1 text-sm pf-v2-t">
                           Plan calibrado a los parámetros físicos y objetivo del cliente.
                         </p>
                       </div>
@@ -9582,8 +9581,8 @@ export default function ClientesPage() {
                                 disabled={nutritionAssigning}
                                 className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
                                   nutritionEditMode
-                                    ? "border-amber-300/50 bg-amber-500/15 text-amber-200"
-                                    : "border-white/20 text-slate-300 hover:bg-white/8"
+                                    ? "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"
+                                    : "pf-v2-b-hi pf-v2-t-70 pf-v2-hover"
                                 }`}
                               >
                                 {nutritionEditMode ? "✓ Editando" : "✏️ Editar plan"}
@@ -9594,12 +9593,12 @@ export default function ClientesPage() {
                                 disabled={nutritionSyncing || nutritionAssigning}
                                 className={`relative rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 ${
                                   hasUnsavedNutritionChanges
-                                    ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.35)] hover:bg-emerald-500/30"
-                                    : "border-white/20 bg-white/5 text-slate-100 hover:bg-white/10"
+                                    ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok pf-v2-hover"
+                                    : "pf-v2-b-hi pf-v2-s-hi pf-v2-t pf-v2-hover"
                                 }`}
                               >
                                 {hasUnsavedNutritionChanges && !nutritionSyncing && (
-                                  <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,1)]" />
+                                  <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full pf-v2-s-ok" />
                                 )}
                                 {nutritionSyncing ? "Actualizando..." : "Actualizar planilla"}
                               </ReliableActionButton>
@@ -9609,7 +9608,7 @@ export default function ClientesPage() {
                             type="button"
                             onClick={() => openNutritionWizard()}
                             disabled={nutritionAssigning}
-                            className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-60"
+                            className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-ok pf-v2-hover disabled:opacity-60"
                           >
                             ✨ {selectedNutritionPlan ? "Regenerar plan" : "Nuevo plan"}
                           </ReliableActionButton>
@@ -9617,7 +9616,7 @@ export default function ClientesPage() {
                             type="button"
                             onClick={() => openNutritionWizard("__pick__")}
                             disabled={nutritionAssigning}
-                            className="rounded-lg border border-emerald-300/25 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/8 disabled:opacity-60"
+                            className="rounded-lg border pf-v2-b-ok px-3 py-1.5 text-xs font-semibold pf-v2-t-70 pf-v2-hover disabled:opacity-60"
                           >
                             📋 Asignar existente
                           </ReliableActionButton>
@@ -9627,25 +9626,25 @@ export default function ClientesPage() {
 
                     {/* Estado de carga */}
                     {nutritionAssigning && (
-                      <div className="mb-4 flex items-center gap-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
-                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-emerald-300 border-t-transparent" />
-                        <p className="text-sm font-medium text-emerald-200">Analizando perfil y personalizando el plan…</p>
+                      <div className="mb-4 flex items-center gap-3 rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3">
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 pf-v2-b-ok border-t-transparent" />
+                        <p className="text-sm font-medium pf-v2-t-ok">Analizando perfil y personalizando el plan…</p>
                       </div>
                     )}
 
                     {selectedNutritionPlan ? (
                       <>
                         {/* Resumen del plan */}
-                        <div className="rounded-xl border border-emerald-300/25 bg-emerald-500/8 p-4">
+                        <div className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
-                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">Plan activo</p>
-                              <p className="mt-0.5 text-base font-black text-white">{selectedNutritionPlan.nombre}</p>
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] pf-v2-t-ok">Plan activo</p>
+                              <p className="mt-0.5 text-base font-black pf-v2-t">{selectedNutritionPlan.nombre}</p>
                               {selectedNutritionPlan.notas && (
-                                <p className="mt-1 text-xs text-slate-400">{selectedNutritionPlan.notas}</p>
+                                <p className="mt-1 text-xs pf-v2-t-50">{selectedNutritionPlan.notas}</p>
                               )}
                             </div>
-                            <p className="shrink-0 text-xs text-slate-400">
+                            <p className="shrink-0 text-xs pf-v2-t-50">
                               {new Date(selectedNutritionAssignment?.assignedAt || selectedNutritionPlan.updatedAt).toLocaleDateString("es-AR")}
                             </p>
                           </div>
@@ -9653,14 +9652,14 @@ export default function ClientesPage() {
                           {/* Métricas clave */}
                           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {[
-                              { label: "Objetivo",      value: nutritionGoalLabel(selectedNutritionPlan.objetivo), color: "text-cyan-200"   },
-                              { label: "Kcal / día",    value: `${selectedNutritionPlan.targets.calorias} kcal`,   color: "text-amber-200"  },
-                              { label: "Proteínas",     value: `${selectedNutritionPlan.targets.proteinas} g`,     color: "text-violet-200" },
-                              { label: "Carbohidratos", value: `${selectedNutritionPlan.targets.carbohidratos} g`, color: "text-emerald-200"},
+                              { label: "Objetivo",      value: nutritionGoalLabel(selectedNutritionPlan.objetivo), color: "pf-v2-t-accent"   },
+                              { label: "Kcal / día",    value: `${selectedNutritionPlan.targets.calorias} kcal`,   color: "pf-v2-t-warn"  },
+                              { label: "Proteínas",     value: `${selectedNutritionPlan.targets.proteinas} g`,     color: "pf-v2-t-violet" },
+                              { label: "Carbohidratos", value: `${selectedNutritionPlan.targets.carbohidratos} g`, color: "pf-v2-t-ok"},
                             ].map((s) => (
-                              <div key={s.label} className="rounded-lg border border-white/8 bg-[#0e1012]/70 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{s.label}</p>
-                                <p className={`mt-0.5 text-sm font-black ${s.color}`}>{s.value}</p>
+                              <div key={s.label} className="rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide pf-v2-t-40">{s.label}</p>
+                                <p className={`mt-0.5 text-sm font-black${s.color}`}>{s.value}</p>
                               </div>
                             ))}
                           </div>
@@ -9677,7 +9676,7 @@ export default function ClientesPage() {
                                   ? `${selectedNutritionPlan.perfil.diasEntrenamiento} días entren./sem.`
                                   : null,
                               ].filter(Boolean).map((tag) => (
-                                <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-slate-400">
+                                <span key={tag} className="rounded-full border pf-v2-b pf-v2-s-hi px-2 py-0.5 text-[10px] pf-v2-t-50">
                                   {tag}
                                 </span>
                               ))}
@@ -9693,13 +9692,13 @@ export default function ClientesPage() {
                             const gPct  = total > 0 ? Math.round((t.grasas * 9       / total) * 100) : 0;
                             return (
                               <div className="mt-3">
-                                <div className="mb-1 flex justify-between text-[10px] text-slate-500">
+                                <div className="mb-1 flex justify-between text-[10px] pf-v2-t-40">
                                   <span>Prot {pPct}%</span><span>Carbs {cPct}%</span><span>Grasas {gPct}%</span>
                                 </div>
                                 <div className="flex h-2 overflow-hidden rounded-full">
-                                  <div className="bg-violet-500" style={{ width: `${pPct}%` }} />
-                                  <div className="bg-emerald-500" style={{ width: `${cPct}%` }} />
-                                  <div className="bg-amber-500" style={{ width: `${gPct}%` }} />
+                                  <div className="pf-v2-s-violet" style={{ width: `${pPct}%` }} />
+                                  <div className="pf-v2-s-ok" style={{ width: `${cPct}%` }} />
+                                  <div className="pf-v2-s-warn" style={{ width: `${gPct}%` }} />
                                 </div>
                               </div>
                             );
@@ -9708,12 +9707,12 @@ export default function ClientesPage() {
 
                         {/* Banner modo edición */}
                         {nutritionEditMode && (
-                          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-amber-300/30 bg-amber-500/10 px-4 py-2.5">
-                            <p className="text-xs font-semibold text-amber-200">✏️ Modo edición — modificá los gramos o eliminá alimentos. Los cambios se guardan al instante.</p>
+                          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border pf-v2-b-warn pf-v2-s-warn px-4 py-2.5">
+                            <p className="text-xs font-semibold pf-v2-t-warn">✏️ Modo edición — modificá los gramos o eliminá alimentos. Los cambios se guardan al instante.</p>
                             <ReliableActionButton
                               type="button"
                               onClick={() => { setNutritionEditMode(false); setNutritionGramEdit(null); setNutritionAddFoodMealId(null); setHasUnsavedNutritionChanges(false); }}
-                              className="shrink-0 rounded-lg border border-amber-300/30 px-3 py-1 text-[11px] font-bold text-amber-200 hover:bg-amber-500/15"
+                              className="shrink-0 rounded-lg border pf-v2-b-warn px-3 py-1 text-[11px] font-bold pf-v2-t-warn pf-v2-hover"
                             >
                               Cerrar edición
                             </ReliableActionButton>
@@ -9723,7 +9722,7 @@ export default function ClientesPage() {
                         {/* Comidas */}
                         <div className="mt-4 space-y-2">
                           {selectedNutritionPlan.comidas.length === 0 ? (
-                            <p className="rounded-xl border border-white/10 bg-[#0e1012] p-4 text-sm text-slate-400">
+                            <p className="rounded-xl border pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-50">
                               El plan no tiene comidas cargadas.
                             </p>
                           ) : (
@@ -9739,12 +9738,12 @@ export default function ClientesPage() {
                                     .slice(0, 8)
                                 : [];
                               return (
-                                <article key={meal.id} className="rounded-xl border border-white/8 bg-white/[0.025] p-4">
+                                <article key={meal.id} className="rounded-xl border pf-v2-b pf-v2-s p-4">
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-bold text-white">{meal.nombre}</p>
+                                    <p className="text-sm font-bold pf-v2-t">{meal.nombre}</p>
                                     <div className="flex items-center gap-2">
                                       {mealKcal > 0 && (
-                                        <span className="rounded-full border border-amber-300/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                                        <span className="rounded-full border pf-v2-b-warn pf-v2-s-warn px-2 py-0.5 text-[10px] font-semibold pf-v2-t-warn">
                                           {Math.round(mealKcal)} kcal
                                         </span>
                                       )}
@@ -9755,7 +9754,7 @@ export default function ClientesPage() {
                                             setNutritionAddFoodMealId(isAddingFood ? null : meal.id);
                                             setNutritionFoodSearch("");
                                           }}
-                                          className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-500/20"
+                                          className="rounded-full border pf-v2-b-ok pf-v2-s-ok px-2 py-0.5 text-[10px] font-semibold pf-v2-t-ok pf-v2-hover"
                                         >
                                           {isAddingFood ? "— Cancelar" : "+ Agregar"}
                                         </ReliableActionButton>
@@ -9765,13 +9764,13 @@ export default function ClientesPage() {
 
                                   {/* Panel agregar alimento */}
                                   {isAddingFood && (
-                                    <div className="mt-2 rounded-xl border border-emerald-300/20 bg-emerald-500/5 p-3">
+                                    <div className="mt-2 rounded-xl border pf-v2-b-ok pf-v2-s-ok p-3">
                                       <input
                                         value={nutritionFoodSearch}
                                         onChange={(e) => setNutritionFoodSearch(e.target.value)}
                                         placeholder="Buscar alimento…"
                                         autoFocus
-                                        className="w-full rounded-lg border border-white/15 bg-[#0e1012] px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-400/40"
+                                        className="w-full rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-1.5 text-xs pf-v2-t pf-v2-ph outline-none"
                                       />
                                       {foodResults.length > 0 && (
                                         <div className="mt-2 space-y-1">
@@ -9780,10 +9779,10 @@ export default function ClientesPage() {
                                               key={f.id}
                                               type="button"
                                               onClick={() => addNutritionItem(meal.id, f.id)}
-                                              className="w-full rounded-lg border border-white/8 bg-white/[0.02] px-3 py-1.5 text-left text-xs text-slate-200 hover:bg-white/[0.06]"
+                                              className="w-full rounded-lg border pf-v2-b pf-v2-s px-3 py-1.5 text-left text-xs pf-v2-t pf-v2-hover"
                                             >
                                               <span className="font-medium">{f.nombre}</span>
-                                              <span className="ml-2 text-slate-500">{f.kcalPer100g} kcal/100g · P{f.proteinPer100g}g · C{f.carbsPer100g}g · G{f.fatPer100g}g</span>
+                                              <span className="ml-2 pf-v2-t-40">{f.kcalPer100g} kcal/100g · P{f.proteinPer100g}g · C{f.carbsPer100g}g · G{f.fatPer100g}g</span>
                                             </ReliableActionButton>
                                           ))}
                                         </div>
@@ -9792,7 +9791,7 @@ export default function ClientesPage() {
                                   )}
 
                                   {meal.items.length === 0 ? (
-                                    <p className="mt-1 text-xs text-slate-500">Sin alimentos.</p>
+                                    <p className="mt-1 text-xs pf-v2-t-40">Sin alimentos.</p>
                                   ) : (
                                     <div className="mt-2 grid gap-1 sm:grid-cols-2">
                                       {meal.items.map((itm) => {
@@ -9800,8 +9799,8 @@ export default function ClientesPage() {
                                         const itemKcal = food ? Math.round(food.kcalPer100g * itm.gramos / 100) : 0;
                                         const isEditingGrams = nutritionGramEdit?.mealId === meal.id && nutritionGramEdit?.itemId === itm.id;
                                         return (
-                                          <div key={itm.id} className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${nutritionEditMode ? "border-white/10 bg-[#0e1012]/60 hover:border-white/20" : "border-white/5 bg-[#0e1012]/50"}`}>
-                                            <span className="min-w-0 flex-1 truncate text-slate-300">{food?.nombre || itm.foodId}</span>
+                                          <div key={itm.id} className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${nutritionEditMode ? "pf-v2-b pf-v2-s-deep" : "pf-v2-b pf-v2-s-deep"}`}>
+                                            <span className="min-w-0 flex-1 truncate pf-v2-t-70">{food?.nombre || itm.foodId}</span>
                                             {isEditingGrams ? (
                                               <div className="flex shrink-0 items-center gap-1">
                                                 <input
@@ -9811,15 +9810,15 @@ export default function ClientesPage() {
                                                   onBlur={saveNutritionInlineEdit}
                                                   onKeyDown={(e) => { if (e.key === "Enter") saveNutritionInlineEdit(); if (e.key === "Escape") setNutritionGramEdit(null); }}
                                                   autoFocus
-                                                  className="w-14 rounded border border-emerald-400/40 bg-emerald-500/10 px-1.5 py-0.5 text-right text-[11px] text-emerald-200 outline-none"
+                                                  className="w-14 rounded border pf-v2-b-ok pf-v2-s-ok px-1.5 py-0.5 text-right text-[11px] pf-v2-t-ok outline-none"
                                                 />
-                                                <span className="text-slate-500">g</span>
+                                                <span className="pf-v2-t-40">g</span>
                                               </div>
                                             ) : (
                                               <div className="flex shrink-0 items-center gap-1.5">
                                                 <span
                                                   onClick={nutritionEditMode ? () => setNutritionGramEdit({ mealId: meal.id, itemId: itm.id, value: String(itm.gramos) }) : undefined}
-                                                  className={`font-semibold text-slate-400 ${nutritionEditMode ? "cursor-pointer rounded px-1 hover:bg-white/10 hover:text-white" : ""}`}
+                                                  className={`font-semibold pf-v2-t-50 ${nutritionEditMode ? "cursor-pointer rounded px-1 pf-v2-hover" : ""}`}
                                                 >
                                                   {itm.gramos} g{itemKcal > 0 ? ` · ${itemKcal} kcal` : ""}
                                                 </span>
@@ -9827,7 +9826,7 @@ export default function ClientesPage() {
                                                   <ReliableActionButton
                                                     type="button"
                                                     onClick={() => removeNutritionItem(meal.id, itm.id)}
-                                                    className="flex h-4 w-4 items-center justify-center rounded-full text-slate-600 hover:bg-red-500/20 hover:text-red-400"
+                                                    className="flex h-4 w-4 items-center justify-center rounded-full pf-v2-t-40 pf-v2-hover"
                                                   >
                                                     ×
                                                   </ReliableActionButton>
@@ -9846,23 +9845,23 @@ export default function ClientesPage() {
                         </div>
                       </>
                     ) : !nutritionAssigning ? (
-                      <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center">
+                      <div className="rounded-xl border pf-v2-b pf-v2-s p-6 text-center">
                         <p className="text-2xl">🥗</p>
-                        <p className="mt-2 text-sm font-semibold text-slate-200">Sin plan nutricional</p>
-                        <p className="mt-1 text-xs text-slate-400">Generá un plan personalizado basado en el perfil de este cliente, o asigná uno existente.</p>
+                        <p className="mt-2 text-sm font-semibold pf-v2-t">Sin plan nutricional</p>
+                        <p className="mt-1 text-xs pf-v2-t-50">Generá un plan personalizado basado en el perfil de este cliente, o asigná uno existente.</p>
                         {canEditTrainingPlan && (
                           <div className="mt-4 flex justify-center gap-2">
                             <ReliableActionButton
                               type="button"
                               onClick={() => openNutritionWizard()}
-                              className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-500/20"
+                              className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-4 py-2 text-xs font-semibold pf-v2-t-ok pf-v2-hover"
                             >
                               ✨ Crear plan personalizado
                             </ReliableActionButton>
                             <ReliableActionButton
                               type="button"
                               onClick={() => openNutritionWizard("__pick__")}
-                              className="rounded-lg border border-white/20 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-white/8"
+                              className="rounded-lg border pf-v2-b-hi px-4 py-2 text-xs font-semibold pf-v2-t-70 pf-v2-hover"
                             >
                               📋 Asignar plan existente
                             </ReliableActionButton>
@@ -9872,12 +9871,12 @@ export default function ClientesPage() {
                     ) : null}
 
                     {/* Recetas — fusionado dentro de Plan nutricional */}
-                    <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-500/[0.06] p-4">
+                    <div className="mt-5 rounded-2xl border pf-v2-b-warn pf-v2-s-warn p-4">
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-lg">🍽</span>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-100/85">Recetas</p>
-                          <p className="text-xs text-slate-300/85">Recetas sugeridas, reemplazos y planificación de comidas.</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] pf-v2-t-warn">Recetas</p>
+                          <p className="text-xs pf-v2-t-70">Recetas sugeridas, reemplazos y planificación de comidas.</p>
                         </div>
                       </div>
                       <textarea
@@ -9885,59 +9884,59 @@ export default function ClientesPage() {
                         onChange={(e) => updateTabNote("recetas", e.target.value)}
                         disabled={!canEditTrainingPlan}
                         rows={8}
-                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-amber-500/5 placeholder:text-slate-600 focus:outline-none disabled:opacity-70"
+                        className="w-full rounded-2xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 text-sm leading-relaxed pf-v2-t shadow-inner shadow-amber-500/5 pf-v2-ph focus:outline-none disabled:opacity-70"
                         placeholder="Ej: Desayuno — avena con banana y huevos. Reemplazo: yogur + frutos secos..."
                       />
                     </div>
                   </div>
                 ) : activeTab === "progreso" ? (
                   <div className="grid gap-3 md:grid-cols-3">
-                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
-                      <p className="text-xs text-slate-300">Wellness</p>
-                      <p className="text-3xl font-black text-cyan-100">{selectedClient.wellness ?? "-"}</p>
+                    <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+                      <p className="text-xs pf-v2-t-70">Wellness</p>
+                      <p className="text-3xl font-black pf-v2-t-accent">{selectedClient.wellness ?? "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
-                      <p className="text-xs text-slate-300">Carga</p>
-                      <p className="text-3xl font-black text-emerald-100">{selectedClient.carga ?? "-"}</p>
+                    <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+                      <p className="text-xs pf-v2-t-70">Carga</p>
+                      <p className="text-3xl font-black pf-v2-t-ok">{selectedClient.carga ?? "-"}</p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-[#0e1012] p-4">
-                      <p className="text-xs text-slate-300">Peso actual</p>
-                      <p className="text-3xl font-black text-violet-100">{selectedClient.peso || "-"}</p>
+                    <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+                      <p className="text-xs pf-v2-t-70">Peso actual</p>
+                      <p className="text-3xl font-black pf-v2-t-violet">{selectedClient.peso || "-"}</p>
                     </div>
                   </div>
                 ) : activeTab === "documentos" ? (
                   <div className="space-y-4">
-                    <div className="rounded-2xl border border-sky-300/25 bg-sky-500/[0.06] p-4">
+                    <div className="rounded-2xl border pf-v2-b-blue pf-v2-s-blue p-4">
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-lg">📁</span>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-100/85">Documentos</p>
-                          <p className="text-xs text-slate-300/85">Links o referencias de documentos cargados (estudios, aptos, PDFs).</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] pf-v2-t-blue">Documentos</p>
+                          <p className="text-xs pf-v2-t-70">Links o referencias de documentos cargados (estudios, aptos, PDFs).</p>
                         </div>
                       </div>
                       <textarea
                         value={selectedMeta.tabNotas["documentos"] || ""}
                         onChange={(e) => updateTabNote("documentos", e.target.value)}
                         rows={7}
-                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-sky-500/5 placeholder:text-slate-600 focus:outline-none"
+                        className="w-full rounded-2xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 text-sm leading-relaxed pf-v2-t shadow-inner shadow-sky-500/5 pf-v2-ph focus:outline-none"
                         placeholder="Ej: Apto físico 2026 — drive.google.com/... · Estudio de sangre — ..."
                       />
                     </div>
 
                     {/* Notas — fusionado dentro de Documentos */}
-                    <div className="rounded-2xl border border-slate-300/20 bg-slate-500/[0.08] p-4">
+                    <div className="rounded-2xl border pf-v2-b pf-v2-s p-4">
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-lg">📝</span>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-200/85">Notas</p>
-                          <p className="text-xs text-slate-300/85">Notas del profesional y seguimiento del cliente.</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] pf-v2-t">Notas</p>
+                          <p className="text-xs pf-v2-t-70">Notas del profesional y seguimiento del cliente.</p>
                         </div>
                       </div>
                       <textarea
                         value={selectedMeta.tabNotas["notas"] || ""}
                         onChange={(e) => updateTabNote("notas", e.target.value)}
                         rows={8}
-                        className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed text-slate-100 shadow-inner shadow-cyan-500/5 placeholder:text-slate-600 focus:outline-none"
+                        className="w-full rounded-2xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 text-sm leading-relaxed pf-v2-t shadow-inner shadow-cyan-500/5 pf-v2-ph focus:outline-none"
                         placeholder="Observaciones accionables, acuerdos y pendientes..."
                       />
                     </div>
@@ -9946,47 +9945,47 @@ export default function ClientesPage() {
                   <div className="space-y-4">
                     <div
                       className={`rounded-2xl border p-4 ${
-                        tabVisualConfig[activeTab]?.accent || "border-slate-300/25 bg-slate-700/20"
+                        tabVisualConfig[activeTab]?.accent || "pf-v2-b pf-v2-s"
                       }`}
                     >
-                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-200/80">
+                      <p className="text-[11px] font-black uppercase tracking-[0.18em] pf-v2-t">
                         {tabVisualConfig[activeTab]?.badge || "Detalle"}
                       </p>
-                      <h3 className="mt-2 text-xl font-black text-white">
+                      <h3 className="mt-2 text-xl font-black pf-v2-t">
                         {tabVisualConfig[activeTab]?.title || TABS.find((item) => item.id === activeTab)?.label}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-200/90">
+                      <p className="mt-1 text-sm pf-v2-t">
                         {tabVisualConfig[activeTab]?.hint || tabPlaceholderCopy[activeTab] || "Apartado editable del cliente."}
                       </p>
 
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                        <div className="rounded-xl border border-white/15 bg-white/[0.025] p-2.5">
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Cliente</p>
-                          <p className="truncate text-sm font-bold text-white">{selectedClient.nombre}</p>
+                        <div className="rounded-xl border pf-v2-b-hi pf-v2-s p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide pf-v2-t-50">Cliente</p>
+                          <p className="truncate text-sm font-bold pf-v2-t">{selectedClient.nombre}</p>
                         </div>
-                        <div className="rounded-xl border border-white/15 bg-white/[0.025] p-2.5">
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Vigencia plan</p>
-                          <p className="truncate text-sm font-bold text-white">
+                        <div className="rounded-xl border pf-v2-b-hi pf-v2-s p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide pf-v2-t-50">Vigencia plan</p>
+                          <p className="truncate text-sm font-bold pf-v2-t">
                             {selectedMeta.startDate || "Sin inicio"} - {selectedMeta.endDate || "Sin fin"}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-white/15 bg-white/[0.025] p-2.5">
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">Largo de nota</p>
-                          <p className="text-sm font-bold text-white">
+                        <div className="rounded-xl border pf-v2-b-hi pf-v2-s p-2.5">
+                          <p className="text-[10px] uppercase tracking-wide pf-v2-t-50">Largo de nota</p>
+                          <p className="text-sm font-bold pf-v2-t">
                             {(selectedMeta.tabNotas[activeTab] || "").trim().length} caracteres
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm pf-v2-t-70">
                       Campo de trabajo para {TABS.find((item) => item.id === activeTab)?.label?.toLowerCase()}.
                     </p>
                     <textarea
                       value={selectedMeta.tabNotas[activeTab] || ""}
                       onChange={(e) => updateTabNote(activeTab, e.target.value)}
                       rows={10}
-                      className="w-full rounded-2xl border border-white/20 bg-[#0e1012]/80 px-4 py-3 text-sm leading-relaxed shadow-inner shadow-cyan-500/5"
+                      className="w-full rounded-2xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 text-sm leading-relaxed shadow-inner shadow-cyan-500/5"
                       placeholder="Escribe aqui observaciones accionables, acuerdos y pendientes..."
                     />
                   </div>
@@ -10001,13 +10000,13 @@ export default function ClientesPage() {
       )}
 
       {feedbackModalTarget ? (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/[0.02]/85 px-3 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center pf-v2-s px-3 py-6 backdrop-blur-sm">
           <div className="pf-v2-card w-full max-w-3xl">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Feedback post sesión</p>
-                <h2 className="mt-1 text-xl font-black text-white">Mediciones para el cierre del día</h2>
-                <p className="mt-1 text-xs text-slate-300">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] pf-v2-t-ok">Feedback post sesión</p>
+                <h2 className="mt-1 text-xl font-black pf-v2-t">Mediciones para el cierre del día</h2>
+                <p className="mt-1 text-xs pf-v2-t-70">
                   Elegí qué mediciones le mostramos al alumno cuando finaliza la sesión. Las marcadas como obligatorias deben completarse antes de guardar.
                 </p>
               </div>
@@ -10015,24 +10014,24 @@ export default function ClientesPage() {
                 type="button"
                 onClick={closeFeedbackModal}
                 aria-label="Cerrar"
-                className="rounded-full border border-white/15 bg-[#0e1012] px-2 py-1 text-sm text-slate-200 hover:bg-slate-700"
+                className="rounded-full border pf-v2-b-hi pf-v2-s-deep px-2 py-1 text-sm pf-v2-t pf-v2-hover"
               >
                 ✕
               </ReliableActionButton>
             </div>
 
-            <label className="mt-4 grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+            <label className="mt-4 grid gap-1 text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-70">
               Título del cuestionario (opcional)
               <input
                 value={feedbackModalTitle}
                 onChange={(event) => setFeedbackModalTitle(event.target.value)}
                 placeholder="Ej: ¿Cómo te sentiste al cerrar la sesión?"
-                className="rounded-lg border border-white/15 bg-slate-700 px-3 py-2 text-sm text-white"
+                className="rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-2 text-sm pf-v2-t"
               />
             </label>
 
-            <div className="mt-4 max-h-[55vh] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.02]/40">
-              <div className="grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] gap-2 border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            <div className="mt-4 max-h-[55vh] overflow-y-auto rounded-2xl border pf-v2-b pf-v2-s">
+              <div className="grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] gap-2 border-b pf-v2-b px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] pf-v2-t-50">
                 <span>Medición</span>
                 <span>Descripción</span>
                 <span className="text-center">Visible</span>
@@ -10049,19 +10048,19 @@ export default function ClientesPage() {
                   <div
                     key={entry.id}
                     className={`grid grid-cols-[1.2fr_2.2fr_0.6fr_0.6fr] items-center gap-2 px-3 py-3 text-xs ${
-                      index % 2 === 1 ? "bg-[#0e1012]/40" : ""
-                    } border-b border-white/5`}
+                      index % 2 === 1 ? "pf-v2-s-deep" : ""
+                    }border-b pf-v2-b`}
                   >
-                    <p className="font-bold text-slate-100">{entry.nombre}</p>
-                    <p className="text-slate-300">{entry.descripcion}</p>
+                    <p className="font-bold pf-v2-t">{entry.nombre}</p>
+                    <p className="pf-v2-t-70">{entry.descripcion}</p>
                     <div className="flex justify-center gap-1">
                       <ReliableActionButton
                         type="button"
                         onClick={() => toggleFeedbackModalMeasurement(entry.id, "visible", true)}
                         className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
                           state.visible
-                            ? "border-cyan-300/70 bg-cyan-400/30 text-cyan-50"
-                            : "border-white/15 bg-white/[0.025] text-slate-300"
+                            ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                            : "pf-v2-b-hi pf-v2-s pf-v2-t-70"
                         }`}
                       >
                         SÍ
@@ -10071,8 +10070,8 @@ export default function ClientesPage() {
                         onClick={() => toggleFeedbackModalMeasurement(entry.id, "visible", false)}
                         className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
                           !state.visible
-                            ? "border-cyan-300/70 bg-cyan-400/30 text-cyan-50"
-                            : "border-white/15 bg-white/[0.025] text-slate-300"
+                            ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                            : "pf-v2-b-hi pf-v2-s pf-v2-t-70"
                         }`}
                       >
                         NO
@@ -10084,8 +10083,8 @@ export default function ClientesPage() {
                         onClick={() => toggleFeedbackModalMeasurement(entry.id, "obligatoria", true)}
                         className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
                           state.obligatoria
-                            ? "border-amber-300/70 bg-amber-400/25 text-amber-50"
-                            : "border-white/15 bg-white/[0.025] text-slate-300"
+                            ? "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"
+                            : "pf-v2-b-hi pf-v2-s pf-v2-t-70"
                         }`}
                       >
                         SÍ
@@ -10095,8 +10094,8 @@ export default function ClientesPage() {
                         onClick={() => toggleFeedbackModalMeasurement(entry.id, "obligatoria", false)}
                         className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${
                           !state.obligatoria
-                            ? "border-amber-300/70 bg-amber-400/25 text-amber-50"
-                            : "border-white/15 bg-white/[0.025] text-slate-300"
+                            ? "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"
+                            : "pf-v2-b-hi pf-v2-s pf-v2-t-70"
                         }`}
                       >
                         NO
@@ -10108,10 +10107,10 @@ export default function ClientesPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
+              <label className="grid gap-1 text-xs font-bold uppercase tracking-[0.14em] pf-v2-t-70">
                 <span className="inline-flex items-center gap-1">
                   Cantidad máxima por día
-                  <span title="Cuántas veces puede el alumno enviar este feedback por día (mínimo 1)." className="cursor-help text-slate-400">
+                  <span title="Cuántas veces puede el alumno enviar este feedback por día (mínimo 1)." className="cursor-help pf-v2-t-50">
                     ⓘ
                   </span>
                 </span>
@@ -10120,7 +10119,7 @@ export default function ClientesPage() {
                   min={1}
                   value={feedbackModalMaxPerDay}
                   onChange={(event) => setFeedbackModalMaxPerDay(event.target.value)}
-                  className="w-24 rounded-lg border border-white/15 bg-slate-700 px-3 py-1.5 text-sm text-white"
+                  className="w-24 rounded-lg border pf-v2-b-hi pf-v2-s px-3 py-1.5 text-sm pf-v2-t"
                 />
               </label>
 
@@ -10128,14 +10127,14 @@ export default function ClientesPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={closeFeedbackModal}
-                  className="rounded-lg border border-white/20 bg-[#0e1012] px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
+                  className="rounded-lg border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-xs font-bold pf-v2-t pf-v2-hover"
                 >
                   Cancelar
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="button"
                   onClick={saveFeedbackModal}
-                  className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 hover:bg-emerald-300"
+                  className="rounded-lg pf-v2-s-ok px-4 py-2 text-xs font-black pf-v2-t pf-v2-hover"
                 >
                   Asignar / Guardar
                 </ReliableActionButton>
@@ -10146,27 +10145,27 @@ export default function ClientesPage() {
       ) : null}
 
       {newExerciseModalOpen ? (
-        <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center bg-black/65 px-0 pb-0 sm:px-4 sm:py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center pf-v2-s-deep px-0 pb-0 sm:px-4 sm:py-6 backdrop-blur-sm">
           {/* Backdrop click */}
           <div className="absolute inset-0" onClick={closeNewExerciseModal} />
 
-          <div className="relative w-full max-w-md sm:rounded-2xl overflow-hidden shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] border-t sm:border border-white/10 bg-[#0b0e11]">
+          <div className="relative w-full max-w-md sm:rounded-2xl overflow-hidden border-t sm:border pf-v2-b pf-v2-s-deep">
 
             {/* Accent bar — color según categoría */}
             <div className={`h-1 w-full ${
-              newExerciseCategoria === "Velocidad" ? "bg-gradient-to-r from-amber-400 to-yellow-300" :
-              newExerciseCategoria === "Potencia"  ? "bg-gradient-to-r from-orange-500 to-red-400" :
-              newExerciseCategoria === "Condición" ? "bg-gradient-to-r from-emerald-400 to-green-300" :
-              newExerciseCategoria === "Core"      ? "bg-gradient-to-r from-violet-500 to-purple-400" :
-              newExerciseCategoria === "Movilidad" ? "bg-gradient-to-r from-teal-400 to-cyan-300" :
-              newExerciseCategoria === "Técnica"   ? "bg-gradient-to-r from-indigo-400 to-blue-300" :
-                                                    "bg-gradient-to-r from-cyan-400 to-blue-400"
+              newExerciseCategoria === "Velocidad" ? "" :
+              newExerciseCategoria === "Potencia"  ? "" :
+              newExerciseCategoria === "Condición" ? "" :
+              newExerciseCategoria === "Core"      ? "" :
+              newExerciseCategoria === "Movilidad" ? "" :
+              newExerciseCategoria === "Técnica"   ? "" :
+                                                    ""
             }`} />
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-lg">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl pf-v2-s-hi text-lg">
                   {newExerciseCategoria === "Velocidad" ? "⚡" :
                    newExerciseCategoria === "Potencia"  ? "🔥" :
                    newExerciseCategoria === "Condición" ? "🫀" :
@@ -10175,14 +10174,14 @@ export default function ClientesPage() {
                    newExerciseCategoria === "Técnica"   ? "🧠" : "💪"}
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">Biblioteca</p>
-                  <h2 className="text-base font-black leading-tight text-white">Nuevo ejercicio</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] pf-v2-t-40">Biblioteca</p>
+                  <h2 className="text-base font-black leading-tight pf-v2-t">Nuevo ejercicio</h2>
                 </div>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={closeNewExerciseModal}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/6 text-slate-400 hover:bg-white/12 hover:text-white transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg pf-v2-s-hi pf-v2-t-50 pf-v2-hover transition-colors"
               >
                 ✕
               </ReliableActionButton>
@@ -10197,22 +10196,22 @@ export default function ClientesPage() {
                   onChange={(event) => setNewExerciseNombre(event.target.value)}
                   placeholder="Nombre del ejercicio…"
                   autoFocus
-                  className="w-full rounded-xl border border-white/10 bg-[#131720] px-4 py-3 text-base font-semibold text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/50 focus:bg-[#141b24] transition"
+                  className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-3 text-base font-semibold pf-v2-t pf-v2-ph outline-none transition"
                 />
               </div>
 
               {/* Categoría como chips */}
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Categoría</p>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Categoría</p>
                 <div className="flex flex-wrap gap-1.5">
                   {([
-                    { value: "Fuerza",    icon: "💪", color: "border-cyan-400/40 bg-cyan-500/15 text-cyan-200"   },
-                    { value: "Velocidad", icon: "⚡", color: "border-amber-400/40 bg-amber-500/15 text-amber-200"},
-                    { value: "Potencia",  icon: "🔥", color: "border-orange-400/40 bg-orange-500/15 text-orange-200"},
-                    { value: "Condición", icon: "🫀", color: "border-emerald-400/40 bg-emerald-500/15 text-emerald-200"},
-                    { value: "Core",      icon: "🎯", color: "border-violet-400/40 bg-violet-500/15 text-violet-200"},
-                    { value: "Movilidad", icon: "🌀", color: "border-teal-400/40 bg-teal-500/15 text-teal-200"},
-                    { value: "Técnica",   icon: "🧠", color: "border-indigo-400/40 bg-indigo-500/15 text-indigo-200"},
+                    { value: "Fuerza",    icon: "💪", color: "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"   },
+                    { value: "Velocidad", icon: "⚡", color: "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"},
+                    { value: "Potencia",  icon: "🔥", color: "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn"},
+                    { value: "Condición", icon: "🫀", color: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"},
+                    { value: "Core",      icon: "🎯", color: "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet"},
+                    { value: "Movilidad", icon: "🌀", color: "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"},
+                    { value: "Técnica",   icon: "🧠", color: "pf-v2-b-blue pf-v2-s-blue pf-v2-t-blue"},
                   ] as const).map((cat) => (
                     <ReliableActionButton
                       key={cat.value}
@@ -10220,8 +10219,8 @@ export default function ClientesPage() {
                       onClick={() => setNewExerciseCategoria(cat.value)}
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
                         newExerciseCategoria === cat.value
-                          ? cat.color + " shadow-sm scale-[1.04]"
-                          : "border-white/10 bg-white/4 text-slate-500 hover:bg-white/8 hover:text-slate-300"
+                          ? cat.color + "shadow-sm scale-[1.04]"
+                          : "pf-v2-b pf-v2-s-hi pf-v2-t-40 pf-v2-hover"
                       }`}
                     >
                       {cat.icon} {cat.value}
@@ -10233,41 +10232,41 @@ export default function ClientesPage() {
               {/* Objetivo + Video en fila */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">🎯 Objetivo</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">🎯 Objetivo</p>
                   <input
                     type="text"
                     value={newExerciseObjetivo}
                     onChange={(event) => setNewExerciseObjetivo(event.target.value)}
                     placeholder="Ej: Cuádriceps, glúteos"
-                    className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
+                    className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none transition"
                   />
                 </div>
                 <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">🎬 Video</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">🎬 Video</p>
                   <input
                     type="url"
                     value={newExerciseVideoUrl}
                     onChange={(event) => setNewExerciseVideoUrl(event.target.value)}
                     placeholder="YouTube, Vimeo…"
-                    className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
+                    className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Descripción técnica */}
               <div>
-                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">📝 Descripción técnica</p>
+                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">📝 Descripción técnica</p>
                 <textarea
                   value={newExerciseDescripcion}
                   onChange={(event) => setNewExerciseDescripcion(event.target.value)}
                   placeholder="Posición de partida, puntos clave de ejecución…"
                   rows={2}
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-cyan-400/40 transition"
+                  className="w-full resize-none rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none transition"
                 />
               </div>
 
               {newExerciseError ? (
-                <p className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300">
+                <p className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-xs font-semibold pf-v2-t-danger">
                   ⚠ {newExerciseError}
                 </p>
               ) : null}
@@ -10278,7 +10277,7 @@ export default function ClientesPage() {
                   type="button"
                   onClick={closeNewExerciseModal}
                   disabled={newExerciseSaving}
-                  className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 disabled:opacity-50 transition"
+                  className="flex-1 rounded-xl border pf-v2-b pf-v2-s-hi py-2.5 text-sm font-semibold pf-v2-t-70 pf-v2-hover disabled:opacity-50 transition"
                 >
                   Cancelar
                 </ReliableActionButton>
@@ -10287,13 +10286,13 @@ export default function ClientesPage() {
                   onClick={saveNewExerciseFromModal}
                   disabled={newExerciseSaving || !newExerciseNombre.trim()}
                   className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition disabled:opacity-50 ${
-                    newExerciseCategoria === "Velocidad" ? "bg-amber-500 hover:bg-amber-400 text-black" :
-                    newExerciseCategoria === "Potencia"  ? "bg-orange-500 hover:bg-orange-400 text-white" :
-                    newExerciseCategoria === "Condición" ? "bg-emerald-500 hover:bg-emerald-400 text-black" :
-                    newExerciseCategoria === "Core"      ? "bg-violet-500 hover:bg-violet-400 text-white" :
-                    newExerciseCategoria === "Movilidad" ? "bg-teal-500 hover:bg-teal-400 text-black" :
-                    newExerciseCategoria === "Técnica"   ? "bg-indigo-500 hover:bg-indigo-400 text-white" :
-                                                          "bg-cyan-500 hover:bg-cyan-400 text-black"
+                    newExerciseCategoria === "Velocidad" ? "pf-v2-s-warn pf-v2-hover pf-v2-t-on" :
+                    newExerciseCategoria === "Potencia"  ? "pf-v2-s-warn pf-v2-hover pf-v2-t" :
+                    newExerciseCategoria === "Condición" ? "pf-v2-s-ok pf-v2-hover pf-v2-t-on" :
+                    newExerciseCategoria === "Core"      ? "pf-v2-s-violet pf-v2-hover pf-v2-t" :
+                    newExerciseCategoria === "Movilidad" ? "pf-v2-s-ok pf-v2-hover pf-v2-t-on" :
+                    newExerciseCategoria === "Técnica"   ? "pf-v2-s-blue pf-v2-hover pf-v2-t" :
+                                                          "pf-v2-s-accent-full pf-v2-hover pf-v2-t-on"
                   }`}
                 >
                   {newExerciseSaving ? "Guardando…" : "Guardar ejercicio"}
@@ -10309,37 +10308,37 @@ export default function ClientesPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 pf-v2-s-deep backdrop-blur-sm"
             onClick={() => setShowAssignPlanModal(false)}
           />
 
-          <div className="relative w-full max-w-2xl rounded-2xl border border-cyan-300/20 bg-[#0b0e11] shadow-[0_40px_80px_-20px_rgba(34,211,238,0.25)] overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="relative w-full max-w-2xl rounded-2xl border pf-v2-b-accent pf-v2-s-deep overflow-hidden flex flex-col max-h-[90vh]">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 bg-[#0e1214] px-6 py-4 shrink-0">
+            <div className="flex items-center justify-between border-b pf-v2-b pf-v2-s-deep px-6 py-4 shrink-0">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-cyan-400/80">
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] pf-v2-t-accent">
                   Plan de entrenamiento
                 </p>
-                <h2 className="mt-0.5 text-lg font-black text-white">
+                <h2 className="mt-0.5 text-lg font-black pf-v2-t">
                   Asignar a {selectedClient.nombre}
                 </h2>
               </div>
               <ReliableActionButton
                 type="button"
                 onClick={() => setShowAssignPlanModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-white transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border pf-v2-b pf-v2-s-hi pf-v2-t-50 transition-colors"
               >
                 ✕
               </ReliableActionButton>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-white/8 bg-[#0c0f12] px-6 py-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 border-b pf-v2-b pf-v2-s-deep px-6 py-3 shrink-0">
               <input
                 value={assignPlanSearch}
                 onChange={(e) => setAssignPlanSearch(e.target.value)}
                 placeholder="Buscar template o plan IA…"
-                className="h-8 min-w-[180px] flex-1 rounded-lg border border-white/12 bg-white/6 px-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-400/50"
+                className="h-8 min-w-[180px] flex-1 rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 text-sm pf-v2-t pf-v2-ph outline-none"
               />
               {(["todos", "template", "ia"] as const).map((f) => (
                 <ReliableActionButton
@@ -10348,8 +10347,8 @@ export default function ClientesPage() {
                   onClick={() => setAssignPlanFilter(f)}
                   className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
                     assignPlanFilter === f
-                      ? "border-cyan-400/60 bg-cyan-500/20 text-cyan-100"
-                      : "border-white/15 text-slate-400 hover:bg-white/8"
+                      ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                      : "pf-v2-b-hi pf-v2-t-50 pf-v2-hover"
                   }`}
                 >
                   {f === "todos" ? "Todos" : f === "template" ? "Templates" : "IA"}
@@ -10375,24 +10374,24 @@ export default function ClientesPage() {
                   {assignPlanItems.map((item) => (
                     <div
                       key={item.optionId}
-                      className="group relative rounded-xl border border-white/10 bg-white/4 p-4 transition-all hover:border-cyan-400/40 hover:bg-cyan-500/8"
+                      className="group relative rounded-xl border pf-v2-b pf-v2-s-hi p-4 transition-all pf-v2-hover"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="rounded-full border border-white/15 bg-white/8 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-400">
+                            <span className="rounded-full border pf-v2-b-hi pf-v2-s-hi px-2 py-0.5 text-[10px] font-bold uppercase pf-v2-t-50">
                               {item.source === "template" ? "Template" : "IA"}
                             </span>
                             {item.categoria && (
-                              <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] text-cyan-300/80">
+                              <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-2 py-0.5 text-[10px] pf-v2-t-accent">
                                 {item.categoria}
                               </span>
                             )}
                           </div>
-                          <p className="font-semibold text-slate-100 truncate" title={item.nombre}>
+                          <p className="font-semibold pf-v2-t truncate" title={item.nombre}>
                             {item.nombre}
                           </p>
-                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs pf-v2-t-40">
                             <span>📅 {item.totalSemanas} semana{item.totalSemanas !== 1 ? "s" : ""}</span>
                             {item.deporte && <span>⚽ {item.deporte}</span>}
                           </div>
@@ -10401,7 +10400,7 @@ export default function ClientesPage() {
                       <ReliableActionButton
                         type="button"
                         onClick={() => assignPlanFromModal(item.optionId)}
-                        className="mt-3 w-full rounded-lg border border-cyan-300/30 bg-cyan-500/12 py-1.5 text-xs font-bold text-cyan-200 transition-colors hover:bg-cyan-500/25 hover:border-cyan-300/50"
+                        className="mt-3 w-full rounded-lg border pf-v2-b-accent pf-v2-s-accent py-1.5 text-xs font-bold pf-v2-t-accent transition-colors pf-v2-hover"
                       >
                         Asignar este plan
                       </ReliableActionButton>
@@ -10412,16 +10411,16 @@ export default function ClientesPage() {
             </div>
 
             {/* Footer — crear desde cero */}
-            <div className="shrink-0 border-t border-white/10 bg-[#0c0f12] px-6 py-4">
+            <div className="shrink-0 border-t pf-v2-b pf-v2-s-deep px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-slate-300">Crear desde cero</p>
-                  <p className="text-[11px] text-slate-500">Plan vacío para completar manualmente.</p>
+                  <p className="text-xs font-semibold pf-v2-t-70">Crear desde cero</p>
+                  <p className="text-[11px] pf-v2-t-40">Plan vacío para completar manualmente.</p>
                 </div>
                 <ReliableActionButton
                   type="button"
                   onClick={handleCreateBlankPlanFromModal}
-                  className="rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20 transition-colors"
+                  className="rounded-lg border pf-v2-b-ok pf-v2-s-ok px-4 py-2 text-xs font-bold pf-v2-t-ok pf-v2-hover transition-colors"
                 >
                   + Plan vacío
                 </ReliableActionButton>
@@ -10434,26 +10433,26 @@ export default function ClientesPage() {
       {/* ── Modal asignación plan nutricional ─────────────────────────────────── */}
       {/* ── Wizard plan nutricional ─────────────────────────────────────────── */}
       {nutritionWizard && selectedClient && (
-        <div className="fixed inset-0 z-[250] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center">
+        <div className="fixed inset-0 z-[250] flex items-end justify-center pf-v2-s-deep backdrop-blur-sm sm:items-center">
           <div className="absolute inset-0" onClick={() => setNutritionWizard(null)} />
 
           {/* ── PASO 0: picker de plan existente ── */}
           {nutritionWizard.basePlanId === "__pick__" ? (
-            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/12 bg-[#0c0f12] shadow-2xl sm:rounded-2xl">
-              <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
+            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border pf-v2-b-hi pf-v2-s-deep shadow-2xl sm:rounded-2xl">
+              <div className="flex shrink-0 items-center justify-between border-b pf-v2-b px-5 py-4">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">Plan nutricional</p>
-                  <h2 className="text-base font-black text-white">Asignar plan existente</h2>
-                  <p className="text-xs text-slate-400">{selectedClient.nombre}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] pf-v2-t-ok">Plan nutricional</p>
+                  <h2 className="text-base font-black pf-v2-t">Asignar plan existente</h2>
+                  <p className="text-xs pf-v2-t-50">{selectedClient.nombre}</p>
                 </div>
-                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 hover:bg-white/10">×</ReliableActionButton>
+                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border pf-v2-b-hi pf-v2-s-hi pf-v2-t-70 pf-v2-hover">×</ReliableActionButton>
               </div>
-              <div className="shrink-0 border-b border-white/8 px-5 py-3">
+              <div className="shrink-0 border-b pf-v2-b px-5 py-3">
                 <input
                   value={nutritionAssignSearch}
                   onChange={(e) => setNutritionAssignSearch(e.target.value)}
                   placeholder="Buscar plan…"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-emerald-400/40"
+                  className="w-full rounded-lg border pf-v2-b pf-v2-s-hi px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none"
                 />
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -10463,21 +10462,21 @@ export default function ClientesPage() {
                     !q || p.nombre.toLowerCase().includes(q) || nutritionGoalLabel(p.objetivo).toLowerCase().includes(q)
                   );
                   if (filtered.length === 0) {
-                    return <p className="py-8 text-center text-sm text-slate-500">{nutritionPlans.length === 0 ? "No hay planes nutricionales creados aún." : "Sin resultados."}</p>;
+                    return <p className="py-8 text-center text-sm pf-v2-t-40">{nutritionPlans.length === 0 ? "No hay planes nutricionales creados aún." : "Sin resultados."}</p>;
                   }
                   return (
                     <div className="space-y-2">
                       {filtered.map((plan) => (
-                        <div key={plan.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-emerald-400/30 hover:bg-emerald-500/5">
-                          <p className="truncate font-semibold text-slate-100">{plan.nombre}</p>
-                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
-                            <span className="rounded-full border border-emerald-300/20 bg-emerald-500/10 px-2 py-0.5 text-emerald-300/80">{nutritionGoalLabel(plan.objetivo)}</span>
+                        <div key={plan.id} className="rounded-xl border pf-v2-b pf-v2-s p-4 transition pf-v2-hover">
+                          <p className="truncate font-semibold pf-v2-t">{plan.nombre}</p>
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs pf-v2-t-40">
+                            <span className="rounded-full border pf-v2-b-ok pf-v2-s-ok px-2 py-0.5 pf-v2-t-ok">{nutritionGoalLabel(plan.objetivo)}</span>
                             <span>{plan.targets.calorias} kcal · P{plan.targets.proteinas}g · C{plan.targets.carbohidratos}g · G{plan.targets.grasas}g</span>
                           </div>
                           <ReliableActionButton
                             type="button"
                             onClick={() => setNutritionWizard((prev) => prev ? { ...prev, basePlanId: plan.id, step: 1 } : null)}
-                            className="mt-3 w-full rounded-lg border border-emerald-300/30 bg-emerald-500/10 py-1.5 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20"
+                            className="mt-3 w-full rounded-lg border pf-v2-b-ok pf-v2-s-ok py-1.5 text-xs font-bold pf-v2-t-ok pf-v2-hover"
                           >
                             Seleccionar y personalizar →
                           </ReliableActionButton>
@@ -10487,11 +10486,11 @@ export default function ClientesPage() {
                   );
                 })()}
               </div>
-              <div className="shrink-0 border-t border-white/10 px-5 py-3">
+              <div className="shrink-0 border-t pf-v2-b px-5 py-3">
                 <ReliableActionButton
                   type="button"
                   onClick={() => setNutritionWizard((prev) => prev ? { ...prev, basePlanId: undefined, step: 1 } : null)}
-                  className="w-full rounded-lg border border-violet-300/30 bg-violet-500/10 py-2 text-xs font-bold text-violet-200 hover:bg-violet-500/20"
+                  className="w-full rounded-lg border pf-v2-b-violet pf-v2-s-violet py-2 text-xs font-bold pf-v2-t-violet pf-v2-hover"
                 >
                   ✨ Crear plan desde cero en cambio
                 </ReliableActionButton>
@@ -10500,26 +10499,26 @@ export default function ClientesPage() {
 
           ) : (
             /* ── PASOS 1, 2 y 3: wizard de configuración + análisis ── */
-            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/12 bg-[#0c0f12] shadow-2xl sm:rounded-2xl">
+            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border pf-v2-b-hi pf-v2-s-deep shadow-2xl sm:rounded-2xl">
               {/* Header */}
-              <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
+              <div className="flex shrink-0 items-center justify-between border-b pf-v2-b px-5 py-4">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300/70">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] pf-v2-t-ok">
                     Paso {nutritionWizard.step} de 3 —&nbsp;
                     {nutritionWizard.step === 1 ? "Datos físicos" : nutritionWizard.step === 2 ? "Objetivo y preferencias" : "Revisión del análisis"}
                   </p>
-                  <h2 className="text-base font-black text-white">
+                  <h2 className="text-base font-black pf-v2-t">
                     {nutritionWizard.step === 1 ? "Perfil corporal" : nutritionWizard.step === 2 ? "Parámetros del plan" : "Análisis completo"}
                   </h2>
-                  <p className="text-xs text-slate-400">{selectedClient.nombre}</p>
+                  <p className="text-xs pf-v2-t-50">{selectedClient.nombre}</p>
                 </div>
-                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 hover:bg-white/10">×</ReliableActionButton>
+                <ReliableActionButton type="button" onClick={() => setNutritionWizard(null)} className="flex h-8 w-8 items-center justify-center rounded-full border pf-v2-b-hi pf-v2-s-hi pf-v2-t-70 pf-v2-hover">×</ReliableActionButton>
               </div>
 
               {/* Progress bar — 3 segmentos */}
-              <div className="h-1 shrink-0 bg-white/5">
+              <div className="h-1 shrink-0 pf-v2-s-hi">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-300"
+                  className="h-full pf-v2-s-ok transition-all duration-300"
                   style={{ width: nutritionWizard.step === 1 ? "33%" : nutritionWizard.step === 2 ? "66%" : "100%" }}
                 />
               </div>
@@ -10530,33 +10529,33 @@ export default function ClientesPage() {
                 {/* ── Paso 1: Datos físicos ── */}
                 {nutritionWizard.step === 1 && (
                   <div className="space-y-4">
-                    <p className="text-xs text-slate-400">Verificá o corregí los datos físicos del cliente. Se usan para calcular el gasto energético (fórmula Mifflin-St Jeor).</p>
+                    <p className="text-xs pf-v2-t-50">Verificá o corregí los datos físicos del cliente. Se usan para calcular el gasto energético (fórmula Mifflin-St Jeor).</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Peso (kg)</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Peso (kg)</label>
                         <input type="number" value={nutritionWizard.pesoKg}
                           onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, pesoKg: e.target.value } : null)}
-                          placeholder="70" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                          placeholder="70" className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                       </div>
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Altura (cm)</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Altura (cm)</label>
                         <input type="number" value={nutritionWizard.alturaCm}
                           onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, alturaCm: e.target.value } : null)}
-                          placeholder="170" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                          placeholder="170" className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                       </div>
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Edad</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Edad</label>
                         <input type="number" value={nutritionWizard.edad}
                           onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, edad: e.target.value } : null)}
-                          placeholder="25" className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                          placeholder="25" className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                       </div>
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Sexo biológico</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Sexo biológico</label>
                         <div className="flex gap-2">
                           {(["masculino", "femenino"] as const).map((s) => (
                             <ReliableActionButton key={s} type="button"
                               onClick={() => setNutritionWizard((prev) => prev ? { ...prev, sexo: s } : null)}
-                              className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-colors ${nutritionWizard.sexo === s ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-200" : "border-white/10 bg-[#131720] text-slate-400 hover:bg-white/8"}`}>
+                              className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-colors ${nutritionWizard.sexo === s ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" : "pf-v2-b pf-v2-s-deep pf-v2-t-50 pf-v2-hover"}`}>
                               {s === "masculino" ? "♂ Masculino" : "♀ Femenino"}
                             </ReliableActionButton>
                           ))}
@@ -10564,8 +10563,8 @@ export default function ClientesPage() {
                       </div>
                     </div>
                     {nutritionWizard.pesoKg && nutritionWizard.alturaCm && nutritionWizard.edad && (
-                      <div className="rounded-xl border border-white/8 bg-white/[0.025] p-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estimación rápida</p>
+                      <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide pf-v2-t-40">Estimación rápida</p>
                         <div className="mt-1.5 flex flex-wrap gap-3 text-xs">
                           {(() => {
                             const p = parseFloat(nutritionWizard.pesoKg) || 0;
@@ -10577,8 +10576,8 @@ export default function ClientesPage() {
                             const imcLabel = +imc < 18.5 ? "bajo peso" : +imc < 25 ? "normal" : +imc < 30 ? "sobrepeso" : "obesidad";
                             return (
                               <>
-                                <span className="text-slate-300">IMC <strong className="text-white">{imc}</strong> <span className="text-slate-500">({imcLabel})</span></span>
-                                <span className="text-slate-300">TMB <strong className="text-white">{bmr} kcal/día</strong></span>
+                                <span className="pf-v2-t-70">IMC <strong className="pf-v2-t">{imc}</strong> <span className="pf-v2-t-40">({imcLabel})</span></span>
+                                <span className="pf-v2-t-70">TMB <strong className="pf-v2-t">{bmr} kcal/día</strong></span>
                               </>
                             );
                           })()}
@@ -10592,7 +10591,7 @@ export default function ClientesPage() {
                 {nutritionWizard.step === 2 && (
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Objetivo nutricional</label>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Objetivo nutricional</label>
                       <div className="grid grid-cols-2 gap-2">
                         {([
                           { id: "mantenimiento", label: "Mantenimiento",     desc: "Sostener composición actual",  color: "emerald" },
@@ -10602,19 +10601,19 @@ export default function ClientesPage() {
                         ] as { id: NutritionGoal; label: string; desc: string; color: string }[]).map((opt) => (
                           <ReliableActionButton key={opt.id} type="button"
                             onClick={() => setNutritionWizard((prev) => prev ? { ...prev, objetivo: opt.id } : null)}
-                            className={`rounded-xl border p-3 text-left transition-colors ${nutritionWizard.objetivo === opt.id ? `border-${opt.color}-400/50 bg-${opt.color}-500/15` : "border-white/10 bg-[#131720] hover:bg-white/5"}`}>
-                            <p className={`text-xs font-bold ${nutritionWizard.objetivo === opt.id ? `text-${opt.color}-200` : "text-slate-200"}`}>{opt.label}</p>
-                            <p className="mt-0.5 text-[10px] text-slate-500">{opt.desc}</p>
+                            className={`rounded-xl border p-3 text-left transition-colors ${nutritionWizard.objetivo === opt.id ?`border-${opt.color}-400/50 bg-${opt.color}-500/15` : "pf-v2-b pf-v2-s-deep pf-v2-hover"}`}>
+                            <p className={`text-xs font-bold ${nutritionWizard.objetivo === opt.id ?`text-${opt.color}-200` : "pf-v2-t"}`}>{opt.label}</p>
+                            <p className="mt-0.5 text-[10px] pf-v2-t-40">{opt.desc}</p>
                           </ReliableActionButton>
                         ))}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Días entreno/semana</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Días entreno/semana</label>
                         <select value={nutritionWizard.diasEntrenamiento}
                           onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, diasEntrenamiento: e.target.value } : null)}
-                          className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40">
+                          className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none">
                           <option value="">Seleccionar</option>
                           {[0,1,2,3,4,5,6,7].map((d) => (
                             <option key={d} value={String(d)}>{d === 0 ? "Ninguno (sedentario)" : `${d} ${d === 1 ? "día" : "días"}`}</option>
@@ -10622,34 +10621,34 @@ export default function ClientesPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Comidas por día</label>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Comidas por día</label>
                         <select value={nutritionWizard.comidasDia}
                           onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, comidasDia: e.target.value } : null)}
-                          className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40">
+                          className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none">
                           {[3,4,5,6].map((n) => (<option key={n} value={String(n)}>{n} comidas</option>))}
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Horario de entrenamiento <span className="normal-case text-slate-600">(opcional)</span></label>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Horario de entrenamiento <span className="normal-case pf-v2-t-40">(opcional)</span></label>
                       <input value={nutritionWizard.horarioEntrenamiento}
                         onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, horarioEntrenamiento: e.target.value } : null)}
                         placeholder="Ej: Mañana 7–9h, tarde 18–20h…"
-                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Restricciones / alergias alimentarias</label>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Restricciones / alergias alimentarias</label>
                       <input value={nutritionWizard.restricciones}
                         onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, restricciones: e.target.value } : null)}
                         placeholder="Ej: Sin gluten, intolerante a la lactosa, vegetariano…"
-                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Condiciones médicas relevantes</label>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Condiciones médicas relevantes</label>
                       <input value={nutritionWizard.condicionesMedicas}
                         onChange={(e) => setNutritionWizard((prev) => prev ? { ...prev, condicionesMedicas: e.target.value } : null)}
                         placeholder="Ej: Diabetes tipo 2, HTA, hipotiroidismo, SOP…"
-                        className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-emerald-400/40" />
+                        className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none" />
                     </div>
                   </div>
                 )}
@@ -10732,14 +10731,14 @@ export default function ClientesPage() {
                   return (
                     <div className="space-y-4 text-xs">
                       {/* Intro */}
-                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-500/8 p-3">
-                        <p className="font-semibold text-emerald-200">Análisis completado. Revisá el razonamiento antes de confirmar.</p>
-                        <p className="mt-0.5 text-slate-400">El plan se generará exactamente con los valores calculados a continuación. Podés volver y modificar cualquier parámetro.</p>
+                      <div className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-3">
+                        <p className="font-semibold pf-v2-t-ok">Análisis completado. Revisá el razonamiento antes de confirmar.</p>
+                        <p className="mt-0.5 pf-v2-t-50">El plan se generará exactamente con los valores calculados a continuación. Podés volver y modificar cualquier parámetro.</p>
                       </div>
 
                       {/* Bloque 1: Datos de entrada */}
-                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">1 — Datos de entrada</p>
+                      <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] pf-v2-t-40">1 — Datos de entrada</p>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                           {[
                             ["Cliente",   selectedClient.nombre],
@@ -10750,89 +10749,89 @@ export default function ClientesPage() {
                             ["IMC",       `${imc} (rango saludable ${pesoIdealMin}–${pesoIdealMax} kg)`],
                           ].map(([k,v]) => (
                             <div key={k} className="flex justify-between gap-2">
-                              <span className="text-slate-500">{k}</span>
-                              <span className="font-semibold text-slate-200">{v}</span>
+                              <span className="pf-v2-t-40">{k}</span>
+                              <span className="font-semibold pf-v2-t">{v}</span>
                             </div>
                           ))}
                         </div>
                       </div>
 
                       {/* Bloque 2: Cálculo metabólico */}
-                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">2 — Cálculo metabólico</p>
+                      <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] pf-v2-t-40">2 — Cálculo metabólico</p>
                         <div className="space-y-1.5">
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500">Fórmula</span>
-                            <span className="text-slate-300">Mifflin-St Jeor</span>
+                            <span className="pf-v2-t-40">Fórmula</span>
+                            <span className="pf-v2-t-70">Mifflin-St Jeor</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500">TMB (metabolismo basal)</span>
-                            <span className="font-semibold text-white">{bmr} kcal/día</span>
+                            <span className="pf-v2-t-40">TMB (metabolismo basal)</span>
+                            <span className="font-semibold pf-v2-t">{bmr} kcal/día</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500">Nivel de actividad</span>
-                            <span className="font-semibold text-cyan-200">{actividadLabel[actividad]}</span>
+                            <span className="pf-v2-t-40">Nivel de actividad</span>
+                            <span className="font-semibold pf-v2-t-accent">{actividadLabel[actividad]}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500">Factor actividad</span>
-                            <span className="text-slate-300">×{actFactor[actividad]}</span>
+                            <span className="pf-v2-t-40">Factor actividad</span>
+                            <span className="pf-v2-t-70">×{actFactor[actividad]}</span>
                           </div>
-                          <div className="flex justify-between gap-2 border-t border-white/8 pt-1.5">
-                            <span className="text-slate-500">TDEE (gasto total)</span>
-                            <span className="font-semibold text-white">{tdee} kcal/día</span>
+                          <div className="flex justify-between gap-2 border-t pf-v2-b pt-1.5">
+                            <span className="pf-v2-t-40">TDEE (gasto total)</span>
+                            <span className="font-semibold pf-v2-t">{tdee} kcal/día</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500">Ajuste por objetivo</span>
-                            <span className="text-amber-200">{goalLabel[nutritionWizard.objetivo]}</span>
+                            <span className="pf-v2-t-40">Ajuste por objetivo</span>
+                            <span className="pf-v2-t-warn">{goalLabel[nutritionWizard.objetivo]}</span>
                           </div>
-                          <div className="flex justify-between gap-2 border-t border-white/8 pt-1.5">
-                            <span className="font-semibold text-slate-300">→ Calorías objetivo</span>
-                            <span className="text-lg font-black text-emerald-300">{targets.calorias} kcal</span>
+                          <div className="flex justify-between gap-2 border-t pf-v2-b pt-1.5">
+                            <span className="font-semibold pf-v2-t-70">→ Calorías objetivo</span>
+                            <span className="text-lg font-black pf-v2-t-ok">{targets.calorias} kcal</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Bloque 3: Distribución de macros */}
-                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">3 — Distribución de macros</p>
-                        <p className="mb-2 text-slate-500">{mp.rationale}</p>
+                      <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] pf-v2-t-40">3 — Distribución de macros</p>
+                        <p className="mb-2 pf-v2-t-40">{mp.rationale}</p>
                         <div className="space-y-1.5">
                           <div className="flex justify-between gap-2">
-                            <span className="text-violet-300">Proteínas</span>
-                            <span className="font-semibold text-white">{targets.proteinas} g <span className="text-slate-500">({mp.protPerKg} g/kg × {pesoKg} kg) · {pPct}% kcal</span></span>
+                            <span className="pf-v2-t-violet">Proteínas</span>
+                            <span className="font-semibold pf-v2-t">{targets.proteinas} g <span className="pf-v2-t-40">({mp.protPerKg} g/kg × {pesoKg} kg) · {pPct}% kcal</span></span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-amber-300">Grasas</span>
-                            <span className="font-semibold text-white">{targets.grasas} g <span className="text-slate-500">({mp.fatPct * 100}% de {targets.calorias} kcal) · {gPct}% kcal</span></span>
+                            <span className="pf-v2-t-warn">Grasas</span>
+                            <span className="font-semibold pf-v2-t">{targets.grasas} g <span className="pf-v2-t-40">({mp.fatPct * 100}% de {targets.calorias} kcal) · {gPct}% kcal</span></span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-emerald-300">Carbohidratos</span>
-                            <span className="font-semibold text-white">{targets.carbohidratos} g <span className="text-slate-500">(resto de calorías) · {cPct}% kcal</span></span>
+                            <span className="pf-v2-t-ok">Carbohidratos</span>
+                            <span className="font-semibold pf-v2-t">{targets.carbohidratos} g <span className="pf-v2-t-40">(resto de calorías) · {cPct}% kcal</span></span>
                           </div>
                         </div>
                         <div className="mt-3 flex h-2 overflow-hidden rounded-full">
-                          <div className="bg-violet-500" style={{ width: `${pPct}%` }} />
-                          <div className="bg-emerald-500" style={{ width: `${cPct}%` }} />
-                          <div className="bg-amber-500"  style={{ width: `${gPct}%` }} />
+                          <div className="pf-v2-s-violet" style={{ width: `${pPct}%` }} />
+                          <div className="pf-v2-s-ok" style={{ width: `${cPct}%` }} />
+                          <div className="pf-v2-s-warn"  style={{ width: `${gPct}%` }} />
                         </div>
-                        <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+                        <div className="mt-1 flex justify-between text-[10px] pf-v2-t-40">
                           <span>Prot {pPct}%</span><span>Carbs {cPct}%</span><span>Grasas {gPct}%</span>
                         </div>
                       </div>
 
                       {/* Bloque 4: Estructura del plan */}
-                      <div className="rounded-xl border border-white/8 bg-[#0e1012]/60 p-3">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">4 — Estructura del plan ({comidas} comidas/día)</p>
+                      <div className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] pf-v2-t-40">4 — Estructura del plan ({comidas} comidas/día)</p>
                         <div className="space-y-1">
                           {names.map((name, i) => (
                             <div key={name} className="flex items-center justify-between gap-2">
-                              <span className="text-slate-300">{name}</span>
-                              <span className="text-slate-500">{Math.round(targets.calorias * dists[i])} kcal <span className="text-slate-600">({Math.round(dists[i]*100)}%)</span></span>
+                              <span className="pf-v2-t-70">{name}</span>
+                              <span className="pf-v2-t-40">{Math.round(targets.calorias * dists[i])} kcal <span className="pf-v2-t-40">({Math.round(dists[i]*100)}%)</span></span>
                             </div>
                           ))}
                         </div>
                         {nutritionWizard.horarioEntrenamiento && (
-                          <p className="mt-2 text-slate-500">Horario registrado: <span className="text-slate-300">{nutritionWizard.horarioEntrenamiento}</span></p>
+                          <p className="mt-2 pf-v2-t-40">Horario registrado: <span className="pf-v2-t-70">{nutritionWizard.horarioEntrenamiento}</span></p>
                         )}
                       </div>
 
@@ -10840,7 +10839,7 @@ export default function ClientesPage() {
                       {alertas.length > 0 && (
                         <div className="space-y-2">
                           {alertas.map((a, i) => (
-                            <div key={i} className="rounded-xl border border-amber-300/25 bg-amber-500/8 px-3 py-2 text-amber-200">{a}</div>
+                            <div key={i} className="rounded-xl border pf-v2-b-warn pf-v2-s-warn px-3 py-2 pf-v2-t-warn">{a}</div>
                           ))}
                         </div>
                       )}
@@ -10850,12 +10849,12 @@ export default function ClientesPage() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 border-t border-white/10 px-5 py-4">
+              <div className="shrink-0 border-t pf-v2-b px-5 py-4">
                 <div className="flex gap-3">
                   {nutritionWizard.step > 1 && (
                     <ReliableActionButton type="button"
                       onClick={() => setNutritionWizard((prev) => prev ? { ...prev, step: (prev.step - 1) as 1|2|3 } : null)}
-                      className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10">
+                      className="rounded-xl border pf-v2-b pf-v2-s-hi px-5 py-2.5 text-sm font-semibold pf-v2-t-70 pf-v2-hover">
                       ← Atrás
                     </ReliableActionButton>
                   )}
@@ -10863,14 +10862,14 @@ export default function ClientesPage() {
                     <ReliableActionButton type="button"
                       onClick={() => setNutritionWizard((prev) => prev ? { ...prev, step: (prev.step + 1) as 1|2|3 } : null)}
                       disabled={nutritionWizard.step === 1 && (!nutritionWizard.pesoKg || !nutritionWizard.alturaCm || !nutritionWizard.edad)}
-                      className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+                      className="flex-1 rounded-xl pf-v2-s-ok py-2.5 text-sm font-bold pf-v2-t pf-v2-hover disabled:opacity-50 transition-colors">
                       {nutritionWizard.step === 2 ? "Ver análisis →" : "Siguiente →"}
                     </ReliableActionButton>
                   ) : (
                     <ReliableActionButton type="button"
                       onClick={() => applyNutritionPlan(nutritionWizard)}
                       disabled={nutritionAssigning}
-                      className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+                      className="flex-1 rounded-xl pf-v2-s-ok py-2.5 text-sm font-bold pf-v2-t pf-v2-hover disabled:opacity-50 transition-colors">
                       {nutritionAssigning ? "Generando…" : "✅ Confirmar y generar plan"}
                     </ReliableActionButton>
                   )}
@@ -10883,29 +10882,29 @@ export default function ClientesPage() {
 
       {/* ── Modal: Guardar plan como template ─────────────────────────────── */}
       {saveAsTemplateModal && selectedClientTrainingPlan && (
-        <div className="fixed inset-0 z-[260] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[260] flex items-center justify-center pf-v2-s-deep backdrop-blur-sm">
           <div className="absolute inset-0" onClick={() => setSaveAsTemplateModal(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-white/12 bg-[#0c0f12] p-6 shadow-2xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300/70">Templates</p>
-            <h2 className="mt-0.5 text-base font-black text-white">Guardar como template</h2>
-            <p className="mt-1 text-xs text-slate-400">
-              El plan de <strong className="text-slate-200">{selectedClient?.nombre}</strong> se guardará como template reutilizable en la categoría de templates.
+          <div className="relative w-full max-w-sm rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-2xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] pf-v2-t-violet">Templates</p>
+            <h2 className="mt-0.5 text-base font-black pf-v2-t">Guardar como template</h2>
+            <p className="mt-1 text-xs pf-v2-t-50">
+              El plan de <strong className="pf-v2-t">{selectedClient?.nombre}</strong> se guardará como template reutilizable en la categoría de templates.
             </p>
             <div className="mt-4">
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Nombre del template</label>
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] pf-v2-t-40">Nombre del template</label>
               <input
                 value={saveAsTemplateModal.name}
                 onChange={(e) => setSaveAsTemplateModal({ name: e.target.value })}
                 onKeyDown={(e) => { if (e.key === "Enter" && saveAsTemplateModal.name.trim()) saveTrainingPlanAsTemplate(saveAsTemplateModal.name); }}
                 autoFocus
-                className="w-full rounded-xl border border-white/10 bg-[#131720] px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-fuchsia-400/40"
+                className="w-full rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph outline-none"
               />
             </div>
             <div className="mt-4 flex gap-3">
               <ReliableActionButton
                 type="button"
                 onClick={() => setSaveAsTemplateModal(null)}
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10"
+                className="flex-1 rounded-xl border pf-v2-b pf-v2-s-hi py-2.5 text-sm font-semibold pf-v2-t-70 pf-v2-hover"
               >
                 Cancelar
               </ReliableActionButton>
@@ -10913,7 +10912,7 @@ export default function ClientesPage() {
                 type="button"
                 onClick={() => saveTrainingPlanAsTemplate(saveAsTemplateModal.name)}
                 disabled={!saveAsTemplateModal.name.trim()}
-                className="flex-1 rounded-xl bg-fuchsia-600 py-2.5 text-sm font-bold text-white hover:bg-fuchsia-500 disabled:opacity-50 transition-colors"
+                className="flex-1 rounded-xl pf-v2-s-violet py-2.5 text-sm font-bold pf-v2-t pf-v2-hover disabled:opacity-50 transition-colors"
               >
                 💾 Guardar template
               </ReliableActionButton>

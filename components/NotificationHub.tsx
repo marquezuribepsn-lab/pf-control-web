@@ -95,8 +95,7 @@ function relativeTime(iso: string): string {
   }
 }
 
-const STYLES = `
-/* Panel de notificaciones — diseño "PF Control v2 - Notificaciones".
+const STYLES = `/* Panel de notificaciones — diseño "PF Control v2 - Notificaciones".
    Es una tarjeta centrada de 420px, no el cajon lateral de altura completa
    que habia antes. */
 .pf-notif-root { position: relative; }

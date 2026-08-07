@@ -9,6 +9,12 @@
    una variante clara que el diseño no especifica.
    ========================================================================== */
 
+/* Los tokens van en :root, no solo en .pf-v2: las utilidades de color se usan
+   tambien en componentes compartidos con la vista de alumno (ChatPanel, el
+   propio AppShell) y en el shell de superadmin, que estan fuera de `.pf-v2`.
+   Se deja `.pf-v2` en el selector para que el bloque siga siendo el origen
+   evidente de la paleta del panel. */
+:root,
 .pf-v2 {
   /* ── Fondo ───────────────────────────────────────────────────────────── */
   --v2-bg: #020304;
@@ -1836,4 +1842,67 @@ body:has(.pf-v2) {
   .pf-v2-card {
     padding: 20px;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Utilidades de color
+
+   Reemplazan a las utilidades de Tailwind con la paleta vieja (slate, zinc,
+   indigo, `white/[0.04]`, `bg-[#0e1012]`...). Todas salen de los tokens, asi
+   que el panel tiene una sola paleta y no hay colores sueltos en el JSX.
+
+   Nomenclatura:  t = texto,  s = superficie,  b = borde
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Texto ───────────────────────────────────────────────────────────────── */
+
+.pf-v2-t          { color: var(--v2-fg); }
+.pf-v2-t-70       { color: var(--v2-fg-70); }
+.pf-v2-t-50       { color: var(--v2-fg-50); }
+.pf-v2-t-40       { color: var(--v2-fg-40); }
+.pf-v2-t-accent   { color: var(--v2-accent); }
+.pf-v2-t-ok       { color: var(--v2-success); }
+.pf-v2-t-warn     { color: var(--v2-warning); }
+.pf-v2-t-danger   { color: var(--v2-danger); }
+.pf-v2-t-violet   { color: var(--v2-violet); }
+.pf-v2-t-blue     { color: var(--v2-blue); }
+/* Sobre un fondo de acento pleno (botones cian). */
+.pf-v2-t-on       { color: var(--v2-on-accent); }
+
+/* ── Superficies ─────────────────────────────────────────────────────────── */
+
+.pf-v2-s          { background: var(--v2-card); }
+.pf-v2-s-hi       { background: var(--v2-card-hi); }
+.pf-v2-s-deep     { background: rgba(0, 0, 0, 0.28); }
+.pf-v2-s-accent   { background: rgba(34, 229, 255, 0.1); }
+.pf-v2-s-ok       { background: rgba(52, 211, 153, 0.1); }
+.pf-v2-s-warn     { background: rgba(251, 191, 36, 0.1); }
+.pf-v2-s-danger   { background: rgba(248, 113, 113, 0.1); }
+.pf-v2-s-violet   { background: rgba(192, 132, 252, 0.1); }
+.pf-v2-s-blue     { background: rgba(96, 165, 250, 0.1); }
+/* Acento pleno, para botones y estados activos. */
+.pf-v2-s-accent-full { background: var(--v2-accent); }
+
+/* ── Bordes ──────────────────────────────────────────────────────────────── */
+
+.pf-v2-b          { border-color: var(--v2-border); }
+.pf-v2-b-hi       { border-color: var(--v2-border-hi); }
+.pf-v2-b-accent   { border-color: rgba(34, 229, 255, 0.3); }
+.pf-v2-b-ok       { border-color: rgba(52, 211, 153, 0.3); }
+.pf-v2-b-warn     { border-color: rgba(251, 191, 36, 0.3); }
+.pf-v2-b-danger   { border-color: rgba(248, 113, 113, 0.3); }
+.pf-v2-b-violet   { border-color: rgba(192, 132, 252, 0.3); }
+.pf-v2-b-blue     { border-color: rgba(96, 165, 250, 0.3); }
+
+/* ── Placeholder ─────────────────────────────────────────────────────────── */
+
+.pf-v2-ph::placeholder { color: var(--v2-fg-35); }
+
+/* Realce al pasar el mouse, para elementos sin componente propio. */
+.pf-v2-hover {
+  transition: background 0.15s ease;
+}
+
+.pf-v2-hover:hover {
+  background: rgba(255, 255, 255, 0.05);
 }

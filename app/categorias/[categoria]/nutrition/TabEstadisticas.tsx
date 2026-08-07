@@ -17,7 +17,7 @@ function StatCard({
   label,
   value,
   sub,
-  color = "text-slate-100",
+  color = "pf-v2-t",
 }: {
   label: string;
   value: string;
@@ -25,10 +25,10 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-800/50 px-4 py-3">
-      <p className="text-xs text-slate-500">{label}</p>
+    <div className="rounded-xl border pf-v2-b pf-v2-s-deep px-4 py-3">
+      <p className="text-xs pf-v2-t-40">{label}</p>
       <p className={`text-xl font-black ${color}`}>{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-slate-500">{sub}</p>}
+      {sub && <p className="mt-0.5 text-xs pf-v2-t-40">{sub}</p>}
     </div>
   );
 }
@@ -53,9 +53,9 @@ function BarChart({
     <div className="space-y-2">
       {data.map(({ label, value }) => (
         <div key={label} className="flex items-center gap-3">
-          <span className="w-24 shrink-0 truncate text-right text-xs text-slate-400">{label}</span>
+          <span className="w-24 shrink-0 truncate text-right text-xs pf-v2-t-50">{label}</span>
           <div className="flex-1">
-            <div className="relative h-6 overflow-hidden rounded-md bg-slate-800/60">
+            <div className="relative h-6 overflow-hidden rounded-md pf-v2-s-deep">
               <div
                 className="absolute inset-y-0 left-0 rounded-md transition-all"
                 style={{
@@ -64,7 +64,7 @@ function BarChart({
                   opacity: 0.75,
                 }}
               />
-              <span className="absolute inset-0 flex items-center pl-2 text-xs font-medium text-slate-200">
+              <span className="absolute inset-0 flex items-center pl-2 text-xs font-medium pf-v2-t">
                 {value.toFixed(0)}{unit}
               </span>
             </div>
@@ -80,7 +80,7 @@ function BarChart({
 function WeightTrend({ data }: { data: { fecha: string; peso: number }[] }) {
   if (data.length < 2) {
     return (
-      <p className="text-center text-sm text-slate-500 py-4">
+      <p className="text-center text-sm pf-v2-t-40 py-4">
         Necesitás al menos 2 registros para ver la tendencia.
       </p>
     );
@@ -135,7 +135,7 @@ function WeightTrend({ data }: { data: { fecha: string; peso: number }[] }) {
           );
         })}
       </svg>
-      <div className="mt-1 flex justify-between text-xs text-slate-500">
+      <div className="mt-1 flex justify-between text-xs pf-v2-t-40">
         <span>{data[0].fecha}</span>
         <span>{data[data.length - 1].fecha}</span>
       </div>
@@ -180,8 +180,8 @@ function DonutChart({
         {segments.map(({ label, value, color }) => (
           <div key={label} className="flex items-center gap-2 text-xs">
             <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-slate-400">{label}</span>
-            <span className="font-semibold text-slate-200">{value}</span>
+            <span className="pf-v2-t-50">{label}</span>
+            <span className="font-semibold pf-v2-t">{value}</span>
           </div>
         ))}
       </div>
@@ -256,34 +256,34 @@ export default function TabEstadisticas({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-slate-100">📊 Estadísticas</h2>
-        <p className="mt-1 text-sm text-slate-400">Resumen global y evolución por alumno.</p>
+        <h2 className="text-xl font-black pf-v2-t">📊 Estadísticas</h2>
+        <p className="mt-1 text-sm pf-v2-t-50">Resumen global y evolución por alumno.</p>
       </div>
 
       {/* ── Global overview ── */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Resumen global</h3>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide pf-v2-t-40">Resumen global</h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Planes creados" value={String(totalPlanes)} color="text-emerald-400" />
-          <StatCard label="Asignaciones" value={String(totalAsignados)} color="text-blue-400" />
+          <StatCard label="Planes creados" value={String(totalPlanes)} color="pf-v2-t-ok" />
+          <StatCard label="Asignaciones" value={String(totalAsignados)} color="pf-v2-t-blue" />
           <StatCard
             label="Prom. kcal objetivo"
             value={avgCalories > 0 ? `${avgCalories}` : "—"}
             sub="kcal / día"
-            color="text-amber-400"
+            color="pf-v2-t-warn"
           />
           <StatCard
             label="Registros antrop."
             value={String(anthropometry.length)}
-            color="text-violet-400"
+            color="pf-v2-t-violet"
           />
         </div>
       </div>
 
       {/* ── Goal distribution ── */}
       {goalDistrib.length > 0 && (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <h3 className="mb-4 font-semibold text-slate-200">Distribución de objetivos</h3>
+        <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+          <h3 className="mb-4 font-semibold pf-v2-t">Distribución de objetivos</h3>
           <BarChart
             data={goalDistrib}
             color="#34d399"
@@ -294,8 +294,8 @@ export default function TabEstadisticas({
 
       {/* ── Plan calories bar ── */}
       {planes.length > 0 && (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <h3 className="mb-4 font-semibold text-slate-200">Calorías objetivo por plan</h3>
+        <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+          <h3 className="mb-4 font-semibold pf-v2-t">Calorías objetivo por plan</h3>
           <BarChart
             data={planes.slice(0, 10).map((p) => ({
               label: p.nombre.slice(0, 16),
@@ -309,41 +309,41 @@ export default function TabEstadisticas({
 
       {/* ── Per-alumno section ── */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Por alumno</h3>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide pf-v2-t-40">Por alumno</h3>
         {alumnosNombres.length > 0 ? (
           <select
             value={selectedAlumno}
             onChange={(e) => setSelectedAlumno(e.target.value)}
-            className="mb-4 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 focus:border-emerald-500/50 focus:outline-none"
+            className="mb-4 w-full max-w-sm rounded-xl border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t focus:outline-none"
           >
             {alumnosNombres.map((n) => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
         ) : (
-          <p className="text-sm text-slate-500 mb-4">No hay alumnos cargados aún.</p>
+          <p className="text-sm pf-v2-t-40 mb-4">No hay alumnos cargados aún.</p>
         )}
 
         {selectedAlumno && (
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Weight trend */}
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-              <h4 className="mb-3 font-semibold text-slate-200">⚖️ Evolución de peso</h4>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+              <h4 className="mb-3 font-semibold pf-v2-t">⚖️ Evolución de peso</h4>
               <WeightTrend data={weightData} />
             </div>
 
             {/* IMC history */}
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-              <h4 className="mb-3 font-semibold text-slate-200">📏 Historial de IMC</h4>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+              <h4 className="mb-3 font-semibold pf-v2-t">📏 Historial de IMC</h4>
               {imcData.length === 0 ? (
-                <p className="text-sm text-slate-500">Sin registros de IMC.</p>
+                <p className="text-sm pf-v2-t-40">Sin registros de IMC.</p>
               ) : (
                 <div className="space-y-2">
                   {imcData.slice(-5).reverse().map((d, i) => {
                     const cat = getImcCategory(d.imc);
                     return (
-                      <div key={i} className="flex items-center justify-between rounded-lg bg-slate-800/50 px-3 py-2">
-                        <span className="text-xs text-slate-400">{d.fecha}</span>
+                      <div key={i} className="flex items-center justify-between rounded-lg pf-v2-s-deep px-3 py-2">
+                        <span className="text-xs pf-v2-t-50">{d.fecha}</span>
                         <div className="flex items-center gap-2">
                           <span className="font-bold" style={{ color: cat.color }}>{d.imc.toFixed(1)}</span>
                           <span className="text-xs" style={{ color: cat.color }}>{cat.label}</span>
@@ -356,23 +356,23 @@ export default function TabEstadisticas({
             </div>
 
             {/* Plans for this alumno */}
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5 lg:col-span-2">
-              <h4 className="mb-3 font-semibold text-slate-200">📋 Planes asignados</h4>
+            <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5 lg:col-span-2">
+              <h4 className="mb-3 font-semibold pf-v2-t">📋 Planes asignados</h4>
               {alumnoPlans.length === 0 ? (
-                <p className="text-sm text-slate-500">Sin planes asignados.</p>
+                <p className="text-sm pf-v2-t-40">Sin planes asignados.</p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {alumnoPlans.map((p) => {
                     const intake = calcPlanIntake(p, foodMap);
                     const kcal = intake.calorias > 0 ? intake.calorias : p.targets.calorias;
                     return (
-                      <div key={p.id} className="rounded-xl border border-white/10 bg-slate-800/50 p-4">
-                        <p className="font-semibold text-slate-200">{p.nombre}</p>
+                      <div key={p.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-4">
+                        <p className="font-semibold pf-v2-t">{p.nombre}</p>
                         <p className={`text-xs ${GOAL_COLORS[p.objetivo]}`}>{GOAL_LABELS[p.objetivo]}</p>
                         <div className="mt-2 grid grid-cols-2 gap-1 text-xs">
-                          <span className="text-slate-500">Target: <span className="text-amber-400">{p.targets.calorias} kcal</span></span>
+                          <span className="pf-v2-t-40">Target: <span className="pf-v2-t-warn">{p.targets.calorias} kcal</span></span>
                           {intake.calorias > 0 && (
-                            <span className="text-slate-500">Real: <span className="text-emerald-400">{intake.calorias} kcal</span></span>
+                            <span className="pf-v2-t-40">Real: <span className="pf-v2-t-ok">{intake.calorias} kcal</span></span>
                           )}
                         </div>
                       </div>

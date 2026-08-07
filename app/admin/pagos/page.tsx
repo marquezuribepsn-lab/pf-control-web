@@ -314,9 +314,9 @@ function resolveMethodLabel(method: string): string {
 
 function resolveStatusTone(status: string): string {
   const normalized = String(status || "").trim().toLowerCase();
-  if (normalized === "approved") return "border-emerald-300/45 bg-emerald-500/15 text-emerald-100";
-  if (normalized === "rejected") return "border-rose-300/45 bg-rose-500/15 text-rose-100";
-  return "border-amber-300/45 bg-amber-500/15 text-amber-100";
+  if (normalized === "approved") return "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok";
+  if (normalized === "rejected") return "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger";
+  return "pf-v2-b-warn pf-v2-s-warn pf-v2-t-warn";
 }
 
 function resolveMercadoPagoOauthErrorMessage(code: string): string {
@@ -1044,7 +1044,7 @@ export default function AdminPagosManualPage() {
   if (sessionStatus === "loading") {
     return (
       <main className={ADMIN_PAGE_CONTAINER}>
-        <div className={`${ADMIN_CARD_SURFACE} p-6 text-center`}>
+        <div className={`${ADMIN_CARD_SURFACE}p-6 text-center`}>
           <div className="flex justify-center">
             <AdminRunningLoaderCard
               message="Cargando..."
@@ -1059,7 +1059,7 @@ export default function AdminPagosManualPage() {
   if (role !== "ADMIN") {
     return (
       <main className={ADMIN_PAGE_CONTAINER}>
-        <div className="rounded-2xl border border-rose-400/30 bg-rose-500/15 p-4 text-sm text-rose-200">
+        <div className="rounded-2xl border pf-v2-b-danger pf-v2-s-danger p-4 text-sm pf-v2-t-danger">
           Esta seccion es solo para administradores.
         </div>
       </main>
@@ -1071,7 +1071,6 @@ export default function AdminPagosManualPage() {
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,38),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
       <AdminRunningLoaderOverlay
@@ -1081,21 +1080,21 @@ export default function AdminPagosManualPage() {
       />
 
       <section className="pf-v2-card">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/90" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Admin pagos</p>
-        <h1 className="mt-2 text-3xl font-black text-white">Pagos mensuales</h1>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-warn">Admin pagos</p>
+        <h1 className="mt-2 text-3xl font-black pf-v2-t">Pagos mensuales</h1>
+        <p className="mt-2 text-sm pf-v2-t-70">
           Vista consolidada de ingresos mensuales y confirmaciones manuales para renovar pases de alumnos.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-          <span className="rounded-full border border-amber-300/40 bg-amber-500/20 px-3 py-1 font-semibold text-amber-100">
+          <span className="rounded-full border pf-v2-b-warn pf-v2-s-warn px-3 py-1 font-semibold pf-v2-t-warn">
             Pendientes: {pendingCount}
           </span>
 
           <ReliableActionButton
             type="button"
             onClick={() => setShowAll((prev) => !prev)}
-            className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 font-semibold text-white"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-3 py-2 font-semibold pf-v2-t"
           >
             {showAll ? "Ver solo pendientes" : "Ver historial reciente"}
           </ReliableActionButton>
@@ -1103,7 +1102,7 @@ export default function AdminPagosManualPage() {
           <ReliableActionButton
             type="button"
             onClick={() => void loadOrders()}
-            className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 font-semibold text-slate-100"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 font-semibold pf-v2-t"
           >
             Actualizar
           </ReliableActionButton>
@@ -1111,89 +1110,89 @@ export default function AdminPagosManualPage() {
       </section>
 
       {message ? (
-        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        <section className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">
           {message}
         </section>
       ) : null}
 
       {error ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <section className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {error}
         </section>
       ) : null}
 
       {accountMessage ? (
-        <section className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+        <section className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-4 py-3 text-sm pf-v2-t-accent">
           {accountMessage}
         </section>
       ) : null}
 
       {accountError ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <section className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {accountError}
         </section>
       ) : null}
 
       {mpConnectMessage ? (
-        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        <section className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">
           {mpConnectMessage}
         </section>
       ) : null}
 
       {mpConnectError ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <section className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {mpConnectError}
         </section>
       ) : null}
 
       {incomeMessage ? (
-        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        <section className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">
           {incomeMessage}
         </section>
       ) : null}
 
       {incomeError ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <section className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {incomeError}
         </section>
       ) : null}
 
       {planesMessage ? (
-        <section className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        <section className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">
           {planesMessage}
         </section>
       ) : null}
 
       {planesError ? (
-        <section className="rounded-xl border border-rose-300/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <section className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-3 text-sm pf-v2-t-danger">
           {planesError}
         </section>
       ) : null}
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Planes de precios</h2>
-        <p className="mt-1 text-sm text-slate-300">
+        <h2 className="text-xl font-black pf-v2-t">Planes de precios</h2>
+        <p className="mt-1 text-sm pf-v2-t-70">
           Define los planes disponibles con nombre, precio y duracion. Al asignar un plan, el precio se usa automaticamente en Mercado Pago.
         </p>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+          <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">
               {planForm.id ? "Editar plan" : "Nuevo plan"}
             </h3>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="text-xs text-slate-300 sm:col-span-2">
+              <label className="text-xs pf-v2-t-70 sm:col-span-2">
                 Nombre del plan
                 <input
                   value={planForm.nombre}
                   onChange={(e) => setPlanForm((p) => ({ ...p, nombre: e.target.value }))}
                   placeholder="Plan Mensual"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Precio
                 <input
                   type="number"
@@ -1201,23 +1200,23 @@ export default function AdminPagosManualPage() {
                   onChange={(e) => setPlanForm((p) => ({ ...p, precio: e.target.value }))}
                   placeholder="15000"
                   min={1}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Moneda
                 <select
                   value={planForm.moneda}
                   onChange={(e) => setPlanForm((p) => ({ ...p, moneda: e.target.value }))}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 >
                   <option value="ARS">ARS</option>
                   <option value="USD">USD</option>
                 </select>
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Duracion (dias)
                 <input
                   type="number"
@@ -1226,27 +1225,27 @@ export default function AdminPagosManualPage() {
                   placeholder="30"
                   min={1}
                   max={365}
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300 sm:col-span-2">
+              <label className="text-xs pf-v2-t-70 sm:col-span-2">
                 Descripcion (opcional)
                 <input
                   value={planForm.descripcion}
                   onChange={(e) => setPlanForm((p) => ({ ...p, descripcion: e.target.value }))}
                   placeholder="Acceso completo por 30 dias"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
             </div>
 
-            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
+            <label className="mt-3 inline-flex items-center gap-2 text-sm pf-v2-t">
               <input
                 type="checkbox"
                 checked={planForm.activo}
                 onChange={(e) => setPlanForm((p) => ({ ...p, activo: e.target.checked }))}
-                className="h-4 w-4 rounded border-white/20 bg-slate-900"
+                className="h-4 w-4 rounded pf-v2-b-hi pf-v2-s-deep"
               />
               Plan activo
             </label>
@@ -1256,7 +1255,7 @@ export default function AdminPagosManualPage() {
                 type="button"
                 onClick={() => void savePlan()}
                 disabled={planesSaving || planesLoading}
-                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+                className="rounded-xl pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {planesSaving ? "Guardando..." : planForm.id ? "Actualizar plan" : "Crear plan"}
               </ReliableActionButton>
@@ -1266,7 +1265,7 @@ export default function AdminPagosManualPage() {
                   type="button"
                   onClick={() => setPlanForm(EMPTY_PLAN_FORM)}
                   disabled={planesSaving}
-                  className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   Cancelar edicion
                 </ReliableActionButton>
@@ -1274,32 +1273,32 @@ export default function AdminPagosManualPage() {
             </div>
           </article>
 
-          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">Planes cargados</h3>
+          <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">Planes cargados</h3>
 
             {planesLoading ? (
-              <p className="mt-3 text-sm text-slate-300">Cargando planes...</p>
+              <p className="mt-3 text-sm pf-v2-t-70">Cargando planes...</p>
             ) : planes.length === 0 ? (
               <p className="pf-v2-muted">Todavia no hay planes creados.</p>
             ) : (
               <div className="mt-3 space-y-3">
                 {planes.map((plan) => (
-                  <div key={plan.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-3">
+                  <div key={plan.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-bold text-white">{plan.nombre}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-sm font-bold pf-v2-t">{plan.nombre}</p>
+                        <p className="text-xs pf-v2-t-50">
                           {formatMoney(plan.precio, plan.moneda)} &middot; {plan.duracionDias} dias
                         </p>
                         {plan.descripcion ? (
-                          <p className="mt-1 text-xs text-slate-400">{plan.descripcion}</p>
+                          <p className="mt-1 text-xs pf-v2-t-50">{plan.descripcion}</p>
                         ) : null}
                       </div>
                       <span
                         className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
                           plan.activo
-                            ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
-                            : "border-white/[0.08] bg-[#0e1012] text-slate-200"
+                            ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                            : "pf-v2-b pf-v2-s-deep pf-v2-t"
                         }`}
                       >
                         {plan.activo ? "Activo" : "Inactivo"}
@@ -1321,7 +1320,7 @@ export default function AdminPagosManualPage() {
                           })
                         }
                         disabled={planesSaving}
-                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/12 px-3 py-1.5 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Editar
                       </ReliableActionButton>
@@ -1330,7 +1329,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => void deletePlan(plan.id)}
                         disabled={planesSaving}
-                        className="rounded-lg border border-rose-300/40 bg-rose-500/12 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Eliminar
                       </ReliableActionButton>
@@ -1344,28 +1343,28 @@ export default function AdminPagosManualPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Estado general de pagos</h2>
-        <p className="mt-1 text-sm text-slate-300">Resumen en vivo desde la ficha de clientes.</p>
+        <h2 className="text-xl font-black pf-v2-t">Estado general de pagos</h2>
+        <p className="mt-1 text-sm pf-v2-t-70">Resumen en vivo desde la ficha de clientes.</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">Pagos confirmados</p>
-            <p className="mt-2 text-2xl font-black text-emerald-100">{paymentSummary.pagosConfirmados}</p>
+          <article className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">Pagos confirmados</p>
+            <p className="mt-2 text-2xl font-black pf-v2-t-ok">{paymentSummary.pagosConfirmados}</p>
           </article>
 
-          <article className="rounded-xl border border-rose-300/35 bg-rose-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-rose-100/90">Pagos pendientes</p>
-            <p className="mt-2 text-2xl font-black text-rose-100">{paymentSummary.pagosPendientes}</p>
+          <article className="rounded-xl border pf-v2-b-danger pf-v2-s-danger p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-danger">Pagos pendientes</p>
+            <p className="mt-2 text-2xl font-black pf-v2-t-danger">{paymentSummary.pagosPendientes}</p>
           </article>
 
-          <article className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-cyan-100/90">Ingresos confirmados</p>
-            <p className="mt-2 text-2xl font-black text-cyan-100">{formatPeso(paymentSummary.ingresosConfirmados)}</p>
+          <article className="rounded-xl border pf-v2-b-accent pf-v2-s-accent p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-accent">Ingresos confirmados</p>
+            <p className="mt-2 text-2xl font-black pf-v2-t-accent">{formatPeso(paymentSummary.ingresosConfirmados)}</p>
           </article>
 
-          <article className="rounded-xl border border-amber-300/35 bg-amber-500/10 p-4">
-            <p className="text-[11px] uppercase tracking-wide text-amber-100/90">Saldo pendiente</p>
-            <p className="mt-2 text-2xl font-black text-amber-100">{formatPeso(paymentSummary.saldoPendiente)}</p>
+          <article className="rounded-xl border pf-v2-b-warn pf-v2-s-warn p-4">
+            <p className="text-[11px] uppercase tracking-wide pf-v2-t-warn">Saldo pendiente</p>
+            <p className="mt-2 text-2xl font-black pf-v2-t-warn">{formatPeso(paymentSummary.saldoPendiente)}</p>
           </article>
         </div>
       </section>
@@ -1373,14 +1372,14 @@ export default function AdminPagosManualPage() {
       <section className="rounded-2xl border p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Resumen de ingresos</h2>
-            <p className="mt-1 text-sm text-slate-300">
+            <h2 className="text-xl font-black pf-v2-t">Resumen de ingresos</h2>
+            <p className="mt-1 text-sm pf-v2-t-70">
               Filtra ingresos por periodo mensual o anual. Puedes reiniciar acumulados sin borrar historiales.
             </p>
             {incomeSummary?.resetAt ? (
-              <p className="mt-1 text-xs text-slate-400">Base de acumulado actual: {formatDate(incomeSummary.resetAt)}</p>
+              <p className="mt-1 text-xs pf-v2-t-50">Base de acumulado actual: {formatDate(incomeSummary.resetAt)}</p>
             ) : (
-              <p className="mt-1 text-xs text-slate-400">Base de acumulado: historico completo.</p>
+              <p className="mt-1 text-xs pf-v2-t-50">Base de acumulado: historico completo.</p>
             )}
           </div>
 
@@ -1391,9 +1390,9 @@ export default function AdminPagosManualPage() {
               disabled={incomeBusy}
               className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
                 incomeScope === "monthly"
-                  ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
-                  : "border-white/20 bg-slate-800 text-slate-200"
-              } disabled:cursor-not-allowed disabled:opacity-45`}
+                  ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                  : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
+              }disabled:cursor-not-allowed disabled:opacity-45`}
             >
               Mensual
             </ReliableActionButton>
@@ -1404,9 +1403,9 @@ export default function AdminPagosManualPage() {
               disabled={incomeBusy}
               className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
                 incomeScope === "annual"
-                  ? "border-cyan-300/45 bg-cyan-500/20 text-cyan-100"
-                  : "border-white/20 bg-slate-800 text-slate-200"
-              } disabled:cursor-not-allowed disabled:opacity-45`}
+                  ? "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent"
+                  : "pf-v2-b-hi pf-v2-s-deep pf-v2-t"
+              }disabled:cursor-not-allowed disabled:opacity-45`}
             >
               Anual
             </ReliableActionButton>
@@ -1415,7 +1414,7 @@ export default function AdminPagosManualPage() {
               type="button"
               onClick={() => void loadIncomeSummary()}
               disabled={incomeBusy}
-              className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
             >
               {incomeLoading || incomeRefreshing ? "Cargando..." : "Recargar"}
             </ReliableActionButton>
@@ -1424,7 +1423,7 @@ export default function AdminPagosManualPage() {
               type="button"
               onClick={() => void resetIncomeSummary()}
               disabled={incomeBusy}
-              className="rounded-xl border border-rose-300/45 bg-rose-500/15 px-3 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+              className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-3 py-2 text-sm font-semibold pf-v2-t-danger disabled:cursor-not-allowed disabled:opacity-45"
             >
               {incomeResetting ? "Reiniciando..." : "Limpiar ingresos"}
             </ReliableActionButton>
@@ -1433,18 +1432,18 @@ export default function AdminPagosManualPage() {
 
         <div className="mt-4 flex flex-wrap items-end gap-3">
           {incomeScope === "monthly" ? (
-            <label className="text-xs text-slate-300">
+            <label className="text-xs pf-v2-t-70">
               Mes a consultar
               <input
                 type="month"
                 value={incomeMonth}
                 onChange={(event) => setIncomeMonth(event.target.value)}
                 disabled={incomeBusy}
-                className="mt-1 w-full min-w-[190px] rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                className="mt-1 w-full min-w-[190px] rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
               />
             </label>
           ) : (
-            <label className="text-xs text-slate-300">
+            <label className="text-xs pf-v2-t-70">
               Ano a consultar
               <input
                 type="number"
@@ -1455,7 +1454,7 @@ export default function AdminPagosManualPage() {
                 disabled={incomeBusy}
                 min={2000}
                 max={3000}
-                className="mt-1 w-full min-w-[150px] rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                className="mt-1 w-full min-w-[150px] rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
               />
             </label>
           )}
@@ -1469,7 +1468,7 @@ export default function AdminPagosManualPage() {
           <div className="relative mt-4">
             {incomeRefreshing ? (
               <div
-                className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/[0.025] backdrop-blur-sm"
+                className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl pf-v2-s backdrop-blur-sm"
                 aria-live="polite"
               >
                 <IncomeLoadingIndicator />
@@ -1482,41 +1481,41 @@ export default function AdminPagosManualPage() {
               }`}
             >
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <article className="rounded-xl border border-emerald-300/35 bg-emerald-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-emerald-100/90">
+                <article className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
+                  <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">
                     Total {incomeScope === "monthly" ? "mensual" : "anual"}
                   </p>
-                  <p className="mt-2 text-2xl font-black text-emerald-100">
+                  <p className="mt-2 text-2xl font-black pf-v2-t-ok">
                     {formatMoney(incomeSummary?.selected?.total || 0, incomeSummary?.selected?.currency || "ARS")}
                   </p>
-                  <p className="mt-1 text-xs text-emerald-100/80">
+                  <p className="mt-1 text-xs pf-v2-t-ok">
                     Periodo: {incomeScope === "monthly"
                       ? formatMonthLabel(incomeSummary?.selected?.periodLabel || incomeMonth)
                       : incomeSummary?.selected?.periodLabel || incomeYear}
                   </p>
                 </article>
 
-                <article className="rounded-xl border border-cyan-300/35 bg-cyan-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-cyan-100/90">Pagos del periodo</p>
-                  <p className="mt-2 text-2xl font-black text-cyan-100">{incomeSummary?.selected?.paymentCount || 0}</p>
+                <article className="rounded-xl border pf-v2-b-accent pf-v2-s-accent p-4">
+                  <p className="text-[11px] uppercase tracking-wide pf-v2-t-accent">Pagos del periodo</p>
+                  <p className="mt-2 text-2xl font-black pf-v2-t-accent">{incomeSummary?.selected?.paymentCount || 0}</p>
                 </article>
 
-                <article className="rounded-xl border border-indigo-300/35 bg-indigo-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-indigo-100/90">Clientes unicos</p>
-                  <p className="mt-2 text-2xl font-black text-indigo-100">{incomeSummary?.selected?.uniqueClients || 0}</p>
+                <article className="rounded-xl border pf-v2-b-blue pf-v2-s-blue p-4">
+                  <p className="text-[11px] uppercase tracking-wide pf-v2-t-blue">Clientes unicos</p>
+                  <p className="mt-2 text-2xl font-black pf-v2-t-blue">{incomeSummary?.selected?.uniqueClients || 0}</p>
                 </article>
 
-                <article className="rounded-xl border border-amber-300/35 bg-amber-500/10 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-amber-100/90">Acumulado general</p>
-                  <p className="mt-2 text-2xl font-black text-amber-100">
+                <article className="rounded-xl border pf-v2-b-warn pf-v2-s-warn p-4">
+                  <p className="text-[11px] uppercase tracking-wide pf-v2-t-warn">Acumulado general</p>
+                  <p className="mt-2 text-2xl font-black pf-v2-t-warn">
                     {formatMoney(incomeSummary?.overall?.total || 0, incomeSummary?.overall?.currency || "ARS")}
                   </p>
                 </article>
               </div>
 
-              <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
+              <div className="mt-4 overflow-x-auto rounded-xl border pf-v2-b">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="bg-slate-800 text-slate-200">
+                  <thead className="pf-v2-s-deep pf-v2-t">
                     <tr>
                       <th className="px-3 py-2">Mes</th>
                       <th className="px-3 py-2">Pagos</th>
@@ -1526,8 +1525,8 @@ export default function AdminPagosManualPage() {
                   </thead>
                   <tbody>
                     {displayedIncomeRows.length === 0 ? (
-                      <tr className="border-t border-white/10">
-                        <td colSpan={4} className="px-3 py-4 text-center text-slate-400">
+                      <tr className="border-t pf-v2-b">
+                        <td colSpan={4} className="px-3 py-4 text-center pf-v2-t-50">
                           {incomeScope === "monthly"
                             ? "No hay ingresos para el mes seleccionado."
                             : "No hay ingresos para el ano seleccionado."}
@@ -1535,11 +1534,11 @@ export default function AdminPagosManualPage() {
                       </tr>
                     ) : (
                       displayedIncomeRows.map((row) => (
-                        <tr key={row.month} className="border-t border-white/10">
-                          <td className="px-3 py-2 font-semibold text-slate-100">{formatMonthLabel(row.month)}</td>
-                          <td className="px-3 py-2 text-slate-300">{row.paymentCount}</td>
-                          <td className="px-3 py-2 text-slate-300">{row.uniqueClients}</td>
-                          <td className="px-3 py-2 font-semibold text-emerald-200">
+                        <tr key={row.month} className="border-t pf-v2-b">
+                          <td className="px-3 py-2 font-semibold pf-v2-t">{formatMonthLabel(row.month)}</td>
+                          <td className="px-3 py-2 pf-v2-t-70">{row.paymentCount}</td>
+                          <td className="px-3 py-2 pf-v2-t-70">{row.uniqueClients}</td>
+                          <td className="px-3 py-2 font-semibold pf-v2-t-ok">
                             {formatMoney(row.total, row.currency || "ARS")}
                           </td>
                         </tr>
@@ -1551,20 +1550,20 @@ export default function AdminPagosManualPage() {
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-slate-300">No hay datos de ingresos para mostrar.</p>
+          <p className="mt-4 text-sm pf-v2-t-70">No hay datos de ingresos para mostrar.</p>
         )}
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Cuenta Mercado Pago conectada</h2>
-        <p className="mt-1 text-sm text-slate-300">
+        <h2 className="text-xl font-black pf-v2-t">Cuenta Mercado Pago conectada</h2>
+        <p className="mt-1 text-sm pf-v2-t-70">
           Vincula una cuenta real por OAuth. El sistema usara esa cuenta para checkout y webhooks sin
           copiar access tokens por usuario.
         </p>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-200">
+        <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s p-4 text-sm pf-v2-t">
           {mpConnectLoading ? (
-            <p className="text-slate-300">Cargando estado de conexion...</p>
+            <p className="pf-v2-t-70">Cargando estado de conexion...</p>
           ) : (
             <div className="space-y-2">
               <p>
@@ -1596,7 +1595,7 @@ export default function AdminPagosManualPage() {
             type="button"
             onClick={startMercadoPagoConnect}
             disabled={mpConnectActionLoading || mpConnectLoading || !mpConnectStatus.oauthEnabled}
-            className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-xl pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
           >
             {mpConnectStatus.connected ? "Reconectar cuenta MP" : "Conectar cuenta MP"}
           </ReliableActionButton>
@@ -1605,7 +1604,7 @@ export default function AdminPagosManualPage() {
             type="button"
             onClick={() => void disconnectMercadoPagoAccount()}
             disabled={mpConnectActionLoading || mpConnectLoading || !mpConnectStatus.connected}
-            className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
           >
             {mpConnectActionLoading ? "Procesando..." : "Desconectar"}
           </ReliableActionButton>
@@ -1614,31 +1613,31 @@ export default function AdminPagosManualPage() {
             type="button"
             onClick={() => void loadMercadoPagoConnectStatus()}
             disabled={mpConnectActionLoading || mpConnectLoading}
-            className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
           >
             {mpConnectLoading ? "Cargando..." : "Recargar estado"}
           </ReliableActionButton>
         </div>
 
         {!mpConnectStatus.oauthEnabled ? (
-          <p className="mt-3 text-xs text-amber-200/90">
+          <p className="mt-3 text-xs pf-v2-t-warn">
             Para habilitar la conexion OAuth, configura MERCADOPAGO_APP_CLIENT_ID y
             MERCADOPAGO_APP_CLIENT_SECRET en el entorno.
           </p>
         ) : null}
 
         {/* ── Configurar token directo (sin OAuth) ── */}
-        <div className="mt-5 rounded-xl border border-cyan-400/25 bg-cyan-500/[0.07] p-4">
-          <p className="text-sm font-bold text-cyan-200">Configurar token de acceso directo</p>
-          <p className="mt-1 text-xs text-slate-400">
-            Si no podés usar OAuth, pegá tu <strong className="text-slate-200">Access Token de producción</strong> de Mercado Pago.
+        <div className="mt-5 rounded-xl border pf-v2-b-accent pf-v2-s-accent p-4">
+          <p className="text-sm font-bold pf-v2-t-accent">Configurar token de acceso directo</p>
+          <p className="mt-1 text-xs pf-v2-t-50">
+            Si no podés usar OAuth, pegá tu <strong className="pf-v2-t">Access Token de producción</strong> de Mercado Pago.
             Se guarda en la base de datos del servidor y reemplaza al token de entorno.
             Obtené el tuyo en{" "}
             <a
               href="https://www.mercadopago.com.ar/developers/panel/app"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-cyan-300"
+              className="underline pf-v2-t-accent"
             >
               Panel de Desarrolladores MP
             </a>.
@@ -1652,12 +1651,12 @@ export default function AdminPagosManualPage() {
                 onChange={(e) => { setMpTokenInput(e.target.value); setMpTokenError(""); setMpTokenMessage(""); }}
                 placeholder="APP_USR-..."
                 autoComplete="off"
-                className="w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-400/50"
+                className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2.5 pr-10 text-sm pf-v2-t outline-none"
               />
               <button
                 type="button"
                 onClick={() => setMpTokenVisible((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-200"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs pf-v2-t-50"
                 aria-label={mpTokenVisible ? "Ocultar token" : "Mostrar token"}
               >
                 {mpTokenVisible ? "Ocultar" : "Mostrar"}
@@ -1667,17 +1666,17 @@ export default function AdminPagosManualPage() {
               type="button"
               disabled={mpTokenLoading || !mpTokenInput.trim()}
               onClick={() => void saveDirectToken()}
-              className="rounded-xl bg-cyan-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-45"
+              className="rounded-xl pf-v2-s-accent-full px-4 py-2.5 text-sm font-bold pf-v2-t transition pf-v2-hover disabled:cursor-not-allowed disabled:opacity-45"
             >
               {mpTokenLoading ? "Guardando..." : "Guardar token"}
             </ReliableActionButton>
           </div>
 
           {mpTokenError ? (
-            <p className="mt-2 text-xs text-rose-300">{mpTokenError}</p>
+            <p className="mt-2 text-xs pf-v2-t-danger">{mpTokenError}</p>
           ) : null}
           {mpTokenMessage ? (
-            <p className="mt-2 text-xs text-emerald-300">✓ {mpTokenMessage}</p>
+            <p className="mt-2 text-xs pf-v2-t-ok">✓ {mpTokenMessage}</p>
           ) : null}
         </div>
       </section>
@@ -1685,19 +1684,19 @@ export default function AdminPagosManualPage() {
 
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Cuentas destino para transferencia</h2>
-        <p className="mt-1 text-sm text-slate-300">
+        <h2 className="text-xl font-black pf-v2-t">Cuentas destino para transferencia</h2>
+        <p className="mt-1 text-sm pf-v2-t-70">
           Carga aca las cuentas bancarias/corrientes que se mostraran a los alumnos al informar pagos por transferencia.
         </p>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+          <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">
               {accountForm.id ? "Editar cuenta" : "Nueva cuenta"}
             </h3>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Etiqueta visible
                 <input
                   value={accountForm.label}
@@ -1708,11 +1707,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Cuenta principal"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Banco / billetera
                 <input
                   value={accountForm.bankName}
@@ -1723,11 +1722,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Banco Galicia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Tipo de cuenta
                 <input
                   value={accountForm.accountType}
@@ -1738,11 +1737,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Caja de ahorro"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Titular
                 <input
                   value={accountForm.holderName}
@@ -1753,11 +1752,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="Nombre del titular"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 CUIT / Documento
                 <input
                   value={accountForm.holderDocument}
@@ -1768,11 +1767,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="20-12345678-9"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 Numero de cuenta
                 <input
                   value={accountForm.accountNumber}
@@ -1783,11 +1782,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="000123456789"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300">
+              <label className="text-xs pf-v2-t-70">
                 CBU/CVU
                 <input
                   value={accountForm.cbu}
@@ -1798,11 +1797,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="0000003100000000000000"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300 sm:col-span-2">
+              <label className="text-xs pf-v2-t-70 sm:col-span-2">
                 Alias
                 <input
                   value={accountForm.alias}
@@ -1813,11 +1812,11 @@ export default function AdminPagosManualPage() {
                     }))
                   }
                   placeholder="mi.alias.pagos"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
 
-              <label className="text-xs text-slate-300 sm:col-span-2">
+              <label className="text-xs pf-v2-t-70 sm:col-span-2">
                 Nota opcional
                 <textarea
                   value={accountForm.notes}
@@ -1829,12 +1828,12 @@ export default function AdminPagosManualPage() {
                   }
                   rows={2}
                   placeholder="Ejemplo: enviar comprobante por WhatsApp al finalizar la transferencia"
-                  className="mt-1 w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                  className="mt-1 w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                 />
               </label>
             </div>
 
-            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-200">
+            <label className="mt-3 inline-flex items-center gap-2 text-sm pf-v2-t">
               <input
                 type="checkbox"
                 checked={accountForm.isVisible}
@@ -1844,7 +1843,7 @@ export default function AdminPagosManualPage() {
                     isVisible: event.target.checked,
                   }))
                 }
-                className="h-4 w-4 rounded border-white/20 bg-slate-900"
+                className="h-4 w-4 rounded pf-v2-b-hi pf-v2-s-deep"
               />
               Visible para alumnos
             </label>
@@ -1854,7 +1853,7 @@ export default function AdminPagosManualPage() {
                 type="button"
                 onClick={() => void saveTransferAccount()}
                 disabled={accountSaving}
-                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-45"
+                className="rounded-xl pf-v2-s-accent px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {accountSaving ? "Guardando..." : accountForm.id ? "Actualizar cuenta" : "Guardar cuenta"}
               </ReliableActionButton>
@@ -1863,30 +1862,30 @@ export default function AdminPagosManualPage() {
                 type="button"
                 onClick={resetTransferAccountForm}
                 disabled={accountSaving}
-                className="rounded-xl border border-white/20 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+                className="rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-2 text-sm font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Limpiar
               </ReliableActionButton>
             </div>
           </article>
 
-          <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-300">
+          <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">
               Cuentas cargadas
             </h3>
 
             {accountLoading ? (
-              <p className="mt-3 text-sm text-slate-300">Cargando cuentas...</p>
+              <p className="mt-3 text-sm pf-v2-t-70">Cargando cuentas...</p>
             ) : transferAccounts.length === 0 ? (
               <p className="pf-v2-muted">Todavia no hay cuentas de transferencia cargadas.</p>
             ) : (
               <div className="mt-3 space-y-3">
                 {transferAccounts.map((account) => (
-                  <div key={account.id} className="rounded-xl border border-white/10 bg-[#0e1012] p-3">
+                  <div key={account.id} className="rounded-xl border pf-v2-b pf-v2-s-deep p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-bold text-white">{account.label}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-sm font-bold pf-v2-t">{account.label}</p>
+                        <p className="text-xs pf-v2-t-50">
                           {account.bankName || "Banco no definido"}
                           {account.accountType ? ` · ${account.accountType}` : ""}
                         </p>
@@ -1894,15 +1893,15 @@ export default function AdminPagosManualPage() {
                       <span
                         className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${
                           account.isVisible
-                            ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100"
-                            : "border-white/[0.08] bg-[#0e1012] text-slate-200"
+                            ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                            : "pf-v2-b pf-v2-s-deep pf-v2-t"
                         }`}
                       >
                         {account.isVisible ? "Visible" : "Oculta"}
                       </span>
                     </div>
 
-                    <div className="mt-2 space-y-1 text-xs text-slate-300">
+                    <div className="mt-2 space-y-1 text-xs pf-v2-t-70">
                       {account.holderName ? <p>Titular: {account.holderName}</p> : null}
                       {account.holderDocument ? <p>CUIT/DNI: {account.holderDocument}</p> : null}
                       {account.accountNumber ? <p>Nro cuenta: {account.accountNumber}</p> : null}
@@ -1916,7 +1915,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => startEditTransferAccount(account)}
                         disabled={accountSaving}
-                        className="rounded-lg border border-cyan-300/35 bg-cyan-500/12 px-3 py-1.5 text-xs font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-lg border pf-v2-b-accent pf-v2-s-accent px-3 py-1.5 text-xs font-semibold pf-v2-t-accent disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Editar
                       </ReliableActionButton>
@@ -1925,7 +1924,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => void toggleTransferAccountVisibility(account)}
                         disabled={accountSaving}
-                        className="rounded-lg border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-lg border pf-v2-b-hi pf-v2-s-deep px-3 py-1.5 text-xs font-semibold pf-v2-t disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         {account.isVisible ? "Ocultar" : "Mostrar"}
                       </ReliableActionButton>
@@ -1934,7 +1933,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => void removeTransferAccount(account.id)}
                         disabled={accountSaving}
-                        className="rounded-lg border border-rose-300/40 bg-rose-500/12 px-3 py-1.5 text-xs font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-lg border pf-v2-b-danger pf-v2-s-danger px-3 py-1.5 text-xs font-semibold pf-v2-t-danger disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Eliminar
                       </ReliableActionButton>
@@ -1949,16 +1948,16 @@ export default function AdminPagosManualPage() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Confirmaciones manuales</h2>
-          <p className="mt-1 text-sm text-slate-300">
+          <h2 className="text-xl font-black pf-v2-t">Confirmaciones manuales</h2>
+          <p className="mt-1 text-sm pf-v2-t-70">
             Aprobacion o rechazo de pagos informados por transferencia, efectivo o QR de Mercado Pago.
           </p>
         </div>
 
         {loading ? (
-          <p className="text-sm text-slate-300">Cargando pagos manuales...</p>
+          <p className="text-sm pf-v2-t-70">Cargando pagos manuales...</p>
         ) : orders.length === 0 ? (
-          <p className="rounded-2xl border p-4 text-sm text-slate-300">
+          <p className="rounded-2xl border p-4 text-sm pf-v2-t-70">
             No hay solicitudes manuales para mostrar.
           </p>
         ) : (
@@ -1975,52 +1974,52 @@ export default function AdminPagosManualPage() {
               <article key={order.id} className="rounded-2xl border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-white">{order.email}</p>
-                    <p className="text-xs text-slate-400">Orden: {order.id}</p>
+                    <p className="text-sm font-black pf-v2-t">{order.email}</p>
+                    <p className="text-xs pf-v2-t-50">Orden: {order.id}</p>
                   </div>
                   <span
-                    className={`rounded-full border px-3 py-1 text-xs font-bold ${resolveStatusTone(order.status)}`}
+                    className={`rounded-full border px-3 py-1 text-xs font-bold${resolveStatusTone(order.status)}`}
                   >
                     {String(order.status || "pending").toUpperCase()}
                   </span>
                 </div>
 
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Metodo</p>
-                    <p className="mt-1 font-semibold text-white">{resolveMethodLabel(order.paymentMethod)}</p>
+                  <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Metodo</p>
+                    <p className="mt-1 font-semibold pf-v2-t">{resolveMethodLabel(order.paymentMethod)}</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Importe</p>
-                    <p className="mt-1 font-semibold text-white">{formatMoney(order.amount, order.currency)}</p>
+                  <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Importe</p>
+                    <p className="mt-1 font-semibold pf-v2-t">{formatMoney(order.amount, order.currency)}</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Periodo</p>
-                    <p className="mt-1 font-semibold text-white">{order.periodDays} dias</p>
+                  <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Periodo</p>
+                    <p className="mt-1 font-semibold pf-v2-t">{order.periodDays} dias</p>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Creado</p>
-                    <p className="mt-1 font-semibold text-white">{formatDate(order.createdAt)}</p>
+                  <div className="rounded-xl border pf-v2-b pf-v2-s p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-50">Creado</p>
+                    <p className="mt-1 font-semibold pf-v2-t">{formatDate(order.createdAt)}</p>
                   </div>
                 </div>
 
                 {order.adminNote ? (
-                  <p className="mt-3 text-sm text-slate-300">Nota alumno/admin previa: {order.adminNote}</p>
+                  <p className="mt-3 text-sm pf-v2-t-70">Nota alumno/admin previa: {order.adminNote}</p>
                 ) : null}
 
                 {order.receiptNumber || order.receiptIssuedAt ? (
-                  <p className="mt-2 text-xs text-cyan-200">
+                  <p className="mt-2 text-xs pf-v2-t-accent">
                     Comprobante: {order.receiptNumber || "-"}
                     {order.receiptIssuedAt ? ` · Emitido: ${formatDate(order.receiptIssuedAt)}` : ""}
                   </p>
                 ) : null}
 
                 {order.receiptFileUrl ? (
-                  <div className="mt-3 rounded-xl border border-emerald-400/25 bg-emerald-500/[0.06] p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-emerald-300/80">
+                  <div className="mt-3 rounded-xl border pf-v2-b-ok pf-v2-s-ok p-3">
+                    <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">
                       Comprobante adjunto del alumno
                     </p>
                     {order.receiptFileUrl.startsWith("data:application/pdf") ? (
@@ -2028,11 +2027,11 @@ export default function AdminPagosManualPage() {
                         href={order.receiptFileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-emerald-200 underline decoration-emerald-400/40 underline-offset-2"
+                        className="mt-2 inline-flex items-center gap-2 text-sm font-semibold pf-v2-t-ok underline decoration-emerald-400/40 underline-offset-2"
                       >
                         Ver comprobante (PDF)
                         {order.receiptFileName ? (
-                          <span className="text-xs font-normal text-slate-400">
+                          <span className="text-xs font-normal pf-v2-t-50">
                             · {order.receiptFileName}
                           </span>
                         ) : null}
@@ -2048,9 +2047,9 @@ export default function AdminPagosManualPage() {
                         <img
                           src={order.receiptFileUrl}
                           alt={`Comprobante de pago de ${order.email}`}
-                          className="max-h-56 w-auto rounded-lg border border-white/10 object-contain"
+                          className="max-h-56 w-auto rounded-lg border pf-v2-b object-contain"
                         />
-                        <span className="mt-1 block text-xs text-emerald-200 underline decoration-emerald-400/40 underline-offset-2">
+                        <span className="mt-1 block text-xs pf-v2-t-ok underline decoration-emerald-400/40 underline-offset-2">
                           Abrir en tamano completo
                         </span>
                       </a>
@@ -2059,7 +2058,7 @@ export default function AdminPagosManualPage() {
                 ) : null}
 
                 {!pending ? (
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs pf-v2-t-50">
                     Revisado: {formatDate(order.reviewedAt)}
                     {order.reviewedByUserEmail ? ` por ${order.reviewedByUserEmail}` : ""}
                   </p>
@@ -2077,7 +2076,7 @@ export default function AdminPagosManualPage() {
                       }
                       rows={2}
                       placeholder="Nota opcional para el alumno"
-                      className="w-full rounded-xl border border-white/15 bg-[#0e1012] px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/[0.2]"
+                      className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-3 py-2 text-sm pf-v2-t outline-none"
                     />
 
                     <div className="flex flex-wrap gap-3">
@@ -2094,7 +2093,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => void handleDecision(order.id, "reject")}
                         disabled={actionLoadingId === order.id}
-                        className="rounded-xl border border-rose-300/45 bg-rose-500/15 px-4 py-2 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-4 py-2 text-sm font-semibold pf-v2-t-danger disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         {actionLoadingId === order.id ? "Procesando..." : "Rechazar"}
                       </ReliableActionButton>

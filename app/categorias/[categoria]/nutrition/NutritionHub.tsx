@@ -31,13 +31,13 @@ import TabAlimentos from "./TabAlimentos";
 function SkeletonLoader() {
   return (
     <div className="animate-pulse space-y-4">
-      <div className="h-10 w-64 rounded-xl bg-slate-800/60" />
+      <div className="h-10 w-64 rounded-xl pf-v2-s-deep" />
       <div className="flex gap-2">
         {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="h-9 w-24 rounded-xl bg-slate-800/40" />
+          <div key={i} className="h-9 w-24 rounded-xl pf-v2-s-deep" />
         ))}
       </div>
-      <div className="h-48 rounded-2xl bg-slate-800/40" />
+      <div className="h-48 rounded-2xl pf-v2-s-deep" />
     </div>
   );
 }
@@ -92,14 +92,14 @@ export default function NutritionHub() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-100">🥦 Nutrición</h1>
-          <p className="mt-0.5 text-sm text-slate-400">
+          <h1 className="text-2xl font-black pf-v2-t">🥦 Nutrición</h1>
+          <p className="mt-0.5 text-sm pf-v2-t-50">
             Planes · Asignaciones · IA · Calculadoras · Estadísticas · Registros · Alimentos
           </p>
         </div>
         <button
           onClick={handleSaveAll}
-          className="hidden sm:flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 transition-all hover:bg-emerald-500/20"
+          className="hidden sm:flex items-center gap-2 rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-2 text-sm font-semibold pf-v2-t-ok transition-all pf-v2-hover"
         >
           💾 Guardar todo
         </button>
@@ -113,8 +113,8 @@ export default function NutritionHub() {
             onClick={() => setActiveTab(tab.id as NutritionHubTab)}
             className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 border border-transparent"
+                ? "pf-v2-s-ok pf-v2-t-ok border pf-v2-b-ok"
+                : "pf-v2-t-50 pf-v2-hover border border-transparent"
             }`}
           >
             <span>{tab.icon}</span>
@@ -124,7 +124,7 @@ export default function NutritionHub() {
       </div>
 
       {/* ── Tab content ── */}
-      <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:p-6">
+      <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4 sm:p-6">
         {!loaded ? (
           <SkeletonLoader />
         ) : (

@@ -10,8 +10,8 @@ import { useEquipos } from "../../../components/EquiposProvider";
 import { type Jugadora } from "../../../data/mockData";
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/12 bg-white/6 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/30";
-const LABEL_CLS = "mb-1 block text-sm font-medium text-slate-300";
+  "w-full rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2.5 text-sm pf-v2-t pf-v2-ph outline-none transition focus:ring-1";
+const LABEL_CLS = "mb-1 block text-sm font-medium pf-v2-t-70";
 
 export default function EquipoPage({ params }: { params: Promise<{ equipo: string }> }) {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
 
   if (!equipo) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center p-6 text-slate-100">
+      <main className="flex min-h-[60vh] items-center justify-center p-6 pf-v2-t">
         <div className="text-center">
           <p className="text-5xl">🏆</p>
           <p className="mt-4 text-xl font-semibold">Equipo no encontrado</p>
@@ -114,7 +114,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
       {/* ── Edit form ── */}
       {editandoEquipo && (
         <section className="pf-v2-card">
-          <h2 className="mb-5 text-lg font-semibold text-slate-200">✏️ Editar Equipo</h2>
+          <h2 className="mb-5 text-lg font-semibold pf-v2-t">✏️ Editar Equipo</h2>
           <form onSubmit={handleUpdateEquipo} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -189,22 +189,22 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
         ].map((s) => (
           <div key={s.label} className="pf-v2-card">
             <p className="pf-v2-muted">{s.icon} {s.label}</p>
-            <p className="mt-2 text-2xl font-bold text-slate-100" suppressHydrationWarning>{s.value}</p>
+            <p className="mt-2 text-2xl font-bold pf-v2-t" suppressHydrationWarning>{s.value}</p>
           </div>
         ))}
         {equipo.descripcion && (
           <div className="pf-v2-card col-span-full">
             <p className="pf-v2-muted">📝 Descripción</p>
-            <p className="mt-1 text-slate-200">{equipo.descripcion}</p>
+            <p className="mt-1 pf-v2-t">{equipo.descripcion}</p>
           </div>
         )}
       </section>
 
       {/* ── Jugadoras del equipo ── */}
       <section className="pf-v2-card">
-        <h2 className="mb-5 text-lg font-semibold text-slate-200">👥 Jugadoras del Equipo</h2>
+        <h2 className="mb-5 text-lg font-semibold pf-v2-t">👥 Jugadoras del Equipo</h2>
         {jugadorasEnEquipo.length === 0 ? (
-          <p className="py-6 text-center text-sm text-slate-500">
+          <p className="py-6 text-center text-sm pf-v2-t-40">
             No hay jugadoras asignadas a este equipo aún.
           </p>
         ) : (
@@ -212,16 +212,16 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
             {jugadorasEnEquipo.map((jugadora) => (
               <div
                 key={jugadora.nombre}
-                className="rounded-xl border border-white/8 bg-white/3 p-4"
+                className="rounded-xl border pf-v2-b pf-v2-s-hi p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/8 text-sm font-bold text-slate-300">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full pf-v2-s-hi text-sm font-bold pf-v2-t-70">
                       {jugadora.nombre?.charAt(0).toUpperCase() ?? "?"}
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-100">{jugadora.nombre}</p>
-                      <p className="text-xs text-slate-500">{jugadora.posicion}</p>
+                      <p className="font-semibold pf-v2-t">{jugadora.nombre}</p>
+                      <p className="text-xs pf-v2-t-40">{jugadora.posicion}</p>
                     </div>
                   </div>
 
@@ -232,7 +232,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                         <select
                           value={nuevaCategoria}
                           onChange={(e) => setNuevaCategoria(e.target.value)}
-                          className="rounded-lg border border-white/12 bg-white/8 px-2 py-1 text-sm text-slate-100 outline-none"
+                          className="rounded-lg border pf-v2-b-hi pf-v2-s-hi px-2 py-1 text-sm pf-v2-t outline-none"
                         >
                           {categorias
                             .filter((cat) => cat.habilitada)
@@ -288,7 +288,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                 </div>
 
                 {/* Player detail grid */}
-                <div className="mt-2 grid gap-x-6 gap-y-1 text-xs text-slate-400 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-2 grid gap-x-6 gap-y-1 text-xs pf-v2-t-50 sm:grid-cols-2 lg:grid-cols-4">
                   {[
                     { label: "Wellness", value: jugadora.wellness != null ? `${jugadora.wellness}/10` : null },
                     { label: "Carga", value: jugadora.carga },
@@ -302,14 +302,14 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                     .filter((d) => d.value)
                     .map((d) => (
                       <p key={d.label}>
-                        <span className="font-medium text-slate-500">{d.label}: </span>
-                        <span className="text-slate-300">{d.value}</span>
+                        <span className="font-medium pf-v2-t-40">{d.label}: </span>
+                        <span className="pf-v2-t-70">{d.value}</span>
                       </p>
                     ))}
                 </div>
                 {jugadora.observaciones && (
-                  <p className="mt-2 rounded-lg border border-white/6 bg-white/3 px-3 py-2 text-xs text-slate-400">
-                    <span className="font-medium text-slate-500">Obs: </span>{jugadora.observaciones}
+                  <p className="mt-2 rounded-lg border pf-v2-b pf-v2-s-hi px-3 py-2 text-xs pf-v2-t-50">
+                    <span className="font-medium pf-v2-t-40">Obs: </span>{jugadora.observaciones}
                   </p>
                 )}
               </div>
@@ -321,16 +321,16 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
       {/* ── Agregar jugadoras ── */}
       {jugadorasFuera.length > 0 && (
         <section className="pf-v2-card">
-          <h2 className="mb-5 text-lg font-semibold text-slate-200">➕ Agregar Jugadora al Equipo</h2>
+          <h2 className="mb-5 text-lg font-semibold pf-v2-t">➕ Agregar Jugadora al Equipo</h2>
           <div className="space-y-2">
             {jugadorasFuera.map((jugadora) => (
               <div
                 key={jugadora.nombre}
-                className="flex items-center justify-between rounded-xl border border-white/8 bg-white/3 p-3"
+                className="flex items-center justify-between rounded-xl border pf-v2-b pf-v2-s-hi p-3"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-200">{jugadora.nombre}</p>
-                  <p className="text-xs text-slate-500">Categoría actual: {jugadora.categoria || "Sin categoría"}</p>
+                  <p className="text-sm font-medium pf-v2-t">{jugadora.nombre}</p>
+                  <p className="text-xs pf-v2-t-40">Categoría actual: {jugadora.categoria || "Sin categoría"}</p>
                 </div>
                 <ReliableActionButton
                   onClick={() => cambiarCategoriaJugadora(jugadora.nombre, equipo.categoria)}

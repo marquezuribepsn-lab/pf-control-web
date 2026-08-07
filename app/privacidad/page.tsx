@@ -11,11 +11,11 @@ const CONTACT_EMAIL = "soporte@pf-control.com";
 
 export default function PrivacidadPage() {
   return (
-    <main className="mx-auto max-w-3xl px-5 py-10 text-slate-800">
+    <main className="mx-auto max-w-3xl px-5 py-10 pf-v2-t">
       <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900">Política de Privacidad</h1>
-        <p className="mt-2 text-sm text-slate-500">Última actualización: {LAST_UPDATED}</p>
-        <p className="mt-4 text-base leading-relaxed text-slate-700">
+        <h1 className="text-3xl font-black pf-v2-t">Política de Privacidad</h1>
+        <p className="mt-2 text-sm pf-v2-t-40">Última actualización: {LAST_UPDATED}</p>
+        <p className="mt-4 text-base leading-relaxed pf-v2-t">
           Esta política describe cómo <strong>PF Control</strong> (&ldquo;la aplicación&rdquo;, &ldquo;nosotros&rdquo;)
           recopila, utiliza, almacena y protege tu información personal cuando usás la
           plataforma a través de la web o de la aplicación móvil. Al usar PF Control aceptás
@@ -100,7 +100,7 @@ export default function PrivacidadPage() {
       <Section title="9. Contacto">
         <p>
           Si tenés preguntas sobre esta política o sobre tus datos, escribinos a{" "}
-          <a className="font-semibold text-emerald-700 underline" href={`mailto:${CONTACT_EMAIL}`}>
+          <a className="font-semibold pf-v2-t-ok underline" href={`mailto:${CONTACT_EMAIL}`}>
             {CONTACT_EMAIL}
           </a>.
         </p>
@@ -112,8 +112,8 @@ export default function PrivacidadPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-7">
-      <h2 className="mb-2 text-xl font-bold text-slate-900">{title}</h2>
-      <div className="text-base leading-relaxed text-slate-700">{children}</div>
+      <h2 className="mb-2 text-xl font-bold pf-v2-t">{title}</h2>
+      <div className="text-base leading-relaxed pf-v2-t">{children}</div>
     </section>
   );
 }

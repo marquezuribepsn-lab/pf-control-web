@@ -94,27 +94,27 @@ export default function NuevaSesionPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-6 text-slate-100">
-      <section className="relative overflow-hidden rounded-3xl border border-cyan-200/20 bg-gradient-to-br from-slate-900 via-cyan-950/45 to-slate-900 p-6 shadow-[0_20px_70px_rgba(6,182,212,0.14)]">
-        <div className="pointer-events-none absolute -left-10 top-0 h-40 w-40 rounded-full bg-cyan-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute right-0 top-8 h-32 w-32 rounded-full bg-emerald-400/20 blur-3xl" />
+    <main className="mx-auto max-w-5xl p-6 pf-v2-t">
+      <section className="relative overflow-hidden rounded-3xl border pf-v2-b-accent p-6">
+        <div className="pointer-events-none absolute -left-10 top-0 h-40 w-40 rounded-full pf-v2-s-accent blur-3xl" />
+        <div className="pointer-events-none absolute right-0 top-8 h-32 w-32 rounded-full pf-v2-s-ok blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-100/80">
+            <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">
               Flujo dedicado
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">
+            <h1 className="mt-2 text-3xl font-black tracking-tight pf-v2-t">
               Nueva sesion
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-200/90">
+            <p className="mt-2 max-w-2xl text-sm pf-v2-t">
               Crea una sesion en pantalla exclusiva y vuelve a Sesiones cuando termines.
             </p>
           </div>
 
           <Link
             href={returnTo}
-            className="rounded-xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+            className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-4 py-2 text-sm font-semibold pf-v2-t transition pf-v2-hover"
           >
             Volver a Sesiones
           </Link>
@@ -123,51 +123,51 @@ export default function NuevaSesionPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="mt-6 rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-sm"
+        className="mt-6 rounded-2xl border pf-v2-b-hi pf-v2-s-deep p-6 shadow-sm"
       >
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-200">
+            <label className="mb-1 block text-sm font-medium pf-v2-t">
               Título de la sesión
             </label>
             <input
               value={form.titulo}
               onChange={(e) => updateField("titulo", e.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
               placeholder="Ej: Fuerza tren inferior + aceleración"
               required
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-200">Objetivo</label>
+            <label className="mb-1 block text-sm font-medium pf-v2-t">Objetivo</label>
             <input
               value={form.objetivo}
               onChange={(e) => updateField("objetivo", e.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
               placeholder="Ej: Desarrollar fuerza y aceleración inicial"
               required
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-200">
+            <label className="mb-1 block text-sm font-medium pf-v2-t">
               Duración (min)
             </label>
             <input
               value={form.duracion}
               onChange={(e) => updateField("duracion", e.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
               placeholder="Ej: 70"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-200">Asignar a</label>
+            <label className="mb-1 block text-sm font-medium pf-v2-t">Asignar a</label>
             <select
               value={form.asignacionTipo}
               onChange={(e) => updateField("asignacionTipo", e.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
             >
               <option value="jugadoras">Jugadoras</option>
               <option value="alumnos">Alumno/a</option>
@@ -177,14 +177,14 @@ export default function NuevaSesionPage() {
           {form.asignacionTipo === "jugadoras" ? (
             <>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-200">Categoría de jugadoras</label>
+                <label className="mb-1 block text-sm font-medium pf-v2-t">Categoría de jugadoras</label>
                 <select
                   value={form.categoriaAsignada}
                   onChange={(e) => {
                     updateField("categoriaAsignada", e.target.value);
                     updateField("jugadoraAsignada", "");
                   }}
-                  className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
                 >
                   {categorias
                     .filter((cat) => cat.habilitada)
@@ -197,13 +197,13 @@ export default function NuevaSesionPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-200">
+                <label className="mb-1 block text-sm font-medium pf-v2-t">
                   Jugadora (opcional)
                 </label>
                 <select
                   value={form.jugadoraAsignada}
                   onChange={(e) => updateField("jugadoraAsignada", e.target.value)}
-                  className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
                 >
                   <option value="">Todas las jugadoras de la categoría</option>
                   {jugadorasFiltradas.map((jugadora) => (
@@ -216,11 +216,11 @@ export default function NuevaSesionPage() {
             </>
           ) : (
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-200">Alumno/a</label>
+              <label className="mb-1 block text-sm font-medium pf-v2-t">Alumno/a</label>
               <select
                 value={form.alumnoAsignado}
                 onChange={(e) => updateField("alumnoAsignado", e.target.value)}
-                className="w-full rounded-xl border border-white/20 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                className="w-full rounded-xl border pf-v2-b-hi pf-v2-s-deep px-4 py-3 pf-v2-t outline-none"
                 required={form.asignacionTipo === "alumnos"}
               >
                 <option value="">Seleccionar alumno/a</option>
@@ -233,7 +233,7 @@ export default function NuevaSesionPage() {
             </div>
           )}
 
-          <div className="md:col-span-2 rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-3 text-sm text-cyan-100">
+          <div className="md:col-span-2 rounded-xl border pf-v2-b-accent pf-v2-s-accent p-3 text-sm pf-v2-t-accent">
             Los bloques se cargan y editan después de crear la sesión, desde la pantalla de sesiones.
           </div>
         </div>
@@ -241,13 +241,13 @@ export default function NuevaSesionPage() {
         <div className="mt-6 flex flex-wrap justify-end gap-2">
           <Link
             href={returnTo}
-            className="rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+            className="rounded-xl border pf-v2-b-hi px-5 py-3 text-sm font-semibold pf-v2-t transition pf-v2-hover"
           >
             Volver sin guardar
           </Link>
           <ReliableActionButton
             type="submit"
-            className="rounded-xl border border-cyan-100/40 bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
+            className="rounded-xl border pf-v2-b-accent pf-v2-s-accent px-5 py-3 text-sm font-black pf-v2-t transition pf-v2-hover"
           >
             Guardar sesión
           </ReliableActionButton>

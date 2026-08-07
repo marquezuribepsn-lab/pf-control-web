@@ -111,7 +111,7 @@ export default function DateInput({
       {complete && (
         <span
           className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold ${
-            valid ? "text-emerald-400" : "text-red-400"
+            valid ? "pf-v2-t-ok" : "pf-v2-t-danger"
           }`}
         >
           {valid ? "✓" : "✗"}

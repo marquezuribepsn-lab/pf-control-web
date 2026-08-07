@@ -92,10 +92,10 @@ function buildCalendarGrid(year: number, month: number): (Date | null)[][] {
 // ─── Event type indicator ─────────────────────────────────────
 type EventKind = "completion" | "workout" | "expiry" | "checkin";
 const EVENT_COLORS: Record<EventKind, string> = {
-  completion: "bg-emerald-500",
-  workout:    "bg-cyan-500",
-  expiry:     "bg-amber-400",
-  checkin:    "bg-violet-500",
+  completion: "pf-v2-s-ok",
+  workout:    "pf-v2-s-accent-full",
+  expiry:     "pf-v2-s-warn",
+  checkin:    "pf-v2-s-violet",
 };
 const EVENT_LABELS: Record<EventKind, string> = {
   completion: "Entrenamiento completado",
@@ -194,24 +194,24 @@ function DayDetailPanel({
                   className="pf-v2-alert-row" style={{ flexWrap: "wrap", justifyContent: "space-between" }}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/8 text-xs font-black text-white/60">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full pf-v2-s-hi text-xs font-black pf-v2-t-70">
                       {nombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-white">{nombre}</p>
+                      <p className="text-sm font-semibold pf-v2-t">{nombre}</p>
                       <div className="mt-0.5 flex flex-wrap gap-1">
                         {didComplete && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                          <span className="inline-flex items-center gap-0.5 rounded-full pf-v2-s-ok px-2 py-0.5 text-[10px] font-semibold pf-v2-t-ok">
                             ✓ Completó sesión
                           </span>
                         )}
                         {logs.length > 0 && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-400">
+                          <span className="inline-flex items-center gap-0.5 rounded-full pf-v2-s-accent px-2 py-0.5 text-[10px] font-semibold pf-v2-t-accent">
                             {logs.length} carga{logs.length !== 1 ? "s" : ""} registrada{logs.length !== 1 ? "s" : ""}
                           </span>
                         )}
                         {hasPain && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-semibold text-rose-400">
+                          <span className="inline-flex items-center gap-0.5 rounded-full pf-v2-s-danger px-2 py-0.5 text-[10px] font-semibold pf-v2-t-danger">
                             🚨 Molestia
                           </span>
                         )}
@@ -219,7 +219,7 @@ function DayDetailPanel({
                     </div>
                   </div>
                   {logs.length > 0 && (
-                    <div className="text-right text-[11px] text-white/40">
+                    <div className="text-right text-[11px] pf-v2-t-40">
                       {logs.slice(0, 3).map((l, i) => (
                         <p key={i}>
                           {l.ejercicioNombre || "Ejercicio"}
@@ -228,7 +228,7 @@ function DayDetailPanel({
                         </p>
                       ))}
                       {logs.length > 3 && (
-                        <p className="text-white/25">+{logs.length - 3} más</p>
+                        <p className="pf-v2-t-40">+{logs.length - 3} más</p>
                       )}
                     </div>
                   )}
@@ -251,7 +251,7 @@ function DayDetailPanel({
                 key={i}
                 className="pf-v2-alert" style={{ display: "flex", alignItems: "center", gap: 8, borderColor: "rgba(192,132,252,0.25)", background: "rgba(192,132,252,0.1)", color: "#ddd6fe" }}
               >
-                <span className="text-violet-400">📝</span>
+                <span className="pf-v2-t-violet">📝</span>
                 <span>{c.alumnoNombre || "Alumno"}</span>
               </div>
             ))}
@@ -433,7 +433,7 @@ export default function CalendarioPage() {
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 pf-v2-b-accent border-t-transparent" />
       </div>
     );
   }
@@ -481,7 +481,7 @@ export default function CalendarioPage() {
         {/* Legend */}
         <div className="mb-4 flex flex-wrap gap-3">
           {(Object.entries(EVENT_LABELS) as [EventKind, string][]).map(([kind, label]) => (
-            <div key={kind} className="flex items-center gap-1.5 text-xs text-white/50">
+            <div key={kind} className="flex items-center gap-1.5 text-xs pf-v2-t-50">
               <span className={`h-2 w-2 rounded-full ${EVENT_COLORS[kind]}`} />
               {label}
             </div>
@@ -491,11 +491,11 @@ export default function CalendarioPage() {
         {/* Calendar grid */}
         <div className="pf-v2-card" style={{ overflow: "hidden", padding: 0 }}>
           {/* Day headers */}
-          <div className="grid grid-cols-7 border-b border-white/8">
+          <div className="grid grid-cols-7 border-b pf-v2-b">
             {DAY_LABELS.map((d) => (
               <div
                 key={d}
-                className="py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-white/35"
+                className="py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide pf-v2-t-40"
               >
                 {d}
               </div>
@@ -506,14 +506,14 @@ export default function CalendarioPage() {
           {grid.map((week, rowIdx) => (
             <div
               key={rowIdx}
-              className={`grid grid-cols-7 ${rowIdx < grid.length - 1 ? "border-b border-white/8" : ""}`}
+              className={`grid grid-cols-7 ${rowIdx < grid.length - 1 ? "border-b pf-v2-b" : ""}`}
             >
               {week.map((date, colIdx) => {
                 if (!date) {
                   return (
                     <div
                       key={`empty-${colIdx}`}
-                      className={`min-h-[80px] ${colIdx < 6 ? "border-r border-white/8" : ""} bg-white/[0.01]`}
+                      className={`min-h-[80px] ${colIdx < 6 ? "border-r pf-v2-b" : ""}pf-v2-s`}
                     />
                   );
                 }
@@ -530,21 +530,15 @@ export default function CalendarioPage() {
                   <button
                     key={key}
                     onClick={() => setSelectedDateKey(isSelected ? null : key)}
-                    className={`
-                      group relative min-h-[80px] p-2 text-left transition-colors
-                      ${colIdx < 6 ? "border-r border-white/8" : ""}
-                      ${hasExpiry ? "bg-amber-400/[0.06] hover:bg-amber-400/[0.10]" : "hover:bg-white/[0.04]"}
-                      ${isSelected ? "ring-1 ring-inset ring-indigo-500/50 bg-indigo-500/[0.07]" : ""}
-                    `}
+                    className={`group relative min-h-[80px] p-2 text-left transition-colors
+                      ${colIdx < 6 ? "border-r pf-v2-b" : ""}${hasExpiry ? "pf-v2-s-warn pf-v2-hover" : "pf-v2-hover"}${isSelected ? "ring-1 ring-inset pf-v2-s-blue" : ""}`}
                   >
                     {/* Day number */}
                     <span
-                      className={`
-                        inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
                         ${isToday
-                          ? "bg-indigo-500 text-white"
-                          : "text-white/70 group-hover:text-white"}
-                      `}
+                          ? "pf-v2-s-blue pf-v2-t"
+                          : "pf-v2-t-70"}`}
                     >
                       {date.getDate()}
                     </span>
@@ -556,7 +550,7 @@ export default function CalendarioPage() {
                           <EventDot key={i} kind={ev.kind} />
                         ))}
                         {extraCount > 0 && (
-                          <span className="text-[9px] font-semibold text-white/35 leading-none mt-px">
+                          <span className="text-[9px] font-semibold pf-v2-t-40 leading-none mt-px">
                             +{extraCount}
                           </span>
                         )}
@@ -565,7 +559,7 @@ export default function CalendarioPage() {
 
                     {/* Expiry badge */}
                     {hasExpiry && (
-                      <div className="mt-1 text-[9px] font-semibold text-amber-400/80 leading-tight">
+                      <div className="mt-1 text-[9px] font-semibold pf-v2-t-warn leading-tight">
                         ⏰ {data!.expiringClients.length} vence
                       </div>
                     )}
@@ -594,8 +588,8 @@ export default function CalendarioPage() {
                 const k = parseToKey(c.fecha);
                 return k?.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`);
               }).length,
-              color: "text-emerald-400",
-              bg: "bg-emerald-500/10 border-emerald-500/20",
+              color: "pf-v2-t-ok",
+              bg: "pf-v2-s-ok pf-v2-b-ok",
             },
             {
               label: "Cargas registradas",
@@ -603,8 +597,8 @@ export default function CalendarioPage() {
                 const k = parseToKey(w.fecha);
                 return k?.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`);
               }).length,
-              color: "text-cyan-400",
-              bg: "bg-cyan-500/10 border-cyan-500/20",
+              color: "pf-v2-t-accent",
+              bg: "pf-v2-s-accent pf-v2-b-accent",
             },
             {
               label: "Check-ins este mes",
@@ -612,8 +606,8 @@ export default function CalendarioPage() {
                 const k = parseToKey(c.createdAt || c.semanaOf);
                 return k?.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`);
               }).length,
-              color: "text-violet-400",
-              bg: "bg-violet-500/10 border-violet-500/20",
+              color: "pf-v2-t-violet",
+              bg: "pf-v2-s-violet pf-v2-b-violet",
             },
             {
               label: "Suscripciones vencen",
@@ -621,13 +615,13 @@ export default function CalendarioPage() {
                 const k = parseToKey(m.endDate);
                 return k?.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`);
               }).length,
-              color: "text-amber-400",
-              bg: "bg-amber-400/10 border-amber-400/20",
+              color: "pf-v2-t-warn",
+              bg: "pf-v2-s-warn pf-v2-b-warn",
             },
           ].map(({ label, value, color, bg }) => (
             <article key={label} className={`rounded-2xl border p-4 ${bg}`}>
               <p className="pf-v2-stat-label">{label}</p>
-              <p className={`mt-2 text-3xl font-black tabular-nums ${color}`}>{value}</p>
+              <p className={`mt-2 text-3xl font-black tabular-nums${color}`}>{value}</p>
             </article>
           ))}
         </div>

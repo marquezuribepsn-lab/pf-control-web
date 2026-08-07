@@ -9,10 +9,10 @@ import type { ActivityLevel, BiologicalSex, NutritionGoal, NutritionHubState, Nu
 type Props = Pick<NutritionHubState, "planes" | "setPlanes" | "alumnosNombres">;
 
 const FIELD_CLS =
-  "w-full rounded-lg border border-white/10 bg-slate-800/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30";
+  "w-full rounded-lg border pf-v2-b pf-v2-s-deep px-3 py-2 text-sm pf-v2-t pf-v2-ph focus:outline-none focus:ring-1 ";
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="mb-1 block text-xs font-medium text-slate-400">{children}</label>;
+  return <label className="mb-1 block text-xs font-medium pf-v2-t-50">{children}</label>;
 }
 
 export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
@@ -88,16 +88,16 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-slate-100">🤖 Asistente IA de Nutrición</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <h2 className="text-xl font-black pf-v2-t">🤖 Asistente IA de Nutrición</h2>
+        <p className="mt-1 text-sm pf-v2-t-50">
           Completá los datos del atleta y generá un prompt optimizado para crear un plan nutricional con IA.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Form ── */}
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <h3 className="mb-4 font-semibold text-slate-200">Datos del atleta</h3>
+        <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+          <h3 className="mb-4 font-semibold pf-v2-t">Datos del atleta</h3>
           <div className="space-y-3">
             {/* Alumno */}
             <div>
@@ -124,8 +124,8 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
                     onClick={() => setSexo(s)}
                     className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-all ${
                       sexo === s
-                        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-                        : "border-white/10 bg-slate-800/40 text-slate-400 hover:border-white/20"
+                        ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok"
+                        : "pf-v2-b pf-v2-s-deep pf-v2-t-50 "
                     }`}
                   >
                     {s === "femenino" ? "♀ Femenino" : "♂ Masculino"}
@@ -145,7 +145,7 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
                   <Label>{label}</Label>
                   <div className="flex items-center gap-1">
                     <input type="number" value={value} onChange={(e) => set(e.target.value)} className={FIELD_CLS} />
-                    <span className="shrink-0 text-xs text-slate-500">{unit}</span>
+                    <span className="shrink-0 text-xs pf-v2-t-40">{unit}</span>
                   </div>
                 </div>
               ))}
@@ -178,8 +178,8 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
             </div>
 
             {/* Opcionales */}
-            <div className="border-t border-white/5 pt-3">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Datos opcionales</p>
+            <div className="border-t pf-v2-b pt-3">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide pf-v2-t-40">Datos opcionales</p>
               <div className="space-y-3">
                 <div>
                   <Label>Alergias / Intolerancias</Label>
@@ -213,17 +213,17 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
         {/* ── Right panel ── */}
         <div className="flex flex-col gap-4">
           {/* Targets preview */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-            <h3 className="mb-3 font-semibold text-slate-200">📊 Objetivos calculados</h3>
+          <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
+            <h3 className="mb-3 font-semibold pf-v2-t">📊 Objetivos calculados</h3>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Calorías", value: `${targets.calorias} kcal`, color: "text-amber-400" },
-                { label: "Proteínas", value: `${targets.proteinas} g`, color: "text-emerald-400" },
-                { label: "Carbohidratos", value: `${targets.carbohidratos} g`, color: "text-blue-400" },
-                { label: "Grasas", value: `${targets.grasas} g`, color: "text-yellow-400" },
+                { label: "Calorías", value: `${targets.calorias} kcal`, color: "pf-v2-t-warn" },
+                { label: "Proteínas", value: `${targets.proteinas} g`, color: "pf-v2-t-ok" },
+                { label: "Carbohidratos", value: `${targets.carbohidratos} g`, color: "pf-v2-t-blue" },
+                { label: "Grasas", value: `${targets.grasas} g`, color: "pf-v2-t-warn" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="rounded-xl bg-slate-800/50 px-3 py-2.5">
-                  <p className="text-xs text-slate-500">{label}</p>
+                <div key={label} className="rounded-xl pf-v2-s-deep px-3 py-2.5">
+                  <p className="text-xs pf-v2-t-40">{label}</p>
                   <p className={`font-bold ${color}`}>{value}</p>
                 </div>
               ))}
@@ -231,15 +231,15 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
           </div>
 
           {/* Prompt area */}
-          <div className="flex-1 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+          <div className="flex-1 rounded-2xl border pf-v2-b pf-v2-s-deep p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-slate-200">📝 Prompt para IA</h3>
+              <h3 className="font-semibold pf-v2-t">📝 Prompt para IA</h3>
               <button
                 onClick={handleCopyPrompt}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                   promptCopied
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "border border-white/10 bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    ? "pf-v2-s-ok pf-v2-t-ok"
+                    : "border pf-v2-b pf-v2-s-deep pf-v2-t-70 pf-v2-hover"
                 }`}
               >
                 {promptCopied ? "✓ Copiado!" : "Copiar prompt"}
@@ -249,25 +249,25 @@ export default function TabIA({ planes, setPlanes, alumnosNombres }: Props) {
               readOnly
               value={prompt}
               rows={14}
-              className="w-full resize-none rounded-xl border border-white/5 bg-slate-800/40 p-3 font-mono text-xs text-slate-300 focus:outline-none"
+              className="w-full resize-none rounded-xl border pf-v2-b pf-v2-s-deep p-3 font-mono text-xs pf-v2-t-70 focus:outline-none"
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs pf-v2-t-40">
               Copiá este prompt y pegalo en Claude, ChatGPT u otro asistente IA para generar el plan.
             </p>
           </div>
 
           {/* Actions */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-            <h3 className="mb-2 font-semibold text-slate-200">🚀 Crear plan base</h3>
-            <p className="mb-3 text-xs text-slate-400">
+          <div className="rounded-2xl border pf-v2-b pf-v2-s-deep p-4">
+            <h3 className="mb-2 font-semibold pf-v2-t">🚀 Crear plan base</h3>
+            <p className="mb-3 text-xs pf-v2-t-50">
               Crea un plan vacío con las comidas estructuradas. Luego lo completás con los alimentos del plan generado por la IA.
             </p>
             <button
               onClick={handleCreatePlan}
               className={`w-full rounded-xl py-2.5 text-sm font-semibold transition-all ${
                 planCreated
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-emerald-600 text-white hover:bg-emerald-500"
+                  ? "pf-v2-s-ok pf-v2-t-ok"
+                  : "pf-v2-s-ok pf-v2-t pf-v2-hover"
               }`}
             >
               {planCreated ? "✓ Plan creado — ve a la pestaña Planes" : "Crear plan base"}

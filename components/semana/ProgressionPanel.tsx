@@ -192,18 +192,18 @@ const fmtDate  = (iso: string) => {
 const daysAgo  = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
 
 function decisionColor(d: ProgressionDecisionType | null): string {
-  if (!d) return "text-white/40";
-  return ({ supercompensation: "text-emerald-300", "progressive-overload": "text-cyan-300", maintenance: "text-sky-300", conservative: "text-amber-300", same: "text-white/50", deload: "text-rose-300", "plateau-break": "text-orange-300" } as Record<string, string>)[d] ?? "text-white/50";
+  if (!d) return "pf-v2-t-40";
+  return ({ supercompensation: "pf-v2-t-ok", "progressive-overload": "pf-v2-t-accent", maintenance: "pf-v2-t-blue", conservative: "pf-v2-t-warn", same: "pf-v2-t-50", deload: "pf-v2-t-danger", "plateau-break": "pf-v2-t-warn" } as Record<string, string>)[d] ?? "pf-v2-t-50";
 }
 
 function decisionBadgeBg(d: ProgressionDecisionType | null): string {
-  if (!d) return "bg-white/5 border-white/10 text-white/40";
-  return ({ supercompensation: "bg-emerald-500/15 border-emerald-300/30 text-emerald-200", "progressive-overload": "bg-cyan-500/15 border-cyan-300/30 text-cyan-200", maintenance: "bg-sky-500/15 border-sky-300/30 text-sky-200", conservative: "bg-amber-500/15 border-amber-300/30 text-amber-200", same: "bg-white/5 border-white/15 text-white/55", deload: "bg-rose-500/15 border-rose-300/30 text-rose-200", "plateau-break": "bg-orange-500/15 border-orange-300/30 text-orange-200" } as Record<string, string>)[d] ?? "bg-white/5 border-white/10 text-white/40";
+  if (!d) return "pf-v2-s-hi pf-v2-b pf-v2-t-40";
+  return ({ supercompensation: "pf-v2-s-ok pf-v2-b-ok pf-v2-t-ok", "progressive-overload": "pf-v2-s-accent pf-v2-b-accent pf-v2-t-accent", maintenance: "pf-v2-s-blue pf-v2-b-blue pf-v2-t-blue", conservative: "pf-v2-s-warn pf-v2-b-warn pf-v2-t-warn", same: "pf-v2-s-hi pf-v2-b-hi pf-v2-t-50", deload: "pf-v2-s-danger pf-v2-b-danger pf-v2-t-danger", "plateau-break": "pf-v2-s-warn pf-v2-b-warn pf-v2-t-warn" } as Record<string, string>)[d] ?? "pf-v2-s-hi pf-v2-b pf-v2-t-40";
 }
 
 function phaseBadge(p: ProgressionPhase | null): string {
-  if (!p) return "bg-white/5 border-white/10 text-white/40";
-  return ({ acumulacion: "bg-violet-500/15 border-violet-300/30 text-violet-200", intensificacion: "bg-orange-500/15 border-orange-300/30 text-orange-200", descarga: "bg-teal-500/15 border-teal-300/30 text-teal-200", mantenimiento: "bg-slate-500/15 border-slate-300/30 text-slate-300" } as Record<string, string>)[p] ?? "bg-white/5 border-white/10 text-white/40";
+  if (!p) return "pf-v2-s-hi pf-v2-b pf-v2-t-40";
+  return ({ acumulacion: "pf-v2-s-violet pf-v2-b-violet pf-v2-t-violet", intensificacion: "pf-v2-s-warn pf-v2-b-warn pf-v2-t-warn", descarga: "pf-v2-s-ok pf-v2-b-ok pf-v2-t-ok", mantenimiento: "pf-v2-s pf-v2-b pf-v2-t-70" } as Record<string, string>)[p] ?? "pf-v2-s-hi pf-v2-b pf-v2-t-40";
 }
 
 // ──────────────────────────────────────────────
@@ -726,20 +726,20 @@ export default function ProgressionPanel({
   // ──────────────────────────────────────────────
 
   return (
-    <div className="mt-5 border-t border-white/[0.07] pt-5 space-y-5">
+    <div className="mt-5 border-t pf-v2-b pt-5 space-y-5">
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold text-white">Motor de Progresión IA</h3>
-          <p className="mt-0.5 text-xs text-white/50 max-w-xl">
+          <h3 className="text-base font-semibold pf-v2-t">Motor de Progresión IA</h3>
+          <p className="mt-0.5 text-xs pf-v2-t-50 max-w-xl">
             Analiza rendimiento semanal, detecta plateaus y genera la próxima semana con vista previa y ajuste manual.
           </p>
         </div>
-        <div className="inline-flex rounded-xl bg-white/[0.025] p-0.5 ring-1 ring-white/10">
+        <div className="inline-flex rounded-xl pf-v2-s p-0.5 ring-1 ">
           {(["panel", "historial"] as const).map((v) => (
             <button key={v} type="button" onClick={() => setMotorView(v)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition capitalize ${motorView === v ? "bg-violet-400/20 text-violet-200" : "text-white/45 hover:text-white/70"}`}>
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition capitalize ${motorView === v ? "pf-v2-s-violet pf-v2-t-violet" : "pf-v2-t-50 "}`}>
               {v === "historial" ? `Historial (${progressionHistory.length})` : "Panel"}
             </button>
           ))}
@@ -751,10 +751,10 @@ export default function ProgressionPanel({
         <>
           {/* Filter bar */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-xl bg-white/[0.025] p-0.5 ring-1 ring-white/10">
+            <div className="inline-flex rounded-xl pf-v2-s p-0.5 ring-1 ">
               {(["all", "ready", ...(staleCount > 0 ? ["stale"] : [])] as const).map((f) => (
                 <button key={f} type="button" onClick={() => setFilter(f as typeof filter)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filter === f ? (f === "stale" ? "bg-amber-400/20 text-amber-200" : f === "ready" ? "bg-emerald-400/20 text-emerald-200" : "bg-cyan-400/20 text-cyan-200") : (f === "stale" ? "text-amber-300/60 hover:text-amber-200" : "text-white/45 hover:text-white/70")}`}>
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filter === f ? (f === "stale" ? "pf-v2-s-warn pf-v2-t-warn" : f === "ready" ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-accent pf-v2-t-accent") : (f === "stale" ? "pf-v2-t-warn " : "pf-v2-t-50 ")}`}>
                   {f === "all" ? `Todos (${planes.length})` : f === "ready" ? `Listos (${readyCount})` : `⏰ Stale (${staleCount})`}
                 </button>
               ))}
@@ -763,31 +763,31 @@ export default function ProgressionPanel({
             {/* Tipo / categoría */}
             {[{ key: "all", label: "Todos" }, { key: "jugadoras", label: "Jugadoras" }, { key: "alumnos", label: "Alumnos" }, ...availableCategorias.map((c) => ({ key: c, label: c }))].map(({ key, label }) => (
               <button key={key} type="button" onClick={() => setTipoFilter(key)}
-                className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${tipoFilter === key ? "border-white/20 bg-white/10 text-white/90" : "border-white/[0.07] bg-white/[0.02] text-white/40 hover:text-white/65"}`}>
+                className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${tipoFilter === key ? "pf-v2-b-hi pf-v2-s-hi pf-v2-t" : "pf-v2-b pf-v2-s pf-v2-t-40 "}`}>
                 {label}
               </button>
             ))}
 
             {/* Batch button */}
             <button type="button" onClick={() => setConfirmBatch(true)} disabled={readyCount === 0}
-              className={`ml-auto rounded-xl border px-4 py-1.5 text-xs font-bold transition ${readyCount > 0 ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25" : "border-white/10 bg-white/[0.03] text-white/30 cursor-not-allowed"}`}>
+              className={`ml-auto rounded-xl border px-4 py-1.5 text-xs font-bold transition ${readyCount > 0 ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok pf-v2-hover" : "pf-v2-b pf-v2-s pf-v2-t-40 cursor-not-allowed"}`}>
               ⚡ Auto-avanzar ({readyCount})
             </button>
           </div>
 
           {/* Confirm batch banner */}
           {confirmBatch && readyCount > 0 && (
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-4 py-3">
-              <p className="flex-1 text-sm text-emerald-100">
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3">
+              <p className="flex-1 text-sm pf-v2-t-ok">
                 ¿Generar la próxima semana para <strong>{readyCount} alumno{readyCount > 1 ? "s" : ""}</strong> sin revisión previa?
               </p>
               <div className="flex gap-2">
                 <button type="button" onClick={generateAll}
-                  className="rounded-xl border border-emerald-300/40 bg-emerald-500/25 px-4 py-1.5 text-xs font-bold text-emerald-100 hover:bg-emerald-500/35 transition">
+                  className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-1.5 text-xs font-bold pf-v2-t-ok pf-v2-hover transition">
                   ✓ Sí, generar todos
                 </button>
                 <button type="button" onClick={() => setConfirmBatch(false)}
-                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white/80 transition">
+                  className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-3 py-1.5 text-xs font-semibold pf-v2-t-70 transition">
                   Cancelar
                 </button>
               </div>
@@ -797,13 +797,13 @@ export default function ProgressionPanel({
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { label: "Con plan",       value: totalPersonas,  color: "text-white/85" },
-              { label: "Con registros",  value: withData,       color: "text-cyan-300" },
-              { label: "Listos",         value: readyCount,     color: "text-emerald-300" },
-              { label: "Generados hoy",  value: generatedCount, color: "text-violet-300" },
+              { label: "Con plan",       value: totalPersonas,  color: "pf-v2-t" },
+              { label: "Con registros",  value: withData,       color: "pf-v2-t-accent" },
+              { label: "Listos",         value: readyCount,     color: "pf-v2-t-ok" },
+              { label: "Generados hoy",  value: generatedCount, color: "pf-v2-t-violet" },
             ].map(({ label, value, color }) => (
-              <div key={label} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3">
-                <p className="text-[10px] uppercase tracking-wide text-white/40">{label}</p>
+              <div key={label} className="rounded-2xl border pf-v2-b pf-v2-s p-3">
+                <p className="text-[10px] uppercase tracking-wide pf-v2-t-40">{label}</p>
                 <p className={`mt-1 text-2xl font-black ${color}`}>{value}</p>
               </div>
             ))}
@@ -811,13 +811,13 @@ export default function ProgressionPanel({
 
           {/* Empty state */}
           {filtered.length === 0 && (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 text-center">
-              <p className="text-sm text-white/45">
+            <div className="rounded-2xl border pf-v2-b pf-v2-s p-8 text-center">
+              <p className="text-sm pf-v2-t-50">
                 {filter === "ready" ? "Ningún alumno listo para avanzar aún." : filter === "stale" ? "No hay semanas vencidas." : "No hay alumnos con planes activos."}
               </p>
               {filter === "all" && planes.length === 0 && (
-                <p className="mt-2 text-xs text-white/30">
-                  Asignale un template a un alumno o jugadora desde <span className="text-cyan-400/70">Clientes → Plan</span> para que aparezca aquí.
+                <p className="mt-2 text-xs pf-v2-t-40">
+                  Asignale un template a un alumno o jugadora desde <span className="pf-v2-t-accent">Clientes → Plan</span> para que aparezca aquí.
                 </p>
               )}
             </div>
@@ -839,25 +839,25 @@ export default function ProgressionPanel({
 
               return (
                 <div key={status.ownerKey}
-                  className={`rounded-2xl border bg-white/[0.02] overflow-hidden transition ${status.isStale ? "border-amber-300/25" : status.plateau?.detected ? "border-orange-300/25" : preview ? "border-cyan-300/20" : "border-white/[0.07]"}`}>
+                  className={`rounded-2xl border pf-v2-s overflow-hidden transition ${status.isStale ? "pf-v2-b-warn" : status.plateau?.detected ? "pf-v2-b-warn" : preview ? "pf-v2-b-accent" : "pf-v2-b"}`}>
 
                   {/* Status banners */}
                   {status.isStale && (
-                    <div className="flex items-center gap-2 bg-amber-500/10 border-b border-amber-300/20 px-4 py-1.5">
-                      <span className="text-[10px] font-bold text-amber-300">⏰ SEMANA VENCIDA</span>
-                      <span className="text-[10px] text-amber-200/60">Última generación hace +{STALE_DAYS} días.</span>
+                    <div className="flex items-center gap-2 pf-v2-s-warn border-b pf-v2-b-warn px-4 py-1.5">
+                      <span className="text-[10px] font-bold pf-v2-t-warn">⏰ SEMANA VENCIDA</span>
+                      <span className="text-[10px] pf-v2-t-warn">Última generación hace +{STALE_DAYS} días.</span>
                     </div>
                   )}
                   {status.plateau?.detected && !status.isStale && (
-                    <div className="flex items-center gap-2 bg-orange-500/10 border-b border-orange-300/20 px-4 py-1.5">
-                      <span className="text-[10px] font-bold text-orange-300">🔄 PLATEAU</span>
-                      <span className="text-[10px] text-orange-200/60">{status.plateau.consecutiveLowStimulus} semanas de bajo estímulo · se aplicará variación de carga.</span>
+                    <div className="flex items-center gap-2 pf-v2-s-warn border-b pf-v2-b-warn px-4 py-1.5">
+                      <span className="text-[10px] font-bold pf-v2-t-warn">🔄 PLATEAU</span>
+                      <span className="text-[10px] pf-v2-t-warn">{status.plateau.consecutiveLowStimulus} semanas de bajo estímulo · se aplicará variación de carga.</span>
                     </div>
                   )}
                   {preview && (
-                    <div className="flex items-center gap-2 bg-cyan-500/10 border-b border-cyan-300/20 px-4 py-1.5">
-                      <span className="text-[10px] font-bold text-cyan-300">👁 VISTA PREVIA LISTA</span>
-                      <span className="text-[10px] text-cyan-200/55">Revisá los cambios antes de confirmar.</span>
+                    <div className="flex items-center gap-2 pf-v2-s-accent border-b pf-v2-b-accent px-4 py-1.5">
+                      <span className="text-[10px] font-bold pf-v2-t-accent">👁 VISTA PREVIA LISTA</span>
+                      <span className="text-[10px] pf-v2-t-accent">Revisá los cambios antes de confirmar.</span>
                     </div>
                   )}
 
@@ -866,10 +866,10 @@ export default function ProgressionPanel({
                     <div className="min-w-0 flex-1">
                       {/* Name + badges */}
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-white">{status.nombre}</span>
-                        {status.categoria && <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] text-white/50">{status.categoria}</span>}
-                        <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] text-white/40">{status.tipo === "alumnos" ? "Alumno" : "Jugadora"}</span>
-                        {status.currentWeek && <span className="text-[11px] text-white/35">{status.currentWeek.nombre} · sem. {status.weekNumberInPlan}</span>}
+                        <span className="text-sm font-semibold pf-v2-t">{status.nombre}</span>
+                        {status.categoria && <span className="rounded-md pf-v2-s-hi px-2 py-0.5 text-[10px] pf-v2-t-50">{status.categoria}</span>}
+                        <span className="rounded-md pf-v2-s-hi px-2 py-0.5 text-[10px] pf-v2-t-40">{status.tipo === "alumnos" ? "Alumno" : "Jugadora"}</span>
+                        {status.currentWeek && <span className="text-[11px] pf-v2-t-40">{status.currentWeek.nombre} · sem. {status.weekNumberInPlan}</span>}
                       </div>
 
                       {/* Metrics */}
@@ -886,7 +886,7 @@ export default function ProgressionPanel({
                       {/* Sparkline */}
                       {personHistory.length >= 2 && (
                         <div className="mt-2 flex items-center gap-2">
-                          <span className="text-[10px] uppercase tracking-wide text-white/30">Carga %</span>
+                          <span className="text-[10px] uppercase tracking-wide pf-v2-t-40">Carga %</span>
                           <Sparkline records={personHistory} />
                         </div>
                       )}
@@ -904,7 +904,7 @@ export default function ProgressionPanel({
                             <p className={`mt-0.5 text-[10px] font-semibold ${decisionColor(preview?.decision ?? status.decision)}`}>
                               {(preview ? preview.loadDeltaPct : delta)! > 0 ? "+" : ""}
                               {preview ? preview.loadDeltaPct : delta}% carga
-                              {override?.active && !preview && <span className="ml-1 text-violet-300/70">✏ manual</span>}
+                              {override?.active && !preview && <span className="ml-1 pf-v2-t-violet">✏ manual</span>}
                             </p>
                           )}
                           {(preview ? preview.phase : status.phase) && (
@@ -920,7 +920,7 @@ export default function ProgressionPanel({
                         {/* Override toggle */}
                         <button type="button" title="Ajuste manual de carga"
                           onClick={() => setOverrideOpenKey(isOverrideOpen ? null : status.ownerKey)}
-                          className={`rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition ${override?.active ? "border-violet-300/40 bg-violet-500/15 text-violet-200" : isOverrideOpen ? "border-white/20 bg-white/10 text-white/80" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/65"}`}>
+                          className={`rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition ${override?.active ? "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet" : isOverrideOpen ? "pf-v2-b-hi pf-v2-s-hi pf-v2-t" : "pf-v2-b pf-v2-s pf-v2-t-40 "}`}>
                           ✏ {override?.active ? `${override.pct > 0 ? "+" : ""}${override.pct}%` : "Ajustar"}
                         </button>
 
@@ -928,7 +928,7 @@ export default function ProgressionPanel({
                         {!status.generated && !preview && (
                           <button type="button" onClick={() => previewNextWeek(status.ownerKey)}
                             disabled={isPreviewing || !status.currentWeek}
-                            className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${isPreviewing ? "border-violet-300/25 bg-violet-500/10 text-violet-200/70 cursor-wait" : "border-cyan-300/35 bg-cyan-500/15 text-cyan-100 hover:bg-cyan-500/25 active:scale-95"}`}>
+                            className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${isPreviewing ? "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet cursor-wait" : "pf-v2-b-accent pf-v2-s-accent pf-v2-t-accent pf-v2-hover active:scale-95"}`}>
                             {isPreviewing ? (
                               <span className="flex items-center gap-1.5 max-w-[160px]">
                                 <svg className="h-3 w-3 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeDashoffset="10" strokeLinecap="round"/></svg>
@@ -940,11 +940,11 @@ export default function ProgressionPanel({
                         {preview && !status.generated && (
                           <>
                             <button type="button" onClick={() => confirmPreview(status.ownerKey)}
-                              className="rounded-xl border border-emerald-300/40 bg-emerald-500/20 px-3 py-2 text-xs font-bold text-emerald-100 hover:bg-emerald-500/30 active:scale-95 transition">
+                              className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-xs font-bold pf-v2-t-ok pf-v2-hover active:scale-95 transition">
                               ✓ Confirmar
                             </button>
                             <button type="button" onClick={() => cancelPreview(status.ownerKey)}
-                              className="rounded-xl border border-white/15 bg-white/5 px-2.5 py-2 text-xs font-semibold text-white/55 hover:text-white/75 transition">
+                              className="rounded-xl border pf-v2-b-hi pf-v2-s-hi px-2.5 py-2 text-xs font-semibold pf-v2-t-50 transition">
                               ✕
                             </button>
                           </>
@@ -953,16 +953,16 @@ export default function ProgressionPanel({
                         {/* Generated state */}
                         {status.generated && (
                           <div className="flex items-center gap-1.5">
-                            <span className="rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-3 py-2 text-xs font-bold text-emerald-200">✓ Generada</span>
+                            <span className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-3 py-2 text-xs font-bold pf-v2-t-ok">✓ Generada</span>
                             <button type="button" onClick={() => sendWaNotification(status.ownerKey)}
                               disabled={currentWaState === "sending" || currentWaState === "sent"}
                               title="Notificar por WhatsApp"
-                              className={`rounded-xl border px-2.5 py-2 text-xs font-bold transition ${currentWaState === "sent" ? "border-emerald-300/30 bg-emerald-500/10 text-emerald-300" : currentWaState === "sending" ? "border-white/10 bg-white/5 text-white/30 cursor-wait" : currentWaState === "error" ? "border-rose-300/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/15" : "border-green-300/30 bg-green-500/10 text-green-200 hover:bg-green-500/15"}`}>
+                              className={`rounded-xl border px-2.5 py-2 text-xs font-bold transition ${currentWaState === "sent" ? "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok" : currentWaState === "sending" ? "pf-v2-b pf-v2-s-hi pf-v2-t-40 cursor-wait" : currentWaState === "error" ? "pf-v2-b-danger pf-v2-s-danger pf-v2-t-danger pf-v2-hover" : "pf-v2-b-ok pf-v2-s-ok pf-v2-t-ok pf-v2-hover"}`}>
                               {currentWaState === "sent" ? "✓ WA" : currentWaState === "sending" ? "…" : currentWaState === "error" ? "⚠ WA" : "📱"}
                             </button>
                             <button type="button" onClick={() => rollbackLastWeek(status.ownerKey)}
                               title="Deshacer última generación"
-                              className="rounded-xl border border-rose-300/25 bg-rose-500/10 px-2.5 py-2 text-xs font-bold text-rose-300 hover:bg-rose-500/15 transition">
+                              className="rounded-xl border pf-v2-b-danger pf-v2-s-danger px-2.5 py-2 text-xs font-bold pf-v2-t-danger pf-v2-hover transition">
                               ↩
                             </button>
                           </div>
@@ -971,7 +971,7 @@ export default function ProgressionPanel({
                         {/* Expand/collapse rationale */}
                         {(status.rationaleEs || preview?.rationaleEs) && (
                           <button type="button" onClick={() => setExpandedKey(isExpanded ? null : status.ownerKey)}
-                            className="rounded-lg p-1.5 text-white/35 hover:text-white/65 transition">
+                            className="rounded-lg p-1.5 pf-v2-t-40 transition">
                             <svg viewBox="0 0 24 24" className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
@@ -983,24 +983,24 @@ export default function ProgressionPanel({
 
                   {/* ── THINKING PANEL (visible mientras genera) ── */}
                   {isPreviewing && thinking && (
-                    <div className="border-t border-violet-300/10 bg-violet-500/[0.04] px-4 py-3">
+                    <div className="border-t pf-v2-b-violet pf-v2-s-violet px-4 py-3">
                       <div className="flex items-center gap-2.5">
                         {/* Bouncing dots */}
                         <div className="flex gap-0.5 shrink-0">
                           {[0, 1, 2].map((i) => (
                             <div
                               key={i}
-                              className="h-1.5 w-1.5 rounded-full bg-violet-400/70 animate-bounce"
+                              className="h-1.5 w-1.5 rounded-full pf-v2-s-violet animate-bounce"
                               style={{ animationDelay: `${i * 0.15}s`, animationDuration: "0.9s" }}
                             />
                           ))}
                         </div>
-                        <p className="text-[11px] font-medium text-violet-200/80 leading-tight">
+                        <p className="text-[11px] font-medium pf-v2-t-violet leading-tight">
                           {thinking.text}
                         </p>
                       </div>
                       {thinking.exercise && (
-                        <p className="mt-1 pl-6 text-[10px] text-violet-300/50 truncate">
+                        <p className="mt-1 pl-6 text-[10px] pf-v2-t-violet truncate">
                           → {thinking.exercise}
                         </p>
                       )}
@@ -1009,12 +1009,12 @@ export default function ProgressionPanel({
 
                   {/* Override slider */}
                   {isOverrideOpen && (
-                    <div className="border-t border-white/[0.06] bg-white/[0.01] px-4 py-3">
+                    <div className="border-t pf-v2-b pf-v2-s px-4 py-3">
                       <div className="flex items-center justify-between mb-1.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/45">Ajuste manual de carga</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-50">Ajuste manual de carga</p>
                         <button type="button"
                           onClick={() => setOverrides((prev) => ({ ...prev, [status.ownerKey]: { active: !override?.active, pct: override?.pct ?? 0 } }))}
-                          className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${override?.active ? "border-violet-300/40 bg-violet-500/15 text-violet-200" : "border-white/10 bg-white/[0.03] text-white/40"}`}>
+                          className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${override?.active ? "pf-v2-b-violet pf-v2-s-violet pf-v2-t-violet" : "pf-v2-b pf-v2-s pf-v2-t-40"}`}>
                           {override?.active ? "ON" : "OFF"}
                         </button>
                       </div>
@@ -1022,17 +1022,17 @@ export default function ProgressionPanel({
                         <input type="range" min={-30} max={10} step={0.5} value={override?.pct ?? 0}
                           onChange={(e) => setOverrides((prev) => ({ ...prev, [status.ownerKey]: { active: prev[status.ownerKey]?.active ?? false, pct: Number(e.target.value) } }))}
                           className="flex-1 accent-violet-400 h-1.5"/>
-                        <span className={`w-14 text-right text-xs font-bold tabular-nums ${(override?.pct ?? 0) > 0 ? "text-emerald-300" : (override?.pct ?? 0) < 0 ? "text-rose-300" : "text-white/50"}`}>
+                        <span className={`w-14 text-right text-xs font-bold tabular-nums ${(override?.pct ?? 0) > 0 ? "pf-v2-t-ok" : (override?.pct ?? 0) < 0 ? "pf-v2-t-danger" : "pf-v2-t-50"}`}>
                           {(override?.pct ?? 0) > 0 ? "+" : ""}{override?.pct ?? 0}%
                         </span>
                       </div>
-                      <div className="mt-1.5 flex justify-between text-[10px] text-white/30">
+                      <div className="mt-1.5 flex justify-between text-[10px] pf-v2-t-40">
                         <span>−30% (recuperación)</span>
-                        <span className="text-white/40">Auto: {delta !== null ? `${delta > 0 ? "+" : ""}${delta}%` : "—"}</span>
+                        <span className="pf-v2-t-40">Auto: {delta !== null ? `${delta > 0 ? "+" : ""}${delta}%` : "—"}</span>
                         <span>+10% (agresivo)</span>
                       </div>
                       {override?.active && (
-                        <p className="mt-1.5 text-[10px] text-violet-300/70">
+                        <p className="mt-1.5 text-[10px] pf-v2-t-violet">
                           Override activo — se usará {override.pct > 0 ? "+" : ""}{override.pct}% en la próxima generación.
                         </p>
                       )}
@@ -1041,8 +1041,8 @@ export default function ProgressionPanel({
 
                   {/* Preview exercise comparison */}
                   {preview && status.currentWeek && (
-                    <div className="border-t border-cyan-300/15 bg-cyan-500/[0.04] px-4 py-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-300/70 mb-2">
+                    <div className="border-t pf-v2-b-accent pf-v2-s-accent px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-accent mb-2">
                         Comparación de ejercicios — {status.currentWeek.nombre} → {preview.nextWeekPlan.nombre}
                       </p>
                       <ExerciseComparisonTable
@@ -1051,8 +1051,8 @@ export default function ProgressionPanel({
                         ejercicioMap={ejercicioMap}
                       />
                       {preview.rationaleEs && (
-                        <p className="mt-3 text-[11px] text-white/50 leading-relaxed border-t border-white/[0.06] pt-2">
-                          <span className="text-white/35 font-semibold mr-1">Razonamiento:</span>
+                        <p className="mt-3 text-[11px] pf-v2-t-50 leading-relaxed border-t pf-v2-b pt-2">
+                          <span className="pf-v2-t-40 font-semibold mr-1">Razonamiento:</span>
                           {preview.rationaleEs}
                         </p>
                       )}
@@ -1061,16 +1061,16 @@ export default function ProgressionPanel({
 
                   {/* Expanded rationale (when no preview) */}
                   {isExpanded && !preview && status.rationaleEs && (
-                    <div className="border-t border-white/[0.06] bg-white/[0.015] px-4 py-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40 mb-1.5">Razonamiento del Motor</p>
-                      <p className="text-xs text-white/65 leading-relaxed">{status.rationaleEs}</p>
+                    <div className="border-t pf-v2-b pf-v2-s px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-40 mb-1.5">Razonamiento del Motor</p>
+                      <p className="text-xs pf-v2-t-70 leading-relaxed">{status.rationaleEs}</p>
                       {status.plateau && status.plateau.consecutiveLowStimulus > 0 && (
-                        <div className="mt-2 rounded-lg border border-orange-300/20 bg-orange-500/10 px-3 py-2">
-                          <p className="text-[11px] text-orange-200">🔄 {status.plateau.recommendation}</p>
+                        <div className="mt-2 rounded-lg border pf-v2-b-warn pf-v2-s-warn px-3 py-2">
+                          <p className="text-[11px] pf-v2-t-warn">🔄 {status.plateau.recommendation}</p>
                         </div>
                       )}
                       {m && !m.hasData && (
-                        <p className="mt-2 text-[11px] text-amber-300/70">Sin datos de rendimiento — ajuste por posición en el mesociclo.</p>
+                        <p className="mt-2 text-[11px] pf-v2-t-warn">Sin datos de rendimiento — ajuste por posición en el mesociclo.</p>
                       )}
                     </div>
                   )}
@@ -1080,8 +1080,8 @@ export default function ProgressionPanel({
           </div>
 
           {/* How it works */}
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/30 mb-2">¿Cómo funciona?</p>
+          <div className="rounded-2xl border pf-v2-b pf-v2-s p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide pf-v2-t-40 mb-2">¿Cómo funciona?</p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { icon: "📊", title: "1. Lee los datos",      desc: "Carga real, RPE, fatiga y completitud de la semana." },
@@ -1090,8 +1090,8 @@ export default function ProgressionPanel({
                 { icon: "🔄", title: "4. Detecta plateaus",  desc: "3+ semanas de bajo estímulo → variación de carga automática." },
               ].map(({ icon, title, desc }) => (
                 <div key={title} className="space-y-0.5">
-                  <p className="text-[11px] font-semibold text-white/55">{icon} {title}</p>
-                  <p className="text-[10px] text-white/30 leading-relaxed">{desc}</p>
+                  <p className="text-[11px] font-semibold pf-v2-t-50">{icon} {title}</p>
+                  <p className="text-[10px] pf-v2-t-40 leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -1125,7 +1125,7 @@ function ExerciseComparisonTable({
   ejercicioMap: Record<string, { nombre?: string; categoria?: string }>;
 }) {
   const diffs = useMemo(() => diffWeeks(oldWeek, newWeek, ejercicioMap), [oldWeek, newWeek, ejercicioMap]);
-  if (diffs.length === 0) return <p className="text-xs text-white/35">Sin ejercicios para comparar.</p>;
+  if (diffs.length === 0) return <p className="text-xs pf-v2-t-40">Sin ejercicios para comparar.</p>;
 
   const changed = diffs.filter((d) => d.changed);
   const same    = diffs.filter((d) => !d.changed);
@@ -1133,13 +1133,13 @@ function ExerciseComparisonTable({
   return (
     <div className="space-y-1">
       {changed.length === 0 && (
-        <p className="text-xs text-white/45 italic">Todos los parámetros se mantienen iguales.</p>
+        <p className="text-xs pf-v2-t-50 italic">Todos los parámetros se mantienen iguales.</p>
       )}
       {changed.map((d) => (
         <ExerciseRow key={d.ejercicioId} diff={d} highlight />
       ))}
       {same.length > 0 && changed.length > 0 && (
-        <p className="text-[10px] uppercase tracking-wide text-white/25 pt-1">Sin cambios ({same.length})</p>
+        <p className="text-[10px] uppercase tracking-wide pf-v2-t-40 pt-1">Sin cambios ({same.length})</p>
       )}
       {same.map((d) => (
         <ExerciseRow key={d.ejercicioId} diff={d} />
@@ -1167,24 +1167,24 @@ function ExerciseRow({ diff, highlight = false }: { diff: ExerciseDiff; highligh
   }
 
   return (
-    <div className={`flex items-start gap-2 rounded-lg px-2.5 py-1.5 ${highlight ? "bg-cyan-500/10" : "bg-white/[0.015]"}`}>
+    <div className={`flex items-start gap-2 rounded-lg px-2.5 py-1.5 ${highlight ? "pf-v2-s-accent" : "pf-v2-s"}`}>
       <div className="flex-1 min-w-0">
-        <p className={`text-[11px] font-semibold truncate ${highlight ? "text-white/90" : "text-white/50"}`}>{nombre}</p>
-        <p className="text-[10px] text-white/30">{dia} · {bloque}</p>
+        <p className={`text-[11px] font-semibold truncate ${highlight ? "pf-v2-t" : "pf-v2-t-50"}`}>{nombre}</p>
+        <p className="text-[10px] pf-v2-t-40">{dia} · {bloque}</p>
       </div>
       {highlight ? (
         <div className="flex items-center gap-1.5 text-[11px] shrink-0">
-          <span className="text-white/40 tabular-nums">{beforeStr}</span>
-          <span className="text-white/25">→</span>
-          <span className="font-semibold text-cyan-200 tabular-nums">{afterStr}</span>
+          <span className="pf-v2-t-40 tabular-nums">{beforeStr}</span>
+          <span className="pf-v2-t-40">→</span>
+          <span className="font-semibold pf-v2-t-accent tabular-nums">{afterStr}</span>
           {deltaBadge && (
-            <span className={`rounded px-1 py-0.5 text-[10px] font-bold ${deltaBadge.startsWith("+") ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>
+            <span className={`rounded px-1 py-0.5 text-[10px] font-bold ${deltaBadge.startsWith("+") ? "pf-v2-s-ok pf-v2-t-ok" : "pf-v2-s-danger pf-v2-t-danger"}`}>
               {deltaBadge}
             </span>
           )}
         </div>
       ) : (
-        <span className="text-[11px] text-white/30 tabular-nums shrink-0">{afterStr}</span>
+        <span className="text-[11px] pf-v2-t-40 tabular-nums shrink-0">{afterStr}</span>
       )}
     </div>
   );
@@ -1213,16 +1213,16 @@ function HistoryView({
       <div className="flex flex-wrap gap-1">
         {[{ key: "all", label: "Todos" }, { key: "jugadoras", label: "Jugadoras" }, { key: "alumnos", label: "Alumnos" }, ...availableCategorias.map((c) => ({ key: c, label: c }))].map(({ key, label }) => (
           <button key={key} type="button" onClick={() => onSetTipoFilter(key)}
-            className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${tipoFilter === key ? "border-white/20 bg-white/10 text-white/90" : "border-white/[0.07] bg-white/[0.02] text-white/40 hover:text-white/65"}`}>
+            className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${tipoFilter === key ? "pf-v2-b-hi pf-v2-s-hi pf-v2-t" : "pf-v2-b pf-v2-s pf-v2-t-40 "}`}>
             {label}
           </button>
         ))}
       </div>
 
       {filteredPlanes.length === 0 && (
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 text-center">
-          <p className="text-sm text-white/40">No hay historial de progresiones aún.</p>
-          <p className="mt-1 text-xs text-white/25">Generá semanas desde el Panel para ver el historial aquí.</p>
+        <div className="rounded-2xl border pf-v2-b pf-v2-s p-8 text-center">
+          <p className="text-sm pf-v2-t-40">No hay historial de progresiones aún.</p>
+          <p className="mt-1 text-xs pf-v2-t-40">Generá semanas desde el Panel para ver el historial aquí.</p>
         </div>
       )}
 
@@ -1231,42 +1231,42 @@ function HistoryView({
         const sparkRecords = [...records].reverse().slice(0, 10);
 
         return (
-          <div key={plan.ownerKey} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]">
+          <div key={plan.ownerKey} className="rounded-2xl border pf-v2-b pf-v2-s overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 border-b pf-v2-b">
               <div className="flex-1">
-                <span className="text-sm font-semibold text-white">{plan.nombre}</span>
-                {plan.categoria && <span className="ml-2 rounded-md bg-white/5 px-2 py-0.5 text-[10px] text-white/45">{plan.categoria}</span>}
+                <span className="text-sm font-semibold pf-v2-t">{plan.nombre}</span>
+                {plan.categoria && <span className="ml-2 rounded-md pf-v2-s-hi px-2 py-0.5 text-[10px] pf-v2-t-50">{plan.categoria}</span>}
               </div>
-              <span className="text-[11px] text-white/35">{records.length} generación{records.length !== 1 ? "es" : ""}</span>
+              <span className="text-[11px] pf-v2-t-40">{records.length} generación{records.length !== 1 ? "es" : ""}</span>
             </div>
 
             {sparkRecords.length >= 2 && (
               <div className="px-4 pt-3 pb-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] uppercase tracking-wide text-white/30">Tendencia de carga</span>
+                  <span className="text-[10px] uppercase tracking-wide pf-v2-t-40">Tendencia de carga</span>
                 </div>
                 <Sparkline records={sparkRecords} width={200} height={36} />
               </div>
             )}
 
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y ">
               {records.map((rec, i) => (
                 <div key={rec.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${i === 0 ? "bg-cyan-400" : "bg-white/20"}`}/>
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${i === 0 ? "pf-v2-s-accent-full" : "pf-v2-s-hi"}`}/>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-white/70">{rec.weekLabel}</span>
+                      <span className="text-xs pf-v2-t-70">{rec.weekLabel}</span>
                       <span className={`inline-block rounded-md border px-2 py-0.5 text-[10px] font-bold ${decisionBadgeBg(rec.decision)}`}>{DECISION_LABELS[rec.decision]}</span>
-                      {rec.plateauDetected && <span className="rounded-md border border-orange-300/30 bg-orange-500/10 px-2 py-0.5 text-[10px] text-orange-200">Plateau</span>}
-                      {rec.manualOverride  && <span className="rounded-md border border-violet-300/30 bg-violet-500/10 px-2 py-0.5 text-[10px] text-violet-200">✏ Manual</span>}
+                      {rec.plateauDetected && <span className="rounded-md border pf-v2-b-warn pf-v2-s-warn px-2 py-0.5 text-[10px] pf-v2-t-warn">Plateau</span>}
+                      {rec.manualOverride  && <span className="rounded-md border pf-v2-b-violet pf-v2-s-violet px-2 py-0.5 text-[10px] pf-v2-t-violet">✏ Manual</span>}
                     </div>
-                    <p className="mt-0.5 text-[10px] text-white/30 line-clamp-1">{rec.rationaleEs}</p>
+                    <p className="mt-0.5 text-[10px] pf-v2-t-40 line-clamp-1">{rec.rationaleEs}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className={`text-xs font-bold tabular-nums ${rec.loadDeltaPct > 0 ? "text-emerald-300" : rec.loadDeltaPct < 0 ? "text-rose-300" : "text-white/40"}`}>
+                    <p className={`text-xs font-bold tabular-nums ${rec.loadDeltaPct > 0 ? "pf-v2-t-ok" : rec.loadDeltaPct < 0 ? "pf-v2-t-danger" : "pf-v2-t-40"}`}>
                       {rec.loadDeltaPct > 0 ? "+" : ""}{rec.loadDeltaPct}%
                     </p>
-                    <p className="text-[10px] text-white/25">{fmtDate(rec.generatedAt)}</p>
+                    <p className="text-[10px] pf-v2-t-40">{fmtDate(rec.generatedAt)}</p>
                   </div>
                 </div>
               ))}
@@ -1283,12 +1283,12 @@ function HistoryView({
 // ──────────────────────────────────────────────
 
 function MetricChip({ label, value, sub, ok, warn }: { label: string; value: string; sub?: string; ok?: boolean; warn?: boolean }) {
-  const color = warn ? "text-rose-300" : ok ? "text-emerald-300" : "text-white/65";
+  const color = warn ? "pf-v2-t-danger" : ok ? "pf-v2-t-ok" : "pf-v2-t-70";
   return (
     <div className="flex items-baseline gap-1.5">
-      <span className="text-[10px] uppercase tracking-wide text-white/35">{label}</span>
+      <span className="text-[10px] uppercase tracking-wide pf-v2-t-40">{label}</span>
       <span className={`text-xs font-bold ${color}`}>{value}</span>
-      {sub && <span className="text-[10px] text-white/30">{sub}</span>}
+      {sub && <span className="text-[10px] pf-v2-t-40">{sub}</span>}
     </div>
   );
 }
@@ -1318,7 +1318,7 @@ function Sparkline({ records, width = 80, height = 24 }: { records: ProgressionH
         <path d={line} fill="none" stroke={clr} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <circle cx={toX(values.length - 1)} cy={toY(last)} r="2.5" fill={clr}/>
       </svg>
-      <span className={`text-[10px] font-bold tabular-nums ${last >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+      <span className={`text-[10px] font-bold tabular-nums ${last >= 0 ? "pf-v2-t-ok" : "pf-v2-t-danger"}`}>
         {last > 0 ? "+" : ""}{last}%
       </span>
     </div>

@@ -63,19 +63,19 @@ function StatCard({
   tone?: CardTone;
 }) {
   const palette: Record<CardTone, { border: string; value: string }> = {
-    cyan: { border: "border-cyan-300/35 bg-cyan-500/10", value: "text-cyan-100" },
-    emerald: { border: "border-emerald-300/35 bg-emerald-500/10", value: "text-emerald-100" },
-    rose: { border: "border-rose-300/35 bg-rose-500/10", value: "text-rose-100" },
-    violet: { border: "border-violet-300/35 bg-violet-500/10", value: "text-violet-100" },
-    amber: { border: "border-amber-300/35 bg-amber-500/10", value: "text-amber-100" },
-    slate: { border: "border-white/[0.08] bg-[#0e1012]", value: "text-white/85" },
+    cyan: { border: "pf-v2-b-accent pf-v2-s-accent", value: "pf-v2-t-accent" },
+    emerald: { border: "pf-v2-b-ok pf-v2-s-ok", value: "pf-v2-t-ok" },
+    rose: { border: "pf-v2-b-danger pf-v2-s-danger", value: "pf-v2-t-danger" },
+    violet: { border: "pf-v2-b-violet pf-v2-s-violet", value: "pf-v2-t-violet" },
+    amber: { border: "pf-v2-b-warn pf-v2-s-warn", value: "pf-v2-t-warn" },
+    slate: { border: "pf-v2-b pf-v2-s-deep", value: "pf-v2-t" },
   };
 
   return (
     <article className={`rounded-2xl border p-4 ${palette[tone].border}`}>
-      <p className="text-xs uppercase tracking-wide text-white/65">{label}</p>
-      <p className={`mt-2 text-3xl font-black ${palette[tone].value}`}>{value}</p>
-      {sub ? <p className="mt-1 text-xs text-white/40">{sub}</p> : null}
+      <p className="text-xs uppercase tracking-wide pf-v2-t-70">{label}</p>
+      <p className={`mt-2 text-3xl font-black${palette[tone].value}`}>{value}</p>
+      {sub ? <p className="mt-1 text-xs pf-v2-t-40">{sub}</p> : null}
     </article>
   );
 }
@@ -299,7 +299,7 @@ export default function RegistrosPage() {
 
   if (sessionStatus === "loading") {
     return (
-      <main className="mx-auto max-w-[1500px] p-6 text-white/85">
+      <main className="mx-auto max-w-[1500px] p-6 pf-v2-t">
         <p className="pf-v2-muted">Cargando registros...</p>
       </main>
     );
@@ -307,7 +307,7 @@ export default function RegistrosPage() {
 
   if (role === "ADMIN") {
     return (
-      <main className="mx-auto max-w-[1500px] p-6 text-white/85">
+      <main className="mx-auto max-w-[1500px] p-6 pf-v2-t">
         <p className="pf-v2-muted">Redirigiendo a Pagos mensuales...</p>
       </main>
     );
@@ -331,7 +331,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Asistencia</h2>
+        <h2 className="pf-v2-h2">Asistencia</h2>
         <p className="pf-v2-muted">Estado actual de jornadas y presentismo.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
           <StatCard label="Jornadas activas" value={stats.jornadasActivas} tone="cyan" />
@@ -343,7 +343,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Clientes</h2>
+        <h2 className="pf-v2-h2">Clientes</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
           <StatCard label="Activos" value={stats.activos} tone="emerald" />
@@ -355,13 +355,13 @@ export default function RegistrosPage() {
       <section className="rounded-2xl border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Resumen mensual de ingresos</h2>
+            <h2 className="pf-v2-h2">Resumen mensual de ingresos</h2>
             <p className="pf-v2-muted">Consolidado por mes en base a pagos registrados en Clientes.</p>
           </div>
           <ReliableActionButton
             type="button"
             onClick={exportarExcelIngresos}
-            className="rounded-xl border border-emerald-200/40 bg-emerald-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
+            className="rounded-xl border pf-v2-b-ok pf-v2-s-ok px-4 py-2 text-sm font-black pf-v2-t transition pf-v2-hover"
           >
             Descargar Excel
           </ReliableActionButton>
@@ -370,9 +370,9 @@ export default function RegistrosPage() {
         {resumenMensualIngresos.length === 0 ? (
           <p className="pf-v2-muted">No hay pagos suficientes para resumir por mes.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
+          <div className="overflow-x-auto rounded-xl border pf-v2-b">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-[#0e1012] text-white/75">
+              <thead className="pf-v2-s-deep pf-v2-t-70">
                 <tr>
                   <th className="px-3 py-2">Mes</th>
                   <th className="px-3 py-2">Pagos</th>
@@ -382,11 +382,11 @@ export default function RegistrosPage() {
               </thead>
               <tbody>
                 {resumenMensualIngresos.map((row) => (
-                  <tr key={row.mes} className="border-t border-white/[0.07]">
-                    <td className="px-3 py-2 font-medium text-white/85">{row.mes}</td>
-                    <td className="px-3 py-2 text-white/65">{row.cantidadPagos}</td>
-                    <td className="px-3 py-2 text-white/65">{row.clientesUnicos}</td>
-                    <td className="px-3 py-2 font-semibold text-emerald-200">
+                  <tr key={row.mes} className="border-t pf-v2-b">
+                    <td className="px-3 py-2 font-medium pf-v2-t">{row.mes}</td>
+                    <td className="px-3 py-2 pf-v2-t-70">{row.cantidadPagos}</td>
+                    <td className="px-3 py-2 pf-v2-t-70">{row.clientesUnicos}</td>
+                    <td className="px-3 py-2 font-semibold pf-v2-t-ok">
                       {row.moneda} {row.total.toLocaleString("es-AR")}
                     </td>
                   </tr>
@@ -398,7 +398,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Pagos</h2>
+        <h2 className="pf-v2-h2">Pagos</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Pagos confirmados" value={stats.pagosConfirmados} tone="emerald" />
           <StatCard label="Pagos pendientes" value={stats.pagosPendientes} tone={stats.pagosPendientes > 0 ? "rose" : "emerald"} />
@@ -408,38 +408,38 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Sesiones y asesoria</h2>
+        <h2 className="pf-v2-h2">Sesiones y asesoria</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           <StatCard label="Sesiones creadas" value={stats.sesionesTotales} tone="cyan" />
 
           <div className="pf-v2-card">
-            <p className="text-sm font-semibold text-white/65">Tipo de asesoria</p>
+            <p className="text-sm font-semibold pf-v2-t-70">Tipo de asesoria</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-white/65">Completa</span>
-                <span className="font-semibold text-white/85">{stats.tipoAsesoria.completa ?? 0}</span>
+                <span className="pf-v2-t-70">Completa</span>
+                <span className="font-semibold pf-v2-t">{stats.tipoAsesoria.completa ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/65">Entrenamiento</span>
-                <span className="font-semibold text-white/85">{stats.tipoAsesoria.entrenamiento ?? 0}</span>
+                <span className="pf-v2-t-70">Entrenamiento</span>
+                <span className="font-semibold pf-v2-t">{stats.tipoAsesoria.entrenamiento ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/65">Nutricion</span>
-                <span className="font-semibold text-white/85">{stats.tipoAsesoria.nutricion ?? 0}</span>
+                <span className="pf-v2-t-70">Nutricion</span>
+                <span className="font-semibold pf-v2-t">{stats.tipoAsesoria.nutricion ?? 0}</span>
               </div>
             </div>
           </div>
 
           <div className="pf-v2-card">
-            <p className="text-sm font-semibold text-white/65">Modalidad</p>
+            <p className="text-sm font-semibold pf-v2-t-70">Modalidad</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-white/65">Presencial</span>
-                <span className="font-semibold text-white/85">{stats.modalidades.presencial ?? 0}</span>
+                <span className="pf-v2-t-70">Presencial</span>
+                <span className="font-semibold pf-v2-t">{stats.modalidades.presencial ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/65">Virtual</span>
-                <span className="font-semibold text-white/85">{stats.modalidades.virtual ?? 0}</span>
+                <span className="pf-v2-t-70">Virtual</span>
+                <span className="font-semibold pf-v2-t">{stats.modalidades.virtual ?? 0}</span>
               </div>
             </div>
           </div>
@@ -447,7 +447,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="mb-3 text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Todos los clientes ({allClientes.length})</h2>
+        <h2 className="mb-3 text-xl font-bold">Todos los clientes ({allClientes.length})</h2>
         <div className="grid gap-3">
           {allClientes.length === 0 ? (
             <p className="pf-v2-muted">No hay clientes registrados aun.</p>
@@ -457,13 +457,13 @@ export default function RegistrosPage() {
             const meta = clientesMeta[cliente.id] as ClienteMeta | undefined;
             const estadoClienteClass =
               cliente.estado === "activo"
-                ? "bg-emerald-500/10 text-emerald-200 border-emerald-300/35"
-                : "bg-slate-500/10 text-white/75 border-slate-300/35";
+                ? "pf-v2-s-ok pf-v2-t-ok pf-v2-b-ok"
+                : "pf-v2-s pf-v2-t-70 pf-v2-b";
 
             const estadoPagoClass =
               meta?.pagoEstado === "confirmado"
-                ? "bg-emerald-500/10 text-emerald-200 border-emerald-300/35"
-                : "bg-rose-500/10 text-rose-200 border-rose-300/35";
+                ? "pf-v2-s-ok pf-v2-t-ok pf-v2-b-ok"
+                : "pf-v2-s-danger pf-v2-t-danger pf-v2-b-danger";
 
             return (
               <article
@@ -471,8 +471,8 @@ export default function RegistrosPage() {
                 className="pf-v2-card flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-semibold text-white/85">{cliente.nombre}</p>
-                  <p className="text-xs text-white/40">
+                  <p className="font-semibold pf-v2-t">{cliente.nombre}</p>
+                  <p className="text-xs pf-v2-t-40">
                     {cliente.tipo}
                     {cliente.categoria ? ` · ${cliente.categoria}` : ""}
                     {cliente.club ? ` · ${cliente.club}` : ""}
@@ -481,24 +481,24 @@ export default function RegistrosPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   {meta?.startDate ? (
-                    <span className="rounded-full border border-white/[0.08] bg-white/5 px-3 py-1 text-xs text-white/75">
+                    <span className="rounded-full border pf-v2-b pf-v2-s-hi px-3 py-1 text-xs pf-v2-t-70">
                       Desde {new Date(meta.startDate).toLocaleDateString("es-AR")}
                     </span>
                   ) : null}
 
                   {meta?.tipoAsesoria ? (
-                    <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-xs font-medium capitalize text-cyan-100">
+                    <span className="rounded-full border pf-v2-b-accent pf-v2-s-accent px-3 py-1 text-xs font-medium capitalize pf-v2-t-accent">
                       {meta.tipoAsesoria}
                     </span>
                   ) : null}
 
                   {meta?.pagoEstado ? (
-                    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${estadoPagoClass}`}>
+                    <span className={`rounded-full border px-3 py-1 text-xs font-medium${estadoPagoClass}`}>
                       Pago {meta.pagoEstado}
                     </span>
                   ) : null}
 
-                  <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${estadoClienteClass}`}>
+                  <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize${estadoClienteClass}`}>
                     {cliente.estado}
                   </span>
                 </div>

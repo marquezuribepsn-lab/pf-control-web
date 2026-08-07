@@ -27,7 +27,7 @@ const steps = [
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="mx-auto mb-3 h-12 w-12 text-cyan-400"
+        className="mx-auto mb-3 h-12 w-12 pf-v2-t-accent"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -47,7 +47,7 @@ const steps = [
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="mx-auto mb-3 h-12 w-12 text-cyan-400"
+        className="mx-auto mb-3 h-12 w-12 pf-v2-t-accent"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -67,7 +67,7 @@ const steps = [
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="mx-auto mb-3 h-12 w-12 text-cyan-400"
+        className="mx-auto mb-3 h-12 w-12 pf-v2-t-accent"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -109,12 +109,12 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
       role="dialog"
       aria-modal="true"
       aria-label="Bienvenida al entrenamiento"
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 pf-dialog-fade-overlay${
+      className={`fixed inset-0 z-50 flex items-center justify-center pf-v2-s-deep backdrop-blur-sm px-4 pf-dialog-fade-overlay${
         closing ? " pf-dialog-is-closing" : ""
       }`}
     >
       <div
-        className={`relative w-full max-w-md rounded-2xl border border-white/10 bg-[#0e1012] shadow-2xl pf-dialog-fade-panel${
+        className={`relative w-full max-w-md rounded-2xl border pf-v2-b pf-v2-s-deep shadow-2xl pf-dialog-fade-panel${
           closing ? " pf-dialog-is-closing" : ""
         }`}
       >
@@ -123,7 +123,7 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
           type="button"
           onClick={handleClose}
           aria-label="Cerrar bienvenida"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-white/40 transition hover:bg-white/10 hover:text-white/80"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full pf-v2-t-40 transition pf-v2-hover "
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -145,7 +145,7 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
               key={i}
               aria-hidden="true"
               className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                i === step ? "w-6 bg-cyan-400" : "bg-white/20"
+                i === step ? "w-6 pf-v2-s-accent-full" : "pf-v2-s-hi"
               }`}
             />
           ))}
@@ -157,17 +157,17 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
           {step === 0 && (
             <>
               {steps[0].icon}
-              <h2 className="mb-2 text-xl font-bold text-white">
+              <h2 className="mb-2 text-xl font-bold pf-v2-t">
                 ¡Bienvenido/a{firstName ? `, ${firstName}` : ""}! 👋
               </h2>
-              <p className="mb-4 text-sm leading-relaxed text-white/60">
+              <p className="mb-4 text-sm leading-relaxed pf-v2-t-70">
                 Nos alegra que estés acá. Antes de empezar, completá tu perfil para que tu
                 entrenador pueda personalizarte mejor el plan.
               </p>
               <Link
                 href="/alumnos/cuenta"
                 onClick={handleClose}
-                className="mb-4 inline-flex items-center gap-1.5 rounded-lg bg-cyan-500/10 px-4 py-2 text-sm font-medium text-cyan-400 transition hover:bg-cyan-500/20"
+                className="mb-4 inline-flex items-center gap-1.5 rounded-lg pf-v2-s-accent px-4 py-2 text-sm font-medium pf-v2-t-accent transition pf-v2-hover"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -193,12 +193,12 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
           {step === 1 && (
             <>
               {steps[1].icon}
-              <h2 className="mb-2 text-xl font-bold text-white">Así se ve tu plan</h2>
-              <p className="mb-1 text-sm leading-relaxed text-white/60">
-                En la pestaña <span className="font-semibold text-cyan-400">Rutina</span> vas a
+              <h2 className="mb-2 text-xl font-bold pf-v2-t">Así se ve tu plan</h2>
+              <p className="mb-1 text-sm leading-relaxed pf-v2-t-70">
+                En la pestaña <span className="font-semibold pf-v2-t-accent">Rutina</span> vas a
                 encontrar tu plan de entrenamiento organizado por semanas y días.
               </p>
-              <p className="text-sm leading-relaxed text-white/60">
+              <p className="text-sm leading-relaxed pf-v2-t-70">
                 Cada día muestra los ejercicios asignados con sus series, repeticiones y descansos.
                 Seguí el orden sugerido para aprovechar al máximo cada sesión.
               </p>
@@ -209,14 +209,14 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
           {step === 2 && (
             <>
               {steps[2].icon}
-              <h2 className="mb-2 text-xl font-bold text-white">Cómo registrar una carga</h2>
-              <p className="mb-1 text-sm leading-relaxed text-white/60">
+              <h2 className="mb-2 text-xl font-bold pf-v2-t">Cómo registrar una carga</h2>
+              <p className="mb-1 text-sm leading-relaxed pf-v2-t-70">
                 Al tocar cualquier ejercicio podés registrar el peso y las repeticiones que
                 realizaste ese día — esto se guarda automáticamente en tu historial.
               </p>
-              <p className="text-sm leading-relaxed text-white/60">
-                Por ejemplo: si hiciste <span className="font-semibold text-white/80">3 series de 8</span> con{" "}
-                <span className="font-semibold text-white/80">60 kg</span>, anotalo ahí para que
+              <p className="text-sm leading-relaxed pf-v2-t-70">
+                Por ejemplo: si hiciste <span className="font-semibold pf-v2-t">3 series de 8</span> con{" "}
+                <span className="font-semibold pf-v2-t">60 kg</span>, anotalo ahí para que
                 tanto vos como tu entrenador puedan ver tu progreso.
               </p>
             </>
@@ -226,7 +226,7 @@ export default function OnboardingModal({ nombre, onDone }: OnboardingModalProps
           <button
             type="button"
             onClick={handleNext}
-            className="mt-5 w-full rounded-xl bg-cyan-500 py-3 text-sm font-semibold text-black transition hover:bg-cyan-400 active:scale-[0.98]"
+            className="mt-5 w-full rounded-xl pf-v2-s-accent-full py-3 text-sm font-semibold pf-v2-t-on transition pf-v2-hover active:scale-[0.98]"
           >
             {isLast ? "Listo 🎉" : "Siguiente →"}
           </button>

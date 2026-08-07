@@ -181,20 +181,20 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Sesiones - {equipo.nombre}</h1>
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm pf-v2-t-40">
             Planificación detallada de sesiones de entrenamiento
           </p>
         </div>
         <ReliableActionButton
           onClick={() => setMostrarFormulario(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-xl pf-v2-s-blue px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
         >
           Nueva Sesión
         </ReliableActionButton>
       </div>
 
       {/* Información del equipo */}
-      <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-2xl pf-v2-s-hi p-6 shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Información del Equipo</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -219,30 +219,30 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       </div>
 
       {mostrarFormulario && (
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl pf-v2-s-hi p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Nueva Sesión</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-700">
+              <label className="block text-sm font-medium pf-v2-t">
                 Título de la Sesión
               </label>
               <input
                 type="text"
                 value={formData.titulo}
                 onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                 placeholder="Ej: Fuerza tren inferior + aceleración"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700">
+              <label className="block text-sm font-medium pf-v2-t">
                 Objetivo
               </label>
               <textarea
                 value={formData.objetivo}
                 onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                 rows={3}
                 placeholder="Describe el objetivo principal de la sesión..."
                 required
@@ -250,27 +250,27 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-neutral-700">
+                <label className="block text-sm font-medium pf-v2-t">
                   Duración (minutos)
                 </label>
                 <input
                   type="number"
                   value={formData.duracion}
                   onChange={(e) => setFormData({ ...formData, duracion: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                  className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                   placeholder="90"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700">
+                <label className="block text-sm font-medium pf-v2-t">
                   Número estimado de bloques
                 </label>
                 <input
                   type="number"
                   value={formData.bloques}
                   onChange={(e) => setFormData({ ...formData, bloques: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                  className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                   placeholder="3"
                   required
                 />
@@ -279,7 +279,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
             <div className="flex gap-2">
               <ReliableActionButton
                 type="submit"
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-xl pf-v2-s-blue px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
               >
                 Crear Sesión
               </ReliableActionButton>
@@ -289,7 +289,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                   setMostrarFormulario(false);
                   setFormData({ titulo: "", objetivo: "", duracion: "", bloques: "" });
                 }}
-                className="rounded-xl border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+                className="rounded-xl border pf-v2-b px-4 py-2 text-sm font-medium pf-v2-hover"
               >
                 Cancelar
               </ReliableActionButton>
@@ -301,19 +301,19 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       {/* Sesiones del equipo */}
       <div className="space-y-6">
         {sesionesEquipo.map((sesion) => (
-          <div key={sesion.id} className="rounded-2xl bg-white p-6 shadow-sm">
+          <div key={sesion.id} className="rounded-2xl pf-v2-s-hi p-6 shadow-sm">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <h3 className="text-2xl font-bold">{sesion.titulo}</h3>
-                <p className="text-neutral-600 mt-1">{sesion.objetivo}</p>
-                <div className="flex gap-4 mt-2 text-sm text-neutral-500">
+                <p className="pf-v2-t-40 mt-1">{sesion.objetivo}</p>
+                <div className="flex gap-4 mt-2 text-sm pf-v2-t-40">
                   <span>⏱️ {sesion.duracion} min</span>
                   <span>📊 {sesion.bloques.length} bloques</span>
                 </div>
               </div>
               <ReliableActionButton
                 onClick={() => setSesionSeleccionada(sesionSeleccionada === sesion.id ? null : sesion.id)}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-lg pf-v2-s-blue px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
               >
                 {sesionSeleccionada === sesion.id ? "Ocultar Detalles" : "Ver Detalles"}
               </ReliableActionButton>
@@ -322,7 +322,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
             {sesionSeleccionada === sesion.id && (
               <div className="mt-6 space-y-6">
                 {/* Formulario para agregar bloque */}
-                <div className="rounded-xl bg-neutral-50 p-4">
+                <div className="rounded-xl pf-v2-s p-4">
                   <h4 className="text-lg font-semibold mb-3">Agregar Nuevo Bloque</h4>
                   <div className="grid gap-4 md:grid-cols-2 mb-4">
                     <input
@@ -330,20 +330,20 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                       placeholder="Título del bloque"
                       value={bloqueForm.titulo}
                       onChange={(e) => setBloqueForm({ ...bloqueForm, titulo: e.target.value })}
-                      className="rounded-md border border-neutral-300 px-3 py-2"
+                      className="rounded-md border pf-v2-b px-3 py-2"
                     />
                     <input
                       type="text"
                       placeholder="Objetivo del bloque"
                       value={bloqueForm.objetivo}
                       onChange={(e) => setBloqueForm({ ...bloqueForm, objetivo: e.target.value })}
-                      className="rounded-md border border-neutral-300 px-3 py-2"
+                      className="rounded-md border pf-v2-b px-3 py-2"
                     />
                   </div>
                   <ReliableActionButton
                     onClick={() => agregarBloque(sesion.id)}
                     disabled={!bloqueForm.titulo || !bloqueForm.objetivo}
-                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-lg pf-v2-s-ok px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Agregar Bloque
                   </ReliableActionButton>
@@ -352,18 +352,18 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                 {/* Bloques de la sesión */}
                 <div className="space-y-4">
                   {sesion.bloques.map((bloque) => (
-                    <div key={bloque.id} className="rounded-xl bg-neutral-50 p-4">
+                    <div key={bloque.id} className="rounded-xl pf-v2-s p-4">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h5 className="text-lg font-semibold">{bloque.titulo}</h5>
-                          <p className="text-neutral-600">{bloque.objetivo}</p>
+                          <p className="pf-v2-t-40">{bloque.objetivo}</p>
                         </div>
                         <ReliableActionButton
                           onClick={() => {
                             setBloqueActual(bloqueActual === bloque.id ? null : bloque.id);
                             setMostrarBuscadorEjercicios(false);
                           }}
-                          className="rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
+                          className="rounded-lg pf-v2-s-blue px-3 py-1 text-sm font-medium pf-v2-t pf-v2-hover"
                         >
                           {bloqueActual === bloque.id ? "Ocultar" : "Agregar Ejercicio"}
                         </ReliableActionButton>
@@ -376,12 +376,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                           if (!ejercicio) return null;
 
                           return (
-                            <div key={index} className="rounded-lg bg-white p-4 border border-neutral-200">
+                            <div key={index} className="rounded-lg pf-v2-s-hi p-4 border pf-v2-b">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h6 className="font-semibold">{ejercicio.nombre}</h6>
-                                    <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                                    <span className="inline-block rounded-full pf-v2-s-blue px-2 py-1 text-xs font-medium pf-v2-t-blue">
                                       {ejercicio.categoria}
                                     </span>
                                   </div>
@@ -406,7 +406,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   </div>
 
                                   {ejercicio.descripcion && (
-                                    <p className="text-sm text-neutral-600 mt-2">{ejercicio.descripcion}</p>
+                                    <p className="text-sm pf-v2-t-40 mt-2">{ejercicio.descripcion}</p>
                                   )}
                                 </div>
 
@@ -415,7 +415,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   const embedUrl = getEmbedUrl(ejercicio.videoUrl);
                                   return embedUrl ? (
                                     <div className="ml-4 flex-shrink-0">
-                                      <div className="w-32 h-20 rounded-lg overflow-hidden bg-neutral-100">
+                                      <div className="w-32 h-20 rounded-lg overflow-hidden pf-v2-s">
                                         <iframe
                                           src={embedUrl}
                                           className="w-full h-full"
@@ -435,12 +435,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
 
                       {/* Formulario para agregar ejercicios */}
                       {bloqueActual === bloque.id && (
-                        <div className="mt-4 rounded-lg bg-white p-4 border border-neutral-200">
+                        <div className="mt-4 rounded-lg pf-v2-s-hi p-4 border pf-v2-b">
                           {!mostrarBuscadorEjercicios ? (
                             <div className="text-center">
                               <ReliableActionButton
                                 onClick={() => setMostrarBuscadorEjercicios(true)}
-                                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                className="rounded-lg pf-v2-s-ok px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
                               >
                                 Agregar Ejercicios
                               </ReliableActionButton>
@@ -454,35 +454,35 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   placeholder="Buscar ejercicios..."
                                   value={busquedaEjercicio}
                                   onChange={(e) => setBusquedaEjercicio(e.target.value)}
-                                  className="flex-1 rounded-md border border-neutral-300 px-3 py-2"
+                                  className="flex-1 rounded-md border pf-v2-b px-3 py-2"
                                 />
                                 <ReliableActionButton
                                   onClick={seleccionarTodosEjercicios}
-                                  className="rounded-lg bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
+                                  className="rounded-lg pf-v2-s-blue px-3 py-2 text-sm font-medium pf-v2-t-blue pf-v2-hover"
                                 >
                                   Todos
                                 </ReliableActionButton>
                                 <ReliableActionButton
                                   onClick={deseleccionarTodosEjercicios}
-                                  className="rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200"
+                                  className="rounded-lg pf-v2-s px-3 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
                                 >
                                   Ninguno
                                 </ReliableActionButton>
                               </div>
 
                               {/* Lista de ejercicios con checkboxes */}
-                              <div className="grid gap-2 max-h-60 overflow-y-auto border border-neutral-200 rounded-lg p-2">
+                              <div className="grid gap-2 max-h-60 overflow-y-auto border pf-v2-b rounded-lg p-2">
                                 {ejerciciosFiltrados.map((ejercicio) => (
-                                  <label key={ejercicio.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-50 cursor-pointer">
+                                  <label key={ejercicio.id} className="flex items-center gap-3 p-2 rounded-lg pf-v2-hover cursor-pointer">
                                     <input
                                       type="checkbox"
                                       checked={ejerciciosSeleccionados.has(ejercicio.id)}
                                       onChange={() => toggleEjercicioSeleccionado(ejercicio.id)}
-                                      className="rounded border-neutral-300"
+                                      className="rounded pf-v2-b"
                                     />
                                     <div className="flex-1">
                                       <div className="font-medium">{ejercicio.nombre}</div>
-                                      <div className="text-sm text-neutral-600">{ejercicio.categoria}</div>
+                                      <div className="text-sm pf-v2-t-40">{ejercicio.categoria}</div>
                                     </div>
                                   </label>
                                 ))}
@@ -490,59 +490,59 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
 
                               {/* Parámetros globales */}
                               {ejerciciosSeleccionados.size > 0 && (
-                                <div className="space-y-4 border-t border-neutral-200 pt-4">
-                                  <h6 className="font-medium text-green-700">
+                                <div className="space-y-4 border-t pf-v2-b pt-4">
+                                  <h6 className="font-medium pf-v2-t-ok">
                                     {ejerciciosSeleccionados.size} ejercicio{ejerciciosSeleccionados.size !== 1 ? 's' : ''} seleccionado{ejerciciosSeleccionados.size !== 1 ? 's' : ''}
                                   </h6>
 
                                   <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                      <label className="block text-sm font-medium text-neutral-700">
+                                      <label className="block text-sm font-medium pf-v2-t">
                                         Series (todos)
                                       </label>
                                       <input
                                         type="number"
                                         value={parametrosGlobales.series}
                                         onChange={(e) => setParametrosGlobales({ ...parametrosGlobales, series: Number(e.target.value) })}
-                                        className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                                        className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                                         min="1"
                                       />
                                     </div>
                                     <div>
-                                      <label className="block text-sm font-medium text-neutral-700">
+                                      <label className="block text-sm font-medium pf-v2-t">
                                         Repeticiones (todos)
                                       </label>
                                       <input
                                         type="text"
                                         value={parametrosGlobales.repeticiones}
                                         onChange={(e) => setParametrosGlobales({ ...parametrosGlobales, repeticiones: e.target.value })}
-                                        className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                                        className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                                         placeholder="8-10 o máx"
                                       />
                                     </div>
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-700">
+                                    <label className="block text-sm font-medium pf-v2-t">
                                       Carga (todos)
                                     </label>
                                     <input
                                       type="text"
                                       value={parametrosGlobales.carga}
                                       onChange={(e) => setParametrosGlobales({ ...parametrosGlobales, carga: e.target.value })}
-                                      className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                                      className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                                       placeholder="70% 1RM o peso específico"
                                     />
                                   </div>
 
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-700">
+                                    <label className="block text-sm font-medium pf-v2-t">
                                       Observaciones (todos)
                                     </label>
                                     <textarea
                                       value={parametrosGlobales.observaciones}
                                       onChange={(e) => setParametrosGlobales({ ...parametrosGlobales, observaciones: e.target.value })}
-                                      className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
+                                      className="mt-1 block w-full rounded-md border pf-v2-b px-3 py-2"
                                       rows={2}
                                       placeholder="Instrucciones específicas, técnica, etc."
                                     />
@@ -551,7 +551,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                   <div className="flex gap-2">
                                     <ReliableActionButton
                                       onClick={() => agregarEjerciciosABloque(sesion.id, bloque.id)}
-                                      className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                      className="rounded-lg pf-v2-s-ok px-4 py-2 text-sm font-medium pf-v2-t pf-v2-hover"
                                     >
                                       Agregar {ejerciciosSeleccionados.size} Ejercicio{ejerciciosSeleccionados.size !== 1 ? 's' : ''} al Bloque
                                     </ReliableActionButton>
@@ -567,7 +567,7 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
                                         setMostrarBuscadorEjercicios(false);
                                         setBloqueActual(null);
                                       }}
-                                      className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+                                      className="rounded-lg border pf-v2-b px-4 py-2 text-sm font-medium pf-v2-hover"
                                     >
                                       Cancelar
                                     </ReliableActionButton>
@@ -588,12 +588,12 @@ export default function EquipoSesionesPage({ params }: { params: Promise<{ equip
       </div>
 
       {sesionesEquipo.length === 0 && (
-        <div className="rounded-2xl bg-white p-8 shadow-sm text-center">
-          <svg className="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="rounded-2xl pf-v2-s-hi p-8 shadow-sm text-center">
+          <svg className="mx-auto h-12 w-12 pf-v2-t-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-neutral-900">No hay sesiones planificadas</h3>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h3 className="mt-2 text-sm font-medium pf-v2-t">No hay sesiones planificadas</h3>
+          <p className="mt-1 text-sm pf-v2-t-40">
             Crea tu primera sesión de entrenamiento para este equipo.
           </p>
         </div>

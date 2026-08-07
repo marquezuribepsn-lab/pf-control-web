@@ -390,7 +390,7 @@ function MusicPlayer({ item }: { item: MusicaAlumno }) {
   const showImage = Boolean(proxyUrl) && !failed;
 
   return (
-    <div className="mt-2 aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border border-white/10 bg-slate-900/70">
+    <div className="mt-2 aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border pf-v2-b pf-v2-s-deep">
       {showImage ? (
         <img
           src={proxyUrl}
@@ -400,11 +400,11 @@ function MusicPlayer({ item }: { item: MusicaAlumno }) {
           onError={() => setFailed(true)}
         />
       ) : (
-        <div className="flex h-full w-full flex-col justify-between bg-gradient-to-br from-slate-700/50 to-slate-900/80 p-3 text-left">
-          <span className="inline-flex w-max rounded-full border border-white/20 bg-black/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/80">
+        <div className="flex h-full w-full flex-col justify-between p-3 text-left">
+          <span className="inline-flex w-max rounded-full border pf-v2-b-hi pf-v2-s-deep px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] pf-v2-t">
             {getPlatformLabel(item.platform)}
           </span>
-          <p className="line-clamp-2 text-sm font-black text-white/90">{item.playlistName}</p>
+          <p className="line-clamp-2 text-sm font-black pf-v2-t">{item.playlistName}</p>
         </div>
       )}
     </div>
@@ -587,28 +587,27 @@ export default function ClientesMusicaPage() {
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
-        style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,288),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
       <div className="pf-v2-card">
-        <h1 className="text-3xl font-black" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Musica</h1>
+        <h1 className="text-3xl font-black">Musica</h1>
         <p className="pf-v2-muted">
           Categoria unificada: selecciona playlist desde cualquier plataforma y asignala a cada alumno con reproductor integrado.
         </p>
-        <p className="mt-1 text-xs text-white/40">
+        <p className="mt-1 text-xs pf-v2-t-40">
           Plataformas compatibles: Spotify, YouTube, YouTube Music, SoundCloud, Apple Music, Deezer, Amazon Music y links directos de audio.
         </p>
       </div>
 
       <section className="pf-v2-card">
-        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Nueva asignacion</h2>
+        <h2 className="pf-v2-h2">Nueva asignacion</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <label className="text-xs text-white/65 md:col-span-2 xl:col-span-2">
+          <label className="text-xs pf-v2-t-70 md:col-span-2 xl:col-span-2">
             Seleccionar desde catalogo (opcional)
             <select
               value={selectedCatalogUrl}
               onChange={(e) => loadFromCatalog(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             >
               <option value="">Cargar datos de una playlist existente</option>
               {catalogOptions.map((item) => (
@@ -619,12 +618,12 @@ export default function ClientesMusicaPage() {
             </select>
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Alumno
             <select
               value={alumnoNombre}
               onChange={(e) => setAlumnoNombre(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             >
               <option value="">Musica general (sin alumno)</option>
               {alumnoOptions.map((name) => (
@@ -635,12 +634,12 @@ export default function ClientesMusicaPage() {
             </select>
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Plataforma
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value as FormPlatform)}
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             >
               {PLATFORM_OPTIONS.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -650,7 +649,7 @@ export default function ClientesMusicaPage() {
             </select>
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             URL de la playlist
             <input
               value={playlistUrl}
@@ -665,26 +664,26 @@ export default function ClientesMusicaPage() {
                 }
               }}
               placeholder="https://..."
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             />
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Objetivo
             <input
               value={objetivo}
               onChange={(e) => setObjetivo(e.target.value)}
               placeholder="activacion, fuerza, recuperacion"
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             />
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Dia sugerido
             <select
               value={diaSemana}
               onChange={(e) => setDiaSemana(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             >
               <option value="">Sin dia definido</option>
               <option value={ALL_DAYS_VALUE}>Todos los dias</option>
@@ -696,31 +695,31 @@ export default function ClientesMusicaPage() {
             </select>
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Cancion destacada
             <input
               value={recommendedSongTitle}
               onChange={(e) => setRecommendedSongTitle(e.target.value)}
               placeholder="Titulo"
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             />
           </label>
 
-          <label className="text-xs text-white/65">
+          <label className="text-xs pf-v2-t-70">
             Artista
             <input
               value={recommendedSongArtist}
               onChange={(e) => setRecommendedSongArtist(e.target.value)}
               placeholder="Artista"
-              className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             />
           </label>
         </div>
 
         {previewItem ? (
-          <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.06] p-3">
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Preview del reproductor</p>
-            <p className="mt-1 text-sm font-semibold text-white/85">{previewItem.playlistName}</p>
+          <div className="mt-4 rounded-xl border pf-v2-b pf-v2-s-hi p-3">
+            <p className="text-xs uppercase tracking-[0.2em] pf-v2-t-accent">Preview del reproductor</p>
+            <p className="mt-1 text-sm font-semibold pf-v2-t">{previewItem.playlistName}</p>
             <MusicPlayer item={previewItem} />
           </div>
         ) : null}
@@ -729,24 +728,24 @@ export default function ClientesMusicaPage() {
           type="button"
           onClick={addAssignment}
           disabled={isSaving}
-          className="mt-4 rounded-lg bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500"
+          className="mt-4 rounded-lg pf-v2-s-violet px-3 py-2 text-sm font-semibold pf-v2-t pf-v2-hover"
         >
           {isSaving ? "Guardando..." : "Guardar asignacion musical (sync automatico)"}
         </ReliableActionButton>
 
-        {status ? <p className="mt-3 text-sm text-emerald-300">{status}</p> : null}
-        {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
+        {status ? <p className="mt-3 text-sm pf-v2-t-ok">{status}</p> : null}
+        {error ? <p className="mt-3 text-sm pf-v2-t-danger">{error}</p> : null}
       </section>
 
       <section className="pf-v2-card mt-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Asignaciones ({sortedAssignments.length})</h2>
-          <label className="text-xs text-white/65">
+          <h2 className="pf-v2-h2">Asignaciones ({sortedAssignments.length})</h2>
+          <label className="text-xs pf-v2-t-70">
             Vista alumno
             <select
               value={previewAlumno}
               onChange={(e) => setPreviewAlumno(e.target.value)}
-              className="mt-1 w-full min-w-52 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+              className="mt-1 w-full min-w-52 rounded-lg border pf-v2-b-hi pf-v2-s-hi px-3 py-2 text-sm pf-v2-t outline-none"
             >
               <option value="TODOS">Todos los alumnos</option>
               {alumnoWithAssignments.map((name) => (
@@ -768,17 +767,17 @@ export default function ClientesMusicaPage() {
             return (
               <article
                 key={item.id}
-                className="rounded-lg border border-white/[0.07] bg-white/[0.025] p-3 text-xs text-white/65"
+                className="rounded-lg border pf-v2-b pf-v2-s p-3 text-xs pf-v2-t-70"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-white/85">{item.alumnoNombre || "Musica general"}</p>
-                  <span className="rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-200">
+                  <p className="text-sm font-semibold pf-v2-t">{item.alumnoNombre || "Musica general"}</p>
+                  <span className="rounded-full border pf-v2-b-violet pf-v2-s-violet px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] pf-v2-t-violet">
                     {item.platform}
                   </span>
                 </div>
 
-                {showDistinctName ? <p className="font-semibold text-fuchsia-200">{item.playlistName}</p> : null}
-                <a href={item.playlistUrl} target="_blank" rel="noreferrer" className="text-cyan-300 underline">
+                {showDistinctName ? <p className="font-semibold pf-v2-t-violet">{item.playlistName}</p> : null}
+                <a href={item.playlistUrl} target="_blank" rel="noreferrer" className="pf-v2-t-accent underline">
                   {item.playlistUrl}
                 </a>
                 <p>Objetivo: {item.objetivo || "-"}</p>
@@ -793,7 +792,7 @@ export default function ClientesMusicaPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={() => removeAssignment(item.id)}
-                  className="mt-2 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-rose-200"
+                  className="mt-2 rounded-md border pf-v2-b-danger pf-v2-s-danger px-2 py-1 pf-v2-t-danger"
                 >
                   Eliminar
                 </ReliableActionButton>
