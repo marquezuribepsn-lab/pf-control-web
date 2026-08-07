@@ -76,28 +76,24 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
   }
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
+    <div className="pf-v2-page">
       {/* ── Header ── */}
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">
-              {visual.icon} Categorías
-            </p>
-            <h1 className="pf-page-hero-title">{categoria}</h1>
-            <p className="pf-page-hero-sub">
+            <span className="pf-v2-eyebrow">Categorías</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>{categoria}</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
               {totalEnCategoria} jugadora{totalEnCategoria !== 1 ? "s" : ""} en esta categoría.
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/categorias" className="pf-btn pf-btn--ghost">
+            <Link href="/categorias" className="pf-v2-btn pf-v2-btn-2">
               ← Categorías
             </Link>
             <Link
               href={`/nueva-jugadora?categoria=${encodeURIComponent(categoria)}`}
-              className="pf-btn pf-btn--primary"
+              className="pf-v2-btn"
             >
               + Agregar jugadora
             </Link>
@@ -107,20 +103,20 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
 
       {/* ── Stats ── */}
       <section className="grid gap-4 sm:grid-cols-3">
-        <div className="pf-card rounded-2xl border border-cyan-300/26 p-5">
-          <p className="text-sm text-slate-400">👥 Total</p>
+        <div className="pf-v2-card">
+          <p className="pf-v2-muted">👥 Total</p>
           <p className="mt-2 text-3xl font-bold text-slate-100">{totalEnCategoria}</p>
         </div>
-        <div className="pf-card rounded-2xl border border-emerald-300/26 p-5">
-          <p className="text-sm text-slate-400">💚 Wellness promedio</p>
+        <div className="pf-v2-card">
+          <p className="pf-v2-muted">💚 Wellness promedio</p>
           <p className="mt-2 text-3xl font-bold text-slate-100">
             {jugadorasEnCategoria.length > 0
               ? (jugadorasEnCategoria.reduce((a, j) => a + (j.wellness || 0), 0) / jugadorasEnCategoria.length).toFixed(1)
               : "—"}
           </p>
         </div>
-        <div className="pf-card rounded-2xl border border-violet-300/26 p-5">
-          <p className="text-sm text-slate-400">⚡ Carga promedio</p>
+        <div className="pf-v2-card">
+          <p className="pf-v2-muted">⚡ Carga promedio</p>
           <p className="mt-2 text-3xl font-bold text-slate-100">
             {jugadorasEnCategoria.length > 0
               ? Math.round(jugadorasEnCategoria.reduce((a, j) => a + (Number(j.carga) || 0), 0) / jugadorasEnCategoria.length)
@@ -143,7 +139,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
       </div>
 
       {/* ── Player list ── */}
-      <section className="pf-card rounded-2xl border border-white/8 p-6">
+      <section className="pf-v2-card">
         <h2 className="mb-5 text-lg font-semibold text-slate-200">
           Jugadoras ({jugadorasEnCategoria.length})
         </h2>
@@ -157,7 +153,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
             {!busqueda && (
               <Link
                 href={`/nueva-jugadora?categoria=${encodeURIComponent(categoria)}`}
-                className="pf-btn pf-btn--primary mt-5 inline-block"
+                className="pf-v2-btn"
               >
                 Agregar primera jugadora
               </Link>
@@ -214,13 +210,13 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
                             setCambiandoCategoria(null);
                             setNuevaCategoria("");
                           }}
-                          className="pf-btn pf-btn--success text-xs"
+                          className="pf-v2-btn"
                         >
                           Guardar
                         </ReliableActionButton>
                         <ReliableActionButton
                           onClick={() => { setCambiandoCategoria(null); setNuevaCategoria(""); }}
-                          className="pf-btn pf-btn--ghost text-xs"
+                          className="pf-v2-btn pf-v2-btn-2"
                         >
                           Cancelar
                         </ReliableActionButton>
@@ -232,7 +228,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
                             setCambiandoCategoria(jugadora.nombre);
                             setNuevaCategoria(jugadora.categoria || "");
                           }}
-                          className="pf-btn pf-btn--ghost text-xs"
+                          className="pf-v2-btn pf-v2-btn-2"
                         >
                           Mover
                         </ReliableActionButton>
@@ -242,7 +238,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
                               eliminarJugadora(jugadora.nombre);
                             }
                           }}
-                          className="pf-btn pf-btn--danger text-xs"
+                          className="pf-v2-btn pf-v2-btn-danger"
                         >
                           Eliminar
                         </ReliableActionButton>
@@ -294,6 +290,6 @@ export default function CategoriaPage({ params }: { params: Promise<{ categoria:
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

@@ -7,16 +7,16 @@ import { PlayersContext } from "../../components/PlayersProvider";
 import { CategoriesContext } from "../../components/CategoriesProvider";
 import { type Jugadora } from "../../data/mockData";
 
-const CATEGORY_GRADIENTS = [
-  "from-cyan-500 to-blue-600",
-  "from-emerald-500 to-teal-600",
-  "from-fuchsia-500 to-pink-600",
-  "from-amber-500 to-orange-600",
-  "from-violet-500 to-purple-600",
-  "from-lime-500 to-green-600",
-  "from-rose-500 to-red-600",
-  "from-sky-500 to-indigo-600",
+const CATEGORY_TINTS = [
+  "#22e5ff", "#34d399", "#f472b6", "#fbbf24",
+  "#c084fc", "#a3e635", "#f87171", "#60a5fa",
 ];
+
+/** Mismo color con alfa, para fondos y glows. */
+function tinte(hex: string, alfa: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`;
+}
 
 const CATEGORY_ICONS = ["⚡", "🛡️", "🎯", "🚀", "🏆", "🔥", "🌟", "💪"];
 
@@ -41,85 +41,83 @@ export default function CategoriasPage() {
   };
 
   return (
-    <main className="relative mx-auto max-w-7xl p-6">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
-        <div className="relative">
-          <p className="pf-page-hero-badge">⚡ Gestión del club</p>
-          <h1 className="pf-page-hero-title">Categorías</h1>
-          <p className="pf-page-hero-sub">Organización por categoría y resumen general.</p>
+    <div className="pf-v2-page">
+      <header className="pf-v2-page-head">
+        <div>
+          <span className="pf-v2-eyebrow">Gestión del club</span>
+          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Categorías</h1>
+          <p className="pf-v2-muted" style={{ marginTop: 8 }}>
+            Organización por categoría y resumen general.
+          </p>
         </div>
-      </section>
+      </header>
 
-      <div className="pf-card mb-6 rounded-2xl border p-6">
-        <h2 className="text-xl font-semibold text-white/85 mb-4" style={{ color: `hsl(var(--hue,346),65%,65%)` }}>Agregar nueva categoría</h2>
-        <div className="flex gap-2">
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2" style={{ marginBottom: 14 }}>Agregar nueva categoría</h2>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input
             type="text"
             value={nuevaCategoria}
             onChange={(e) => setNuevaCategoria(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAgregarCategoria();
+            }}
             placeholder="Nombre de la categoría"
-            className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-white/[0.06]"
+            className="pf-v2-input"
+            style={{ flex: 1, minWidth: 220 }}
+            aria-label="Nombre de la categoría"
           />
-          <ReliableActionButton
-            onClick={handleAgregarCategoria}
-            className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-400"
-          >
+          <ReliableActionButton onClick={handleAgregarCategoria} className="pf-v2-btn">
             Agregar
           </ReliableActionButton>
         </div>
-      </div>
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="pf-v2-grid-3">
         {categoriasConJugadoras.map((categoria, index) => {
-          const tone = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
+          const hex = CATEGORY_TINTS[index % CATEGORY_TINTS.length];
           const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 
           return (
-            <div
-              key={categoria.nombre}
-              className="pf-card group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1"
-            >
-              <div className={`mb-3 h-2 rounded-full bg-gradient-to-r ${tone}`} />
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-semibold text-white/90">
-                  <span className="mr-2">{icon}</span>
-                  {categoria.nombre}
-                </h2>
-                <div className="flex gap-2">
-                  <ReliableActionButton
-                    onClick={() => toggleCategoria(categoria.nombre)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      categoria.habilitada
-                        ? "rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300"
-                        : "rounded-full border border-rose-400/25 bg-rose-500/10 px-2 py-0.5 text-xs text-rose-300"
-                    }`}
-                  >
-                    {categoria.habilitada ? "Habilitada" : "Deshabilitada"}
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    onClick={() => eliminarCategoria(categoria.nombre)}
-                    className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/15"
-                  >
-                    Eliminar
-                  </ReliableActionButton>
-                </div>
+            <article key={categoria.nombre} className="pf-v2-card pf-v2-lift">
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                <span
+                  className="pf-v2-module-icon"
+                  style={{ background: tinte(hex, 0.14), color: hex, boxShadow: `0 0 18px ${tinte(hex, 0.3)}` }}
+                  aria-hidden="true"
+                >
+                  {icon}
+                </span>
+                <ReliableActionButton
+                  onClick={() => toggleCategoria(categoria.nombre)}
+                  className={`pf-v2-chip ${categoria.habilitada ? "pf-v2-chip-ok" : "pf-v2-chip-danger"}`}
+                  style={{ cursor: "pointer" }}
+                >
+                  {categoria.habilitada ? "Habilitada" : "Deshabilitada"}
+                </ReliableActionButton>
               </div>
-              <div className="mt-4 space-y-2 text-sm text-white/55">
-                <p>Equipos: 1</p>
-                <p suppressHydrationWarning={true}>Jugadoras: {categoria.jugadoras}</p>
+
+              <h2 className="pf-v2-h2" style={{ marginTop: 14 }}>{categoria.nombre}</h2>
+
+              <p className="pf-v2-muted" style={{ marginTop: 6 }} suppressHydrationWarning>
+                Equipos: 1 · Jugadoras: {categoria.jugadoras}
+              </p>
+
+              <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
+                <Link href={`/categorias/${encodeURIComponent(categoria.nombre)}`} className="pf-v2-btn">
+                  {categoria.habilitada ? "Ver jugadoras" : "Ver categoría"}
+                </Link>
+                <ReliableActionButton
+                  onClick={() => eliminarCategoria(categoria.nombre)}
+                  className="pf-v2-btn pf-v2-btn-danger"
+                >
+                  Eliminar
+                </ReliableActionButton>
               </div>
-              <Link
-                href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                className={`mt-4 inline-block rounded-xl bg-gradient-to-r px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 ${tone}`}
-              >
-                {categoria.habilitada ? "Ver jugadoras" : "Ver categoria"}
-              </Link>
-            </div>
+            </article>
           );
         })}
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }

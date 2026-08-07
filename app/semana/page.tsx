@@ -3397,7 +3397,7 @@ export default function SemanaPage() {
 
       <div className="mb-6">
         <h1 className="text-3xl font-bold" style={{ color: `hsl(var(--hue,258),65%,65%)` }}>Templates de entrenamiento</h1>
-        <p className="mt-1 text-sm text-white/65">
+        <p className="pf-v2-muted">
           Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
         </p>
       </div>
@@ -3817,7 +3817,7 @@ export default function SemanaPage() {
                     ref={templateNameInputRef}
                     value={templateDraft.nombre}
                     onChange={(e) => actualizarTemplateMeta({ nombre: e.target.value })}
-                    className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                    className="pf-v2-input"
                     placeholder="Nombre del plan"
                   />
                 </label>
@@ -3828,7 +3828,7 @@ export default function SemanaPage() {
                     <input
                       value={templateTagInput}
                       onChange={(e) => setTemplateTagInput(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                      className="pf-v2-input"
                       placeholder="Agregar etiqueta"
                     />
                     <ReliableActionButton
@@ -3863,7 +3863,7 @@ export default function SemanaPage() {
                   value={templateDraft.descripcion || ""}
                   onChange={(e) => actualizarTemplateMeta({ descripcion: e.target.value })}
                   rows={3}
-                  className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                  className="pf-v2-input"
                   placeholder="Describe el objetivo del template"
                 />
               </label>
@@ -3917,7 +3917,7 @@ export default function SemanaPage() {
                         onChange={(e) =>
                           actualizarSemanaTemplate(templateDraftWeek.id, { nombre: e.target.value })
                         }
-                        className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                        className="pf-v2-input"
                       />
                     </label>
                     <label className="space-y-1 text-xs uppercase tracking-wide text-white/65">
@@ -3927,7 +3927,7 @@ export default function SemanaPage() {
                         onChange={(e) =>
                           actualizarSemanaTemplate(templateDraftWeek.id, { objetivo: e.target.value })
                         }
-                        className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white"
+                        className="pf-v2-input"
                       />
                     </label>
                   </div>
@@ -5084,7 +5084,7 @@ export default function SemanaPage() {
           onClick={() => setWeightViewer(null)}
         >
           <div
-            className="w-full max-w-6xl max-h-[92vh] overflow-y-auto pf-card rounded-2xl border/95 p-4 shadow-2xl"
+            className="pf-v2-card w-full max-w-6xl max-h-[92vh] overflow-y-auto"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
@@ -5162,7 +5162,7 @@ export default function SemanaPage() {
           onClick={() => setWeightRegister(null)}
         >
           <div
-            className="w-full max-w-6xl max-h-[92vh] overflow-y-auto pf-card rounded-2xl border/95 p-4 shadow-2xl"
+            className="pf-v2-card w-full max-w-6xl max-h-[92vh] overflow-y-auto"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">

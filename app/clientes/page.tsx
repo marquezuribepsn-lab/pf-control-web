@@ -5689,14 +5689,14 @@ export default function ClientesPage() {
   };
 
   return (
-    <main className="relative mx-auto max-w-[1920px] space-y-6 p-6 text-slate-100">
+    <div className="pf-v2-page">
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
         style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,142),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
-      <section className="pf-card rounded-2xl border p-3">
+      <section className="pf-v2-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex rounded-xl border border-white/15 bg-white/[0.025] p-1">
             <ReliableActionButton
@@ -6376,7 +6376,7 @@ export default function ClientesPage() {
             {ingresantesPendientes.map((ingresante) => {
               const nombre = resolveIngresanteDisplayName(ingresante);
               return (
-                <article key={`ingresante-${ingresante.id}`} className="pf-card rounded-2xl border p-3">
+                <article key={`ingresante-${ingresante.id}`} className="pf-v2-card">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-200/80">Nuevo ingresante</p>
                   <p className="mt-1 text-sm font-black text-white">{nombre.nombreCompleto || 'Sin nombre'}</p>
                   <p className="text-xs text-slate-300">{ingresante.email}</p>
@@ -6413,8 +6413,8 @@ export default function ClientesPage() {
       ) : null}
 
       {!isDetailMode ? (
-      <section className="mb-6 pf-card rounded-2xl border p-5 ">
-        <h2 className="text-xl font-bold">Registrar pago</h2>
+      <section className="pf-v2-card mb-6">
+        <h2 className="pf-v2-h2">Registrar pago</h2>
         <p className="mt-1 text-sm text-slate-300">
           Al registrar un pago, se renueva automaticamente la asesoria por 30 dias (configurable por cliente).
         </p>
@@ -6467,7 +6467,7 @@ export default function ClientesPage() {
 
           <ReliableActionButton
             type="submit"
-            className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
+            className="pf-v2-btn"
           >
             Guardar pago
           </ReliableActionButton>
@@ -6490,7 +6490,7 @@ export default function ClientesPage() {
             </div>
           ))}
           {pagos.length === 0 ? (
-            <p className="text-sm text-slate-400">Todavia no hay pagos registrados.</p>
+            <p className="pf-v2-muted">Todavia no hay pagos registrados.</p>
           ) : null}
         </div>
       </section>
@@ -6762,7 +6762,7 @@ export default function ClientesPage() {
         ) : null}
 
         {isDetailMode ? (
-        <div className="pf-card rounded-2xl border p-5  xl:p-6">
+        <div className="pf-v2-card">
           {!selectedClient || !selectedMeta || !datosDraft ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 text-sm text-slate-300">Selecciona un cliente para abrir su ficha.</div>
           ) : (
@@ -6899,7 +6899,7 @@ export default function ClientesPage() {
                       onChange={(e) => setEtiquetaCrear((prev) => ({ ...prev, color: e.target.value }))}
                       className="w-8 h-8 border border-white/20"
                     />
-                    <ReliableActionButton type="submit" className="pf-btn pf-btn--primary !rounded !px-2 !py-1 !text-xs">+</ReliableActionButton>
+                    <ReliableActionButton type="submit" className="pf-v2-btn !rounded !px-2 !py-1 !text-xs">+</ReliableActionButton>
                   </form>
                   {/* Buscador por etiqueta */}
                   <input
@@ -7619,7 +7619,7 @@ export default function ClientesPage() {
                     </div>
 
                     {!selectedClientTrainingPlan ? (
-                      <div className="pf-card rounded-2xl border p-6 text-center">
+                      <div className="pf-v2-card">
                         <p className="text-2xl mb-2">🏋</p>
                         <p className="text-sm font-medium text-slate-200">Sin plan de entrenamiento</p>
                         <p className="mt-1 text-xs text-slate-400">Asigná un template o creá uno desde cero.</p>
@@ -10002,7 +10002,7 @@ export default function ClientesPage() {
 
       {feedbackModalTarget ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/[0.02]/85 px-3 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-3xl pf-card rounded-2xl border border-emerald-300/30 p-5 text-slate-100 shadow-2xl">
+          <div className="pf-v2-card w-full max-w-3xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Feedback post sesión</p>
@@ -10362,7 +10362,7 @@ export default function ClientesPage() {
               {assignPlanItems.length === 0 ? (
                 <div className="py-10 text-center">
                   <p className="text-3xl">🔍</p>
-                  <p className="mt-3 text-sm text-slate-400">
+                  <p className="pf-v2-muted">
                     {assignPlanSearch
                       ? "Sin resultados para esa búsqueda."
                       : templatesAlumnos.length === 0 && aiTrainingPlans.length === 0
@@ -10921,6 +10921,6 @@ export default function ClientesPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -300,7 +300,7 @@ export default function RegistrosPage() {
   if (sessionStatus === "loading") {
     return (
       <main className="mx-auto max-w-[1500px] p-6 text-white/85">
-        <p className="text-sm text-white/65">Cargando registros...</p>
+        <p className="pf-v2-muted">Cargando registros...</p>
       </main>
     );
   }
@@ -308,21 +308,19 @@ export default function RegistrosPage() {
   if (role === "ADMIN") {
     return (
       <main className="mx-auto max-w-[1500px] p-6 text-white/85">
-        <p className="text-sm text-white/65">Redirigiendo a Pagos mensuales...</p>
+        <p className="pf-v2-muted">Redirigiendo a Pagos mensuales...</p>
       </main>
     );
   }
 
   return (
-    <main className="relative mx-auto max-w-[1500px] space-y-6 p-6 text-white/85">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+    <div className="pf-v2-page">
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">📊 Hub de analítica operativa</p>
-            <h1 className="pf-page-hero-title">Registros</h1>
-            <p className="pf-page-hero-sub">Vista consolidada de clientes, pagos y asistencia en un solo lugar.</p>
+            <span className="pf-v2-eyebrow">Hub de analítica operativa</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Registros</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>Vista consolidada de clientes, pagos y asistencia en un solo lugar.</p>
           </div>
         </div>
         <div className="relative mt-5 grid gap-3 md:grid-cols-3">
@@ -333,8 +331,8 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Asistencia</h2>
-        <p className="mt-1 text-sm text-white/65">Estado actual de jornadas y presentismo.</p>
+        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Asistencia</h2>
+        <p className="pf-v2-muted">Estado actual de jornadas y presentismo.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
           <StatCard label="Jornadas activas" value={stats.jornadasActivas} tone="cyan" />
           <StatCard label="Categorias activas" value={stats.categoriasConJornadas} tone="amber" />
@@ -345,7 +343,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Clientes</h2>
+        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Clientes</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Total clientes" value={stats.totalClientes} tone="cyan" />
           <StatCard label="Activos" value={stats.activos} tone="emerald" />
@@ -357,8 +355,8 @@ export default function RegistrosPage() {
       <section className="rounded-2xl border p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Resumen mensual de ingresos</h2>
-            <p className="mt-1 text-sm text-white/65">Consolidado por mes en base a pagos registrados en Clientes.</p>
+            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Resumen mensual de ingresos</h2>
+            <p className="pf-v2-muted">Consolidado por mes en base a pagos registrados en Clientes.</p>
           </div>
           <ReliableActionButton
             type="button"
@@ -370,7 +368,7 @@ export default function RegistrosPage() {
         </div>
 
         {resumenMensualIngresos.length === 0 ? (
-          <p className="text-sm text-white/40">No hay pagos suficientes para resumir por mes.</p>
+          <p className="pf-v2-muted">No hay pagos suficientes para resumir por mes.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="min-w-full text-left text-sm">
@@ -400,7 +398,7 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Pagos</h2>
+        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Pagos</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
           <StatCard label="Pagos confirmados" value={stats.pagosConfirmados} tone="emerald" />
           <StatCard label="Pagos pendientes" value={stats.pagosPendientes} tone={stats.pagosPendientes > 0 ? "rose" : "emerald"} />
@@ -410,11 +408,11 @@ export default function RegistrosPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Sesiones y asesoria</h2>
+        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Sesiones y asesoria</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           <StatCard label="Sesiones creadas" value={stats.sesionesTotales} tone="cyan" />
 
-          <div className="pf-card rounded-2xl border p-4">
+          <div className="pf-v2-card">
             <p className="text-sm font-semibold text-white/65">Tipo de asesoria</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
@@ -432,7 +430,7 @@ export default function RegistrosPage() {
             </div>
           </div>
 
-          <div className="pf-card rounded-2xl border p-4">
+          <div className="pf-v2-card">
             <p className="text-sm font-semibold text-white/65">Modalidad</p>
             <div className="mt-3 space-y-1 text-sm">
               <div className="flex items-center justify-between">
@@ -452,7 +450,7 @@ export default function RegistrosPage() {
         <h2 className="mb-3 text-xl font-bold" style={{ color: `hsl(var(--hue,42),65%,65%)` }}>Todos los clientes ({allClientes.length})</h2>
         <div className="grid gap-3">
           {allClientes.length === 0 ? (
-            <p className="text-sm text-white/40">No hay clientes registrados aun.</p>
+            <p className="pf-v2-muted">No hay clientes registrados aun.</p>
           ) : null}
 
           {allClientes.map((cliente) => {
@@ -470,7 +468,7 @@ export default function RegistrosPage() {
             return (
               <article
                 key={cliente.id}
-                className="flex flex-col gap-2 pf-card rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="pf-v2-card flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-semibold text-white/85">{cliente.nombre}</p>
@@ -509,6 +507,6 @@ export default function RegistrosPage() {
           })}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

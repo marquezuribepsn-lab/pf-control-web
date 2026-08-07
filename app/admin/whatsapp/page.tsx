@@ -1321,7 +1321,7 @@ export default function AdminWhatsAppPage() {
   if (sessionStatus === "loading") {
     return (
       <main className={ADMIN_PAGE_CONTAINER}>
-        <div className="pf-card rounded-2xl border p-6 text-center">
+        <div className="pf-v2-card">
           <div className="flex justify-center">
             <AdminRunningLoaderCard
               message="Cargando..."
@@ -1357,7 +1357,7 @@ export default function AdminWhatsAppPage() {
         detail="Sincronizando panel de WhatsApp..."
       />
 
-      <header className="relative overflow-hidden pf-card rounded-2xl border p-6">
+      <header className="pf-v2-card">
         <div className="pointer-events-none absolute -left-8 top-1 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-6 top-8 h-40 w-40 rounded-full bg-emerald-400/15 blur-3xl" />
 
@@ -1395,29 +1395,29 @@ export default function AdminWhatsAppPage() {
         </div>
 
         <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Conexion
             <p className="mt-1 text-base font-black text-white">
               {config.connection.enabled ? "Activa" : "Desactivada"}
             </p>
           </div>
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Proveedor
             <p className="mt-1 text-base font-black text-white">{providerLabel}</p>
           </div>
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Modo
             <p className="mt-1 text-base font-black text-white">{config.connection.mode}</p>
           </div>
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Destinatarios
             <p className="mt-1 text-base font-black text-white">{recipients.length}</p>
           </div>
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Alumnos sin numero
             <p className="mt-1 text-base font-black text-white">{missingPhoneRows.length}</p>
           </div>
-          <div className="pf-card rounded-2xl border p-3 text-xs text-white/65">
+          <div className="pf-v2-card">
             Runner
             <p className="mt-1 text-base font-black text-white">
               cada {config.automationRunner.intervalMinutes} min
@@ -1479,13 +1479,13 @@ export default function AdminWhatsAppPage() {
       {activeTab === "envio_manual" ? (
         <section className="space-y-4">
           <div className="rounded-2xl border p-4">
-            <h2 className="text-lg font-bold">Envio manual</h2>
+            <h2 className="pf-v2-h2">Envio manual</h2>
             <p className="mt-1 text-xs text-white/40">
               Seleccion multiple de alumnos/colaboradores, subcategoria y envio inmediato.
             </p>
 
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <label className="text-sm text-white/65">
+              <label className="pf-v2-muted">
                 Categoria
                 <select
                   value={manualCategoryKey}
@@ -1504,7 +1504,7 @@ export default function AdminWhatsAppPage() {
                 </select>
               </label>
 
-              <label className="text-sm text-white/65">
+              <label className="pf-v2-muted">
                 Subcategoria
                 <select
                   value={manualSubcategoryKey}
@@ -1532,7 +1532,7 @@ export default function AdminWhatsAppPage() {
                 />
               </label>
 
-              <label className="text-sm text-white/65">
+              <label className="pf-v2-muted">
                 Tipo
                 <select
                   value={manualRecipientTypeFilter}
@@ -1661,7 +1661,7 @@ export default function AdminWhatsAppPage() {
       {activeTab === "historial" ? (
         <section className="space-y-4">
           <div className="rounded-2xl border p-4">
-            <h2 className="text-lg font-bold">Historial de envios</h2>
+            <h2 className="pf-v2-h2">Historial de envios</h2>
             <p className="mt-1 text-xs text-white/40">
               Filtros avanzados por fecha, estado, tipo, regla y usuario.
             </p>
@@ -1961,7 +1961,7 @@ export default function AdminWhatsAppPage() {
             </div>
 
             <div className="mt-3 space-y-2">
-              {runs.length === 0 ? <p className="text-sm text-white/40">Sin ejecuciones.</p> : null}
+              {runs.length === 0 ? <p className="pf-v2-muted">Sin ejecuciones.</p> : null}
               {runs.map((run) => (
                 <article
                   key={run.runId}
@@ -2031,7 +2031,7 @@ export default function AdminWhatsAppPage() {
 
       {activeTab === "configuracion" ? (
         <section className="rounded-2xl border p-4">
-          <h2 className="text-lg font-bold">Configuracion general</h2>
+          <h2 className="pf-v2-h2">Configuracion general</h2>
 
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="rounded-lg border border-white/[0.07] bg-[#0e1012]/50 p-3 text-sm">
@@ -2052,7 +2052,7 @@ export default function AdminWhatsAppPage() {
               Conexion habilitada
             </label>
 
-            <label className="text-sm text-white/65">
+            <label className="pf-v2-muted">
               Modo de envio por defecto
               <select
                 value={config.connection.mode}
@@ -2072,7 +2072,7 @@ export default function AdminWhatsAppPage() {
               </select>
             </label>
 
-            <label className="text-sm text-white/65">
+            <label className="pf-v2-muted">
               Proveedor de envio
               <select
                 value={config.connection.provider || "meta_cloud"}
@@ -2132,7 +2132,7 @@ export default function AdminWhatsAppPage() {
               Runner automatico habilitado
             </label>
 
-            <label className="text-sm text-white/65">
+            <label className="pf-v2-muted">
               Frecuencia runner (minutos)
               <input
                 type="number"
@@ -2152,7 +2152,7 @@ export default function AdminWhatsAppPage() {
               />
             </label>
 
-            <label className="text-sm text-white/65">
+            <label className="pf-v2-muted">
               Reintentos transitorios
               <input
                 type="number"
@@ -2172,7 +2172,7 @@ export default function AdminWhatsAppPage() {
               />
             </label>
 
-            <label className="text-sm text-white/65">
+            <label className="pf-v2-muted">
               Backoff entre reintentos (seg)
               <input
                 type="number"
@@ -2282,14 +2282,14 @@ export default function AdminWhatsAppPage() {
             )}
           </div>
 
-          <div className="mt-6 pf-card rounded-2xl border p-5">
+          <div className="pf-v2-card mt-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/85">
                   Vinculacion WhatsApp Web
                 </p>
                 <h3 className="mt-2 text-xl font-black text-white">QR y control de sesion</h3>
-                <p className="mt-1 text-sm text-white/65">
+                <p className="pf-v2-muted">
                   Esta sesion se mantiene activa con reconexion automatica y almacenamiento local.
                 </p>
               </div>
@@ -2450,7 +2450,7 @@ export default function AdminWhatsAppPage() {
                   return (
                     <article
                       key={`${activeTab}-${subcategoryKey}`}
-                      className="pf-card rounded-2xl border border-emerald-500/35 p-4"
+                      className="pf-v2-card"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
@@ -2473,7 +2473,7 @@ export default function AdminWhatsAppPage() {
 
                       <div className="mt-3 grid gap-3 md:grid-cols-3">
                         {sub.triggerType === "days_before" ? (
-                          <label className="text-sm text-white/65">
+                          <label className="pf-v2-muted">
                             Dias antes
                             <input
                               type="number"
@@ -2489,12 +2489,12 @@ export default function AdminWhatsAppPage() {
                             />
                           </label>
                         ) : (
-                          <div className="text-sm text-white/40">
+                          <div className="pf-v2-muted">
                             Trigger: <span className="font-semibold text-white/75">{sub.triggerType}</span>
                           </div>
                         )}
 
-                        <label className="text-sm text-white/65">
+                        <label className="pf-v2-muted">
                           Enviar desde
                           <input
                             type="time"
@@ -2506,7 +2506,7 @@ export default function AdminWhatsAppPage() {
                           />
                         </label>
 
-                        <label className="text-sm text-white/65">
+                        <label className="pf-v2-muted">
                           Enviar hasta
                           <input
                             type="time"

@@ -1121,7 +1121,7 @@ export default function AdminUsuariosPermisosPage() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-black tracking-tight" style={{ color: `hsl(var(--hue,24),65%,65%)` }}>Usuarios y permisos</h1>
-          <p className="mt-1 text-sm text-white/65">
+          <p className="pf-v2-muted">
             Gestion centralizada de usuarios colaboradores, permisos y accesos.
           </p>
         </div>
@@ -1145,7 +1145,7 @@ export default function AdminUsuariosPermisosPage() {
       </div>
 
       {showCreateForm ? (
-        <section className="mb-6 pf-card rounded-2xl border p-5">
+        <section className="pf-v2-card">
           <h2 className="text-xl font-black text-white" style={{ color: `hsl(var(--hue,24),65%,65%)` }}>Alta de colaborador</h2>
           <p className="mt-1 text-xs text-white/65">Se crea la cuenta y se envia credencial por mail.</p>
 
@@ -1250,7 +1250,7 @@ export default function AdminUsuariosPermisosPage() {
         </section>
       ) : null}
 
-      <section className="mb-6 pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card">
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/65">Total colaboradores</p>
@@ -1512,7 +1512,7 @@ export default function AdminUsuariosPermisosPage() {
                       {expandedColaboradorId === item.id ? (
                         <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
                           {detailLoadingId === item.id || !detailDraft ? (
-                            <p className="text-sm text-white/65">Cargando detalle...</p>
+                            <p className="pf-v2-muted">Cargando detalle...</p>
                           ) : (
                             <div className="space-y-4">
                               <div>
@@ -1641,7 +1641,7 @@ export default function AdminUsuariosPermisosPage() {
 
                                 <div className="mt-3 max-h-64 space-y-2 overflow-y-auto rounded-xl border border-white/[0.07] bg-white/[0.02]/40 p-3">
                                   {clientesFiltrados.length === 0 ? (
-                                    <p className="text-sm text-white/65">No hay clientes para asignar.</p>
+                                    <p className="pf-v2-muted">No hay clientes para asignar.</p>
                                   ) : (
                                     clientesFiltrados.map((cliente) => {
                                       const checked = asignacionesSet.has(cliente.id);
@@ -1691,7 +1691,7 @@ export default function AdminUsuariosPermisosPage() {
                               <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
                                 <p className="text-sm font-black text-white">Historial</p>
                                 {detailHistorial.length === 0 ? (
-                                  <p className="mt-2 text-sm text-white/65">Sin acciones registradas.</p>
+                                  <p className="pf-v2-muted">Sin acciones registradas.</p>
                                 ) : (
                                   <div className="mt-2 space-y-2">
                                     {detailHistorial.slice(0, 8).map((entry, index) => (
@@ -1746,11 +1746,11 @@ export default function AdminUsuariosPermisosPage() {
 
       <div className="space-y-4">
         {filtered.map((item) => (
-          <section id={`permisos-${item.id}`} key={item.id} className="pf-card rounded-2xl border p-5">
+          <section id={`permisos-${item.id}`} key={item.id} className="pf-v2-card">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black text-white">{item.nombreCompleto}</h2>
-                <p className="text-sm text-white/65">{item.email}</p>
+                <p className="pf-v2-muted">{item.email}</p>
               </div>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-bold ${
@@ -1843,7 +1843,7 @@ export default function AdminUsuariosPermisosPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="pf-card rounded-2xl border p-6 text-sm text-white/65">
+        <div className="pf-v2-card">
           No se encontraron colaboradores para mostrar.
         </div>
       ) : null}
@@ -1862,7 +1862,7 @@ export default function AdminUsuariosPermisosPage() {
                 <h2 className="mt-1 text-2xl font-black text-white">
                   {resolveIngresanteNombre(ingresanteModal).nombreCompleto || 'Sin nombre'}
                 </h2>
-                <p className="text-sm text-white/65">{ingresanteModal.email}</p>
+                <p className="pf-v2-muted">{ingresanteModal.email}</p>
               </div>
 
               <ReliableActionButton

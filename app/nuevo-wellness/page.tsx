@@ -100,20 +100,18 @@ export default function NuevoWellnessPage() {
   ];
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
+    <div className="pf-v2-page">
       {/* ── Header ── */}
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">💚 Monitoreo de Plantel</p>
-            <h1 className="pf-page-hero-title">Nuevo Registro Wellness</h1>
-            <p className="pf-page-hero-sub">
+            <span className="pf-v2-eyebrow">Monitoreo de Plantel</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Nuevo Registro Wellness</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
               Registrá el estado diario de una jugadora: bienestar, fatiga, dolor y disponibilidad.
             </p>
           </div>
-          <Link href="/wellness" className="pf-btn pf-btn--ghost">
+          <Link href="/wellness" className="pf-v2-btn pf-v2-btn-2">
             ← Volver a Wellness
           </Link>
         </div>
@@ -124,7 +122,7 @@ export default function NuevoWellnessPage() {
           {/* ── Left: main fields ── */}
           <div className="space-y-6">
             {/* Nombre */}
-            <div className="pf-card rounded-2xl border border-white/8 p-6">
+            <div className="pf-v2-card">
               <h2 className="mb-4 text-base font-semibold text-slate-200">👤 Jugadora</h2>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">Nombre completo</label>
@@ -139,7 +137,7 @@ export default function NuevoWellnessPage() {
             </div>
 
             {/* Scores */}
-            <div className="pf-card rounded-2xl border border-white/8 p-6">
+            <div className="pf-v2-card">
               <h2 className="mb-4 text-base font-semibold text-slate-200">📊 Indicadores</h2>
               <div className="space-y-4">
                 {SCORE_FIELDS.map((f) => (
@@ -158,7 +156,7 @@ export default function NuevoWellnessPage() {
             </div>
 
             {/* Comentario */}
-            <div className="pf-card rounded-2xl border border-white/8 p-6">
+            <div className="pf-v2-card">
               <h2 className="mb-4 text-base font-semibold text-slate-200">📝 Observaciones</h2>
               <textarea
                 value={form.comentario}
@@ -172,7 +170,7 @@ export default function NuevoWellnessPage() {
           {/* ── Right: availability + summary ── */}
           <div className="space-y-6">
             {/* Disponibilidad */}
-            <div className="pf-card rounded-2xl border border-white/8 p-6">
+            <div className="pf-v2-card">
               <h2 className="mb-4 text-base font-semibold text-slate-200">📍 Disponibilidad</h2>
               <div className="space-y-2">
                 {AVAIL_OPTIONS.map((opt) => (
@@ -193,7 +191,7 @@ export default function NuevoWellnessPage() {
             </div>
 
             {/* Resumen */}
-            <div className="pf-card rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-6">
+            <div className="pf-v2-card">
               <h2 className="mb-4 text-base font-semibold text-slate-200">📋 Resumen</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -227,7 +225,7 @@ export default function NuevoWellnessPage() {
               <div className="mt-6">
                 <ReliableActionButton
                   type="submit"
-                  className="pf-btn pf-btn--success w-full justify-center"
+                  className="pf-v2-btn w-full justify-center"
                 >
                   Guardar registro
                 </ReliableActionButton>
@@ -236,6 +234,6 @@ export default function NuevoWellnessPage() {
           </div>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

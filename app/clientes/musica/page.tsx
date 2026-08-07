@@ -583,16 +583,16 @@ export default function ClientesMusicaPage() {
   };
 
   return (
-    <main className="relative mx-auto max-w-7xl p-6 text-white/85">
+    <div className="pf-v2-page">
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 z-0"
         style={{ background: `radial-gradient(ellipse 80% 55% at 50% -10%, hsla(var(--hue,288),65%,55%,0.1) 0%, transparent 70%)` }}
         aria-hidden="true"
       />
-      <div className="mb-6 pf-card rounded-2xl border p-6">
+      <div className="pf-v2-card">
         <h1 className="text-3xl font-black" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Musica</h1>
-        <p className="mt-2 text-sm text-white/65">
+        <p className="pf-v2-muted">
           Categoria unificada: selecciona playlist desde cualquier plataforma y asignala a cada alumno con reproductor integrado.
         </p>
         <p className="mt-1 text-xs text-white/40">
@@ -600,8 +600,8 @@ export default function ClientesMusicaPage() {
         </p>
       </div>
 
-      <section className="pf-card rounded-2xl border p-5">
-        <h2 className="text-lg font-bold" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Nueva asignacion</h2>
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Nueva asignacion</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="text-xs text-white/65 md:col-span-2 xl:col-span-2">
             Seleccionar desde catalogo (opcional)
@@ -738,9 +738,9 @@ export default function ClientesMusicaPage() {
         {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
       </section>
 
-      <section className="mt-4 pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card mt-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-lg font-bold" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Asignaciones ({sortedAssignments.length})</h2>
+          <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,288),65%,65%)` }}>Asignaciones ({sortedAssignments.length})</h2>
           <label className="text-xs text-white/65">
             Vista alumno
             <select
@@ -760,7 +760,7 @@ export default function ClientesMusicaPage() {
 
         <div className="mt-3 space-y-2">
           {previewRows.length === 0 ? (
-            <p className="text-sm text-white/40">No hay musica asignada.</p>
+            <p className="pf-v2-muted">No hay musica asignada.</p>
           ) : null}
 
           {previewRows.map((item) => {
@@ -802,6 +802,6 @@ export default function ClientesMusicaPage() {
           })}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

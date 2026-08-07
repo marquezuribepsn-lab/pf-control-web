@@ -70,19 +70,17 @@ export default function NuevaJugadoraPage() {
   const categoriasHabilitadas = categorias.filter((c) => c.habilitada);
 
   return (
-    <main className="relative mx-auto max-w-4xl p-6 text-slate-100">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+    <div className="pf-v2-page">
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">👤 Gestión del plantel</p>
-            <h1 className="pf-page-hero-title">Nueva jugadora</h1>
-            <p className="pf-page-hero-sub">Carga de datos básicos del plantel.</p>
+            <span className="pf-v2-eyebrow">Gestión del plantel</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Nueva jugadora</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>Carga de datos básicos del plantel.</p>
           </div>
           <Link
             href={form.categoria ? `/categorias/${encodeURIComponent(form.categoria)}` : "/categorias"}
-            className="pf-btn pf-btn--ghost"
+            className="pf-v2-btn pf-v2-btn-2"
           >
             ← Volver
           </Link>
@@ -95,7 +93,7 @@ export default function NuevaJugadoraPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="pf-card rounded-2xl border p-6">
+      <form onSubmit={handleSubmit} className="pf-v2-card">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className={LABEL_CLS}>Nombre completo *</label>
@@ -210,19 +208,19 @@ export default function NuevaJugadoraPage() {
         <div className="mt-6 flex justify-end gap-2">
           <Link
             href={form.categoria ? `/categorias/${encodeURIComponent(form.categoria)}` : "/categorias"}
-            className="pf-btn pf-btn--ghost"
+            className="pf-v2-btn pf-v2-btn-2"
           >
             Cancelar
           </Link>
           <ReliableActionButton
             type="submit"
-            className="pf-btn pf-btn--primary"
+            className="pf-v2-btn"
             disabled={guardado}
           >
             Guardar jugadora
           </ReliableActionButton>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

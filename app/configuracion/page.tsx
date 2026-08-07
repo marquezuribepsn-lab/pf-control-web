@@ -606,7 +606,7 @@ export default function ConfiguracionPage() {
             <ReliableActionButton
               type="button"
               onClick={resetAccentColor}
-              className="pf-btn pf-btn--ghost !px-3 !py-2 !text-xs"
+              className="pf-v2-btn pf-v2-btn-2 !px-3 !py-2 !text-xs"
               title="Restablecer al color por defecto"
             >
               Restablecer
@@ -700,7 +700,7 @@ export default function ConfiguracionPage() {
                 type="button"
                 onClick={guardarSidebarImage}
                 disabled={!sidebarImageDirty || savingSidebarImage}
-                className="pf-btn pf-btn--primary !px-3 !py-1.5 !text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                className="pf-v2-btn !px-3 !py-1.5 !text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {savingSidebarImage ? "Guardando..." : "Guardar cambios"}
               </ReliableActionButton>
@@ -847,7 +847,7 @@ export default function ConfiguracionPage() {
               <ReliableActionButton
                 type="button"
                 onClick={activarModificacion}
-                className="pf-btn pf-btn--primary"
+                className="pf-v2-btn"
               >
                 Modificar pantalla
               </ReliableActionButton>

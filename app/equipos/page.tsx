@@ -164,17 +164,15 @@ export default function EquiposPage() {
   };
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+    <div className="pf-v2-page">
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">🏆 Planificación Estructural</p>
-            <h1 className="pf-page-hero-title">Equipos</h1>
-            <p className="pf-page-hero-sub">Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.</p>
+            <span className="pf-v2-eyebrow">Planificación Estructural</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Equipos</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.</p>
           </div>
-          <ReliableActionButton onClick={handleCreateMode} className="pf-btn pf-btn--primary">
+          <ReliableActionButton onClick={handleCreateMode} className="pf-v2-btn">
             Nuevo equipo
           </ReliableActionButton>
         </div>
@@ -187,29 +185,29 @@ export default function EquiposPage() {
       </section>
 
       {mostrarFormulario && (
-        <section className="pf-card rounded-2xl border p-5">
+        <section className="pf-v2-card">
           <h2 className="mb-4 text-xl font-bold text-white/90" style={{ color: `hsl(var(--hue,243),65%,65%)` }}>
             {editandoEquipo ? "Editar equipo" : "Nuevo equipo"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-medium text-white/75">
+              <label className="pf-v2-field">
                 Nombre
                 <input
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                  className="pf-v2-input"
                   required
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-white/75">
+              <label className="pf-v2-field">
                 Categoría
                 <select
                   value={formData.categoria}
                   onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                  className="pf-v2-input"
                   required
                 >
                   <option value="">Seleccionar categoría</option>
@@ -221,13 +219,13 @@ export default function EquiposPage() {
                 </select>
               </label>
 
-              <label className="grid gap-2 text-sm font-medium text-white/75">
+              <label className="pf-v2-field">
                 Temporada
                 <input
                   type="text"
                   value={formData.temporada}
                   onChange={(e) => setFormData({ ...formData, temporada: e.target.value })}
-                  className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                  className="pf-v2-input"
                   required
                 />
               </label>
@@ -247,14 +245,14 @@ export default function EquiposPage() {
             <div className="flex gap-2">
               <ReliableActionButton
                 type="submit"
-                className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-400"
+                className="pf-v2-btn"
               >
                 {editandoEquipo ? "Actualizar" : "Crear"}
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={handleCancelForm}
-                className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-sm font-semibold text-white/70 transition hover:bg-white/[0.07]"
+                className="pf-v2-input"
               >
                 Cancelar
               </ReliableActionButton>
@@ -263,10 +261,10 @@ export default function EquiposPage() {
         </section>
       )}
 
-      <section className="pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,243),65%,65%)` }}>Buscador de equipos</h2>
+            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,243),65%,65%)` }}>Buscador de equipos</h2>
             <p className="mt-1 text-xs text-white/40">Filtra por nombre, categoría, temporada o descripción.</p>
           </div>
           <span className="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
@@ -279,17 +277,17 @@ export default function EquiposPage() {
           value={busqueda}
           onChange={(event) => setBusqueda(event.target.value)}
           placeholder="Buscar equipo..."
-          className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+          className="pf-v2-input"
         />
       </section>
 
       <section>
         {equiposFiltrados.length === 0 ? (
-          <div className="pf-card rounded-2xl border p-8 text-center">
-            <p className="text-lg font-bold text-white/90">
+          <div className="pf-v2-card">
+            <p className="pf-v2-h2">
               {equiposConJugadoras.length === 0 ? "No hay equipos cargados todavía." : "No encontramos coincidencias para tu búsqueda."}
             </p>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="pf-v2-muted">
               {equiposConJugadoras.length === 0
                 ? "Crea el primer equipo para comenzar a planificar la temporada."
                 : "Ajusta el filtro o limpia la búsqueda para volver a ver todos los equipos."}
@@ -303,7 +301,7 @@ export default function EquiposPage() {
               return (
                 <article
                   key={equipo.id}
-                  className={`pf-card relative overflow-hidden rounded-2xl border p-5`}
+                  className="pf-v2-card" style={{ position: "relative", overflow: "hidden" }}
                 >
                   <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone.glow}`} />
 
@@ -349,7 +347,7 @@ export default function EquiposPage() {
                     </Link>
                     <ReliableActionButton
                       onClick={() => handleEdit(equipo)}
-                      className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/[0.07]"
+                      className="pf-v2-input"
                     >
                       Editar
                     </ReliableActionButton>
@@ -366,7 +364,7 @@ export default function EquiposPage() {
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

@@ -1080,7 +1080,7 @@ export default function AdminPagosManualPage() {
         detail="Sincronizando panel de pagos..."
       />
 
-      <section className="pf-card rounded-2xl border p-6">
+      <section className="pf-v2-card">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/90" style={{ color: `hsl(var(--hue,38),65%,65%)` }}>Admin pagos</p>
         <h1 className="mt-2 text-3xl font-black text-white">Pagos mensuales</h1>
         <p className="mt-2 text-sm text-slate-300">
@@ -1280,7 +1280,7 @@ export default function AdminPagosManualPage() {
             {planesLoading ? (
               <p className="mt-3 text-sm text-slate-300">Cargando planes...</p>
             ) : planes.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-400">Todavia no hay planes creados.</p>
+              <p className="pf-v2-muted">Todavia no hay planes creados.</p>
             ) : (
               <div className="mt-3 space-y-3">
                 {planes.map((plan) => (
@@ -1878,7 +1878,7 @@ export default function AdminPagosManualPage() {
             {accountLoading ? (
               <p className="mt-3 text-sm text-slate-300">Cargando cuentas...</p>
             ) : transferAccounts.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-400">Todavia no hay cuentas de transferencia cargadas.</p>
+              <p className="pf-v2-muted">Todavia no hay cuentas de transferencia cargadas.</p>
             ) : (
               <div className="mt-3 space-y-3">
                 {transferAccounts.map((account) => (
@@ -2085,7 +2085,7 @@ export default function AdminPagosManualPage() {
                         type="button"
                         onClick={() => void handleDecision(order.id, "approve")}
                         disabled={actionLoadingId === order.id}
-                        className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="pf-v2-btn"
                       >
                         {actionLoadingId === order.id ? "Procesando..." : "Aprobar y renovar pase"}
                       </ReliableActionButton>

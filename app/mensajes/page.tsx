@@ -36,63 +36,59 @@ export default function MensajesPage() {
   }, [alumnos, allMessages, myName]);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <h1 className="mb-6 text-2xl font-black text-white">💬 Mensajes</h1>
+    <div className="pf-v2-page" style={{ maxWidth: 1100 }}>
+      <header className="pf-v2-page-head">
+        <div>
+          <span className="pf-v2-eyebrow">Conversaciones</span>
+          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Mensajes</h1>
+        </div>
+      </header>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-start">
-        {/* Alumno list */}
-        <div className="w-full md:w-72 shrink-0 space-y-2">
-          {!alumnosLoaded && (
-            <p className="text-sm text-slate-400">Cargando alumnos...</p>
-          )}
-          {alumnosLoaded && alumnos.length === 0 && (
-            <p className="text-sm text-slate-400">No tenés alumnos registrados.</p>
-          )}
-          {alumnoSummaries.map(({ alumno, lastMsg, unread }) => {
-            const isActive = selectedAlumno === alumno.nombre;
-            return (
-              <button
-                key={alumno.nombre}
-                type="button"
-                onClick={() => setSelectedAlumno(alumno.nombre)}
-                className={`w-full rounded-[1rem] border p-3 text-left transition-colors ${
-                  isActive
-                    ? "border-cyan-500/60 bg-cyan-600/15"
-                    : "border-white/10 bg-slate-900/60 hover:bg-slate-800/60"
-                }`}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "flex-start" }}>
+        {/* Lista de alumnos */}
+        <div style={{ width: 280, flexShrink: 0, display: "grid", gap: 8, minWidth: 240 }}>
+          {!alumnosLoaded ? (
+            <p className="pf-v2-muted">Cargando alumnos...</p>
+          ) : null}
+          {alumnosLoaded && alumnos.length === 0 ? (
+            <p className="pf-v2-muted">No tenés alumnos registrados.</p>
+          ) : null}
+
+          {alumnoSummaries.map(({ alumno, lastMsg, unread }) => (
+            <button
+              key={alumno.nombre}
+              type="button"
+              onClick={() => setSelectedAlumno(alumno.nombre)}
+              className="pf-v2-option"
+              aria-pressed={selectedAlumno === alumno.nombre}
+              style={{ width: "100%" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {alumno.nombre}
+                </span>
+                {unread > 0 ? <span className="pf-v2-nav-badge">{unread}</span> : null}
+              </span>
+              <span
+                className="pf-v2-feed-meta"
+                style={{ marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-white truncate">{alumno.nombre}</span>
-                  {unread > 0 && (
-                    <span className="shrink-0 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
-                      {unread}
-                    </span>
-                  )}
-                </div>
-                {lastMsg ? (
-                  <p className="mt-1 truncate text-xs text-slate-400">
-                    {lastMsg.de === myName ? "Vos: " : ""}{lastMsg.texto}
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-slate-500">Sin mensajes aún</p>
-                )}
-              </button>
-            );
-          })}
+                {lastMsg
+                  ? `${lastMsg.de === myName ? "Vos: " : ""}${lastMsg.texto}`
+                  : "Sin mensajes aún"}
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* Chat area */}
-        <div className="flex-1">
+        {/* Conversación */}
+        <div style={{ flex: 1, minWidth: 280 }}>
           {selectedAlumno ? (
-            <ChatPanel
-              myName={myName}
-              myRole="profe"
-              otherName={selectedAlumno}
-            />
+            <ChatPanel myName={myName} myRole="profe" otherName={selectedAlumno} />
           ) : (
-            <div className="flex h-64 items-center justify-center rounded-[1.2rem] border border-white/10 bg-[#080a0b]">
-              <p className="text-sm text-slate-400">
-                Seleccioná un alumno para ver la conversación 👈
+            <div className="pf-v2-card" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 260 }}>
+              <p className="pf-v2-muted" style={{ margin: 0 }}>
+                Elegí un alumno para ver la conversación.
               </p>
             </div>
           )}

@@ -63,20 +63,18 @@ export default function WellnessPage() {
   }, [wellnessList, filtroDisp, busqueda]);
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
+    <div className="pf-v2-page">
       {/* ── Header ── */}
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">💚 Monitoreo de Plantel</p>
-            <h1 className="pf-page-hero-title">Wellness</h1>
-            <p className="pf-page-hero-sub">
+            <span className="pf-v2-eyebrow">Monitoreo de Plantel</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Wellness</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
               Estado diario del plantel: bienestar, fatiga, dolor y disponibilidad.
             </p>
           </div>
-          <Link href="/nuevo-wellness" className="pf-btn pf-btn--primary">
+          <Link href="/nuevo-wellness" className="pf-v2-btn">
             + Nuevo registro
           </Link>
         </div>
@@ -97,9 +95,9 @@ export default function WellnessPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className={`pf-card rounded-2xl border p-5 ${s.tone}`}
+            className={`pf-v2-card ${s.tone}`}
           >
-            <p className="text-sm text-slate-400">{s.icon} {s.label}</p>
+            <p className="pf-v2-muted">{s.icon} {s.label}</p>
             <p className="mt-2 text-3xl font-bold text-slate-100">{s.value}</p>
           </div>
         ))}
@@ -132,7 +130,7 @@ export default function WellnessPage() {
 
       {/* ── List ── */}
       {filteredList.length === 0 ? (
-        <div className="pf-card rounded-2xl border border-white/8 p-12 text-center">
+        <div className="pf-v2-card">
           <p className="text-4xl">💚</p>
           <p className="mt-3 text-lg font-semibold text-slate-200">Sin registros</p>
           <p className="mt-1 text-sm text-slate-500">
@@ -141,7 +139,7 @@ export default function WellnessPage() {
               : "No se encontraron registros con ese filtro."}
           </p>
           {wellnessList.length === 0 && (
-            <Link href="/nuevo-wellness" className="pf-btn pf-btn--primary mt-5 inline-block">
+            <Link href="/nuevo-wellness" className="pf-v2-btn">
               Cargar primer registro
             </Link>
           )}
@@ -151,7 +149,7 @@ export default function WellnessPage() {
           {filteredList.map((item: WellnessItem, idx: number) => (
             <div
               key={`${item.nombre}-${idx}`}
-              className="pf-card rounded-2xl border border-white/8 p-5"
+              className="pf-v2-card"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 {/* Left: name + badge */}
@@ -189,6 +187,6 @@ export default function WellnessPage() {
           ))}
         </section>
       )}
-    </main>
+    </div>
   );
 }

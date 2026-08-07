@@ -673,6 +673,12 @@ body:has(.pf-v2) {
   flex-wrap: wrap;
 }
 
+/* Bloque de encabezado de pantalla: titulo arriba, stats o acciones abajo. */
+.pf-v2-hero-block {
+  display: grid;
+  gap: 20px;
+}
+
 /* ── Grillas ──────────────────────────────────────────────────────────────
    Las tres que usa el handoff. Colapsan solas en pantallas angostas: el
    diseño es de escritorio, pero el panel se abre igual desde el celular. */

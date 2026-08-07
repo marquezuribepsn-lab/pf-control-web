@@ -1078,15 +1078,13 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
 
   return (
     <ContainerTag className={containerClassName}>
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+      <section className="pf-v2-hero-block">
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">⚡ Centro de operaciones</p>
-            <h1 className="pf-page-hero-title">Entrenamiento</h1>
-            <p className="pf-page-hero-sub">
+            <span className="pf-v2-eyebrow">Centro de operaciones</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Entrenamiento</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
               Unifica sesiones y ejercicios en un mismo modulo para planificar, ajustar y ejecutar sin salir de contexto.
             </p>
           </div>
@@ -1096,14 +1094,14 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               <ReliableActionButton
                 type="button"
                 onClick={() => openQuickExerciseEditor(null, "")}
-                className="pf-btn pf-btn--primary"
+                className="pf-v2-btn"
               >
                 + Nuevo ejercicio
               </ReliableActionButton>
             ) : (
               <Link
                 href={nuevaSesionHref}
-                className="pf-btn pf-btn--primary"
+                className="pf-v2-btn"
               >
                 + Nueva sesion
               </Link>
@@ -1373,7 +1371,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
       {editandoBloquesId && (
         <div className="mb-6 rounded-2xl border border-white/15 bg-slate-900/90 p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold">Editor de bloques</h2>
+            <h2 className="pf-v2-h2">Editor de bloques</h2>
             <div className="flex gap-2">
               <ReliableActionButton
                 onClick={addBlock}
@@ -1431,7 +1429,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 />
 
                 <div className="mt-3 rounded-lg border border-white/10 bg-slate-900/70 p-3">
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+                  <label className="pf-v2-field-label">
                     Buscar ejercicio
                   </label>
                   <input
@@ -1806,7 +1804,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                         );
                       })}
                       {personasAutomatizables.length === 0 ? (
-                        <p className="text-sm text-slate-400">
+                        <p className="pf-v2-muted">
                           Esta sesion no tiene personas elegibles para automatizar.
                         </p>
                       ) : null}
@@ -1986,7 +1984,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
           <ReliableActionButton
             type="button"
             onClick={() => openQuickExerciseEditor(null, "")}
-            className="pf-btn pf-btn--primary"
+            className="pf-v2-btn"
           >
             + Nuevo ejercicio
           </ReliableActionButton>
@@ -2205,7 +2203,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
             <form onSubmit={submitQuickExercise} className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <label className="pf-v2-field-label">
                     Nombre
                   </label>
                   <input
@@ -2219,7 +2217,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <label className="pf-v2-field-label">
                     Categoria
                   </label>
                   <select
@@ -2240,7 +2238,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <label className="pf-v2-field-label">
                   Objetivo
                 </label>
                 <input
@@ -2254,7 +2252,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <label className="pf-v2-field-label">
                   Descripcion
                 </label>
                 <textarea
@@ -2269,7 +2267,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <label className="pf-v2-field-label">
                   Link de video
                 </label>
                 <input
@@ -2320,7 +2318,7 @@ export default function SesionesPage({ embedded = false }: SesionesPageProps = {
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="submit"
-                  className="pf-btn pf-btn--primary"
+                  className="pf-v2-btn"
                 >
                   {quickExerciseEditId ? "Guardar cambios" : "Guardar ejercicio"}
                 </ReliableActionButton>

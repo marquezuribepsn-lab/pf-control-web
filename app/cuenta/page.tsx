@@ -406,7 +406,7 @@ export default function CuentaPage() {
         <section className={sectionClass}>
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold">Datos del profesor / admin</h2>
+              <h2 className="pf-v2-h2">Datos del profesor / admin</h2>
               <p className={`mt-1 text-sm ${mutedTextClass}`}>Estos son los datos que hoy existen guardados para tu usuario.</p>
             </div>
             <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${account?.emailVerified ? "bg-emerald-500/20 text-emerald-200" : "bg-amber-500/20 text-amber-200"}`}>
@@ -450,7 +450,7 @@ export default function CuentaPage() {
         </section>
 
         <section className={sectionClass}>
-          <h2 className="text-xl font-bold">Editar cuenta</h2>
+          <h2 className="pf-v2-h2">Editar cuenta</h2>
           <p className={`mt-1 text-sm ${mutedTextClass}`}>
             Los datos personales se guardan directo. Para cambiar email o contraseña te pedimos la contraseña actual.
           </p>
@@ -722,7 +722,7 @@ export default function CuentaPage() {
             <ReliableActionButton
               type="submit"
               disabled={saving}
-              className="pf-btn pf-btn--primary disabled:cursor-not-allowed disabled:opacity-70"
+              className="pf-v2-btn disabled:cursor-not-allowed disabled:opacity-70"
             >
               {saving ? "Guardando..." : "Guardar cambios"}
             </ReliableActionButton>

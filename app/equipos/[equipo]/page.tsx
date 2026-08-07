@@ -49,8 +49,8 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
         <div className="text-center">
           <p className="text-5xl">🏆</p>
           <p className="mt-4 text-xl font-semibold">Equipo no encontrado</p>
-          <p className="mt-1 text-sm text-slate-400">El equipo que buscás no existe o fue eliminado.</p>
-          <Link href="/equipos" className="pf-btn pf-btn--ghost mt-5 inline-block">
+          <p className="pf-v2-muted">El equipo que buscás no existe o fue eliminado.</p>
+          <Link href="/equipos" className="pf-v2-btn pf-v2-btn-2">
             ← Volver a Equipos
           </Link>
         </div>
@@ -80,32 +80,30 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
   };
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
+    <div className="pf-v2-page">
       {/* ── Header ── */}
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">🏆 Planificación Estructural</p>
-            <h1 className="pf-page-hero-title">{equipo.nombre}</h1>
-            <p className="pf-page-hero-sub">
+            <span className="pf-v2-eyebrow">Planificación Estructural</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>{equipo.nombre}</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
               {equipo.categoria} · Temporada {equipo.temporada}
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/equipos" className="pf-btn pf-btn--ghost">
+            <Link href="/equipos" className="pf-v2-btn pf-v2-btn-2">
               ← Equipos
             </Link>
             <ReliableActionButton
               onClick={() => setEditandoEquipo(true)}
-              className="pf-btn pf-btn--ghost"
+              className="pf-v2-btn pf-v2-btn-2"
             >
               ✏️ Editar equipo
             </ReliableActionButton>
             <ReliableActionButton
               onClick={handleDeleteEquipo}
-              className="pf-btn pf-btn--danger"
+              className="pf-v2-btn pf-v2-btn-danger"
             >
               🗑 Eliminar
             </ReliableActionButton>
@@ -115,7 +113,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
 
       {/* ── Edit form ── */}
       {editandoEquipo && (
-        <section className="pf-card rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-6">
+        <section className="pf-v2-card">
           <h2 className="mb-5 text-lg font-semibold text-slate-200">✏️ Editar Equipo</h2>
           <form onSubmit={handleUpdateEquipo} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -167,13 +165,13 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
               </div>
             </div>
             <div className="flex gap-2 pt-1">
-              <ReliableActionButton type="submit" className="pf-btn pf-btn--success">
+              <ReliableActionButton type="submit" className="pf-v2-btn">
                 Guardar cambios
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={() => setEditandoEquipo(false)}
-                className="pf-btn pf-btn--ghost"
+                className="pf-v2-btn pf-v2-btn-2"
               >
                 Cancelar
               </ReliableActionButton>
@@ -189,21 +187,21 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
           { icon: "📅", label: "Temporada", value: equipo.temporada },
           { icon: "👥", label: "Jugadoras en el equipo", value: jugadorasEnEquipo.length },
         ].map((s) => (
-          <div key={s.label} className="pf-card rounded-2xl border border-white/8 p-5">
-            <p className="text-sm text-slate-400">{s.icon} {s.label}</p>
+          <div key={s.label} className="pf-v2-card">
+            <p className="pf-v2-muted">{s.icon} {s.label}</p>
             <p className="mt-2 text-2xl font-bold text-slate-100" suppressHydrationWarning>{s.value}</p>
           </div>
         ))}
         {equipo.descripcion && (
-          <div className="pf-card col-span-full rounded-2xl border border-white/8 p-5">
-            <p className="text-sm text-slate-400">📝 Descripción</p>
+          <div className="pf-v2-card col-span-full">
+            <p className="pf-v2-muted">📝 Descripción</p>
             <p className="mt-1 text-slate-200">{equipo.descripcion}</p>
           </div>
         )}
       </section>
 
       {/* ── Jugadoras del equipo ── */}
-      <section className="pf-card rounded-2xl border border-white/8 p-6">
+      <section className="pf-v2-card">
         <h2 className="mb-5 text-lg font-semibold text-slate-200">👥 Jugadoras del Equipo</h2>
         {jugadorasEnEquipo.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-500">
@@ -252,13 +250,13 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                             setCambiandoCategoria(null);
                             setNuevaCategoria("");
                           }}
-                          className="pf-btn pf-btn--success text-xs"
+                          className="pf-v2-btn"
                         >
                           Guardar
                         </ReliableActionButton>
                         <ReliableActionButton
                           onClick={() => { setCambiandoCategoria(null); setNuevaCategoria(""); }}
-                          className="pf-btn pf-btn--ghost text-xs"
+                          className="pf-v2-btn pf-v2-btn-2"
                         >
                           Cancelar
                         </ReliableActionButton>
@@ -270,7 +268,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                             setCambiandoCategoria(jugadora.nombre);
                             setNuevaCategoria(jugadora.categoria || "");
                           }}
-                          className="pf-btn pf-btn--ghost text-xs"
+                          className="pf-v2-btn pf-v2-btn-2"
                         >
                           Cambiar equipo
                         </ReliableActionButton>
@@ -280,7 +278,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                               eliminarJugadora(jugadora.nombre);
                             }
                           }}
-                          className="pf-btn pf-btn--danger text-xs"
+                          className="pf-v2-btn pf-v2-btn-danger"
                         >
                           Eliminar
                         </ReliableActionButton>
@@ -322,7 +320,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
 
       {/* ── Agregar jugadoras ── */}
       {jugadorasFuera.length > 0 && (
-        <section className="pf-card rounded-2xl border border-white/8 p-6">
+        <section className="pf-v2-card">
           <h2 className="mb-5 text-lg font-semibold text-slate-200">➕ Agregar Jugadora al Equipo</h2>
           <div className="space-y-2">
             {jugadorasFuera.map((jugadora) => (
@@ -336,7 +334,7 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
                 </div>
                 <ReliableActionButton
                   onClick={() => cambiarCategoriaJugadora(jugadora.nombre, equipo.categoria)}
-                  className="pf-btn pf-btn--primary text-xs"
+                  className="pf-v2-btn"
                 >
                   Agregar al equipo
                 </ReliableActionButton>
@@ -345,6 +343,6 @@ export default function EquipoPage({ params }: { params: Promise<{ equipo: strin
           </div>
         </section>
       )}
-    </main>
+    </div>
   );
 }

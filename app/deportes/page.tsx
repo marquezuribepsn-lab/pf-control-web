@@ -106,15 +106,13 @@ export default function DeportesPage() {
   };
 
   return (
-    <main className="relative mx-auto max-w-[1480px] space-y-6 p-6 text-slate-100">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
+    <div className="pf-v2-page">
+      <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="pf-page-hero-badge">🏅 Centro Operativo</p>
-            <h1 className="pf-page-hero-title">Deportes</h1>
-            <p className="pf-page-hero-sub">Gestiona disciplinas y posiciones con una vista moderna enfocada en operación diaria.</p>
+            <span className="pf-v2-eyebrow">Centro Operativo</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Deportes</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>Gestiona disciplinas y posiciones con una vista moderna enfocada en operación diaria.</p>
           </div>
           <div className="pf-kpi pf-kpi--violet min-w-[180px] text-right">
             <p className="pf-kpi__label">Total actual</p>
@@ -130,7 +128,7 @@ export default function DeportesPage() {
         </div>
       </section>
 
-      <section className="pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-white/90" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Agregar nuevo deporte</h2>
@@ -153,21 +151,21 @@ export default function DeportesPage() {
               }
             }}
             placeholder="Nombre del deporte"
-            className="flex-1 rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+            className="pf-v2-input"
           />
           <ReliableActionButton
             onClick={handleAgregarDeporte}
-            className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-400"
+            className="pf-v2-btn"
           >
             Agregar
           </ReliableActionButton>
         </div>
       </section>
 
-      <section className="pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Buscador inteligente</h2>
+            <h2 className="pf-v2-h2" style={{ color: `hsl(var(--hue,197),65%,65%)` }}>Buscador inteligente</h2>
             <p className="mt-1 text-xs text-white/40">
               Busca por nombre de deporte o por cualquier posición (por ejemplo &quot;delantero&quot; o &quot;base&quot;).
             </p>
@@ -182,17 +180,17 @@ export default function DeportesPage() {
           value={busqueda}
           onChange={(event) => setBusqueda(event.target.value)}
           placeholder="Filtrar deportes o posiciones..."
-          className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-4 py-2.5 text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+          className="pf-v2-input"
         />
       </section>
 
       <section>
         {deportesFiltrados.length === 0 ? (
-          <div className="pf-card rounded-2xl border p-8 text-center">
-            <p className="text-lg font-bold text-white/90">
+          <div className="pf-v2-card">
+            <p className="pf-v2-h2">
               {sortedDeportes.length === 0 ? "No hay deportes cargados todavía." : "No encontramos coincidencias para tu búsqueda."}
             </p>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="pf-v2-muted">
               {sortedDeportes.length === 0
                 ? "Empieza creando el primero desde el bloque superior."
                 : "Prueba con otro término o limpia el filtro para ver todos los deportes."}
@@ -206,7 +204,7 @@ export default function DeportesPage() {
               return (
                 <article
                   key={deporte.nombre}
-                  className={`pf-card relative overflow-hidden rounded-2xl border p-5`}
+                  className="pf-v2-card" style={{ position: "relative", overflow: "hidden" }}
                 >
                   <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone.glow}`} />
 
@@ -236,7 +234,7 @@ export default function DeportesPage() {
                     </div>
                   </div>
 
-                  <div className="relative mt-4 pf-card rounded-2xl border p-3">
+                  <div className="pf-v2-card mt-4">
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Posiciones</h3>
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone.badge}`}>
@@ -283,7 +281,7 @@ export default function DeportesPage() {
                         />
                         <ReliableActionButton
                           onClick={() => handleAgregarPosicion(deporte.nombre)}
-                          className="pf-btn pf-btn--primary !px-3 !py-2 !text-xs"
+                          className="pf-v2-btn !px-3 !py-2 !text-xs"
                         >
                           Agregar
                         </ReliableActionButton>
@@ -303,7 +301,7 @@ export default function DeportesPage() {
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 
