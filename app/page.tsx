@@ -511,561 +511,482 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
+  // Paleta por tarjeta, del handoff v2.
+  const TINTES = ["#22e5ff", "#34d399", "#c084fc", "#fbbf24"];
+  const suave = (hex: string, a: number) => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  };
+
   return (
-    <main className="relative -mx-4 min-h-screen overflow-x-clip text-white">
-      {/* Keyframes + global scoped styles */}
-      <style>{`
-        /* ── Defaults ────────────────────────────────────────── */
-        :root { --hue: 135; --bright: 100%; }
-
-        @keyframes pf-fade-up {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pf-dot-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.35; transform: scale(0.65); }
-        }
-        .pf-au   { animation: pf-fade-up 0.55s cubic-bezier(0.22,1,0.36,1) both; }
-        .pf-d1   { animation-delay: 0.04s; }
-        .pf-d2   { animation-delay: 0.09s; }
-        .pf-d3   { animation-delay: 0.14s; }
-        .pf-d4   { animation-delay: 0.19s; }
-        .pf-d5   { animation-delay: 0.24s; }
-        .pf-dot-live { animation: pf-dot-pulse 2s ease-in-out infinite; }
-
-        /* ── Hue-reactive tokens ─────────────────────────────── */
-        .pf-accent       { color: hsl(var(--hue) 80% 72%); }
-        .pf-accent-bg    { background: hsl(var(--hue) 70% 55%); }
-        .pf-accent-glow  { box-shadow: 0 0 28px hsla(var(--hue), 70%, 60%, 0.45); }
-        .pf-accent-border{ border-color: hsla(var(--hue), 70%, 65%, 0.3) !important; }
-
-        /* Badge / pill */
-        .pf-badge {
-          border-color: hsla(var(--hue), 70%, 65%, 0.35);
-          background: hsla(var(--hue), 70%, 60%, 0.12);
-          color: hsl(var(--hue) 85% 78%);
-        }
-        .pf-badge-dot { background: hsl(var(--hue) 85% 72%); }
-
-        /* Section label */
-        .pf-label { color: hsl(var(--hue) 75% 72%); }
-
-        /* Primary button */
-        .pf-btn {
-          background: hsl(var(--hue) 65% 52%);
-          box-shadow: 0 0 28px hsla(var(--hue), 65%, 55%, 0.45);
-          color: #fff;
-          transition: all 0.3s ease;
-        }
-        .pf-btn:hover {
-          background: hsl(var(--hue) 65% 58%);
-          box-shadow: 0 0 44px hsla(var(--hue), 65%, 58%, 0.6);
-          transform: translateY(-2px);
-        }
-        .pf-btn:active { transform: scale(0.97); }
-
-        /* Stat cards — new gym design */
-        .pf-stat-card { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s ease; }
-        .pf-stat-card:hover { transform: translateY(-3px) scale(1.015); }
-        .pf-stat-card:active { transform: scale(0.98); }
-
-        /* KPI mini-cards */
-        .pf-k0 { background: hsla(calc(var(--hue) + 120), 60%, 50%, 0.09); border-color: hsla(calc(var(--hue) + 120), 60%, 60%, 0.22) !important; }
-        .pf-k0 .pf-kval { color: hsl(calc(var(--hue) + 120) 75% 72%); }
-        .pf-k1 { background: hsla(var(--hue), 65%, 55%, 0.09); border-color: hsla(var(--hue), 65%, 65%, 0.22) !important; }
-        .pf-k1 .pf-kval { color: hsl(var(--hue) 80% 75%); }
-        .pf-k2 { background: hsla(0, 70%, 55%, 0.09); border-color: hsla(0, 70%, 65%, 0.22) !important; }
-        .pf-k2 .pf-kval { color: hsl(0 80% 72%); }
-        .pf-k3 { background: hsla(calc(var(--hue) + 60), 65%, 55%, 0.09); border-color: hsla(calc(var(--hue) + 60), 65%, 65%, 0.22) !important; }
-        .pf-k3 .pf-kval { color: hsl(calc(var(--hue) + 60) 80% 75%); }
-
-        /* ── Por-card hover glow (mint gym) ─────────────────── */
-        .pf-led { position: relative; overflow: hidden; }
-        .pf-led::after {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
-          background: radial-gradient(
-            380px circle at var(--cx, 50%) var(--cy, 50%),
-            rgba(97, 206, 112, 0.12) 0%,
-            rgba(97, 206, 112, 0.05) 40%,
-            transparent 65%
-          );
-          opacity: 0;
-          transition: opacity 0.22s ease;
-          pointer-events: none;
-          z-index: 2;
-        }
-        .pf-led:hover::after { opacity: 1; }
-        .pf-led:hover { border-color: rgba(97, 206, 112, 0.30) !important; }
-      `}</style>
-
-      <div className="relative mx-auto max-w-7xl px-5 py-8 md:px-7 lg:px-8">
-
-        {/* ── Config toolbar ───────────────────────────────────── */}
-        {configMode && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.09] bg-[#111417] p-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
-              Configuración de inicio
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {!editando ? (
-                <ReliableActionButton
-                  onClick={() => setEditando(true)}
-                  className="rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-indigo-500 active:scale-95"
-                >
-                  Editar inicio
-                </ReliableActionButton>
-              ) : (
-                <>
-                  <ReliableActionButton
-                    onClick={guardarConfig}
-                    className="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-500 active:scale-95"
-                  >
-                    Guardar cambios
-                  </ReliableActionButton>
-                  <ReliableActionButton
-                    onClick={() => setEditando(false)}
-                    className="rounded-xl border border-white/[0.12] px-3 py-1.5 text-sm font-medium text-zinc-300 transition-all duration-200 hover:bg-white/[0.06]"
-                  >
-                    Cancelar
-                  </ReliableActionButton>
-                </>
-              )}
-              <ReliableActionButton
-                onClick={resetConfig}
-                className="rounded-xl border border-rose-500/25 px-3 py-1.5 text-sm font-medium text-rose-400 transition-all duration-200 hover:bg-rose-500/10"
-              >
-                Reset
+    <div className="pf-v2-page">
+      {/* ── Barra de configuración ─────────────────────────────── */}
+      {configMode ? (
+        <div
+          className="pf-v2-card"
+          style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, padding: 16 }}
+        >
+          <span className="pf-v2-eyebrow" style={{ margin: 0 }}>Configuración de inicio</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {!editando ? (
+              <ReliableActionButton onClick={() => setEditando(true)} className="pf-v2-btn">
+                Editar inicio
               </ReliableActionButton>
-              <Link
-                href="/"
-                onClick={closeHomeEditMode}
-                className="rounded-xl border border-white/[0.10] px-3 py-1.5 text-sm font-medium text-zinc-400 transition-all duration-200 hover:bg-white/[0.05]"
-              >
-                Cerrar
-              </Link>
-            </div>
+            ) : (
+              <>
+                <ReliableActionButton onClick={guardarConfig} className="pf-v2-btn">
+                  Guardar cambios
+                </ReliableActionButton>
+                <ReliableActionButton onClick={() => setEditando(false)} className="pf-v2-btn pf-v2-btn-2">
+                  Cancelar
+                </ReliableActionButton>
+              </>
+            )}
+            <Link href="/" onClick={closeHomeEditMode} className="pf-v2-btn pf-v2-btn-2">
+              Cerrar
+            </Link>
           </div>
-        )}
+        </div>
+      ) : null}
 
-        {/* ── HERO ─────────────────────────────────────────────── */}
-        <header className="pf-au mb-10">
-          {/* Badge vivo */}
+      {/* ── Bienvenida ─────────────────────────────────────────── */}
+      <header className="pf-v2-hero">
+        <div style={{ minWidth: 0 }}>
           {editando ? (
             <input
               value={config.badge}
               onChange={(e) => setConfig({ ...config, badge: e.target.value })}
-              className="mb-4 w-56 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-300"
+              className="pf-v2-input"
+              style={{ maxWidth: 260, marginBottom: 12 }}
             />
           ) : (
-            <span className="pf-badge mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wider">
-              <span className="pf-badge-dot pf-dot-live h-1.5 w-1.5 rounded-full" />
-              {config.badge}
-            </span>
+            <span className="pf-v2-chip pf-v2-chip-accent" style={{ marginBottom: 14 }}>{config.badge}</span>
           )}
 
-          {/* Título con gradient text */}
           {editando ? (
             <input
               value={config.titulo}
               onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-4xl font-bold text-white"
+              className="pf-v2-input"
+              style={{ fontSize: 24, fontWeight: 700 }}
             />
           ) : (
-            <h1 className="pf-page-hero-title mt-2 text-5xl md:text-[3.6rem]">
-              {config.titulo}
-            </h1>
+            <h1 className="pf-v2-hero-title">{config.titulo}</h1>
           )}
 
           {editando ? (
             <textarea
               value={config.subtitulo}
               onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
-              className="mt-4 w-full max-w-xl rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-zinc-400"
+              className="pf-v2-input"
               rows={2}
+              style={{ marginTop: 12, maxWidth: 520 }}
             />
           ) : (
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
-              {config.subtitulo}
-            </p>
+            <p className="pf-v2-muted" style={{ marginTop: 12, maxWidth: 520 }}>{config.subtitulo}</p>
           )}
-
-          {editando ? (
-            <div className="mt-5 grid max-w-lg gap-3 sm:grid-cols-2">
-              {[
-                { label: "Botón primario", labelKey: "botonPrimarioLabel", hrefKey: "botonPrimarioHref" },
-                { label: "Botón secundario", labelKey: "botonSecundarioLabel", hrefKey: "botonSecundarioHref" },
-              ].map((btn) => (
-                <div key={btn.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  <p className="mb-2 text-xs text-zinc-500">{btn.label}</p>
-                  <input
-                    value={(config as any)[btn.labelKey]}
-                    onChange={(e) => setConfig({ ...config, [btn.labelKey]: e.target.value })}
-                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white"
-                  />
-                  <input
-                    value={(config as any)[btn.hrefKey]}
-                    onChange={(e) => setConfig({ ...config, [btn.hrefKey]: e.target.value })}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href={primaryActionHref}
-                className="pf-btn pf-btn--primary !px-5 !py-2.5 !text-sm"
-              >
-                {config.botonPrimarioLabel}
-              </Link>
-              <Link
-                href={secondaryActionHref}
-                className="pf-btn pf-btn--ghost !px-5 !py-2.5 !text-sm"
-              >
-                {config.botonSecundarioLabel}
-              </Link>
-            </div>
-          )}
-        </header>
-
-        {/* ── STATS ROW ─────────────────────────────────────────── */}
-        <div className="pf-kpi-grid mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {useMemo(() => {
-            const totalPersonas = jugadoras.length + alumnos.length;
-            const wellnessList = Array.isArray(wellness) ? wellness : [];
-            const wPromedio = wellnessList.length > 0
-              ? (wellnessList.reduce((a, i) => a + i.bienestar, 0) / wellnessList.length).toFixed(1)
-              : "—";
-            const categoriasActivas = (categoriesContext?.categorias || []).filter((c) => c.habilitada && c.nombre.toLowerCase() !== "wellness").length;
-            return [
-              { title: "Categorías activas", value: String(categoriasActivas), href: "/categorias", hint: "Abrir mapa de categorías" },
-              { title: "Jugadoras / Alumnos", value: String(totalPersonas), href: "/clientes?seccion=plantel", hint: "Ver plantilla operativa" },
-              { title: "Sesiones creadas", value: String(sesiones.length), href: "/sesiones", hint: "Ir a sesiones" },
-              { title: "Wellness promedio", value: String(wPromedio), href: "/wellness", hint: "Revisar balance de carga" },
-            ];
-          }, [jugadoras.length, alumnos.length, sesiones.length, wellness, categoriesContext]).map((stat, index) => {
-            const variant = (["pf-kpi--emerald","pf-kpi--violet","pf-kpi--amber","pf-kpi--rose"] as const)[index];
-            const delayClass = ["pf-d1","pf-d2","pf-d3","pf-d4"][index] ?? "";
-            return (
-              <Link
-                key={stat.title}
-                href={stat.href}
-                className={`pf-au pf-kpi ${variant} ${delayClass} group block !p-5`}
-              >
-                <p className="pf-kpi__value !text-[2.5rem]">{stat.value}</p>
-                <p className="pf-kpi__label mt-2">{stat.title}</p>
-                <p className="pf-kpi__sub mt-2 group-hover:opacity-100" style={{ color: "var(--gym-accent-light)" }}>
-                  {stat.hint} →
-                </p>
-              </Link>
-            );
-          })}
         </div>
 
-        {/* ── MESA OPERATIVA ────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d2 mb-5 pf-card rounded-2xl border p-6"
-          onMouseMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
-            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
-          }}>
-          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        {editando ? (
+          <div style={{ display: "grid", gap: 10, maxWidth: 420 }}>
+            {[
+              { label: "Botón primario", labelKey: "botonPrimarioLabel", hrefKey: "botonPrimarioHref" },
+              { label: "Botón secundario", labelKey: "botonSecundarioLabel", hrefKey: "botonSecundarioHref" },
+            ].map((btn) => (
+              <div key={btn.label} className="pf-v2-card" style={{ padding: 14 }}>
+                <span className="pf-v2-field-label">{btn.label}</span>
+                <input
+                  value={(config as any)[btn.labelKey]}
+                  onChange={(e) => setConfig({ ...config, [btn.labelKey]: e.target.value })}
+                  className="pf-v2-input"
+                  style={{ marginBottom: 8 }}
+                />
+                <input
+                  value={(config as any)[btn.hrefKey]}
+                  onChange={(e) => setConfig({ ...config, [btn.hrefKey]: e.target.value })}
+                  className="pf-v2-input"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <Link href={primaryActionHref} className="pf-v2-btn">{config.botonPrimarioLabel}</Link>
+            <Link href={secondaryActionHref} className="pf-v2-btn pf-v2-btn-2">{config.botonSecundarioLabel}</Link>
+          </div>
+        )}
+      </header>
+
+      {/* ── Indicadores ────────────────────────────────────────── */}
+      <section className="pf-v2-grid-4">
+        {useMemo(() => {
+          const totalPersonas = jugadoras.length + alumnos.length;
+          const wellnessList = Array.isArray(wellness) ? wellness : [];
+          const wPromedio = wellnessList.length > 0
+            ? (wellnessList.reduce((a, i) => a + i.bienestar, 0) / wellnessList.length).toFixed(1)
+            : "—";
+          const categoriasHabilitadas = (categoriesContext?.categorias || []).filter(
+            (c) => c.habilitada && c.nombre.toLowerCase() !== "wellness"
+          ).length;
+          return [
+            { title: "Categorías activas", value: String(categoriasHabilitadas), href: "/categorias", icon: "◈", hint: "Abrir mapa de categorías" },
+            { title: "Jugadoras / Alumnos", value: String(totalPersonas), href: "/clientes?seccion=plantel", icon: "◉", hint: "Ver plantilla operativa" },
+            { title: "Sesiones creadas", value: String(sesiones.length), href: "/sesiones", icon: "▤", hint: "Ir a sesiones" },
+            { title: "Wellness promedio", value: String(wPromedio), href: "/wellness", icon: "◐", hint: "Revisar balance de carga" },
+          ];
+        }, [jugadoras.length, alumnos.length, sesiones.length, wellness, categoriesContext]).map((stat, index) => {
+          const hex = TINTES[index % TINTES.length];
+          return (
+            <Link key={stat.title} href={stat.href} className="pf-v2-kpi pf-v2-lift">
+              <div className="pf-v2-kpi-top">
+                <span
+                  className="pf-v2-kpi-icon"
+                  style={{ background: suave(hex, 0.14), color: hex, boxShadow: `0 0 18px ${suave(hex, 0.3)}` }}
+                  aria-hidden="true"
+                >
+                  {stat.icon}
+                </span>
+              </div>
+              <strong className="pf-v2-stat-value">{stat.value}</strong>
+              <span className="pf-v2-stat-label">{stat.title}</span>
+              <span className="pf-v2-module-go" style={{ color: hex, display: "block", marginTop: 10 }}>
+                {stat.hint} →
+              </span>
+            </Link>
+          );
+        })}
+      </section>
+
+      {/* ── Mesa operativa + actividad ─────────────────────────── */}
+      <section className="pf-v2-grid-split">
+        <article className="pf-v2-card">
+          <div className="pf-v2-page-head" style={{ marginBottom: 20 }}>
             <div>
-              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Mesa operativa</p>
-              <h2 className="text-2xl font-bold text-white">Alumnos y planes activos</h2>
+              <span className="pf-v2-eyebrow">Mesa operativa</span>
+              <h2 className="pf-v2-h2">Alumnos y planes activos</h2>
             </div>
-            <div className="flex gap-2">
-              <Link href="/clientes" className="pf-btn pf-btn--primary !px-4 !py-2 !text-xs">
-                Crear cliente
-              </Link>
-              <Link href="/clientes" className="pf-btn pf-btn--ghost !px-4 !py-2 !text-xs">
-                Asignar entrenamiento
-              </Link>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link href="/clientes" className="pf-v2-btn">Crear cliente</Link>
+              <Link href="/clientes" className="pf-v2-btn pf-v2-btn-2">Asignar entrenamiento</Link>
             </div>
           </div>
 
-          {/* KPIs */}
-          <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="pf-v2-grid-4" style={{ gap: 10, marginBottom: 20 }}>
             {[
-              { label: "Clientes activos", val: operativoKpis.totalAlumnos,        ki: 0 },
-              { label: "Con plan",         val: operativoKpis.conPlan,             ki: 1 },
-              { label: "Sin plan",         val: operativoKpis.sinPlan,             ki: 2 },
-              { label: "Prescripciones",   val: operativoKpis.totalPrescripciones, ki: 3 },
-            ].map((k) => (
-              <div key={k.label} className={`pf-k${k.ki} rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5`}>
-                <p className={`pf-kval text-3xl font-bold`}>{k.val}</p>
-                <p className="mt-1 text-xs font-semibold text-white/60">{k.label}</p>
+              { label: "Clientes activos", val: operativoKpis.totalAlumnos },
+              { label: "Con plan", val: operativoKpis.conPlan },
+              { label: "Sin plan", val: operativoKpis.sinPlan },
+              { label: "Prescripciones", val: operativoKpis.totalPrescripciones },
+            ].map((k, i) => (
+              <div key={k.label} className="pf-v2-card" style={{ padding: 16 }}>
+                <strong className="pf-v2-stat-value" style={{ fontSize: 24, color: TINTES[i] }}>{k.val}</strong>
+                <span className="pf-v2-stat-label">{k.label}</span>
               </div>
             ))}
           </div>
 
-          {/* Table */}
-          <div className="rounded-xl border border-white/[0.06] bg-black/[0.18] p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <input
-                value={operativoFiltro}
-                onChange={(e) => setOperativoFiltro(e.target.value)}
-                placeholder="Buscar alumno..."
-                className="w-full max-w-xs rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 transition-colors duration-200 focus:border-indigo-500/50 focus:outline-none"
-              />
-              <Link href="/clientes" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
-                Ver módulo clientes →
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-white/[0.06]">
-                    {["Alumno", "Estado", "Objetivo", "Sesiones", "Últ. act.", ""].map((h) => (
-                      <th key={h} className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-zinc-600">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {alumnosOperativos.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-3 py-8 text-center text-sm text-zinc-600">
-                        No hay alumnos con el filtro actual.
-                      </td>
-                    </tr>
-                  ) : (
-                    alumnosOperativos.slice(0, 8).map((alumno) => (
-                      <tr key={alumno.nombre} className="border-b border-white/[0.04] transition-colors duration-150 hover:bg-indigo-500/[0.04]">
-                        <td className="px-3 py-3 font-medium text-white">{alumno.nombre}</td>
-                        <td className="px-3 py-3">
-                          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                            alumno.estado === "Con plan"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : "bg-red-500/10 text-red-400"
-                          }`}>
-                            {alumno.estado}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-zinc-400">{alumno.objetivo}</td>
-                        <td className="px-3 py-3 text-zinc-400">
-                          {alumno.sesiones}
-                          <span className="ml-1 text-zinc-600">({alumno.prescripciones})</span>
-                        </td>
-                        <td className="px-3 py-3 text-zinc-500">
-                          {alumno.ultimaActualizacion
-                            ? new Date(alumno.ultimaActualizacion).toLocaleDateString("es-AR")
-                            : "—"}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          <Link href="/semana" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
-                            Templates →
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        {/* ── CATEGORÍAS ────────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d3 mb-5 pf-card rounded-2xl border p-6"
-          onMouseMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
-            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
-          }}>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Acceso rápido</p>
-              <h2 className="text-2xl font-bold text-white">Categorías</h2>
-            </div>
-            <Link href="/categorias" className="text-xs font-medium text-zinc-500 transition-colors duration-200 hover:text-indigo-400">
-              Ver todas →
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+            <input
+              value={operativoFiltro}
+              onChange={(e) => setOperativoFiltro(e.target.value)}
+              placeholder="Buscar alumno..."
+              className="pf-v2-input"
+              style={{ maxWidth: 280 }}
+              aria-label="Buscar alumno"
+            />
+            <Link href="/clientes" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
+              Ver módulo clientes →
             </Link>
           </div>
-          {categoriasActivas.length === 0 ? (
-            <p className="text-sm text-zinc-600">No hay categorías habilitadas.</p>
-          ) : (
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {categoriasActivas.map((categoria, index) => {
-                const accent = CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length];
-                return (
-                  <Link
-                    key={categoria.nombre}
-                    href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                    className="group pf-card rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5"
-                  >
-                    <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${accent}`} />
-                    <p className="font-semibold" style={{ color: "#ffffff" }}>{categoria.nombre}</p>
-                    <p className="mt-0.5 text-xs transition-colors duration-200 group-hover:text-indigo-400" style={{ color: "rgba(255,255,255,0.35)" }}>
-                      Abrir →
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
 
-        {/* ── RADAR + ALERTAS ───────────────────────────────────── */}
-        <section className="pf-au pf-d4 mb-5 grid gap-4 lg:grid-cols-3">
-          <div className="pf-led pf-card rounded-2xl border p-6 lg:col-span-2"
-            onMouseMove={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
-              e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
-            }}>
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="pf-v2-table-wrap">
+            <table className="pf-v2-table">
+              <thead>
+                <tr>
+                  {["Alumno", "Estado", "Objetivo", "Sesiones", "Últ. act.", ""].map((h, i) => (
+                    <th key={h || `col-${i}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {alumnosOperativos.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="pf-v2-table-empty">No hay alumnos con el filtro actual.</td>
+                  </tr>
+                ) : (
+                  alumnosOperativos.slice(0, 8).map((alumno) => (
+                    <tr key={alumno.nombre}>
+                      <td>{alumno.nombre}</td>
+                      <td>
+                        <span className={`pf-v2-chip ${alumno.estado === "Con plan" ? "pf-v2-chip-ok" : "pf-v2-chip-danger"}`}>
+                          {alumno.estado}
+                        </span>
+                      </td>
+                      <td>{alumno.objetivo}</td>
+                      <td>
+                        {alumno.sesiones}
+                        <span style={{ color: "var(--v2-fg-35)", marginLeft: 4 }}>({alumno.prescripciones})</span>
+                      </td>
+                      <td>
+                        {alumno.ultimaActualizacion
+                          ? new Date(alumno.ultimaActualizacion).toLocaleDateString("es-AR")
+                          : "—"}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <Link href="/semana" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
+                          Templates →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <div style={{ display: "grid", gap: 20 }}>
+          {/* Sesión del día */}
+          <article className="pf-v2-card">
+            <div className="pf-v2-page-head" style={{ marginBottom: 14 }}>
               {editando ? (
-                <input value={config.radarTitulo} onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xl font-bold text-white" />
+                <input
+                  value={config.radarTitulo}
+                  onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
+                  className="pf-v2-input"
+                />
               ) : (
-                <h2 className="text-xl font-bold text-white">{config.radarTitulo}</h2>
+                <h2 className="pf-v2-h2">{config.radarTitulo}</h2>
               )}
               {editando ? (
-                <input value={config.diaLabel} onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
-                  className="w-16 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-zinc-300" />
+                <input
+                  value={config.diaLabel}
+                  onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
+                  className="pf-v2-input"
+                  style={{ maxWidth: 90 }}
+                />
               ) : (
-                <span className="pf-badge rounded-full border px-3 py-1 text-xs font-medium">
-                  {config.diaLabel}
-                </span>
+                <span className="pf-v2-chip pf-v2-chip-accent">{config.diaLabel}</span>
               )}
             </div>
+
             {editando ? (
-              <textarea value={config.radarDetalle} onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
-                className="mb-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-zinc-400" rows={2} />
+              <textarea
+                value={config.radarDetalle}
+                onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
+                className="pf-v2-input"
+                rows={2}
+                style={{ marginBottom: 14 }}
+              />
             ) : (
-              <p className="mb-4 text-sm leading-relaxed text-zinc-400">{config.radarDetalle}</p>
+              <p className="pf-v2-muted" style={{ marginBottom: 14 }}>{config.radarDetalle}</p>
             )}
-            <div className="grid gap-2 sm:grid-cols-3">
+
+            <div className="pf-v2-grid-3" style={{ gap: 10 }}>
               {[
-                { label: "Equipo",   value: config.equipo,   onChange: (v: string) => setConfig({ ...config, equipo: v }) },
+                { label: "Equipo", value: config.equipo, onChange: (v: string) => setConfig({ ...config, equipo: v }) },
                 { label: "Duración", value: config.duracion, onChange: (v: string) => setConfig({ ...config, duracion: v }) },
-                { label: "Bloques",  value: config.bloques,  onChange: (v: string) => setConfig({ ...config, bloques: v }) },
+                { label: "Bloques", value: config.bloques, onChange: (v: string) => setConfig({ ...config, bloques: v }) },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-white/[0.09] bg-[#111417] p-3">
-                  <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">{item.label}</p>
+                <div key={item.label} className="pf-v2-card" style={{ padding: 14 }}>
+                  <span className="pf-v2-stat-label">{item.label}</span>
                   {editando ? (
-                    <input value={item.value} onChange={(e) => item.onChange(e.target.value)}
-                      className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
+                    <input value={item.value} onChange={(e) => item.onChange(e.target.value)} className="pf-v2-input" />
                   ) : (
-                    <p className="font-semibold text-white">{item.value}</p>
+                    <strong style={{ display: "block", fontSize: 14, fontWeight: 700, marginTop: 4 }}>{item.value}</strong>
                   )}
                 </div>
               ))}
             </div>
-            <div className="mt-2 rounded-xl border border-white/[0.09] bg-[#111417] p-3">
-              <p className="mb-1 text-[11px] uppercase tracking-wider text-zinc-600">Objetivo</p>
+
+            <div className="pf-v2-card" style={{ padding: 14, marginTop: 10 }}>
+              <span className="pf-v2-stat-label">Objetivo</span>
               {editando ? (
-                <textarea value={config.objetivo} onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
-                  className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" rows={2} />
+                <textarea
+                  value={config.objetivo}
+                  onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
+                  className="pf-v2-input"
+                  rows={2}
+                />
               ) : (
-                <p className="text-sm font-medium text-zinc-300">{config.objetivo}</p>
+                <p style={{ fontSize: 13, color: "var(--v2-fg-70)", margin: "4px 0 0" }}>{config.objetivo}</p>
               )}
             </div>
-          </div>
+          </article>
 
           {/* Alertas */}
-          <div className="pf-card rounded-2xl border p-6">
-            <div className="mb-4 flex items-center justify-between">
+          <article className="pf-v2-card">
+            <div className="pf-v2-page-head" style={{ marginBottom: 14 }}>
               <div>
-                <div className="mb-2 h-[2px] w-8 rounded-full bg-amber-400 opacity-80" />
-                <h2 className="text-xl font-bold text-white">Alertas</h2>
+                <span className="pf-v2-eyebrow" style={{ color: "var(--v2-warning)" }}>Atención</span>
+                <h2 className="pf-v2-h2">Alertas</h2>
               </div>
-              {editando && (
-                <ReliableActionButton onClick={addAlerta}
-                  className="rounded-xl bg-amber-500 px-2.5 py-1 text-xs font-bold text-black transition-all duration-200 hover:bg-amber-400">
+              {editando ? (
+                <ReliableActionButton onClick={addAlerta} className="pf-v2-btn pf-v2-btn-2">
                   + Alerta
                 </ReliableActionButton>
-              )}
+              ) : null}
             </div>
-            <div className="space-y-2">
-              {config.alertas.map((alerta, index) => (
-                <div key={index} className="rounded-xl border border-white/[0.08] bg-[#111417] p-3 transition-all duration-200 hover:border-white/[0.14]">
-                  {editando ? (
-                    <>
-                      <input value={alerta.nombre} onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
-                        className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
-                      <input value={alerta.detalle} onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-white" />
-                      <ReliableActionButton onClick={() => removeAlerta(index)}
-                        className="mt-2 text-xs text-rose-400 hover:text-rose-300">
-                        Eliminar
-                      </ReliableActionButton>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm font-semibold text-white">{alerta.nombre}</p>
-                      <p className="text-xs text-zinc-400">{alerta.detalle}</p>
-                    </>
-                  )}
-                </div>
-              ))}
-              {config.alertas.length === 0 && <p className="text-sm text-zinc-600">Sin alertas activas.</p>}
-            </div>
-          </div>
-        </section>
 
-        {/* ── MÓDULOS ───────────────────────────────────────────── */}
-        <section className="pf-au pf-led pf-d5 pf-card rounded-2xl border p-6"
-          onMouseMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            e.currentTarget.style.setProperty("--cx", `${e.clientX - r.left}px`);
-            e.currentTarget.style.setProperty("--cy", `${e.clientY - r.top}px`);
-          }}>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <p className="pf-label mb-1 text-[11px] font-semibold uppercase tracking-widest">Accesos</p>
-              <h2 className="text-2xl font-bold text-white">Módulos</h2>
-            </div>
-            {editando && (
-              <ReliableActionButton onClick={addModulo} className="pf-btn rounded-xl px-3 py-1.5 text-xs font-semibold">
-                + Módulo
-              </ReliableActionButton>
+            {config.alertas.length === 0 ? (
+              <p className="pf-v2-muted" style={{ margin: 0 }}>Sin alertas activas.</p>
+            ) : (
+              <ul className="pf-v2-feed">
+                {config.alertas.map((alerta, index) => (
+                  <li key={index}>
+                    <span className="pf-v2-feed-dot" style={{ color: "var(--v2-warning)" }} aria-hidden="true" />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      {editando ? (
+                        <>
+                          <input
+                            value={alerta.nombre}
+                            onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
+                            className="pf-v2-input"
+                            style={{ marginBottom: 6 }}
+                          />
+                          <input
+                            value={alerta.detalle}
+                            onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
+                            className="pf-v2-input"
+                          />
+                          <ReliableActionButton
+                            onClick={() => removeAlerta(index)}
+                            className="pf-v2-module-go"
+                            style={{ color: "var(--v2-danger)", marginTop: 8, background: "none", border: 0, cursor: "pointer" }}
+                          >
+                            Eliminar
+                          </ReliableActionButton>
+                        </>
+                      ) : (
+                        <>
+                          <span className="pf-v2-feed-title">{alerta.nombre}</span>
+                          <span className="pf-v2-feed-meta">{alerta.detalle}</span>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
+          </article>
+        </div>
+      </section>
+
+      {/* ── Categorías ─────────────────────────────────────────── */}
+      <section className="pf-v2-card">
+        <div className="pf-v2-page-head" style={{ marginBottom: 18 }}>
+          <div>
+            <span className="pf-v2-eyebrow">Acceso rápido</span>
+            <h2 className="pf-v2-h2">Categorías</h2>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) =>
-              editando ? (
-                <div key={`${item.label}-${index}`} className="rounded-xl border border-white/[0.09] bg-[#111417] p-4">
-                  <input value={item.label} onChange={(e) => updateModulo(index, { label: e.target.value })}
-                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm font-bold text-white" />
-                  <input value={item.href} onChange={(e) => updateModulo(index, { href: e.target.value })}
-                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white" />
-                  <textarea value={item.desc} onChange={(e) => updateModulo(index, { desc: e.target.value })}
-                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white" rows={2} />
-                  <input value={item.tone} onChange={(e) => updateModulo(index, { tone: e.target.value })}
-                    placeholder="from-cyan-500 to-sky-600"
-                    className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-zinc-400" />
-                  <ReliableActionButton onClick={() => removeModulo(index)}
-                    className="text-xs text-rose-400 hover:text-rose-300">
+          <Link href="/categorias" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
+            Ver todas →
+          </Link>
+        </div>
+
+        {categoriasActivas.length === 0 ? (
+          <p className="pf-v2-muted" style={{ margin: 0 }}>No hay categorías habilitadas.</p>
+        ) : (
+          <div className="pf-v2-grid-4">
+            {categoriasActivas.map((categoria, index) => {
+              const hex = TINTES[index % TINTES.length];
+              return (
+                <Link
+                  key={categoria.nombre}
+                  href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
+                  className="pf-v2-module pf-v2-lift"
+                >
+                  <span
+                    className="pf-v2-module-icon"
+                    style={{ background: suave(hex, 0.14), color: hex, boxShadow: `0 0 18px ${suave(hex, 0.3)}` }}
+                    aria-hidden="true"
+                  >
+                    {CATEGORY_ICONS[index % CATEGORY_ICONS.length]}
+                  </span>
+                  <span>
+                    <span className="pf-v2-module-name">{categoria.nombre}</span>
+                  </span>
+                  <span className="pf-v2-module-go" style={{ color: hex }}>Abrir →</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Módulos ────────────────────────────────────────────── */}
+      <section className="pf-v2-card">
+        <div className="pf-v2-page-head" style={{ marginBottom: 18 }}>
+          <div>
+            <span className="pf-v2-eyebrow">Accesos</span>
+            <h2 className="pf-v2-h2">Módulos</h2>
+          </div>
+          {editando ? (
+            <ReliableActionButton onClick={addModulo} className="pf-v2-btn pf-v2-btn-2">
+              + Módulo
+            </ReliableActionButton>
+          ) : null}
+        </div>
+
+        <div className="pf-v2-grid-4">
+          {config.modulos.filter((item) => !isWellnessModulo(item)).map((item, index) => {
+            const hex = TINTES[index % TINTES.length];
+
+            if (editando) {
+              return (
+                <div key={`${item.label}-${index}`} className="pf-v2-card" style={{ padding: 16 }}>
+                  <input
+                    value={item.label}
+                    onChange={(e) => updateModulo(index, { label: e.target.value })}
+                    className="pf-v2-input"
+                    style={{ marginBottom: 8 }}
+                  />
+                  <input
+                    value={item.href}
+                    onChange={(e) => updateModulo(index, { href: e.target.value })}
+                    className="pf-v2-input"
+                    style={{ marginBottom: 8 }}
+                  />
+                  <textarea
+                    value={item.desc}
+                    onChange={(e) => updateModulo(index, { desc: e.target.value })}
+                    className="pf-v2-input"
+                    rows={2}
+                  />
+                  <ReliableActionButton
+                    onClick={() => removeModulo(index)}
+                    className="pf-v2-module-go"
+                    style={{ color: "var(--v2-danger)", marginTop: 8, background: "none", border: 0, cursor: "pointer" }}
+                  >
                     Eliminar
                   </ReliableActionButton>
                 </div>
-              ) : (
-                <Link
-                  key={`${item.label}-${index}`}
-                  href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
-                  className="group pf-card rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5"
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(99,102,241,0.12)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = "";
-                  }}
-                >
-                  <div className={`mb-3 h-[2px] w-10 rounded-full bg-gradient-to-r ${item.tone}`} />
-                  <p className="font-semibold" style={{ color: "#ffffff" }}>{item.label}</p>
-                  <p className="mt-1 text-xs transition-colors duration-200 group-hover:text-indigo-400" style={{ color: "rgba(255,255,255,0.38)" }}>{item.desc}</p>
-                </Link>
-              )
-            )}
-          </div>
-        </section>
+              );
+            }
 
-      </div>
-    </main>
+            return (
+              <Link
+                key={`${item.label}-${index}`}
+                href={resolveActionHref(item.href, item.label, guessAppHrefByLabel(item.label) || "/")}
+                className="pf-v2-module pf-v2-lift"
+              >
+                <span
+                  className="pf-v2-module-icon"
+                  style={{ background: suave(hex, 0.14), color: hex, boxShadow: `0 0 18px ${suave(hex, 0.3)}` }}
+                  aria-hidden="true"
+                >
+                  {item.label.slice(0, 2).toUpperCase()}
+                </span>
+                <span>
+                  <span className="pf-v2-module-name">{item.label}</span>
+                  <span className="pf-v2-module-desc">{item.desc}</span>
+                </span>
+                <span className="pf-v2-module-go" style={{ color: hex }}>Abrir →</span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }
-
-
