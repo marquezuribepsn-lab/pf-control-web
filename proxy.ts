@@ -6,6 +6,42 @@ import { rateLimit, getIP } from '@/lib/rateLimit';
 const CLIENTE_ALLOWED_PREFIXES = ['/alumnos', '/cuenta'];
 const CLIENTE_PAYMENT_ALLOWED_PREFIXES = ['/alumnos/pagos', '/cuenta'];
 
+/**
+ * Rutas que puede ver un COLABORADOR. Todo lo que no este aca queda bajo ADMIN.
+ *
+ * Antes era al reves: el colaborador entraba a todo salvo /admin y /superadmin.
+ * El diseno v2 define tres secciones de menu y deja el grupo "GRUPOS"
+ * (Nutricion, Pagos, Musica, WhatsApp, Mensajes, Equipos y Deportes, Usuarios)
+ * como gestion de administrador, junto con las pantallas que quedaron fuera del
+ * menu. Con lista negra habria que acordarse de sumar cada pantalla nueva; con
+ * lista blanca, lo que se olvide queda cerrado en vez de abierto.
+ *
+ * Corresponde a las secciones MENU y secundaria del handoff.
+ */
+const COLABORADOR_ALLOWED_PREFIXES = [
+  '/clientes',
+  '/semana',
+  '/asistencias',
+  '/alertas',
+  '/configuracion',
+  '/calendario',
+  '/categorias',
+  '/cuenta',
+];
+
+/**
+ * Sub-rutas que cuelgan de un prefijo permitido pero NO son del colaborador.
+ * Sin estas excepciones el prefijo padre las dejaria pasar:
+ *   - /categorias/nutricion  -> Nutricion es de GRUPOS (admin)
+ *   - /clientes/musica       -> Musica es de GRUPOS (admin)
+ *   - /clientes/plan         -> quedo fuera del menu del handoff (admin)
+ */
+const COLABORADOR_DENIED_PREFIXES = [
+  '/categorias/nutricion',
+  '/clientes/musica',
+  '/clientes/plan',
+];
+
 function normalizePath(pathname: string): string {
   if (pathname !== '/' && pathname.endsWith('/')) {
     return pathname.slice(0, -1);
@@ -33,6 +69,26 @@ function canClienteAccess(pathname: string): boolean {
   }
 
   return CLIENTE_ALLOWED_PREFIXES.some(
+    (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`)
+  );
+}
+
+function canColaboradorAccess(pathname: string): boolean {
+  const normalized = normalizePath(pathname).toLowerCase();
+
+  if (normalized === '/') {
+    return true;
+  }
+
+  if (
+    COLABORADOR_DENIED_PREFIXES.some(
+      (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`)
+    )
+  ) {
+    return false;
+  }
+
+  return COLABORADOR_ALLOWED_PREFIXES.some(
     (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`)
   );
 }
@@ -167,8 +223,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
 
-  // Non-admin roles cannot access admin pages.
-  if (pathname.startsWith('/admin')) {
+  // Resto de roles (COLABORADOR / PROFESOR): lista blanca. Lo que no figure
+  // queda del lado de ADMIN. Esconder el link del menu no alcanza como control
+  // de acceso: sin esto se entra escribiendo la URL.
+  if (!canColaboradorAccess(pathname)) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 

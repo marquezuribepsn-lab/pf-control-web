@@ -29,6 +29,10 @@ type NavLink = {
   tone: string;
   adminOnly?: boolean;
   clientOnly?: boolean;
+  /** Seccion del sidebar v2: "menu", "extra" (sin titulo) o "grupos". */
+  section?: "menu" | "extra" | "grupos";
+  /** Contador rojo al lado del label (ej. avisos pendientes). */
+  badge?: string;
 };
 
 type AppShellProps = {
