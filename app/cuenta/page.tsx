@@ -21,11 +21,6 @@ type AccountData = {
   updatedAt: string;
 };
 
-type ThemeMode = "dark" | "light";
-
-const THEME_MODE_KEY = "pf-control-theme-mode-v1";
-const THEME_MODE_EVENT = "pf-theme-mode-updated";
-
 // ── País / Código de llamada ──────────────────────────────────────────────────
 const COUNTRY_CODES = [
   { code: "AR", flag: "🇦🇷", dial: "+54",  name: "Argentina" },
@@ -60,19 +55,6 @@ function parseStoredPhone(stored: string): { code: string; local: string } {
   return { code: "+54", local: s };
 }
 
-function normalizeThemeMode(value: unknown): ThemeMode {
-  const normalized = String(value || "").trim().toLowerCase();
-  return normalized === "light" ? "light" : "dark";
-}
-
-function applyThemeMode(mode: ThemeMode) {
-  if (typeof document === "undefined") return;
-
-  const resolved = normalizeThemeMode(mode);
-  document.documentElement.setAttribute("data-pf-theme", resolved);
-  document.documentElement.style.colorScheme = resolved;
-}
-
 // En el cliente aplicamos el tema con un layout effect (síncrono, antes del
 // paint) para evitar el parpadeo: sin esto la página pinta primero en tema
 // oscuro por defecto y recién después salta al tema guardado. En el server
@@ -98,7 +80,6 @@ export default function CuentaPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -154,39 +135,6 @@ export default function CuentaPage() {
     const digits = phoneLocal.replace(/\D/g, "");
     setTelefono(digits ? `${countryCode}${digits}` : "");
   }, [countryCode, phoneLocal]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const syncTheme = () => {
-      const nextTheme = normalizeThemeMode(window.localStorage.getItem(THEME_MODE_KEY));
-      setThemeMode(nextTheme);
-      applyThemeMode(nextTheme);
-    };
-
-    syncTheme();
-
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === THEME_MODE_KEY) {
-        syncTheme();
-      }
-    };
-
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
-
-  const handleThemeModeChange = (nextMode: ThemeMode) => {
-    if (typeof window === "undefined") return;
-
-    const normalized = normalizeThemeMode(nextMode);
-    setThemeMode(normalized);
-    applyThemeMode(normalized);
-    window.localStorage.setItem(THEME_MODE_KEY, normalized);
-    window.dispatchEvent(new Event(THEME_MODE_EVENT));
-  };
 
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -361,15 +309,10 @@ export default function CuentaPage() {
     }
   };
 
-  const isLightTheme = themeMode === "light";
-  const pageTextClass = isLightTheme ? "text-slate-800" : "text-slate-100";
-  const mutedTextClass = isLightTheme ? "text-slate-600" : "text-slate-300";
-  const sectionClass = isLightTheme
-    ? "min-w-0 overflow-hidden rounded-3xl border border-emerald-200/70 bg-white/95 p-6 shadow-[0_16px_42px_rgba(15,23,42,0.12)]"
-    : "min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg";
-  const inputClass = isLightTheme
-    ? "box-border w-full max-w-full rounded-2xl border border-emerald-200/70 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-emerald-400"
-    : "box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60";
+  const pageTextClass = "text-slate-100";
+  const mutedTextClass = "text-slate-300";
+  const sectionClass = "min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-slate-900/75 p-6 shadow-lg";
+  const inputClass = "box-border w-full max-w-full rounded-2xl border border-white/15 bg-slate-950/70 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400/60";
 
   if (loading) {
     return (
@@ -415,22 +358,21 @@ export default function CuentaPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard label="Nombre completo" value={account?.nombreCompleto || "-"} light={isLightTheme} />
+            <InfoCard label="Nombre completo" value={account?.nombreCompleto || "-"} />
             <InfoCard
               label="Telefono"
               value={account?.telefono ? `${account.telefono}${account.telefonoVerificado ? " ✓" : " (sin verificar)"}` : "-"}
-              light={isLightTheme}
             />
-            <InfoCard label="Direccion" value={account?.direccion || "-"} light={isLightTheme} />
-            <InfoCard label="Edad" value={account?.edad !== undefined ? String(account.edad) : "-"} light={isLightTheme} />
-            <InfoCard label="Fecha de nacimiento" value={formatDate(account?.fechaNacimiento)} light={isLightTheme} />
-            <InfoCard label="Altura" value={account?.altura !== undefined ? `${account.altura} cm` : "-"} light={isLightTheme} />
-            <InfoCard label="Email" value={account?.email || "-"} light={isLightTheme} />
-            <InfoCard label="Rol" value={account?.role || "-"} light={isLightTheme} />
-            <InfoCard label="ID" value={account?.id || "-"} mono light={isLightTheme} />
-            <InfoCard label="Alta" value={formatDate(account?.createdAt)} light={isLightTheme} />
-            <InfoCard label="Ultima actualizacion" value={formatDate(account?.updatedAt)} light={isLightTheme} />
-            <InfoCard label="Estado del mail" value={account?.emailVerified ? "Verificado" : "Pendiente"} light={isLightTheme} />
+            <InfoCard label="Direccion" value={account?.direccion || "-"} />
+            <InfoCard label="Edad" value={account?.edad !== undefined ? String(account.edad) : "-"} />
+            <InfoCard label="Fecha de nacimiento" value={formatDate(account?.fechaNacimiento)} />
+            <InfoCard label="Altura" value={account?.altura !== undefined ? `${account.altura} cm` : "-"} />
+            <InfoCard label="Email" value={account?.email || "-"} />
+            <InfoCard label="Rol" value={account?.role || "-"} />
+            <InfoCard label="ID" value={account?.id || "-"} mono />
+            <InfoCard label="Alta" value={formatDate(account?.createdAt)} />
+            <InfoCard label="Ultima actualizacion" value={formatDate(account?.updatedAt)} />
+            <InfoCard label="Estado del mail" value={account?.emailVerified ? "Verificado" : "Pendiente"} />
           </div>
 
           {!account?.emailVerified && (
@@ -455,42 +397,9 @@ export default function CuentaPage() {
             Los datos personales se guardan directo. Para cambiar email o contraseña te pedimos la contraseña actual.
           </p>
 
-          <div className="mt-5 rounded-2xl border border-emerald-300/35 bg-emerald-500/10 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-emerald-100">Apariencia</p>
-                <p className="mt-1 text-xs text-emerald-100/90">Alterna entre modo oscuro y claro.</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => handleThemeModeChange("dark")}
-                  className={`rounded-xl border px-3 py-1.5 text-xs font-bold ${
-                    themeMode === "dark"
-                      ? "border-cyan-200/60 bg-cyan-500/25 text-cyan-50"
-                      : "border-white/20 bg-slate-900/30 text-slate-200"
-                  }`}
-                >
-                  Oscuro
-                </ReliableActionButton>
-                <ReliableActionButton
-                  type="button"
-                  onClick={() => handleThemeModeChange("light")}
-                  className={`rounded-xl border px-3 py-1.5 text-xs font-bold ${
-                    themeMode === "light"
-                      ? "border-emerald-200/70 bg-emerald-400/30 text-emerald-50"
-                      : "border-white/20 bg-slate-900/30 text-slate-200"
-                  }`}
-                >
-                  Claro
-                </ReliableActionButton>
-              </div>
-            </div>
-          </div>
-
           <form className="pf-account-form mt-5 grid min-w-0 gap-4" onSubmit={handleSave} noValidate>
             <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"} xl:col-span-2`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"} xl:col-span-2`}>
                 Nombre completo
                 <input
                   type="text"
@@ -502,7 +411,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
                 Edad
                 <input
                   type="number"
@@ -516,7 +425,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
                 Fecha de nacimiento
                 <DateInput
                   value={fechaNacimiento}
@@ -525,7 +434,7 @@ export default function CuentaPage() {
                 />
               </label>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
                 Altura (cm)
                 <input
                   type="number"
@@ -540,7 +449,7 @@ export default function CuentaPage() {
               </label>
 
               {/* ── Teléfono ─────────────────────────────────────────── */}
-              <div className={`flex min-w-0 flex-col gap-2 text-sm font-medium xl:col-span-2 ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+              <div className={`flex min-w-0 flex-col gap-2 text-sm font-medium xl:col-span-2 ${"text-slate-200"}`}>
                 {/* Etiqueta */}
                 <span className="flex items-center gap-2">
                   Teléfono
@@ -564,9 +473,7 @@ export default function CuentaPage() {
                     }}
                     style={{ width: "96px", flexShrink: 0 }}
                     className={`cursor-pointer rounded-2xl border px-2 py-3 text-sm outline-none transition ${
-                      isLightTheme
-                        ? "border-emerald-200/70 bg-white text-slate-800 focus:border-emerald-400"
-                        : "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
+                      "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
                     }`}
                   >
                     {COUNTRY_CODES.map((c) => (
@@ -585,9 +492,7 @@ export default function CuentaPage() {
                     placeholder="2257 613518"
                     style={{ flex: 1, minWidth: 0 }}
                     className={`rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-                      isLightTheme
-                        ? "border-emerald-200/70 bg-white text-slate-800 focus:border-emerald-400"
-                        : "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
+                      "border-white/15 bg-slate-950/70 text-slate-100 focus:border-cyan-400/60"
                     }`}
                   />
                 </div>
@@ -595,9 +500,9 @@ export default function CuentaPage() {
                 {/* Paso 1 — botón enviar código */}
                 {phoneLocal.replace(/\D/g, "").length >= 6 && !phoneVerified && !phoneCodeSent && (
                   <div className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
-                    isLightTheme ? "border-cyan-200/50 bg-cyan-50/70" : "border-cyan-400/20 bg-cyan-500/10"
+                    "border-cyan-400/20 bg-cyan-500/10"
                   }`}>
-                    <p className={`text-xs ${isLightTheme ? "text-slate-600" : "text-slate-300"}`}>
+                    <p className={`text-xs ${"text-slate-300"}`}>
                       Código de 6 dígitos a tu email
                     </p>
                     <ReliableActionButton
@@ -606,9 +511,7 @@ export default function CuentaPage() {
                       disabled={phoneSending}
                       reliabilityMode="off"
                       className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold whitespace-nowrap transition disabled:opacity-60 ${
-                        isLightTheme
-                          ? "bg-cyan-500 text-white hover:bg-cyan-400"
-                          : "bg-cyan-500 text-white hover:bg-cyan-400"
+                        "bg-cyan-500 text-white hover:bg-cyan-400"
                       }`}
                     >
                       {phoneSending ? "Enviando..." : "Enviar código"}
@@ -619,9 +522,9 @@ export default function CuentaPage() {
                 {/* Paso 2 — ingresar el código */}
                 {phoneCodeSent && !phoneVerified && (
                   <div className={`rounded-2xl border p-4 ${
-                    isLightTheme ? "border-emerald-200/60 bg-emerald-50/70" : "border-emerald-400/20 bg-emerald-500/10"
+                    "border-emerald-400/20 bg-emerald-500/10"
                   }`}>
-                    <p className={`mb-3 text-xs ${isLightTheme ? "text-slate-600" : "text-emerald-300/90"}`}>
+                    <p className={`mb-3 text-xs ${"text-emerald-300/90"}`}>
                       Revisá tu email e ingresá el código:
                     </p>
                     {/* Fila: input + Confirmar */}
@@ -635,9 +538,7 @@ export default function CuentaPage() {
                         onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         style={{ flex: 1, minWidth: 0 }}
                         className={`rounded-2xl border px-3 py-3 text-center text-lg font-black tracking-[0.25em] outline-none transition ${
-                          isLightTheme
-                            ? "border-emerald-300/70 bg-white text-slate-800 focus:border-emerald-500"
-                            : "border-emerald-400/30 bg-slate-950/70 text-slate-100 focus:border-emerald-400"
+                          "border-emerald-400/30 bg-slate-950/70 text-slate-100 focus:border-emerald-400"
                         }`}
                         placeholder="000000"
                       />
@@ -660,7 +561,7 @@ export default function CuentaPage() {
                         disabled={phoneSending}
                         reliabilityMode="off"
                         className={`text-xs font-semibold underline-offset-2 hover:underline disabled:opacity-50 transition ${
-                          isLightTheme ? "text-slate-500" : "text-slate-400"
+                          "text-slate-400"
                         }`}
                       >
                         {phoneSending ? "Enviando…" : "Reenviar código"}
@@ -670,7 +571,7 @@ export default function CuentaPage() {
                 )}
               </div>
 
-              <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"} xl:col-span-2`}>
+              <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"} xl:col-span-2`}>
                 Direccion
                 <input
                   type="text"
@@ -682,11 +583,11 @@ export default function CuentaPage() {
               </label>
             </div>
 
-            <div className={`mt-1 border-t pt-4 ${isLightTheme ? "border-slate-200" : "border-white/10"}`}>
-              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${isLightTheme ? "text-slate-500" : "text-slate-400"}`}>Credenciales</p>
+            <div className={`mt-1 border-t pt-4 ${"border-white/10"}`}>
+              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${"text-slate-400"}`}>Credenciales</p>
             </div>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
               Email
               <input
                 type="email"
@@ -697,7 +598,7 @@ export default function CuentaPage() {
               />
             </label>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
               Contraseña actual
               <input
                 type="password"
@@ -708,7 +609,7 @@ export default function CuentaPage() {
               />
             </label>
 
-            <label className={`grid min-w-0 gap-2 text-sm font-medium ${isLightTheme ? "text-slate-700" : "text-slate-200"}`}>
+            <label className={`grid min-w-0 gap-2 text-sm font-medium ${"text-slate-200"}`}>
               Nueva contraseña
               <input
                 type="password"
@@ -805,11 +706,11 @@ export default function CuentaPage() {
   );
 }
 
-function InfoCard({ label, value, mono = false, light = false }: { label: string; value: string; mono?: boolean; light?: boolean }) {
+function InfoCard({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 ${light ? "border-emerald-200/70 bg-emerald-50/60" : "border-white/10 bg-slate-950/60"}`}>
-      <p className={`text-xs font-semibold uppercase tracking-[0.2em] ${light ? "text-slate-500" : "text-slate-400"}`}>{label}</p>
-      <p className={`mt-2 break-all text-sm ${light ? "text-slate-800" : "text-slate-100"} ${mono ? "font-mono" : ""}`}>{value}</p>
+    <div className="pf-v2-card" style={{ padding: 16 }}>
+      <span className="pf-v2-stat-label">{label}</span>
+      <p className={`mt-2 break-all text-sm text-slate-100 ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   );
 }

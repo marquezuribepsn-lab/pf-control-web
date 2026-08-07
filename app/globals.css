@@ -23,20 +23,6 @@
   --pf-mynter-lime: #9fd873;
 }
 
-html[data-pf-theme="light"] {
-  color-scheme: light;
-  --pf-bg-0: #eefaf7;
-  --pf-bg-1: #dff4ee;
-  --pf-bg-2: #d4efe8;
-  --pf-surface: rgba(230, 250, 244, 0.85);
-  --pf-surface-strong: rgba(223, 247, 240, 0.96);
-  --pf-border: rgba(42, 149, 136, 0.28);
-  --pf-text: #13323f;
-  --pf-text-muted: #2f5b67;
-  --pf-accent: #1fb99f;
-  --pf-accent-warm: #7ac55b;
-}
-
 html,
 body {
   margin: 0;
@@ -48,11 +34,6 @@ body {
 html {
   scrollbar-gutter: stable;
   color-scheme: dark;
-}
-
-html[data-pf-theme="light"],
-html[data-pf-theme="light"] body {
-  background-color: #f5f8ff;
 }
 
 body {
@@ -202,17 +183,6 @@ h6 {
   /* HARBIZ — fondo plano, sin grid ni texturas */
   background-color: var(--gym-bg) !important;
   background-image: none !important;
-}
-
-html[data-pf-theme="light"] .pf-training-shell {
-  background-color: #f2f4f7 !important;
-  background-image:
-    radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px),
-    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px),
-    #f2f4f7 !important;
-  background-size: 30px 30px, 30px 30px, 30px 30px, 100% 100% !important;
-  color: #0c1a35;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2098,184 +2068,32 @@ select:-webkit-autofill {
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Design tokens (light) ───────────────────────────────────────────────── */
-html[data-pf-theme="light"] {
-  /* HARBIZ light — blanco + azul royal + slate text (paleta Harbiz.io) */
-  --gym-bg:              #ffffff;
-  --gym-panel:           #ffffff;
-  --gym-panel-alt:       #f8fafc;
-  --gym-panel-border:    #e2e8f0;
-  --gym-panel-border-hi: color-mix(in srgb, var(--gym-accent) 38%, transparent);
-  --gym-grid-dot:        rgba(15, 23, 42, 0.04);
-  --gym-grid-line:       rgba(15, 23, 42, 0.02);
-  --gym-accent:          #2563eb;
-  --gym-accent-light:    color-mix(in srgb, var(--gym-accent) 78%, black 22%);
-  --gym-accent-dim:      color-mix(in srgb, var(--gym-accent) 10%, transparent);
-  --gym-accent-glow:     color-mix(in srgb, var(--gym-accent) 25%, transparent);
-  --gym-success:         #16a34a;
-  --gym-success-light:   #15803d;
-  --gym-success-dim:     rgba(22, 163, 74, 0.12);
-  --gym-warn:            #d97706;
-  --gym-warn-light:      #b45309;
-  --gym-warn-dim:        rgba(217, 119, 6, 0.12);
-  --gym-danger:          #dc2626;
-  --gym-danger-light:    #b91c1c;
-  --gym-danger-dim:      rgba(220, 38, 38, 0.12);
-  --gym-info:            #475569;
-  color-scheme: light;
-}
 
 /* ── Fondo global (light) — HARBIZ Gym: slate-100 + faint gym mat hatching ── */
-html[data-pf-theme="light"] .pf-training-shell {
-  background-color: #f1f5f9 !important;
-  background-image:
-    /* Diagonal hatching estilo gym mat / rubber floor */
-    repeating-linear-gradient(45deg, transparent 0, transparent 18px, rgba(15, 23, 42, 0.025) 18px, rgba(15, 23, 42, 0.025) 19px),
-    repeating-linear-gradient(-45deg, transparent 0, transparent 18px, rgba(15, 23, 42, 0.02) 18px, rgba(15, 23, 42, 0.02) 19px)
-    !important;
-  color: #0f172a !important;
-}
 
 /* ── pf-card light ───────────────────────────────────────────────────────── */
 /* HARBIZ light: cards = white panel + variedad de íconos gym (slate-700) ── */
-html[data-pf-theme="light"] .pf-card,
-html[data-pf-theme="light"] .pf-training-shell main > section:where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:where([class*="rounded"]) {
-  background-color: #ffffff !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 100'%3E%3Cg fill='%23334155' fill-opacity='0.06'%3E%3Crect x='52' y='44' width='136' height='12' rx='2'/%3E%3Crect x='28' y='24' width='24' height='52' rx='4'/%3E%3Crect x='14' y='34' width='14' height='32' rx='3'/%3E%3Crect x='188' y='24' width='24' height='52' rx='4'/%3E%3Crect x='212' y='34' width='14' height='32' rx='3'/%3E%3C/g%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: bottom -10px right -20px !important;
-  background-size: 200px auto !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04) !important;
-  color: #0f172a !important;
-}
 
 /* Light mode rotation — mismas posiciones, SVGs en slate-700 */
-html[data-pf-theme="light"] .pf-training-shell main > section:nth-of-type(6n+2):where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:nth-of-type(6n+2):where([class*="rounded"]) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 130'%3E%3Cg fill='%23334155' fill-opacity='0.07'%3E%3Cpath d='M30 30 A20 20 0 0 1 70 30 L70 40 L62 40 A12 12 0 0 0 38 40 L30 40 Z'/%3E%3Ccircle cx='55' cy='78' r='35'/%3E%3C/g%3E%3C/svg%3E") !important;
-  background-position: bottom -8px left -12px !important;
-  background-size: 135px auto !important;
-}
-html[data-pf-theme="light"] .pf-training-shell main > section:nth-of-type(6n+3):where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:nth-of-type(6n+3):where([class*="rounded"]) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 80'%3E%3Cg fill='%23334155' fill-opacity='0.06'%3E%3Crect x='30' y='35' width='260' height='10' rx='2'/%3E%3Crect x='42' y='15' width='10' height='50' rx='2'/%3E%3Crect x='56' y='8' width='14' height='64' rx='3'/%3E%3Crect x='74' y='2' width='16' height='76' rx='3'/%3E%3Crect x='230' y='2' width='16' height='76' rx='3'/%3E%3Crect x='250' y='8' width='14' height='64' rx='3'/%3E%3Crect x='268' y='15' width='10' height='50' rx='2'/%3E%3C/g%3E%3C/svg%3E") !important;
-  background-position: top 10px right -30px !important;
-  background-size: 300px auto !important;
-}
-html[data-pf-theme="light"] .pf-training-shell main > section:nth-of-type(6n+4):where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:nth-of-type(6n+4):where([class*="rounded"]) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 110'%3E%3Cg fill='%23334155' fill-opacity='0.06'%3E%3Ccircle cx='40' cy='55' r='42'/%3E%3Ccircle cx='105' cy='55' r='30'/%3E%3Ccircle cx='140' cy='55' r='14'/%3E%3C/g%3E%3C/svg%3E") !important;
-  background-position: bottom -18px right -20px !important;
-  background-size: 200px auto !important;
-}
-html[data-pf-theme="light"] .pf-training-shell main > section:nth-of-type(6n+5):where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:nth-of-type(6n+5):where([class*="rounded"]) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 80'%3E%3Cpath d='M0 40 L40 40 L55 18 L70 60 L82 8 L95 60 L110 40 L280 40' fill='none' stroke='%23334155' stroke-opacity='0.10' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-  background-position: bottom 8px right 0 !important;
-  background-size: 70% auto !important;
-}
-html[data-pf-theme="light"] .pf-training-shell main > section:nth-of-type(6n):where([class*="rounded"]),
-html[data-pf-theme="light"] .pf-training-shell main > article:nth-of-type(6n):where([class*="rounded"]) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 130'%3E%3Cg fill='%23334155' fill-opacity='0.06'%3E%3Crect x='45' y='4' width='20' height='10' rx='3'/%3E%3Crect x='38' y='14' width='34' height='6' rx='2'/%3E%3Ccircle cx='55' cy='78' r='45'/%3E%3C/g%3E%3Cpath d='M55 78 L55 50 M55 78 L75 78' stroke='%23334155' stroke-opacity='0.16' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") !important;
-  background-position: top -8px right -15px !important;
-  background-size: 140px auto !important;
-}
+
 /* Re-enable el top accent en light también */
-html[data-pf-theme="light"] .pf-card::before,
-html[data-pf-theme="light"] .pf-training-shell main > section:where([class*="rounded"])::before,
-html[data-pf-theme="light"] .pf-training-shell main > article:where([class*="rounded"])::before {
-  content: '' !important;
-}
-html[data-pf-theme="light"] .pf-card::after,
-html[data-pf-theme="light"] .pf-training-shell main > section:where([class*="rounded"])::after,
-html[data-pf-theme="light"] .pf-training-shell main > article:where([class*="rounded"])::after {
-  content: none !important;
-}
 
 /* HARBIZ light hero — blanco + dumbbell SVG slate más oscuro */
-html[data-pf-theme="light"] .pf-page-hero {
-  background-color: #ffffff !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 140' preserveAspectRatio='xMaxYMax meet'%3E%3Cg fill='%23334155' fill-opacity='0.07'%3E%3Crect x='90' y='62' width='220' height='16' rx='3'/%3E%3Crect x='52' y='32' width='32' height='76' rx='5'/%3E%3Crect x='30' y='46' width='18' height='48' rx='3'/%3E%3Crect x='316' y='32' width='32' height='76' rx='5'/%3E%3Crect x='352' y='46' width='18' height='48' rx='3'/%3E%3C/g%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: bottom -15px right -30px !important;
-  background-size: 340px auto !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.05) !important;
-}
-html[data-pf-theme="light"] .pf-page-hero::before {
-  content: '' !important;
-}
-html[data-pf-theme="light"] .pf-page-hero-badge {
-  background: var(--gym-accent) !important;
-  border: none !important;
-  color: #ffffff !important;
-}
-html[data-pf-theme="light"] .pf-page-hero-title { color: #0f172a !important; letter-spacing: -0.025em; font-weight: 800; }
-html[data-pf-theme="light"] .pf-page-hero-sub   { color: #475569 !important; }
 
 /* HARBIZ light KPI — flat panel */
-html[data-pf-theme="light"] .pf-kpi {
-  border-color: #e2e8f0 !important;
-  background: #ffffff !important;
-}
-html[data-pf-theme="light"] .pf-kpi__label { color: #64748b !important; }
-html[data-pf-theme="light"] .pf-kpi__value { color: #0f172a !important; }
-html[data-pf-theme="light"] .pf-kpi__sub   { color: #64748b !important; }
-html[data-pf-theme="light"] .pf-kpi--violet  { border-color: #e2e8f0 !important; background: #ffffff !important; }
-html[data-pf-theme="light"] .pf-kpi--violet .pf-kpi__value  { color: var(--gym-accent) !important; }
-html[data-pf-theme="light"] .pf-kpi--emerald { border-color: #e2e8f0 !important; background: #ffffff !important; }
-html[data-pf-theme="light"] .pf-kpi--emerald .pf-kpi__value { color: #15803d !important; }
-html[data-pf-theme="light"] .pf-kpi--amber   { border-color: #e2e8f0 !important; background: #ffffff !important; }
-html[data-pf-theme="light"] .pf-kpi--amber .pf-kpi__value   { color: #b45309 !important; }
-html[data-pf-theme="light"] .pf-kpi--rose    { border-color: #e2e8f0 !important; background: #ffffff !important; }
-html[data-pf-theme="light"] .pf-kpi--rose .pf-kpi__value    { color: #b91c1c !important; }
 
 /* ── pf-btn light: NO override de la reactividad — usa los fijos del dark ─ */
 /* (los selectores .pf-btn--* con !important arriba ya garantizan color fijo en ambos temas) */
 
 /* ── pf-tag light ────────────────────────────────────────────────────────── */
-html[data-pf-theme="light"] .pf-tag--violet  { color: var(--gym-accent) !important; background: color-mix(in srgb, var(--gym-accent) 10%, transparent) !important; }
-html[data-pf-theme="light"] .pf-tag--emerald { color: #15803d !important; background: rgba(22,163,74,0.10) !important; }
-html[data-pf-theme="light"] .pf-tag--amber   { color: #b45309 !important; background: rgba(217,119,6,0.10) !important; }
-html[data-pf-theme="light"] .pf-tag--rose    { color: #b91c1c !important; background: rgba(220,38,38,0.10) !important; }
-html[data-pf-theme="light"] .pf-tag--slate   { color: #475569 !important; border-color: #e2e8f0 !important; background: #f8fafc !important; }
 
 /* ── pf-alert-strip light ────────────────────────────────────────────────── */
-html[data-pf-theme="light"] .pf-alert-strip--warn    { color: #b45309 !important; background: rgba(217,119,6,0.10) !important; border-color: rgba(217,119,6,0.32) !important; }
-html[data-pf-theme="light"] .pf-alert-strip--danger  { color: #b91c1c !important; background: rgba(220,38,38,0.10) !important; border-color: rgba(220,38,38,0.34) !important; }
-html[data-pf-theme="light"] .pf-alert-strip--violet  { color: var(--gym-accent-light) !important; background: color-mix(in srgb, var(--gym-accent) 10%, transparent) !important; border-color: color-mix(in srgb, var(--gym-accent) 32%, transparent) !important; }
-html[data-pf-theme="light"] .pf-alert-strip--success { color: #15803d !important; background: rgba(22,163,74,0.10) !important; border-color: rgba(22,163,74,0.32) !important; }
 
 /* ── pf-section-title + pf-divider + pf-quick-card light ─────────────────── */
-html[data-pf-theme="light"] .pf-section-title { color: rgba(31, 30, 29, 0.88) !important; }
-html[data-pf-theme="light"] .pf-quick-card { background: #ffffff !important; }
-html[data-pf-theme="light"] .pf-quick-card:hover { background: color-mix(in srgb, var(--gym-accent) 6%, transparent) !important; }
-html[data-pf-theme="light"] .pf-quick-card__title { color: rgba(31, 30, 29, 0.90) !important; }
-html[data-pf-theme="light"] .pf-quick-card__sub   { color: rgba(31, 30, 29, 0.50) !important; }
-html[data-pf-theme="light"] .pf-divider           { color: rgba(31, 30, 29, 0.30) !important; }
-html[data-pf-theme="light"] .pf-divider::before,
-html[data-pf-theme="light"] .pf-divider::after    { background: color-mix(in srgb, var(--gym-accent) 14%, transparent) !important; }
 
 /* ── pf-progress light ───────────────────────────────────────────────────── */
-html[data-pf-theme="light"] .pf-progress { background: rgba(0,0,0,0.07); }
 
 /* ── Form inputs/selects/textareas light ─────────────────────────────────── */
-html[data-pf-theme="light"] .pf-training-shell input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
-html[data-pf-theme="light"] .pf-training-shell select,
-html[data-pf-theme="light"] .pf-training-shell textarea {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell input::placeholder,
-html[data-pf-theme="light"] .pf-training-shell textarea::placeholder {
-  color: #94a3b8 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell select option {
-  background: #ffffff;
-  color: #0f172a;
-}
 
 /* ── Global text overrides — MUST beat Tailwind utilities ─────────────────
    These rules use !important because Tailwind v4 utilities are in @layer utilities
@@ -2283,166 +2101,29 @@ html[data-pf-theme="light"] .pf-training-shell select option {
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* HARBIZ text mapping: blanco → slate-900 ink, opacities → graduated slate */
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white"] {
-  color: #0f172a !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/7"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/8"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/9"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.7"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.8"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.9"] {
-  color: #0f172a !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/5"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/6"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.5"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.6"] {
-  color: #475569 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/3"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/4"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.3"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white/[0.4"] {
-  color: #64748b !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-gray-"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-neutral-"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-zinc-"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-slate-"] {
-  color: #475569 !important;
-}
 
 /* HARBIZ chromatic mapping: usa colores fitness/médicos (Tailwind 600-700) */
-html[data-pf-theme="light"] .pf-training-shell [class*="text-emerald"] { color: #047857 !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-green"]   { color: #166534 !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-teal"]    { color: #0f766e !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-rose"]    { color: #be123c !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-red"]     { color: #b91c1c !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-pink"]    { color: #9d174d !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-amber"]   { color: #b45309 !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-orange"]  { color: #c2410c !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-yellow"]  { color: #a16207 !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-violet"]  { color: var(--gym-accent) !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-purple"]  { color: #7e22ce !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-indigo"]  { color: #4338ca !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-blue"]    { color: var(--gym-accent) !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-sky"]     { color: #0369a1 !important; }
-html[data-pf-theme="light"] .pf-training-shell [class*="text-cyan"]    { color: #0e7490 !important; }
 
 /* ── Solid-background buttons/badges always keep white text ──────────────── */
-html[data-pf-theme="light"] .pf-btn--primary,
-html[data-pf-theme="light"] .pf-btn--primary *,
-html[data-pf-theme="light"] .pf-btn--success,
-html[data-pf-theme="light"] .pf-btn--success * { color: #ffffff !important; }
-html[data-pf-theme="light"] [class*="bg-emerald-4"] { color: #ffffff !important; }
-html[data-pf-theme="light"] [class*="bg-indigo-5"],
-html[data-pf-theme="light"] [class*="bg-violet-5"],
-html[data-pf-theme="light"] [class*="bg-violet-6"],
-html[data-pf-theme="light"] [class*="bg-purple-5"] { color: #ffffff !important; }
 
 /* HARBIZ light tables */
-html[data-pf-theme="light"] .pf-training-shell table { color: #0f172a !important; }
-html[data-pf-theme="light"] .pf-training-shell th    { color: #64748b !important; }
-html[data-pf-theme="light"] .pf-training-shell td    { color: #0f172a !important; }
-html[data-pf-theme="light"] .pf-training-shell thead { background: #f8fafc !important; }
-html[data-pf-theme="light"] .pf-training-shell tbody tr:hover { background: #f8fafc !important; }
 
 /* HARBIZ misc text */
-html[data-pf-theme="light"] .pf-training-shell label { color: #334155 !important; }
-html[data-pf-theme="light"] .pf-training-shell h1,
-html[data-pf-theme="light"] .pf-training-shell h2,
-html[data-pf-theme="light"] .pf-training-shell h3,
-html[data-pf-theme="light"] .pf-training-shell h4,
-html[data-pf-theme="light"] .pf-training-shell h5 { color: #0f172a !important; }
-html[data-pf-theme="light"] .pf-training-shell p   { color: #475569 !important; }
-html[data-pf-theme="light"] .pf-training-shell span:not([class*="bg-"]) { color: inherit; }
 
 /* ── Border overrides for dark border-white/* classes ────────────────────── */
-html[data-pf-theme="light"] .pf-training-shell [class*="border-white/"] {
-  border-color: color-mix(in srgb, var(--gym-accent) 16%, transparent) !important;
-}
 
 /* ── Bg overrides for dark bg-white/* panels ─────────────────────────────── */
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/0"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.0"] {
-  background: transparent !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.03"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.04"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.05"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.06"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.07"] {
-  background: color-mix(in srgb, var(--gym-accent) 5%, transparent) !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.08"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.09"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/[0.1"] {
-  background: color-mix(in srgb, var(--gym-accent) 8%, transparent) !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/2"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/3"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/4"] {
-  background: color-mix(in srgb, var(--gym-accent) 7%, transparent) !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/5"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/6"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/7"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/8"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/9"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-white/10"] {
-  background: color-mix(in srgb, var(--gym-accent) 10%, transparent) !important;
-}
 
 /* ── Tailwind slate-900 / slate-800 / slate-950 dark classes → light panel ── */
 /* Esto convierte los fondos oscuros de NutritionPlanner en paneles claros     */
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-slate-950"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-slate-900"] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-slate-800"] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-slate-700"] {
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-}
+
 /* Bordes que usan opacidad blanca → e2e8f0 en light */
-html[data-pf-theme="light"] .pf-training-shell [class*="border-white/"] {
-  border-color: #e2e8f0 !important;
-}
+
 /* Texto claro sobre fondos oscuros → slate texto en light */
-html[data-pf-theme="light"] .pf-training-shell [class*="text-slate-100"],
-html[data-pf-theme="light"] .pf-training-shell [class*="text-slate-200"] {
-  color: #0f172a !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-slate-300"] {
-  color: #334155 !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-slate-400"] {
-  color: #64748b !important;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="text-white"]:not([class*="text-white/"]) {
-  color: #0f172a !important;
-}
+
 /* placeholder en inputs → gris medio */
-html[data-pf-theme="light"] .pf-training-shell [class*="placeholder:text-slate-"] {
-  --placeholder-color: #94a3b8;
-}
-html[data-pf-theme="light"] .pf-training-shell [class*="placeholder:text-slate-"]::placeholder {
-  color: #94a3b8 !important;
-}
 
 /* ── Dark surface classes (bg-[#0e…] etc.) ───────────────────────────────── */
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#0e"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#0a"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#07"],
-html[data-pf-theme="light"] .pf-training-shell [class*="bg-[#1"] {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-color: color-mix(in srgb, var(--gym-accent) 15%, transparent) !important;
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    Cohesión violeta — re-tinte de superficies slate de Tailwind (solo alumno)

@@ -92,7 +92,6 @@ type SidebarWidgetItem = {
   toneClass: string;
 };
 
-type ThemeMode = "dark" | "light";
 
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const SIDEBAR_ROLE_KEY = "pf-control-sidebar-role-v1";
@@ -100,8 +99,6 @@ const SIDEBAR_PROFILE_NAME_KEY = "pf-control-sidebar-profile-name-v1";
 const SIDEBAR_PROFILE_ROLE_KEY = "pf-control-sidebar-profile-role-v1";
 const SCREEN_SCALE_KEY = "pf-control-screen-scale-v1";
 const SCREEN_SCALE_EVENT = "pf-screen-scale-updated";
-const THEME_MODE_KEY = "pf-control-theme-mode-v1";
-const THEME_MODE_EVENT = "pf-theme-mode-updated";
 const ACCENT_COLOR_KEY = "pf-control-accent-color-v1";
 const ACCENT_COLOR_EVENT = "pf-accent-color-updated";
 const DEFAULT_ACCENT_COLOR = "#2563eb"; // Harbiz royal blue
@@ -353,17 +350,6 @@ const clampScreenScale = (value: number): number => {
   return Number(value.toFixed(2));
 };
 
-const normalizeThemeMode = (value: unknown): ThemeMode => {
-  const normalized = String(value || "").trim().toLowerCase();
-  if (normalized === "light") return "light";
-  if (normalized === "dark") return "dark";
-  // No explicit stored preference → respect OS/browser setting
-  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: light)").matches) {
-    return "light";
-  }
-  return "dark";
-};
-
 const isMobileLikeViewport = (): boolean => {
   if (typeof window === "undefined") {
     return false;
@@ -418,12 +404,15 @@ const isNativeWebViewShell = (): boolean => {
   return false;
 };
 
-const applyThemeMode = (mode: ThemeMode) => {
+/**
+ * El tema es oscuro y punto: los dos rediseños (panel v2 y vista de alumno)
+ * definen una sola paleta. Se sigue marcando el atributo para que el CSS que
+ * lo consulta no quede sin valor.
+ */
+const applyDarkTheme = () => {
   if (typeof document === "undefined") return;
-
-  const resolved = isNativeWebViewShell() ? "dark" : normalizeThemeMode(mode);
-  document.documentElement.setAttribute("data-pf-theme", resolved);
-  document.documentElement.style.colorScheme = resolved;
+  document.documentElement.setAttribute("data-pf-theme", "dark");
+  document.documentElement.style.colorScheme = "dark";
 };
 
 const applyScreenScale = (value: number) => {
@@ -533,10 +522,6 @@ export default function AppShell({
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [clockNow, setClockNow] = useState<Date | null>(null);
   const [alertasCount, setAlertasCount] = useState(0);
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return "dark";
-    return normalizeThemeMode(window.localStorage.getItem(THEME_MODE_KEY));
-  });
   const stableSidebarImageRef = useRef<string | null>(
     normalizeSidebarImageValue(sidebarImage || initialSidebarImage)
   );
@@ -935,29 +920,11 @@ export default function AppShell({
     };
     window.addEventListener("storage", onAccentStorage);
 
-    const syncThemeFromStorage = () => {
-      const stored = window.localStorage.getItem(THEME_MODE_KEY);
-      const resolved = normalizeThemeMode(stored);
-      applyThemeMode(resolved);
-      setThemeMode(resolved);
-    };
-
-    syncThemeFromStorage();
-    window.addEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
-
-    // Re-apply when OS preference changes (only matters when no stored override)
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
-    const onSystemChange = () => {
-      const stored = window.localStorage.getItem(THEME_MODE_KEY);
-      if (!stored) syncThemeFromStorage();
-    };
-    mediaQuery.addEventListener("change", onSystemChange);
+    applyDarkTheme();
 
     return () => {
-      window.removeEventListener(THEME_MODE_EVENT, syncThemeFromStorage);
       window.removeEventListener(ACCENT_COLOR_EVENT, syncAccentFromStorage);
       window.removeEventListener("storage", onAccentStorage);
-      mediaQuery.removeEventListener("change", onSystemChange);
     };
   }, []);
 
@@ -1023,10 +990,6 @@ export default function AppShell({
       if (event.key === SIDEBAR_PROFILE_ROLE_KEY) {
         const nextProfileRole = String(event.newValue || "").trim().toUpperCase();
         setCachedProfileRole(nextProfileRole || null);
-      }
-
-      if (event.key === THEME_MODE_KEY) {
-        applyThemeMode(normalizeThemeMode(event.newValue));
       }
 
       if (event.key === SIDEBAR_WIDGET_SETTINGS_KEY) {
