@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { AuthBackdrop, AuthLoader, AuthPitch } from '../shared';
 
 type VerifyStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -113,111 +114,102 @@ function VerifyPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">
-          Verificacion de mail
-        </h1>
+    <main className="pf-v2 pf-v2-auth">
+      <AuthBackdrop />
+      <AuthPitch />
 
-        <p className="mb-6 text-sm text-slate-600">
-          Te enviamos un codigo por email. Ingresalo aca para validar tu cuenta.
+      <section className="pf-v2-auth-panel">
+        <div className="pf-v2-auth-head">
+          <span className="pf-v2-auth-logo">PF</span>
+        </div>
+
+        <span className="pf-v2-auth-kicker">Verificación</span>
+        <h1 className="pf-v2-auth-h2">Verificación de mail</h1>
+        <p className="pf-v2-auth-sub">
+          Te enviamos un código por email. Ingresalo acá para validar tu cuenta.
         </p>
 
-        {status === 'success' && (
-          <div className="space-y-4">
-            <div className="text-4xl">✓</div>
-            <p className="text-green-600 font-medium">{message}</p>
-            <p className="text-sm text-slate-500">
-              {redirectIn === null ? 'Preparando redireccion...' : `Redirigiendo al login en ${redirectIn}s...`}
+        {status === "success" ? (
+          <div style={{ display: "grid", gap: 18 }}>
+            <p className="pf-v2-alert pf-v2-alert-ok">{message}</p>
+            <p style={{ fontSize: 13, color: "var(--v2-fg-50)", margin: 0 }}>
+              {redirectIn === null
+                ? "Preparando redirección..."
+                : `Redirigiendo al login en ${redirectIn}s...`}
             </p>
             <button
               type="button"
+              className="pf-v2-auth-submit"
               onClick={() => {
                 router.replace(loginHref);
                 window.setTimeout(() => {
-                  if (!window.location.pathname.startsWith('/auth/login')) {
+                  if (!window.location.pathname.startsWith("/auth/login")) {
                     window.location.replace(loginHref);
                   }
                 }, 120);
               }}
-              className="inline-block mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Ir al login
             </button>
           </div>
-        )}
-
-        {status !== 'success' && (
-          <div className="space-y-4 text-left">
-            <form onSubmit={handleVerifyByCode} className="space-y-3">
-              <label className="grid gap-1 text-sm font-semibold text-slate-700">
-                Email
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="tu@email.com"
-                  className="rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-1 text-sm font-semibold text-slate-700">
-                Codigo de verificacion
-                <input
-                  type="text"
-                  value={code}
-                  onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="123456"
-                  className="rounded-lg border border-slate-300 px-3 py-2 tracking-[0.3em] font-bold text-slate-800 outline-none focus:border-blue-500"
-                  required
-                />
-              </label>
-
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-70"
-              >
-                {status === 'loading' ? 'Verificando...' : 'Verificar mail'}
-              </button>
-            </form>
-
-            {status === 'error' ? (
-              <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-                {message}
-              </p>
+        ) : (
+          <form onSubmit={handleVerifyByCode} style={{ display: "grid", gap: 18 }}>
+            {status === "error" ? (
+              <p className="pf-v2-alert pf-v2-alert-error">{message}</p>
             ) : null}
 
-            <div className="text-center">
-              <a
-                href="/auth/register"
-                className="inline-block mt-2 text-sm font-semibold text-blue-700 hover:text-blue-800"
-              >
-                Volver al registro
-              </a>
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="verify-email">Email</label>
+              <input
+                id="verify-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="pf-v2-input"
+                placeholder="tu@email.com"
+                autoComplete="email"
+                required
+              />
             </div>
-          </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="verify-code">Código de verificación</label>
+              <input
+                id="verify-code"
+                type="text"
+                value={code}
+                onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="pf-v2-input"
+                style={{ letterSpacing: "0.3em", fontWeight: 700 }}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                placeholder="123456"
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={status === "loading"} className="pf-v2-auth-submit">
+              {status === "loading" ? "Verificando..." : "Verificar mail"}
+            </button>
+          </form>
         )}
-      </div>
-    </div>
+
+        <div className="pf-v2-divider" style={{ margin: "26px 0 22px" }}>
+          <span>Acceso de usuarios</span>
+        </div>
+
+        <p className="pf-v2-auth-foot">
+          <a href="/auth/register">Volver al registro</a>
+        </p>
+      </section>
+    </main>
   );
 }
 
 export default function VerifyPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-8 text-center">
-            <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando verificación...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<AuthLoader message="Cargando verificación..." />}>
       <VerifyPageContent />
     </Suspense>
   );

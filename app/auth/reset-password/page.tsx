@@ -1,6 +1,7 @@
 'use client';
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import { AuthBackdrop, AuthLoader, AuthPitch } from "../shared";
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -97,79 +98,89 @@ function ResetPasswordContent() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.22),_transparent_24%),radial-gradient(circle_at_20%_80%,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(145deg,_#08111d_0%,_#0f2040_42%,_#1d4ed8_100%)]" />
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
-        <div className="w-full max-w-xl rounded-[2rem] border border-white/12 bg-slate-950/60 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Nueva contraseña</p>
-          <h1 className="mt-3 text-3xl font-black text-white">Restablecer contraseña</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
-            Elegí una nueva contraseña para volver a entrar a PF Control.
-          </p>
+    <main className="pf-v2 pf-v2-auth">
+      <AuthBackdrop />
+      <AuthPitch />
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-            {message && <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100">{message}</div>}
-            {error && <div className="rounded-2xl border border-rose-400/35 bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-100">{error}</div>}
-
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Nueva contraseña
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Mínimo 6 caracteres"
-                minLength={6}
-                required
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Confirmar contraseña
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Repite la nueva contraseña"
-                minLength={6}
-                required
-              />
-            </label>
-
-            <ReliableActionButton
-              type="submit"
-              disabled={loading || redirecting || !token}
-              className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {redirecting ? 'Redirigiendo al login...' : loading ? 'Guardando...' : 'Guardar nueva contraseña'}
-            </ReliableActionButton>
-
-            {showManualRedirect ? (
-              <ReliableActionButton
-                type="button"
-                onClick={() => window.location.replace('/auth/login')}
-                className="w-full rounded-2xl border border-cyan-300/45 bg-cyan-500/15 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/25"
-              >
-                Ir al login ahora
-              </ReliableActionButton>
-            ) : null}
-          </form>
-
-          <p className="mt-6 text-center text-sm text-slate-300">
-            <a href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
-              Volver al login
-            </a>
-          </p>
+      <section className="pf-v2-auth-panel">
+        <div className="pf-v2-auth-head">
+          <span className="pf-v2-auth-logo">PF</span>
         </div>
-      </div>
+
+        <span className="pf-v2-auth-kicker">Nueva contraseña</span>
+        <h1 className="pf-v2-auth-h2">Restablecer contraseña</h1>
+        <p className="pf-v2-auth-sub">
+          Elegí una nueva contraseña para volver a entrar a PF Control.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 18 }}>
+          {message ? <p className="pf-v2-alert pf-v2-alert-ok">{message}</p> : null}
+          {error ? <p className="pf-v2-alert pf-v2-alert-error">{error}</p> : null}
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reset-password">Nueva contraseña</label>
+            <input
+              id="reset-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="pf-v2-input"
+              placeholder="Mínimo 6 caracteres"
+              autoComplete="new-password"
+              minLength={6}
+              required
+            />
+          </div>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reset-confirm">Confirmar contraseña</label>
+            <input
+              id="reset-confirm"
+              type="password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className="pf-v2-input"
+              placeholder="Repetí la nueva contraseña"
+              autoComplete="new-password"
+              minLength={6}
+              required
+            />
+          </div>
+
+          <ReliableActionButton
+            type="submit"
+            disabled={loading || redirecting || !token}
+            className="pf-v2-auth-submit"
+          >
+            {redirecting ? "Redirigiendo al login..." : loading ? "Guardando..." : "Guardar nueva contraseña"}
+          </ReliableActionButton>
+
+          {showManualRedirect ? (
+            <ReliableActionButton
+              type="button"
+              onClick={() => window.location.replace("/auth/login")}
+              className="pf-v2-auth-submit pf-v2-auth-submit-2"
+            >
+              Ir al login ahora
+            </ReliableActionButton>
+          ) : null}
+        </form>
+
+        <div className="pf-v2-divider" style={{ margin: "26px 0 22px" }}>
+          <span>Acceso de usuarios</span>
+        </div>
+
+        <p className="pf-v2-auth-foot">
+          <a href="/auth/login">Volver al login</a>
+        </p>
+      </section>
     </main>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#080a0b]" />}>
+    <Suspense fallback={<AuthLoader message="Cargando..." />}>
       <ResetPasswordContent />
     </Suspense>
   );

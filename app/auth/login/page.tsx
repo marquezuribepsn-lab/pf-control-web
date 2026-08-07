@@ -1,6 +1,7 @@
 'use client';
 
 import ReliableActionButton from "@/components/ReliableActionButton";
+import { AuthBackdrop, AuthLoader, AuthPitch } from "../shared";
 import PasswordRevealInput from "@/components/PasswordRevealInput";
 import { Suspense, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
@@ -203,26 +204,6 @@ async function signInWithTimeout(options: {
   }
 }
 
-function FullScreenLoader({ message }: { message: string }) {
-  return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
-      <div className="relative z-10 flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-5">
-          <div className="relative h-16 w-16">
-            <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-400" style={{ animationDuration: '800ms' }} />
-            <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-blue-500" style={{ animationDuration: '1200ms', animationDirection: 'reverse' }} />
-            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-300/90 via-sky-400/80 to-blue-500/80 text-[15px] font-black text-slate-950" style={{ inset: '10px' }}>
-              PF
-            </div>
-          </div>
-          <p className="text-sm font-semibold text-slate-300">{message}</p>
-        </div>
-      </div>
-    </main>
-  );
-}
-
 function LoginPageContent() {
   // ── Todos los hooks deben ir antes de cualquier return condicional ──
   const { status } = useSession();
@@ -352,11 +333,11 @@ function LoginPageContent() {
 
   // ── Returns condicionales DESPUÉS de todos los hooks ──
   if (status === 'loading') {
-    return <FullScreenLoader message="Verificando sesión..." />;
+    return <AuthLoader message="Verificando sesión..." />;
   }
 
   if (status === 'authenticated') {
-    return <FullScreenLoader message="Redirigiendo..." />;
+    return <AuthLoader message="Redirigiendo..." />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -441,178 +422,115 @@ function LoginPageContent() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
+    <main className="pf-v2 pf-v2-auth">
+      <AuthBackdrop />
+      <AuthPitch />
 
-      <div className="relative z-10 mx-auto grid min-h-screen max-w-7xl items-center gap-10 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
-        <section className="hidden lg:block">
-          <div className="max-w-xl">
-            <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.35em] text-cyan-100">
-              Acceso privado
+      <section className="pf-v2-auth-panel">
+        <div className="pf-v2-auth-head">
+          <span className="pf-v2-auth-logo">PF</span>
+          <dl className="pf-v2-auth-status">
+            <dt>Estado</dt>
+            <dd>Protegido</dd>
+          </dl>
+        </div>
+
+        <span className="pf-v2-auth-kicker">Login</span>
+        <h2 className="pf-v2-auth-h2">Ingresar a la plataforma</h2>
+        <p className="pf-v2-auth-sub">
+          Usá tu cuenta verificada para desbloquear todo el sistema.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 18 }}>
+          {magicLoading && magicToken ? (
+            <p className="pf-v2-alert pf-v2-alert-info">Validando enlace de acceso...</p>
+          ) : null}
+
+          {error ? <p className="pf-v2-alert pf-v2-alert-error">{error}</p> : null}
+          {magicSent ? <p className="pf-v2-alert pf-v2-alert-ok">{magicSent}</p> : null}
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="login-email">Email</label>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pf-v2-input"
+              placeholder="tu@email.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="login-password">Contraseña</label>
+            <PasswordRevealInput
+              id="login-password"
+              value={password}
+              onChange={setPassword}
+              className="pf-v2-input"
+              placeholder="Ingresa tu contraseña"
+              required
+            />
+          </div>
+
+          <label className="pf-v2-check">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <span className="pf-v2-check-box" aria-hidden="true">
+              <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="#00131a" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 10.5 L8 14.5 L16 5.5" />
+              </svg>
             </span>
-            <h1 className="mt-6 text-6xl font-black leading-none tracking-tight text-white">
-              PF Control
-            </h1>
-            <p className="mt-5 max-w-lg text-lg leading-8 text-slate-200/85">
-              Toda la plataforma queda bloqueada hasta iniciar sesión. Entrás, trabajás y administrás el plantel desde un único acceso seguro.
-            </p>
+            <span>Recordar inicio de sesión</span>
+          </label>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <FeatureCard title="Entrenamiento" text="Sesiones y ejercicios con acceso protegido." />
-              <FeatureCard title="Plantel" text="Datos, control operativo y seguimiento centralizado." />
-              <FeatureCard title="Registros" text="Historial de trabajo y reportes bajo sesión activa." />
-              <FeatureCard title="Cuenta" text="Perfil, verificación y cierre de sesión en un solo lugar." />
-            </div>
-          </div>
-        </section>
+          <ReliableActionButton type="submit" disabled={loading} className="pf-v2-auth-submit">
+            {loading ? "Ingresando..." : "Iniciar sesión"}
+          </ReliableActionButton>
 
-        <section className="mx-auto w-full max-w-lg">
-          <div className="rounded-[2rem] border border-white/12 bg-slate-950/55 p-6 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-2xl sm:p-8">
-            <div className="mb-8 flex items-start justify-between gap-4">
-              <div>
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-300/90 via-sky-400/80 to-blue-500/80 text-2xl font-black text-slate-950 shadow-[0_20px_40px_rgba(6,182,212,0.25)]">
-                  PF
-                </div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-200/80">Login</p>
-                <h2 className="mt-3 text-3xl font-black text-white">Ingresar a la plataforma</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Usá tu cuenta verificada para desbloquear todo el sistema.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-right">
-                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400">Estado</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-300">Protegido</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {magicLoading && magicToken ? (
-                <div className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-3 text-sm font-medium text-cyan-100">
-                  Validando enlace de acceso...
-                </div>
-              ) : null}
-
-              {error && (
-                <div className="rounded-2xl border border-rose-400/35 bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-100">
-                  {error}
-                </div>
-              )}
-
-              {magicSent ? (
-                <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100">
-                  {magicSent}
-                </div>
-              ) : null}
-
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Email
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-cyan-300/55 focus:bg-slate-900"
-                  placeholder="tu@email.com"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Contraseña
-                <PasswordRevealInput
-                  value={password}
-                  onChange={setPassword}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-cyan-300/55 focus:bg-slate-900"
-                  placeholder="Ingresa tu contraseña"
-                  required
-                />
-              </label>
-
-              <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 bg-slate-900 text-cyan-400 focus:ring-cyan-400"
-                />
-                <span>Recordar inicio de sesión</span>
-              </label>
-
+          {canUseMagicAccess ? (
+            <>
+              <p style={{ fontSize: 12.5, color: "var(--v2-accent)", margin: 0 }}>
+                Detectamos varios intentos fallidos. Podés entrar con un enlace seguro al email.
+              </p>
               <ReliableActionButton
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-cyan-300 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
+                type="button"
+                onClick={handleRequestMagicLink}
+                disabled={magicLoading || loading}
+                className="pf-v2-auth-submit pf-v2-auth-submit-2"
               >
-                {loading ? 'Ingresando...' : 'Iniciar sesión'}
+                {magicLoading ? "Enviando enlace..." : "Entrar con enlace al email"}
               </ReliableActionButton>
+            </>
+          ) : null}
 
-              {canUseMagicAccess ? (
-                <>
-                  <p className="text-xs font-semibold text-cyan-200/90">
-                    Detectamos varios intentos fallidos. Puedes entrar con un enlace seguro al email.
-                  </p>
-                  <ReliableActionButton
-                    type="button"
-                    onClick={handleRequestMagicLink}
-                    disabled={magicLoading || loading}
-                    className="w-full rounded-2xl border border-cyan-300/35 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {magicLoading ? 'Enviando enlace...' : 'Entrar con enlace al email'}
-                  </ReliableActionButton>
-                </>
-              ) : null}
+          <a href="/auth/forgot-password" className="pf-v2-auth-link" style={{ textAlign: "right" }}>
+            Olvidé mi contraseña
+          </a>
+        </form>
 
-            <div className="text-right">
-              <a href="/auth/forgot-password" className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">
-                Olvidé mi contraseña
-              </a>
-            </div>
-            </form>
+        <div className="pf-v2-divider" style={{ margin: "26px 0 22px" }}>
+          <span>Acceso de usuarios</span>
+        </div>
 
-            <div className="mt-8 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-slate-500">
-              <span className="h-px flex-1 bg-white/10" />
-              acceso de usuarios
-              <span className="h-px flex-1 bg-white/10" />
-            </div>
-
-            <p className="mt-6 text-center text-sm text-slate-300">
-              ¿No tenés cuenta?{' '}
-              <a href="/auth/register" className="font-bold text-cyan-300 transition hover:text-cyan-200">
-                Registrate acá
-              </a>
-            </p>
-          </div>
-        </section>
-      </div>
+        <p className="pf-v2-auth-foot">
+          ¿No tenés cuenta? <a href="/auth/register">Registrate acá</a>
+        </p>
+      </section>
     </main>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.2),_transparent_24%),linear-gradient(135deg,_#09111f_0%,_#102a56_48%,_#1d4ed8_100%)]" />
-          <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6 py-10">
-            <div className="rounded-2xl border border-white/12 bg-slate-950/55 px-6 py-4 text-sm text-slate-200 backdrop-blur-2xl">
-              Cargando acceso...
-            </div>
-          </div>
-        </main>
-      }
-    >
+    <Suspense fallback={<AuthLoader message="Cargando acceso..." />}>
       <LoginPageContent />
     </Suspense>
-  );
-}
-
-function FeatureCard({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-      <p className="text-sm font-black uppercase tracking-[0.22em] text-white">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
-    </div>
   );
 }

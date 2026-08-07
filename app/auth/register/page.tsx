@@ -3,6 +3,7 @@
 import ReliableActionButton from "@/components/ReliableActionButton";
 import DateInput from "@/components/DateInput";
 import { useEffect, useMemo, useState } from 'react';
+import { AuthBackdrop } from '../shared';
 import { useRouter } from 'next/navigation';
 
 const ALIMENTACION_OPTIONS = [
@@ -210,486 +211,279 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#080a0b] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(34,211,238,0.24),transparent_25%),radial-gradient(circle_at_86%_18%,rgba(56,189,248,0.2),transparent_28%),radial-gradient(circle_at_24%_82%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(150deg,#040a17_0%,#0b1d3c_44%,#1e3a8a_100%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] [background-size:46px_46px]" />
+    <main className="pf-v2 pf-v2-auth">
+      <AuthBackdrop />
 
-      <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-[1880px] items-start gap-6 px-4 py-6 lg:grid-cols-[minmax(320px,0.62fr)_minmax(0,1.38fr)] lg:gap-7 lg:px-6 lg:py-8 xl:gap-8 xl:px-8">
-        <div className="flex flex-col gap-6 lg:max-w-[560px]">
-          <section className="rounded-[2rem] border border-cyan-200/20 bg-slate-950/45 p-6 shadow-[0_30px_80px_rgba(2,8,25,0.45)] backdrop-blur-xl">
-            <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-cyan-100/85">Alta inicial</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-white">Registro de ingresante</h1>
-            <p className="mt-4 text-sm leading-7 text-slate-200/90">
-              Completas tus datos, dejas la anamnesis de aptitud fisica y recibes validacion por mail.
-              Luego el profesor revisa y habilita tu cuenta.
-            </p>
+      <section className="pf-v2-auth-pitch">
+        <span className="pf-v2-auth-badge">Alta inicial</span>
+        <h1 className="pf-v2-auth-title" style={{ fontSize: "clamp(32px, 4vw, 44px)" }}>
+          Registro de ingresante
+        </h1>
+        <p className="pf-v2-auth-lead">
+          Completás tus datos, dejás la anamnesis de aptitud física y recibís validación
+          por mail. Después el profesor revisa y habilita tu cuenta.
+        </p>
 
-            <div className="mt-7 space-y-3">
-              <StepItem index="1" title="Datos personales" text="Nombre, contacto y datos base de salud." />
-              <StepItem index="2" title="Anamnesis" text="Cuestionario clinico y habitos en formato desplegable." />
-              <StepItem index="3" title="Credenciales" text="Email y contraseña para acceso seguro." />
-              <StepItem index="4" title="Verificacion" text="Confirmas mail y el sistema te redirige al login." />
-            </div>
+        <ol style={{ display: "grid", gap: 8, listStyle: "none", margin: 0, padding: 0, maxWidth: 480 }}>
+          <StepItem index="1" title="Datos personales" text="Nombre, contacto y datos base de salud." />
+          <StepItem index="2" title="Anamnesis" text="Cuestionario clínico y hábitos." />
+          <StepItem index="3" title="Credenciales" text="Email y contraseña para acceso seguro." />
+          <StepItem index="4" title="Verificación" text="Confirmás el mail y entrás al login." />
+        </ol>
 
-            <div className="mt-8 rounded-2xl border border-amber-200/35 bg-amber-500/12 px-4 py-3 text-sm text-amber-100">
-              Importante: para continuar debes aceptar la declaracion de aptitud y responsabilidad.
-            </div>
-          </section>
+        <p className="pf-v2-alert" style={{ maxWidth: 480 }}>
+          <strong style={{ color: "var(--v2-warning)" }}>Importante:</strong>{" "}
+          para continuar tenés que aceptar la declaración de aptitud y responsabilidad.
+        </p>
+      </section>
 
-          <aside className="relative overflow-hidden rounded-[2rem] border border-emerald-200/20 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.22),rgba(3,7,18,0.88)_45%,rgba(3,7,18,0.98)_100%)] p-5 shadow-[0_30px_70px_rgba(2,8,25,0.45)] lg:p-6">
-            <div className="pointer-events-none absolute -right-12 -top-10 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
-
-            <div className="relative">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.32em] text-emerald-100/85">Programa de ingreso</p>
-                <h3 className="mt-2 text-2xl font-black leading-tight text-white">Entrás con plan, no improvisando</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-200/90">
-                  Tu alta queda lista para revisión profesional con datos completos, anamnesis y objetivos claros.
-                </p>
-              </div>
-
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                <PromoBadge title="Aprobación" value="Con alta del profe" />
-                <PromoBadge title="Anamnesis" value="Integrada" />
-                <PromoBadge title="Plan inicial" value="Personalizado" />
-                <PromoBadge title="Seguimiento" value="Constante" />
-              </div>
-
-              <div className="mt-5 grid gap-2">
-                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 1</p>
-                  <p className="mt-1 text-sm text-slate-100">Completás tus datos y contacto.</p>
-                </div>
-                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 2</p>
-                  <p className="mt-1 text-sm text-slate-100">Se habilita anamnesis y cargás aptitud física.</p>
-                </div>
-                <div className="rounded-xl border border-white/15 bg-slate-950/55 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-100/80">Paso 3</p>
-                  <p className="mt-1 text-sm text-slate-100">Verificás mail y esperás aprobación final.</p>
-                </div>
-              </div>
-
-              <p className="mt-5 text-[11px] font-semibold text-emerald-100/85">
-                Cupos administrados por alta del profesor.
-              </p>
-            </div>
-          </aside>
+      <section className="pf-v2-auth-panel pf-v2-auth-panel-wide">
+        <div className="pf-v2-auth-head">
+          <span className="pf-v2-auth-logo">PF</span>
         </div>
 
-        <section className="min-w-0 rounded-[2rem] border border-white/12 bg-slate-950/65 p-5 shadow-[0_28px_90px_rgba(4,10,24,0.5)] backdrop-blur-2xl sm:p-7 md:p-8 xl:p-9">
-          <div className="mb-7">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-100/85">Formulario</p>
-              <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">Crea tu cuenta</h2>
-              <p className="mt-2 text-sm text-slate-300">La plataforma te pedira validacion de profesor antes de habilitar acceso.</p>
+        <span className="pf-v2-auth-kicker">Formulario</span>
+        <h2 className="pf-v2-auth-h2">Creá tu cuenta</h2>
+        <p className="pf-v2-auth-sub">
+          La plataforma te va a pedir validación del profesor antes de habilitar el acceso.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 18 }}>
+          {error ? <p className="pf-v2-alert pf-v2-alert-error">{error}</p> : null}
+
+          <div className="pf-v2-quiz-grid">
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-nombre">Nombre</label>
+              <input id="reg-nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: Sofía" autoComplete="given-name" required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-apellido">Apellido</label>
+              <input id="reg-apellido" type="text" value={apellido} onChange={(e) => setApellido(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: Pérez" autoComplete="family-name" required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-edad">Edad</label>
+              <input id="reg-edad" type="number" min={1} max={120} value={edad} onChange={(e) => setEdad(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: 24" required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-nacimiento">Fecha de nacimiento</label>
+              <DateInput id="reg-nacimiento" value={fechaNacimiento} onChange={setFechaNacimiento}
+                className="pf-v2-input" required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-altura">Altura (cm)</label>
+              <input id="reg-altura" type="number" min={0} step="0.1" value={altura} onChange={(e) => setAltura(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: 172" required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-peso">Peso (kg)</label>
+              <input id="reg-peso" type="number" min={0} step="0.1" value={peso} onChange={(e) => setPeso(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: 68" required />
+            </div>
+
+            <div className="pf-v2-field pf-v2-quiz-wide">
+              <label className="pf-v2-field-label" htmlFor="reg-telefono">Número de teléfono</label>
+              <input id="reg-telefono" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)}
+                className="pf-v2-input" placeholder="Ej: +5491112345678" autoComplete="tel" required />
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="rounded-2xl border border-rose-400/35 bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-100">
-                {error}
-              </div>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Nombre
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  placeholder="Ej: Sofía"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Apellido
-                <input
-                  type="text"
-                  value={apellido}
-                  onChange={(e) => setApellido(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  placeholder="Ej: Perez"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Edad
-                <input
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={edad}
-                  onChange={(e) => setEdad(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  placeholder="Ej: 24"
-                  required
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Fecha de nacimiento
-                <DateInput
-                  value={fechaNacimiento}
-                  onChange={setFechaNacimiento}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 pr-10 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  required
-                />
-              </label>
+          <section className="pf-v2-quiz">
+            <div className="pf-v2-quiz-head">
+              <h3 className="pf-v2-h2" style={{ fontSize: 15 }}>Cuestionario de ingreso (anamnesis)</h3>
+              <span className={`pf-v2-chip ${showAnamnesis ? "pf-v2-chip-ok" : "pf-v2-chip-accent"}`}>
+                {showAnamnesis ? "Habilitado" : "Se habilita al completar teléfono"}
+              </span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Altura (cm)
-                <input
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  value={altura}
-                  onChange={(e) => setAltura(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  placeholder="Ej: 172"
-                  required
-                />
-              </label>
+            {showAnamnesis ? (
+              <div className="pf-v2-quiz-grid">
+                <TextAnswer label="¿Estás actualmente bajo tratamiento médico?"
+                  value={anamnesis.tratamientoMedico}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, tratamientoMedico: v }))}
+                  placeholder="Detalle breve" />
+                <TextAnswer label="¿Tenés o tuviste lesión, dolor o limitación física?"
+                  value={anamnesis.lesionesLimitaciones}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, lesionesLimitaciones: v }))}
+                  placeholder="Detalle breve" />
+                <TextAnswer label="¿Tomás medicación regularmente? ¿Cuál?"
+                  value={anamnesis.medicacionRegular}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, medicacionRegular: v }))}
+                  placeholder="Detalle breve" />
+                <TextAnswer label="¿Tuviste alguna cirugía en los últimos 2 años?"
+                  value={anamnesis.cirugiasRecientes}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, cirugiasRecientes: v }))}
+                  placeholder="Detalle breve" />
+                <TextAnswer label="¿Antecedentes de hipertensión, diabetes, problemas cardíacos o respiratorios?"
+                  value={anamnesis.antecedentesClinicos}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, antecedentesClinicos: v }))}
+                  placeholder="Detalle breve" />
+                <TextAnswer label="¿Tenés autorización médica para realizar actividad física?"
+                  value={anamnesis.autorizacionMedica}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, autorizacionMedica: v }))}
+                  placeholder="Detalle breve" />
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-200">
-                Peso (kg)
-                <input
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  value={peso}
-                  onChange={(e) => setPeso(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                  placeholder="Ej: 68"
-                  required
-                />
-              </label>
-            </div>
-
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Numero de telefono
-              <input
-                type="tel"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Ej: +5491112345678"
-                required
-              />
-            </label>
-
-            <section className="rounded-2xl border border-white/10 bg-slate-900/45 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-sm font-black text-white">Cuestionario de ingreso (anamnesis)</p>
-                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-                  showAnamnesis
-                    ? 'border-emerald-300/45 bg-emerald-500/15 text-emerald-100'
-                    : 'border-cyan-300/35 bg-cyan-500/15 text-cyan-100'
-                }`}>
-                  {showAnamnesis ? 'Habilitado' : 'Se habilita al completar telefono'}
-                </span>
-              </div>
-
-              {showAnamnesis ? (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <TextAnswer
-                    label="Estas actualmente bajo tratamiento medico?"
-                    value={anamnesis.tratamientoMedico}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, tratamientoMedico: value }))}
-                    placeholder="Detalle breve"
-                  />
-                  <TextAnswer
-                    label="Tenes o tuviste lesion, dolor o limitacion fisica?"
-                    value={anamnesis.lesionesLimitaciones}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, lesionesLimitaciones: value }))}
-                    placeholder="Detalle breve"
-                  />
-                  <TextAnswer
-                    label="Tomas medicacion regularmente? Cual?"
-                    value={anamnesis.medicacionRegular}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, medicacionRegular: value }))}
-                    placeholder="Detalle breve"
-                  />
-                  <TextAnswer
-                    label="Tuviste alguna cirugia en los ultimos 2 anos?"
-                    value={anamnesis.cirugiasRecientes}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, cirugiasRecientes: value }))}
-                    placeholder="Detalle breve"
-                  />
-                  <TextAnswer
-                    label="Tenes antecedentes de hipertension, diabetes, problemas cardiacos o respiratorios?"
-                    value={anamnesis.antecedentesClinicos}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, antecedentesClinicos: value }))}
-                    placeholder="Detalle breve"
-                  />
-                  <TextAnswer
-                    label="Tenes autorizacion medica para realizar actividad fisica?"
-                    value={anamnesis.autorizacionMedica}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, autorizacionMedica: value }))}
-                    placeholder="Detalle breve"
-                  />
-
-                  <div className="md:col-span-2">
-                    <TextAreaAnswer
-                      label="Entrenaste antes? Cuanto tiempo y que tipo de entrenamiento hacias?"
-                      value={anamnesis.experienciaEntrenamiento}
-                      onChange={(value) => setAnamnesis((prev) => ({ ...prev, experienciaEntrenamiento: value }))}
-                    />
-                  </div>
-
-                  <OptionGroup
-                    label="Como describirias tu alimentacion actual?"
-                    options={ALIMENTACION_OPTIONS}
-                    selected={anamnesis.alimentacionActual}
-                    onToggle={(value) =>
-                      setAnamnesis((prev) => ({
-                        ...prev,
-                        alimentacionActual: toggleListValue(prev.alimentacionActual, value),
-                      }))
-                    }
-                  />
-
-                  <TextAnswer
-                    label="Si marcaste Otro en alimentacion, detallalo"
-                    value={anamnesis.alimentacionDetalle}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, alimentacionDetalle: value }))}
-                    placeholder="Opcional"
-                  />
-
-                  <TextAreaAnswer
-                    label="Sufris de algun desorden alimentario? Cual?"
-                    value={anamnesis.desordenAlimentario}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, desordenAlimentario: value }))}
-                  />
-
-                  <TextAnswer
-                    label="Consumis alcohol, cigarrillos u otras sustancias?"
-                    value={anamnesis.consumoSustancias}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, consumoSustancias: value }))}
-                    placeholder="Detalle breve"
-                  />
-
-                  <TextAnswer
-                    label="Tomas suplementos (proteina, creatina, multivitaminicos, etc.)?"
-                    value={anamnesis.suplementos}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, suplementos: value }))}
-                    placeholder="Detalle breve"
-                  />
-
-                  <OptionGroup
-                    label="Que tipo de entrenamiento te interesa mas?"
-                    options={INTERES_ENTRENAMIENTO_OPTIONS}
-                    selected={anamnesis.interesEntrenamiento}
-                    onToggle={(value) =>
-                      setAnamnesis((prev) => ({
-                        ...prev,
-                        interesEntrenamiento: toggleListValue(prev.interesEntrenamiento, value),
-                      }))
-                    }
-                  />
-
-                  <TextAnswer
-                    label="Si queres sumar detalle del interes, escribilo"
-                    value={anamnesis.interesDetalle}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, interesDetalle: value }))}
-                    placeholder="Opcional"
-                  />
-
-                  <OptionGroup
-                    label="Como llegaste hasta mi?"
-                    options={ORIGEN_CONTACTO_OPTIONS}
-                    selected={anamnesis.origenContacto}
-                    onToggle={(value) =>
-                      setAnamnesis((prev) => ({
-                        ...prev,
-                        origenContacto: toggleListValue(prev.origenContacto, value),
-                      }))
-                    }
-                  />
-
-                  <TextAnswer
-                    label="Si marcaste Otro en origen, detallalo"
-                    value={anamnesis.origenDetalle}
-                    onChange={(value) => setAnamnesis((prev) => ({ ...prev, origenDetalle: value }))}
-                    placeholder="Opcional"
-                  />
-
-                  <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 md:col-span-2">
-                    <p className="text-sm font-semibold text-slate-100">Que tan comprometido/a estas con tu objetivo?</p>
-                    <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-10">
-                      {commitmentScale.map((value) => (
-                        <button
-                          key={`compromiso-${value}`}
-                          type="button"
-                          onClick={() => setAnamnesis((prev) => ({ ...prev, compromisoObjetivo: value }))}
-                          className={`rounded-lg border px-2 py-1 text-sm font-bold transition ${
-                            anamnesis.compromisoObjetivo === value
-                              ? 'border-cyan-200 bg-cyan-300 text-slate-950'
-                              : 'border-white/20 bg-slate-800/80 text-slate-100 hover:bg-slate-700/80'
-                          }`}
-                        >
-                          {value}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 md:col-span-2">
-                    <p className="text-sm font-semibold text-slate-100">
-                      Declaro que los datos son veridicos y autorizo su uso para seguimiento de mi progreso.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setAnamnesis((prev) => ({ ...prev, consentimientoSalud: 'si' }))}
-                        className={`rounded-lg border px-4 py-2 text-sm font-bold transition ${
-                          anamnesis.consentimientoSalud === 'si'
-                            ? 'border-emerald-200 bg-emerald-300 text-slate-950'
-                            : 'border-white/20 bg-slate-800/80 text-slate-100 hover:bg-slate-700/80'
-                        }`}
-                      >
-                        Si
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAnamnesis((prev) => ({ ...prev, consentimientoSalud: 'no' }))}
-                        className={`rounded-lg border px-4 py-2 text-sm font-bold transition ${
-                          anamnesis.consentimientoSalud === 'no'
-                            ? 'border-rose-200 bg-rose-300 text-slate-950'
-                            : 'border-white/20 bg-slate-800/80 text-slate-100 hover:bg-slate-700/80'
-                        }`}
-                      >
-                        No
-                      </button>
-                    </div>
-                  </div>
+                <div className="pf-v2-quiz-wide">
+                  <TextAreaAnswer label="¿Entrenaste antes? ¿Cuánto tiempo y qué tipo de entrenamiento hacías?"
+                    value={anamnesis.experienciaEntrenamiento}
+                    onChange={(v) => setAnamnesis((prev) => ({ ...prev, experienciaEntrenamiento: v }))} />
                 </div>
-              ) : (
-                <p className="rounded-xl border border-white/10 bg-slate-900/65 px-3 py-2 text-xs text-slate-300">
-                  Completá un número de telefono valido y la anamnesis se despliega automáticamente acá abajo.
-                </p>
-              )}
-            </section>
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Club (opcional)
-              <input
-                type="text"
-                value={club}
-                onChange={(e) => setClub(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Club / institucion"
-              />
-            </label>
+                <OptionGroup label="¿Cómo describirías tu alimentación actual?"
+                  options={ALIMENTACION_OPTIONS}
+                  selected={anamnesis.alimentacionActual}
+                  onToggle={(v) => setAnamnesis((prev) => ({ ...prev, alimentacionActual: toggleListValue(prev.alimentacionActual, v) }))} />
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Objetivo (opcional)
-              <input
-                type="text"
-                value={objetivo}
-                onChange={(e) => setObjetivo(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Objetivo principal"
-              />
-            </label>
+                <TextAnswer label='Si marcaste "Otro" en alimentación, detallalo'
+                  value={anamnesis.alimentacionDetalle}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, alimentacionDetalle: v }))}
+                  placeholder="Opcional" />
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Observaciones (opcional)
-              <textarea
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
-                className="min-h-[96px] rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Info adicional"
-              />
-            </label>
+                <TextAreaAnswer label="¿Sufrís de algún desorden alimentario? ¿Cuál?"
+                  value={anamnesis.desordenAlimentario}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, desordenAlimentario: v }))} />
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Email
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="tu@email.com"
-                required
-              />
-            </label>
+                <TextAnswer label="¿Consumís alcohol, cigarrillos u otras sustancias?"
+                  value={anamnesis.consumoSustancias}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, consumoSustancias: v }))}
+                  placeholder="Detalle breve" />
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Contraseña
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Mínimo 6 caracteres"
-                required
-                minLength={6}
-              />
-            </label>
+                <TextAnswer label="¿Tomás suplementos (proteína, creatina, multivitamínicos)?"
+                  value={anamnesis.suplementos}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, suplementos: v }))}
+                  placeholder="Detalle breve" />
 
-            <label className="grid gap-2 text-sm font-semibold text-slate-200">
-              Confirmar contraseña
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-900/85 px-4 py-3 text-base text-white outline-none transition focus:border-emerald-300/55 focus:bg-slate-900"
-                placeholder="Repite la contraseña"
-                required
-                minLength={6}
-              />
-            </label>
+                <OptionGroup label="¿Qué tipo de entrenamiento te interesa más?"
+                  options={INTERES_ENTRENAMIENTO_OPTIONS}
+                  selected={anamnesis.interesEntrenamiento}
+                  onToggle={(v) => setAnamnesis((prev) => ({ ...prev, interesEntrenamiento: toggleListValue(prev.interesEntrenamiento, v) }))} />
 
-            <ReliableActionButton
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:from-emerald-300 hover:to-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading ? 'Registrando...' : 'Crear cuenta'}
-            </ReliableActionButton>
-          </form>
+                <TextAnswer label="Si querés sumar detalle del interés, escribilo"
+                  value={anamnesis.interesDetalle}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, interesDetalle: v }))}
+                  placeholder="Opcional" />
 
-          <p className="mt-6 text-center text-sm text-slate-300">
-            ¿Ya tenés cuenta?{' '}
-            <a href="/auth/login" className="font-bold text-cyan-300 transition hover:text-cyan-200">
-              Iniciá sesión acá
-            </a>
-          </p>
-        </section>
-      </div>
+                <OptionGroup label="¿Cómo llegaste hasta mí?"
+                  options={ORIGEN_CONTACTO_OPTIONS}
+                  selected={anamnesis.origenContacto}
+                  onToggle={(v) => setAnamnesis((prev) => ({ ...prev, origenContacto: toggleListValue(prev.origenContacto, v) }))} />
+
+                <TextAnswer label='Si marcaste "Otro" en origen, detallalo'
+                  value={anamnesis.origenDetalle}
+                  onChange={(v) => setAnamnesis((prev) => ({ ...prev, origenDetalle: v }))}
+                  placeholder="Opcional" />
+
+                <fieldset className="pf-v2-quiz-wide" style={{ border: 0, margin: 0, padding: 0 }}>
+                  <legend className="pf-v2-field-label" style={{ marginBottom: 10 }}>
+                    ¿Qué tan comprometido/a estás con tu objetivo?
+                  </legend>
+                  <div className="pf-v2-scale">
+                    {commitmentScale.map((value) => (
+                      <button key={`compromiso-${value}`} type="button"
+                        aria-pressed={anamnesis.compromisoObjetivo === value}
+                        onClick={() => setAnamnesis((prev) => ({ ...prev, compromisoObjetivo: value }))}>
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset className="pf-v2-quiz-wide" style={{ border: 0, margin: 0, padding: 0 }}>
+                  <legend className="pf-v2-field-label" style={{ marginBottom: 10 }}>
+                    Declaro que los datos son verídicos y autorizo su uso para seguimiento de mi progreso.
+                  </legend>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button type="button" className="pf-v2-option"
+                      aria-pressed={anamnesis.consentimientoSalud === "si"}
+                      onClick={() => setAnamnesis((prev) => ({ ...prev, consentimientoSalud: "si" }))}>
+                      Sí
+                    </button>
+                    <button type="button" className="pf-v2-option"
+                      aria-pressed={anamnesis.consentimientoSalud === "no"}
+                      onClick={() => setAnamnesis((prev) => ({ ...prev, consentimientoSalud: "no" }))}>
+                      No
+                    </button>
+                  </div>
+                </fieldset>
+              </div>
+            ) : (
+              <p className="pf-v2-muted" style={{ margin: 0 }}>
+                Completá un número de teléfono válido y la anamnesis se despliega automáticamente acá abajo.
+              </p>
+            )}
+          </section>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reg-club">Club (opcional)</label>
+            <input id="reg-club" type="text" value={club} onChange={(e) => setClub(e.target.value)}
+              className="pf-v2-input" placeholder="Club / institución" />
+          </div>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reg-objetivo">Objetivo (opcional)</label>
+            <input id="reg-objetivo" type="text" value={objetivo} onChange={(e) => setObjetivo(e.target.value)}
+              className="pf-v2-input" placeholder="Objetivo principal" />
+          </div>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reg-observaciones">Observaciones (opcional)</label>
+            <textarea id="reg-observaciones" value={observaciones} onChange={(e) => setObservaciones(e.target.value)}
+              className="pf-v2-input" rows={3} placeholder="Info adicional" />
+          </div>
+
+          <div className="pf-v2-field">
+            <label className="pf-v2-field-label" htmlFor="reg-email">Email</label>
+            <input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="pf-v2-input" placeholder="tu@email.com" autoComplete="email" required />
+          </div>
+
+          <div className="pf-v2-quiz-grid">
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-password">Contraseña</label>
+              <input id="reg-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                className="pf-v2-input" placeholder="Mínimo 6 caracteres" autoComplete="new-password" minLength={6} required />
+            </div>
+
+            <div className="pf-v2-field">
+              <label className="pf-v2-field-label" htmlFor="reg-confirm">Confirmar contraseña</label>
+              <input id="reg-confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                className="pf-v2-input" placeholder="Repetí la contraseña" autoComplete="new-password" minLength={6} required />
+            </div>
+          </div>
+
+          <ReliableActionButton type="submit" disabled={loading} className="pf-v2-auth-submit">
+            {loading ? "Registrando..." : "Crear cuenta"}
+          </ReliableActionButton>
+        </form>
+
+        <div className="pf-v2-divider" style={{ margin: "26px 0 22px" }}>
+          <span>Acceso de usuarios</span>
+        </div>
+
+        <p className="pf-v2-auth-foot">
+          ¿Ya tenés cuenta? <a href="/auth/login">Iniciá sesión acá</a>
+        </p>
+      </section>
     </main>
   );
 }
 
 function StepItem({ index, title, text }: { index: string; title: string; text: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-      <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-cyan-200/45 bg-cyan-500/20 text-xs font-black text-cyan-100">
-        {index}
+    <li className="pf-v2-step">
+      <span className="pf-v2-step-n">{index}</span>
+      <span>
+        <span className="pf-v2-step-title">{title}</span>
+        <span className="pf-v2-step-text">{text}</span>
       </span>
-      <div>
-        <p className="text-sm font-black text-white">{title}</p>
-        <p className="text-xs text-slate-300">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function PromoBadge({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">{title}</p>
-      <p className="mt-1 text-lg font-black text-cyan-100">{value}</p>
-    </div>
+    </li>
   );
 }
 
@@ -705,12 +499,12 @@ function TextAnswer({
   placeholder: string;
 }) {
   return (
-    <label className="grid gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-sm font-semibold text-slate-200">
-      <span>{label}</span>
+    <label className="pf-v2-field">
+      <span className="pf-v2-field-label">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="rounded-xl border border-white/15 bg-slate-800/85 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300/55"
+        className="pf-v2-input"
         placeholder={placeholder}
       />
     </label>
@@ -727,12 +521,13 @@ function TextAreaAnswer({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-2 rounded-2xl border border-white/10 bg-slate-900/70 p-3 text-sm font-semibold text-slate-200">
-      <span>{label}</span>
+    <label className="pf-v2-field">
+      <span className="pf-v2-field-label">{label}</span>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-[84px] rounded-xl border border-white/15 bg-slate-800/85 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300/55"
+        className="pf-v2-input"
+        rows={3}
       />
     </label>
   );
@@ -750,27 +545,21 @@ function OptionGroup({
   onToggle: (value: string) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-3">
-      <p className="mb-2 text-sm font-semibold text-slate-100">{label}</p>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {options.map((option) => {
-          const active = selected.includes(option);
-          return (
-            <button
-              key={`${label}-${option}`}
-              type="button"
-              onClick={() => onToggle(option)}
-              className={`rounded-xl border px-3 py-2 text-left text-sm font-semibold transition ${
-                active
-                  ? 'border-cyan-200/70 bg-cyan-400/20 text-cyan-100'
-                  : 'border-white/15 bg-slate-800/80 text-slate-200 hover:bg-slate-700/80'
-              }`}
-            >
-              {option}
-            </button>
-          );
-        })}
+    <fieldset style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+      <legend className="pf-v2-field-label" style={{ marginBottom: 9 }}>{label}</legend>
+      <div className="pf-v2-option-grid">
+        {options.map((option) => (
+          <button
+            key={`${label}-${option}`}
+            type="button"
+            className="pf-v2-option"
+            aria-pressed={selected.includes(option)}
+            onClick={() => onToggle(option)}
+          >
+            {option}
+          </button>
+        ))}
       </div>
-    </div>
+    </fieldset>
   );
 }

@@ -949,16 +949,22 @@ body:has(.pf-v2) {
   font-family: var(--v2-body);
 }
 
+/* Sticky para que en Registro —que scrollea largo— la columna izquierda
+   siga a la vista en lugar de centrarse sobre todo el alto del documento. */
 .pf-v2-auth-pitch {
-  position: relative;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
   z-index: 1;
   flex: 1;
   min-width: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
   gap: 26px;
+  overflow-y: auto;
 }
 
 .pf-v2-auth-panel {
@@ -978,6 +984,440 @@ body:has(.pf-v2) {
   animation: pfV2FadeInUp 0.4s ease 0.05s both;
 }
 
+/* Columna izquierda: lo que la plataforma promete antes de entrar. */
+.pf-v2-auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  padding: 7px 16px;
+  border-radius: var(--v2-r-pill);
+  background: rgba(34, 229, 255, 0.1);
+  border: 1px solid rgba(34, 229, 255, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--v2-accent);
+  text-transform: uppercase;
+}
+
+.pf-v2-auth-title {
+  font-family: var(--v2-display);
+  font-size: clamp(38px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin: 0;
+}
+
+.pf-v2-auth-lead {
+  font-size: 16px;
+  color: var(--v2-fg-50);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0;
+}
+
+.pf-v2-auth-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 520px;
+}
+
+.pf-v2-auth-feature {
+  background: var(--v2-card);
+  border: 1px solid var(--v2-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.pf-v2-auth-feature dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--v2-fg);
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.pf-v2-auth-feature dd {
+  font-size: 13px;
+  color: var(--v2-fg-50);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Panel derecho ───────────────────────────────────────────────────────── */
+
+.pf-v2-auth-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 34px;
+}
+
+.pf-v2-auth-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--v2-accent-2), var(--v2-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--v2-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--v2-on-accent);
+  box-shadow: 0 0 30px rgba(34, 229, 255, 0.4);
+}
+
+.pf-v2-auth-status {
+  text-align: right;
+}
+
+.pf-v2-auth-status dt {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--v2-fg-40);
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.pf-v2-auth-status dd {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--v2-success);
+  margin: 0;
+}
+
+.pf-v2-auth-kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--v2-accent);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.pf-v2-auth-h2 {
+  font-family: var(--v2-display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  margin: 0 0 12px;
+}
+
+.pf-v2-auth-sub {
+  font-size: 13.5px;
+  color: var(--v2-fg-50);
+  line-height: 1.5;
+  margin: 0 0 30px;
+}
+
+/* Casilla propia: la nativa no se puede pintar del cian del diseño. */
+.pf-v2-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--v2-fg-70);
+}
+
+.pf-v2-check input {
+  position: absolute;
+  opacity: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.pf-v2-check-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--v2-border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pf-v2-check-box svg {
+  opacity: 0;
+}
+
+.pf-v2-check input:checked ~ .pf-v2-check-box {
+  background: var(--v2-accent);
+  border-color: var(--v2-accent);
+}
+
+.pf-v2-check input:checked ~ .pf-v2-check-box svg {
+  opacity: 1;
+}
+
+.pf-v2-check input:focus-visible ~ .pf-v2-check-box {
+  outline: 2px solid var(--v2-accent);
+  outline-offset: 2px;
+}
+
+.pf-v2-auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: var(--v2-r-input);
+  background: linear-gradient(135deg, var(--v2-accent), var(--v2-accent-2));
+  color: var(--v2-on-accent);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(34, 229, 255, 0.3);
+}
+
+.pf-v2-auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pf-v2-auth-submit-2 {
+  background: rgba(34, 229, 255, 0.1);
+  border: 1px solid rgba(34, 229, 255, 0.3);
+  color: var(--v2-accent);
+  box-shadow: none;
+}
+
+.pf-v2-auth-link {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+
+/* Linea — texto — linea. */
+.pf-v2-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pf-v2-divider::before,
+.pf-v2-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pf-v2-divider span {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--v2-fg-35);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pf-v2-auth-foot {
+  text-align: center;
+  font-size: 13px;
+  color: var(--v2-fg-50);
+}
+
+.pf-v2-auth-foot a {
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+
+/* ── Registro ─────────────────────────────────────────────────────────────
+   El alta pide muchos más datos que el login, asi que el panel derecho se
+   ensancha y el pitch de la izquierda muestra los pasos del trámite. */
+
+.pf-v2-auth-panel-wide {
+  width: 760px;
+  padding: 48px 48px;
+}
+
+.pf-v2-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--v2-card);
+  border: 1px solid var(--v2-border);
+}
+
+.pf-v2-step-n {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 229, 255, 0.14);
+  border: 1px solid rgba(34, 229, 255, 0.35);
+  color: var(--v2-accent);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pf-v2-step-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+
+.pf-v2-step-text {
+  display: block;
+  font-size: 12px;
+  color: var(--v2-fg-50);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Bloque de preguntas de la anamnesis. */
+.pf-v2-quiz {
+  border: 1px solid var(--v2-border);
+  border-radius: var(--v2-r-card);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+}
+
+.pf-v2-quiz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.pf-v2-quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pf-v2-quiz-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .pf-v2-quiz-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Opción seleccionable (alimentación, intereses, origen). */
+.pf-v2-option {
+  padding: 10px 14px;
+  border-radius: var(--v2-r-input);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--v2-border-hi);
+  color: var(--v2-fg-70);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pf-v2-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pf-v2-option[aria-pressed="true"] {
+  background: rgba(34, 229, 255, 0.14);
+  border-color: rgba(34, 229, 255, 0.45);
+  color: var(--v2-accent);
+}
+
+.pf-v2-option-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Escala 1–10 de compromiso. */
+.pf-v2-scale {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+.pf-v2-scale button {
+  padding: 9px 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--v2-border-hi);
+  color: var(--v2-fg-70);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pf-v2-scale button[aria-pressed="true"] {
+  background: var(--v2-accent);
+  border-color: var(--v2-accent);
+  color: var(--v2-on-accent);
+}
+
+@media (max-width: 560px) {
+  .pf-v2-scale {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .pf-v2-option-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Avisos ──────────────────────────────────────────────────────────────── */
+
+.pf-v2-alert {
+  border-radius: var(--v2-r-input);
+  padding: 13px 16px;
+  font-size: 13px;
+  line-height: 1.45;
+  border: 1px solid var(--v2-border-hi);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--v2-fg-70);
+}
+
+.pf-v2-alert-error {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fecaca;
+}
+
+.pf-v2-alert-ok {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.12);
+  color: #a7f3d0;
+}
+
+.pf-v2-alert-info {
+  border-color: rgba(34, 229, 255, 0.35);
+  background: rgba(34, 229, 255, 0.12);
+  color: #a5f3fc;
+}
+
 @media (max-width: 900px) {
   .pf-v2-auth {
     flex-direction: column;
@@ -987,7 +1427,8 @@ body:has(.pf-v2) {
     display: none;
   }
 
-  .pf-v2-auth-panel {
+  .pf-v2-auth-panel,
+  .pf-v2-auth-panel-wide {
     width: 100%;
     border-left: none;
     padding: 40px 24px;
