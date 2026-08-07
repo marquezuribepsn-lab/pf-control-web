@@ -16,6 +16,7 @@ import {
 } from "@/lib/sidebarWidget";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import AdminNavIcon, { NAV_TINT } from "@/components/AdminNavIcon";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAlumnos } from "./AlumnosProvider";
 import { usePlayers } from "./PlayersProvider";
@@ -1770,8 +1771,25 @@ export default function AppShell({
   }
 
   return (
-    <div className="pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] bg-[#09090f] text-slate-100">
-      <div className="pf-shell-bg-layer pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(ellipse_80%_45%_at_50%_-5%,hsla(220,70%,40%,0.18),transparent_65%)] max-md:hidden" aria-hidden="true" />
+    /* `pf-v2` solo cuando se renderiza el panel: define tipografia, colores y
+       fondo, y la vista de alumno tiene los suyos (pf-n-*). */
+    <div
+      className={`pf-training-shell relative max-md:min-h-[100svh] md:min-h-[100dvh] ${
+        shouldRenderSidebar ? "pf-v2" : "bg-[#09090f] text-slate-100"
+      }`}
+    >
+      {/* Fondo del handoff v2: cuatro manchas radiales con blur, ruido y
+          vinieta. Es comun a todas las pantallas del panel. */}
+      {shouldRenderSidebar ? (
+        <div className="pf-v2-bg" aria-hidden="true">
+          <div className="pf-v2-blob pf-v2-blob-1" />
+          <div className="pf-v2-blob pf-v2-blob-2" />
+          <div className="pf-v2-blob pf-v2-blob-3" />
+          <div className="pf-v2-blob pf-v2-blob-4" />
+          <div className="pf-v2-noise" />
+          <div className="pf-v2-vignette" />
+        </div>
+      ) : null}
       <AdminRunningLoaderOverlay
         active={appRouteTransitionLoading}
         message="Cargando..."
@@ -1803,22 +1821,6 @@ export default function AppShell({
           </section>
         </div>
       ) : null}
-      {shouldRenderSidebar ? (
-        <ReliableActionButton
-          type="button"
-          onClick={() => setMobileOpen((prev) => !prev)}
-          className="fixed left-2 top-2 z-[97] inline-flex h-9 w-9 items-center justify-center rounded-xl text-base text-white/70 md:hidden"
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-          }}
-          aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
-        >
-          {mobileOpen ? "✕" : "☰"}
-        </ReliableActionButton>
-      ) : null}
-
-
       {mobileOpen && shouldRenderSidebar ? (
         <div
           className="fixed inset-0 z-[88] bg-slate-950/65 md:hidden"
@@ -1827,111 +1829,45 @@ export default function AppShell({
         />
       ) : null}
 
-      {/* ── Top bar — profile at top-right like Instagram ── */}
+      {/* Barra superior v2: estado de sesion, buscador y reloj.
+          El handoff saca de aca el nombre de usuario y el logout: el usuario
+          vive al pie del sidebar y el logout solo en la pantalla Cuenta. */}
       {shouldRenderSidebar ? (
         <header
-          className="fixed top-0 right-0 z-[85] flex h-[52px] items-center justify-between gap-2 pr-3"
+          className="pf-v2-topbar fixed top-0 right-0 z-[85]"
           style={{
-            left: isMobileViewport ? "0" : "52px",
-            background: "linear-gradient(180deg,rgba(5,5,10,0.92) 0%,rgba(5,5,10,0.0) 100%)",
-            backdropFilter: "blur(20px) saturate(160%)",
-            WebkitBackdropFilter: "blur(20px) saturate(160%)",
-            borderBottom: "1px solid rgba(255,255,255,0.04)",
+            background: "rgba(2,3,4,0.82)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
           }}
         >
-          {/* ── LEFT: reloj + fecha + página ── */}
-          <div className="flex min-w-0 flex-1 items-center gap-3 pl-4 overflow-hidden">
-            {/* Reloj */}
-            {clockNow && (
-              <div className="flex shrink-0 items-baseline gap-1.5">
-                <span className="tabular-nums text-[22px] font-black leading-none tracking-tight text-white/88">
-                  {clockNow.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                </span>
-                <span
-                  className="tabular-nums text-[13px] font-semibold leading-none"
-                  style={{ color: `hsl(var(--hue,220),65%,68%)` }}
-                >
-                  {String(clockNow.getSeconds()).padStart(2, "0")}
-                </span>
-              </div>
-            )}
-
-            {/* Separador */}
-            <span className="h-[20px] w-px shrink-0 bg-white/[0.08]" aria-hidden="true" />
-
-            {/* Fecha */}
-            {clockNow && (
-              <div className="hidden flex-col leading-none sm:flex">
-                <span className="text-[11px] font-semibold capitalize text-white/60">
-                  {clockNow.toLocaleDateString("es-AR", { weekday: "long" })}
-                </span>
-                <span className="mt-[3px] text-[10px] font-medium capitalize text-white/35">
-                  {clockNow.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
-            )}
-
-            {/* Pendientes de guardado — siempre visible si los hay */}
-            {pendingSaveKeys.length > 0 && (
-              <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/28 bg-amber-500/10 px-2 py-[3px]">
-                <span className="text-[10px] leading-none">⚠️</span>
-                <span className="text-[10px] font-bold text-amber-200/80 whitespace-nowrap">
-                  {pendingSaveKeys.length} sin guardar
-                </span>
-              </span>
-            )}
-          </div>
-
-          {/* ── RIGHT: perfil fusionado ── */}
-          <Link
-            href="/cuenta"
-            reliabilityMode="hard"
-            className="flex shrink-0 items-center gap-2.5 px-3 transition-opacity duration-200 hover:opacity-80 active:scale-95"
-            onClick={(event) => {
-              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-              handleSidebarLinkClick("/cuenta");
-            }}
-            title="Ir a cuenta"
-            aria-label="Ir a cuenta"
+          {/* En movil el dock se esconde: el acceso al menu vive acá adentro,
+              no flotando encima de la barra. */}
+          <ReliableActionButton
+            type="button"
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className="pf-v2-burger"
+            aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
           >
-            <span className="hidden flex-col items-end leading-none sm:flex">
-              <span className="text-[11px] font-semibold text-white/70">{displayName}</span>
-              <span
-                className="mt-[3px] text-[9px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: `hsl(var(--hue,220),60%,60%)` }}
-              >
-                {roleLabel}
-              </span>
-            </span>
-            <span
-              className="relative h-8 w-8 shrink-0 rounded-full"
-              style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.08),0 0 12px hsla(var(--hue,220),72%,62%,0.28)` }}
-            >
-              <img
-                src={avatarImageSrc}
-                alt="Cuenta"
-                loading="eager"
-                decoding="sync"
-                fetchPriority="high"
-                className={`h-full w-full rounded-full object-cover transition-opacity duration-200 ${hasSidebarImage ? "opacity-100" : "opacity-0"}`}
-              />
-              <span
-                className={`absolute inset-0 flex items-center justify-center rounded-full text-[11px] font-black transition-opacity duration-200 ${hasSidebarImage ? "opacity-0" : "opacity-100"}`}
-                style={{
-                  background: `linear-gradient(135deg,hsla(var(--hue,220),60%,25%,0.65),hsla(var(--hue,220),50%,16%,0.85))`,
-                  color: `hsl(var(--hue,220),70%,78%)`,
-                }}
-                aria-hidden={hasSidebarImage}
-              >
-                {profileInitials}
-              </span>
-              <span
-                className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-[1.5px] border-[#080810] bg-emerald-400"
-                style={{ boxShadow: "0 0 5px rgba(52,211,153,0.8)" }}
-                aria-hidden="true"
-              />
-            </span>
-          </Link>
+            {mobileOpen ? "✕" : "☰"}
+          </ReliableActionButton>
+
+          <span className="pf-v2-live">Sesión en vivo</span>
+
+          <input
+            type="text"
+            className="pf-v2-topsearch"
+            placeholder="Buscar alumno, sesión, ejercicio..."
+            aria-label="Buscar"
+          />
+
+          {/* clockNow arranca en null para no desincronizar la hidratacion. */}
+          <div className="pf-v2-clock" suppressHydrationWarning>
+            {clockNow
+              ? clockNow.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false })
+              : "--:--"}
+            <span>:{clockNow ? String(clockNow.getSeconds()).padStart(2, "0") : "--"}</span>
+          </div>
         </header>
       ) : null}
 
@@ -1939,239 +1875,122 @@ export default function AppShell({
       <aside
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
-        className={`pf-sidebar-mac pointer-events-auto fixed inset-y-0 left-0 z-[90] overflow-hidden translate-x-0 ${
-          mobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"
+        className={`pf-v2-rail ${sidebarExpanded || mobileOpen ? "pf-v2-rail-open" : ""} ${
+          mobileOpen ? "pf-v2-rail-mobile-open" : ""
         }`}
-        style={{
-          width: sidebarExpanded || mobileOpen ? "clamp(160px,14vw,178px)" : "52px",
-          transition: "width 320ms cubic-bezier(0.32,1,0.36,1)",
-          /* Sidebar SIEMPRE oscura en ambos temas (Harbiz Dark Nav) */
-          background: "linear-gradient(180deg,#0b1220 0%,#0a1020 100%)",
-          borderRight: "1px solid rgba(148, 163, 184, 0.14)",
-          backdropFilter: "blur(40px) saturate(160%)",
-          WebkitBackdropFilter: "blur(40px) saturate(160%)",
-        }}
+        aria-label="Navegación principal"
       >
-        {/* Top ambient glow */}
-        <div
-          className="pointer-events-none absolute left-0 top-0 h-48 w-full"
-          style={{ background: "radial-gradient(ellipse 100% 50% at 50% -5%, hsla(var(--hue,220),72%,58%,0.12) 0%, transparent 70%)" }}
-          aria-hidden="true"
-        />
+        <div className="pf-v2-rail-head">
+          <span className="pf-v2-logo">PF</span>
+          <span className="pf-v2-wordmark">PF Control</span>
+        </div>
 
-        {/* Left LED strip */}
-        <div
-          className="pf-sidebar-led-strip absolute inset-y-4 left-0 z-[1] w-[2px] rounded-r-full"
-          style={{
-            background: `linear-gradient(180deg,transparent 0%,${sidebarLedColors.start} 28%,${sidebarLedColors.end} 72%,transparent 100%)`,
-            boxShadow: `0 0 8px ${sidebarLedColors.start},0 0 18px ${sidebarLedColors.end}`,
-          }}
-          aria-hidden="true"
-        />
+        <div className="pf-v2-rail-search" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.5" y2="16.5" />
+          </svg>
+          <span>Buscar...</span>
+        </div>
 
-        {/* Nav + widget — full height */}
-        <div className="flex h-full flex-col pt-[52px] overflow-hidden">
-          {/* Nav */}
-          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-1.5">
-            <div className="flex w-full flex-col gap-[2px]">
-              {visibleLinks.map((link) => {
-                const normalizedHref = normalizePath(link.href);
-                const hasChildLink = allVisibleHrefs.some(
-                  (candidate) => candidate !== normalizedHref && candidate.startsWith(`${normalizedHref}/`)
-                );
-                const isCurrent =
-                  normalizedPathname === normalizedHref ||
-                  (!hasChildLink &&
-                    normalizedHref !== "/" &&
-                    normalizedPathname.startsWith(`${normalizedHref}/`)) ||
-                  optimisticNavHref === normalizedHref;
+        {(() => {
+          const porSeccion = (s: string) => visibleLinks.filter((l) => l.section === s);
+          const menu = porSeccion("menu");
+          const extra = porSeccion("extra");
+          const grupos = porSeccion("grupos");
+          // Los links del alumno no llevan seccion; van sueltos al final para
+          // no perderlos si el shell se monta con rol CLIENTE.
+          const sueltos = visibleLinks.filter((l) => !l.section);
 
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    reliabilityMode="hard"
-                    className="pf-shell-nav-link group relative flex w-full items-center rounded-[10px] overflow-hidden transition-all duration-150"
-                    onClick={(event) => {
-                      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-                      handleSidebarLinkClick(link.href);
-                    }}
-                    style={{
-                      height: `${sidebarItemHeight}px`,
-                      minHeight: `${sidebarItemHeight}px`,
-                      background: isCurrent
-                        ? `linear-gradient(90deg,hsla(var(--hue,220),65%,55%,0.22) 0%,hsla(var(--hue,220),50%,45%,0.07) 100%)`
-                        : "transparent",
-                      boxShadow: isCurrent
-                        ? `inset 0 0 0 1px hsla(var(--hue,220),60%,65%,0.14)`
-                        : undefined,
-                    }}
-                    aria-current={isCurrent ? "page" : undefined}
-                    title={link.label}
-                    aria-label={link.label}
-                  >
-                    {/* Hover fill */}
-                    <span
-                      className="pointer-events-none absolute inset-0 rounded-[10px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-                      style={{ background: "color-mix(in srgb, var(--gym-accent) 18%, transparent)" }}
-                      aria-hidden="true"
-                    />
-                    {/* Active accent bar */}
-                    <span
-                      className="absolute inset-y-[7px] left-0 w-[3px] rounded-r-full transition-all duration-300"
-                      style={{
-                        background: isCurrent
-                          ? `linear-gradient(180deg,${sidebarLedColors.start},${sidebarLedColors.end})`
-                          : "transparent",
-                        boxShadow: isCurrent ? `0 0 7px ${sidebarLedColors.start}` : "none",
-                        opacity: isCurrent ? 1 : 0,
-                      }}
-                      aria-hidden="true"
-                    />
-                    {/* Icon — always centered in the 52px zone */}
-                    <span
-                      className="relative z-[1] shrink-0 text-center leading-none transition-all duration-300"
-                      style={{
-                        fontSize: sidebarIconSize,
-                        width: "52px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {link.icon}
-                      {link.href === "/alertas" && alertasCount > 0 && (
-                        <span
-                          className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40"
-                          style={{ fontSize: "9px", fontWeight: 700, lineHeight: 1, padding: "0 3px" }}
-                          aria-label={`${alertasCount} avisos`}
-                        >
-                          {alertasCount > 99 ? "99+" : alertasCount}
-                        </span>
-                      )}
-                    </span>
-                    {/* Label — slides in when expanded */}
-                    <span
-                      className="relative z-[1] truncate text-left font-semibold leading-tight transition-all duration-300"
-                      style={{
-                        fontSize: sidebarLabelSize,
-                        color: isCurrent ? `hsl(var(--hue,220),75%,88%)` : "rgba(255,255,255,0.5)",
-                        maxWidth: sidebarExpanded || mobileOpen ? "110px" : "0px",
-                        opacity: sidebarExpanded || mobileOpen ? 1 : 0,
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                        transitionDelay: sidebarExpanded || mobileOpen ? "40ms" : "0ms",
-                      }}
-                    >
-                      {compactSidebarLabel(link.label)}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
+          const item = (link: NavLink, opts?: { tint?: string; chevron?: boolean }) => {
+            const activo = link.href === "/" ? pathname === "/" : Boolean(pathname && pathname.startsWith(link.href));
+            const badge = link.href === "/alertas" && alertasCount > 0
+              ? (alertasCount > 99 ? "99+" : String(alertasCount))
+              : null;
 
-          {/* Widget — only show when expanded */}
-          {activeSidebarWidgetItem && (sidebarExpanded || mobileOpen) ? (
-            <div
-              className="px-1.5 pb-2"
-              style={{ opacity: sidebarExpanded || mobileOpen ? 1 : 0, transition: "opacity 200ms 80ms" }}
-            >
-              <div
-                className="mb-2 h-px w-full"
-                style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.055),transparent)" }}
-                aria-hidden="true"
-              />
+            return (
               <Link
-                href={activeSidebarWidgetItem.href}
-                reliabilityMode="hard"
-                onClick={(event) => {
-                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-                  handleSidebarLinkClick(activeSidebarWidgetItem.href);
-                }}
-                className="block w-full min-h-[100px] rounded-xl px-3 py-2.5 transition-all duration-200 hover:brightness-110"
-                style={{
-                  background: "linear-gradient(145deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.015) 100%)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05),0 8px 24px rgba(0,0,0,0.4)",
-                }}
-                title={`Widget: ${activeSidebarWidgetItem.label}`}
-                aria-label={`Widget: ${activeSidebarWidgetItem.label}`}
+                key={link.href}
+                href={link.href}
+                title={link.label}
+                onClick={() => setMobileOpen(false)}
+                className={`pf-v2-nav ${activo ? "pf-v2-nav-active" : ""}`}
+                aria-current={activo ? "page" : undefined}
               >
-                <div
-                  className={`transition-all duration-300 ${
-                    sidebarWidgetPhase === "enter" ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-                  }`}
+                <span
+                  className="pf-v2-nav-icon"
+                  style={activo ? undefined : opts?.tint ? { color: opts.tint } : undefined}
                 >
-                  <p className="text-[7px] font-black uppercase tracking-[0.22em] text-white/28">Resumen</p>
-                  <p className="mt-0.5 truncate text-[10px] font-bold text-white/65">{activeSidebarWidgetItem.label}</p>
-                  <div className="mt-2 flex items-end justify-between gap-1">
-                    <p className="text-[22px] font-black leading-none text-white">{activeSidebarWidgetItem.value}</p>
-                    <span
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] text-xs"
-                      style={{
-                        background: `hsla(var(--hue,220),60%,50%,0.14)`,
-                        border: `1px solid hsla(var(--hue,220),65%,65%,0.16)`,
-                      }}
-                    >
-                      {activeSidebarWidgetItem.icon}
-                    </span>
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-[9px] leading-tight text-white/35">
-                    {activeSidebarWidgetItem.detail}
-                  </p>
-                </div>
+                  <AdminNavIcon href={link.href} />
+                </span>
+                <span className="pf-v2-nav-label">{link.label}</span>
+                {badge ? <span className="pf-v2-nav-badge">{badge}</span> : null}
+                {opts?.chevron ? (
+                  <span className="pf-v2-nav-chevron">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 6 L15 12 L9 18" />
+                    </svg>
+                  </span>
+                ) : null}
               </Link>
-              {sidebarWidgetItems.length > 1 ? (
-                <div className="mt-1.5 flex items-center justify-center gap-1">
-                  {sidebarWidgetItems.slice(0, 5).map((item, idx) => {
-                    const isActive = sidebarWidgetItems[sidebarWidgetIndex]?.id === item.id;
-                    return (
-                      <span
-                        key={`${item.id}-${idx}`}
-                        className="h-[3px] rounded-full transition-all duration-300"
-                        style={{
-                          width: isActive ? "14px" : "4px",
-                          background: isActive ? `hsl(var(--hue,220),70%,72%)` : "rgba(255,255,255,0.18)",
-                        }}
-                      />
-                    );
-                  })}
-                </div>
+            );
+          };
+
+          return (
+            /* La lista scrollea sola: el logo arriba y el usuario abajo quedan
+               fijos. Con 15 items el dock medía 978px en un alto de 900px y el
+               bloque de usuario terminaba fuera de pantalla. */
+            <div className="pf-v2-rail-scroll">
+              {menu.length > 0 ? (
+                <>
+                  <div className="pf-v2-rail-label">Menu</div>
+                  <div className="pf-v2-rail-group">{menu.map((l) => item(l))}</div>
+                </>
+              ) : null}
+
+              {extra.length > 0 ? (
+                <>
+                  <div className="pf-v2-rail-sep" />
+                  <div className="pf-v2-rail-group">{extra.map((l) => item(l))}</div>
+                </>
+              ) : null}
+
+              {grupos.length > 0 ? (
+                <>
+                  {/* Con el dock colapsado los titulos se desvanecen, asi que
+                      la separacion visual la tiene que dar la linea. */}
+                  <div className="pf-v2-rail-sep" />
+                  <div className="pf-v2-rail-label">Grupos</div>
+                  <div className="pf-v2-rail-group">
+                    {grupos.map((l) => item(l, { tint: NAV_TINT[l.href], chevron: true }))}
+                  </div>
+                </>
+              ) : null}
+
+              {sueltos.length > 0 ? (
+                <>
+                  <div className="pf-v2-rail-sep" />
+                  <div className="pf-v2-rail-group">{sueltos.map((l) => item(l))}</div>
+                </>
               ) : null}
             </div>
-          ) : null}
+          );
+        })()}
 
-          {/* Pending saves */}
-          {!isClienteRole && pendingSaveKeys.length > 0 ? (
-            <div className="px-1.5 pb-2 shrink-0">
-              <ReliableActionButton
-                type="button"
-                onClick={() => setPendingPanelOpen((prev) => !prev)}
-                title="Cambios pendientes"
-                className="w-full overflow-hidden rounded-[9px] border border-amber-300/38 bg-amber-500/12 transition-all duration-150 hover:border-amber-300/55 hover:bg-amber-500/20"
-                style={{
-                  minHeight: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: sidebarExpanded || mobileOpen ? "flex-start" : "center",
-                  padding: sidebarExpanded || mobileOpen ? "0 10px" : "0",
-                }}
-              >
-                <span style={{ fontSize: "13px" }}>⚠️</span>
-                <span
-                  className="ml-1.5 truncate text-[10px] font-bold text-amber-100 transition-all duration-300"
-                  style={{
-                    maxWidth: sidebarExpanded || mobileOpen ? "100px" : "0px",
-                    opacity: sidebarExpanded || mobileOpen ? 1 : 0,
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Pendientes ({pendingSaveKeys.length})
-                </span>
-              </ReliableActionButton>
-            </div>
-          ) : null}
-        </div>
+        {/* Bloque de usuario: es el acceso a Cuenta, no decoracion. */}
+        <Link href="/cuenta" className="pf-v2-rail-user" onClick={() => setMobileOpen(false)}>
+          <span className="pf-v2-rail-avatar">
+            {sidebarImageToRender ? (
+              <img src={sidebarImageToRender} alt="" />
+            ) : (
+              profileInitials
+            )}
+          </span>
+          <span className="pf-v2-rail-user-info">
+            <span className="pf-v2-rail-user-name">{displayName || "Mi cuenta"}</span>
+            <span className="pf-v2-rail-user-role">{roleLabel}</span>
+          </span>
+        </Link>
       </aside>
       ) : null}
 
@@ -2286,9 +2105,9 @@ export default function AppShell({
       ) : null}
 
       <main
-        className={`relative max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 ${
-          shouldRenderSidebar ? "md:pl-[52px]" : "md:pl-0"
-        } md:pt-[52px] ${
+        className={`relative z-[1] max-md:min-h-[100svh] md:min-h-[100dvh] pb-8 ${
+          shouldRenderSidebar ? "md:pl-[var(--v2-rail)]" : "md:pl-0"
+        } ${shouldRenderSidebar ? "md:pt-[var(--v2-topbar)]" : "md:pt-0"} ${
           isAlumnosRoute ? "pt-0" : "pt-14"
         }`}
       >

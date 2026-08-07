@@ -129,6 +129,16 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Mesa de diseño del panel de admin. Misma idea que la del alumno, pero SOLO
+  // en desarrollo: aunque no muestra datos reales, no hay motivo para publicar
+  // la estructura del panel en el VPS. En produccion cae al flujo normal (login).
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    (rawPath === '/admin/diseno' || rawPath.startsWith('/admin/diseno/'))
+  ) {
+    return NextResponse.next();
+  }
+
   // ── Rate limiting en rutas API (antes de cualquier lógica de sesión) ──
   if (rawPath.startsWith('/api/auth/')) {
     if (!rateLimit(ip, 'api-auth', { max: 30, windowMs: 60_000 })) {

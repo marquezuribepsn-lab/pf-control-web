@@ -55,6 +55,9 @@
   --v2-r-pill: 100px;
   --v2-rail: 84px;
   --v2-rail-open: 236px;
+  /* Alto real de la barra superior (22px de padding arriba y abajo + el buscador
+     de 44px). El <main> reserva este mismo valor, asi nunca se solapan. */
+  --v2-topbar: 89px;
   --v2-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --v2-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -71,9 +74,13 @@
    Shell
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* Ojo: `display: block`, no `flex`. En el handoff el shell era una fila
+   (dock + contenido), pero acá el dock y la barra superior son `fixed` y el
+   contenido reserva su lugar con padding. Con `flex` el <main> se encogia al
+   ancho de su contenido (medido: 699px en un viewport de 1440px). */
 .pf-v2 {
   position: relative;
-  display: flex;
+  display: block;
   min-height: 100vh;
   background: var(--v2-bg);
   color: var(--v2-fg);
@@ -248,8 +255,7 @@ body:has(.pf-v2) {
   background: var(--v2-sidebar);
   border-right: 1px solid var(--v2-border-accent);
   box-shadow: 8px 0 40px rgba(0, 0, 0, 0.45);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   transition: width 0.25s var(--v2-ease);
   will-change: width;
 }
@@ -324,6 +330,8 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-rail-label {
+  opacity: 0;
+  transition: opacity 0.2s ease;
   height: 16px;
   flex-shrink: 0;
   display: flex;
@@ -336,6 +344,28 @@ body:has(.pf-v2) {
   color: var(--v2-fg-40);
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* Zona scrolleable entre el logo y el bloque de usuario. La barra de scroll
+   va oculta: 6px de barra sobre un dock de 84px se comen el ancho util. */
+.pf-v2-rail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: none;
+}
+
+.pf-v2-rail-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.pf-v2-rail-open .pf-v2-rail-label {
+  opacity: 1;
 }
 
 .pf-v2-rail-group {
@@ -514,6 +544,8 @@ body:has(.pf-v2) {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  left: var(--v2-rail);
+  min-height: var(--v2-topbar);
   padding: 22px 40px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-wrap: wrap;
@@ -569,6 +601,57 @@ body:has(.pf-v2) {
   color: var(--v2-accent);
 }
 
+/* Boton de menu: solo en movil, donde el dock esta escondido. */
+.pf-v2-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--v2-border-hi);
+  color: var(--v2-fg-70);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ── Barra superior en movil ──────────────────────────────────────────────
+   Se compacta a una sola fila de 56px, que es lo que el contenido reserva
+   con `pt-14`. Sin esto la barra envolvia a dos filas (128px medidos) y se
+   comia el encabezado de la pantalla. El buscador se cae: no entra al lado
+   del reloj y la busqueda del dock cubre el caso. */
+@media (max-width: 767.98px) {
+  :root,
+  .pf-v2 {
+    --v2-topbar: 56px;
+  }
+
+  .pf-v2-topbar {
+    /* Sin dock a la izquierda, la barra ocupa todo el ancho. */
+    left: 0;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 0 14px;
+  }
+
+  .pf-v2-burger {
+    display: inline-flex;
+  }
+
+  .pf-v2-topsearch {
+    display: none;
+  }
+
+  .pf-v2-live {
+    /* Deja de ser el protagonista: el reloj y el menu tienen prioridad. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+}
+
 .pf-v2-page {
   flex: 1;
   padding: 36px 40px;
@@ -579,6 +662,53 @@ body:has(.pf-v2) {
   flex-direction: column;
   gap: 30px;
   animation: pfV2FadeInUp 0.4s ease both;
+}
+
+/* Encabezado de pantalla: titulo a la izquierda, acciones a la derecha. */
+.pf-v2-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* ── Grillas ──────────────────────────────────────────────────────────────
+   Las tres que usa el handoff. Colapsan solas en pantallas angostas: el
+   diseño es de escritorio, pero el panel se abre igual desde el celular. */
+
+.pf-v2-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.pf-v2-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* Contenido principal + columna lateral. */
+.pf-v2-grid-split {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .pf-v2-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .pf-v2-grid-split { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  .pf-v2-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .pf-v2-grid-4,
+  .pf-v2-grid-3 { grid-template-columns: 1fr; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -620,6 +750,7 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-h1 {
+  display: block;
   font-family: var(--v2-display);
   font-size: clamp(28px, 3vw, 38px);
   font-weight: 800;
@@ -629,6 +760,7 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-h2 {
+  display: block;
   font-family: var(--v2-display);
   font-size: 19px;
   font-weight: 700;
@@ -636,6 +768,7 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-eyebrow {
+  display: block;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -654,6 +787,7 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-muted {
+  display: block;
   font-size: 13px;
   color: var(--v2-fg-50);
   line-height: 1.5;
@@ -772,6 +906,7 @@ body:has(.pf-v2) {
 /* ── Stat ────────────────────────────────────────────────────────────────── */
 
 .pf-v2-stat-value {
+  display: block;
   font-family: var(--v2-display);
   font-size: 28px;
   font-weight: 800;
@@ -779,6 +914,7 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-stat-label {
+  display: block;
   font-size: 11.5px;
   color: var(--v2-fg-45);
   margin: 0;
@@ -863,7 +999,7 @@ body:has(.pf-v2) {
    Responsive del panel
    ══════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .pf-v2-rail-spacer {
     display: none;
   }
@@ -876,10 +1012,8 @@ body:has(.pf-v2) {
   .pf-v2-rail-mobile-open {
     transform: translateX(0);
     width: var(--v2-rail-open);
-  }
-
-  .pf-v2-topbar {
-    padding: 16px 20px;
+    /* Por encima del fondo oscuro (88) y de la barra superior (85). */
+    z-index: 90;
   }
 
   .pf-v2-page {
