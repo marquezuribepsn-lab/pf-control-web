@@ -1093,6 +1093,152 @@ body:has(.pf-v2) {
   margin-top: auto;
 }
 
+/* ── Secciones plegables (Avisos) ────────────────────────────────────────── */
+
+.pf-v2-fold {
+  background: var(--v2-card);
+  border: 1px solid var(--v2-border);
+  border-radius: var(--v2-r-card);
+  overflow: hidden;
+}
+
+.pf-v2-fold-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pf-v2-fold-head:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pf-v2-fold-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.pf-v2-fold-caret {
+  font-size: 10px;
+  color: var(--v2-fg-35);
+  flex-shrink: 0;
+}
+
+.pf-v2-fold-body {
+  border-top: 1px solid var(--v2-border);
+  padding: 16px 20px;
+  display: grid;
+  gap: 8px;
+}
+
+/* Fila de aviso. El color del borde lo pone el nivel. */
+.pf-v2-alert-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--v2-r-input);
+  border: 1px solid var(--v2-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pf-v2-alert-row[data-nivel="alta"] {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.07);
+}
+
+.pf-v2-alert-row[data-nivel="media"] {
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.pf-v2-alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+  background: var(--v2-muted);
+}
+
+.pf-v2-alert-row[data-nivel="alta"] .pf-v2-alert-dot { background: var(--v2-danger); }
+.pf-v2-alert-row[data-nivel="media"] .pf-v2-alert-dot { background: var(--v2-warning); }
+
+.pf-v2-alert-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--v2-fg);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-v2-alert-detail {
+  display: block;
+  font-size: 12px;
+  color: var(--v2-fg-50);
+  line-height: 1.45;
+  margin: 3px 0 0;
+}
+
+.pf-v2-alert-when {
+  font-size: 11px;
+  color: var(--v2-fg-35);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Estado vacío centrado, para pantallas sin datos. */
+.pf-v2-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.pf-v2-empty-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--v2-success);
+  box-shadow: 0 0 26px rgba(52, 211, 153, 0.22);
+}
+
+/* Girador de carga. */
+.pf-v2-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--v2-accent);
+  animation: pfV2Spin 0.8s linear infinite;
+}
+
+@keyframes pfV2Spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Tablas ──────────────────────────────────────────────────────────────── */
 
 .pf-v2-table-wrap {

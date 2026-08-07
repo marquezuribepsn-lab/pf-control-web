@@ -19,8 +19,6 @@ const NAV_CONFIG_KEY = "pf-control-nav-config-v1";
 const SIDEBAR_IMAGE_KEY = "pf-control-sidebar-image-v1";
 const HOME_EDIT_MODE_KEY = "pf-control-home-edit-mode-v1";
 const DOCK_LABEL_MODE_KEY = "pf-control-dock-label-mode-v1";
-const THEME_MODE_KEY = "pf-control-theme-mode-v1";
-const THEME_MODE_EVENT = "pf-theme-mode-updated";
 const ACCENT_COLOR_KEY = "pf-control-accent-color-v1";
 const ACCENT_COLOR_EVENT = "pf-accent-color-updated";
 const DEFAULT_ACCENT = "#2563eb"; // Harbiz royal blue (default)
@@ -40,7 +38,6 @@ const ACCENT_PRESETS = [
   { name: "Slate",       value: "#475569" },
 ];
 
-type ThemeChoice = "light" | "dark" | "system";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 const MAX_PROFILE_IMAGE_DATA_URL_LENGTH = 850_000;
 const PROFILE_IMAGE_MAX_DIMENSION = 720;
@@ -183,7 +180,6 @@ export default function ConfiguracionPage() {
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
   const [accentColor, setAccentColor] = useState<string>(DEFAULT_ACCENT);
   const [savedScale, setSavedScale] = useState(1);
   const [draftScale, setDraftScale] = useState(1);
@@ -208,8 +204,6 @@ export default function ConfiguracionPage() {
     const nextNotifications = localStorage.getItem(NOTIFICATIONS_ENABLED_KEY) === "1";
     const nextSidebarImage = localStorage.getItem(SIDEBAR_IMAGE_KEY);
     const nextDockLabelMode = normalizeDockLabelMode(localStorage.getItem(DOCK_LABEL_MODE_KEY));
-    const storedTheme = localStorage.getItem(THEME_MODE_KEY);
-    setThemeChoice(storedTheme === "light" ? "light" : storedTheme === "dark" ? "dark" : "system");
     const storedAccent = localStorage.getItem(ACCENT_COLOR_KEY);
     if (storedAccent && /^#[0-9a-fA-F]{6}$/.test(storedAccent)) {
       setAccentColor(storedAccent);
@@ -363,16 +357,6 @@ export default function ConfiguracionPage() {
         body: "Notificaciones activadas. Te avisaremos cada cambio guardado.",
       });
     }
-  };
-
-  const applyTheme = (choice: ThemeChoice) => {
-    setThemeChoice(choice);
-    if (choice === "system") {
-      localStorage.removeItem(THEME_MODE_KEY);
-    } else {
-      localStorage.setItem(THEME_MODE_KEY, choice);
-    }
-    window.dispatchEvent(new Event(THEME_MODE_EVENT));
   };
 
   const applyAccentColor = (hex: string) => {
@@ -577,7 +561,7 @@ export default function ConfiguracionPage() {
   if (!loaded) {
     return (
       <main className="mx-auto max-w-4xl p-6">
-        <div className="pf-card rounded-2xl border p-6">
+        <div className="pf-v2-card">
           <p className="text-sm text-white/65">Cargando configuracion...</p>
         </div>
       </main>
@@ -585,23 +569,23 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <main className="relative mx-auto max-w-4xl p-6 text-white/85">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
-        <div className="relative">
-          <p className="pf-page-hero-badge">⚙️ Preferencias</p>
-          <h1 className="pf-page-hero-title">Configuración</h1>
-          <p className="pf-page-hero-sub">Ajusta el tamaño visual de toda la app y activa notificaciones tipo push del navegador.</p>
+    <div className="pf-v2-page" style={{ maxWidth: 960 }}>
+      <header className="pf-v2-page-head">
+        <div>
+          <span className="pf-v2-eyebrow">Preferencias</span>
+          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Configuración</h1>
+          <p className="pf-v2-muted" style={{ marginTop: 8 }}>
+            Ajustá el tamaño visual de toda la app y activá notificaciones tipo push del navegador.
+          </p>
         </div>
-      </section>
+      </header>
 
       {/* ── Color de acento (LEDs) ──────────────────────────────────────── */}
-      <section className="mb-6 pf-card rounded-2xl border p-5">
+      <section className="pf-v2-card">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold" style={{ color: "var(--gym-accent)" }}>Color de acento</h2>
-            <p className="mt-0.5 text-sm text-white/55">
+            <h2 className="pf-v2-h2">Color de acento</h2>
+            <p className="pf-v2-muted" style={{ marginTop: 4 }}>
               Color de los LEDs, botones primarios, glows y bordes activos en toda la plataforma.
             </p>
           </div>
@@ -655,55 +639,14 @@ export default function ConfiguracionPage() {
             );
           })}
         </div>
-        <p className="mt-3 text-[11px] text-white/40">
+        <p className="pf-v2-muted" style={{ marginTop: 12, fontSize: 11 }}>
           Color actual: <span className="font-mono" style={{ color: accentColor }}>{accentColor.toUpperCase()}</span>
         </p>
       </section>
 
-      {/* ── Modo visual ─────────────────────────────────────────────────── */}
-      <section className="mb-6 pf-card rounded-2xl border p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold" style={{ color: "var(--gym-accent)" }}>Modo visual</h2>
-            <p className="mt-0.5 text-sm text-white/55">
-              {themeChoice === "system"
-                ? "Siguiendo la configuración del sistema operativo"
-                : themeChoice === "light"
-                ? "Modo claro activado manualmente"
-                : "Modo oscuro activado manualmente"}
-            </p>
-          </div>
-          {/* Segmented control */}
-          <div className="flex items-center gap-1 rounded-2xl border border-white/[0.09] bg-white/[0.04] p-1">
-            {(
-              [
-                { value: "light",  icon: "☀️", label: "Claro"   },
-                { value: "system", icon: "💻", label: "Sistema" },
-                { value: "dark",   icon: "🌙", label: "Oscuro"  },
-              ] as { value: ThemeChoice; icon: string; label: string }[]
-            ).map(({ value, icon, label }) => (
-              <ReliableActionButton
-                key={value}
-                type="button"
-                onClick={() => applyTheme(value)}
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                  themeChoice === value
-                    ? "bg-[--gym-accent] text-white shadow-md shadow-violet-900/30"
-                    : "text-white/55 hover:text-white/80 hover:bg-white/[0.06]"
-                }`}
-                style={themeChoice === value ? { background: "var(--gym-accent)" } : {}}
-              >
-                <span>{icon}</span>
-                <span className="hidden sm:inline">{label}</span>
-              </ReliableActionButton>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-6 pf-card rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Panel general</h2>
-        <p className="mt-1 text-sm text-white/65">
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2">Panel general</h2>
+        <p className="pf-v2-muted" style={{ marginTop: 6 }}>
           Opciones generales que antes estaban en la configuracion inferior del sidebar.
         </p>
 
@@ -711,7 +654,7 @@ export default function ConfiguracionPage() {
           <ReliableActionButton
             type="button"
             onClick={abrirEditorInicio}
-            className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
+            className="pf-v2-btn"
           >
             Editar inicio
           </ReliableActionButton>
@@ -719,7 +662,7 @@ export default function ConfiguracionPage() {
           <ReliableActionButton
             type="button"
             onClick={resetearMenu}
-            className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-white"
+            className="pf-v2-btn pf-v2-btn-2"
           >
             Reset menu lateral
           </ReliableActionButton>
@@ -735,7 +678,7 @@ export default function ConfiguracionPage() {
           </label>
         </div>
 
-        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+        <div className="pf-v2-card" style={{ marginTop: 16, padding: 14 }}>
           <div className="flex items-center gap-3">
             {sidebarImageDraft ? (
               <img src={sidebarImageDraft} alt="Sidebar" className="h-14 w-14 rounded-lg object-cover" />
@@ -787,9 +730,9 @@ export default function ConfiguracionPage() {
           <p className="mt-2 text-xs text-rose-200">{sidebarImageError}</p>
         ) : null}
 
-        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
-          <p className="text-sm font-semibold text-white/85">Dock inferior</p>
-          <p className="mt-1 text-xs text-white/40">
+        <div className="pf-v2-card" style={{ marginTop: 16, padding: 14 }}>
+          <p style={{ fontSize: 13.5, fontWeight: 600 }}>Dock inferior</p>
+          <p className="pf-v2-muted" style={{ marginTop: 6, fontSize: 12 }}>
             Controla como se muestran los nombres de los botones para evitar que el dock quede demasiado ancho.
           </p>
 
@@ -812,7 +755,7 @@ export default function ConfiguracionPage() {
 
         <div className="mt-4 rounded-xl border border-cyan-300/25 bg-white/[0.02]/65 p-3">
           <p className="text-sm font-semibold text-cyan-100">Widget rotativo del sidebar</p>
-          <p className="mt-1 text-xs text-white/40">
+          <p className="pf-v2-muted" style={{ marginTop: 6, fontSize: 12 }}>
             Configura el carrusel de indicadores operativos que aparece abajo del menu lateral.
           </p>
 
@@ -866,9 +809,9 @@ export default function ConfiguracionPage() {
         </div>
       </section>
 
-      <section className="mb-6 pf-card rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Pantalla</h2>
-        <p className="mt-1 text-sm text-white/65">
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2">Pantalla</h2>
+        <p className="pf-v2-muted" style={{ marginTop: 6 }}>
           Solo puedes cambiar el tamano cuando activas &quot;Modificar pantalla&quot;.
         </p>
 
@@ -913,14 +856,14 @@ export default function ConfiguracionPage() {
                 <ReliableActionButton
                   type="button"
                   onClick={guardarPantalla}
-                  className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
+                  className="pf-v2-btn"
                 >
                   Guardar cambios
                 </ReliableActionButton>
                 <ReliableActionButton
                   type="button"
                   onClick={cancelarModificacion}
-                  className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-white"
+                  className="pf-v2-btn pf-v2-btn-2"
                 >
                   Cancelar
                 </ReliableActionButton>
@@ -937,9 +880,9 @@ export default function ConfiguracionPage() {
         </div>
       </section>
 
-      <section className="pf-card rounded-2xl border p-5">
-        <h2 className="text-xl font-bold" style={{ color: `hsl(var(--hue,217),65%,65%)` }}>Notificaciones</h2>
-        <p className="mt-1 text-sm text-white/65">
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2">Notificaciones</h2>
+        <p className="pf-v2-muted" style={{ marginTop: 6 }}>
           Al activarlas, cada cambio guardado en la app dispara una notificacion del sistema.
         </p>
 
@@ -967,8 +910,8 @@ export default function ConfiguracionPage() {
         </p>
 
         <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
-          <p className="text-sm font-semibold text-white/85">Push remoto (tipo sistema)</p>
-          <p className="mt-1 text-xs text-white/40">
+          <p style={{ fontSize: 13.5, fontWeight: 600 }}>Push remoto (tipo sistema)</p>
+          <p className="pf-v2-muted" style={{ marginTop: 6, fontSize: 12 }}>
             Requiere HTTPS y VAPID configurado. Si lo activas, recibes aviso cuando se guarda cualquier cambio.
           </p>
 
@@ -1009,6 +952,6 @@ export default function ConfiguracionPage() {
           ) : null}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

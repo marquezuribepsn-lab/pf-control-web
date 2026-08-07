@@ -23,12 +23,6 @@ function timeAgo(iso?: string): string {
   return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
 }
 
-const NIVEL_DOT: Record<string, string> = {
-  alta:  "bg-rose-500",
-  media: "bg-amber-400",
-  baja:  "bg-slate-500",
-};
-
 const TYPE_ICON: Record<string, string> = {
   vencimiento:        "💳",
   inactividad:        "😴",
@@ -37,50 +31,31 @@ const TYPE_ICON: Record<string, string> = {
   mensaje:            "💬",
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  vencimiento:        "Vencimiento",
-  inactividad:        "Inactividad",
-  salud:              "Alerta salud",
-  "checkin-pendiente":"Sin check-in",
-  mensaje:            "Mensaje",
-};
-
 // ── sub-components ───────────────────────────────────────────────
 
 function AlertCard({ item, onAction }: { item: AlertItem; onAction: (href: string) => void }) {
   return (
-    <div
-      className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition-all ${
-        item.nivel === "alta"
-          ? "border-rose-500/30 bg-rose-500/8"
-          : item.nivel === "media"
-          ? "border-amber-500/25 bg-amber-500/6"
-          : "border-white/8 bg-white/[0.03]"
-      }`}
-    >
-      {/* nivel dot */}
-      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${NIVEL_DOT[item.nivel]}`} />
+    <div className="pf-v2-alert-row" data-nivel={item.nivel}>
+      <span className="pf-v2-alert-dot" aria-hidden="true" />
 
-      {/* content */}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline justify-between gap-2">
-          <p className="text-sm font-semibold text-white/90 truncate">{item.alumnoNombre}</p>
-          {item.fecha && (
-            <span className="shrink-0 text-xs text-white/30">{timeAgo(item.fecha)}</span>
-          )}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+          <span className="pf-v2-alert-name">{item.alumnoNombre}</span>
+          {item.fecha ? <span className="pf-v2-alert-when">{timeAgo(item.fecha)}</span> : null}
         </div>
-        <p className="mt-0.5 text-xs text-white/50 leading-relaxed">{item.detalle}</p>
+        <span className="pf-v2-alert-detail">{item.detalle}</span>
       </div>
 
-      {/* action */}
-      {item.href && (
+      {item.href ? (
         <button
+          type="button"
           onClick={() => onAction(item.href!)}
-          className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:border-white/20 hover:text-white/90 transition-colors"
+          className="pf-v2-btn pf-v2-btn-2"
+          style={{ padding: "7px 14px", fontSize: 12, flexShrink: 0 }}
         >
           Ver →
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -101,40 +76,33 @@ function Section({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const hayUrgentes = items.some((i) => i.nivel === "alta");
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">{icon}</span>
-          <span className="text-sm font-bold text-white/80">{title}</span>
-          {items.length > 0 && (
-            <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-              items.some((i) => i.nivel === "alta")
-                ? "bg-rose-500/25 text-rose-300"
-                : "bg-white/10 text-white/50"
-            }`}>
-              {items.length}
-            </span>
-          )}
-        </div>
-        <span className="text-white/30 text-xs">{open ? "▲" : "▼"}</span>
+    <section className="pf-v2-fold">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="pf-v2-fold-head" aria-expanded={open}>
+        <span className="pf-v2-fold-title">
+          <span aria-hidden="true">{icon}</span>
+          {title}
+          {items.length > 0 ? (
+            <span className={`pf-v2-chip ${hayUrgentes ? "pf-v2-chip-danger" : ""}`}>{items.length}</span>
+          ) : null}
+        </span>
+        <span className="pf-v2-fold-caret" aria-hidden="true">{open ? "▲" : "▼"}</span>
       </button>
 
-      {open && (
-        <div className="border-t border-white/8 px-5 py-4 space-y-2">
+      {open ? (
+        <div className="pf-v2-fold-body">
           {items.length === 0 ? (
-            <p className="text-xs text-white/30 italic py-2">{emptyMsg}</p>
+            <p className="pf-v2-muted" style={{ margin: 0 }}>{emptyMsg}</p>
           ) : (
             items.map((item, i) => (
               <AlertCard key={`${item.type}-${item.alumnoNombre}-${i}`} item={item} onAction={onAction} />
             ))
           )}
         </div>
-      )}
-    </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -170,13 +138,12 @@ export default function AlertasPage() {
     router.push(href);
   }, [router]);
 
-  // ── loading ─────────────────────────────────────────────────
   if (loading && !data) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-cyan-400" />
-          <p className="text-sm text-white/40">Calculando avisos…</p>
+      <div className="pf-v2-page">
+        <div className="pf-v2-empty">
+          <span className="pf-v2-spinner" aria-hidden="true" />
+          <p className="pf-v2-muted" style={{ margin: 0 }}>Calculando avisos...</p>
         </div>
       </div>
     );
@@ -184,10 +151,14 @@ export default function AlertasPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
-        <p className="text-3xl">⚠️</p>
-        <p className="text-sm text-white/50">{error}</p>
-        <button onClick={fetchAlertas} className="text-xs text-cyan-400 underline">Reintentar</button>
+      <div className="pf-v2-page">
+        <div className="pf-v2-empty">
+          <span className="pf-v2-empty-mark" style={{ background: "rgba(248,113,113,0.12)", color: "var(--v2-danger)", boxShadow: "0 0 26px rgba(248,113,113,0.22)" }} aria-hidden="true">!</span>
+          <p className="pf-v2-muted" style={{ margin: 0 }}>{error}</p>
+          <button type="button" onClick={fetchAlertas} className="pf-v2-btn pf-v2-btn-2">
+            Reintentar
+          </button>
+        </div>
       </div>
     );
   }
@@ -196,113 +167,106 @@ export default function AlertasPage() {
   const total    = data?.total ?? 0;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="pf-v2-page" style={{ maxWidth: 860 }}>
+      <header className="pf-v2-page-head">
         <div>
-          <h1 className="text-xl font-black text-white">🔔 Avisos</h1>
-          <p className="mt-0.5 text-xs text-white/40">
-            {total === 0 ? "Todo en orden" : `${total} aviso${total > 1 ? "s" : ""}${urgente > 0 ? ` · ${urgente} urgente${urgente > 1 ? "s" : ""}` : ""}`}
-            {lastFetch && ` · Actualizado ${timeAgo(lastFetch.toISOString())}`}
+          <span className="pf-v2-eyebrow">Avisos</span>
+          <h1 className="pf-v2-h1" style={{ fontSize: 30 }}>
+            {total === 0 ? "Todo en orden" : `${total} aviso${total > 1 ? "s" : ""}`}
+          </h1>
+          <p className="pf-v2-muted" style={{ marginTop: 6 }}>
+            {urgente > 0 ? `${urgente} urgente${urgente > 1 ? "s" : ""}. ` : ""}
+            {lastFetch ? `Actualizado ${timeAgo(lastFetch.toISOString())}.` : ""}
           </p>
         </div>
-        <button
-          onClick={fetchAlertas}
-          disabled={loading}
-          className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/60 hover:border-white/20 hover:text-white transition-colors disabled:opacity-40"
-        >
-          {loading ? "…" : "↻ Actualizar"}
+        <button type="button" onClick={fetchAlertas} disabled={loading} className="pf-v2-btn pf-v2-btn-2">
+          {loading ? "Actualizando..." : "↻ Actualizar"}
         </button>
-      </div>
+      </header>
 
-      {/* Summary chips */}
-      {total > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {urgente > 0 && (
-            <span className="rounded-full bg-rose-500/20 px-3 py-1 text-xs font-semibold text-rose-300">
-              🔴 {urgente} urgente{urgente > 1 ? "s" : ""}
+      {total > 0 ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {urgente > 0 ? (
+            <span className="pf-v2-chip pf-v2-chip-danger">
+              {urgente} urgente{urgente > 1 ? "s" : ""}
             </span>
-          )}
-          {(data?.vencimientos.length ?? 0) > 0 && (
-            <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs text-amber-300">
-              💳 {data!.vencimientos.length} vencimiento{data!.vencimientos.length > 1 ? "s" : ""}
+          ) : null}
+          {(data?.vencimientos.length ?? 0) > 0 ? (
+            <span className="pf-v2-chip pf-v2-chip-warn">
+              {data!.vencimientos.length} vencimiento{data!.vencimientos.length > 1 ? "s" : ""}
             </span>
-          )}
-          {(data?.inactivos.length ?? 0) > 0 && (
-            <span className="rounded-full bg-slate-500/20 px-3 py-1 text-xs text-slate-300">
-              😴 {data!.inactivos.length} inactivo{data!.inactivos.length > 1 ? "s" : ""}
+          ) : null}
+          {(data?.inactivos.length ?? 0) > 0 ? (
+            <span className="pf-v2-chip">
+              {data!.inactivos.length} inactivo{data!.inactivos.length > 1 ? "s" : ""}
             </span>
-          )}
-          {(data?.mensajes.length ?? 0) > 0 && (
-            <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-300">
-              💬 {data!.mensajes.length} mensaje{data!.mensajes.length > 1 ? "s" : ""}
+          ) : null}
+          {(data?.mensajes.length ?? 0) > 0 ? (
+            <span className="pf-v2-chip pf-v2-chip-ok">
+              {data!.mensajes.length} mensaje{data!.mensajes.length > 1 ? "s" : ""}
             </span>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
 
-      {/* Empty state */}
-      {total === 0 && (
-        <div className="flex flex-col items-center gap-4 py-16">
-          <span className="text-5xl">✅</span>
-          <p className="text-base font-semibold text-white/70">Todo en orden</p>
-          <p className="text-sm text-white/30 text-center max-w-xs">
+      {total === 0 ? (
+        <div className="pf-v2-empty">
+          <span className="pf-v2-empty-mark" aria-hidden="true">✓</span>
+          <h2 className="pf-v2-h2">Todo en orden</h2>
+          <p className="pf-v2-muted" style={{ maxWidth: 340, margin: 0 }}>
             No hay vencimientos próximos, alumnos inactivos ni alertas de salud por ahora.
           </p>
         </div>
-      )}
+      ) : null}
 
-      {/* Sections — ordered by urgency */}
-      {(data?.salud.length ?? 0) > 0 && (
+      {(data?.salud.length ?? 0) > 0 ? (
         <Section
           title="Alertas de salud"
-          icon="🚨"
+          icon={TYPE_ICON.salud}
           items={data!.salud}
           emptyMsg="Sin alertas de salud"
           onAction={handleAction}
           defaultOpen
         />
-      )}
+      ) : null}
 
-      {(data?.mensajes.length ?? 0) > 0 && (
+      {(data?.mensajes.length ?? 0) > 0 ? (
         <Section
           title="Mensajes sin leer"
-          icon="💬"
+          icon={TYPE_ICON.mensaje}
           items={data!.mensajes}
           emptyMsg="Sin mensajes pendientes"
           onAction={handleAction}
           defaultOpen
         />
-      )}
+      ) : null}
 
       <Section
         title="Vencimientos próximos"
-        icon="💳"
+        icon={TYPE_ICON.vencimiento}
         items={data?.vencimientos ?? []}
-        emptyMsg="Sin vencimientos en los próximos 7 días ✓"
+        emptyMsg="Sin vencimientos en los próximos 7 días."
         onAction={handleAction}
         defaultOpen={(data?.vencimientos.length ?? 0) > 0}
       />
 
       <Section
         title="Alumnos inactivos"
-        icon="😴"
+        icon={TYPE_ICON.inactividad}
         items={data?.inactivos ?? []}
-        emptyMsg="Todos los alumnos activos tienen actividad reciente ✓"
+        emptyMsg="Todos los alumnos activos tienen actividad reciente."
         onAction={handleAction}
         defaultOpen={(data?.inactivos.length ?? 0) > 0}
       />
 
       <Section
         title="Sin check-in esta semana"
-        icon="📝"
+        icon={TYPE_ICON["checkin-pendiente"]}
         items={data?.sinCheckin ?? []}
-        emptyMsg="Todos completaron el check-in esta semana ✓"
+        emptyMsg="Todos completaron el check-in esta semana."
         onAction={handleAction}
         defaultOpen={false}
       />
-
     </div>
   );
 }

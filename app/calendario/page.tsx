@@ -160,27 +160,27 @@ function DayDetailPanel({
     data.checkins.length > 0;
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+    <div className="pf-v2-card" style={{ marginTop: 24 }}>
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-base font-bold text-white">
+        <h3 className="pf-v2-h2" style={{ fontSize: 15 }}>
           📋 {label}
         </h3>
         <button
           onClick={onClose}
-          className="rounded-lg px-2 py-1 text-xs text-white/40 transition hover:bg-white/8 hover:text-white/70"
+          className="pf-v2-option" style={{ padding: "5px 10px", fontSize: 12 }}
         >
           ✕ Cerrar
         </button>
       </div>
 
       {!hasAny && (
-        <p className="text-sm text-white/35">Sin actividad registrada para este día.</p>
+        <p className="pf-v2-muted">Sin actividad registrada para este día.</p>
       )}
 
       {/* Alumnos que entrenaron */}
       {allNames.size > 0 && (
         <section className="mb-5">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+          <h4 className="pf-v2-field-label">
             Alumnos con actividad
           </h4>
           <div className="flex flex-col gap-2">
@@ -191,7 +191,7 @@ function DayDetailPanel({
               return (
                 <div
                   key={nombre}
-                  className="flex flex-wrap items-start justify-between gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3"
+                  className="pf-v2-alert-row" style={{ flexWrap: "wrap", justifyContent: "space-between" }}
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/8 text-xs font-black text-white/60">
@@ -242,14 +242,14 @@ function DayDetailPanel({
       {/* Check-ins */}
       {data.checkins.length > 0 && (
         <section className="mb-5">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+          <h4 className="pf-v2-field-label">
             Check-ins semanales
           </h4>
           <div className="flex flex-col gap-1.5">
             {data.checkins.map((c, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 py-2 text-sm text-violet-300"
+                className="pf-v2-alert" style={{ display: "flex", alignItems: "center", gap: 8, borderColor: "rgba(192,132,252,0.25)", background: "rgba(192,132,252,0.1)", color: "#ddd6fe" }}
               >
                 <span className="text-violet-400">📝</span>
                 <span>{c.alumnoNombre || "Alumno"}</span>
@@ -262,14 +262,14 @@ function DayDetailPanel({
       {/* Suscripciones que vencen */}
       {data.expiringClients.length > 0 && (
         <section>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+          <h4 className="pf-v2-field-label">
             Suscripciones que vencen
           </h4>
           <div className="flex flex-col gap-1.5">
             {data.expiringClients.map((nombre, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-sm text-amber-300"
+                className="pf-v2-alert" style={{ display: "flex", alignItems: "center", gap: 8, borderColor: "rgba(251,191,36,0.25)", background: "rgba(251,191,36,0.1)", color: "#fde68a" }}
               >
                 <span>⏰</span>
                 <span>{nombre}</span>
@@ -439,24 +439,23 @@ export default function CalendarioPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#080a0b] text-white">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-
-        {/* Header */}
-        <header className="mb-6">
-          <h1 className="text-2xl font-black tracking-tight text-white">
-            📅 Calendario
-          </h1>
-          <p className="mt-1 text-sm text-white/50">
-            Vista mensual de actividad de alumnos
-          </p>
+    <div className="pf-v2-page" style={{ maxWidth: 1080 }}>
+      <div>
+        <header className="pf-v2-page-head">
+          <div>
+            <span className="pf-v2-eyebrow">Actividad</span>
+            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Calendario</h1>
+            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
+              Vista mensual de actividad de alumnos.
+            </p>
+          </div>
         </header>
 
         {/* Month navigation */}
         <div className="mb-5 flex items-center justify-between">
           <button
             onClick={prevMonth}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-white/20 hover:bg-white/8 hover:text-white active:scale-95"
+            className="pf-v2-btn pf-v2-btn-2" style={{ gap: 6 }}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -464,13 +463,13 @@ export default function CalendarioPage() {
             Mes anterior
           </button>
 
-          <h2 className="text-lg font-black tracking-tight text-white">
+          <h2 className="pf-v2-h2">
             {MONTH_NAMES_ES[currentMonth]} {currentYear}
           </h2>
 
           <button
             onClick={nextMonth}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-white/20 hover:bg-white/8 hover:text-white active:scale-95"
+            className="pf-v2-btn pf-v2-btn-2" style={{ gap: 6 }}
           >
             Mes siguiente
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -490,7 +489,7 @@ export default function CalendarioPage() {
         </div>
 
         {/* Calendar grid */}
-        <div className="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02]">
+        <div className="pf-v2-card" style={{ overflow: "hidden", padding: 0 }}>
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-white/8">
             {DAY_LABELS.map((d) => (
@@ -627,12 +626,12 @@ export default function CalendarioPage() {
             },
           ].map(({ label, value, color, bg }) => (
             <article key={label} className={`rounded-2xl border p-4 ${bg}`}>
-              <p className="text-xs uppercase tracking-wide text-white/45">{label}</p>
+              <p className="pf-v2-stat-label">{label}</p>
               <p className={`mt-2 text-3xl font-black tabular-nums ${color}`}>{value}</p>
             </article>
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

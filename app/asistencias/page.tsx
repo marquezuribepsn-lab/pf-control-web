@@ -295,32 +295,26 @@ export default function AsistenciasPage() {
   }, [jugadorasDisponibles, registros, selectedJornada]);
 
   return (
-    <main className="relative mx-auto max-w-7xl p-6 text-slate-100">
-      <section className="pf-page-hero mb-6">
-        <div className="pf-blob pf-blob--tl" />
-        <div className="pf-blob pf-blob--br" />
-        <div className="relative flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="pf-page-hero-badge">📋 Categoría operativa</p>
-            <h1 className="pf-page-hero-title">Asistencias</h1>
-            <p className="pf-page-hero-sub">Jornadas por día y hora, con control de presentes y ausentes por categoría.</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/sesiones" className="pf-btn pf-btn--ghost">
-              Ver sesiones
-            </Link>
-            <Link href="/clientes?seccion=plantel" className="pf-btn pf-btn--primary">
-              Ir a plantel
-            </Link>
-          </div>
+    <div className="pf-v2-page">
+      <header className="pf-v2-page-head">
+        <div>
+          <span className="pf-v2-eyebrow">Categoría operativa</span>
+          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Asistencias</h1>
+          <p className="pf-v2-muted" style={{ marginTop: 8 }}>
+            Jornadas por día y hora, con control de presentes y ausentes por categoría.
+          </p>
         </div>
-      </section>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link href="/sesiones" className="pf-v2-btn pf-v2-btn-2">Ver sesiones</Link>
+          <Link href="/clientes?seccion=plantel" className="pf-v2-btn">Ir a plantel</Link>
+        </div>
+      </header>
 
-      <section className="pf-card rounded-2xl border p-5">
-        <h2 className="text-lg font-bold text-white/90" style={{ color: `hsl(var(--hue,172),65%,65%)` }}>Nueva jornada</h2>
+      <section className="pf-v2-card">
+        <h2 className="pf-v2-h2">Nueva jornada</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Categoria
             </label>
             <select
@@ -332,7 +326,7 @@ export default function AsistenciasPage() {
                   sesionId: "",
                 }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
             >
               <option value="">Seleccionar categoria</option>
               {categoriasOptions.map((categoria) => (
@@ -344,7 +338,7 @@ export default function AsistenciasPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Dia
             </label>
             <input
@@ -353,12 +347,12 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, fecha: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Hora
             </label>
             <input
@@ -367,12 +361,12 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, hora: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Sesion (opcional)
             </label>
             <select
@@ -380,7 +374,7 @@ export default function AsistenciasPage() {
               onChange={(e) =>
                 setNuevaJornada((prev) => ({ ...prev, sesionId: e.target.value }))
               }
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
               disabled={!nuevaJornada.categoria}
             >
               <option value="">Sin sesion vinculada</option>
@@ -393,7 +387,7 @@ export default function AsistenciasPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Titulo (opcional)
             </label>
             <input
@@ -402,12 +396,12 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, titulo: e.target.value }))
               }
               placeholder="Ej: Jornada tecnica"
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <label className="pf-v2-field-label">
               Ubicacion (opcional)
             </label>
             <input
@@ -416,13 +410,13 @@ export default function AsistenciasPage() {
                 setNuevaJornada((prev) => ({ ...prev, ubicacion: e.target.value }))
               }
               placeholder="Cancha 1"
-              className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+              className="pf-v2-input"
             />
           </div>
         </div>
 
         <div className="mt-3">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+          <label className="pf-v2-field-label">
             Notas (opcional)
           </label>
           <textarea
@@ -431,7 +425,7 @@ export default function AsistenciasPage() {
               setNuevaJornada((prev) => ({ ...prev, notas: e.target.value }))
             }
             rows={2}
-            className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+            className="pf-v2-input"
             placeholder="Objetivo de la jornada, indicaciones..."
           />
         </div>
@@ -440,7 +434,7 @@ export default function AsistenciasPage() {
           <ReliableActionButton
             type="button"
             onClick={crearJornada}
-            className="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-emerald-300"
+            className="pf-v2-btn"
           >
             Crear jornada
           </ReliableActionButton>
@@ -448,16 +442,16 @@ export default function AsistenciasPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_1.8fr]">
-        <div className="pf-card rounded-2xl border p-5">
+        <div className="pf-v2-card">
           <div className="mb-3 flex flex-wrap items-end gap-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <label className="pf-v2-field-label">
                 Filtrar categoria
               </label>
               <select
                 value={selectedCategoria}
                 onChange={(e) => setSelectedCategoria(e.target.value)}
-                className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                className="pf-v2-input"
               >
                 <option value="todas">Todas</option>
                 {categoriasOptions.map((categoria) => (
@@ -468,14 +462,14 @@ export default function AsistenciasPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <label className="pf-v2-field-label">
                 Filtrar fecha
               </label>
               <input
                 type="date"
                 value={filtroFecha}
                 onChange={(e) => setFiltroFecha(e.target.value)}
-                className="rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                className="pf-v2-input"
               />
             </div>
           </div>
@@ -483,7 +477,7 @@ export default function AsistenciasPage() {
           <h3 className="text-lg font-bold text-white">Jornadas</h3>
           <div className="mt-3 space-y-2">
             {jornadasFiltradas.length === 0 ? (
-              <p className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-4 text-sm text-white/65">
+              <p className="pf-v2-card pf-v2-muted" style={{ padding: "16px 14px" }}>
                 No hay jornadas cargadas para este filtro.
               </p>
             ) : (
@@ -507,17 +501,17 @@ export default function AsistenciasPage() {
                       onClick={() => setSelectedJornadaId(jornada.id)}
                       className="w-full text-left text-white/85"
                     >
-                      <p className="font-semibold text-white">{jornada.titulo}</p>
-                      <p className="text-xs text-slate-300">
+                      <p style={{ fontWeight: 600 }}>{jornada.titulo}</p>
+                      <p className="pf-v2-muted" style={{ fontSize: 12 }}>
                         {jornada.categoria} · {jornada.fecha} · {jornada.hora}
                       </p>
                       {jornada.suspendida ? (
-                        <p className="mt-1 inline-flex rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-semibold text-amber-100">
+                        <p className="pf-v2-chip pf-v2-chip-warn" style={{ marginTop: 4 }}>
                           Jornada suspendida
                         </p>
                       ) : null}
                       {jornada.ubicacion ? (
-                        <p className="text-xs text-slate-400">{jornada.ubicacion}</p>
+                        <p className="pf-v2-muted" style={{ fontSize: 12 }}>{jornada.ubicacion}</p>
                       ) : null}
                     </ReliableActionButton>
 
@@ -526,7 +520,7 @@ export default function AsistenciasPage() {
                         <ReliableActionButton
                           type="button"
                           onClick={() => reactivarJornada(jornada.id)}
-                          className="rounded-lg border border-emerald-300/35 px-2 py-1 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/10"
+                          className="pf-v2-option" style={{ padding: "6px 12px", fontSize: 12 }}
                         >
                           Reactivar
                         </ReliableActionButton>
@@ -534,7 +528,7 @@ export default function AsistenciasPage() {
                         <ReliableActionButton
                           type="button"
                           onClick={() => abrirModalSuspension(jornada.id)}
-                          className="rounded-lg border border-amber-300/35 px-2 py-1 text-xs font-semibold text-amber-200 hover:bg-amber-500/10"
+                          className="pf-v2-option" style={{ padding: "6px 12px", fontSize: 12 }}
                         >
                           Suspender
                         </ReliableActionButton>
@@ -542,7 +536,7 @@ export default function AsistenciasPage() {
                       <ReliableActionButton
                         type="button"
                         onClick={() => eliminarJornada(jornada.id)}
-                        className="rounded-lg border border-rose-300/35 px-2 py-1 text-xs font-semibold text-rose-200 hover:bg-rose-500/10"
+                        className="pf-v2-option" style={{ padding: "6px 12px", fontSize: 12 }}
                       >
                         Eliminar
                       </ReliableActionButton>
@@ -554,9 +548,9 @@ export default function AsistenciasPage() {
           </div>
         </div>
 
-        <div className="pf-card rounded-2xl border p-5">
+        <div className="pf-v2-card">
           {!selectedJornada ? (
-            <div className="pf-card rounded-2xl border p-5 text-sm text-white/65">
+            <div className="pf-v2-card pf-v2-muted">
               Selecciona una jornada para cargar asistencia.
             </div>
           ) : (
@@ -564,11 +558,11 @@ export default function AsistenciasPage() {
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-xl font-black text-white">{selectedJornada.titulo}</h3>
-                  <p className="text-sm text-slate-300">
+                  <p className="pf-v2-muted">
                     {selectedJornada.categoria} · {selectedJornada.fecha} · {selectedJornada.hora}
                   </p>
                   {selectedJornada.suspendida ? (
-                    <p className="mt-2 rounded-lg border border-amber-300/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-100">
+                    <p className="pf-v2-chip pf-v2-chip-warn" style={{ marginTop: 8 }}>
                       Jornada suspendida. Motivo: {selectedJornada.motivoSuspension || "Sin motivo"}
                     </p>
                   ) : null}
@@ -578,7 +572,7 @@ export default function AsistenciasPage() {
                     <ReliableActionButton
                       type="button"
                       onClick={() => reactivarJornada(selectedJornada.id)}
-                      className="rounded-full border border-emerald-300/40 px-3 py-1 text-emerald-100 hover:bg-emerald-500/10"
+                      className="pf-v2-chip pf-v2-chip-ok" style={{ cursor: "pointer" }}
                     >
                       Reactivar jornada
                     </ReliableActionButton>
@@ -586,25 +580,25 @@ export default function AsistenciasPage() {
                     <ReliableActionButton
                       type="button"
                       onClick={() => abrirModalSuspension(selectedJornada.id)}
-                      className="rounded-full border border-amber-300/40 px-3 py-1 text-amber-100 hover:bg-amber-500/10"
+                      className="pf-v2-chip pf-v2-chip-warn" style={{ cursor: "pointer" }}
                     >
                       Suspender jornada
                     </ReliableActionButton>
                   )}
-                  <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-100">
+                  <span className="pf-v2-chip pf-v2-chip-ok">
                     Presentes: {resumen.presentes}
                   </span>
-                  <span className="rounded-full bg-rose-500/20 px-2 py-1 text-rose-100">
+                  <span className="pf-v2-chip pf-v2-chip-danger">
                     Ausentes: {resumen.ausentes}
                   </span>
-                  <span className="rounded-full bg-[#0e1012] px-2 py-1 text-slate-100">
+                  <span className="pf-v2-chip">
                     Sin cargar: {resumen.sinCargar}
                   </span>
                 </div>
               </div>
 
               {jugadorasDisponibles.length === 0 ? (
-                <p className="rounded-xl border border-amber-300/30 bg-amber-500/10 px-3 py-4 text-sm text-amber-100">
+                <p className="pf-v2-alert" style={{ borderColor: "rgba(251,191,36,0.3)", background: "rgba(251,191,36,0.1)", color: "#fde68a" }}>
                   No hay jugadoras disponibles para la categoria seleccionada.
                 </p>
               ) : (
@@ -615,12 +609,12 @@ export default function AsistenciasPage() {
                     return (
                       <div
                         key={`${selectedJornada.id}-${jugadora.nombre}`}
-                        className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"
+                        className="pf-v2-card" style={{ padding: 14 }}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-white">{jugadora.nombre}</p>
-                            <p className="text-xs text-slate-300">{jugadora.posicion || "Sin posicion"}</p>
+                            <p style={{ fontWeight: 600 }}>{jugadora.nombre}</p>
+                            <p className="pf-v2-muted" style={{ fontSize: 12 }}>{jugadora.posicion || "Sin posicion"}</p>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2">
@@ -661,7 +655,7 @@ export default function AsistenciasPage() {
                         </div>
 
                         <div className="mt-2">
-                          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                          <label className="pf-v2-field-label">
                             Motivo de ausencia (opcional)
                           </label>
                           <input
@@ -676,7 +670,7 @@ export default function AsistenciasPage() {
                             }
                             disabled={Boolean(selectedJornada.suspendida)}
                             placeholder="Ej: lesion, estudio, viaje..."
-                            className="w-full rounded-lg border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-xs text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417] disabled:cursor-not-allowed disabled:opacity-45"
+                            className="pf-v2-input"
                           />
                         </div>
                       </div>
@@ -695,7 +689,7 @@ export default function AsistenciasPage() {
           onClick={cerrarModalSuspension}
         >
           <div
-            className="w-full max-w-lg pf-card rounded-2xl border border-amber-300/30 p-5 shadow-2xl"
+            className="pf-v2-card" style={{ width: "100%", maxWidth: 520, borderColor: "rgba(251,191,36,0.3)" }}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -709,12 +703,12 @@ export default function AsistenciasPage() {
               </ReliableActionButton>
             </div>
 
-            <p className="text-sm text-slate-300">
+            <p className="pf-v2-muted">
               Esta accion bloquea la carga de asistencia hasta reactivar la jornada.
             </p>
 
             <div className="mt-3">
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <label className="pf-v2-field-label">
                 Motivo (obligatorio)
               </label>
               <textarea
@@ -724,7 +718,7 @@ export default function AsistenciasPage() {
                   if (suspensionError) setSuspensionError("");
                 }}
                 rows={3}
-                className="w-full rounded-xl border border-white/[0.1] bg-[#0e1012] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 outline-none focus:border-white/[0.2] focus:bg-[#111417]"
+                className="pf-v2-input"
                 placeholder="Ej: lluvia intensa, cancha cerrada, protocolo medico..."
               />
               {suspensionError ? (
@@ -736,14 +730,14 @@ export default function AsistenciasPage() {
               <ReliableActionButton
                 type="button"
                 onClick={cerrarModalSuspension}
-                className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-200"
+                className="pf-v2-btn pf-v2-btn-2"
               >
                 Cancelar
               </ReliableActionButton>
               <ReliableActionButton
                 type="button"
                 onClick={confirmarSuspension}
-                className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-300"
+                className="pf-v2-btn"
               >
                 Confirmar suspension
               </ReliableActionButton>
@@ -751,6 +745,6 @@ export default function AsistenciasPage() {
           </div>
         </div>
       ) : null}
-    </main>
+    </div>
   );
 }
