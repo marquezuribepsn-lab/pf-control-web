@@ -176,8 +176,29 @@ async function optimizeProfileImage(file: File): Promise<string> {
   throw new Error("La imagen es demasiado pesada. Prueba con una mas liviana");
 }
 
+const MODO_VISUAL_KEY = "pf-control-modo-visual-v1";
+
 export default function ConfiguracionPage() {
   const router = useRouter();
+  /* Modo visual. Hoy "sistema" y "oscuro" resuelven a lo mismo porque el
+     diseño solo define la paleta oscura; se guarda igual la preferencia para
+     que el dia que haya tema claro no haya que migrar nada. */
+  const [modoVisual, setModoVisual] = useState<"sistema" | "oscuro">("oscuro");
+
+  useEffect(() => {
+    const guardado = window.localStorage.getItem(MODO_VISUAL_KEY);
+    if (guardado === "sistema" || guardado === "oscuro") setModoVisual(guardado);
+  }, []);
+
+  const aplicarModoVisual = (modo: "sistema" | "oscuro") => {
+    setModoVisual(modo);
+    try {
+      window.localStorage.setItem(MODO_VISUAL_KEY, modo);
+    } catch {
+      // Navegadores con storage restringido: la preferencia no persiste, nada mas.
+    }
+  };
+
   const [loaded, setLoaded] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [accentColor, setAccentColor] = useState<string>(DEFAULT_ACCENT);
@@ -570,15 +591,54 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="pf-v2-page" style={{ maxWidth: 960 }}>
-      <header className="pf-v2-page-head">
+      <header>
+        <h1 className="pf-v2-title">Configuración</h1>
+        <p className="pf-v2-title-sub">
+          Ajustá el tamaño visual de toda la app y activá notificaciones tipo push del navegador.
+        </p>
+      </header>
+
+      {/* ── Modo visual ──────────────────────────────────────────────────
+          El handoff pone este control aca y lo marca como dueño unico (no se
+          duplica en Cuenta). Ojo: el zip define UNA sola paleta —negro y
+          cian—, no hay diseño de tema claro en ningun archivo. Por eso
+          "Claro" queda deshabilitado: un boton que no cambia nada es peor
+          que uno que dice por que no esta disponible. */}
+      <section className="pf-v2-card pf-v2-setting" style={{ padding: "26px 30px" }}>
         <div>
-          <span className="pf-v2-eyebrow">Preferencias</span>
-          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Configuración</h1>
-          <p className="pf-v2-muted" style={{ marginTop: 8 }}>
-            Ajustá el tamaño visual de toda la app y activá notificaciones tipo push del navegador.
+          <h2 className="pf-v2-h2 pf-v2-h2-accent" style={{ marginBottom: 6 }}>Modo visual</h2>
+          <p style={{ fontSize: 13, color: "var(--v2-fg-45)", margin: 0 }}>
+            {modoVisual === "sistema"
+              ? "Siguiendo la configuración del sistema operativo"
+              : "Modo oscuro activado manualmente"}
           </p>
         </div>
-      </header>
+
+        <div className="pf-v2-segmented" role="group" aria-label="Modo visual">
+          <button
+            type="button"
+            disabled
+            aria-pressed={false}
+            title="El diseño del panel define una sola paleta (oscura); todavía no hay tema claro."
+          >
+            ☀ Claro
+          </button>
+          <button
+            type="button"
+            aria-pressed={modoVisual === "sistema"}
+            onClick={() => aplicarModoVisual("sistema")}
+          >
+            🖥 Sistema
+          </button>
+          <button
+            type="button"
+            aria-pressed={modoVisual === "oscuro"}
+            onClick={() => aplicarModoVisual("oscuro")}
+          >
+            🌙 Oscuro
+          </button>
+        </div>
+      </section>
 
       {/* ── Color de acento (LEDs) ──────────────────────────────────────── */}
       <section className="pf-v2-card">
