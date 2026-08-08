@@ -159,13 +159,13 @@ function VerifyPageContent() {
             ) : null}
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="verify-email">Email</label>
+              <label className="pf-v2-field-label-lg" htmlFor="verify-email">Email</label>
               <input
                 id="verify-email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="pf-v2-input"
+                className="pf-v2-input pf-v2-input-lg"
                 placeholder="tu@email.com"
                 autoComplete="email"
                 required
@@ -173,13 +173,13 @@ function VerifyPageContent() {
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="verify-code">Código de verificación</label>
+              <label className="pf-v2-field-label-lg" htmlFor="verify-code">Código de verificación</label>
               <input
                 id="verify-code"
                 type="text"
                 value={code}
                 onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="pf-v2-input"
+                className="pf-v2-input pf-v2-input-lg"
                 style={{ letterSpacing: "0.3em", fontWeight: 700 }}
                 inputMode="numeric"
                 autoComplete="one-time-code"

@@ -856,8 +856,24 @@ body:has(.pf-v2) {
 }
 
 .pf-v2-field-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--v2-fg-45);
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+/* Formularios de acceso (login, registro, recuperar): label mas grande y sin
+   mayusculas, como en screens/Login.dc.html. */
+.pf-v2-field-label-lg {
+  display: block;
   font-size: 13px;
   font-weight: 700;
+  color: var(--v2-fg);
+  letter-spacing: normal;
+  text-transform: none;
   margin: 0 0 9px;
 }
 
@@ -865,13 +881,13 @@ body:has(.pf-v2) {
 .pf-v2 textarea.pf-v2-input,
 .pf-v2 select.pf-v2-input {
   width: 100%;
-  padding: 15px 18px;
-  border-radius: var(--v2-r-input);
+  padding: 13px 16px;
+  border-radius: 10px;
   background: var(--v2-input-bg);
   border: 1px solid var(--v2-border-hi);
   color: var(--v2-fg);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -2319,4 +2335,31 @@ body:has(.pf-v2) {
 .pf-v2-segmented button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+
+/* Accion de crear: pastilla verde. El handoff la usa para "Crear jornada" y
+   "Editar inicio", distinta del primario cian. */
+.pf-v2-btn-ok {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #04120a;
+  border-radius: var(--v2-r-pill);
+  box-shadow: 0 8px 24px rgba(52, 211, 153, 0.25);
+}
+
+/* Input grande, para los formularios de acceso. */
+.pf-v2-input-lg {
+  padding: 15px 18px;
+  border-radius: var(--v2-r-input);
+  font-size: 14px;
+}
+
+
+/* Los grids con proporciones fijas escritos inline en las pantallas colapsan
+   solos abajo de 1000px; sin esto la columna angosta queda impracticable. */
+@media (max-width: 1000px) {
+  .pf-v2-page section[style*="1fr 1.4fr"],
+  .pf-v2-page section[style*="1.3fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
 }

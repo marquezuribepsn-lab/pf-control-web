@@ -450,13 +450,13 @@ function LoginPageContent() {
           {magicSent ? <p className="pf-v2-alert pf-v2-alert-ok">{magicSent}</p> : null}
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="login-email">Email</label>
+            <label className="pf-v2-field-label-lg" htmlFor="login-email">Email</label>
             <input
               id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pf-v2-input"
+              className="pf-v2-input pf-v2-input-lg"
               placeholder="tu@email.com"
               autoComplete="email"
               required
@@ -464,12 +464,12 @@ function LoginPageContent() {
           </div>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="login-password">Contraseña</label>
+            <label className="pf-v2-field-label-lg" htmlFor="login-password">Contraseña</label>
             <PasswordRevealInput
               id="login-password"
               value={password}
               onChange={setPassword}
-              className="pf-v2-input"
+              className="pf-v2-input pf-v2-input-lg"
               placeholder="Ingresa tu contraseña"
               required
             />

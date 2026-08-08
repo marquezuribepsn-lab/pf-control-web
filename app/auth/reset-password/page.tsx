@@ -118,13 +118,13 @@ function ResetPasswordContent() {
           {error ? <p className="pf-v2-alert pf-v2-alert-error">{error}</p> : null}
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reset-password">Nueva contraseña</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reset-password">Nueva contraseña</label>
             <input
               id="reset-password"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="pf-v2-input"
+              className="pf-v2-input pf-v2-input-lg"
               placeholder="Mínimo 6 caracteres"
               autoComplete="new-password"
               minLength={6}
@@ -133,13 +133,13 @@ function ResetPasswordContent() {
           </div>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reset-confirm">Confirmar contraseña</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reset-confirm">Confirmar contraseña</label>
             <input
               id="reset-confirm"
               type="password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              className="pf-v2-input"
+              className="pf-v2-input pf-v2-input-lg"
               placeholder="Repetí la nueva contraseña"
               autoComplete="new-password"
               minLength={6}

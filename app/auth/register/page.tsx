@@ -253,45 +253,45 @@ export default function RegisterPage() {
 
           <div className="pf-v2-quiz-grid">
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-nombre">Nombre</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-nombre">Nombre</label>
               <input id="reg-nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: Sofía" autoComplete="given-name" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: Sofía" autoComplete="given-name" required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-apellido">Apellido</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-apellido">Apellido</label>
               <input id="reg-apellido" type="text" value={apellido} onChange={(e) => setApellido(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: Pérez" autoComplete="family-name" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: Pérez" autoComplete="family-name" required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-edad">Edad</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-edad">Edad</label>
               <input id="reg-edad" type="number" min={1} max={120} value={edad} onChange={(e) => setEdad(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: 24" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: 24" required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-nacimiento">Fecha de nacimiento</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-nacimiento">Fecha de nacimiento</label>
               <DateInput id="reg-nacimiento" value={fechaNacimiento} onChange={setFechaNacimiento}
-                className="pf-v2-input" required />
+                className="pf-v2-input pf-v2-input-lg" required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-altura">Altura (cm)</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-altura">Altura (cm)</label>
               <input id="reg-altura" type="number" min={0} step="0.1" value={altura} onChange={(e) => setAltura(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: 172" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: 172" required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-peso">Peso (kg)</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-peso">Peso (kg)</label>
               <input id="reg-peso" type="number" min={0} step="0.1" value={peso} onChange={(e) => setPeso(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: 68" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: 68" required />
             </div>
 
             <div className="pf-v2-field pf-v2-quiz-wide">
-              <label className="pf-v2-field-label" htmlFor="reg-telefono">Número de teléfono</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-telefono">Número de teléfono</label>
               <input id="reg-telefono" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)}
-                className="pf-v2-input" placeholder="Ej: +5491112345678" autoComplete="tel" required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Ej: +5491112345678" autoComplete="tel" required />
             </div>
           </div>
 
@@ -381,7 +381,7 @@ export default function RegisterPage() {
                   placeholder="Opcional" />
 
                 <fieldset className="pf-v2-quiz-wide" style={{ border: 0, margin: 0, padding: 0 }}>
-                  <legend className="pf-v2-field-label" style={{ marginBottom: 10 }}>
+                  <legend className="pf-v2-field-label-lg" style={{ marginBottom: 10 }}>
                     ¿Qué tan comprometido/a estás con tu objetivo?
                   </legend>
                   <div className="pf-v2-scale">
@@ -396,7 +396,7 @@ export default function RegisterPage() {
                 </fieldset>
 
                 <fieldset className="pf-v2-quiz-wide" style={{ border: 0, margin: 0, padding: 0 }}>
-                  <legend className="pf-v2-field-label" style={{ marginBottom: 10 }}>
+                  <legend className="pf-v2-field-label-lg" style={{ marginBottom: 10 }}>
                     Declaro que los datos son verídicos y autorizo su uso para seguimiento de mi progreso.
                   </legend>
                   <div style={{ display: "flex", gap: 10 }}>
@@ -421,40 +421,40 @@ export default function RegisterPage() {
           </section>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reg-club">Club (opcional)</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reg-club">Club (opcional)</label>
             <input id="reg-club" type="text" value={club} onChange={(e) => setClub(e.target.value)}
-              className="pf-v2-input" placeholder="Club / institución" />
+              className="pf-v2-input pf-v2-input-lg" placeholder="Club / institución" />
           </div>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reg-objetivo">Objetivo (opcional)</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reg-objetivo">Objetivo (opcional)</label>
             <input id="reg-objetivo" type="text" value={objetivo} onChange={(e) => setObjetivo(e.target.value)}
-              className="pf-v2-input" placeholder="Objetivo principal" />
+              className="pf-v2-input pf-v2-input-lg" placeholder="Objetivo principal" />
           </div>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reg-observaciones">Observaciones (opcional)</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reg-observaciones">Observaciones (opcional)</label>
             <textarea id="reg-observaciones" value={observaciones} onChange={(e) => setObservaciones(e.target.value)}
-              className="pf-v2-input" rows={3} placeholder="Info adicional" />
+              className="pf-v2-input pf-v2-input-lg" rows={3} placeholder="Info adicional" />
           </div>
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="reg-email">Email</label>
+            <label className="pf-v2-field-label-lg" htmlFor="reg-email">Email</label>
             <input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="pf-v2-input" placeholder="tu@email.com" autoComplete="email" required />
+              className="pf-v2-input pf-v2-input-lg" placeholder="tu@email.com" autoComplete="email" required />
           </div>
 
           <div className="pf-v2-quiz-grid">
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-password">Contraseña</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-password">Contraseña</label>
               <input id="reg-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="pf-v2-input" placeholder="Mínimo 6 caracteres" autoComplete="new-password" minLength={6} required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Mínimo 6 caracteres" autoComplete="new-password" minLength={6} required />
             </div>
 
             <div className="pf-v2-field">
-              <label className="pf-v2-field-label" htmlFor="reg-confirm">Confirmar contraseña</label>
+              <label className="pf-v2-field-label-lg" htmlFor="reg-confirm">Confirmar contraseña</label>
               <input id="reg-confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pf-v2-input" placeholder="Repetí la contraseña" autoComplete="new-password" minLength={6} required />
+                className="pf-v2-input pf-v2-input-lg" placeholder="Repetí la contraseña" autoComplete="new-password" minLength={6} required />
             </div>
           </div>
 
@@ -500,11 +500,11 @@ function TextAnswer({
 }) {
   return (
     <label className="pf-v2-field">
-      <span className="pf-v2-field-label">{label}</span>
+      <span className="pf-v2-field-label-lg">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="pf-v2-input"
+        className="pf-v2-input pf-v2-input-lg"
         placeholder={placeholder}
       />
     </label>
@@ -522,11 +522,11 @@ function TextAreaAnswer({
 }) {
   return (
     <label className="pf-v2-field">
-      <span className="pf-v2-field-label">{label}</span>
+      <span className="pf-v2-field-label-lg">{label}</span>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="pf-v2-input"
+        className="pf-v2-input pf-v2-input-lg"
         rows={3}
       />
     </label>
@@ -546,7 +546,7 @@ function OptionGroup({
 }) {
   return (
     <fieldset style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
-      <legend className="pf-v2-field-label" style={{ marginBottom: 9 }}>{label}</legend>
+      <legend className="pf-v2-field-label-lg" style={{ marginBottom: 9 }}>{label}</legend>
       <div className="pf-v2-option-grid">
         {options.map((option) => (
           <button

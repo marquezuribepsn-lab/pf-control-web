@@ -58,13 +58,13 @@ export default function ForgotPasswordPage() {
           {error ? <p className="pf-v2-alert pf-v2-alert-error">{error}</p> : null}
 
           <div className="pf-v2-field">
-            <label className="pf-v2-field-label" htmlFor="forgot-email">Email</label>
+            <label className="pf-v2-field-label-lg" htmlFor="forgot-email">Email</label>
             <input
               id="forgot-email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="pf-v2-input"
+              className="pf-v2-input pf-v2-input-lg"
               placeholder="tu@email.com"
               autoComplete="email"
               required

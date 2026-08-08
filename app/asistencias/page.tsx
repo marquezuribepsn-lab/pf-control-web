@@ -313,7 +313,7 @@ export default function AsistenciasPage() {
 
       <section className="pf-v2-card">
         <h2 className="pf-v2-h2">Nueva jornada</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="pf-v2-grid-3" style={{ gap: 20, marginTop: 20 }}>
           <div>
             <label className="pf-v2-field-label">
               Categoria
@@ -435,14 +435,14 @@ export default function AsistenciasPage() {
           <ReliableActionButton
             type="button"
             onClick={crearJornada}
-            className="pf-v2-btn"
+            className="pf-v2-btn pf-v2-btn-ok"
           >
             Crear jornada
           </ReliableActionButton>
         </div>
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_1.8fr]">
+      <section style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 22, alignItems: "start" }}>
         <div className="pf-v2-card">
           <div className="mb-3 flex flex-wrap items-end gap-3">
             <div>
