@@ -1119,7 +1119,8 @@ export default function AdminUsuariosPermisosPage() {
 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight">Usuarios y permisos</h1>
+          <h1 className="pf-v2-title">Usuarios <span>y permisos</span></h1>
+          <p className="pf-v2-title-sub">Gestión centralizada de usuarios colaboradores, permisos y accesos.</p>
           <p className="pf-v2-muted">
             Gestion centralizada de usuarios colaboradores, permisos y accesos.
           </p>

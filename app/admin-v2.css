@@ -2146,3 +2146,127 @@ body:has(.pf-v2) {
   animation: pfV2Glow 1.8s ease-in-out infinite;
   flex-shrink: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Encabezado de pantalla del handoff (Templates, Nutricion, Pagos...)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Pastilla de seccion con icono, arriba del titulo. */
+.pf-v2-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--v2-r-pill);
+  background: rgba(34, 229, 255, 0.12);
+  border: 1px solid rgba(34, 229, 255, 0.35);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--v2-accent);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* Titulo de pantalla, con la segunda mitad en cian. */
+.pf-v2-title {
+  font-family: var(--v2-display);
+  font-size: clamp(28px, 3.4vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 10px;
+}
+
+.pf-v2-title span {
+  color: var(--v2-accent);
+  text-shadow: 0 0 24px rgba(34, 229, 255, 0.4);
+}
+
+.pf-v2-title-sub {
+  font-size: 15px;
+  color: var(--v2-fg-50);
+  max-width: 640px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Tabs tipo pastilla ──────────────────────────────────────────────────── */
+
+.pf-v2-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-v2-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 22px;
+  border-radius: var(--v2-r-pill);
+  border: 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--v2-fg-50);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pf-v2-tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--v2-fg-70);
+}
+
+.pf-v2-tab[aria-selected="true"] {
+  background: rgba(34, 229, 255, 0.14);
+  color: var(--v2-accent);
+}
+
+/* Linea divisoria entre el bloque de tabs y el contenido. */
+.pf-v2-rule {
+  height: 1px;
+  background: var(--v2-border);
+  border: 0;
+  margin: 0;
+}
+
+/* ── Grilla de tarjetas que se acomodan solas ────────────────────────────── */
+
+.pf-v2-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Tarjeta de item dentro de una card (mas hundida que el contenedor). */
+.pf-v2-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--v2-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* Estado vacio con marca centrada, del handoff. */
+.pf-v2-blank {
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--v2-border);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.pf-v2-blank-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(34, 229, 255, 0.12);
+  border: 1px solid rgba(34, 229, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--v2-accent);
+  margin: 0 auto 16px;
+}

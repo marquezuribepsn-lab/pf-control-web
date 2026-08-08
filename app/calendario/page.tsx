@@ -443,11 +443,7 @@ export default function CalendarioPage() {
       <div>
         <header className="pf-v2-page-head">
           <div>
-            <span className="pf-v2-eyebrow">Actividad</span>
-            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Calendario</h1>
-            <p className="pf-v2-muted" style={{ marginTop: 8 }}>
-              Vista mensual de actividad de alumnos.
-            </p>
+            <h1 className="pf-v2-title">Calendario</h1>
           </div>
         </header>
 

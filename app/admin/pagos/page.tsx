@@ -1081,7 +1081,8 @@ export default function AdminPagosManualPage() {
 
       <section className="pf-v2-card">
         <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-warn">Admin pagos</p>
-        <h1 className="mt-2 text-3xl font-black pf-v2-t">Pagos mensuales</h1>
+        <h1 className="pf-v2-title">Pagos <span>mensuales</span></h1>
+        <p className="pf-v2-title-sub">Vista consolidada de ingresos mensuales y confirmaciones manuales para renovar pases de alumnos.</p>
         <p className="mt-2 text-sm pf-v2-t-70">
           Vista consolidada de ingresos mensuales y confirmaciones manuales para renovar pases de alumnos.
         </p>

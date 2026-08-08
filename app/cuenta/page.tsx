@@ -327,7 +327,8 @@ export default function CuentaPage() {
   return (
     <main className={`pf-account-theme-scope mx-auto max-w-5xl p-6 ${pageTextClass}`}>
       <div className="mb-6">
-        <h1 className="text-3xl font-black">Cuenta</h1>
+        <h1 className="pf-v2-title">Cuenta</h1>
+        <p className="pf-v2-title-sub">Revisá tus datos, actualizá tu acceso y reenviá el mail de verificación cuando lo necesites.</p>
         <p className={`mt-1 text-sm${mutedTextClass}`}>
           Revisa tus datos, actualiza tu acceso y reenvía el mail de verificación cuando lo necesites.
         </p>

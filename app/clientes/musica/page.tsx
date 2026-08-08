@@ -590,7 +590,9 @@ export default function ClientesMusicaPage() {
         aria-hidden="true"
       />
       <div className="pf-v2-card">
-        <h1 className="text-3xl font-black">Musica</h1>
+        <span className="pf-v2-tagline"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.2" /><rect x="11" y="3" width="6" height="6" rx="1.2" /><rect x="3" y="11" width="6" height="6" rx="1.2" /><rect x="11" y="11" width="6" height="6" rx="1.2" /></svg> Ambiente y motivación</span>
+        <h1 className="pf-v2-title">Música</h1>
+        <p className="pf-v2-title-sub">Asigná playlists por alumno o de uso general, con sync automático a Spotify.</p>
         <p className="pf-v2-muted">
           Categoria unificada: selecciona playlist desde cualquier plataforma y asignala a cada alumno con reproductor integrado.
         </p>

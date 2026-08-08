@@ -1365,11 +1365,9 @@ export default function AdminWhatsAppPage() {
             <p className="text-[11px] font-black uppercase tracking-[0.22em] pf-v2-t-accent">
               Centro de mensajeria
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight pf-v2-t md:text-4xl">
-              Hub de WhatsApp
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm pf-v2-t-70">
-              Automatizaciones, envios manuales e historial operativo en una vista unificada.
+            <h1 className="pf-v2-title">Hub de <span>WhatsApp</span></h1>
+            <p className="pf-v2-title-sub">
+              Automatizaciones, envíos manuales e historial operativo en una vista unificada.
             </p>
           </div>
 

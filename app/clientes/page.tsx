@@ -5741,7 +5741,8 @@ export default function ClientesPage() {
             <p className="text-xs font-black uppercase tracking-[0.2em] pf-v2-t-accent">
               Hub comercial y operativo
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight pf-v2-t md:text-4xl">Clientes</h1>
+            <h1 className="pf-v2-title">Clientes</h1>
+            <p className="pf-v2-title-sub">Gestión integral de fichas, pagos y planes — plantel incluido.</p>
             <p className="mt-2 text-sm pf-v2-t">
               Gestion integral de fichas, pagos y planes en una vista mas clara y moderna.
             </p>

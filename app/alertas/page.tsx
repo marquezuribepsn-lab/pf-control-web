@@ -170,14 +170,7 @@ export default function AlertasPage() {
     <div className="pf-v2-page" style={{ maxWidth: 860 }}>
       <header className="pf-v2-page-head">
         <div>
-          <span className="pf-v2-eyebrow">Avisos</span>
-          <h1 className="pf-v2-h1" style={{ fontSize: 30 }}>
-            {total === 0 ? "Todo en orden" : `${total} aviso${total > 1 ? "s" : ""}`}
-          </h1>
-          <p className="pf-v2-muted" style={{ marginTop: 6 }}>
-            {urgente > 0 ? `${urgente} urgente${urgente > 1 ? "s" : ""}. ` : ""}
-            {lastFetch ? `Actualizado ${timeAgo(lastFetch.toISOString())}.` : ""}
-          </p>
+          <h1 className="pf-v2-title">Avisos</h1>
         </div>
         <button type="button" onClick={fetchAlertas} disabled={loading} className="pf-v2-btn pf-v2-btn-2">
           {loading ? "Actualizando..." : "↻ Actualizar"}

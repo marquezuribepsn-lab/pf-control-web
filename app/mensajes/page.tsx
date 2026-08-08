@@ -39,8 +39,7 @@ export default function MensajesPage() {
     <div className="pf-v2-page" style={{ maxWidth: 1100 }}>
       <header className="pf-v2-page-head">
         <div>
-          <span className="pf-v2-eyebrow">Conversaciones</span>
-          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Mensajes</h1>
+          <h1 className="pf-v2-title">Mensajes</h1>
         </div>
       </header>
 

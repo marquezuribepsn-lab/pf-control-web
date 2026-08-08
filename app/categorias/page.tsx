@@ -44,11 +44,12 @@ export default function CategoriasPage() {
     <div className="pf-v2-page">
       <header className="pf-v2-page-head">
         <div>
-          <span className="pf-v2-eyebrow">Gestión del club</span>
-          <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Categorías</h1>
-          <p className="pf-v2-muted" style={{ marginTop: 8 }}>
-            Organización por categoría y resumen general.
-          </p>
+          <span className="pf-v2-tagline">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.2" /><rect x="11" y="3" width="6" height="6" rx="1.2" /><rect x="3" y="11" width="6" height="6" rx="1.2" /><rect x="11" y="11" width="6" height="6" rx="1.2" /></svg>
+            Gestión del club
+          </span>
+          <h1 className="pf-v2-title">Categorías</h1>
+          <p className="pf-v2-title-sub">Organización por categoría y resumen general del plantel.</p>
         </div>
       </header>
 

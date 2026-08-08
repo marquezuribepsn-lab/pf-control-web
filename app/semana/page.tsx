@@ -3394,16 +3394,27 @@ export default function SemanaPage() {
         </div>
       )}
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Templates de entrenamiento</h1>
-        <p className="pf-v2-muted">
-          Workspace dedicado para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
+      <header>
+        <span className="pf-v2-tagline">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="6" height="6" rx="1.2" />
+            <rect x="11" y="3" width="6" height="6" rx="1.2" />
+            <rect x="3" y="11" width="6" height="6" rx="1.2" />
+            <rect x="11" y="11" width="6" height="6" rx="1.2" />
+          </svg>
+          Workspace
+        </span>
+        <h1 className="pf-v2-title">
+          Templates <span>de entrenamiento</span>
+        </h1>
+        <p className="pf-v2-title-sub">
+          Workspace para crear, editar y asignar templates con bloques armables y ejercicios reutilizables.
         </p>
-      </div>
+      </header>
 
 
 
-      <section className="mt-6 rounded-[28px] border pf-v2-b-accent pf-v2-s p-5">
+      <section className="pf-v2-card" style={{ padding: 30 }}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div>
@@ -3418,56 +3429,52 @@ export default function SemanaPage() {
               </p>
             </div>
 
-            <div className="inline-flex flex-wrap gap-1 rounded-2xl pf-v2-s p-1 ring-1">
-              <ReliableActionButton
+            <div className="pf-v2-tabs" role="tablist">
+              <button
                 type="button"
+                role="tab"
+                aria-selected={templatesTab === "nuevo"}
                 onClick={iniciarNuevoTemplate}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                  templatesTab === "nuevo"
-                    ? "pf-v2-s-accent pf-v2-t"
-                    : "pf-v2-t-70 pf-v2-hover"
-                }`}
+                className="pf-v2-tab"
               >
                 Nuevo template
-              </ReliableActionButton>
-              <ReliableActionButton
+              </button>
+              <button
                 type="button"
+                role="tab"
+                aria-selected={templatesTab === "mis"}
                 onClick={() => setTemplatesTab("mis")}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                  templatesTab === "mis"
-                    ? "pf-v2-s-accent pf-v2-t"
-                    : "pf-v2-t-70 pf-v2-hover"
-                }`}
+                className="pf-v2-tab"
               >
                 Mis templates
-              </ReliableActionButton>
-              <ReliableActionButton
+              </button>
+              <button
                 type="button"
+                role="tab"
+                aria-selected={templatesTab === "buscar"}
                 onClick={() => setTemplatesTab("buscar")}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                  templatesTab === "buscar"
-                    ? "pf-v2-s-accent pf-v2-t"
-                    : "pf-v2-t-70 pf-v2-hover"
-                }`}
+                className="pf-v2-tab"
               >
                 Buscar alumno
-              </ReliableActionButton>
-              <ReliableActionButton
+              </button>
+              <button
                 type="button"
+                role="tab"
+                aria-selected={templatesTab === "motor"}
                 onClick={() => setTemplatesTab("motor")}
-                className={`relative rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                  templatesTab === "motor"
-                    ? "pf-v2-s-violet pf-v2-t"
-                    : "pf-v2-t-violet pf-v2-hover"
-                }`}
+                className="pf-v2-tab"
+                style={{ position: "relative" }}
               >
-                ⚡ Motor IA
-                {motorBadgeCount > 0 && templatesTab !== "motor" && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full pf-v2-s-warn text-[9px] font-black pf-v2-t">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M11 2 L4 12 H9 L8 18 L16 8 H11 Z" />
+                </svg>
+                Motor IA
+                {motorBadgeCount > 0 && templatesTab !== "motor" ? (
+                  <span className="pf-v2-nav-badge" style={{ position: "absolute", top: -4, right: -4 }}>
                     {motorBadgeCount > 9 ? "9+" : motorBadgeCount}
                   </span>
-                )}
-              </ReliableActionButton>
+                ) : null}
+              </button>
             </div>
           </div>
 
@@ -3476,7 +3483,9 @@ export default function SemanaPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Buscar template..."
-              className="w-full max-w-xs rounded-xl border pf-v2-b-accent pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
+              className="pf-v2-input"
+              style={{ minWidth: 240, maxWidth: 320 }}
+              aria-label="Buscar template"
             />
           ) : templatesTab === "buscar" ? (
             <input
@@ -3484,21 +3493,41 @@ export default function SemanaPage() {
               onChange={(e) => setAlumnoSearch(e.target.value)}
               placeholder="Escribí el nombre del alumno..."
               autoFocus
-              className="w-full max-w-xs rounded-xl border pf-v2-b-accent pf-v2-s px-3 py-2 text-sm pf-v2-t pf-v2-ph"
+              className="pf-v2-input"
+              style={{ minWidth: 240, maxWidth: 320 }}
+              aria-label="Buscar alumno"
             />
           ) : null}
         </div>
 
         {templatesTab === "mis" ? (
-          <div className="mt-5 border-t pf-v2-b pt-5">
-            <h3 className="text-base font-semibold pf-v2-t">Biblioteca de templates</h3>
-            <p className="mt-1 text-xs pf-v2-t-70">
-              Gestiona y edita tus templates guardados.
-            </p>
+          <div style={{ marginTop: 26 }}>
+            <hr className="pf-v2-rule" style={{ marginBottom: 22 }} />
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "var(--v2-display)", fontSize: 17, fontWeight: 800, margin: "0 0 4px" }}>
+                Biblioteca de templates
+              </h3>
+              <p style={{ fontSize: 12.5, color: "var(--v2-fg-45)", margin: 0 }}>
+                Gestiona y edita tus templates guardados.
+              </p>
+            </div>
 
             {templatesFiltrados.length === 0 ? (
-              <div className="mt-3 rounded-xl border border-dashed pf-v2-b pf-v2-s-deep p-4 text-sm pf-v2-t-70">
-                No hay templates guardados con ese filtro.
+              <div className="pf-v2-blank">
+                <span className="pf-v2-blank-mark" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="6" height="6" rx="1.2" />
+                    <rect x="11" y="3" width="6" height="6" rx="1.2" />
+                    <rect x="3" y="11" width="6" height="6" rx="1.2" />
+                    <rect x="11" y="11" width="6" height="6" rx="1.2" />
+                  </svg>
+                </span>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+                  No hay templates guardados con ese filtro
+                </div>
+                <div style={{ fontSize: 13, color: "var(--v2-fg-40)" }}>
+                  Creá tu primer template para reutilizarlo en cualquier alumno.
+                </div>
               </div>
             ) : (
               <>

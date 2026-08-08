@@ -168,9 +168,8 @@ export default function EquiposPage() {
       <section className="pf-v2-hero-block">
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <span className="pf-v2-eyebrow">Planificación Estructural</span>
-            <h1 className="pf-v2-h1" style={{ fontSize: 32 }}>Equipos</h1>
-            <p className="pf-v2-muted" style={{ marginTop: 8 }}>Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.</p>
+            <h1 className="pf-v2-title">Equipos</h1>
+            <p className="pf-v2-title-sub">Diseña planteles por categoría y temporada con acceso rápido a detalle y sesiones.</p>
           </div>
           <ReliableActionButton onClick={handleCreateMode} className="pf-v2-btn">
             Nuevo equipo
