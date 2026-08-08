@@ -250,7 +250,7 @@ body:has(.pf-v2) {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 50;
+  z-index: 90;
   height: 100vh;
   width: var(--v2-rail);
   display: flex;
@@ -1830,8 +1830,6 @@ body:has(.pf-v2) {
   .pf-v2-rail-mobile-open {
     transform: translateX(0);
     width: var(--v2-rail-open);
-    /* Por encima del fondo oscuro (88) y de la barra superior (85). */
-    z-index: 90;
   }
 
   .pf-v2-page {
