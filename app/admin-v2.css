@@ -2359,7 +2359,8 @@ body:has(.pf-v2) {
    solos abajo de 1000px; sin esto la columna angosta queda impracticable. */
 @media (max-width: 1000px) {
   .pf-v2-page section[style*="1fr 1.4fr"],
-  .pf-v2-page section[style*="1.3fr 1fr"] {
+  .pf-v2-page section[style*="1.3fr 1fr"],
+  .pf-v2-page div[style*="1.1fr 1fr"] {
     grid-template-columns: 1fr !important;
   }
 }

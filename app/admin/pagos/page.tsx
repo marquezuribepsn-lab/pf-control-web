@@ -1171,12 +1171,12 @@ export default function AdminPagosManualPage() {
       ) : null}
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black pf-v2-t">Planes de precios</h2>
+        <h2 className="pf-v2-h2 pf-v2-h2-accent">Planes de precios</h2>
         <p className="mt-1 text-sm pf-v2-t-70">
           Define los planes disponibles con nombre, precio y duracion. Al asignar un plan, el precio se usa automaticamente en Mercado Pago.
         </p>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 20, marginTop: 20, alignItems: "start" }}>
           <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
             <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">
               {planForm.id ? "Editar plan" : "Nuevo plan"}
@@ -1344,10 +1344,10 @@ export default function AdminPagosManualPage() {
       </section>
 
       <section className="rounded-2xl border p-5">
-        <h2 className="text-xl font-black pf-v2-t">Estado general de pagos</h2>
+        <h2 className="pf-v2-h2 pf-v2-h2-accent">Estado general de pagos</h2>
         <p className="mt-1 text-sm pf-v2-t-70">Resumen en vivo desde la ficha de clientes.</p>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="pf-v2-grid-4" style={{ marginTop: 20 }}>
           <article className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
             <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">Pagos confirmados</p>
             <p className="mt-2 text-2xl font-black pf-v2-t-ok">{paymentSummary.pagosConfirmados}</p>
@@ -1373,7 +1373,7 @@ export default function AdminPagosManualPage() {
       <section className="rounded-2xl border p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black pf-v2-t">Resumen de ingresos</h2>
+            <h2 className="pf-v2-h2 pf-v2-h2-accent">Resumen de ingresos</h2>
             <p className="mt-1 text-sm pf-v2-t-70">
               Filtra ingresos por periodo mensual o anual. Puedes reiniciar acumulados sin borrar historiales.
             </p>
@@ -1481,7 +1481,7 @@ export default function AdminPagosManualPage() {
                 incomeRefreshing ? "pointer-events-none opacity-55" : "opacity-100"
               }`}
             >
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="pf-v2-grid-4">
                 <article className="rounded-xl border pf-v2-b-ok pf-v2-s-ok p-4">
                   <p className="text-[11px] uppercase tracking-wide pf-v2-t-ok">
                     Total {incomeScope === "monthly" ? "mensual" : "anual"}
@@ -1690,7 +1690,7 @@ export default function AdminPagosManualPage() {
           Carga aca las cuentas bancarias/corrientes que se mostraran a los alumnos al informar pagos por transferencia.
         </p>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 20, marginTop: 20, alignItems: "start" }}>
           <article className="rounded-xl border pf-v2-b pf-v2-s p-4">
             <h3 className="text-sm font-black uppercase tracking-[0.14em] pf-v2-t-70">
               {accountForm.id ? "Editar cuenta" : "Nueva cuenta"}

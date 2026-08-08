@@ -53,9 +53,12 @@ export default function CategoriasPage() {
         </div>
       </header>
 
-      <section className="pf-v2-card">
-        <h2 className="pf-v2-h2" style={{ marginBottom: 14 }}>Agregar nueva categoría</h2>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      {/* Alta de categoria (handoff: screens/Categorias.dc.html) */}
+      <section className="pf-v2-card" style={{ padding: 30 }}>
+        <h2 className="pf-v2-h2 pf-v2-h2-accent" style={{ marginBottom: 20 }}>
+          Agregar nueva categoría
+        </h2>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <input
             type="text"
             value={nuevaCategoria}
@@ -64,57 +67,70 @@ export default function CategoriasPage() {
               if (e.key === "Enter") handleAgregarCategoria();
             }}
             placeholder="Nombre de la categoría"
-            className="pf-v2-input"
-            style={{ flex: 1, minWidth: 220 }}
+            className="pf-v2-input pf-v2-input-lg"
+            style={{ flex: 1, minWidth: 260 }}
             aria-label="Nombre de la categoría"
           />
-          <ReliableActionButton onClick={handleAgregarCategoria} className="pf-v2-btn">
+          <ReliableActionButton
+            onClick={handleAgregarCategoria}
+            className="pf-v2-btn"
+            style={{ padding: "14px 28px", borderRadius: 12, whiteSpace: "nowrap" }}
+          >
             Agregar
           </ReliableActionButton>
         </div>
       </section>
 
-      <section className="pf-v2-grid-3">
+      {/* Grilla de categorias: 3 columnas, cards de 26px */}
+      <section className="pf-v2-grid-3" style={{ gap: 20 }}>
         {categoriasConJugadoras.map((categoria, index) => {
           const hex = CATEGORY_TINTS[index % CATEGORY_TINTS.length];
           const icon = CATEGORY_ICONS[index % CATEGORY_ICONS.length];
 
           return (
-            <article key={categoria.nombre} className="pf-v2-card pf-v2-lift">
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <span
-                  className="pf-v2-module-icon"
-                  style={{ background: tinte(hex, 0.14), color: hex, boxShadow: `0 0 18px ${tinte(hex, 0.3)}` }}
-                  aria-hidden="true"
-                >
-                  {icon}
-                </span>
-                <ReliableActionButton
-                  onClick={() => toggleCategoria(categoria.nombre)}
-                  className={`pf-v2-chip ${categoria.habilitada ? "pf-v2-chip-ok" : "pf-v2-chip-danger"}`}
-                  style={{ cursor: "pointer" }}
-                >
-                  {categoria.habilitada ? "Habilitada" : "Deshabilitada"}
-                </ReliableActionButton>
+            <article key={categoria.nombre} className="pf-v2-card" style={{ padding: 26 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                  <span style={{ fontSize: 17 }} aria-hidden="true">{icon}</span>
+                  <span style={{ fontFamily: "var(--v2-display)", fontSize: 19, fontWeight: 800 }}>
+                    {categoria.nombre}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <ReliableActionButton
+                    onClick={() => toggleCategoria(categoria.nombre)}
+                    className={`pf-v2-chip ${categoria.habilitada ? "pf-v2-chip-ok" : "pf-v2-chip-danger"}`}
+                    style={{ cursor: "pointer", border: "1px solid" }}
+                  >
+                    {categoria.habilitada ? "Habilitada" : "Deshabilitada"}
+                  </ReliableActionButton>
+                  <ReliableActionButton
+                    onClick={() => eliminarCategoria(categoria.nombre)}
+                    className="pf-v2-chip pf-v2-chip-danger"
+                    style={{ cursor: "pointer", border: "1px solid" }}
+                  >
+                    Eliminar
+                  </ReliableActionButton>
+                </div>
               </div>
 
-              <h2 className="pf-v2-h2" style={{ marginTop: 14 }}>{categoria.nombre}</h2>
-
-              <p className="pf-v2-muted" style={{ marginTop: 6 }} suppressHydrationWarning>
-                Equipos: 1 · Jugadoras: {categoria.jugadoras}
-              </p>
-
-              <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-                <Link href={`/categorias/${encodeURIComponent(categoria.nombre)}`} className="pf-v2-btn">
-                  {categoria.habilitada ? "Ver jugadoras" : "Ver categoría"}
-                </Link>
-                <ReliableActionButton
-                  onClick={() => eliminarCategoria(categoria.nombre)}
-                  className="pf-v2-btn pf-v2-btn-danger"
-                >
-                  Eliminar
-                </ReliableActionButton>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 22 }}>
+                <div style={{ fontSize: 14, color: "var(--v2-fg-50)" }}>
+                  Equipos: <span style={{ color: "var(--v2-fg)", fontWeight: 700 }}>1</span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--v2-fg-50)" }} suppressHydrationWarning>
+                  Jugadoras: <span style={{ color: "var(--v2-fg)", fontWeight: 700 }}>{categoria.jugadoras}</span>
+                </div>
               </div>
+
+              <Link
+                href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
+                className="pf-v2-btn"
+                style={{ padding: "12px 24px", borderRadius: 12, background: hex, color: "var(--v2-on-accent)", boxShadow: `0 8px 24px ${tinte(hex, 0.28)}` }}
+              >
+                {categoria.habilitada ? "Ver jugadoras" : "Ver categoría"}
+              </Link>
             </article>
           );
         })}
