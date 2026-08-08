@@ -45,7 +45,7 @@ export default function MensajesPage() {
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "flex-start" }}>
         {/* Lista de alumnos */}
-        <div style={{ width: 280, flexShrink: 0, display: "grid", gap: 8, minWidth: 240 }}>
+        <div style={{ width: 320, flexShrink: 0, display: "grid", gap: 8, minWidth: 240 }}>
           {!alumnosLoaded ? (
             <p className="pf-v2-muted">Cargando alumnos...</p>
           ) : null}

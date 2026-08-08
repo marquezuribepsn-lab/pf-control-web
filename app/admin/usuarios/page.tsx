@@ -1219,7 +1219,7 @@ export default function AdminUsuariosPermisosPage() {
             </Field>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="pf-v2-grid-3" style={{ gap: 20, marginTop: 20 }}>
             <ToggleChip
               label="Puede editar registros"
               checked={createForm.puedeEditarRegistros}
@@ -1251,7 +1251,7 @@ export default function AdminUsuariosPermisosPage() {
       ) : null}
 
       <section className="pf-v2-card">
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="pf-v2-grid-3" style={{ gap: 20, marginBottom: 20 }}>
           <div className="rounded-xl border pf-v2-b pf-v2-s-hi p-3">
             <p className="text-xs font-semibold uppercase tracking-wide pf-v2-t-70">Total colaboradores</p>
             <p className="mt-1 text-2xl font-black pf-v2-t">{colaboradoresStats.total}</p>

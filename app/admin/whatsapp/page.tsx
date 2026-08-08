@@ -1391,7 +1391,7 @@ export default function AdminWhatsAppPage() {
           </div>
         </div>
 
-        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <div className="pf-v2-grid-3" style={{ gap: 20, marginTop: 20 }}>
           <div className="pf-v2-card">
             Conexion
             <p className="mt-1 text-base font-black pf-v2-t">
@@ -1426,24 +1426,20 @@ export default function AdminWhatsAppPage() {
         </div>
       </header>
 
-      <section className="rounded-2xl border p-3">
-        <div className="flex flex-wrap gap-2">
-          {TAB_ITEMS.map((tab) => (
-            <ReliableActionButton
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`rounded-2xl px-4 py-2 text-xs font-bold tracking-wide transition ${
-                activeTab === tab.id
-                  ? "pf-v2-t"
-                  : "pf-v2-s-deep pf-v2-t-70 pf-v2-hover"
-              }`}
-            >
-              {tab.label}
-            </ReliableActionButton>
-          ))}
-        </div>
-      </section>
+      <div className="pf-v2-tabs" role="tablist">
+        {TAB_ITEMS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="pf-v2-tab"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {status ? (
         <div className="rounded-2xl border pf-v2-b-ok pf-v2-s-ok px-4 py-3 text-sm pf-v2-t-ok">

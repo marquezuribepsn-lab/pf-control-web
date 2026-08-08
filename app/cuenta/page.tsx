@@ -329,9 +329,6 @@ export default function CuentaPage() {
       <div className="mb-6">
         <h1 className="pf-v2-title">Cuenta</h1>
         <p className="pf-v2-title-sub">Revisá tus datos, actualizá tu acceso y reenviá el mail de verificación cuando lo necesites.</p>
-        <p className={`mt-1 text-sm${mutedTextClass}`}>
-          Revisa tus datos, actualiza tu acceso y reenvía el mail de verificación cuando lo necesites.
-        </p>
       </div>
 
       {error && (
@@ -346,7 +343,7 @@ export default function CuentaPage() {
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, alignItems: "start" }}>
         <section className={sectionClass}>
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
