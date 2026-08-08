@@ -602,8 +602,8 @@ export default function ClientesMusicaPage() {
       </div>
 
       <section className="pf-v2-card">
-        <h2 className="pf-v2-h2">Nueva asignacion</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <h2 className="pf-v2-h2 pf-v2-h2-accent">Nueva asignación</h2>
+        <div className="pf-v2-grid-3" style={{ gap: 20, marginTop: 20 }}>
           <label className="text-xs pf-v2-t-70 md:col-span-2 xl:col-span-2">
             Seleccionar desde catalogo (opcional)
             <select
@@ -741,7 +741,7 @@ export default function ClientesMusicaPage() {
 
       <section className="pf-v2-card mt-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="pf-v2-h2">Asignaciones ({sortedAssignments.length})</h2>
+          <h2 className="pf-v2-h2 pf-v2-h2-accent">Asignaciones ({sortedAssignments.length})</h2>
           <label className="text-xs pf-v2-t-70">
             Vista alumno
             <select
@@ -759,7 +759,7 @@ export default function ClientesMusicaPage() {
           </label>
         </div>
 
-        <div className="mt-3 space-y-2">
+        <div className="pf-v2-grid-auto" style={{ marginTop: 20 }}>
           {previewRows.length === 0 ? (
             <p className="pf-v2-muted">No hay musica asignada.</p>
           ) : null}
@@ -769,7 +769,7 @@ export default function ClientesMusicaPage() {
             return (
               <article
                 key={item.id}
-                className="rounded-lg border pf-v2-b pf-v2-s p-3 text-xs pf-v2-t-70"
+                className="pf-v2-item" style={{ fontSize: 12, color: "var(--v2-fg-50)", display: "grid", gap: 4 }}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold pf-v2-t">{item.alumnoNombre || "Musica general"}</p>

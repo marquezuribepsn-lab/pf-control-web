@@ -175,7 +175,7 @@ export default function EquiposPage() {
             Nuevo equipo
           </ReliableActionButton>
         </div>
-        <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="pf-v2-grid-4" style={{ marginTop: 20 }}>
           <StatTile label="Equipos" value={stats.totalEquipos} tone="cyan" />
           <StatTile label="Jugadoras" value={stats.totalJugadoras} tone="emerald" />
           <StatTile label="Categorías" value={stats.categoriasCubiertas} tone="violet" />
@@ -189,7 +189,7 @@ export default function EquiposPage() {
             {editandoEquipo ? "Editar equipo" : "Nuevo equipo"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="pf-v2-quiz-grid" style={{ gap: 20 }}>
               <label className="pf-v2-field">
                 Nombre
                 <input
