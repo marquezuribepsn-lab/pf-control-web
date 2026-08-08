@@ -115,11 +115,13 @@ const STYLES = `/* Panel de notificaciones — diseño "PF Control v2 - Notifica
   box-shadow: 0 0 0 2px rgba(9, 13, 17,0.9);
 }
 
-/* Pantalla completa con fundido, estilo iOS. El backdrop ya no centra una
-   tarjeta: el panel ocupa toda la pantalla, asi que no quedan bordes ni
-   esquinas de una caja flotando sobre el contenido. */
+/* Card flotante anclada a la campana, como pide el handoff (README, pantalla
+   20): "no pantalla completa, pensada como dropdown/modal desde la campana".
+   El backdrop queda casi transparente: solo atrapa el click de afuera para
+   cerrar, sin tapar el panel que hay detras. */
 .pf-notif-backdrop {
-  position: fixed; inset: 0; z-index: 2147482000; background: #05060b;
+  position: fixed; inset: 0; z-index: 2147482000;
+  background: rgba(2, 3, 4, 0.45);
   opacity: 1; transition: opacity .24s ease;
 }
 .pf-notif-backdrop.pf-notif-closing,
@@ -128,27 +130,44 @@ const STYLES = `/* Panel de notificaciones — diseño "PF Control v2 - Notifica
 /* Estado en reposo VISIBLE: la entrada es una transicion, no una animacion con
    fill-mode:both, que si no arranca deja el panel invisible. */
 .pf-notif-panel {
-  position: fixed; inset: 0; z-index: 2147482001;
+  position: fixed; z-index: 2147482001;
+  top: calc(var(--v2-topbar, 89px) + 10px);
+  right: 20px;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  max-height: min(78vh, 640px);
   display: flex; flex-direction: column;
-  background: #080a10; border: 0; border-radius: 0; box-shadow: none;
+  background: #0a0d12;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 60px rgba(34, 229, 255, 0.12);
   color: #eef2f7;
   font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: max(22px, env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));
+  padding: 24px;
   /* Estado en reposo visible; el fundido lo dan las clases de estado. */
-  opacity: 1; transform: scale(1);
-  transition: opacity .24s ease, transform .26s cubic-bezier(0.16,1,0.3,1);
+  opacity: 1; transform: translateY(0) scale(1);
+  transform-origin: top right;
+  transition: opacity .2s ease, transform .24s cubic-bezier(0.16,1,0.3,1);
 }
-/* Entra y sale con un escalado minimo, como las hojas de iOS. */
-.pf-notif-panel.pf-notif-entering { opacity: 0; transform: scale(1.015); }
-.pf-notif-panel.pf-notif-closing { opacity: 0; transform: scale(0.985); }
+/* Cae desde arriba a la derecha, como un dropdown. */
+.pf-notif-panel.pf-notif-entering { opacity: 0; transform: translateY(-8px) scale(0.97); }
+.pf-notif-panel.pf-notif-closing { opacity: 0; transform: translateY(-6px) scale(0.98); }
 
-/* En pantallas anchas el contenido se centra a ancho de lectura. */
-.pf-notif-panel > * { width: 100%; max-width: 520px; margin-inline: auto; }
+/* En celular no entra un dropdown de 420px: ocupa el ancho util, pegado abajo
+   de la barra, y respeta el area segura. */
+@media (max-width: 520px) {
+  .pf-notif-panel {
+    left: 12px; right: 12px; width: auto;
+    top: calc(var(--v2-topbar, 56px) + 8px);
+    max-height: calc(100dvh - var(--v2-topbar, 56px) - 24px - env(safe-area-inset-bottom));
+    padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+  }
+}
 
 .pf-notif-head { flex-shrink: 0; }
-.pf-notif-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
-.pf-notif-title { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+.pf-notif-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+.pf-notif-title { font-family: 'Space Grotesk', Inter, sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
 .pf-notif-title small {
   display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: #38bdf8; margin-bottom: 6px; font-family: Inter, sans-serif;
