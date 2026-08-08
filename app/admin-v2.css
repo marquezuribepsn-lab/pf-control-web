@@ -1904,3 +1904,245 @@ body:has(.pf-v2) {
 .pf-v2-hover:hover {
   background: rgba(255, 255, 255, 0.05);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Inicio — piezas propias del dashboard del handoff
+   (design_handoff_pf_control_v2/screens/Inicio.dc.html)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Hero: card ancha con degradado, blur y un halo cian arriba a la derecha. */
+.pf-v2-hero-card {
+  position: relative;
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(2, 3, 4, 0.35) 55%),
+    rgba(8, 9, 11, 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  padding: 40px;
+}
+
+.pf-v2-hero-card::before {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 229, 255, 0.28), transparent 70%);
+  pointer-events: none;
+}
+
+.pf-v2-hero-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+
+.pf-v2-hero-date {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--v2-accent-3);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.pf-v2-hero-h1 {
+  font-family: var(--v2-display);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin: 0 0 14px;
+}
+
+/* Segunda linea del saludo, en cian con glow. */
+.pf-v2-hero-h1 span {
+  color: var(--v2-accent);
+  text-shadow: 0 0 24px rgba(34, 229, 255, 0.5);
+}
+
+.pf-v2-hero-lead {
+  font-size: 14.5px;
+  color: rgba(226, 232, 240, 0.6);
+  max-width: 480px;
+  line-height: 1.6;
+  margin: 0 0 26px;
+}
+
+/* Foto del gimnasio, con degradado encima y epigrafe. */
+.pf-v2-hero-photo {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pf-v2-hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.05) contrast(1.05);
+  opacity: 0.55;
+}
+
+.pf-v2-hero-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(2, 3, 4, 0.15), rgba(2, 3, 4, 0.75) 70%),
+    radial-gradient(circle at 30% 20%, rgba(34, 229, 255, 0.25), transparent 55%);
+  pointer-events: none;
+}
+
+.pf-v2-hero-photo-caption {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  right: 14px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Bajada de seccion: 10.5px celeste sobre el titulo. */
+.pf-v2-kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── Conexiones en vivo ──────────────────────────────────────────────────── */
+
+.pf-v2-live-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pf-v2-live-row:last-child {
+  border-bottom: 0;
+}
+
+.pf-v2-avatar {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--v2-fg-40);
+}
+
+.pf-v2-avatar[data-online="true"] {
+  background: rgba(34, 229, 255, 0.14);
+  color: var(--v2-accent);
+}
+
+/* Puntito de estado, con borde del color del fondo para que "recorte". */
+.pf-v2-avatar::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(226, 232, 240, 0.25);
+  border: 2px solid var(--v2-bg-deep);
+}
+
+.pf-v2-avatar[data-online="true"]::after {
+  background: var(--v2-success);
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+
+.pf-v2-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pf-v2-modal {
+  width: 420px;
+  max-width: 92vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #0a0d12;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 0 60px rgba(34, 229, 255, 0.15);
+}
+
+.pf-v2-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0;
+  color: var(--v2-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Fila de alumno dentro del modal. */
+.pf-v2-modal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--v2-card);
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.pf-v2-modal-row .pf-v2-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 12px;
+}
+
+.pf-v2-modal-row .pf-v2-avatar::after {
+  border-color: #0a0d12;
+  width: 10px;
+  height: 10px;
+}
+
+/* Punto cian pulsante del badge "en vivo". */
+.pf-v2-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pfV2Glow 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}

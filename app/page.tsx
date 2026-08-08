@@ -3,6 +3,7 @@
 import ReliableActionButton from "@/components/ReliableActionButton";
 import Link from "@/components/ReliableLink";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { CategoriesContext } from "../components/CategoriesProvider";
 import { useAlumnos } from "../components/AlumnosProvider";
 import { useSessions } from "../components/SessionsProvider";
@@ -23,6 +24,11 @@ type Modulo = {
 
 type HomeConfig = {
   badge: string;
+  /** Frase motivacional del hero, segunda linea en cian (handoff: Inicio). */
+  lema?: string;
+  /** Foto del gimnasio del hero (data URL o ruta). El handoff la trae de un
+      `image-slot`; aca la carga el profe desde el modo edicion. */
+  heroImagen?: string;
   titulo: string;
   subtitulo: string;
   botonPrimarioLabel: string;
@@ -183,6 +189,7 @@ const CATEGORY_ICONS = ["SP", "DF", "GO", "AC", "WN", "EN", "ST", "PW"];
 
 const defaultConfig: HomeConfig = {
   badge: "ATHLETIC EDITION",
+  lema: "Hoy toca subir el nivel.",
   titulo: "PF Control",
   subtitulo:
     "Inicio con energia visual: colores vivos, foco en accion y accesos directos para trabajar rapido desde campo, gimnasio o escritorio.",
@@ -249,6 +256,7 @@ const defaultConfig: HomeConfig = {
 };
 
 export default function Home() {
+  const { data: session } = useSession();
   const { alumnos } = useAlumnos();
   const { sesiones } = useSessions();
   const { jugadoras } = usePlayers();
@@ -257,6 +265,10 @@ export default function Home() {
   const [editando, setEditando] = useState(false);
   const [operativoFiltro, setOperativoFiltro] = useState("");
   const [config, setConfig] = useState<HomeConfig>(defaultConfig);
+  // Modal "Alumnos en linea" del hero (handoff: Inicio.dc.html).
+  const [mostrarEnLinea, setMostrarEnLinea] = useState(false);
+  const [presencia, setPresencia] = useState<Record<string, { isOnline: boolean; lastSeenAt: string | null }>>({});
+  const [ahora, setAhora] = useState<Date | null>(null);
   const categoriesContext = useContext(CategoriesContext);
   const primaryActionHref = resolveActionHref(
     config.botonPrimarioHref,
@@ -271,6 +283,51 @@ export default function Home() {
   const categoriasActivas = (categoriesContext?.categorias || []).filter(
     (categoria) => categoria.habilitada && categoria.nombre.toLowerCase() !== "wellness"
   );
+
+  // El reloj arranca en null para no desincronizar la hidratacion.
+  useEffect(() => {
+    setAhora(new Date());
+    const id = window.setInterval(() => setAhora(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Conexiones reales: /api/presence resuelve por email y devuelve isOnline.
+  const emailsAlumnos = useMemo(
+    () =>
+      alumnos
+        .map((a) => String((a as { email?: string | null }).email || "").trim().toLowerCase())
+        .filter(Boolean),
+    [alumnos]
+  );
+
+  useEffect(() => {
+    if (emailsAlumnos.length === 0) return;
+
+    let vivo = true;
+    const consultar = async () => {
+      try {
+        const query = encodeURIComponent(emailsAlumnos.join(","));
+        const res = await fetch(`/api/presence?emails=${query}&includeCurrent=0`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { byEmail?: Record<string, { isOnline?: boolean; lastSeenAt?: string | null }> };
+        if (!vivo) return;
+        const mapa: Record<string, { isOnline: boolean; lastSeenAt: string | null }> = {};
+        for (const [email, snap] of Object.entries(data.byEmail || {})) {
+          mapa[email] = { isOnline: !!snap?.isOnline, lastSeenAt: snap?.lastSeenAt ?? null };
+        }
+        setPresencia(mapa);
+      } catch {
+        // Sin presencia se muestran todos como desconectados; no vale romper la pantalla.
+      }
+    };
+
+    void consultar();
+    const id = window.setInterval(consultar, 45_000);
+    return () => {
+      vivo = false;
+      window.clearInterval(id);
+    };
+  }, [emailsAlumnos]);
 
   const mapaSesionesPorAlumno = useMemo(() => {
     const mapa = new Map<string, { total: number; prescripciones: number; ultimaActualizacion: string | null }>();
@@ -511,12 +568,138 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
+  const profileNombre = String(
+    (session?.user as { name?: string | null } | undefined)?.name || ""
+  ).trim();
+
+  const wellnessPromedio = (() => {
+    const lista = Array.isArray(wellness) ? wellness : [];
+    if (lista.length === 0) return "-";
+    return (lista.reduce((a, i) => a + Number(i.bienestar || 0), 0) / lista.length).toFixed(1);
+  })();
+
+  // ── Datos del dashboard del handoff ─────────────────────────────────────
+
+  const DIAS = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
+  const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+  const fechaLarga = ahora
+    ? `${DIAS[ahora.getDay()]}, ${ahora.getDate()} de ${MESES[ahora.getMonth()]} de ${ahora.getFullYear()}`.toUpperCase()
+    : "";
+
+  const saludo = (() => {
+    const h = ahora ? ahora.getHours() : 9;
+    if (h < 12) return "Buenos dias";
+    if (h < 20) return "Buenas tardes";
+    return "Buenas noches";
+  })();
+
+  // Conexiones: los alumnos ordenados por estado y ultima actividad.
+  const conexiones = useMemo(() => {
+    const lista = alumnos.map((alumno) => {
+      const email = String((alumno as { email?: string | null }).email || "").trim().toLowerCase();
+      const snap = email ? presencia[email] : undefined;
+      const nombre = String(alumno.nombre || "").trim();
+      return {
+        nombre,
+        inicial: nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?",
+        enLinea: !!snap?.isOnline,
+        visto: snap?.lastSeenAt ?? null,
+      };
+    });
+
+    return lista.sort((a, b) => {
+      if (a.enLinea !== b.enLinea) return a.enLinea ? -1 : 1;
+      return (b.visto || "").localeCompare(a.visto || "");
+    });
+  }, [alumnos, presencia]);
+
+  const enLinea = conexiones.filter((c) => c.enLinea);
+
+  /** "hace 3 min", "ayer". Vacio si nunca se lo vio. */
+  const desdeHace = (iso: string | null): string => {
+    if (!iso || !ahora) return "sin registro";
+    const min = Math.round((ahora.getTime() - new Date(iso).getTime()) / 60000);
+    if (!Number.isFinite(min) || min < 0) return "sin registro";
+    if (min < 1) return "ahora";
+    if (min < 60) return `hace ${min} min`;
+    const hs = Math.round(min / 60);
+    if (hs < 24) return `hace ${hs} h`;
+    const dias = Math.round(hs / 24);
+    return dias === 1 ? "ayer" : `hace ${dias} dias`;
+  };
+
+  /* Feed de actividad. Ojo: ni `Sesion` ni `WellnessItem` guardan fecha
+     (ver data/mockData.ts), asi que no se puede ordenar por tiempo ni mostrar
+     "hace 2h" como en el handoff. Se listan los ultimos cargados y la linea
+     secundaria lleva el dato real que si existe, en vez de una fecha inventada. */
+  const actividad = useMemo(() => {
+    const items: Array<{ titulo: string; meta: string; hex: string }> = [];
+
+    const wellnessList = Array.isArray(wellness) ? wellness : [];
+    for (const w of [...wellnessList].reverse().slice(0, 2)) {
+      const valor = Number(w.bienestar);
+      const bajo = Number.isFinite(valor) && valor <= 5;
+      items.push({
+        titulo: `${w.nombre || "Alumno"} reporto bienestar ${Number.isFinite(valor) ? valor : "-"}/10`,
+        meta: w.disponibilidad || (bajo ? "Requiere seguimiento" : "Disponible"),
+        hex: bajo ? "#f87171" : "#34d399",
+      });
+    }
+
+    for (const sesion of [...sesiones].reverse().slice(0, 2)) {
+      items.push({
+        titulo: `Sesion "${sesion.titulo || "sin titulo"}"`,
+        meta: [sesion.alumnoAsignado || sesion.jugadoraAsignada || sesion.equipo, sesion.objetivo]
+          .filter(Boolean)
+          .join(" - ") || "sin asignar",
+        hex: "#38bdf8",
+      });
+    }
+
+    return items.slice(0, 4);
+  }, [wellness, sesiones]);
+
   // Paleta por tarjeta, del handoff v2.
   const TINTES = ["#22e5ff", "#34d399", "#c084fc", "#fbbf24"];
   const suave = (hex: string, a: number) => {
     const n = parseInt(hex.slice(1), 16);
     return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
   };
+
+  /** Path SVG de 120x30 a partir de una serie. Null si no alcanza para una linea. */
+  const sparkline = (serie: number[]): string | null => {
+    const vals = serie.filter((n) => Number.isFinite(n));
+    if (vals.length < 2) return null;
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const rango = max - min || 1;
+    const paso = 120 / (vals.length - 1);
+    return vals
+      .map((v, i) => `${i === 0 ? "M" : "L"}${(i * paso).toFixed(1)} ${(26 - ((v - min) / rango) * 22).toFixed(1)}`)
+      .join(" ");
+  };
+
+  const indicadores = useMemo(() => {
+    const categorias = (categoriesContext?.categorias || []).filter(
+      (c) => c.habilitada && c.nombre.toLowerCase() !== "wellness"
+    ).length;
+
+    return [
+      { title: "Categorías activas", value: String(categorias), href: "/categorias", icon: "◈", hint: "Abrir mapa de categorías", hex: TINTES[0], spark: null },
+      { title: "Jugadoras / alumnos", value: String(jugadoras.length + alumnos.length), href: "/clientes?seccion=plantel", icon: "◉", hint: "Ver plantilla operativa", hex: TINTES[1], spark: null },
+      { title: "Sesiones creadas", value: String(sesiones.length), href: "/sesiones", icon: "▤", hint: "Ir a sesiones", hex: TINTES[2], spark: null },
+      {
+        title: "Wellness promedio",
+        value: wellnessPromedio,
+        href: "/wellness",
+        icon: "◐",
+        hint: "Revisar balance de carga",
+        hex: TINTES[3],
+        spark: sparkline((Array.isArray(wellness) ? wellness : []).map((w) => Number(w.bienestar))),
+      },
+    ];
+  }, [categoriesContext, jugadoras.length, alumnos.length, sesiones.length, wellnessPromedio, wellness]);
 
   return (
     <div className="pf-v2-page">
@@ -549,377 +732,172 @@ export default function Home() {
         </div>
       ) : null}
 
-      {/* ── Bienvenida ─────────────────────────────────────────── */}
-      <header className="pf-v2-hero">
-        <div style={{ minWidth: 0 }}>
-          {editando ? (
-            <input
-              value={config.badge}
-              onChange={(e) => setConfig({ ...config, badge: e.target.value })}
-              className="pf-v2-input"
-              style={{ maxWidth: 260, marginBottom: 12 }}
-            />
-          ) : (
-            <span className="pf-v2-chip pf-v2-chip-accent" style={{ marginBottom: 14 }}>{config.badge}</span>
-          )}
+      {/* ── Hero ───────────────────────────────────────────────── */}
+      <section className="pf-v2-hero-card">
+        <div className="pf-v2-hero-row">
+          <div style={{ minWidth: 0 }}>
+            <span className="pf-v2-hero-date" suppressHydrationWarning>{fechaLarga || " "}</span>
 
-          {editando ? (
-            <input
-              value={config.titulo}
-              onChange={(e) => setConfig({ ...config, titulo: e.target.value })}
-              className="pf-v2-input"
-              style={{ fontSize: 24, fontWeight: 700 }}
-            />
-          ) : (
-            <h1 className="pf-v2-hero-title">{config.titulo}</h1>
-          )}
-
-          {editando ? (
-            <textarea
-              value={config.subtitulo}
-              onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
-              className="pf-v2-input"
-              rows={2}
-              style={{ marginTop: 12, maxWidth: 520 }}
-            />
-          ) : (
-            <p className="pf-v2-muted" style={{ marginTop: 12, maxWidth: 520 }}>{config.subtitulo}</p>
-          )}
-        </div>
-
-        {editando ? (
-          <div style={{ display: "grid", gap: 10, maxWidth: 420 }}>
-            {[
-              { label: "Botón primario", labelKey: "botonPrimarioLabel", hrefKey: "botonPrimarioHref" },
-              { label: "Botón secundario", labelKey: "botonSecundarioLabel", hrefKey: "botonSecundarioHref" },
-            ].map((btn) => (
-              <div key={btn.label} className="pf-v2-card" style={{ padding: 14 }}>
-                <span className="pf-v2-field-label">{btn.label}</span>
-                <input
-                  value={(config as any)[btn.labelKey]}
-                  onChange={(e) => setConfig({ ...config, [btn.labelKey]: e.target.value })}
-                  className="pf-v2-input"
-                  style={{ marginBottom: 8 }}
-                />
-                <input
-                  value={(config as any)[btn.hrefKey]}
-                  onChange={(e) => setConfig({ ...config, [btn.hrefKey]: e.target.value })}
-                  className="pf-v2-input"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            <Link href={primaryActionHref} className="pf-v2-btn">{config.botonPrimarioLabel}</Link>
-            <Link href={secondaryActionHref} className="pf-v2-btn pf-v2-btn-2">{config.botonSecundarioLabel}</Link>
-          </div>
-        )}
-      </header>
-
-      {/* ── Indicadores ────────────────────────────────────────── */}
-      <section className="pf-v2-grid-4">
-        {useMemo(() => {
-          const totalPersonas = jugadoras.length + alumnos.length;
-          const wellnessList = Array.isArray(wellness) ? wellness : [];
-          const wPromedio = wellnessList.length > 0
-            ? (wellnessList.reduce((a, i) => a + i.bienestar, 0) / wellnessList.length).toFixed(1)
-            : "—";
-          const categoriasHabilitadas = (categoriesContext?.categorias || []).filter(
-            (c) => c.habilitada && c.nombre.toLowerCase() !== "wellness"
-          ).length;
-          return [
-            { title: "Categorías activas", value: String(categoriasHabilitadas), href: "/categorias", icon: "◈", hint: "Abrir mapa de categorías" },
-            { title: "Jugadoras / Alumnos", value: String(totalPersonas), href: "/clientes?seccion=plantel", icon: "◉", hint: "Ver plantilla operativa" },
-            { title: "Sesiones creadas", value: String(sesiones.length), href: "/sesiones", icon: "▤", hint: "Ir a sesiones" },
-            { title: "Wellness promedio", value: String(wPromedio), href: "/wellness", icon: "◐", hint: "Revisar balance de carga" },
-          ];
-        }, [jugadoras.length, alumnos.length, sesiones.length, wellness, categoriesContext]).map((stat, index) => {
-          const hex = TINTES[index % TINTES.length];
-          return (
-            <Link key={stat.title} href={stat.href} className="pf-v2-kpi pf-v2-lift">
-              <div className="pf-v2-kpi-top">
-                <span
-                  className="pf-v2-kpi-icon"
-                  style={{ background: suave(hex, 0.14), color: hex, boxShadow: `0 0 18px ${suave(hex, 0.3)}` }}
-                  aria-hidden="true"
-                >
-                  {stat.icon}
-                </span>
-              </div>
-              <strong className="pf-v2-stat-value">{stat.value}</strong>
-              <span className="pf-v2-stat-label">{stat.title}</span>
-              <span className="pf-v2-module-go" style={{ color: hex, display: "block", marginTop: 10 }}>
-                {stat.hint} →
-              </span>
-            </Link>
-          );
-        })}
-      </section>
-
-      {/* ── Mesa operativa + actividad ─────────────────────────── */}
-      <section className="pf-v2-grid-split">
-        <article className="pf-v2-card">
-          <div className="pf-v2-page-head" style={{ marginBottom: 20 }}>
-            <div>
-              <span className="pf-v2-eyebrow">Mesa operativa</span>
-              <h2 className="pf-v2-h2">Alumnos y planes activos</h2>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Link href="/clientes" className="pf-v2-btn">Crear cliente</Link>
-              <Link href="/clientes" className="pf-v2-btn pf-v2-btn-2">Asignar entrenamiento</Link>
-            </div>
-          </div>
-
-          <div className="pf-v2-grid-4" style={{ gap: 10, marginBottom: 20 }}>
-            {[
-              { label: "Clientes activos", val: operativoKpis.totalAlumnos },
-              { label: "Con plan", val: operativoKpis.conPlan },
-              { label: "Sin plan", val: operativoKpis.sinPlan },
-              { label: "Prescripciones", val: operativoKpis.totalPrescripciones },
-            ].map((k, i) => (
-              <div key={k.label} className="pf-v2-card" style={{ padding: 16 }}>
-                <strong className="pf-v2-stat-value" style={{ fontSize: 24, color: TINTES[i] }}>{k.val}</strong>
-                <span className="pf-v2-stat-label">{k.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
-            <input
-              value={operativoFiltro}
-              onChange={(e) => setOperativoFiltro(e.target.value)}
-              placeholder="Buscar alumno..."
-              className="pf-v2-input"
-              style={{ maxWidth: 280 }}
-              aria-label="Buscar alumno"
-            />
-            <Link href="/clientes" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
-              Ver módulo clientes →
-            </Link>
-          </div>
-
-          <div className="pf-v2-table-wrap">
-            <table className="pf-v2-table">
-              <thead>
-                <tr>
-                  {["Alumno", "Estado", "Objetivo", "Sesiones", "Últ. act.", ""].map((h, i) => (
-                    <th key={h || `col-${i}`}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {alumnosOperativos.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="pf-v2-table-empty">No hay alumnos con el filtro actual.</td>
-                  </tr>
-                ) : (
-                  alumnosOperativos.slice(0, 8).map((alumno) => (
-                    <tr key={alumno.nombre}>
-                      <td>{alumno.nombre}</td>
-                      <td>
-                        <span className={`pf-v2-chip ${alumno.estado === "Con plan" ? "pf-v2-chip-ok" : "pf-v2-chip-danger"}`}>
-                          {alumno.estado}
-                        </span>
-                      </td>
-                      <td>{alumno.objetivo}</td>
-                      <td>
-                        {alumno.sesiones}
-                        <span style={{ color: "var(--v2-fg-35)", marginLeft: 4 }}>({alumno.prescripciones})</span>
-                      </td>
-                      <td>
-                        {alumno.ultimaActualizacion
-                          ? new Date(alumno.ultimaActualizacion).toLocaleDateString("es-AR")
-                          : "—"}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <Link href="/semana" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
-                          Templates →
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <div style={{ display: "grid", gap: 20 }}>
-          {/* Sesión del día */}
-          <article className="pf-v2-card">
-            <div className="pf-v2-page-head" style={{ marginBottom: 14 }}>
-              {editando ? (
-                <input
-                  value={config.radarTitulo}
-                  onChange={(e) => setConfig({ ...config, radarTitulo: e.target.value })}
-                  className="pf-v2-input"
-                />
-              ) : (
-                <h2 className="pf-v2-h2">{config.radarTitulo}</h2>
-              )}
-              {editando ? (
-                <input
-                  value={config.diaLabel}
-                  onChange={(e) => setConfig({ ...config, diaLabel: e.target.value })}
-                  className="pf-v2-input"
-                  style={{ maxWidth: 90 }}
-                />
-              ) : (
-                <span className="pf-v2-chip pf-v2-chip-accent">{config.diaLabel}</span>
-              )}
-            </div>
+            {editando ? (
+              <input
+                value={config.lema ?? defaultConfig.lema ?? ""}
+                onChange={(e) => setConfig({ ...config, lema: e.target.value })}
+                className="pf-v2-input"
+                style={{ fontSize: 22, fontWeight: 700, marginBottom: 14 }}
+              />
+            ) : (
+              <h1 className="pf-v2-hero-h1" suppressHydrationWarning>
+                {saludo}, {(profileNombre || "profe").split(" ")[0]}.
+                <br />
+                <span>{config.lema || defaultConfig.lema}</span>
+              </h1>
+            )}
 
             {editando ? (
               <textarea
-                value={config.radarDetalle}
-                onChange={(e) => setConfig({ ...config, radarDetalle: e.target.value })}
+                value={config.subtitulo}
+                onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
                 className="pf-v2-input"
                 rows={2}
-                style={{ marginBottom: 14 }}
+                style={{ marginBottom: 26, maxWidth: 480 }}
               />
             ) : (
-              <p className="pf-v2-muted" style={{ marginBottom: 14 }}>{config.radarDetalle}</p>
+              <p className="pf-v2-hero-lead">
+                {alumnos.length + jugadoras.length} atletas activos, {sesiones.length}{" "}
+                {sesiones.length === 1 ? "sesión creada" : "sesiones creadas"} y una wellness promedio de{" "}
+                {wellnessPromedio}/10 — todo desde un solo panel.
+              </p>
             )}
 
-            <div className="pf-v2-grid-3" style={{ gap: 10 }}>
-              {[
-                { label: "Equipo", value: config.equipo, onChange: (v: string) => setConfig({ ...config, equipo: v }) },
-                { label: "Duración", value: config.duracion, onChange: (v: string) => setConfig({ ...config, duracion: v }) },
-                { label: "Bloques", value: config.bloques, onChange: (v: string) => setConfig({ ...config, bloques: v }) },
-              ].map((item) => (
-                <div key={item.label} className="pf-v2-card" style={{ padding: 14 }}>
-                  <span className="pf-v2-stat-label">{item.label}</span>
-                  {editando ? (
-                    <input value={item.value} onChange={(e) => item.onChange(e.target.value)} className="pf-v2-input" />
-                  ) : (
-                    <strong style={{ display: "block", fontSize: 14, fontWeight: 700, marginTop: 4 }}>{item.value}</strong>
-                  )}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <ReliableActionButton
+                type="button"
+                onClick={() => setMostrarEnLinea(true)}
+                className="pf-v2-btn"
+                style={{ padding: "15px 26px", borderRadius: 14 }}
+              >
+                <span className="pf-v2-pulse" style={{ color: "var(--v2-on-accent)" }} aria-hidden="true" />
+                Ver alumnos en línea
+              </ReliableActionButton>
+              <Link
+                href="/clientes"
+                className="pf-v2-btn pf-v2-btn-2"
+                style={{ padding: "15px 26px", borderRadius: 14 }}
+              >
+                Ver clientes
+              </Link>
+            </div>
+          </div>
+
+          {/* Foto del gimnasio. El handoff la trae de un image-slot; acá sale
+              de la config para que el profe pueda cambiarla. */}
+          <div className="pf-v2-hero-photo">
+            {config.heroImagen ? <img src={config.heroImagen} alt="" /> : null}
+            <div className="pf-v2-hero-photo-caption">
+              <span className="pf-v2-kicker" style={{ marginBottom: 4 }}>{config.badge}</span>
+              <span style={{ fontFamily: "var(--v2-display)", fontSize: 15, fontWeight: 700, color: "#f5f9ff" }}>
+                Entrená donde entrenás.
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Indicadores ────────────────────────────────────────── */}
+      <section className="pf-v2-grid-4">
+        {indicadores.map((k) => (
+          <Link key={k.title} href={k.href} className="pf-v2-kpi pf-v2-lift">
+            <div className="pf-v2-kpi-top">
+              <span
+                className="pf-v2-kpi-icon"
+                style={{ background: suave(k.hex, 0.14), color: k.hex, boxShadow: `0 0 18px ${suave(k.hex, 0.3)}` }}
+                aria-hidden="true"
+              >
+                {k.icon}
+              </span>
+            </div>
+            <strong className="pf-v2-stat-value">{k.value}</strong>
+            <span className="pf-v2-stat-label" style={{ marginBottom: 14 }}>{k.title}</span>
+            {k.spark ? (
+              <svg width="100%" height="30" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true">
+                <path d={k.spark} fill="none" stroke={k.hex} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : null}
+            <span className="pf-v2-module-go" style={{ color: k.hex }}>{k.hint} →</span>
+          </Link>
+        ))}
+      </section>
+
+      {/* ── Conexiones + actividad ─────────────────────────────── */}
+      <section className="pf-v2-grid-split">
+        <article className="pf-v2-card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
+            <div>
+              <span className="pf-v2-kicker">En vivo</span>
+              <h2 className="pf-v2-h2">Conexiones de clientes</h2>
+            </div>
+            <span
+              className="pf-v2-chip pf-v2-chip-ok"
+              style={{ display: "flex", alignItems: "center", gap: 7 }}
+              suppressHydrationWarning
+            >
+              <span className="pf-v2-pulse" aria-hidden="true" />
+              {enLinea.length} en línea
+            </span>
+          </div>
+
+          {conexiones.length === 0 ? (
+            <p className="pf-v2-muted" style={{ margin: 0 }}>Todavía no hay alumnos cargados.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {conexiones.slice(0, 6).map((c) => (
+                <div key={c.nombre} className="pf-v2-live-row">
+                  <span className="pf-v2-avatar" data-online={c.enLinea} aria-hidden="true">{c.inicial}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 700 }}>{c.nombre}</span>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: c.enLinea ? "var(--v2-success)" : "var(--v2-fg-40)" }}>
+                      {c.enLinea ? "En línea" : "Desconectada"}
+                    </span>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--v2-fg-35)" }} suppressHydrationWarning>
+                      {desdeHace(c.visto)}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
+          )}
+        </article>
 
-            <div className="pf-v2-card" style={{ padding: 14, marginTop: 10 }}>
-              <span className="pf-v2-stat-label">Objetivo</span>
-              {editando ? (
-                <textarea
-                  value={config.objetivo}
-                  onChange={(e) => setConfig({ ...config, objetivo: e.target.value })}
-                  className="pf-v2-input"
-                  rows={2}
-                />
-              ) : (
-                <p style={{ fontSize: 13, color: "var(--v2-fg-70)", margin: "4px 0 0" }}>{config.objetivo}</p>
-              )}
-            </div>
-          </article>
+        <article className="pf-v2-card">
+          <span className="pf-v2-kicker">Actividad</span>
+          <h2 className="pf-v2-h2" style={{ marginBottom: 20 }}>Últimos movimientos</h2>
 
-          {/* Alertas */}
-          <article className="pf-v2-card">
-            <div className="pf-v2-page-head" style={{ marginBottom: 14 }}>
-              <div>
-                <span className="pf-v2-eyebrow" style={{ color: "var(--v2-warning)" }}>Atención</span>
-                <h2 className="pf-v2-h2">Alertas</h2>
-              </div>
-              {editando ? (
-                <ReliableActionButton onClick={addAlerta} className="pf-v2-btn pf-v2-btn-2">
-                  + Alerta
-                </ReliableActionButton>
-              ) : null}
-            </div>
-
-            {config.alertas.length === 0 ? (
-              <p className="pf-v2-muted" style={{ margin: 0 }}>Sin alertas activas.</p>
-            ) : (
-              <ul className="pf-v2-feed">
-                {config.alertas.map((alerta, index) => (
-                  <li key={index}>
-                    <span className="pf-v2-feed-dot" style={{ color: "var(--v2-warning)" }} aria-hidden="true" />
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      {editando ? (
-                        <>
-                          <input
-                            value={alerta.nombre}
-                            onChange={(e) => updateAlerta(index, { nombre: e.target.value })}
-                            className="pf-v2-input"
-                            style={{ marginBottom: 6 }}
-                          />
-                          <input
-                            value={alerta.detalle}
-                            onChange={(e) => updateAlerta(index, { detalle: e.target.value })}
-                            className="pf-v2-input"
-                          />
-                          <ReliableActionButton
-                            onClick={() => removeAlerta(index)}
-                            className="pf-v2-module-go"
-                            style={{ color: "var(--v2-danger)", marginTop: 8, background: "none", border: 0, cursor: "pointer" }}
-                          >
-                            Eliminar
-                          </ReliableActionButton>
-                        </>
-                      ) : (
-                        <>
-                          <span className="pf-v2-feed-title">{alerta.nombre}</span>
-                          <span className="pf-v2-feed-meta">{alerta.detalle}</span>
-                        </>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-        </div>
-      </section>
-
-      {/* ── Categorías ─────────────────────────────────────────── */}
-      <section className="pf-v2-card">
-        <div className="pf-v2-page-head" style={{ marginBottom: 18 }}>
-          <div>
-            <span className="pf-v2-eyebrow">Acceso rápido</span>
-            <h2 className="pf-v2-h2">Categorías</h2>
-          </div>
-          <Link href="/categorias" className="pf-v2-module-go" style={{ color: "var(--v2-accent)" }}>
-            Ver todas →
-          </Link>
-        </div>
-
-        {categoriasActivas.length === 0 ? (
-          <p className="pf-v2-muted" style={{ margin: 0 }}>No hay categorías habilitadas.</p>
-        ) : (
-          <div className="pf-v2-grid-4">
-            {categoriasActivas.map((categoria, index) => {
-              const hex = TINTES[index % TINTES.length];
-              return (
-                <Link
-                  key={categoria.nombre}
-                  href={`/categorias/${encodeURIComponent(categoria.nombre)}`}
-                  className="pf-v2-module pf-v2-lift"
-                >
-                  <span
-                    className="pf-v2-module-icon"
-                    style={{ background: suave(hex, 0.14), color: hex, boxShadow: `0 0 18px ${suave(hex, 0.3)}` }}
-                    aria-hidden="true"
-                  >
-                    {CATEGORY_ICONS[index % CATEGORY_ICONS.length]}
-                  </span>
-                  <span>
-                    <span className="pf-v2-module-name">{categoria.nombre}</span>
-                  </span>
-                  <span className="pf-v2-module-go" style={{ color: hex }}>Abrir →</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+          {actividad.length === 0 ? (
+            <p className="pf-v2-muted" style={{ margin: 0 }}>Sin movimientos registrados.</p>
+          ) : (
+            <ul className="pf-v2-feed">
+              {actividad.map((a, i) => (
+                <li key={`${a.titulo}-${i}`}>
+                  <span className="pf-v2-feed-dot" style={{ color: a.hex }} aria-hidden="true" />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <span className="pf-v2-feed-title">{a.titulo}</span>
+                    <span className="pf-v2-feed-meta">{a.meta}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
       </section>
 
       {/* ── Módulos ────────────────────────────────────────────── */}
-      <section className="pf-v2-card">
-        <div className="pf-v2-page-head" style={{ marginBottom: 18 }}>
+      <section>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
           <div>
-            <span className="pf-v2-eyebrow">Accesos</span>
-            <h2 className="pf-v2-h2">Módulos</h2>
+            <span className="pf-v2-kicker">Accesos</span>
+            <h2 className="pf-v2-h2" style={{ fontSize: 20 }}>Módulos</h2>
           </div>
           {editando ? (
             <ReliableActionButton onClick={addModulo} className="pf-v2-btn pf-v2-btn-2">
@@ -987,6 +965,52 @@ export default function Home() {
           })}
         </div>
       </section>
+
+      {/* ── Modal "Alumnos en línea" ───────────────────────────── */}
+      {mostrarEnLinea ? (
+        <div
+          className="pf-v2-modal-backdrop"
+          onClick={() => setMostrarEnLinea(false)}
+          role="presentation"
+        >
+          <div
+            className="pf-v2-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Alumnos en línea"
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <h2 className="pf-v2-h2">Alumnos en línea</h2>
+              <button
+                type="button"
+                className="pf-v2-modal-close"
+                onClick={() => setMostrarEnLinea(false)}
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="pf-v2-muted" style={{ margin: "0 0 20px" }}>
+              {enLinea.length === 0
+                ? "Nadie conectado ahora mismo."
+                : `${enLinea.length} ${enLinea.length === 1 ? "conectado" : "conectados"} ahora mismo.`}
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {enLinea.map((o) => (
+                <div key={o.nombre} className="pf-v2-modal-row">
+                  <span className="pf-v2-avatar" data-online="true" aria-hidden="true">{o.inicial}</span>
+                  <div>
+                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 700 }}>{o.nombre}</span>
+                    <span className="pf-v2-feed-meta">En línea</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
